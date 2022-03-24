@@ -1272,10 +1272,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$platform_checkout_phone = wc_clean( wp_unslash( $_POST['platform_checkout_user_phone_field']['full'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
 				// Add the metadata.
-				$metadata['platform_checkout_first_name'] = wc_clean( $order->get_billing_first_name() );
-				$metadata['platform_checkout_last_name']  = wc_clean( $order->get_billing_last_name() );
-				$metadata['platform_checkout_phone']      = $platform_checkout_phone;
-				$metadata['platform_checkout_company']    = wc_clean( $order->get_billing_company() );
+				$metadata['platform_checkout_primary_first_name']   = wc_clean( $order->get_billing_first_name() );
+				$metadata['platform_checkout_primary_last_name']    = wc_clean( $order->get_billing_last_name() );
+				$metadata['platform_checkout_primary_phone']        = wc_clean( $order->get_billing_phone() );
+				$metadata['platform_checkout_primary_company']      = wc_clean( $order->get_billing_company() );
+				$metadata['platform_checkout_secondary_first_name'] = wc_clean( $order->get_shipping_first_name() );
+				$metadata['platform_checkout_secondary_last_name']  = wc_clean( $order->get_shipping_last_name() );
+				$metadata['platform_checkout_secondary_phone']      = wc_clean( $order->get_shipping_phone() );
+				$metadata['platform_checkout_secondary_company']    = wc_clean( $order->get_shipping_company() );
+				$metadata['platform_checkout_phone']                = $platform_checkout_phone;
 		}
 
 		return $metadata;
