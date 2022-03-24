@@ -221,12 +221,6 @@ describe( 'Account fees utility functions', () => {
 
 			formatAccountFeesDescription( accountFees );
 
-			// Base fee description
-			expect( formatCurrency ).toHaveBeenCalledWith(
-				accountFees.base.fixed_rate,
-				accountFees.base.currency
-			);
-
 			// Current fee description
 			expect( formatCurrency ).toHaveBeenCalledWith(
 				accountFees.base.fixed_rate * 0.9,
@@ -244,7 +238,7 @@ describe( 'Account fees utility functions', () => {
 			} );
 
 			expect( formatMethodFeesDescription( methodFees ) ).toEqual(
-				'12.3% + $4.57'
+				'From 12.3% + $4.57'
 			);
 		} );
 
@@ -259,7 +253,7 @@ describe( 'Account fees utility functions', () => {
 			);
 
 			expect( formatMethodFeesDescription( methodFees ) ).toEqual(
-				<>11.07% + $4.11</>
+				<>From 11.07% + $4.11</>
 			);
 		} );
 

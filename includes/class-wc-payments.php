@@ -156,6 +156,13 @@ class WC_Payments {
 	private static $webhook_processing_service;
 
 	/**
+	 * Instance of WC_Payments_Webhook_Reliability_Service, created in init function
+	 *
+	 * @var WC_Payments_Webhook_Reliability_Service
+	 */
+	private static $webhook_reliability_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -231,6 +238,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-order-service.php';
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
+		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -238,7 +246,7 @@ class WC_Payments {
 		}
 
 		// Load platform checkout save user section if feature is enabled.
-		if ( WC_Payments_Features::is_platform_checkout_enabled() ) {
+		if ( WC_Payments_Features::is_platform_checkout_eligible() ) {
 			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
 			// Load platform checkout tracking.
 			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
@@ -261,6 +269,7 @@ class WC_Payments {
 		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$order_service                       = new WC_Payments_Order_Service();
 		self::$webhook_processing_service          = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service );
+		self::$webhook_reliability_service         = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		$card_class = CC_Payment_Gateway::class;
 		$upe_class  = UPE_Payment_Gateway::class;
@@ -317,7 +326,7 @@ class WC_Payments {
 		WC_Payments_Explicit_Price_Formatter::init();
 
 		// Add admin screens.
-		if ( is_admin() ) {
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account );
 
@@ -830,17 +839,20 @@ class WC_Payments {
 
 	/**
 	 * Registers platform checkout hooks if the platform checkout feature flag is enabled.
+	 *
+	 * @return void
 	 */
 	public static function maybe_register_platform_checkout_hooks() {
-		$is_platform_checkout_feature_enabled = WC_Payments_Features::is_platform_checkout_enabled(); // Feature flag.
-		$is_platform_checkout_enabled         = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
+		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
+		$is_platform_checkout_enabled  = 'yes' === self::get_gateway()->get_option( 'platform_checkout', 'no' );
 
-		if ( $is_platform_checkout_feature_enabled && $is_platform_checkout_enabled ) {
+		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
+			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], 10 );
+			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
 			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
 		}
 	}
@@ -898,6 +910,20 @@ class WC_Payments {
 	}
 
 	/**
+	 * Tells WC to use platform checkout session cookie if the header is present.
+	 *
+	 * @param string $cookie_hash Default cookie hash.
+	 *
+	 * @return string
+	 */
+	public static function determine_session_cookie_for_platform_checkout( $cookie_hash ) {
+		if ( isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) && 0 === (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) {
+			return 'platform_checkout_session';
+		}
+		return $cookie_hash;
+	}
+
+	/**
 	 * Determine the current user
 	 *
 	 * @param WP_User|int $user The user to determine.
@@ -911,13 +937,6 @@ class WC_Payments {
 			return $user;
 		}
 
-		add_filter(
-			'woocommerce_cookie',
-			function( string $cookie_hash ) {
-				return 'platform_checkout_session';
-			}
-		);
-
 		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
 	}
 
@@ -927,11 +946,11 @@ class WC_Payments {
 	public static function platform_checkout_fields_before_billing_details() {
 		$checkout = WC()->checkout;
 
-		echo '<div id="contact_details" class="col2-set">';
-		echo '<div class="col-1">';
+		echo '<div class="woocommerce-billing-fields" id="contact_details">';
 
 		echo '<h3>' . esc_html( __( 'Contact information', 'woocommerce-payments' ) ) . '</h3>';
 
+		echo '<div class="woocommerce-billing-fields__field-wrapper">';
 		woocommerce_form_field(
 			'billing_email',
 			[
@@ -947,6 +966,10 @@ class WC_Payments {
 
 		echo '</div>';
 		echo '</div>';
+
+		// Ensure WC Blocks styles are enqueued so the spinner will show.
+		// This style is not enqueued be default when using a block theme and classic checkout.
+		wp_enqueue_style( 'wc-blocks-style' );
 	}
 
 	/**
@@ -960,7 +983,7 @@ class WC_Payments {
 	 */
 	public static function filter_woocommerce_form_field_platform_checkout_email( $field, $key, $args, $value ) {
 		$class = $args['class'][0];
-		if ( false === strpos( $class, 'platform-checkout-billing-email' ) ) {
+		if ( false === strpos( $class, 'platform-checkout-billing-email' ) && is_checkout() && ! is_checkout_pay_page() ) {
 			$field = '';
 		}
 		return $field;
