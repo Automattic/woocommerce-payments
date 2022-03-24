@@ -81,7 +81,7 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Caches the business types for a period of time.
 	 *
-	 * @param string|array $business_types - The business types to cache.
+	 * @param string|array $business_types - The business types to cache, or the business types retrieval error.
 	 * @param int          $expiration     - The length of time to cache the data, expressed in seconds.
 	 */
 	private function cache_business_types( $business_types, int $expiration = null ) {
