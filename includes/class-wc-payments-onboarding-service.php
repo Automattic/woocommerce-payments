@@ -50,15 +50,15 @@ class WC_Payments_Onboarding_Service {
 		// If we want to force a refresh, we can skip this logic and go straight to the server request.
 		if ( ! $force_refresh ) {
 			$business_types = $this->read_business_types_from_cache();
-		}
 
-		if ( false !== $business_types && is_array( $business_types ) && ! empty( $business_types ) ) {
-			return $business_types;
-		}
+			if ( false !== $business_types && is_array( $business_types ) && ! empty( $business_types ) ) {
+				return $business_types;
+			}
 
-		// If the option contains the error value, return false early and do not attempt another API call.
-		if ( self::BUSINESS_TYPES_RETRIEVAL_ERROR === $business_types ) {
-			return false;
+			// If the option contains the error value, return false early and do not attempt another API call.
+			if ( self::BUSINESS_TYPES_RETRIEVAL_ERROR === $business_types ) {
+				return false;
+			}
 		}
 
 		try {
