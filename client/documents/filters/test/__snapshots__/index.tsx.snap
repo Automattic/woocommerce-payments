@@ -7,10 +7,5 @@ HTMLOptionsCollection [
   >
     Test Document
   </option>,
-  <option
-    value="invalid_document"
-  >
-    Invalid Document
-  </option>,
 ]
 `;

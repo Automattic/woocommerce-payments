@@ -97,7 +97,7 @@ export const DocumentsList = (): JSX.Element => {
 	const columnsToDisplay = getColumns();
 
 	const totalRows = documentsSummary.count || 0;
-	const rows = documents.map( ( document ) => {
+	const rows = documents.map( ( document: Document ) => {
 		const documentType =
 			displayType[ document.type ] ??
 			__( 'Unknown document type', 'woocommerce-payments' );
