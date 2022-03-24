@@ -182,12 +182,12 @@ exports[`Documents list renders correctly 1`] = `
                   <span
                     aria-hidden="true"
                   >
-                    Format
+                    Type
                   </span>
                   <span
                     class="screen-reader-text"
                   >
-                    Format
+                    Type
                   </span>
                 </th>
                 <th
@@ -476,12 +476,12 @@ exports[`Documents list renders table summary only when the documents summary da
                   <span
                     aria-hidden="true"
                   >
-                    Format
+                    Type
                   </span>
                   <span
                     class="screen-reader-text"
                   >
-                    Format
+                    Type
                   </span>
                 </th>
                 <th

@@ -40,8 +40,8 @@ const getColumns = (): Column[] =>
 		},
 		{
 			key: 'type',
-			label: __( 'Format', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Format', 'woocommerce-payments' ),
+			label: __( 'Type', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 		},
