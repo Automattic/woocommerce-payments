@@ -10,7 +10,7 @@ import { Button } from '@wordpress/components';
 import WizardTaskItem from 'additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
 
-const SetupComplete = () => {
+const SetupCompleteTask = () => {
 	const { connectUrl } = wcpaySettings;
 	const { setCompleted } = useContext( WizardTaskContext );
 
@@ -36,4 +36,4 @@ const SetupComplete = () => {
 	);
 };
 
-export default SetupComplete;
+export default SetupCompleteTask;

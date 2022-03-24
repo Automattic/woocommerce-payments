@@ -10,16 +10,16 @@ import React from 'react';
  * Internal dependencies
  */
 import OnboardingPage from '..';
-import AddBusinessInfo from '../tasks/add-business-info-task';
-import SetupComplete from '../tasks/setup-complete-task';
+import AddBusinessInfoTask from '../tasks/add-business-info-task';
+import SetupCompleteTask from '../tasks/setup-complete-task';
 
 jest.mock( '../tasks/add-business-info-task', () => jest.fn() );
 jest.mock( '../tasks/setup-complete-task', () => jest.fn() );
 
 describe( 'OnboardingPage', () => {
 	beforeEach( () => {
-		AddBusinessInfo.mockReturnValue( <p>Add Business Info</p> );
-		SetupComplete.mockReturnValue( <p>Setup Complete</p> );
+		AddBusinessInfoTask.mockReturnValue( <p>Add Business Info</p> );
+		SetupCompleteTask.mockReturnValue( <p>Setup Complete</p> );
 	} );
 
 	afterEach( () => {

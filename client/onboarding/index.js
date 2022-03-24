@@ -12,9 +12,8 @@ import { Card, CardBody } from '@wordpress/components';
 import Wizard from 'additional-methods-setup/wizard/wrapper';
 import WizardTaskList from 'additional-methods-setup/wizard/task-list';
 import WizardTask from 'additional-methods-setup/wizard/task';
-import AddBusinessInfo from './tasks/add-business-info-task';
-import SetupComplete from './tasks/setup-complete-task';
-
+import AddBusinessInfoTask from './tasks/add-business-info-task';
+import SetupCompleteTask from './tasks/setup-complete-task';
 import './index.scss';
 
 const OnboardingPage = () => {
@@ -27,10 +26,10 @@ const OnboardingPage = () => {
 				<Wizard defaultActiveTask="complete-business-info">
 					<WizardTaskList>
 						<WizardTask id="complete-business-info">
-							<AddBusinessInfo />
+							<AddBusinessInfoTask />
 						</WizardTask>
 						<WizardTask id="setup-complete">
-							<SetupComplete />
+							<SetupCompleteTask />
 						</WizardTask>
 					</WizardTaskList>
 				</Wizard>

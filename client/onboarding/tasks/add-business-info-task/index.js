@@ -17,7 +17,7 @@ import { LoadableBlock } from 'components/loadable';
 import { useBusinessTypes } from 'data/onboarding';
 import strings from '../../strings';
 
-const AddBusinessInfo = () => {
+const AddBusinessInfoTask = () => {
 	const { isCompleted, setCompleted } = useContext( WizardTaskContext );
 	const { businessTypes, isLoading } = useBusinessTypes();
 
@@ -120,4 +120,4 @@ const AddBusinessInfo = () => {
 	);
 };
 
-export default AddBusinessInfo;
+export default AddBusinessInfoTask;

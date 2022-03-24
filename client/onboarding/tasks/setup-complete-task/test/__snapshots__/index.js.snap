@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SetupCompleteTask renders page 1`] = `
+<div>
+  <li
+    class="wcpay-wizard-task"
+  >
+    <div
+      class="wcpay-wizard-task__top-border"
+    />
+    <div
+      class="wcpay-wizard-task__headline"
+      tabindex="-1"
+    >
+      <div
+        class="wcpay-wizard-task__icon-wrapper"
+      >
+        <div
+          class="wcpay-wizard-task__icon-text"
+        >
+          2
+        </div>
+        <svg
+          aria-hidden="true"
+          class="wcpay-wizard-task__icon-checkmark"
+          focusable="false"
+          height="24"
+          role="img"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+          />
+        </svg>
+      </div>
+      <span
+        class="wcpay-wizard-task__title"
+      >
+        Connect your account and finish setup
+      </span>
+    </div>
+    <div
+      class="wcpay-wizard-task__body"
+    >
+      <div
+        class="wcpay-onboarding-setup-complete-task__buttons"
+      >
+        <a
+          class="components-button is-primary"
+          href="/connect"
+        >
+          Connect
+        </a>
+      </div>
+    </div>
+  </li>
+</div>
+`;
