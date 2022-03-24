@@ -466,6 +466,23 @@ Array [
 ]
 `;
 
+exports[`mapTimelineEvents formats refund_failed events 1`] = `
+Array [
+  Object {
+    "body": Array [
+      "Acquirer Reference Number (ARN) 4785767637658864",
+    ],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": "$1.00 USD refund was attempted but failed due to the card being expired or canceled.",
+    "icon": <t
+      className="is-error"
+      icon="notice-outline"
+      size={24}
+    />,
+  },
+]
+`;
+
 exports[`mapTimelineEvents single currency events formats captured events with fee details 1`] = `
 Array [
   Object {
