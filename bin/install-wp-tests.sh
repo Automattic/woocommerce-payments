@@ -118,6 +118,13 @@ install_wp() {
 }
 
 configure_wp() {
+	# portable in-place argument for both GNU sed and Mac OSX sed
+	if [[ $(uname -s) == 'Darwin' ]]; then
+		local ioption='-i.bak'
+	else
+		local ioption='-i'
+	fi
+
 	WP_SITE_URL="http://local.wordpress.test"
 	wait_db
 
@@ -126,7 +133,7 @@ configure_wp() {
 	fi
 
     # MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
-    sed -i "/Happy publishing/i mysqli_report(MYSQLI_REPORT_OFF);\n" "$WP_CORE_DIR/wp-config.php"
+    sed $ioption -E "s/(Happy publishing.+)/\1\nmysqli_report(MYSQLI_REPORT_OFF);/" "$WP_CORE_DIR/wp-config.php"
 
 	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
 }
@@ -151,7 +158,7 @@ install_test_suite() {
 		download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
 
 		# MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
-		sed -i "/youremptytestdbnamehere/i mysqli_report(MYSQLI_REPORT_OFF);\n" "$WP_TESTS_DIR/wp-tests-config.php"
+		sed $ioption -E "s/(youremptytestdbnamehere.+)/\1\nmysqli_report(MYSQLI_REPORT_OFF);/" "$WP_TESTS_DIR/wp-tests-config.php"
 
 		# remove all forward slashes in the end
 		WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
