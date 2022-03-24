@@ -76,7 +76,7 @@ class Platform_Checkout_Utilities_Test extends WP_UnitTestCase {
 	 */
 	private function createWithStubs( $is_subscription_item_in_cart ) {
 		$platform_checkout_utilities = $this->getMockBuilder( Platform_Checkout_Utilities::class )
-			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
+			->setMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 		$platform_checkout_utilities->expects( $this->once() )
 			->method( 'is_subscription_item_in_cart' )
