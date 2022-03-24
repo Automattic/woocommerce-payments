@@ -219,6 +219,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 		$mock_refund_2
 			->expects( $this->once() )
 			->method( 'delete' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
