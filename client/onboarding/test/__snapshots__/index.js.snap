@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OnboardingPage renders page 1`] = `
+<div>
+  <div
+    class="components-card is-size-large wcpay-onboarding-card wcpay-homescreen-card css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+    >
+      <div>
+        <ul>
+          <p>
+            Add Business Info
+          </p>
+          <p>
+            Setup Complete
+          </p>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+`;

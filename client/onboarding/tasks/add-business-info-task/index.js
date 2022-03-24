@@ -15,7 +15,7 @@ import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
 import OnboardingSelectControl from 'components/onboarding-select-control';
 import { LoadableBlock } from 'components/loadable';
 import { useBusinessTypes } from 'data/onboarding';
-import strings from '../strings';
+import strings from '../../strings';
 
 const AddBusinessInfo = () => {
 	const { isCompleted, setCompleted } = useContext( WizardTaskContext );

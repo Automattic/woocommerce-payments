@@ -7,8 +7,8 @@ import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
-import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
-import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
+import WizardTaskItem from 'additional-methods-setup/wizard/task-item';
+import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
 
 const SetupComplete = () => {
 	const { connectUrl } = wcpaySettings;
