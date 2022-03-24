@@ -45,7 +45,11 @@ export const FileUploadControl = ( {
 		event: React.MouseEvent< HTMLButtonElement >,
 		openFileDialog: () => void
 	) => {
-		// Get file input next to the button element and clear it's value, allowing to select the same file again in case of connection or general error or need to select it again
+		// Get file input next to the button element and clear it's value,
+		// allowing to select the same file again in case of
+		// connection or general error or just need to select it again.
+		// This workaround is useful until we update @wordpress/components to a
+		// version the supports this: https://github.com/WordPress/gutenberg/issues/39267
 		const fileInput:
 			| HTMLInputElement
 			| null
