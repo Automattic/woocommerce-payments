@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Add `wcpay_metadata_from_order` filter which allows for injecting of arbitrary metadata and/or overriding of the `payment_context`

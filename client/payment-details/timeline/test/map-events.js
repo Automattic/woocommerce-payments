@@ -150,6 +150,22 @@ describe( 'mapTimelineEvents', () => {
 		).toMatchSnapshot();
 	} );
 
+	test( 'formats refund_failed events', () => {
+		expect(
+			mapTimelineEvents( [
+				{
+					datetime: 1585859207,
+					type: 'refund_failed',
+					user_id: 1,
+					acquirer_reference_number_status: 'available',
+					acquirer_reference_number: '4785767637658864',
+					failure_reason: 'expired_or_canceled_card',
+					amount_refunded: '100',
+				},
+			] )
+		).toMatchSnapshot();
+	} );
+
 	describe( 'single currency events', () => {
 		test( 'formats captured events without fee details', () => {
 			expect(
