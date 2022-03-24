@@ -33,6 +33,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	);
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
 
+	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
+	iframe.classList.add( 'intrinsic-ignore' );
+
 	// Make the iframe arrow.
 	const iframeArrow = document.createElement( 'span' );
 	iframeArrow.setAttribute( 'aria-hidden', 'true' );
