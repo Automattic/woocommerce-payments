@@ -16,11 +16,8 @@ import {
  */
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
-import TextLengthHelpInputWrapper from './text-length-help-input-wrapper';
 import {
 	useAccountStatementDescriptor,
-	useIsShortStatementDescriptorEnabled,
-	useShortStatementDescriptor,
 	useManualCapture,
 	useGetSavingError,
 	useSavedCards,
@@ -29,7 +26,6 @@ import {
 import './style.scss';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
-const SHORT_STATEMENT_MAX_LENGTH = 10;
 
 const TransactionsAndDeposits = () => {
 	const {
@@ -44,18 +40,8 @@ const TransactionsAndDeposits = () => {
 		accountStatementDescriptor,
 		setAccountStatementDescriptor,
 	] = useAccountStatementDescriptor();
-	const [
-		isShortStatementEnabled,
-		setIsShortStatementEnabled,
-	] = useIsShortStatementDescriptorEnabled();
-	const [
-		shortAccountStatementDescriptor,
-		setShortAccountStatementDescriptor,
-	] = useShortStatementDescriptor();
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
-	const shortStatementDescriptorErrorMessage = useGetSavingError()?.data
-		?.details?.short_statement_descriptor?.message;
 	const [ isCardPresentEligible ] = useCardPresentEligible();
 
 	return (
@@ -102,91 +88,34 @@ const TransactionsAndDeposits = () => {
 						</span>
 					}
 				/>
+				{ customerBankStatementErrorMessage && (
+					<Notice status="error" isDismissible={ false }>
+						<span
+							dangerouslySetInnerHTML={ {
+								__html: customerBankStatementErrorMessage,
+							} }
+						/>
+					</Notice>
+				) }
 				<div className="transactions-and-deposits__account-statement-wrapper">
-					<h4>
-						{ __(
+					<TextControl
+						className="transactions-and-deposits__account-statement-input"
+						help={ __(
+							"Edit the way your store name appears on your customers' bank statements.",
+							'woocommerce-payments'
+						) }
+						label={ __(
 							'Customer bank statement',
 							'woocommerce-payments'
 						) }
-					</h4>
-					{ customerBankStatementErrorMessage && (
-						<Notice status="error" isDismissible={ false }>
-							<span
-								dangerouslySetInnerHTML={ {
-									__html: customerBankStatementErrorMessage,
-								} }
-							/>
-						</Notice>
-					) }
-					<TextLengthHelpInputWrapper
-						textLength={ accountStatementDescriptor.length }
+						value={ accountStatementDescriptor }
+						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
 						data-testid={ 'store-name-bank-statement' }
-					>
-						<TextControl
-							className="transactions-and-deposits__account-statement-input"
-							help={ __(
-								'Enter the name your customers will see on their transactions. Use a recognizable name – e.g. ' +
-									'the legal entity name or website address – to avoid potential disputes and chargebacks.',
-								'woocommerce-payments'
-							) }
-							label={ __(
-								'Full bank statement',
-								'woocommerce-payments'
-							) }
-							value={ accountStatementDescriptor }
-							onChange={ setAccountStatementDescriptor }
-							maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
-						/>
-					</TextLengthHelpInputWrapper>
-
-					<CheckboxControl
-						checked={ isShortStatementEnabled }
-						onChange={ setIsShortStatementEnabled }
-						label={ __(
-							'Add customer order number to the bank statement',
-							'woocommerce-payments'
-						) }
-						help={ __(
-							"When enabled, we'll include the order number for card and express checkout transactions.",
-							'woocommerce-payments'
-						) }
 					/>
-					{ isShortStatementEnabled && (
-						<>
-							{ shortStatementDescriptorErrorMessage && (
-								<Notice status="error" isDismissible={ false }>
-									<span
-										dangerouslySetInnerHTML={ {
-											__html: shortStatementDescriptorErrorMessage,
-										} }
-									/>
-								</Notice>
-							) }
-							<TextLengthHelpInputWrapper
-								textLength={
-									shortAccountStatementDescriptor.length
-								}
-								maxLength={ SHORT_STATEMENT_MAX_LENGTH }
-							>
-								<TextControl
-									help={ __(
-										"We'll use the short version in combination with the customer order number.",
-										'woocommerce-payments'
-									) }
-									label={ __(
-										'Shortened customer bank statement',
-										'woocommerce-payments'
-									) }
-									value={ shortAccountStatementDescriptor }
-									onChange={
-										setShortAccountStatementDescriptor
-									}
-									maxLength={ SHORT_STATEMENT_MAX_LENGTH }
-								/>
-							</TextLengthHelpInputWrapper>
-						</>
-					) }
+					<span className="input-help-text" aria-hidden="true">
+						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
+					</span>
 				</div>
 				<div className="transactions-and-deposits__bank-information">
 					<h4>
