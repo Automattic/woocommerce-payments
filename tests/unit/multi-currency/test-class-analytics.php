@@ -31,8 +31,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->set_is_admin( true );
 		$this->set_is_rest_request( true );
@@ -43,8 +43,14 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 			}
 		);
 
+		// Add manage_woocommerce capability to user.
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
+
 		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
 		$this->analytics           = new Analytics( $this->mock_multi_currency );
+
+		remove_filter( 'user_has_cap', $cb );
 	}
 
 	/**
@@ -295,5 +301,18 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 
 	private function set_is_rest_request() {
 		$_SERVER['REQUEST_URI'] = '/ajax';
+	}
+
+	/**
+	 * @param bool $can_manage_woocommerce
+	 *
+	 * @return Closure
+	 */
+	private function create_can_manage_woocommerce_cap_override( bool $can_manage_woocommerce ) {
+		return function ( $allcaps ) use ( $can_manage_woocommerce ) {
+			$allcaps['manage_woocommerce'] = $can_manage_woocommerce;
+
+			return $allcaps;
+		};
 	}
 }

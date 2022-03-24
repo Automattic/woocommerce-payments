@@ -5,7 +5,7 @@
  */
 import { Button, Modal } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { createInterpolateElement } from '@wordpress/element';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 
 /**

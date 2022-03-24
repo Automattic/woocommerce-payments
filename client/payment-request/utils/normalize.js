@@ -46,7 +46,7 @@ export const normalizeOrderData = ( paymentData ) => {
 	return {
 		billing_first_name:
 			name?.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
-		billing_last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) ?? '',
+		billing_last_name: name?.split( ' ' )?.slice( 1 )?.join( ' ' ) || '-',
 		billing_company: billing?.organization ?? '',
 		billing_email: email ?? paymentData?.payerEmail ?? '',
 		billing_phone:

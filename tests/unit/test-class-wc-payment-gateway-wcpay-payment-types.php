@@ -72,8 +72,8 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
 		// return value of create_and_confirm_intention().
@@ -144,9 +144,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 	/**
 	 * Cleanup after all tests.
 	 */
-	public static function tearDownAfterClass() {
+	public static function tear_down_after_class() {
 		WC_Subscriptions::set_wcs_order_contains_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+
+		parent::tear_down_after_class();
 	}
 
 	private function mock_wcs_order_contains_subscription( $value ) {
@@ -166,6 +168,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
 			->with(
+				$this->anything(),
 				$this->anything(),
 				$this->anything(),
 				$this->anything(),
@@ -201,6 +204,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 				$this->anything(),
 				$this->anything(),
 				$this->anything(),
+				$this->anything(),
 				// Metadata argument.
 				$this->callback(
 					function( $metadata ) use ( $order ) {
@@ -230,6 +234,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
 			->with(
+				$this->anything(),
 				$this->anything(),
 				$this->anything(),
 				$this->anything(),

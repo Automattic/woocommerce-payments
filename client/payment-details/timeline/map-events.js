@@ -8,7 +8,7 @@ import Gridicon from 'gridicons';
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 
 /**
@@ -804,11 +804,13 @@ const mapEventToTimelineItems = ( event ) => {
 							{
 								a: (
 									<Link
-										href={
-											'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions' +
-											'&type=charge&filter=advanced&loan_id_is=' +
-											event.loan_id
-										}
+										href={ getAdminUrl( {
+											page: 'wc-admin',
+											path: '/payments/transactions',
+											type: 'charge',
+											filter: 'advanced',
+											loan_id_is: event.loan_id,
+										} ) }
 									/>
 								),
 							}
