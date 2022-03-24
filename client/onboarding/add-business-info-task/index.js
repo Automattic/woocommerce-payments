@@ -18,15 +18,16 @@ import { useBusinessTypes } from 'data/onboarding';
 import strings from '../strings';
 
 const AddBusinessInfo = () => {
-	const { isCompleted } = useContext( WizardTaskContext );
+	const { isCompleted, setCompleted } = useContext( WizardTaskContext );
 	const { businessTypes, isLoading } = useBusinessTypes();
 
 	const accountCountry = businessTypes.find(
 		( b ) => b.key === wcpaySettings.connect.country
 	);
-	const [ businessCountry, setBusinessCountry ] = useState( null );
-	const [ businessType, setBusinessType ] = useState( null );
-	const [ businessStructure, setBusinessStructure ] = useState( null );
+	const [ businessCountry, setBusinessCountry ] = useState( accountCountry );
+	const [ businessType, setBusinessType ] = useState( '' );
+	const [ businessStructure, setBusinessStructure ] = useState( '' );
+	const [ displayStructures, setDisplayStructures ] = useState( false );
 
 	useEffect( () => {
 		setBusinessCountry( accountCountry );
@@ -34,17 +35,24 @@ const AddBusinessInfo = () => {
 
 	const handleBusinessCountryUpdate = ( country ) => {
 		setBusinessCountry( country );
+		setBusinessType( '' );
+		setBusinessStructure( '' );
+		setDisplayStructures( false );
+		setCompleted( false );
 	};
 
 	const handleBusinessTypeUpdate = ( type ) => {
 		setBusinessType( type );
+		setBusinessStructure( '' );
+		setCompleted( 0 === type.structures.length );
+		setDisplayStructures( 0 < type.structures.length );
 	};
 
 	const handleBusinessStructureUpdate = ( structure ) => {
 		setBusinessStructure( structure );
+		setCompleted( true );
 	};
 
-	// if ( businessType ) console.log( businessType );
 	return (
 		<WizardTaskItem
 			className="complete-business-info-task"
@@ -75,7 +83,7 @@ const AddBusinessInfo = () => {
 						options={ businessCountry.types }
 					/>
 				) }
-				{ businessType && (
+				{ businessType && displayStructures && (
 					<CustomSelectControl
 						className="wcpay-onboarding-select"
 						label={ __(
