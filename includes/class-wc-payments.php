@@ -668,7 +668,7 @@ class WC_Payments {
 		$capital_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-onboarding-controller.php';
-		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client );
+		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
 		$onboarding_controller->register_routes();
 
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
@@ -747,15 +747,6 @@ class WC_Payments {
 	 */
 	public static function get_customer_service(): WC_Payments_Customer_Service {
 		return self::$customer_service;
-	}
-
-	/**
-	 * Returns the WC_Payments_Onboarding_Service instance
-	 *
-	 * @return WC_Payments_Onboarding_Service The Onboarding service instance.
-	 */
-	public static function get_onboarding_service(): WC_Payments_Onboarding_Service {
-		return self::$onboarding_service;
 	}
 
 	/**
