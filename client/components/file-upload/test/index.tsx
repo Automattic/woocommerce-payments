@@ -5,14 +5,13 @@
  */
 import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
  */
 import { FileUploadControl } from 'components/file-upload';
 import type { DisputeFileUpload } from 'wcpay/types/disputes';
-
-import userEvent from '@testing-library/user-event';
 
 describe( 'FileUploadControl', () => {
 	let props: DisputeFileUpload;
