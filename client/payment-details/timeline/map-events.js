@@ -314,7 +314,14 @@ const composeFXString = ( event ) => {
 // Conditionally adds the ARN details to the timeline in case they're available.
 const getRefundTrackingDetails = ( event ) => {
 	return 'available' === event.acquirer_reference_number_status
-		? `Acquirer Reference Number(ARN) ${ event.acquirer_reference_number }`
+		? sprintf(
+				/* translators: %s is a trcking reference number */
+				__(
+					'Acquirer Reference Number (ARN) %s',
+					'woocommerce-payments'
+				),
+				event.acquirer_reference_number
+		  )
 		: '';
 };
 
@@ -322,11 +329,20 @@ const getRefundTrackingDetails = ( event ) => {
 const getRefundFailureReason = ( event ) => {
 	switch ( event.failure_reason ) {
 		case 'expired_or_canceled_card':
-			return 'the card being expired or canceled.';
+			return __(
+				'the card being expired or canceled.',
+				'woocommerce-payments'
+			);
 		case 'lost_or_stolen_card':
-			return 'the card being lost or stolen.';
+			return __(
+				'the card being lost or stolen.',
+				'woocommerce-payments'
+			);
 		case 'unknown':
-			return 'some reason.';
+			return __(
+				'the card being lost or stolen.',
+				'woocommerce-payments'
+			);
 	}
 };
 
