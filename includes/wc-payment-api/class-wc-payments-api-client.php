@@ -1819,7 +1819,7 @@ class WC_Payments_API_Client {
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
 				if ( isset( $response_body['error']['decline_code'] ) && 'fraudulent' === $response_body['error']['decline_code'] ) {
-					$fraud_prevention_service = Fraud_Prevention_Service::instance();
+					$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 					if ( $fraud_prevention_service->is_enabled() ) {
 						$fraud_prevention_service->regenerate_token();
 						WC()->session->set( 'reload_checkout', true );

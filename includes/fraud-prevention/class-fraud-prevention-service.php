@@ -45,7 +45,7 @@ class Fraud_Prevention_Service {
 	 * @param null $session Session instance.
 	 * @return Fraud_Prevention_Service
 	 */
-	public static function instance( $session = null ) {
+	public static function get_instance( $session = null ): self {
 		if ( null === self::$instance ) {
 			self::$instance = new self( $session ?? WC()->session );
 		}

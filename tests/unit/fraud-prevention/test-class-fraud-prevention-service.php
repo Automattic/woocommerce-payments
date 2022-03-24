@@ -33,7 +33,7 @@ class Fraud_Prevention_Service_Test extends WP_UnitTestCase {
 			->getMock();
 
 		Fraud_Prevention_Service::set_instance( null );
-		$this->fraud_prevention_service = Fraud_Prevention_Service::instance( $this->session_mock );
+		$this->fraud_prevention_service = Fraud_Prevention_Service::get_instance( $this->session_mock );
 	}
 
 	public function test_it_checks_if_enabled() {
