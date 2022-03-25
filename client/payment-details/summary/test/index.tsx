@@ -15,6 +15,10 @@ declare const global: {
 	wcpaySettings: {
 		isSubscriptionsActive: boolean;
 		zeroDecimalCurrencies: string[];
+		currencyData: Record< string, any >;
+		connect: {
+			country: string;
+		};
 	};
 };
 
@@ -72,6 +76,19 @@ describe( 'PaymentDetailsSummary', () => {
 		global.wcpaySettings = {
 			isSubscriptionsActive: false,
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 
