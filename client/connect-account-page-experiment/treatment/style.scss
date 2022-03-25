@@ -1,0 +1,105 @@
+.connect-account-page-treatment {
+	&__onboarding {
+		img {
+			width: 140px;
+			margin: $gap-smaller 0;
+		}
+
+		h2 {
+			font-size: 24px;
+			line-height: 32px;
+			font-weight: normal;
+			letter-spacing: 0.05em;
+			@include breakpoint( '>660px' ) {
+				margin-bottom: $gap-small;
+			}
+		}
+
+		p {
+			font-size: 12px;
+			line-height: 16px;
+			color: $studio-gray-60;
+		}
+
+		.components-button {
+			margin: $gap-small 0;
+		}
+
+		@include breakpoint( '>660px' ) {
+			.components-card__header {
+				display: none;
+			}
+
+			.components-card__body.is-size-medium {
+				padding: $gap-large $gap-largest;
+			}
+		}
+	}
+
+	@include breakpoint( '>660px' ) {
+		&__content.components-card__body.is-size-medium {
+			background: url( './illustrations/wcpay.svg' ) no-repeat bottom
+				right/293px 275px;
+			min-height: 305px;
+			padding-right: 340px;
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			align-items: flex-start;
+		}
+	}
+
+	&__payment-methods {
+		margin-bottom: $gap-smaller;
+
+		p {
+			text-align: center;
+			color: $studio-gray-40;
+			@include breakpoint( '>660px' ) {
+				text-align: initial;
+			}
+		}
+
+		svg {
+			height: 24px;
+		}
+
+		div {
+			display: grid;
+			grid-gap: $gap-smaller;
+			grid-template-columns: repeat( auto-fill, minmax( 39px, 1fr ) );
+		}
+
+		span {
+			display: none;
+			@include breakpoint( '>660px' ) {
+				display: initial;
+				white-space: nowrap;
+				align-self: end;
+			}
+		}
+	}
+
+	&__details {
+		text-align: center;
+
+		p {
+			font-size: 16px;
+			line-height: 24px;
+			letter-spacing: 0.022em;
+			color: $studio-gray-90;
+			margin-top: 0;
+			margin-bottom: $gap-smaller;
+		}
+
+		@include breakpoint( '>660px' ) {
+			display: grid;
+			grid-template-columns: repeat( 3, 1fr );
+			column-gap: 30px;
+
+			&.components-card__body.is-size-medium {
+				padding: 30px;
+			}
+		}
+	}
+}

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix bug when woocommerce_order_actions is called by a plugin or custom code.
