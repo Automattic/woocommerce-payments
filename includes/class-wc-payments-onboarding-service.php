@@ -95,11 +95,7 @@ class WC_Payments_Onboarding_Service {
 			'expires'        => time() * $expiration,
 		];
 
-		if ( false === get_option( self::BUSINESS_TYPES_OPTION ) ) {
-			$result = add_option( self::BUSINESS_TYPES_OPTION, $business_types_cache, '', 'no' );
-		} else {
-			$result = update_option( self::BUSINESS_TYPES_OPTION, $business_types_cache, 'no' );
-		}
+		$result = update_option( self::BUSINESS_TYPES_OPTION, $business_types_cache, 'no' );
 
 		return $result;
 	}
