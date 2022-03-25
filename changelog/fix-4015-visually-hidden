@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Update wordpres/components to fix VisuallyHidden styles not loading.
