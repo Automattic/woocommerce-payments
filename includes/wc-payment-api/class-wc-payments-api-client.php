@@ -55,6 +55,7 @@ class WC_Payments_API_Client {
 	const TERMINAL_READERS_API         = 'terminal/readers';
 	const MINIMUM_RECURRING_AMOUNT_API = 'subscriptions/minimum_amount';
 	const CAPITAL_API                  = 'capital';
+	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1626,6 +1627,17 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieves the list of failed webhook events and their data.
+	 *
+	 * @return array List of failed webhook events.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	public function get_failed_webhook_events() {
+		return $this->request( [], self::WEBHOOK_FETCH_API, self::POST );
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -1645,6 +1657,8 @@ class WC_Payments_API_Client {
 				'test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
 			]
 		);
+
+		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
 
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;

@@ -202,6 +202,11 @@ class WC_Payments_Webhook_Processing_Service {
 			),
 			$refund_id
 		);
+
+		if ( $this->order_service->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
 		$order->add_order_note( $note );
 		$order->update_meta_data( '_wcpay_refund_status', 'failed' );
 		$order->save();
@@ -408,6 +413,10 @@ class WC_Payments_Webhook_Processing_Service {
 				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
 			)
 		);
+
+		if ( $this->order_service->order_note_exists( $order, $note ) ) {
+			return;
+		}
 
 		$order->add_order_note( $note );
 	}
