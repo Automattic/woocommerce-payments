@@ -70,11 +70,16 @@ const getDocumentDescription = ( document: Document ) => {
 					),
 					dateI18n(
 						'M j, Y',
-						moment.utc( document.period_from ).local().toISOString()
+						moment
+							.utc( document.period_from )
+							.local()
+							.toISOString(),
+						'utc'
 					),
 					dateI18n(
 						'M j, Y',
-						moment.utc( document.period_to ).local().toISOString()
+						moment.utc( document.period_to ).local().toISOString(),
+						'utc'
 					)
 				);
 			}
