@@ -127,10 +127,10 @@ class Platform_Checkout_Tracker extends Tracking {
 		}
 
 		// Don't track when platform checkout is disabled.
-		$gateway                              = \WC_Payments::get_gateway();
-		$is_platform_checkout_feature_enabled = WC_Payments_Features::is_platform_checkout_enabled(); // Feature flag.
-		$is_platform_checkout_enabled         = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
-		if ( ! ( $is_platform_checkout_feature_enabled && $is_platform_checkout_enabled ) ) {
+		$gateway                       = \WC_Payments::get_gateway();
+		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
+		$is_platform_checkout_enabled  = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
+		if ( ! ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) ) {
 			return false;
 		}
 

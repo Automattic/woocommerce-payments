@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: I only removed one line that added an unused filter with an unknown callback
-
-

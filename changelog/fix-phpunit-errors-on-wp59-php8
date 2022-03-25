@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Unit test support for PHP 8 and upgrade PHPUnit version to 9.5.14

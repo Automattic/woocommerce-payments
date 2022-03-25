@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix `is_platform_payment_method` flag on blocks checkout
