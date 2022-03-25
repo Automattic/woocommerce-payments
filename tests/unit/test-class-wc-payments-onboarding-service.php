@@ -213,7 +213,7 @@ class WC_Payments_Onboarding_Service_Test extends WP_UnitTestCase {
 
 		$this->assertEquals(
 			WC_Payments_Onboarding_Service::BUSINESS_TYPES_RETRIEVAL_ERROR,
-			get_option( WC_Payments_Onboarding_Service::BUSINESS_TYPES_OPTION )['business_types'],
+			get_option( WC_Payments_Onboarding_Service::BUSINESS_TYPES_OPTION )['business_types']
 		);
 	}
 
