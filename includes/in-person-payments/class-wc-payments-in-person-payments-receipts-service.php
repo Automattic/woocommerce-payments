@@ -68,6 +68,29 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 		return ob_get_clean();
 	}
 
+
+	/**
+	 * Send card reader receipt to customer by email
+	 *
+	 * @param  WC_Order $order the order.
+	 * @param  array    $charge the charge.
+	 * @return void
+	 */
+	public function send_customer_ipp_receipt_email( WC_Order $order, array $charge ) {
+		// Send email receipt to the customer.
+		$wcpay_gateway     = WC_Payments::get_gateway();
+		$merchant_settings = [
+			'business_name' => $wcpay_gateway->get_option( 'account_business_name' ),
+			'support_info'  => [
+				'address' => $wcpay_gateway->get_option( 'account_business_support_address' ),
+				'phone'   => $wcpay_gateway->get_option( 'account_business_support_phone' ),
+				'email'   => $wcpay_gateway->get_option( 'account_business_support_email' ),
+			],
+		];
+
+		do_action( 'woocommerce_payments_email_ipp_receipt', $order, $merchant_settings, $charge );
+	}
+
 	/**
 	 * Format line items
 	 *

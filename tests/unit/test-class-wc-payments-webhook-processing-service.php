@@ -41,6 +41,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	private $order_service;
 
 	/**
+	 * receipt_service
+	 *
+	 * @var mixed
+	 */
+	private $mock_receipt_service;
+
+	/**
 	 * @var array
 	 */
 	private $event_body;
@@ -67,7 +74,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
 
-		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service );
+		$this->mock_receipt_service = $this->createMock( WC_Payments_In_Person_Payments_Receipts_Service::class );
+
+		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service );
 
 		// Build the event body data.
 		$event_object = [];
@@ -523,6 +532,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
+		$this->mock_receipt_service
+			->expects( $this->never() )
+			->method( 'send_customer_ipp_receipt_email' );
+
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -576,6 +589,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
+		$this->mock_receipt_service
+			->expects( $this->never() )
+			->method( 'send_customer_ipp_receipt_email' );
+
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -623,9 +640,68 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
+		$this->mock_receipt_service
+			->expects( $this->never() )
+			->method( 'send_customer_ipp_receipt_email' );
+
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 
+	}
+
+	/**
+	 * Tests that a payment_intent.succeeded event will complete the order and
+	 * send the card reader receipt to the customer.
+	 */
+	public function test_payment_intent_successful_and_send_card_reader_receipt() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123', // payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method_details' => [
+							'type' => 'card_present',
+						],
+					],
+				],
+			],
+			'currency' => 'eur',
+			'status'   => 'succeeded',
+		];
+
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'has_status' )
+			->with( [ 'processing', 'completed' ] )
+			->willReturn( false );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $mock_order );
+
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_receipt_service
+			->expects( $this->once() )
+			->method( 'send_customer_ipp_receipt_email' )
+			->with( $mock_order, $this->event_body['data']['object']['charges']['data'][0] );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**

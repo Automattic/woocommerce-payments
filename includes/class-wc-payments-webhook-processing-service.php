@@ -55,26 +55,36 @@ class WC_Payments_Webhook_Processing_Service {
 	protected $order_service;
 
 	/**
+	 * WC_Payments_In_Person_Payments_Receipts_Service
+	 *
+	 * @var WC_Payments_In_Person_Payments_Receipts_Service
+	 */
+	private $receipt_service;
+
+	/**
 	 * WC_Payments_Webhook_Processing_Service constructor.
 	 *
-	 * @param WC_Payments_API_Client          $api_client          WooCommerce Payments API client.
-	 * @param WC_Payments_DB                  $wcpay_db            WC_Payments_DB instance.
-	 * @param WC_Payments_Account             $account             WC_Payments_Account instance.
-	 * @param WC_Payments_Remote_Note_Service $remote_note_service WC_Payments_Remote_Note_Service instance.
-	 * @param WC_Payments_Order_Service       $order_service       WC_Payments_Order_Service instance.
+	 * @param WC_Payments_API_Client                          $api_client          WooCommerce Payments API client.
+	 * @param WC_Payments_DB                                  $wcpay_db            WC_Payments_DB instance.
+	 * @param WC_Payments_Account                             $account             WC_Payments_Account instance.
+	 * @param WC_Payments_Remote_Note_Service                 $remote_note_service WC_Payments_Remote_Note_Service instance.
+	 * @param WC_Payments_Order_Service                       $order_service       WC_Payments_Order_Service instance.
+	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service       WC_Payments_In_Person_Payments_Receipts_Service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
 		WC_Payments_DB $wcpay_db,
 		WC_Payments_Account $account,
 		WC_Payments_Remote_Note_Service $remote_note_service,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service
 	) {
 		$this->wcpay_db            = $wcpay_db;
 		$this->account             = $account;
 		$this->remote_note_service = $remote_note_service;
 		$this->order_service       = $order_service;
 		$this->api_client          = $api_client;
+		$this->receipt_service     = $receipt_service;
 	}
 
 	/**
@@ -331,6 +341,11 @@ class WC_Payments_Webhook_Processing_Service {
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
 
 		$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
+
+		// Send the customer a card reader receipt if it's an in person payment type.
+		if ( array_key_exists( 'payment_method_details', $charges_data[0] ) && 'card_present' === $this->read_webhook_property( $charges_data[0]['payment_method_details'], 'type' ) ) {
+			$this->receipt_service->send_customer_ipp_receipt_email( $order, $charges_data[0] );
+		}
 	}
 
 	/**

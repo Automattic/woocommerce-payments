@@ -268,7 +268,7 @@ class WC_Payments {
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$order_service                       = new WC_Payments_Order_Service();
-		self::$webhook_processing_service          = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service );
+		self::$webhook_processing_service          = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service );
 		self::$webhook_reliability_service         = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		$card_class = CC_Payment_Gateway::class;
@@ -347,6 +347,32 @@ class WC_Payments {
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
+
+		// Init Emails. TODO check if this is the right place to do it.
+		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_emails' ], 11 );
+		add_filter( 'woocommerce_email_actions', [ __CLASS__, 'add_email_actions' ], 11 );
+	}
+
+	/**
+	 * Function add_emails
+	 *
+	 * @param array $email_classes the email classes.
+	 * @return array
+	 */
+	public static function add_emails( array $email_classes ): array {
+		$email_classes['WC_Payments_Email_IPP_Receipt'] = include __DIR__ . '/emails/class-wc-payments-email-ipp-receipt.php';
+		return $email_classes;
+	}
+
+	/**
+	 * Function add_email_actions
+	 *
+	 * @param array $email_actions the email actions.
+	 * @return array
+	 */
+	public static function add_email_actions( array $email_actions ): array {
+		$email_actions[] = 'woocommerce_payments_email_ipp_receipt';
+		return $email_actions;
 	}
 
 	/**
