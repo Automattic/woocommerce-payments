@@ -290,6 +290,8 @@ class WC_Payments {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
 
+		self::maybe_register_platform_checkout_hooks();
+
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::$card_gateway );
 		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
@@ -844,8 +846,6 @@ class WC_Payments {
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
-			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
 		}
 	}
 
@@ -990,7 +990,9 @@ class WC_Payments {
 		// Load platform checkout save user section if feature is enabled.
 		$platform_checkout_util = new Platform_Checkout_Utilities();
 		if ( $platform_checkout_util->should_enable_platform_checkout( self::get_gateway() ) ) {
-			self::maybe_register_platform_checkout_hooks();
+			// Update email field location.
+			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
+			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
 
 			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
 			// Load platform checkout tracking.
