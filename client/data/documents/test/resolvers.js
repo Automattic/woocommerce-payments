@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { apiFetch } from '@wordpress/data-controls';
+import { apiFetch, dispatch } from '@wordpress/data-controls';
 
 /**
  * Internal dependencies
@@ -67,6 +67,13 @@ describe( 'getDocuments resolver', () => {
 	describe( 'on error', () => {
 		test( 'should update state with error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
+				dispatch(
+					'core/notices',
+					'createErrorNotice',
+					expect.any( String )
+				)
+			);
+			expect( generator.next().value ).toEqual(
 				updateErrorForDocuments( query, null, errorResponse )
 			);
 		} );
