@@ -27,15 +27,6 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<document_id>\w+)',
-			[
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_document' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
-		register_rest_route(
-			$this->namespace,
 			'/' . $this->rest_base,
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -52,6 +43,39 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<document_id>\w+)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_document' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+	}
+
+	/**
+	 * Retrieve documents to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_documents( $request ) {
+		$page      = (int) $request->get_param( 'page' );
+		$page_size = (int) $request->get_param( 'pagesize' );
+		$sort      = $request->get_param( 'sort' );
+		$direction = $request->get_param( 'direction' );
+		$filters   = $this->get_documents_filters( $request );
+		return $this->forward_request( 'list_documents', [ $page, $page_size, $sort, $direction, $filters ] );
+	}
+
+	/**
+	 * Retrieve documents summary to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_documents_summary( $request ) {
+		$filters = $this->get_documents_filters( $request );
+		return $this->forward_request( 'get_documents_summary', [ $filters ] );
 	}
 
 	/**
@@ -89,30 +113,6 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 		echo $response['body'];
 
 		exit;
-	}
-
-	/**
-	 * Retrieve documents to respond with via API.
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 */
-	public function get_documents( $request ) {
-		$page      = (int) $request->get_param( 'page' );
-		$page_size = (int) $request->get_param( 'pagesize' );
-		$sort      = $request->get_param( 'sort' );
-		$direction = $request->get_param( 'direction' );
-		$filters   = $this->get_documents_filters( $request );
-		return $this->forward_request( 'list_documents', [ $page, $page_size, $sort, $direction, $filters ] );
-	}
-
-	/**
-	 * Retrieve documents summary to respond with via API.
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 */
-	public function get_documents_summary( $request ) {
-		$filters = $this->get_documents_filters( $request );
-		return $this->forward_request( 'get_documents_summary', [ $filters ] );
 	}
 
 	/**
