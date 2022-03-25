@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Exceptions\API_Exception;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -62,7 +64,17 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 	public function get_document( $request ) {
 		$document_id = $request->get_param( 'document_id' );
 
-		$response = $this->api_client->get_document( $document_id );
+		try {
+			$response = $this->api_client->get_document( $document_id );
+		} catch ( API_Exception $e ) {
+			$message = sprintf(
+				/* translators: %1: The document ID. %2: The error message.*/
+				esc_html__( 'There was an error accessing document %1$s. %2$s.', 'woocommerce-payments' ),
+				$document_id,
+				$e->getMessage()
+			);
+			wp_die( esc_html( $message ), '', (int) $e->get_http_code() );
+		}
 
 		// Set the headers to match what was returned from the server.
 		if ( ! headers_sent() ) {

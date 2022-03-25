@@ -1686,23 +1686,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - If not connected or request failed.
 	 */
 	public function get_document( $document_id ) {
-		// Build the document URL.
-		$url = sprintf(
-			'%s/documents/%s?%s',
-			self::ENDPOINT_BASE . '/' . self::ENDPOINT_SITE_FRAGMENT . '/' . self::ENDPOINT_REST_BASE,
-			$document_id,
-			http_build_query( [ 'test_mode' => WC_Payments::get_gateway()->is_in_test_mode() ] )
-		);
-
-		return $this->http_client->remote_request(
-			[
-				'url'             => $url,
-				'method'          => self::GET,
-				'headers'         => apply_filters( 'wcpay_api_request_headers', [ 'User-Agent' => $this->user_agent ] ),
-				'timeout'         => self::API_TIMEOUT_SECONDS,
-				'connect_timeout' => self::API_TIMEOUT_SECONDS,
-			]
-		);
+		return $this->request( [], self::DOCUMENTS_API . '/' . $document_id, self::GET, true, false, true );
 	}
 
 	/**
@@ -1713,11 +1697,12 @@ class WC_Payments_API_Client {
 	 * @param string $method           - The HTTP method to make the request with.
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
 	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
+	 * @param bool   $raw_response     - If true, the raw response will be returned. Defaults to false.
 	 *
 	 * @return array
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
-	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false ) {
+	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false ) {
 		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
@@ -1784,7 +1769,14 @@ class WC_Payments_API_Client {
 			$use_user_token
 		);
 
-		$response_body = $this->extract_response_body( $response );
+		$this->check_response_for_errors( $response );
+
+		if ( ! $raw_response ) {
+			$response_body = $this->extract_response_body( $response );
+		} else {
+			$response_body = $response;
+		}
+
 		Logger::log(
 			'RESPONSE: '
 			. var_export( WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
@@ -1859,6 +1851,29 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception Standard exception in case we can't extract the body.
 	 */
 	protected function extract_response_body( $response ) {
+		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( null === $response_body ) {
+			return wp_remote_retrieve_body( $response );
+		}
+
+		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
+		if ( isset( $response_body['metadata'] ) && empty( $response_body['metadata'] ) ) {
+			$response_body['metadata'] = new stdClass();
+		}
+
+		return $response_body;
+	}
+
+	/**
+	 * Checks if a response has any errors and throws the appropriate API_Exception.
+	 *
+	 * @param array $response That was given to us by http_client remote_request.
+	 *
+	 * @return void
+	 *
+	 * @throws API_Exception If there's something wrong with the response.
+	 */
+	protected function check_response_for_errors( $response ) {
 		$response_code = wp_remote_retrieve_response_code( $response );
 		if ( ! $response_code ) {
 			$response_code = 0;
@@ -1866,7 +1881,7 @@ class WC_Payments_API_Client {
 
 		$response_body_json = wp_remote_retrieve_body( $response );
 		$response_body      = json_decode( $response_body_json, true );
-		if ( null === $response_body ) {
+		if ( null === $response_body && $this->is_json_response( $response ) ) {
 			$message = __( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' );
 			Logger::error( $message );
 			throw new API_Exception(
@@ -1874,6 +1889,8 @@ class WC_Payments_API_Client {
 				'wcpay_unparseable_or_null_body',
 				$response_code
 			);
+		} elseif ( null === $response_body && ! $this->is_json_response( $response ) ) {
+			$response_body = wp_remote_retrieve_body( $response );
 		}
 
 		// Check error codes for 4xx and 5xx responses.
@@ -1907,13 +1924,17 @@ class WC_Payments_API_Client {
 			Logger::error( "$error_message ($error_code)" );
 			throw new API_Exception( $message, $error_code, $response_code, $error_type );
 		}
+	}
 
-		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
-		if ( isset( $response_body['metadata'] ) && empty( $response_body['metadata'] ) ) {
-			$response_body['metadata'] = new stdClass();
-		}
-
-		return $response_body;
+	/**
+	 * Returns true if the response is JSON, based on the content-type header.
+	 *
+	 * @param array $response That was given to us by http_client remote_request.
+	 *
+	 * @return bool True if content-type is application/json, false otherwise.
+	 */
+	protected function is_json_response( $response ) {
+		return 'application/json' === substr( wp_remote_retrieve_header( $response, 'content-type' ), 0, strlen( 'application/json' ) );
 	}
 
 	/**

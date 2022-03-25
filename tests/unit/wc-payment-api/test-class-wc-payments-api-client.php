@@ -1563,6 +1563,27 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test fetch of a document that errors
+	 *
+	 * @throws Exception
+	 */
+	public function test_get_document_error() {
+		$this->set_http_mock_response(
+			404,
+			[
+				'code'    => 'wcpay_document_not_found',
+				'message' => 'Document not found',
+				'data'    => [ 'status' => 404 ],
+			]
+		);
+
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( 'Error: Document not found' );
+
+		$this->payments_api_client->get_document( 'someDocument' );
+	}
+
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int $status_code status code for the mocked response.
