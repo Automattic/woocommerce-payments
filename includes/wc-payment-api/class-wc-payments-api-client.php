@@ -1083,6 +1083,21 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get the business types, needed for our KYC onboarding flow.
+	 *
+	 * @return array An array containing the business types.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_onboarding_business_types() {
+		return $this->request(
+			[],
+			self::ONBOARDING_API . '/business_types',
+			self::GET
+		);
+	}
+
+	/**
 	 * Get one-time dashboard login url
 	 *
 	 * @param string $redirect_url - URL to navigate back to from the dashboard.
