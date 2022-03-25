@@ -1842,13 +1842,11 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * From a given response extract the body. Invalid HTTP codes will result in an error.
+	 * From a given response extract the body.
 	 *
 	 * @param array $response That was given to us by http_client remote_request.
 	 *
-	 * @return array $response_body
-	 *
-	 * @throws API_Exception Standard exception in case we can't extract the body.
+	 * @return mixed $response_body
 	 */
 	protected function extract_response_body( $response ) {
 		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
