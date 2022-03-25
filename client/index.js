@@ -28,6 +28,7 @@ import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
 import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
+import OnboardingPage from 'onboarding';
 import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
@@ -47,6 +48,20 @@ addFilter(
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
+			navArgs: {
+				id: 'wc-payments',
+			},
+			capability: 'manage_woocommerce',
+		} );
+
+		pages.push( {
+			container: OnboardingPage,
+			path: '/payments/onboarding',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Onboarding', 'woocommerce-payments' ),
+			],
 			navArgs: {
 				id: 'wc-payments',
 			},
