@@ -5,7 +5,7 @@
  */
 import React, { useState, useContext, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CustomSelectControl } from '@wordpress/components';
+import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -63,7 +63,7 @@ const AddBusinessInfoTask = () => {
 				{ strings.onboarding.description }
 			</p>
 			<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-				<CustomSelectControl
+				<OnboardingSelectControl
 					className="wcpay-onboarding-select"
 					label={ __( 'Country', 'woocommerce-payments' ) }
 					value={ businessCountry }
@@ -84,7 +84,7 @@ const AddBusinessInfoTask = () => {
 					/>
 				) }
 				{ businessType && displayStructures && (
-					<CustomSelectControl
+					<OnboardingSelectControl
 						className="wcpay-onboarding-select"
 						label={ __(
 							'Business Structure',
