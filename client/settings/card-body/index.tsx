@@ -10,7 +10,13 @@ import classNames from 'classnames';
  */
 import './styles.scss';
 
-const WcpayCardBody = ( { className, ...props } ) => (
+const WcpayCardBody = ( {
+	className,
+	...props
+}: {
+	className?: string;
+	children?: JSX.Element;
+} ): JSX.Element => (
 	<CardBody
 		className={ classNames( 'wcpay-card-body', className ) }
 		{ ...props }
