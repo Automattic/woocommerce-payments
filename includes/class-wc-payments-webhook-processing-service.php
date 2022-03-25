@@ -141,6 +141,9 @@ class WC_Payments_Webhook_Processing_Service {
 			case 'invoice.payment_failed':
 				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_payment_failed( $event_body );
 				break;
+			case 'wcpay.new_document':
+				$this->process_new_document_notification();
+				break;
 		}
 
 		try {
@@ -440,6 +443,17 @@ class WC_Payments_Webhook_Processing_Service {
 		} catch ( Rest_Request_Exception $e ) {
 			throw new Invalid_Webhook_Data_Exception( $e->getMessage() );
 		}
+	}
+
+	/**
+	 * Process new document notification data.
+	 *
+	 * @return void
+	 */
+	private function process_new_document_notification() {
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-new-document-available.php';
+		WC_Payments_Notes_New_Document_Available::possibly_delete_note();
+		WC_Payments_Notes_New_Document_Available::possibly_add_note();
 	}
 
 	/**

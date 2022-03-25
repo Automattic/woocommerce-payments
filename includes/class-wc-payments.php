@@ -822,6 +822,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 			WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-new-document-available.php';
+			WC_Payments_Notes_New_Document_Available::possibly_delete_note();
 		}
 	}
 
