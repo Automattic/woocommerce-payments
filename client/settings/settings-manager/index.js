@@ -17,10 +17,13 @@ import GeneralSettings from '../general-settings';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import TransactionsAndDeposits from '../transactions-and-deposits';
+import FraudPrevention from '../fraud-prevention';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
+
+const isFraudProtectionSettingsEnabled = false;
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -81,6 +84,25 @@ const TransactionsAndDepositsDescription = () => (
 	</>
 );
 
+const FraudPreventionDescription = () => (
+	<>
+		<h2>{ __( 'Fraud prevention', 'woocommerce-payments' ) }</h2>
+		<p>
+			{ __(
+				'Manage security and fraud prevention options to avoid chargebacks, unauthorized access to the store, ' +
+					'and better store management experience.',
+				'woocommerce-payments'
+			) }
+		</p>
+		<ExternalLink href="https://woocommerce.com/#">
+			{ __(
+				'Check out security best practices',
+				'woocommerce-payments'
+			) }
+		</ExternalLink>
+	</>
+);
+
 const SettingsManager = () => {
 	const {
 		featureFlags: {
@@ -125,6 +147,15 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
+			{ isFraudProtectionSettingsEnabled && (
+				<SettingsSection Description={ FraudPreventionDescription }>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<FraudPrevention />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+			) }
 			<AdvancedSettings />
 			<SaveSettingsSection />
 		</SettingsLayout>
