@@ -1,5 +1,51 @@
 *** WooCommerce Payments Changelog ***
 
+= 3.9.0 - 2022-03-24 =
+* Add - Add compatibility between Multi-Currency and WooCommerce Name Your Price.
+* Add - Add wcpay_is_wcpay_subscriptions_enabled filter
+* Add - Add Webhook_Reliability service to fetch and process failed webhook events.
+* Add - Add `wcpay_metadata_from_order` filter which allows for injecting of arbitrary metadata and/or overriding of the `payment_context`
+* Add - Allow handling of previously paid for payment intents via the Checkout Store API
+* Add - Allow saving credit cards to platform account from classic checkout.
+* Add - Implement Tracks events to capture OTP usage
+* Add - New filter introduced: 'wc_payments_account_id_for_intent_confirmation'.
+* Add - Redirect merchants to the onboarding flow when a URL parameter is present
+* Add - Tracking for checkout start and completion
+* Add - Tracking for when platform checkout is offered
+* Fix - Add - when order data has no billing last name (ex. Google Pay payment)
+* Fix - Add all subscription line items not just subscription products when creating WCPay Subscriptions.
+* Fix - Check for variables before using them to prevent possible errors during UPE checkout process.
+* Fix - Don't anonymize new subscriptions related to old subscriptions via a resubscribe relationship
+* Fix - Do not show multi-currency inbox note until the merchant has set up a WCPay account
+* Fix - Fix bug when woocommerce_order_actions is called by a plugin or custom code.
+* Fix - Fix checkout as guest on platform checkout
+* Fix - Fixed failed order getting updated on successful payment in UPE
+* Fix - Fix Printed receipt endpoint throws error when called from Jetpack API
+* Fix - Fix the conversion from amount in the transactions list.
+* Fix - Fix the number formatting issues in Capital loans page loans list
+* Fix - Fix `is_platform_payment_method` flag on blocks checkout
+* Fix - Improve visibility of checkout fields for WCPay payment options on a darker theme
+* Fix - Load currencies from WooCommerce core.
+* Fix - Remove account business URL validation to allow values without http/s:// prefix.
+* Fix - Sets up subscriptions integration with the Mini Cart Block and adds new hook to filter compatible blocks.
+* Fix - Show currencies based on store country currency
+* Fix - Subscription token notices that appear on the My account > Payment methods page should be translatable.
+* Fix - update the menu count html tag for wp.com
+* Fix - When there is only one Shipping Method available in the recurring shipping package, make sure that this method is treated as selected in the current session and the `woocommerce_after_shipping_rate` action runs.
+* Update - Bump minimum required version of WooCommerce from 4.8 to 5.0.
+* Update - Fixes fee display that caused confusion for Merchants
+* Update - Remove feature flagged code that enable platform checkout inside UPE block.
+* Update - Update payment methods icons.
+* Update - Update transaction csv download emails to be sent to the current logged in admin.
+* Dev - Document usage of metadata generated from order
+* Dev - Do not enqueue admin assets if user cannot manage_woocommerce.
+* Dev - Refactor the processing part of Webhook Controller to a separate service.
+* Dev - Remove type "Tweak" from the list of changelog types.
+* Dev - REST API documentation
+* Dev - Skip e2e tests if WC version is 5.0.0 because of WooCommerce Checkout Blocks minimum WC Required version
+* Dev - Unit test support for PHP 8 and upgrade PHPUnit version to 9.5.14
+* Dev - Updated contribution notes (how to add a changelog)
+
 = 3.8.2 - 2022-03-03 =
 * Fix - Fix fatal error when a subscription renews automatically.
 
