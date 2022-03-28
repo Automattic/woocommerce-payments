@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add - when order data has no billing last name (ex. Google Pay payment)
