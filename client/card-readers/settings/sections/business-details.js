@@ -23,7 +23,6 @@ const BusinessDetailsSection = ( { isDisabled, setDisabled } ) => {
 	] = useAccountBusinessURL();
 
 	useLayoutEffect( () => {
-		//businessUrlRef.blur();
 		const businessUrl = document.querySelector(
 			'.card-readers-business-url-input input'
 		);
