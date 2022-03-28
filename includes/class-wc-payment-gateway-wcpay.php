@@ -631,7 +631,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'            => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled'      => WC_Payments_Features::is_platform_checkout_enabled() && 'yes' === $this->get_option( 'platform_checkout', 'no' ),
+			'isPlatformCheckoutEnabled'      => WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === $this->get_option( 'platform_checkout', 'no' ),
 			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
@@ -701,7 +701,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function should_use_stripe_platform_on_checkout_page() {
 		// TODO: Add support for blocks checkout.
 		if (
-			WC_Payments_Features::is_platform_checkout_enabled() &&
+			WC_Payments_Features::is_platform_checkout_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
 			! WC_Payments_Features::is_upe_enabled() &&
 			is_checkout() &&
@@ -1943,10 +1943,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Capture previously authorized charge.
 	 *
 	 * @param WC_Order $order - Order to capture charge on.
+	 * @param bool     $include_level3 - Whether to include level 3 data in payment intent.
 	 *
 	 * @return array An array containing the status (succeeded/failed), id (intent ID), message (error message if any), and http code
 	 */
-	public function capture_charge( $order ) {
+	public function capture_charge( $order, $include_level3 = true ) {
 		$amount                   = $order->get_total();
 		$is_authorization_expired = false;
 		$intent                   = null;
@@ -1972,7 +1973,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = $this->payments_api_client->capture_intention(
 				$intent_id,
 				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
-				$this->get_level3_data_from_order( $order )
+				$include_level3 ? $this->get_level3_data_from_order( $order ) : []
 			);
 
 			$status    = $intent->get_status();

@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Do not enqueue admin assets if user cannot manage_woocommerce.
