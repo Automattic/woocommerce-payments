@@ -2074,4 +2074,14 @@ class WC_Payments_API_Client {
 	public function hash_data_for_fraud_prevention( $data ) {
 		return hash( 'sha512', $data );
 	}
+
+
+	/**
+	 * Checks if fraud prevention is enabled for this store.
+	 *
+	 * @return bool True if store has fraud prevention enabled.
+	 */
+	public function is_fraud_prevention_enabled_for_store() {
+		return false;
+	}
 }
