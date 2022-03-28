@@ -2063,4 +2063,15 @@ class WC_Payments_API_Client {
 	public function get_loans() : array {
 		return $this->request( [], self::CAPITAL_API . '/loans', self::GET );
 	}
+
+	/**
+	 * Hashes customer data for the fraud prevention.
+	 *
+	 * @param string $data The data you want to hash.
+	 *
+	 * @return string Hashed data.
+	 */
+	public function hash_data_for_fraud_prevention( $data ) {
+		return hash( 'sha512', $data );
+	}
 }
