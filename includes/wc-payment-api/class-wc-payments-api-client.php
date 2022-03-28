@@ -330,6 +330,16 @@ class WC_Payments_API_Client {
 			$request['setup_future_usage'] = 'off_session';
 		}
 
+		if ( $this->is_fraud_prevention_enabled_for_store() ) {
+			$request['metadata']['fingerprinting_avaialable'] = true;
+
+			$request['metadata']['fingerprints'] = [
+				'payment_intent_id_hash' => $this->hash_data_for_fraud_prevention( $intention_id ),
+				'payment_method_hash'    => $request['payment_method_types'] ? $this->hash_data_for_fraud_prevention( $request['payment_method_types'] ) : null,
+				'shopper_id_hash'        => $customer_id ? $this->hash_data_for_fraud_prevention( $customer_id ) : null,
+			];
+		}
+
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
