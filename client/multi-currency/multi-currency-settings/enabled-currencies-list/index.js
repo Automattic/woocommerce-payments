@@ -78,7 +78,7 @@ const EnabledCurrencies = () => {
 
 	return (
 		<SettingsSection
-			Description={ EnabledCurrenciesSettingsDescription }
+			description={ EnabledCurrenciesSettingsDescription }
 			className={ 'multi-currency-settings-enabled-currencies-section' }
 		>
 			<Card className={ `${ classBase }__enabled-currencies` }>
