@@ -446,3 +446,13 @@ export const usePlatformCheckoutCustomMessage = () => {
 		[ updatePlatformCheckoutCustomMessage ]
 	);
 };
+
+export const useFraudProtection = () => {
+	const { updateIsFraudPreventionEnabled } = useDispatch( STORE_NAME );
+
+	const isFraudProtectionEnabled = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsFraudProtectionEnabled();
+	}, [] );
+
+	return [ isFraudProtectionEnabled, updateIsFraudPreventionEnabled ];
+};

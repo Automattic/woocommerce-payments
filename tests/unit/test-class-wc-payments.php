@@ -19,6 +19,10 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		'woocommerce_store_api_disable_nonce_check' => '__return_true',
 	];
 
+	public function tear_down() {
+		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
+	}
+
 	public function test_it_runs_upgrade_routines_during_init_at_priority_10() {
 		$install_actions_priority = has_action(
 			'init',
@@ -105,7 +109,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 			remove_filter( $hook, $callback );
 		}
 
-		update_option( '_wcpay_feature_platform_checkout', $is_enabled ? '1' : '0' );
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => $is_enabled ] ] );
 		// Testing feature flag, so platform_checkout setting should always be on.
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 
@@ -119,7 +123,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		}
 
 		// Testing platform_checkout, so feature flag should always be on.
-		update_option( '_wcpay_feature_platform_checkout', '1' );
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => true ] ] );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', $is_enabled ? 'yes' : 'no' );
 
 		WC_Payments::maybe_register_platform_checkout_hooks();
