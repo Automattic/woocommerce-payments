@@ -1478,6 +1478,54 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
 	}
 
+	/** Test a successful fetch of a list of documents
+	 *
+	 * @throws Exception
+	 */
+	public function test_list_documents_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					[
+						'document_id' => 'test_document_1',
+						'date'        => '2020-01-02 17:46:02',
+						'type'        => 'test_document',
+						'period_from' => '2020-01-01 00:00:00',
+						'period_to'   => '2020-01-31 23:59:59',
+					],
+				],
+			]
+		);
+
+		$documents = $this->payments_api_client->list_documents();
+
+		$this->assertSame( 'test_document_1', $documents['data'][0]['document_id'] );
+		$this->assertSame( '2020-01-02 17:46:02', $documents['data'][0]['date'] );
+		$this->assertSame( 'test_document', $documents['data'][0]['type'] );
+		$this->assertSame( '2020-01-01 00:00:00', $documents['data'][0]['period_from'] );
+		$this->assertSame( '2020-01-31 23:59:59', $documents['data'][0]['period_to'] );
+	}
+
+	/**
+	 * Test a sucessful fetch of documents summary
+	 *
+	 * @throws Exception
+	 */
+	public function test_get_documents_summary_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					'count' => 12,
+				],
+			]
+		);
+
+		$documents_summary = $this->payments_api_client->get_documents_summary();
+		$this->assertSame( 12, $documents_summary['data']['count'] );
+	}
+
 	/**
 	 * Set up http mock response.
 	 *
