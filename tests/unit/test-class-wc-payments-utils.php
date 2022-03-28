@@ -450,6 +450,6 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 
 		$result = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
 
-		$this->assertEquals( $refund_1->get_id(), $result->get_id() );
+		$this->assertEquals( $refund_2->get_id(), $result->get_id() );
 	}
 }
