@@ -110,24 +110,4 @@ class WC_Payments_DB {
 	public function order_from_order_id( $order_id ) {
 		return wc_get_order( ( $order_id ) );
 	}
-
-	/**
-	 * Retrieve last WC refund from order ID.
-	 *
-	 * @param string $order_id WC Order ID.
-	 *
-	 * @return bool|WC_Order|WC_Order_Refund
-	 */
-	public function last_refund_from_order_id( $order_id ) {
-		global $wpdb;
-
-		$last_refund = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT posts.ID FROM $wpdb->posts as posts WHERE posts.post_parent = %d AND posts.post_type = 'shop_order_refund' ORDER BY posts.post_date DESC LIMIT 0, 1",
-				$order_id
-			)
-		);
-
-		return $this->order_from_order_id( $last_refund );
-	}
 }
