@@ -560,6 +560,10 @@ class WC_Payments_Account {
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 
+			if ( 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param && WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+				$this->redirect_to( admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' ) );
+			}
+
 			// Hide menu notification badge upon starting setup.
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
 
