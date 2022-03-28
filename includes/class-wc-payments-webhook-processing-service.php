@@ -203,10 +203,10 @@ class WC_Payments_Webhook_Processing_Service {
 			$refund_id
 		);
 
-    if ( $this->order_service->order_note_exists( $order, $note ) ) {
+		if ( $this->order_service->order_note_exists( $order, $note ) ) {
 			return;
 		}
-    
+
 		/**
 		 * Get refunds from order and delete refund if matches wcpay refund id.
 		 *
