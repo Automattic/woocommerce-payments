@@ -1,4 +1,5 @@
 Significance: patch
 Type: add
+Comment: Add Documents list functionality behind feature flag.
 
-Add Documents list functionality behind feature flag.
+
