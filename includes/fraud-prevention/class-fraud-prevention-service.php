@@ -7,7 +7,8 @@
 
 namespace WCPay\Fraud_Prevention;
 
-use WC_Payments_Token_Service;
+use WC_Payment_Gateway_WCPay;
+use WC_Payments;
 
 /**
  * Class Fraud_Prevention_Service
@@ -31,12 +32,21 @@ class Fraud_Prevention_Service {
 	private $session;
 
 	/**
+	 * Instance of WC_Payment_Gateway_WCPay.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $wcpay_gateway;
+
+	/**
 	 * Fraud_Prevention_Service constructor.
 	 *
-	 * @param \WC_Session $session Session instance.
+	 * @param \WC_Session              $session       Session instance.
+	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway Instance of WC_Payment_Gateway_WCPay.
 	 */
-	public function __construct( \WC_Session $session ) {
-		$this->session = $session;
+	public function __construct( \WC_Session $session, WC_Payment_Gateway_WCPay $wcpay_gateway ) {
+		$this->session       = $session;
+		$this->wcpay_gateway = $wcpay_gateway;
 	}
 
 	/**
@@ -47,7 +57,7 @@ class Fraud_Prevention_Service {
 	 */
 	public static function get_instance( $session = null ): self {
 		if ( null === self::$instance ) {
-			self::$instance = new self( $session ?? WC()->session );
+			self::$instance = new self( $session ?? WC()->session, WC_Payments::get_gateway() );
 		}
 
 		return self::$instance;
@@ -69,8 +79,7 @@ class Fraud_Prevention_Service {
 	 * @return bool
 	 */
 	public function is_enabled(): bool {
-		// TODO: depends on #3994.
-		return true;
+		return $this->wcpay_gateway->get_option( 'is_fraud_prevention_enabled' ) === 'yes';
 	}
 
 	/**
