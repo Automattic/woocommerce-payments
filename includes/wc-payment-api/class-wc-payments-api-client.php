@@ -56,6 +56,7 @@ class WC_Payments_API_Client {
 	const MINIMUM_RECURRING_AMOUNT_API = 'subscriptions/minimum_amount';
 	const CAPITAL_API                  = 'capital';
 	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
+	const DOCUMENTS_API                = 'documents';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1635,6 +1636,44 @@ class WC_Payments_API_Client {
 	 */
 	public function get_failed_webhook_events() {
 		return $this->request( [], self::WEBHOOK_FETCH_API, self::POST );
+	}
+
+	/**
+	 * List documents.
+	 *
+	 * @param int    $page      The requested page.
+	 * @param int    $page_size The size of the requested page.
+	 * @param string $sort      The column to be used for sorting.
+	 * @param string $direction The sorting direction.
+	 * @param array  $filters   The filters to be used in the query.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function list_documents( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', array $filters = [] ) {
+		$query = array_merge(
+			$filters,
+			[
+				'page'      => $page,
+				'pagesize'  => $page_size,
+				'sort'      => $sort,
+				'direction' => $direction,
+			]
+		);
+
+		return $this->request( $query, self::DOCUMENTS_API, self::GET );
+	}
+
+	/**
+	 * Get summary of documents.
+	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_documents_summary( array $filters = [] ) {
+		return $this->request( $filters, self::DOCUMENTS_API . '/summary', self::GET );
 	}
 
 	/**
