@@ -93,7 +93,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 		} catch ( API_Exception $e ) {
 			$message = sprintf(
 				/* translators: %1: The document ID. %2: The error message.*/
-				esc_html__( 'There was an error accessing document %1$s. %2$s.', 'woocommerce-payments' ),
+				esc_html__( 'There was an error accessing document %1$s. %2$s', 'woocommerce-payments' ),
 				$document_id,
 				$e->getMessage()
 			);
