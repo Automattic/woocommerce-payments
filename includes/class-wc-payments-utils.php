@@ -627,7 +627,7 @@ class WC_Payments_Utils {
 	 *
 	 * @return bool|WC_Order_Refund
 	 */
-	public static function last_refund_from_order_id( $order_id ) {
+	public static function get_last_refund_from_order_id( $order_id ) {
 		$wc_refunds = wc_get_orders(
 			[
 				'type'    => 'shop_order_refund',
