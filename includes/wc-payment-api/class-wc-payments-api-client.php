@@ -262,6 +262,19 @@ class WC_Payments_API_Client {
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
 
+		if ( $this->is_fraud_prevention_enabled_for_store() ) {
+			$request['metadata']['fingerprinting_avaialable'] = true;
+			$order        = wc_get_order( $order_id );
+			$email_domain = array_pop( explode( '@', $order->get_billing_email() ) );
+
+			$request['metadata']['fingerprints'] = [
+				'shopper_ip_hash'        => $this->hash_data_for_fraud_prevention( $order->get_customer_ip_address() ),
+				'shopper_useragent_hash' => $this->hash_data_for_fraud_prevention( $order->get_customer_user_agent() ),
+				'shopper_email_hash'     => $this->hash_data_for_fraud_prevention( $order->get_billing_email() ),
+				'shopper_email_domain'   => $this->hash_data_for_fraud_prevention( $email_domain ),
+			];
+		}
+
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
