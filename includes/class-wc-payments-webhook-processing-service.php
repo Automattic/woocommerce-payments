@@ -215,18 +215,19 @@ class WC_Payments_Webhook_Processing_Service {
 				if ( $refund_id === $wcpay_refund_id ) {
 					// Delete WC Refund.
 					$wc_refund->delete();
-
-					// Update order status if order is fully refunded.
-					$current_status = $order->get_status();
-					if ( 'refunded' === $current_status ) {
-						$order->update_status( 'failed' );
-					}
 					break;
 				}
 			}
 		}
 
-		$order->add_order_note( $note );
+		// Update order status if order is fully refunded.
+		$current_order_status = $order->get_status();
+		if ( 'refunded' === $current_order_status ) {
+			$order->update_status( 'failed', $note );
+		} else {
+			$order->add_order_note( $note );
+		}
+		// Mark refund as failed in order meta.
 		$order->update_meta_data( '_wcpay_refund_status', 'failed' );
 		$order->save();
 	}
