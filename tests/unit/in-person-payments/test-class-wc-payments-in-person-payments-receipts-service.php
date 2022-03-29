@@ -38,8 +38,8 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 	}
 
 	public function tear_down() {
-		reset_phpmailer_instance();
 		parent::tear_down();
+		reset_phpmailer_instance();
 	}
 
 	public function test_get_receipt_markup_is_EMV_compliant() {
@@ -119,7 +119,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 
 		$sent_email = $mock_mailer->get_sent();
 
-		$this->assertSame( $mock_order->get_billing_email(), $sent_email->to[0][0] );
+		$this->assertSame( $mock_order->get_billing_email(), $sent_email->get_recipient( 'to' )->address );
 		$this->assertSame( 'Your Test Blog Receipt', $sent_email->subject );
 
 		$doc = new DOMDocument();
