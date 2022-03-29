@@ -555,7 +555,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			function ( $output ) {
 				$result = preg_match_all( '/.*<input.*id="wc-woocommerce_payments-new-payment-method".*\/>.*/', $output );
 
-				$this->assertEquals( 0, $result );
+				$this->assertSame( 0, $result );
 			}
 		);
 
@@ -579,7 +579,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			function ( $output ) use ( $token_value ) {
 				$result = preg_match_all( '/.*<input.*type="hidden".*name="wcpay-fraud-prevention-token".*value="' . $token_value . '".*\/>.*/', $output );
 
-				$this->assertEquals( 0, $result );
+				$this->assertSame( 0, $result );
 			}
 		);
 

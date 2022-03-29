@@ -20,6 +20,13 @@ class Fraud_Prevention_Service_Test extends WP_UnitTestCase {
 	private $session_mock;
 
 	/**
+	 * WC_Payment_Gateway_WCPay mock object.
+	 *
+	 * @var PHPUnit_Framework_MockObject_MockObject|WC_Payment_Gateway_WCPay
+	 */
+	private $wcpay_gateway_mock;
+
+	/**
 	 * The service under test.
 	 *
 	 * @var Fraud_Prevention_Service
@@ -32,13 +39,32 @@ class Fraud_Prevention_Service_Test extends WP_UnitTestCase {
 		$this->session_mock = $this->getMockBuilder( 'WC_Session' )
 			->getMock();
 
+		$this->wcpay_gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
+
 		Fraud_Prevention_Service::set_instance( null );
-		$this->fraud_prevention_service = Fraud_Prevention_Service::get_instance( $this->session_mock );
+		$this->fraud_prevention_service = Fraud_Prevention_Service::get_instance( $this->session_mock, $this->wcpay_gateway_mock );
 	}
 
-	public function test_it_checks_if_enabled() {
-		// TODO: depends on #3994.
-		$this->markTestSkipped( 'depends on #3994' );
+	public function provide_enabled_options() {
+		return [
+			[ 'yes', true ],
+			[ 'no', false ],
+		];
+	}
+
+	/**
+	 * @dataProvider provide_enabled_options
+	 */
+	public function test_it_checks_if_enabled( $option_value, $return_value ) {
+		$this->wcpay_gateway_mock
+			->expects( $this->once() )
+			->method( 'get_option' )
+			->with( 'is_fraud_prevention_enabled' )
+			->willReturn( $option_value );
+
+		$is_enabled = $this->fraud_prevention_service->is_enabled();
+
+		$this->assertSame( $return_value, $is_enabled );
 	}
 
 	public function test_it_gets_token_from_session() {
