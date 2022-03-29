@@ -37,7 +37,7 @@ const businessTypes = [
 					},
 					{
 						key: 'single_member_llc',
-						name: 'Single member llc',
+						name: 'Single member LLC',
 					},
 				],
 			},
