@@ -625,7 +625,7 @@ class WC_Payments_Utils {
 	 *
 	 * @param int $order_id WC Order ID.
 	 *
-	 * @return bool|WC_Order|WC_Order_Refund
+	 * @return null|WC_Order_Refund
 	 */
 	public static function get_last_refund_from_order_id( $order_id ) {
 		$wc_refunds = wc_get_orders(
@@ -638,10 +638,10 @@ class WC_Payments_Utils {
 			]
 		);
 
-		if ( is_array( $wc_refunds ) && ! empty( $wc_refunds ) ) {
+		if ( is_array( $wc_refunds ) && ! empty( $wc_refunds ) && is_a( $wc_refunds[0], WC_Order_Refund::class ) ) {
 			return $wc_refunds[0];
 		}
 
-		return false;
+		return null;
 	}
 }
