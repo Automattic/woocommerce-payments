@@ -15,6 +15,7 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
+use WCPay\Constants\Payment_Method;
 use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 
@@ -1455,14 +1456,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$charge_id = $order->get_meta( '_charge_id', true );
-		$intent_id = $order->get_meta( '_intent_id', true );
-
-		$intent = $this->payments_api_client->get_intent( $intent_id );
-
-		$payment_method = $intent->get_payment_method_details();
 
 		try {
-			if ( 'interac_present' !== $payment_method['type'] ) {
+			// If the payment method is Interac_Present, the refund should already have been done in the mobile app, so we only record the refund without actioning it.
+			if ( Payment_Method::INTERAC_PRESENT !== $this->get_payment_method_type_for_order( $order ) ) {
 				if ( is_null( $amount ) ) {
 					// If amount is null, the default is the entire charge.
 					$refund = $this->payments_api_client->refund_charge( $charge_id );
@@ -1520,6 +1517,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function has_refund_failed( $order ) {
 		return 'failed' === $order->get_meta( '_wcpay_refund_status', true );
+	}
+
+	/**
+	 * Gets the payment method type used for an order, if any
+	 *
+	 * @param WC_Order $order The order to get the payment method type for.
+	 * @return string
+	 */
+	protected function get_payment_method_type_for_order( $order ) {
+		$intent_id = $order->get_meta( '_intent_id', true );
+
+		$intent                 = $this->payments_api_client->get_intent( $intent_id );
+		$payment_method_details = $intent ? $intent->get_payment_method_details() : null;
+		$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+		return $payment_method_type;
 	}
 
 	/**
