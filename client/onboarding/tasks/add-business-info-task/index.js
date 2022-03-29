@@ -62,7 +62,7 @@ const AddBusinessInfoTask = () => {
 			<p className="wcpay-wizard-task__description-element subheading is-muted-color">
 				{ strings.onboarding.description }
 			</p>
-			<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+			<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 				<OnboardingSelectControl
 					className="wcpay-onboarding-select"
 					label={ __( 'Country', 'woocommerce-payments' ) }
@@ -72,6 +72,9 @@ const AddBusinessInfoTask = () => {
 					}
 					options={ businessTypes }
 				/>
+				<p className="wcpay-wizard-task__description-element is-muted-color">
+					{ strings.onboarding.countryDescription }
+				</p>
 				{ businessCountry && (
 					<OnboardingSelectControl
 						className="wcpay-onboarding-select"
@@ -97,11 +100,8 @@ const AddBusinessInfoTask = () => {
 						options={ businessType.structures }
 					/>
 				) }
-				<p className="wcpay-wizard-task__description-element is-muted-color">
-					{ strings.onboarding.countryDescription }
-				</p>
 			</LoadableBlock>
-
+			<LoadableBlock isLoading={ isLoading } numLines={ 4 } />
 			{ isCompleted && (
 				<Card size="large" className="wcpay-required-info-card">
 					<CardBody>
