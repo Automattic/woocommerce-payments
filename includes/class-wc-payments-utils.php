@@ -623,7 +623,7 @@ class WC_Payments_Utils {
 	/**
 	 * Retrieve last WC refund from order ID.
 	 *
-	 * @param string $order_id WC Order ID.
+	 * @param int $order_id WC Order ID.
 	 *
 	 * @return bool|WC_Order|WC_Order_Refund
 	 */
