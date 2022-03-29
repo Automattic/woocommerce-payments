@@ -336,7 +336,7 @@ class WC_Payments_API_Client {
 
 			$request['metadata']['fingerprints'] = [
 				'payment_intent_id_hash' => $this->hash_data_for_fraud_prevention( $intention_id ),
-				'payment_method_hash'    => $request['payment_method_types'] ? $this->hash_data_for_fraud_prevention( $request['payment_method_types'] ) : null,
+				'payment_method_hash'    => '' !== $selected_upe_payment_type ? $this->hash_data_for_fraud_prevention( $selected_upe_payment_type ) : null,
 				'shopper_id_hash'        => $customer_id ? $this->hash_data_for_fraud_prevention( $customer_id ) : null,
 			];
 		}
