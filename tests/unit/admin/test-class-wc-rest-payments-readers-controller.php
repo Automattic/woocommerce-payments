@@ -288,7 +288,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 
 		$response = $this->controller->generate_print_receipt( $request );
 
-		$this->assertSame( $receipt, $response->get_data() );
+		$this->assertArrayHasKey( 'html_content', $response->get_data() );
+		$this->assertSame( $receipt, $response->get_data()['html_content'] );
 		$this->assertSame( 200, $response->status );
 	}
 
@@ -348,7 +349,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertSame( 200, $response->status );
-		$this->assertSame( $mock_receipt, $response_data );
+		$this->assertArrayHasKey( 'html_content', $response_data );
+		$this->assertSame( $mock_receipt, $response_data['html_content'] );
 	}
 
 	public function test_preview_print_receipt_defaults_to_wcpay_settings(): void {
@@ -408,7 +410,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$response_data = $response->get_data();
 
 		$this->assertSame( 200, $response->status );
-		$this->assertSame( $mock_receipt, $response_data );
+		$this->assertArrayHasKey( 'html_content', $response_data );
+		$this->assertSame( $mock_receipt, $response_data['html_content'] );
 	}
 
 	public function test_generate_print_receipt_invalid_payment_error(): void {

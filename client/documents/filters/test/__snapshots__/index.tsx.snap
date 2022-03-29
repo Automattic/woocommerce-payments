@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Documents filters when filtering by type should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="test_document"
+  >
+    Test Document
+  </option>,
+]
+`;
