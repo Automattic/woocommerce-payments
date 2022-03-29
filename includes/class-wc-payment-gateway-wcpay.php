@@ -1462,16 +1462,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_method = $intent->get_payment_method_details();
 
 		try {
-			if ( 'interac_present' === $payment_method['type'] ) {
-				$currency = strtoupper( $charge->currency );
-			} elseif ( is_null( $amount ) ) {
-				// If amount is null, the default is the entire charge.
-				$refund = $this->payments_api_client->refund_charge( $charge_id );
-
-				$currency = strtoupper( $refund['currency'] );
-			} else {
-				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
-
+			if ( 'interac_present' !== $payment_method['type'] ) {
+				if ( is_null( $amount ) ) {
+					// If amount is null, the default is the entire charge.
+					$refund = $this->payments_api_client->refund_charge( $charge_id );
+				} else {
+					$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+				}
 				$currency = strtoupper( $refund['currency'] );
 			}
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
