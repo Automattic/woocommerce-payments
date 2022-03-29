@@ -619,4 +619,29 @@ class WC_Payments_Utils {
 			admin_url( 'admin.php' )
 		);
 	}
+
+	/**
+	 * Retrieve last WC refund from order ID.
+	 *
+	 * @param int $order_id WC Order ID.
+	 *
+	 * @return null|WC_Order_Refund
+	 */
+	public static function get_last_refund_from_order_id( $order_id ) {
+		$wc_refunds = wc_get_orders(
+			[
+				'type'    => 'shop_order_refund',
+				'parent'  => $order_id,
+				'limit'   => 1,
+				'orderby' => 'ID',
+				'order'   => 'DESC',
+			]
+		);
+
+		if ( is_array( $wc_refunds ) && ! empty( $wc_refunds ) && is_a( $wc_refunds[0], WC_Order_Refund::class ) ) {
+			return $wc_refunds[0];
+		}
+
+		return null;
+	}
 }

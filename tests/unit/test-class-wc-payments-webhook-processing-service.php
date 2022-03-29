@@ -179,6 +179,52 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test a vaild refund failure deletes WooCommerce Refund.
+	 */
+	public function test_valid_failed_refund_webhook_deletes_wc_refund() {
+		// Setup test request data.
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['data']['object'] = [
+			'status'   => 'failed',
+			'charge'   => 'test_charge_id',
+			'id'       => 'test_refund_id',
+			'amount'   => 999,
+			'currency' => 'usd',
+		];
+
+		$mock_refund_1 = $this->createMock( WC_Order_Refund::class );
+		$mock_refund_1->method( 'get_meta' )->willReturn( 'another_test_refund_id' );
+
+		$mock_refund_2 = $this->createMock( WC_Order_Refund::class );
+		$mock_refund_2->method( 'get_meta' )->willReturn( 'test_refund_id' );
+
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order->method( 'get_refunds' )->willReturn(
+			[
+				$mock_refund_1,
+				$mock_refund_2,
+			]
+		);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $mock_order );
+
+		$mock_refund_1
+			->expects( $this->never() )
+			->method( 'delete' );
+
+		$mock_refund_2
+			->expects( $this->once() )
+			->method( 'delete' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Test a valid refund does not set failed meta.
 	 */
 	public function test_non_failed_refund_update_webhook_does_not_set_failed_meta() {

@@ -1490,6 +1490,111 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->assertTrue( $response['platform_checkout_eligible'] );
 	}
 
+	/** Test a successful fetch of a list of documents
+	 *
+	 * @throws Exception
+	 */
+	public function test_list_documents_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					[
+						'document_id' => 'test_document_1',
+						'date'        => '2020-01-02 17:46:02',
+						'type'        => 'test_document',
+						'period_from' => '2020-01-01 00:00:00',
+						'period_to'   => '2020-01-31 23:59:59',
+					],
+				],
+			]
+		);
+
+		$documents = $this->payments_api_client->list_documents();
+
+		$this->assertSame( 'test_document_1', $documents['data'][0]['document_id'] );
+		$this->assertSame( '2020-01-02 17:46:02', $documents['data'][0]['date'] );
+		$this->assertSame( 'test_document', $documents['data'][0]['type'] );
+		$this->assertSame( '2020-01-01 00:00:00', $documents['data'][0]['period_from'] );
+		$this->assertSame( '2020-01-31 23:59:59', $documents['data'][0]['period_to'] );
+	}
+
+	/**
+	 * Test a sucessful fetch of documents summary
+	 *
+	 * @throws Exception
+	 */
+	public function test_get_documents_summary_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					'count' => 12,
+				],
+			]
+		);
+
+		$documents_summary = $this->payments_api_client->get_documents_summary();
+		$this->assertSame( 12, $documents_summary['data']['count'] );
+	}
+
+	/**
+	 * Test a successful fetch of a document
+	 *
+	 * @throws Exception
+	 */
+	public function test_get_document_success() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $request ) {
+						$this->assertSame( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/documents/someDocument?test_mode=0', $request['url'] );
+						$this->assertSame( 'GET', $request['method'] );
+						return true;
+					}
+				)
+			)
+			->will(
+				$this->returnValue(
+					[
+						'headers'  => [ 'content-type' => 'text/html' ],
+						'body'     => '<html><body>Document</body></html>',
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
+
+		$documents_summary = $this->payments_api_client->get_document( 'someDocument' );
+		$this->assertSame( '<html><body>Document</body></html>', $documents_summary['body'] );
+		$this->assertSame( 'text/html', $documents_summary['headers']['content-type'] );
+	}
+
+	/**
+	 * Test fetch of a document that errors
+	 *
+	 * @throws Exception
+	 */
+	public function test_get_document_error() {
+		$this->set_http_mock_response(
+			404,
+			[
+				'code'    => 'wcpay_document_not_found',
+				'message' => 'Document not found',
+				'data'    => [ 'status' => 404 ],
+			]
+		);
+
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( 'Error: Document not found' );
+
+		$this->payments_api_client->get_document( 'someDocument' );
+	}
+
 	/**
 	 * Set up http mock response.
 	 *
