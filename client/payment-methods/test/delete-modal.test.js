@@ -31,7 +31,7 @@ describe( 'Activation Modal', () => {
 			<ConfirmPaymentMethodDeleteModal
 				id={ 'card' }
 				label={ paymentMethodsMap.card.label }
-				Icon={ paymentMethodsMap.card.Icon }
+				icon={ paymentMethodsMap.card.icon }
 				onCancel={ mockOnClose }
 				onConfirm={ mockOnConfirm }
 			/>
