@@ -28,6 +28,7 @@ import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
 import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
+import DocumentsPage from 'documents';
 import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
@@ -208,6 +209,21 @@ addFilter(
 				__( 'Preview a printed receipt', 'woocommerce-payments' ),
 			],
 		} );
+		if ( wcpaySettings && wcpaySettings.featureFlags.documents ) {
+			pages.push( {
+				container: DocumentsPage,
+				path: '/payments/documents',
+				wpOpenMenu: menuID,
+				breadcrumbs: [
+					rootLink,
+					__( 'Documents', 'woocommerce-payments' ),
+				],
+				navArgs: {
+					id: 'wc-payments-documents',
+				},
+				capability: 'manage_woocommerce',
+			} );
+		}
 		return pages;
 	}
 );

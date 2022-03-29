@@ -70,6 +70,11 @@ global.wcSettings = {
 	// },
 };
 
+global.wpApiSettings = {
+	root: 'https://site.com/wp-json/',
+	nonce: 'random_wp_rest_nonce',
+};
+
 // const config = require( '../../config/development.json' );
 // window.wcAdminFeatures = config && config.features ? config.features : {};
 
