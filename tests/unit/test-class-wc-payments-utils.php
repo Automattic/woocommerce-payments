@@ -452,4 +452,11 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $refund_2->get_id(), $result->get_id() );
 	}
+
+	public function test_get_last_refund_from_order_id_returns_null_if_no_refund_exists() {
+		$order  = WC_Helper_Order::create_order();
+		$result = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
+
+		$this->assertNull( $result );
+	}
 }
