@@ -1527,6 +1527,63 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful fetch of a document
+	 *
+	 * @throws Exception
+	 */
+	public function test_get_document_success() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $request ) {
+						$this->assertSame( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/documents/someDocument?test_mode=0', $request['url'] );
+						$this->assertSame( 'GET', $request['method'] );
+						return true;
+					}
+				)
+			)
+			->will(
+				$this->returnValue(
+					[
+						'headers'  => [ 'content-type' => 'text/html' ],
+						'body'     => '<html><body>Document</body></html>',
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
+
+		$documents_summary = $this->payments_api_client->get_document( 'someDocument' );
+		$this->assertSame( '<html><body>Document</body></html>', $documents_summary['body'] );
+		$this->assertSame( 'text/html', $documents_summary['headers']['content-type'] );
+	}
+
+	/**
+	 * Test fetch of a document that errors
+	 *
+	 * @throws Exception
+	 */
+	public function test_get_document_error() {
+		$this->set_http_mock_response(
+			404,
+			[
+				'code'    => 'wcpay_document_not_found',
+				'message' => 'Document not found',
+				'data'    => [ 'status' => 404 ],
+			]
+		);
+
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( 'Error: Document not found' );
+
+		$this->payments_api_client->get_document( 'someDocument' );
+	}
+
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int $status_code status code for the mocked response.

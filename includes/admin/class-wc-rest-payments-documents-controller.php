@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Exceptions\API_Exception;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -41,6 +43,15 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<document_id>\w+)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_document' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -65,6 +76,43 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 	public function get_documents_summary( $request ) {
 		$filters = $this->get_documents_filters( $request );
 		return $this->forward_request( 'get_documents_summary', [ $filters ] );
+	}
+
+	/**
+	 * Retrieve and serve a document for API requests.
+	 * This method serves the document directly and halts execution, skipping the REST return
+	 * and preventing additional data to be sent.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_document( $request ) {
+		$document_id = $request->get_param( 'document_id' );
+
+		try {
+			$response = $this->api_client->get_document( $document_id );
+		} catch ( API_Exception $e ) {
+			$message = sprintf(
+				/* translators: %1: The document ID. %2: The error message.*/
+				esc_html__( 'There was an error accessing document %1$s. %2$s', 'woocommerce-payments' ),
+				$document_id,
+				$e->getMessage()
+			);
+			wp_die( esc_html( $message ), '', (int) $e->get_http_code() );
+		}
+
+		// Set the headers to match what was returned from the server.
+		if ( ! headers_sent() ) {
+			nocache_headers();
+			status_header( $response['response']['code'], $response['response']['message'] ?? '' );
+			header( 'Content-Type: ' . $response['headers']['content-type'] );
+			header( 'Content-Disposition: ' . $response['headers']['content-disposition'] ?? '' );
+		}
+
+		// We should output the server's file without escaping.
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $response['body'];
+
+		exit;
 	}
 
 	/**
