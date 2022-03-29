@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 3.9.1 - 2022-xx-xx =
+* Fix - Fix single currency settings page error.
+
 = 3.9.0 - 2022-03-24 =
 * Add - Add compatibility between Multi-Currency and WooCommerce Name Your Price.
 * Add - Add wcpay_is_wcpay_subscriptions_enabled filter
