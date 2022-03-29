@@ -264,7 +264,7 @@ class WC_Payments_API_Client {
 		$request['capture_method']       = $capture_method;
 
 		if ( $this->is_fraud_prevention_enabled_for_store() ) {
-			$request['metadata']['fingerprinting_avaialable'] = true;
+			$request['metadata']['fraud_prevention_data_available'] = true;
 			$order               = wc_get_order( $order_id );
 			$billing_email_parts = explode( '@', $order->get_billing_email() );
 			$email_domain        = array_pop( $billing_email_parts );
@@ -333,7 +333,7 @@ class WC_Payments_API_Client {
 		}
 
 		if ( $this->is_fraud_prevention_enabled_for_store() ) {
-			$request['metadata']['fingerprinting_avaialable'] = true;
+			$request['metadata']['fraud_prevention_data_available'] = true;
 
 			$request['metadata']['fingerprints'] = [
 				'payment_intent_id_hash' => $this->hash_data_for_fraud_prevention( $intention_id ),
