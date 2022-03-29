@@ -269,7 +269,7 @@ class WC_Payments_API_Client {
 			$billing_email_parts = explode( '@', $order->get_billing_email() );
 			$email_domain        = array_pop( $billing_email_parts );
 
-			$request['metadata']['fingerprints'] = [
+			$request['metadata']['fraud_prevention_data'] = [
 				'shopper_ip_hash'        => $this->hash_data_for_fraud_prevention( $order->get_customer_ip_address() ),
 				'shopper_useragent_hash' => $this->hash_data_for_fraud_prevention( $order->get_customer_user_agent() ),
 				'shopper_email_hash'     => $this->hash_data_for_fraud_prevention( $order->get_billing_email() ),
@@ -335,7 +335,7 @@ class WC_Payments_API_Client {
 		if ( $this->is_fraud_prevention_enabled_for_store() ) {
 			$request['metadata']['fraud_prevention_data_available'] = true;
 
-			$request['metadata']['fingerprints'] = [
+			$request['metadata']['fraud_prevention_data'] = [
 				'payment_intent_id_hash' => $this->hash_data_for_fraud_prevention( $intention_id ),
 				'payment_method_hash'    => '' !== $selected_upe_payment_type ? $this->hash_data_for_fraud_prevention( $selected_upe_payment_type ) : null,
 				'shopper_id_hash'        => $customer_id ? $this->hash_data_for_fraud_prevention( $customer_id ) : null,
