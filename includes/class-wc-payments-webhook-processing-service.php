@@ -207,6 +207,29 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
+		/**
+		 * Get refunds from order and delete refund if matches wcpay refund id.
+		 *
+		 * @var $wc_refunds WC_Order_Refund[]
+		 * */
+		$wc_refunds = $order->get_refunds();
+		if ( ! empty( $wc_refunds ) ) {
+			foreach ( $wc_refunds as $wc_refund ) {
+				$wcpay_refund_id = $wc_refund->get_meta( '_wcpay_refund_id', true );
+				if ( $refund_id === $wcpay_refund_id ) {
+					// Delete WC Refund.
+					$wc_refund->delete();
+					break;
+				}
+			}
+		}
+
+		// Update order status if order is fully refunded.
+		$current_order_status = $order->get_status();
+		if ( 'refunded' === $current_order_status ) {
+			$order->update_status( 'failed' );
+		}
+
 		$order->add_order_note( $note );
 		$order->update_meta_data( '_wcpay_refund_status', 'failed' );
 		$order->save();
