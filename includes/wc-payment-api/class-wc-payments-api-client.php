@@ -264,8 +264,9 @@ class WC_Payments_API_Client {
 
 		if ( $this->is_fraud_prevention_enabled_for_store() ) {
 			$request['metadata']['fingerprinting_avaialable'] = true;
-			$order        = wc_get_order( $order_id );
-			$email_domain = array_pop( explode( '@', $order->get_billing_email() ) );
+			$order               = wc_get_order( $order_id );
+			$billing_email_parts = explode( '@', $order->get_billing_email() );
+			$email_domain        = array_pop( $billing_email_parts );
 
 			$request['metadata']['fingerprints'] = [
 				'shopper_ip_hash'        => $this->hash_data_for_fraud_prevention( $order->get_customer_ip_address() ),
