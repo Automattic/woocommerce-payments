@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Prevent impossible server-side refund of interac_present charges
