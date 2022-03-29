@@ -52,6 +52,8 @@ class WC_Payments_Printed_Receipt_Sample_Order extends WC_Order {
 			],
 		],
 		'total'        => 0,
+		'shipping_tax' => 0,
+		'total_fees'   => 0,
 	];
 
 	/**
