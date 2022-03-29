@@ -100,6 +100,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether documents section is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_documents_section_enabled() {
+		return '1' === get_option( '_wcpay_feature_documents', '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -112,6 +121,7 @@ class WC_Payments_Features {
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
 				'platformCheckout'        => self::is_platform_checkout_eligible(),
+				'documents'               => self::is_documents_section_enabled(),
 			]
 		);
 	}
