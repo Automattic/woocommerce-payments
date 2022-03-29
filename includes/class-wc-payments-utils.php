@@ -633,7 +633,7 @@ class WC_Payments_Utils {
 				'type'    => 'shop_order_refund',
 				'parent'  => $order_id,
 				'limit'   => 1,
-				'orderby' => 'date',
+				'orderby' => 'ID',
 				'order'   => 'DESC',
 			]
 		);
