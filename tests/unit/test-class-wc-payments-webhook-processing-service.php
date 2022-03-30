@@ -698,7 +698,18 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 		$this->mock_receipt_service
 			->expects( $this->once() )
 			->method( 'send_customer_ipp_receipt_email' )
-			->with( $mock_order, $this->event_body['data']['object']['charges']['data'][0] );
+			->with(
+				$mock_order,
+				[
+					'business_name' => '',
+					'support_info'  => [
+						'address' => [],
+						'phone'   => '',
+						'email'   => '',
+					],
+				],
+				$this->event_body['data']['object']['charges']['data'][0]
+			);
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );

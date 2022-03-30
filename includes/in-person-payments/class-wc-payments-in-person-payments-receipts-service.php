@@ -13,6 +13,23 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_In_Person_Payments_Receipts_Service {
 
 	/**
+	 * WC_Emails instance.
+	 *
+	 * @var WC_Emails
+	 */
+	private $mailer;
+
+	/**
+	 * __construct
+	 *
+	 * @param  WC_Emails $mailer instance.
+	 * @return void
+	 */
+	public function __construct( WC_Emails $mailer ) {
+		$this->mailer = $mailer;
+	}
+
+	/**
 	 * Renders the receipt template.
 	 *
 	 * @param  array    $settings Merchant settings.
@@ -73,22 +90,15 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 * Send card reader receipt to customer by email
 	 *
 	 * @param  WC_Order $order the order.
+	 * @param array    $merchant_settings The merchant settings.
 	 * @param  array    $charge the charge.
 	 * @return void
 	 */
-	public function send_customer_ipp_receipt_email( WC_Order $order, array $charge ) {
-		// Send email receipt to the customer.
-		$wcpay_gateway     = WC_Payments::get_gateway();
-		$merchant_settings = [
-			'business_name' => $wcpay_gateway->get_option( 'account_business_name' ),
-			'support_info'  => [
-				'address' => $wcpay_gateway->get_option( 'account_business_support_address' ),
-				'phone'   => $wcpay_gateway->get_option( 'account_business_support_phone' ),
-				'email'   => $wcpay_gateway->get_option( 'account_business_support_email' ),
-			],
-		];
-
-		do_action( 'woocommerce_payments_email_ipp_receipt', $order, $merchant_settings, $charge );
+	public function send_customer_ipp_receipt_email( WC_Order $order, array $merchant_settings, array $charge ) {
+		$email_receipt = $this->mailer->get_emails()['WC_Payments_Email_IPP_Receipt'];
+		if ( $email_receipt instanceof WC_Payments_Email_IPP_Receipt ) {
+			$email_receipt->trigger( $order, $merchant_settings, $charge );
+		}
 	}
 
 	/**

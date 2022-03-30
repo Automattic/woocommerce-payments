@@ -353,8 +353,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
 		// Init IPP emails.
-		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 11 );
-		add_filter( 'woocommerce_email_actions', [ __CLASS__, 'add_ipp_email_actions' ], 11 );
+		add_filter( 'woocommerce_email_classes', [ $this, 'add_ipp_emails' ] );
+		add_filter( 'woocommerce_email_actions', [ $this, 'add_ipp_email_actions' ] );
 	}
 
 	/**
