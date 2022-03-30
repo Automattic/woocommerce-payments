@@ -353,8 +353,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
 		// Init IPP emails.
-		add_filter( 'woocommerce_email_classes', [ $this, 'add_ipp_emails' ] );
-		add_filter( 'woocommerce_email_actions', [ $this, 'add_ipp_email_actions' ] );
+		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
 	}
 
 	/**
@@ -366,17 +365,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public static function add_ipp_emails( array $email_classes ): array {
 		$email_classes['WC_Payments_Email_IPP_Receipt'] = include __DIR__ . '/emails/class-wc-payments-email-ipp-receipt.php';
 		return $email_classes;
-	}
-
-	/**
-	 * Function add_email_actions
-	 *
-	 * @param array $email_actions the email actions.
-	 * @return array
-	 */
-	public static function add_ipp_email_actions( array $email_actions ): array {
-		$email_actions[] = 'woocommerce_payments_email_ipp_receipt';
-		return $email_actions;
 	}
 
 	/**
