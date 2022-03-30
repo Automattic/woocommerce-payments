@@ -5,8 +5,6 @@ volumes:
   dockerdirectory:
   ## Volume for mysql data to persist across restarts
   mysql_data:
-  ## Volume for WordPress install to persist across restarts (e.g. plugins, uploads etc)
-  wordpress_install:
 
 services:
   wordpress:
@@ -23,7 +21,7 @@ services:
     env_file:
       - default.env
     volumes:
-      - wordpress_install:/var/www/html/
+      - ./docker/wordpress:/var/www/html/
       - ./docker/logs/apache2/:/var/log/apache2
       - .:/var/www/html/wp-content/plugins/woocommerce-payments
       - ./docker/wc-payments-php.ini:/usr/local/etc/php/conf.d/wc-payments-php.ini
