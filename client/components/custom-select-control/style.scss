@@ -1,0 +1,19 @@
+.wcpay.components-custom-select-control {
+	font-size: 13px;
+	color: $gray-900;
+
+	.components-custom-select-control__item {
+		padding: $gap-small;
+		margin: 0;
+		line-height: initial;
+		box-shadow: inset 0 1px 0 #f0f0f0;
+
+		&.is-highlighted {
+			background: $gray-0;
+		}
+	}
+
+	.components-custom-select-control__button.placeholder {
+		color: $gray-50;
+	}
+}

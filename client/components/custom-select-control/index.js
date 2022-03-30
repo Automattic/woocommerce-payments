@@ -4,7 +4,7 @@
  * This is a copy of the CustomSelectControl component, found here:
  * https://github.com/WordPress/gutenberg/tree/7aa042605ff42bb437e650c39132c0aa8eb4ef95/packages/components/src/custom-select-control
  *
- * It has been modified to support a description field underneath each option in the select, a functionality
+ * It has been modified to support using a custom component as option, and placeholder. A functionality
  * that was not possible within the current implementation of CustomSelectControl.
  */
 
@@ -62,13 +62,15 @@ const stateReducer = (
 			return changes;
 	}
 };
-export default function OnboardingSelectControl( {
+export default function CustomSelectControl( {
 	className,
 	label,
 	describedBy,
 	options: items,
 	onChange: onSelectedItemChange,
 	value: _selectedItem,
+	placeholder,
+	children,
 } ) {
 	const {
 		getLabelProps,
@@ -124,7 +126,7 @@ export default function OnboardingSelectControl( {
 	return (
 		<div
 			className={ classNames(
-				'components-custom-select-control',
+				'wcpay components-custom-select-control',
 				className
 			) }
 		>
@@ -144,11 +146,13 @@ export default function OnboardingSelectControl( {
 					'aria-label': label,
 					'aria-labelledby': undefined,
 					'aria-describedby': getDescribedBy(),
-					className: 'components-custom-select-control__button',
-					isSmall: true,
+					className: classNames(
+						'components-custom-select-control__button',
+						{ placeholder: ! selectedItem }
+					),
 				} ) }
 			>
-				{ itemToString( selectedItem ) }
+				{ itemToString( selectedItem ) || placeholder }
 				<Icon
 					icon={ chevronDown }
 					className="components-custom-select-control__button-icon"
@@ -170,25 +174,12 @@ export default function OnboardingSelectControl( {
 									{
 										'is-highlighted':
 											index === highlightedIndex,
-										'has-hint': !! item.__experimentalHint,
 									}
 								),
 								style: item.style,
 							} ) }
 						>
-							<span className="components-onboarding-select-control__name">
-								{ item.name }
-							</span>
-							<br />
-							<span className="components-onboarding-select-control__description">
-								{ item.description }
-							</span>
-
-							{ item.__experimentalHint && (
-								<span className="components-custom-select-control__item-hint">
-									{ item.__experimentalHint }
-								</span>
-							) }
+							{ children ? children( item ) : item.name }
 							{ item === selectedItem && (
 								<Icon
 									icon={ check }
