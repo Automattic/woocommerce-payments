@@ -27,8 +27,20 @@ export interface UpdateBusinessTypesAction {
 	data: Country[];
 }
 
+export interface UpdateRequiredVerificationInfoAction {
+	type: ACTION_TYPES.SET_REQUIRED_VERIFICATION_INFO;
+	data: string[];
+}
+
+export interface RequiredVerificationInfoParams {
+	country: string;
+	type: string;
+	structure?: string;
+}
+
 export interface OnboardingState {
 	countries: Country[];
+	required_fields?: string[];
 }
 
 export interface State {
