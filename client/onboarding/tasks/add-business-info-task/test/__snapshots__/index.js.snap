@@ -359,7 +359,7 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           Business Structure
         </label>
         <button
-          aria-describedby="Currently selected: Single member llc"
+          aria-describedby="Currently selected: Single member LLC"
           aria-expanded="false"
           aria-haspopup="listbox"
           aria-label="Business Structure"
@@ -367,7 +367,7 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           id="downshift-14-toggle-button"
           type="button"
         >
-          Single member llc
+          Single member LLC
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
