@@ -1526,11 +1526,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	protected function get_payment_method_type_for_order( $order ) {
-		$intent_id = $order->get_meta( '_intent_id', true );
+		$payment_method_id = $order->get_meta( '_payment_method_id', true );
 
-		$intent                 = $this->payments_api_client->get_intent( $intent_id );
-		$payment_method_details = $intent ? $intent->get_payment_method_details() : null;
-		$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+		$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : 'unknown';
 		return $payment_method_type;
 	}
 
