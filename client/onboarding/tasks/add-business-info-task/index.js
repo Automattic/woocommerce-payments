@@ -21,17 +21,18 @@ const AddBusinessInfoTask = () => {
 	const { isCompleted, setCompleted } = useContext( WizardTaskContext );
 	const { businessTypes, isLoading } = useBusinessTypes();
 
-	const accountCountry = businessTypes.find(
-		( b ) => b.key === wcpaySettings.connect.country
-	);
-	const [ businessCountry, setBusinessCountry ] = useState( accountCountry );
+	const [ businessCountry, setBusinessCountry ] = useState( '' );
 	const [ businessType, setBusinessType ] = useState( '' );
 	const [ businessStructure, setBusinessStructure ] = useState( '' );
 	const [ displayStructures, setDisplayStructures ] = useState( false );
 
 	useEffect( () => {
-		setBusinessCountry( accountCountry );
-	}, [ accountCountry ] );
+		setBusinessCountry(
+			businessTypes.find(
+				( country ) => country.key === wcpaySettings.connect.country
+			)
+		);
+	}, [ businessTypes ] );
 
 	const handleBusinessCountryUpdate = ( country ) => {
 		setBusinessCountry( country );
