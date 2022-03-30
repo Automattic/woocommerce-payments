@@ -1,0 +1,5 @@
+Significance: patch
+Type: add
+Comment: This helps enable functionality related to platform checkout - currently behind a hidden feature flag.
+
+
