@@ -182,7 +182,7 @@ const PaymentMethods = () => {
 			handleDeleteModalOpen( {
 				id: itemId,
 				label: methodConfig.label,
-				Icon: methodConfig.Icon,
+				Icon: methodConfig.icon,
 			} );
 		} else {
 			completeDeleteAction( itemId );
@@ -290,7 +290,7 @@ const PaymentMethods = () => {
 				<ConfirmPaymentMethodDeleteModal
 					id={ deleteModalParams.id }
 					label={ deleteModalParams.label }
-					Icon={ deleteModalParams.Icon }
+					icon={ deleteModalParams.Icon }
 					onConfirm={ () => {
 						completeDeleteAction( deleteModalParams.id );
 					} }

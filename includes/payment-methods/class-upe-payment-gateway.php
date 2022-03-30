@@ -655,6 +655,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		} catch ( Exception $e ) {
 			Logger::log( 'Error: ' . $e->getMessage() );
 
+			// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
+			$status    = $status ?? null;
+			$charge_id = $charge_id ?? null;
+
 			/* translators: localized exception message */
 			$message = sprintf( __( 'UPE payment failed: %s', 'woocommerce-payments' ), $e->getMessage() );
 			$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id, $message );

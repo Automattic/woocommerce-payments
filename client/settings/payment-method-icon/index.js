@@ -18,7 +18,7 @@ const PaymentMethodIcon = ( { name, showName } ) => {
 		return <></>;
 	}
 
-	const { label, Icon } = paymentMethod;
+	const { label, icon: Icon } = paymentMethod;
 
 	return (
 		<span

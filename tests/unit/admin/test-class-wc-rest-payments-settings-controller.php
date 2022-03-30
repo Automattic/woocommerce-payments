@@ -216,16 +216,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertFalse( $response->get_data()['is_wcpay_enabled'] );
 	}
 
-	public function test_get_settings_returns_is_short_statement_descriptor_enabled() {
-		$response = $this->upe_controller->get_settings();
-		$this->assertEquals( false, $response->get_data()['is_short_statement_descriptor_enabled'] );
-	}
-
-	public function test_get_settings_returns_short_statement_descriptor() {
-		$response = $this->upe_controller->get_settings();
-		$this->assertEquals( '', $response->get_data()['short_statement_descriptor'] );
-	}
-
 	public function test_get_settings_fails_if_user_cannot_manage_woocommerce() {
 		$cb = $this->create_can_manage_woocommerce_cap_override( false );
 		add_filter( 'user_has_cap', $cb );
@@ -511,49 +501,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
 	}
 
-	public function test_update_settings_enables_is_short_statement_descriptor_enabled() {
-		$request = new WP_REST_Request();
-		$request->set_param( 'is_short_statement_descriptor_enabled', true );
-
-		$this->controller->update_settings( $request );
-
-		$this->assertEquals( 'yes', $this->gateway->get_option( 'is_short_statement_descriptor_enabled' ) );
-	}
-
-	public function test_update_settings_disables_is_short_statement_descriptor_enabled() {
-		$request = new WP_REST_Request();
-		$request->set_param( 'is_short_statement_descriptor_enabled', false );
-
-		$this->controller->update_settings( $request );
-
-		$this->assertEquals( 'no', $this->gateway->get_option( 'is_short_statement_descriptor_enabled' ) );
-	}
-
-	public function test_update_settings_does_not_save_short_statement_descriptor_if_short_descriptor_is_disabled() {
-		$this->assertEquals( false, $this->gateway->get_option( 'is_short_statement_descriptor_enabled' ) );
-		$this->assertEquals( '', $this->gateway->get_option( 'short_statement_descriptor' ) );
-
-		$request = new WP_REST_Request();
-		$request->set_param( 'short_statement_descriptor', 'foobar' );
-
-		$this->controller->update_settings( $request );
-
-		$this->assertEquals( '', $this->gateway->get_option( 'short_statement_descriptor' ) );
-	}
-
-	public function test_update_settings_saves_short_statement_descriptor() {
-		$this->assertEquals( false, $this->gateway->get_option( 'is_short_statement_descriptor_enabled' ) );
-		$this->assertEquals( '', $this->gateway->get_option( 'short_statement_descriptor' ) );
-
-		$request = new WP_REST_Request();
-		$request->set_param( 'is_short_statement_descriptor_enabled', true );
-		$request->set_param( 'short_statement_descriptor', 'foobar' );
-
-		$this->controller->update_settings( $request );
-
-		$this->assertEquals( 'foobar', $this->gateway->get_option( 'short_statement_descriptor' ) );
-	}
-
 	/**
 	 * @param bool $can_manage_woocommerce
 	 *
@@ -698,44 +645,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 				$request,
 				'account_business_support_phone',
 				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid phone number: 123test' ),
-			],
-		];
-	}
-
-	/**
-	 * Tests account business support URL validator
-	 *
-	 * @dataProvider account_business_support_uri_validation_provider
-	 */
-	public function test_validate_business_support_uri( $value, $request, $param, $expected ) {
-		$return = $this->controller->validate_business_support_uri( $value, $request, $param );
-		$this->assertEquals( $return, $expected );
-	}
-
-	/**
-	 * Provider for test_validate_business_support_uri.
-	 * @return array[] test method params.
-	 */
-	public function account_business_support_uri_validation_provider() {
-		$request = new WP_REST_Request();
-		return [
-			[
-				'http://test.com',
-				$request,
-				'account_business_url',
-				true,
-			],
-			[
-				'', // Empty value should be allowed.
-				$request,
-				'account_business_url',
-				true,
-			],
-			[
-				'test',
-				$request,
-				'account_business_url',
-				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid business URL: test' ),
 			],
 		];
 	}

@@ -20,6 +20,7 @@ import { CapitalLoan } from 'data/capital/types';
 import ClickableCell from 'components/clickable-cell';
 import Chip from 'components/chip';
 import { useLoans } from 'wcpay/data';
+import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
 
@@ -94,11 +95,13 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 	loans.map( ( loan ) => {
 		const clickable = ( children: React.ReactNode ) => (
 			<ClickableCell
-				href={
-					'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions' +
-					'&type=charge&filter=advanced&loan_id_is=' +
-					loan.stripe_loan_id
-				}
+				href={ getAdminUrl( {
+					page: 'wc-admin',
+					path: '/payments/transactions',
+					type: 'charge',
+					filter: 'advanced',
+					loan_id_is: loan.stripe_loan_id,
+				} ) }
 			>
 				{ children }
 			</ClickableCell>
@@ -118,7 +121,10 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 					? loan.amount
 					: loan.amount / 100,
 				display: clickable(
-					formatExplicitCurrency( loan.amount, loan.currency )
+					formatExplicitCurrency(
+						loan.amount,
+						loan.currency.toUpperCase()
+					)
 				),
 			},
 			fee_amount: {
@@ -126,12 +132,17 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 					? loan.fee_amount
 					: loan.fee_amount / 100,
 				display: clickable(
-					formatExplicitCurrency( loan.fee_amount, loan.currency )
+					formatExplicitCurrency(
+						loan.fee_amount,
+						loan.currency.toUpperCase()
+					)
 				),
 			},
 			withhold_rate: {
 				value: loan.withhold_rate,
-				display: clickable( loan.withhold_rate + '%' ),
+				display: clickable(
+					+( loan.withhold_rate * 100 ).toFixed( 2 ) + '%'
+				),
 			},
 			first_paydown_at: {
 				value: loan.first_paydown_at,

@@ -4,16 +4,12 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { TextControl, Notice } from '@wordpress/components';
+import { TextControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import {
-	useAccountBusinessName,
-	useAccountBusinessURL,
-	useGetSavingError,
-} from '../../../data';
+import { useAccountBusinessName, useAccountBusinessURL } from '../../../data';
 
 const BusinessDetailsSection = () => {
 	const [
@@ -26,9 +22,6 @@ const BusinessDetailsSection = () => {
 		setAccountBusinessURL,
 	] = useAccountBusinessURL();
 
-	const businessSuppotURLErrorMessage = useGetSavingError()?.data?.details
-		?.account_business_url?.message;
-
 	return (
 		<>
 			<h4>{ __( 'Business details', 'woocommerce-payments' ) }</h4>
@@ -38,11 +31,6 @@ const BusinessDetailsSection = () => {
 				value={ accountBusinessName }
 				onChange={ setAccountBusinessName }
 			/>
-			{ businessSuppotURLErrorMessage && (
-				<Notice status="error" isDismissible={ false }>
-					<span>{ businessSuppotURLErrorMessage }</span>
-				</Notice>
-			) }
 			<TextControl
 				className="card-readers-business-url-input"
 				label={ __( 'Business URL', 'woocommerce-payments' ) }

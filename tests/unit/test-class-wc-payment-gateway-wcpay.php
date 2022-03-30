@@ -286,6 +286,57 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 	}
 
+	/**
+	 * Test saving WCPay refund id to WC Refund meta and WC Order Note.
+	 */
+	public function test_process_refund_save_wcpay_refund_id_to_refund_meta_and_order_note() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$refund = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
+			$this->returnValue(
+				[
+					'id'                       => 're_123456789',
+					'object'                   => 'refund',
+					'amount'                   => 19.99,
+					'balance_transaction'      => 'txn_987654321',
+					'charge'                   => 'ch_121212121212',
+					'created'                  => 1610123467,
+					'payment_intent'           => 'pi_1234567890',
+					'reason'                   => null,
+					'reciept_number'           => null,
+					'source_transfer_reversal' => null,
+					'status'                   => 'succeeded',
+					'transfer_reversal'        => null,
+					'currency'                 => 'usd',
+				]
+			)
+		);
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 1,
+			]
+		);
+		$latest_wcpay_note = $notes[0];
+
+		$this->assertTrue( $result );
+		$this->assertEquals( 're_123456789', $refund->get_meta( '_wcpay_refund_id', true ) );
+		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'USD' ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( 're_123456789', $latest_wcpay_note->content );
+	}
+
 	public function test_process_refund_non_usd() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
@@ -1512,6 +1563,81 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertSame( $order->get_status(), 'processing' );
 	}
 
+	public function test_capture_charge_without_level3() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', 'requires_capture' );
+		$order->update_status( 'on-hold' );
+
+		$mock_intent = new WC_Payments_API_Intention(
+			$intent_id,
+			1500,
+			$order->get_currency(),
+			'cus_12345',
+			'pm_12345',
+			new DateTime(),
+			'requires_capture',
+			$charge_id,
+			'...'
+		);
+
+		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
+			$this->returnValue( $mock_intent )
+		);
+		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->will(
+			$this->returnValue( $mock_intent )
+		);
+		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
+			$this->returnValue(
+				new WC_Payments_API_Intention(
+					$intent_id,
+					1500,
+					$order->get_currency(),
+					'cus_12345',
+					'pm_12345',
+					new DateTime(),
+					'succeeded',
+					$charge_id,
+					'...'
+				)
+			)
+		);
+
+		$this->mock_wcpay_account
+			->expects( $this->never() )
+			->method( 'get_account_country' ); // stand-in for get_level3_data_from_order.
+
+		$result = $this->wcpay_gateway->capture_charge( $order, false );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 1,
+			]
+		);
+		$latest_wcpay_note = $notes[0];
+
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertEquals(
+			[
+				'status'    => 'succeeded',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 200,
+			],
+			$result
+		);
+		$this->assertStringContainsString( 'successfully captured', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( $order->get_total() ), $latest_wcpay_note->content );
+		$this->assertEquals( 'succeeded', $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( 'processing', $order->get_status() );
+	}
+
 	public function test_cancel_authorization_handles_api_exception_when_canceling() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
@@ -1843,55 +1969,37 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	 *
 	 * @dataProvider account_statement_descriptor_validation_provider
 	 */
-	public function test_validate_account_statement_descriptor_fields( $is_valid, $key, $value, $max_length, $expected = null ) {
+	public function test_validate_account_statement_descriptor_field( $is_valid, $value, $expected = null ) {
+		$key = 'account_statement_descriptor';
 		if ( $is_valid ) {
-			$validated_value = $this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value, $max_length );
+			$validated_value = $this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
 			$this->assertEquals( $expected ?? $value, $validated_value );
 		} else {
-			$message = 'account_statement_descriptor' === $key ? 'Customer bank statement' : 'Shortened customer bank statement';
-			$this->expectExceptionMessage( $message . ' is invalid.' );
-			$this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value, $max_length );
+			$this->expectExceptionMessage( 'Customer bank statement is invalid.' );
+			$this->wcpay_gateway->validate_account_statement_descriptor_field( $key, $value );
 		}
 	}
 
 	public function account_statement_descriptor_validation_provider() {
 		return [
-			'valid'                  => [ true, 'account_statement_descriptor', 'WCPAY dev', 22 ],
-			'allow_digits'           => [ true, 'account_statement_descriptor', 'WCPay dev 2020', 22 ],
-			'allow_special'          => [ true, 'account_statement_descriptor', 'WCPay-Dev_2020', 22 ],
-			'allow_amp'              => [ true, 'account_statement_descriptor', 'WCPay&Dev_2020', 22 ],
-			'strip_slashes'          => [ true, 'account_statement_descriptor', 'WCPay\\\\Dev_2020', 22, 'WCPay\\Dev_2020' ],
-			'allow_long_amp'         => [ true, 'account_statement_descriptor', 'aaaaaaaaaaaaaaaaaaa&aa', 22 ],
-			'trim_valid'             => [ true, 'account_statement_descriptor', '   good_descriptor  ', 22, 'good_descriptor' ],
-			'empty'                  => [ false, 'account_statement_descriptor', '', 22 ],
-			'short'                  => [ false, 'account_statement_descriptor', 'WCP', 22 ],
-			'long'                   => [ false, 'account_statement_descriptor', 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev', 22 ],
-			'no_*'                   => [ false, 'account_statement_descriptor', 'WCPay * dev', 22 ],
-			'no_sqt'                 => [ false, 'account_statement_descriptor', 'WCPay \'dev\'', 22 ],
-			'no_dqt'                 => [ false, 'account_statement_descriptor', 'WCPay "dev"', 22 ],
-			'no_lt'                  => [ false, 'account_statement_descriptor', 'WCPay<dev', 22 ],
-			'no_gt'                  => [ false, 'account_statement_descriptor', 'WCPay>dev', 22 ],
-			'req_latin'              => [ false, 'account_statement_descriptor', 'дескриптор', 22 ],
-			'req_letter'             => [ false, 'account_statement_descriptor', '123456', 22 ],
-			'trim_too_short'         => [ false, 'account_statement_descriptor', '  aaa    ', 22 ],
-			'valid (short)'          => [ true, 'short_statement_descriptor', 'WCPAY dev', 10 ],
-			'allow_digits (short)'   => [ true, 'short_statement_descriptor', 'WCPay 2020', 10 ],
-			'allow_special (short)'  => [ true, 'short_statement_descriptor', 'WCPay-_202', 10 ],
-			'allow_amp (short)'      => [ true, 'short_statement_descriptor', 'WCPay&_202', 10 ],
-			'strip_slashes (short)'  => [ true, 'short_statement_descriptor', 'WCPay\\\\D_20', 10, 'WCPay\\D_20' ],
-			'allow_long_amp (short)' => [ true, 'short_statement_descriptor', 'aaaaaaaa&a', 10 ],
-			'trim_valid (short)'     => [ true, 'short_statement_descriptor', '   good_d ', 10, 'good_d' ],
-			'empty (short)'          => [ false, 'short_statement_descriptor', '', 10 ],
-			'short (short)'          => [ false, 'short_statement_descriptor', 'WCP', 10 ],
-			'long (short)'           => [ false, 'short_statement_descriptor', 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev', 10 ],
-			'no_* (short)'           => [ false, 'short_statement_descriptor', 'WCPay * de', 10 ],
-			'no_sqt (short)'         => [ false, 'short_statement_descriptor', 'WCPay \'d\'', 10 ],
-			'no_dqt (short)'         => [ false, 'short_statement_descriptor', 'WCPay "de"', 10 ],
-			'no_lt (short)'          => [ false, 'short_statement_descriptor', 'WCPay<dev', 10 ],
-			'no_gt (short)'          => [ false, 'short_statement_descriptor', 'WCPay>dev', 10 ],
-			'req_latin (short)'      => [ false, 'short_statement_descriptor', 'дескриптор', 10 ],
-			'req_letter (short)'     => [ false, 'short_statement_descriptor', '123456', 10 ],
-			'trim_too_short (short)' => [ false, 'short_statement_descriptor', '  aaa    ', 10 ],
+			'valid'          => [ true, 'WCPAY dev' ],
+			'allow_digits'   => [ true, 'WCPay dev 2020' ],
+			'allow_special'  => [ true, 'WCPay-Dev_2020' ],
+			'allow_amp'      => [ true, 'WCPay&Dev_2020' ],
+			'strip_slashes'  => [ true, 'WCPay\\\\Dev_2020', 'WCPay\\Dev_2020' ],
+			'allow_long_amp' => [ true, 'aaaaaaaaaaaaaaaaaaa&aa' ],
+			'trim_valid'     => [ true, '   good_descriptor  ', 'good_descriptor' ],
+			'empty'          => [ false, '' ],
+			'short'          => [ false, 'WCP' ],
+			'long'           => [ false, 'WCPay_dev_WCPay_dev_WCPay_dev_WCPay_dev' ],
+			'no_*'           => [ false, 'WCPay * dev' ],
+			'no_sqt'         => [ false, 'WCPay \'dev\'' ],
+			'no_dqt'         => [ false, 'WCPay "dev"' ],
+			'no_lt'          => [ false, 'WCPay<dev' ],
+			'no_gt'          => [ false, 'WCPay>dev' ],
+			'req_latin'      => [ false, 'дескриптор' ],
+			'req_letter'     => [ false, '123456' ],
+			'trim_too_short' => [ false, '  aaa    ' ],
 		];
 	}
 
@@ -2268,8 +2376,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertSame( 'Intent creation failed with the following message: test exception', $result->get_error_message() );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_true() {
-		update_option( '_wcpay_feature_platform_checkout', '1' );
+	public function test_is_platform_checkout_enabled_returns_true() {
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => true ] ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
@@ -2285,21 +2393,18 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertTrue( $mock_wcpay_gateway->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 	}
 
-	/**
-	 * @dataProvider is_platform_checkout_falsy_value_provider
-	 */
-	public function test_is_platform_checkout_is_returned_as_false_if_feature_flag_is_not_equal_1() {
-		update_option( '_wcpay_feature_platform_checkout', '0' );
+	public function test_is_platform_checkout_enabled_returns_false_if_ineligible() {
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => false ] ] );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_option_is_not_equal_1() {
+	public function test_is_platform_checkout_enabled_returns_false_if_ineligible_and_enabled() {
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_false_if_missing() {
-		delete_option( '_wcpay_feature_platform_checkout' );
+	public function test_is_platform_checkout_enabled_returns_false_if_account_missing() {
+		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [] ] );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 

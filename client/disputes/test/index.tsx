@@ -22,6 +22,19 @@ import {
 declare const global: {
 	wcpaySettings: {
 		zeroDecimalCurrencies: string[];
+		connect: {
+			country: string;
+		};
+		currencyData: {
+			[ key: string ]: {
+				code: string;
+				symbol: string;
+				symbolPosition: string;
+				thousandSeparator: string;
+				decimalSeparator: string;
+				precision: number;
+			};
+		};
 	};
 };
 
@@ -72,7 +85,7 @@ const mockDisputes = [
 			number: '1',
 			customer_url: 'https://shop.local',
 			url: 'http://test.local/order/1',
-		},
+		} as any,
 	} as CachedDispute,
 	{
 		// dispute without order or charge information
@@ -107,7 +120,7 @@ const mockDisputes = [
 		order: {
 			number: '3',
 			url: 'http://test.local/order/3',
-		},
+		} as any,
 	} as CachedDispute,
 ];
 
@@ -115,6 +128,19 @@ describe( 'Disputes list', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 

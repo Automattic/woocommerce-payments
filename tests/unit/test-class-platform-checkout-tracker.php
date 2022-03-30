@@ -34,21 +34,21 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 		$this->tracker          = new WCPay\Platform_Checkout_Tracker( $this->http_client_stub );
 	}
 
-	public function test_should_track_obeys_platform_checkou_flag() {
-		update_option( '_wcpay_feature_platform_checkout', '0' );
+	public function test_should_track_obeys_platform_checkout_flag() {
+		$this->set_is_platform_checkout_eligible( false );
 		$this->assertFalse( $this->tracker->should_track() );
 	}
 
 	public function test_does_not_track_admin_pages() {
-		update_option( '_wcpay_feature_platform_checkout', '1' );
 		wp_set_current_user( 1 );
+		$this->set_is_platform_checkout_eligible( true );
 		$this->set_is_admin( true );
 		$this->assertFalse( $this->tracker->should_track() );
 	}
 
 	public function test_does_track_non_admins() {
 		global $wp_roles;
-		update_option( '_wcpay_feature_platform_checkout', '1' );
+		$this->set_is_platform_checkout_eligible( true );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 		wp_set_current_user( 1 );
 		$this->set_is_admin( false );
@@ -78,5 +78,19 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 			->getMock();
 
 		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
+	}
+
+	/**
+	 * Cache account details.
+	 *
+	 * @param $account
+	 */
+	private function set_is_platform_checkout_eligible( $is_platform_checkout_eligible ) {
+		add_option(
+			WC_Payments_Account::ACCOUNT_OPTION,
+			[
+				'account' => [ 'platform_checkout_eligible' => $is_platform_checkout_eligible ],
+			]
+		);
 	}
 }

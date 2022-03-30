@@ -1,0 +1,24 @@
+////////////////////////////////////////////////////////////////////////////////
+// WOOCOMMERCE CUSTOM TOC STYLES
+////////////////////////////////////////////////////////////////////////////////
+
+.toc-wrapper {
+	.toc-link:hover {
+		background: #eee;
+	}
+	.toc-link.active-parent:hover {
+		background: #eee;
+	}
+	.toc-link.active:hover {
+		background: $nav-active-bg;
+	}
+
+	.toc-footer {
+		border-top: 1px solid $nav-footer-border-color;
+	}
+}
+
+.toc-link,
+.toc-footer li {
+	padding: 3px $nav-padding;
+}

@@ -19,7 +19,7 @@ class WC_Payments_Admin {
 	 *
 	 * @var string
 	 */
-	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1">1</span>';
+	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1"><span class="plugin-count">1</span></span>';
 
 	/**
 	 * Option name used to hide Card Readers page behind a feature flag.
@@ -120,6 +120,19 @@ class WC_Payments_Admin {
 				],
 			],
 		];
+
+		if ( WC_Payments_Features::is_documents_section_enabled() ) {
+			$this->admin_child_pages['wc-payments-documents'] = [
+				'id'       => 'wc-payments-documents',
+				'title'    => __( 'Documents', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/documents',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 50,
+				],
+			];
+		}
 	}
 
 	/**
@@ -385,6 +398,26 @@ class WC_Payments_Admin {
 		$current_user       = wp_get_current_user();
 		$current_user_email = $current_user && $current_user->user_email ? $current_user->user_email : get_option( 'admin_email' );
 
+		if ( version_compare( WC_VERSION, '6.0', '<' ) ) {
+			$path = WCPAY_ABSPATH . 'i18n/locale-info.php';
+		} else {
+			$path = WC()->plugin_path() . '/i18n/locale-info.php';
+		}
+
+		$locale_info   = include $path;
+		$currency_data = [];
+
+		foreach ( $locale_info as $key => $value ) {
+			$currency_data[ $key ] = [
+				'code'              => $value['currency_code'] ?? '',
+				'symbol'            => $value['short_symbol'] ?? '',
+				'symbolPosition'    => $value['currency_pos'] ?? '',
+				'thousandSeparator' => $value['thousand_sep'] ?? '',
+				'decimalSeparator'  => $value['decimal_sep'] ?? '',
+				'precision'         => $value['num_decimals'],
+			];
+		}
+
 		$wcpay_settings = [
 			'connectUrl'              => WC_Payments_Account::get_connect_url(),
 			'connect'                 => [
@@ -423,6 +456,7 @@ class WC_Payments_Admin {
 				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
 			],
 			'currentUserEmail'        => $current_user_email,
+			'currencyData'            => $currency_data,
 		];
 
 		wp_localize_script(

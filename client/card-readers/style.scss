@@ -61,7 +61,7 @@
 
 				.components-circular-option-picker__custom-clear-wrapper {
 					display: block;
-					margin-top: 10px;
+					margin-top: 0;
 				}
 
 				button {
@@ -100,6 +100,10 @@
 				max-width: 25%;
 				text-align: right;
 			}
+		}
+
+		.card-readers-list__body {
+			padding: 0;
 		}
 
 		.card-readers-add-new-reader {

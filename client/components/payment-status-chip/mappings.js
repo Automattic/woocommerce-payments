@@ -45,6 +45,10 @@ export default {
 		type: 'primary',
 		message: __( 'Payment authorized', 'woocommerce-payments' ),
 	},
+	refund_failed: {
+		type: 'alert',
+		message: __( 'Refund failure', 'woocommerce-payments' ),
+	},
 	failed: {
 		type: 'alert',
 		message: __( 'Payment failed', 'woocommerce-payments' ),

@@ -43,7 +43,22 @@ const mockZeroInstantBalance = {
 describe( 'Instant deposit button and modal', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
 	} );
 
 	test( 'button renders correctly with zero balance', () => {

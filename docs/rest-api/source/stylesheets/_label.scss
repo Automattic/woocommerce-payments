@@ -1,0 +1,32 @@
+////////////////////////////////////////////////////////////////////////////////
+// LABEL
+////////////////////////////////////////////////////////////////////////////////
+.label {
+	border-radius: 2px;
+	text-transform: uppercase;
+	font-style: normal;
+	white-space: nowrap;
+}
+
+.label-get {
+	background: #008000;
+}
+
+.label-post,
+.label-put {
+	background: #4e92d7;
+}
+
+.label-delete {
+	background: #ca4949;
+}
+
+.label-info {
+	background: #efefef;
+	color: #999;
+	float: right;
+	font-weight: 700;
+	font-size: 70%;
+	padding: 2px 4px;
+	margin-left: 5px;
+}

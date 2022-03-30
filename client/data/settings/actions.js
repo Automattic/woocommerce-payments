@@ -97,18 +97,6 @@ export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	} );
 }
 
-export function updateIsShortStatementDescriptorEnabled( isEnabled ) {
-	return updateSettingsValues( {
-		is_short_statement_descriptor_enabled: isEnabled,
-	} );
-}
-
-export function updateShortStatementDescriptor( shortStatementDescriptor ) {
-	return updateSettingsValues( {
-		short_statement_descriptor: shortStatementDescriptor,
-	} );
-}
-
 export function updateAccountBusinessName( accountBusinessName ) {
 	return updateSettingsValues( {
 		account_business_name: accountBusinessName,
@@ -215,4 +203,8 @@ export function updatePlatformCheckoutCustomMessage( message ) {
 	return updateSettingsValues( {
 		platform_checkout_custom_message: message,
 	} );
+}
+
+export function updateIsFraudPreventionEnabled( isEnabled ) {
+	return updateSettingsValues( { is_fraud_prevention_enabled: isEnabled } );
 }

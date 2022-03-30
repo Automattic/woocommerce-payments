@@ -5,7 +5,7 @@ on:
 
 env:
   WP_VERSION:        latest
-  WC_VERSION: 6.0.0  # the min supported version as per L-2 policy
+  WC_VERSION: 6.1.0  # the min supported version as per L-2 policy
   GUTENBERG_VERSION: latest
 
 jobs:

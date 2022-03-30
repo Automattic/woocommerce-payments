@@ -135,42 +135,6 @@ export const useAccountStatementDescriptor = () => {
 	);
 };
 
-export const useIsShortStatementDescriptorEnabled = () => {
-	const { updateIsShortStatementDescriptorEnabled } = useDispatch(
-		STORE_NAME
-	);
-
-	return useSelect(
-		( select ) => {
-			const { getIsShortStatementDescriptorEnabled } = select(
-				STORE_NAME
-			);
-
-			return [
-				getIsShortStatementDescriptorEnabled(),
-				updateIsShortStatementDescriptorEnabled,
-			];
-		},
-		[ updateIsShortStatementDescriptorEnabled ]
-	);
-};
-
-export const useShortStatementDescriptor = () => {
-	const { updateShortStatementDescriptor } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getShortStatementDescriptor } = select( STORE_NAME );
-
-			return [
-				getShortStatementDescriptor(),
-				updateShortStatementDescriptor,
-			];
-		},
-		[ updateShortStatementDescriptor ]
-	);
-};
-
 export const useAccountBusinessName = () => {
 	const { updateAccountBusinessName } = useDispatch( STORE_NAME );
 
@@ -481,4 +445,14 @@ export const usePlatformCheckoutCustomMessage = () => {
 		},
 		[ updatePlatformCheckoutCustomMessage ]
 	);
+};
+
+export const useFraudProtection = () => {
+	const { updateIsFraudPreventionEnabled } = useDispatch( STORE_NAME );
+
+	const isFraudProtectionEnabled = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsFraudProtectionEnabled();
+	}, [] );
+
+	return [ isFraudProtectionEnabled, updateIsFraudPreventionEnabled ];
 };

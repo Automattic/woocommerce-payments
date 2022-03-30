@@ -30,7 +30,7 @@ const FileUploadPreview = ( {
 						fileName +
 						'?as_account=0'
 					}
-					style={ { maxWidth: 100 } }
+					style={ { maxWidth: 100, marginTop: 12 } }
 					alt={ fileName }
 				/>
 			) }

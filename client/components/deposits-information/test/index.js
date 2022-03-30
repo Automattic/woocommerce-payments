@@ -73,7 +73,22 @@ useInstantDeposit.mockReturnValue( {
 
 describe( 'Deposits information', () => {
 	beforeEach( () => {
-		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'FR',
+			},
+			currencyData: {
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+			},
+		};
 	} );
 	afterEach( () => {
 		jest.clearAllMocks();
