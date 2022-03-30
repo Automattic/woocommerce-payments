@@ -36,7 +36,7 @@ jobs:
       fail-fast:     false
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce:   [ '5.0.0', '6.1.0', '6.3.1', 'beta' ]
+        woocommerce:   [ '5.2.0', '6.1.0', '6.3.1', 'beta' ]
         wordpress:     [ 'latest' ]
         php:           [ '7.4' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
@@ -57,7 +57,7 @@ jobs:
       # Conditionally skip workflow. Remove/update based on min supported WC version by the blocks checkout plugin.
       - name: Conditionally skip workflow
         run: |
-          if [[ $E2E_WC_VERSION == '5.0.0' ]]; then
+          if [[ $E2E_WC_VERSION == '5.2.0' ]]; then
             echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
             if [[
                 $E2E_GROUP == 'wcpay' && $E2E_BRANCH == 'merchant' ||
