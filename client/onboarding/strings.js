@@ -28,11 +28,4 @@ export default {
 			'woocommerce-payments'
 		),
 	},
-
-	businessTypes: {
-		individual: __( 'Individual', 'woocommerce-payments' ),
-		company: __( 'Company', 'woocommerce-payments' ),
-		non_profit: __( 'Non-Profit', 'woocommerce-payments' ),
-		government_entity: __( 'Government Entity', 'woocommerce-payments' ),
-	},
 };

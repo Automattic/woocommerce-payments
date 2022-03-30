@@ -28,9 +28,9 @@ export interface UpdateBusinessTypesAction {
 }
 
 export interface OnboardingState {
-	data?: Country[];
+	countries: Country[];
 }
 
 export interface State {
-	onboarding?: OnboardingState;
+	onboarding: OnboardingState;
 }
