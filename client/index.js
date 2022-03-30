@@ -63,7 +63,7 @@ addFilter(
 				__( 'Onboarding', 'woocommerce-payments' ),
 			],
 			navArgs: {
-				id: 'wc-payments',
+				id: 'wc-payments-onboarding',
 			},
 			capability: 'manage_woocommerce',
 		} );
