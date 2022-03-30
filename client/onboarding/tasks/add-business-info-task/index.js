@@ -12,7 +12,7 @@ import { Card, CardBody } from '@wordpress/components';
  */
 import WizardTaskItem from 'additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
-import OnboardingSelectControl from 'components/onboarding-select-control';
+import CustomSelectControl from 'components/custom-select-control';
 import { LoadableBlock } from 'components/loadable';
 import { useBusinessTypes } from 'data/onboarding';
 import strings from '../../strings';
@@ -59,12 +59,11 @@ const AddBusinessInfoTask = () => {
 			index={ 1 }
 			title={ strings.onboarding.heading }
 		>
-			<p className="wcpay-wizard-task__description-element subheading is-muted-color">
+			<p className="complete-business-info-task__subheading">
 				{ strings.onboarding.description }
 			</p>
 			<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
-				<OnboardingSelectControl
-					className="wcpay-onboarding-select"
+				<CustomSelectControl
 					label={ __( 'Country', 'woocommerce-payments' ) }
 					value={ businessCountry }
 					onChange={ ( { selectedItem } ) =>
@@ -72,32 +71,47 @@ const AddBusinessInfoTask = () => {
 					}
 					options={ businessTypes }
 				/>
-				<p className="wcpay-wizard-task__description-element is-muted-color">
+				<p className="complete-business-info-task__description">
 					{ strings.onboarding.countryDescription }
 				</p>
 				{ businessCountry && (
-					<OnboardingSelectControl
-						className="wcpay-onboarding-select"
+					<CustomSelectControl
 						label={ __( 'Business type', 'woocommerce-payments' ) }
 						value={ businessType }
+						options={ businessCountry.types }
+						placeholder={ __(
+							'What type of business do you run?',
+							'woocommerce-payments'
+						) }
 						onChange={ ( { selectedItem } ) =>
 							handleBusinessTypeUpdate( selectedItem )
 						}
-						options={ businessCountry.types }
-					/>
+					>
+						{ ( item ) => (
+							<div>
+								<div>{ item.name }</div>
+								<div className="complete-business-info-task__option-description">
+									{ item.description }
+								</div>
+							</div>
+						) }
+					</CustomSelectControl>
 				) }
 				{ businessType && displayStructures && (
-					<OnboardingSelectControl
-						className="wcpay-onboarding-select"
+					<CustomSelectControl
 						label={ __(
 							'Business Structure',
 							'woocommerce-payments'
 						) }
 						value={ businessStructure }
+						options={ businessType.structures }
+						placeholder={ __(
+							'What’s the legal structure of your business?',
+							'woocommerce-payments'
+						) }
 						onChange={ ( { selectedItem } ) =>
 							handleBusinessStructureUpdate( selectedItem )
 						}
-						options={ businessType.structures }
 					/>
 				) }
 			</LoadableBlock>

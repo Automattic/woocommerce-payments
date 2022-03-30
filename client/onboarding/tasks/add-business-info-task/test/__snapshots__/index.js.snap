@@ -45,12 +45,12 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
       class="wcpay-wizard-task__body"
     >
       <p
-        class="wcpay-wizard-task__description-element subheading is-muted-color"
+        class="complete-business-info-task__subheading"
       >
         Preview the details we'll require to verify your business and enable despoits.
       </p>
       <div
-        class="components-custom-select-control wcpay-onboarding-select"
+        class="wcpay components-custom-select-control"
       >
         <label
           class="components-custom-select-control__label"
@@ -64,7 +64,7 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
           aria-expanded="false"
           aria-haspopup="listbox"
           aria-label="Country"
-          class="components-button components-custom-select-control__button is-small"
+          class="components-button components-custom-select-control__button"
           id="downshift-21-toggle-button"
           type="button"
         >
@@ -93,8 +93,13 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
           tabindex="-1"
         />
       </div>
+      <p
+        class="complete-business-info-task__description"
+      >
+        The primary country where your business operates
+      </p>
       <div
-        class="components-custom-select-control wcpay-onboarding-select"
+        class="wcpay components-custom-select-control"
       >
         <label
           class="components-custom-select-control__label"
@@ -108,7 +113,7 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
           aria-expanded="false"
           aria-haspopup="listbox"
           aria-label="Business type"
-          class="components-button components-custom-select-control__button is-small"
+          class="components-button components-custom-select-control__button"
           id="downshift-22-toggle-button"
           type="button"
         >
@@ -137,11 +142,6 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
           tabindex="-1"
         />
       </div>
-      <p
-        class="wcpay-wizard-task__description-element is-muted-color"
-      >
-        The primary country where your business operates
-      </p>
     </div>
   </li>
 </div>
@@ -192,7 +192,7 @@ exports[`AddBusinessInfoTask shows a loadable block 1`] = `
       class="wcpay-wizard-task__body"
     >
       <p
-        class="wcpay-wizard-task__description-element subheading is-muted-color"
+        class="complete-business-info-task__subheading"
       >
         Preview the details we'll require to verify your business and enable despoits.
       </p>
@@ -201,7 +201,17 @@ exports[`AddBusinessInfoTask shows a loadable block 1`] = `
         class="is-loadable-placeholder is-block"
       >
         <p
-          style="line-height: 20;"
+          style="line-height: 4;"
+        >
+          Block placeholder
+        </p>
+      </span>
+      <span
+        aria-busy="true"
+        class="is-loadable-placeholder is-block"
+      >
+        <p
+          style="line-height: 4;"
         >
           Block placeholder
         </p>
@@ -256,12 +266,12 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
       class="wcpay-wizard-task__body"
     >
       <p
-        class="wcpay-wizard-task__description-element subheading is-muted-color"
+        class="complete-business-info-task__subheading"
       >
         Preview the details we'll require to verify your business and enable despoits.
       </p>
       <div
-        class="components-custom-select-control wcpay-onboarding-select"
+        class="wcpay components-custom-select-control"
       >
         <label
           class="components-custom-select-control__label"
@@ -275,7 +285,7 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           aria-expanded="false"
           aria-haspopup="listbox"
           aria-label="Country"
-          class="components-button components-custom-select-control__button is-small"
+          class="components-button components-custom-select-control__button"
           id="downshift-2-toggle-button"
           type="button"
         >
@@ -304,8 +314,13 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           tabindex="-1"
         />
       </div>
+      <p
+        class="complete-business-info-task__description"
+      >
+        The primary country where your business operates
+      </p>
       <div
-        class="components-custom-select-control wcpay-onboarding-select"
+        class="wcpay components-custom-select-control"
       >
         <label
           class="components-custom-select-control__label"
@@ -319,7 +334,7 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           aria-expanded="false"
           aria-haspopup="listbox"
           aria-label="Business type"
-          class="components-button components-custom-select-control__button is-small"
+          class="components-button components-custom-select-control__button"
           id="downshift-3-toggle-button"
           type="button"
         >
@@ -349,7 +364,7 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
         />
       </div>
       <div
-        class="components-custom-select-control wcpay-onboarding-select"
+        class="wcpay components-custom-select-control"
       >
         <label
           class="components-custom-select-control__label"
@@ -363,7 +378,7 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           aria-expanded="false"
           aria-haspopup="listbox"
           aria-label="Business Structure"
-          class="components-button components-custom-select-control__button is-small"
+          class="components-button components-custom-select-control__button"
           id="downshift-14-toggle-button"
           type="button"
         >
@@ -392,11 +407,6 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
           tabindex="-1"
         />
       </div>
-      <p
-        class="wcpay-wizard-task__description-element is-muted-color"
-      >
-        The primary country where your business operates
-      </p>
     </div>
   </li>
 </div>
@@ -447,12 +457,12 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
       class="wcpay-wizard-task__body"
     >
       <p
-        class="wcpay-wizard-task__description-element subheading is-muted-color"
+        class="complete-business-info-task__subheading"
       >
         Preview the details we'll require to verify your business and enable despoits.
       </p>
       <div
-        class="components-custom-select-control wcpay-onboarding-select"
+        class="wcpay components-custom-select-control"
       >
         <label
           class="components-custom-select-control__label"
@@ -466,7 +476,7 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
           aria-expanded="false"
           aria-haspopup="listbox"
           aria-label="Country"
-          class="components-button components-custom-select-control__button is-small"
+          class="components-button components-custom-select-control__button"
           id="downshift-0-toggle-button"
           type="button"
         >
@@ -495,8 +505,13 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
           tabindex="-1"
         />
       </div>
+      <p
+        class="complete-business-info-task__description"
+      >
+        The primary country where your business operates
+      </p>
       <div
-        class="components-custom-select-control wcpay-onboarding-select"
+        class="wcpay components-custom-select-control"
       >
         <label
           class="components-custom-select-control__label"
@@ -510,10 +525,11 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
           aria-expanded="false"
           aria-haspopup="listbox"
           aria-label="Business type"
-          class="components-button components-custom-select-control__button is-small"
+          class="components-button components-custom-select-control__button placeholder"
           id="downshift-1-toggle-button"
           type="button"
         >
+          What type of business do you run?
           <svg
             aria-hidden="true"
             class="components-custom-select-control__button-icon"
@@ -539,11 +555,6 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
         />
       </div>
       
-      <p
-        class="wcpay-wizard-task__description-element is-muted-color"
-      >
-        The primary country where your business operates
-      </p>
     </div>
   </li>
 </div>

@@ -1,28 +1,28 @@
-.wcpay-wizard-task__description-element.subheading {
-	font-size: 0.9rem;
-}
+.complete-business-info-task {
+	&__subheading {
+		font-size: 14px;
+		color: $gray-50;
+		margin: 0;
+	}
 
-.wcpay-onboarding-select {
-	margin-bottom: 8px;
+	&__description {
+		margin: $gap-smaller 0 0 0;
+		color: $gray-700;
+	}
 
-	& button.components-custom-select-control__button {
+	&__option-description {
+		color: $gray-700;
+		margin-top: $gap-smaller;
+	}
+
+	.components-custom-select-control {
+		margin-top: $gap;
+	}
+	.components-custom-select-control__button {
 		width: 100%;
-		font-size: 17px;
-
-		@media ( min-width: 600px ) {
-			font-size: 14px;
-		}
-	}
-
-	.components-custom-select-control__item {
-		display: block;
-	}
-
-	& .components-custom-select-control__item-icon {
-		margin-left: 0 !important;
 	}
 }
 
 .wcpay-onboarding-setup-complete-task__buttons {
-	margin-top: 1rem;
+	margin-top: $gap;
 }
