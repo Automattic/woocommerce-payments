@@ -89,7 +89,7 @@ class Fraud_Prevention_Service {
 	 * For the first page load generates the token,
 	 * for consecutive loads - takes from session.
 	 *
-	 * @return string
+	 * @return string|mixed
 	 */
 	public function get_token(): string {
 		$fraud_prevention_token = $this->session->get( self::TOKEN_NAME );
