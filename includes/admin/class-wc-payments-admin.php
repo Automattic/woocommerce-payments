@@ -163,18 +163,6 @@ class WC_Payments_Admin {
 				],
 			]
 		);
-		wc_admin_register_page(
-			[
-				'id'       => 'wc-payments-onboarding',
-				'title'    => __( 'Onboarding', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/onboarding',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 10,
-				],
-			]
-		);
 		wp_enqueue_style(
 			'wcpay-admin-css',
 			plugins_url( 'assets/css/admin.css', WCPAY_PLUGIN_FILE ),
@@ -230,6 +218,23 @@ class WC_Payments_Admin {
 			// If the account is rejected, only show the overview page.
 			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
 			return;
+		}
+
+		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() && ! $should_render_full_menu ) {
+				wc_admin_register_page(
+					[
+						'id'         => 'wc-payments-onboarding',
+						'title'      => __( 'Onboarding', 'woocommerce-payments' ),
+						'parent'     => 'wc-payments',
+						'path'       => '/payments/onboarding',
+						'capability' => 'manage_woocommerce',
+						'nav_args'   => [
+							'parent' => 'wc-payments',
+						],
+					]
+				);
+				global $submenu;
+				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
 		}
 
 		if ( $should_render_full_menu ) {
@@ -350,19 +355,6 @@ class WC_Payments_Admin {
 					'title'  => __( 'Preview a printed receipt', 'woocommerce-payments' ),
 					'path'   => '/payments/card-readers/preview-receipt',
 
-				]
-			);
-
-			wc_admin_register_page(
-				[
-					'id'       => 'wc-payments-onboarding',
-					'title'    => __( 'Onboarding', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/onboarding',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 10,
-					],
 				]
 			);
 		}
