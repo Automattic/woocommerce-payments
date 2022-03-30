@@ -95,7 +95,6 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 * @return void
 	 */
 	public function send_customer_ipp_receipt_email( WC_Order $order, array $merchant_settings, array $charge ) {
-		$this->mailer->init();
 		$email_receipt = $this->mailer->get_emails()['WC_Payments_Email_IPP_Receipt'];
 		if ( $email_receipt instanceof WC_Payments_Email_IPP_Receipt ) {
 			$email_receipt->trigger( $order, $merchant_settings, $charge );

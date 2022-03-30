@@ -351,20 +351,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
-
-		// Init IPP emails.
-		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
-	}
-
-	/**
-	 * Function add_emails
-	 *
-	 * @param array $email_classes the email classes.
-	 * @return array
-	 */
-	public static function add_ipp_emails( array $email_classes ): array {
-		$email_classes['WC_Payments_Email_IPP_Receipt'] = include __DIR__ . '/emails/class-wc-payments-email-ipp-receipt.php';
-		return $email_classes;
 	}
 
 	/**
