@@ -4,12 +4,13 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { dispatch as dispatcher } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { NAMESPACE } from '../constants';
+import { NAMESPACE, STORE_NAME } from '../constants';
 import { updateBusinessTypes, updateRequiredVerificationInfo } from './actions';
 import { Country, RequiredVerificationInfoParams } from './types';
 import { addQueryArgs } from '@wordpress/url';
@@ -40,8 +41,13 @@ export function* getRequiredVerificationInfo(
 		query
 	);
 
+	yield dispatcher( STORE_NAME ).invalidateResolutionForStoreSelector(
+		'updateRequiredVerificationInfo'
+	);
+
 	try {
 		const result = yield apiFetch( { path } );
+
 		yield updateRequiredVerificationInfo( result.data );
 	} catch ( e ) {
 		yield dispatch(

@@ -17,16 +17,15 @@ import { LoadableBlock } from 'components/loadable';
 import { useBusinessTypes, useRequiredVerificationInfo } from 'data/onboarding';
 import strings from '../../strings';
 import Requirements from 'wcpay/onboarding/requirements';
+import { getRequiredVerificationInfo } from 'wcpay/data/onboarding/resolvers';
 
 const AddBusinessInfoTask = () => {
 	const { isCompleted, setCompleted } = useContext( WizardTaskContext );
 	const { businessTypes, isLoading } = useBusinessTypes();
 	const {
-		requirementKeys,
+		requiredFields,
 		isRequirementsLoading,
-		submitRequiredVerificationInfoUpdate,
 	} = useRequiredVerificationInfo( 'US', 'individual', '' );
-
 	const accountCountry = businessTypes.find(
 		( b ) => b.key === wcpaySettings.connect.country
 	);
@@ -50,21 +49,18 @@ const AddBusinessInfoTask = () => {
 	const handleBusinessTypeUpdate = ( type ) => {
 		setBusinessType( type );
 		setBusinessStructure( '' );
-		setCompleted( 0 === type.structures.length );
 		setDisplayStructures( 0 < type.structures.length );
 
-		if ( isCompleted ) {
-			submitRequiredVerificationInfoUpdate( 'US', 'company' );
+		if ( 0 === type.structures.length ) {
+			getRequiredVerificationInfo( { country: 'US', type: 'company' } );
+			setCompleted( true );
 		}
 	};
 
 	const handleBusinessStructureUpdate = ( structure ) => {
 		setBusinessStructure( structure );
+		getRequiredVerificationInfo( { country: 'US', type: 'company' } );
 		setCompleted( true );
-
-		if ( isCompleted ) {
-			submitRequiredVerificationInfoUpdate( 'US', 'non_profit' );
-		}
 	};
 
 	return (
@@ -116,23 +112,32 @@ const AddBusinessInfoTask = () => {
 				</p>
 			</LoadableBlock>
 
-			{ isCompleted && isRequirementsLoading && (
-				<Card size="large" className="wcpay-required-info-card">
-					<CardBody>
-						<p>
-							<b>
-								{ __(
-									"To verify your details, we'll require:",
-									'woocommerce-payments'
-								) }
-							</b>
-							<Requirements
-								type={ businessType }
-								keys={ requirementKeys }
-							/>
-						</p>
-					</CardBody>
-				</Card>
+			{ isCompleted && (
+				<>
+					{ isRequirementsLoading ? (
+						<LoadableBlock
+							isLoading={ isRequirementsLoading }
+							numLines={ 20 }
+						></LoadableBlock>
+					) : (
+						<Card size="large" className="wcpay-required-info-card">
+							<CardBody>
+								<p>
+									<b>
+										{ __(
+											"To verify your details, we'll require:",
+											'woocommerce-payments'
+										) }
+									</b>
+								</p>
+								<Requirements
+									type={ businessType }
+									keys={ requiredFields }
+								/>
+							</CardBody>
+						</Card>
+					) }
+				</>
 			) }
 		</WizardTaskItem>
 	);
