@@ -412,62 +412,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
-	public function test_process_refund_card_present() {
-		$intent_id         = 'pi_xxxxxxxxxxxxx';
-		$charge_id         = 'ch_yyyyyyyyyyyyy';
-		$payment_method_id = 'pm_zzzzzzzzzzzzz';
-
-		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_intent_id', $intent_id );
-		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_payment_method_id', $payment_method_id );
-		$order->save();
-
-		$mock_payment_method = [
-			'id'     => $payment_method_id,
-			'object' => 'payment_method',
-			'type'   => 'card_present',
-		];
-
-		$this->mock_api_client->expects( $this->atLeastOnce() )->method( 'get_payment_method' )->with( $payment_method_id )->will(
-			$this->returnValue( $mock_payment_method )
-		);
-
-		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
-			$this->returnValue(
-				[
-					'id'                       => 're_123456789',
-					'object'                   => 'refund',
-					'amount'                   => 19.99,
-					'balance_transaction'      => 'txn_987654321',
-					'charge'                   => 'ch_121212121212',
-					'created'                  => 1610123467,
-					'payment_intent'           => 'pi_1234567890',
-					'reason'                   => null,
-					'reciept_number'           => null,
-					'source_transfer_reversal' => null,
-					'status'                   => 'succeeded',
-					'transfer_reversal'        => null,
-					'currency'                 => 'eur',
-				]
-			)
-		);
-
-		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
-
-		$notes             = wc_get_order_notes(
-			[
-				'order_id' => $order->get_id(),
-				'limit'    => 1,
-			]
-		);
-		$latest_wcpay_note = $notes[0];
-
-		$this->assertTrue( $result );
-		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
-		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
-	}
-
 	public function test_process_refund_on_uncaptured_payment() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
