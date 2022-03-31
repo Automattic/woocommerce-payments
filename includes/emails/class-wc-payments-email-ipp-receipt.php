@@ -41,6 +41,9 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		 * Constructor.
 		 */
 		public function __construct() {
+			// Call parent constructor.
+			parent::__construct();
+
 			$this->id             = 'new_receipt';
 			$this->customer_email = true;
 			$this->title          = __( 'New receipt', 'woocommerce-payments' );
@@ -60,8 +63,6 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			// Triggers for this email.
 			add_action( 'woocommerce_payments_email_ipp_receipt_notification', [ $this, 'trigger' ], 10, 3 );
 
-			// Call parent constructor.
-			parent::__construct();
 		}
 
 		/**
@@ -95,7 +96,7 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			$this->setup_locale();
 			$email_already_sent = false;
 
-			if ( is_a( $order, 'WC_Order' ) ) {
+			if ( $order instanceof WC_Order ) {
 				$this->object                         = $order;
 				$this->recipient                      = $this->object->get_billing_email();
 				$this->placeholders['{order_date}']   = wc_format_datetime( $this->object->get_date_created() );
@@ -104,23 +105,16 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 				$email_already_sent = $order->get_meta( '_new_receipt_email_sent' );
 			}
 
-			if ( $merchant_settings ) {
-				$this->merchant_settings = $merchant_settings;
-			}
+			$this->merchant_settings = $merchant_settings;
+			$this->charge            = $charge;
 
-			if ( $charge ) {
-				$this->charge = $charge;
-			}
+			if ( 'true' !== $email_already_sent ) {
+				if ( $this->is_enabled() && $this->get_recipient() ) {
+					$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 
-			if ( 'true' === $email_already_sent ) {
-				return;
-			}
-
-			if ( $this->is_enabled() && $this->get_recipient() ) {
-				$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
-
-				$order->update_meta_data( '_new_receipt_email_sent', 'true' );
-				$order->save();
+					$order->update_meta_data( '_new_receipt_email_sent', 'true' );
+					$order->save();
+				}
 			}
 
 			$this->restore_locale();
