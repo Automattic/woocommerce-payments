@@ -325,16 +325,6 @@ class WC_Payments_API_Client {
 			$request['setup_future_usage'] = 'off_session';
 		}
 
-		if ( Buyer_Fingerprinting_Service::is_fraud_prevention_enabled_for_store() ) {
-			$request['metadata']['fraud_prevention_data_available'] = true;
-
-			$request['metadata']['fraud_prevention_data'] = [
-				'payment_intent_id_hash' => Buyer_Fingerprinting_Service::hash_data_for_fraud_prevention( $intention_id ),
-				'payment_method_hash'    => '' !== $selected_upe_payment_type ? Buyer_Fingerprinting_Service::hash_data_for_fraud_prevention( $selected_upe_payment_type ) : null,
-				'shopper_id_hash'        => $customer_id ? Buyer_Fingerprinting_Service::hash_data_for_fraud_prevention( $customer_id ) : null,
-			];
-		}
-
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
