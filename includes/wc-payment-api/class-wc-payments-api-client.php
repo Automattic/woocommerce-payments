@@ -265,9 +265,8 @@ class WC_Payments_API_Client {
 
 		if ( $this->is_fraud_prevention_enabled_for_store() ) {
 			$request['metadata']['fraud_prevention_data_available'] = true;
-			$order               = wc_get_order( $order_id );
-			$billing_email_parts = explode( '@', $order->get_billing_email() );
-			$email_domain        = array_pop( $billing_email_parts );
+			$order        = wc_get_order( $order_id );
+			$email_domain = explode( '@', $order->get_billing_email(), 2 )[1];
 
 			$request['metadata']['fraud_prevention_data'] = [
 				'shopper_ip_hash'        => $this->hash_data_for_fraud_prevention( $order->get_customer_ip_address() ),
