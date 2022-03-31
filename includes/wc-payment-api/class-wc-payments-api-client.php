@@ -838,6 +838,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Initiates disputes export via API.
+	 *
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to search for.
+	 *
+	 * @return array Export summary
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes_export( $filters = [], $user_email = '' ) {
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+
+		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
+	}
+
+	/**
 	 * Upload file and return file object.
 	 *
 	 * @param WP_REST_Request $request request object received.

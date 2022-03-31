@@ -3,10 +3,10 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import wcpayTracks from 'tracks';
 import { dateI18n } from '@wordpress/date';
-import { _n, __ } from '@wordpress/i18n';
+import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
@@ -16,6 +16,8 @@ import {
 	generateCSVFileName,
 } from '@woocommerce/csv-export';
 import classNames from 'classnames';
+import apiFetch from '@wordpress/api-fetch';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies.
@@ -34,8 +36,10 @@ import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
+import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 
 import './style.scss';
+import { title } from 'process';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -129,6 +133,8 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 ];
 
 export const DisputesList = (): JSX.Element => {
+	const [ isDownloading, setIsDownloading ] = useState( false );
+	const { createNotice } = useDispatch( 'core/notices' );
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
 	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
@@ -136,6 +142,7 @@ export const DisputesList = (): JSX.Element => {
 	);
 
 	const headers = getHeaders( getQuery().orderby );
+	const totalRows = disputesSummary.count || 0;
 
 	const rows = disputes.map( ( dispute ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
@@ -241,58 +248,137 @@ export const DisputesList = (): JSX.Element => {
 
 	const downloadable = !! rows.length;
 
-	function onDownload() {
-		const title = __( 'Disputes', 'woocommerce-payments' );
+	const onDownload = async () => {
+		setIsDownloading( true );
+		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 
-		const csvColumns = [
-			{
-				...headers[ 0 ],
-				label: __( 'Dispute Id', 'woocommerce-payments' ),
-			},
-			...headers.slice( 1 ),
-		];
+		if ( 'endpoint' === downloadType ) {
+			const {
+				date_before: dateBefore,
+				date_after: dateAfter,
+				date_between: dateBetween,
+				match,
+				search,
+				type_is: typeIs,
+				type_is_not: typeIsNot,
+			} = getQuery();
 
-		const csvRows = rows.map( ( row ) => {
-			return [
-				...row.slice( 0, 3 ),
+			const isFiltered =
+				!! dateBefore ||
+				!! dateAfter ||
+				!! dateBetween ||
+				!! typeIs ||
+				!! typeIsNot ||
+				!! search;
+
+			const confirmThreshold = 1000;
+			const confirmMessage = sprintf(
+				__(
+					"You are about to export %d disputes. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
+					'woocommerce-payments'
+				),
+				totalRows
+			);
+
+			if (
+				isFiltered ||
+				totalRows < confirmThreshold ||
+				window.confirm( confirmMessage )
+			) {
+				try {
+					const {
+						exported_disputes: exportedDisputes,
+					} = await apiFetch( {
+						path: getDisputesCSV( {
+							dateAfter,
+							dateBefore,
+							dateBetween,
+							match,
+							search,
+							typeIs,
+							typeIsNot,
+						} ),
+						method: 'POST',
+					} );
+
+					createNotice(
+						'success',
+						__(
+							'Your export will be emailed to you.',
+							'woocommerce-payments'
+						)
+					);
+
+					wcpayTracks.recordEvent( 'wcpay_transactions_download', {
+						exported_transactions: exportedDisputes,
+						total_transactions: exportedDisputes,
+						download_type: 'endpoint',
+					} );
+				} catch {
+					createNotice(
+						'error',
+						__(
+							'There was a problem generating your export.',
+							'woocommerce-payments'
+						)
+					);
+				}
+			}
+		} else {
+			const csvColumns = [
 				{
-					...row[ 3 ],
-					value: disputeStatusMapping[ row[ 3 ].value ?? '' ].message,
+					...headers[ 0 ],
+					label: __( 'Dispute Id', 'woocommerce-payments' ),
 				},
-				{
-					...row[ 4 ],
-					value: formatStringValue(
-						( row[ 4 ].value ?? '' ).toString()
-					),
-				},
-				...row.slice( 5, 10 ),
-				{
-					...row[ 10 ],
-					value: dateI18n(
-						'Y-m-d',
-						moment( row[ 10 ].value ).toISOString()
-					),
-				},
-				{
-					...row[ 11 ],
-					value: dateI18n(
-						'Y-m-d / g:iA',
-						moment( row[ 11 ].value ).toISOString()
-					),
-				},
+				...headers.slice( 1 ),
 			];
-		} );
 
-		downloadCSVFile(
-			generateCSVFileName( title, getQuery() ),
-			generateCSVDataFromTable( csvColumns, csvRows )
-		);
+			const csvRows = rows.map( ( row ) => {
+				return [
+					...row.slice( 0, 3 ),
+					{
+						...row[ 3 ],
+						value:
+							disputeStatusMapping[ row[ 3 ].value ?? '' ]
+								.message,
+					},
+					{
+						...row[ 4 ],
+						value: formatStringValue(
+							( row[ 4 ].value ?? '' ).toString()
+						),
+					},
+					...row.slice( 5, 10 ),
+					{
+						...row[ 10 ],
+						value: dateI18n(
+							'Y-m-d',
+							moment( row[ 10 ].value ).toISOString()
+						),
+					},
+					{
+						...row[ 11 ],
+						value: dateI18n(
+							'Y-m-d / g:iA',
+							moment( row[ 11 ].value ).toISOString()
+						),
+					},
+				];
+			} );
 
-		wcpayTracks.recordEvent( 'wcpay_disputes_download', {
-			exported_disputes: csvRows.length,
-			total_disputes: disputesSummary.count,
-		} );
-	}
+			downloadCSVFile(
+				generateCSVFileName( title, getQuery() ),
+				generateCSVDataFromTable( csvColumns, csvRows )
+			);
+
+			wcpayTracks.recordEvent( 'wcpay_disputes_download', {
+				exported_disputes: csvRows.length,
+				total_disputes: disputesSummary.count,
+			} );
+		}
+
+		setIsDownloading( false );
+	};
 
 	let summary;
 	const isDisputesSummaryDataLoaded =
@@ -326,7 +412,7 @@ export const DisputesList = (): JSX.Element => {
 				title={ __( 'Disputes', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
-				totalRows={ disputesSummary.count || 0 }
+				totalRows={ totalRows }
 				headers={ headers }
 				rows={ rows }
 				summary={ summary }
@@ -336,7 +422,7 @@ export const DisputesList = (): JSX.Element => {
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading }
+							isDisabled={ isLoading || isDownloading }
 							onClick={ onDownload }
 						/>
 					),
