@@ -21,11 +21,11 @@ import Requirements from 'wcpay/onboarding/requirements';
 const AddBusinessInfoTask = () => {
 	const { isCompleted, setCompleted } = useContext( WizardTaskContext );
 	const { businessTypes, isLoading } = useBusinessTypes();
-	const { requirementKeys } = useRequiredVerificationInfo(
-		'US',
-		'individual',
-		''
-	);
+	const {
+		requirementKeys,
+		isRequirementsLoading,
+		submitRequiredVerificationInfoUpdate,
+	} = useRequiredVerificationInfo( 'US', 'individual', '' );
 
 	const accountCountry = businessTypes.find(
 		( b ) => b.key === wcpaySettings.connect.country
@@ -34,7 +34,6 @@ const AddBusinessInfoTask = () => {
 	const [ businessType, setBusinessType ] = useState( '' );
 	const [ businessStructure, setBusinessStructure ] = useState( '' );
 	const [ displayStructures, setDisplayStructures ] = useState( false );
-	// const [ requirementKeys, setRequirementKeys ] = useState( [] );
 
 	useEffect( () => {
 		setBusinessCountry( accountCountry );
@@ -55,9 +54,7 @@ const AddBusinessInfoTask = () => {
 		setDisplayStructures( 0 < type.structures.length );
 
 		if ( isCompleted ) {
-			// setRequirementKeys(
-			// 	getRequiredVerificationInfo( 'US', 'individual' )
-			// );
+			submitRequiredVerificationInfoUpdate( 'US', 'company' );
 		}
 	};
 
@@ -65,11 +62,9 @@ const AddBusinessInfoTask = () => {
 		setBusinessStructure( structure );
 		setCompleted( true );
 
-		// if ( isCompleted ) {
-		// 	setRequirementKeys(
-		// 		getRequiredVerificationInfo( 'US', 'individual' )
-		// 	);
-		// }
+		if ( isCompleted ) {
+			submitRequiredVerificationInfoUpdate( 'US', 'non_profit' );
+		}
 	};
 
 	return (
@@ -121,7 +116,7 @@ const AddBusinessInfoTask = () => {
 				</p>
 			</LoadableBlock>
 
-			{ isCompleted && (
+			{ isCompleted && isRequirementsLoading && (
 				<Card size="large" className="wcpay-required-info-card">
 					<CardBody>
 						<p>

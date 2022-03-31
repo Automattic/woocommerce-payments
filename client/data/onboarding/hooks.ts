@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 import { RequiredVerificationInfoParams } from './types';
 
@@ -25,8 +25,8 @@ export const useRequiredVerificationInfo = (
 	country: string,
 	type: string,
 	structure: string
-): unknown =>
-	useSelect( ( select ) => {
+): unknown => {
+	const { requiredFields, isRequirementsLoading } = useSelect( ( select ) => {
 		const { getRequiredVerificationInfo, isResolving } = select(
 			STORE_NAME
 		);
@@ -42,6 +42,18 @@ export const useRequiredVerificationInfo = (
 
 		return {
 			requiredFields: getRequiredVerificationInfo( query ),
-			isLoading: isResolving( 'getRequiredVerificationInfo', query ),
+			isRequirementsLoading: isResolving(
+				'getRequiredVerificationInfo',
+				query
+			),
 		};
-	}, [] );
+	} );
+
+	const { submitRequiredVerificationInfoUpdate } = useDispatch( STORE_NAME );
+
+	return {
+		requiredFields,
+		isRequirementsLoading,
+		submitRequiredVerificationInfoUpdate,
+	};
+};
