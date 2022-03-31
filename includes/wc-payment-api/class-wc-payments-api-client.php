@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
@@ -264,17 +265,9 @@ class WC_Payments_API_Client {
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
 
-		if ( $this->is_fraud_prevention_enabled_for_store() ) {
+		if ( Buyer_Fingerprinting_Service::is_fraud_prevention_enabled_for_store() ) {
 			$request['metadata']['fraud_prevention_data_available'] = true;
-			$order        = wc_get_order( $order_id );
-			$email_domain = explode( '@', $order->get_billing_email(), 2 )[1];
-
-			$request['metadata']['fraud_prevention_data'] = [
-				'shopper_ip_hash'        => $this->hash_data_for_fraud_prevention( $order->get_customer_ip_address() ),
-				'shopper_useragent_hash' => $this->hash_data_for_fraud_prevention( $order->get_customer_user_agent() ),
-				'shopper_email_hash'     => $this->hash_data_for_fraud_prevention( $order->get_billing_email() ),
-				'shopper_email_domain'   => $this->hash_data_for_fraud_prevention( $email_domain ),
-			];
+			$request['metadata']['fraud_prevention_data']           = Buyer_Fingerprinting_Service::get_hashed_data_for_order( $order_id );
 		}
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
@@ -332,13 +325,13 @@ class WC_Payments_API_Client {
 			$request['setup_future_usage'] = 'off_session';
 		}
 
-		if ( $this->is_fraud_prevention_enabled_for_store() ) {
+		if ( Buyer_Fingerprinting_Service::is_fraud_prevention_enabled_for_store() ) {
 			$request['metadata']['fraud_prevention_data_available'] = true;
 
 			$request['metadata']['fraud_prevention_data'] = [
-				'payment_intent_id_hash' => $this->hash_data_for_fraud_prevention( $intention_id ),
-				'payment_method_hash'    => '' !== $selected_upe_payment_type ? $this->hash_data_for_fraud_prevention( $selected_upe_payment_type ) : null,
-				'shopper_id_hash'        => $customer_id ? $this->hash_data_for_fraud_prevention( $customer_id ) : null,
+				'payment_intent_id_hash' => Buyer_Fingerprinting_Service::hash_data_for_fraud_prevention( $intention_id ),
+				'payment_method_hash'    => '' !== $selected_upe_payment_type ? Buyer_Fingerprinting_Service::hash_data_for_fraud_prevention( $selected_upe_payment_type ) : null,
+				'shopper_id_hash'        => $customer_id ? Buyer_Fingerprinting_Service::hash_data_for_fraud_prevention( $customer_id ) : null,
 			];
 		}
 
@@ -2180,26 +2173,5 @@ class WC_Payments_API_Client {
 	 */
 	public function get_loans() : array {
 		return $this->request( [], self::CAPITAL_API . '/loans', self::GET );
-	}
-
-	/**
-	 * Hashes customer data for the fraud prevention.
-	 *
-	 * @param string $data The data you want to hash.
-	 *
-	 * @return string Hashed data.
-	 */
-	public function hash_data_for_fraud_prevention( $data ) {
-		return hash( 'sha512', $data );
-	}
-
-
-	/**
-	 * Checks if fraud prevention is enabled for this store.
-	 *
-	 * @return bool True if store has fraud prevention enabled.
-	 */
-	public function is_fraud_prevention_enabled_for_store() {
-		return Fraud_Prevention_Service::get_instance()->is_enabled();
 	}
 }
