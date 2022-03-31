@@ -12,7 +12,7 @@ import { Card, CardBody } from '@wordpress/components';
  */
 import WizardTaskItem from 'additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
-import OnboardingSelectControl from 'components/onboarding-select-control';
+import CustomSelectControl from 'components/custom-select-control';
 import { LoadableBlock } from 'components/loadable';
 import { useBusinessTypes, useRequiredVerificationInfo } from 'data/onboarding';
 import strings from '../../strings';
@@ -26,17 +26,19 @@ const AddBusinessInfoTask = () => {
 		requiredFields,
 		isRequirementsLoading,
 	} = useRequiredVerificationInfo( 'US', 'individual', '' );
-	const accountCountry = businessTypes.find(
-		( b ) => b.key === wcpaySettings.connect.country
-	);
-	const [ businessCountry, setBusinessCountry ] = useState( accountCountry );
+
+	const [ businessCountry, setBusinessCountry ] = useState( '' );
 	const [ businessType, setBusinessType ] = useState( '' );
 	const [ businessStructure, setBusinessStructure ] = useState( '' );
 	const [ displayStructures, setDisplayStructures ] = useState( false );
 
 	useEffect( () => {
-		setBusinessCountry( accountCountry );
-	}, [ accountCountry ] );
+		setBusinessCountry(
+			businessTypes.find(
+				( country ) => country.key === wcpaySettings.connect.country
+			)
+		);
+	}, [ businessTypes ] );
 
 	const handleBusinessCountryUpdate = ( country ) => {
 		setBusinessCountry( country );
@@ -69,12 +71,11 @@ const AddBusinessInfoTask = () => {
 			index={ 1 }
 			title={ strings.onboarding.heading }
 		>
-			<p className="wcpay-wizard-task__description-element subheading is-muted-color">
+			<p className="complete-business-info-task__subheading">
 				{ strings.onboarding.description }
 			</p>
-			<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-				<OnboardingSelectControl
-					className="wcpay-onboarding-select"
+			<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
+				<CustomSelectControl
 					label={ __( 'Country', 'woocommerce-payments' ) }
 					value={ businessCountry }
 					onChange={ ( { selectedItem } ) =>
@@ -82,36 +83,51 @@ const AddBusinessInfoTask = () => {
 					}
 					options={ businessTypes }
 				/>
+				<p className="complete-business-info-task__description">
+					{ strings.onboarding.countryDescription }
+				</p>
 				{ businessCountry && (
-					<OnboardingSelectControl
-						className="wcpay-onboarding-select"
+					<CustomSelectControl
 						label={ __( 'Business type', 'woocommerce-payments' ) }
 						value={ businessType }
+						options={ businessCountry.types }
+						placeholder={ __(
+							'What type of business do you run?',
+							'woocommerce-payments'
+						) }
 						onChange={ ( { selectedItem } ) =>
 							handleBusinessTypeUpdate( selectedItem )
 						}
-						options={ businessCountry.types }
-					/>
+					>
+						{ ( item ) => (
+							<div>
+								<div>{ item.name }</div>
+								<div className="complete-business-info-task__option-description">
+									{ item.description }
+								</div>
+							</div>
+						) }
+					</CustomSelectControl>
 				) }
 				{ businessType && displayStructures && (
-					<OnboardingSelectControl
-						className="wcpay-onboarding-select"
+					<CustomSelectControl
 						label={ __(
 							'Business Structure',
 							'woocommerce-payments'
 						) }
 						value={ businessStructure }
+						options={ businessType.structures }
+						placeholder={ __(
+							'What’s the legal structure of your business?',
+							'woocommerce-payments'
+						) }
 						onChange={ ( { selectedItem } ) =>
 							handleBusinessStructureUpdate( selectedItem )
 						}
-						options={ businessType.structures }
 					/>
 				) }
-				<p className="wcpay-wizard-task__description-element is-muted-color">
-					{ strings.onboarding.countryDescription }
-				</p>
 			</LoadableBlock>
-
+			<LoadableBlock isLoading={ isLoading } numLines={ 4 } />
 			{ isCompleted && (
 				<>
 					{ isRequirementsLoading ? (
