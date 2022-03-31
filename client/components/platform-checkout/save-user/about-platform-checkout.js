@@ -10,7 +10,7 @@ const AboutPlatformCheckout = () => {
 		<div className="about-platform-checkout">
 			{ interpolateComponents( {
 				mixedString: __(
-					"Enter your phone number to save your checkout information. You'll get {{strong}}secure single-click checkouts{{/strong}} here, and at 1,000s of other stores using Platform Checkout.",
+					"Enter your phone number to save your checkout information. You'll get {{strong}}secure single-click checkouts{{/strong}} here, and at 1,000s of other stores using WooPay.",
 					'woocommerce-payments'
 				),
 				components: { strong: <b /> },

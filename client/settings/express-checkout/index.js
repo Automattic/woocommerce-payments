@@ -55,10 +55,7 @@ const ExpressCheckout = () => {
 								<WooIcon />
 							</div>
 							<div className="express-checkout__label">
-								{ __(
-									'Platform Checkout',
-									'woocommerce-payments'
-								) }
+								{ __( 'WooPay', 'woocommerce-payments' ) }
 							</div>
 							<div className="express-checkout__link">
 								<a

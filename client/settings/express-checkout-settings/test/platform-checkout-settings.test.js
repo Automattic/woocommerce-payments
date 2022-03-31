@@ -74,7 +74,7 @@ describe( 'PlatformCheckoutSettings', () => {
 
 		expect( updateIsPlatformCheckoutEnabledHandler ).not.toHaveBeenCalled();
 
-		userEvent.click( screen.getByLabelText( /Enable Platform Checkout/ ) );
+		userEvent.click( screen.getByLabelText( /Enable WooPay/ ) );
 		expect( updateIsPlatformCheckoutEnabledHandler ).toHaveBeenCalledWith(
 			false
 		);
