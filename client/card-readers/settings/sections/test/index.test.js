@@ -33,10 +33,7 @@ describe( 'Card Reader Business Details section', () => {
 
 	test( 'Renders Business section', () => {
 		render(
-			<BusinessDetailsSection
-				isDisabled={ false }
-				setDisabled={ setDisabledMock }
-			/>
+			<BusinessDetailsSection setSaveDisabled={ setDisabledMock } />
 		);
 
 		const heading = screen.queryByRole( 'heading', {
@@ -47,10 +44,7 @@ describe( 'Card Reader Business Details section', () => {
 
 	test( 'Renders Business settings', () => {
 		render(
-			<BusinessDetailsSection
-				isDisabled={ false }
-				setDisabled={ setDisabledMock }
-			/>
+			<BusinessDetailsSection setSaveDisabled={ setDisabledMock } />
 		);
 
 		const name = screen.getByLabelText( 'Business name' );
