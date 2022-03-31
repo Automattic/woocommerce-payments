@@ -20,5 +20,9 @@ declare const wcpaySettings: {
 		country: string;
 		availableStates: Array< Record< string, string > >;
 	};
+	accountEmail: string;
 	currentUserEmail: string;
+	zeroDecimalCurrencies: string[];
 };
+
+declare const wcTracks: any;
