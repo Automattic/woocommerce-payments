@@ -19,6 +19,44 @@ import {
 	CachedDispute,
 } from 'wcpay/types/disputes';
 
+jest.mock( '@woocommerce/csv-export', () => {
+	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
+
+	return {
+		...actualModule,
+		downloadCSVFile: jest.fn(),
+	};
+} );
+
+// Workaround for mocking @wordpress/data.
+// See https://github.com/WordPress/gutenberg/issues/15031
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+} ) );
+
+jest.mock( 'data/index', () => ( {
+	useDisputes: jest.fn(),
+	useDisputesSummary: jest.fn(),
+} ) );
+
+const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
+	typeof downloadCSVFile
+>;
+
+const mockUseDisputes = useDisputes as jest.MockedFunction<
+	typeof useDisputes
+>;
+
+const mockUseDisputesSummary = useDisputesSummary as jest.MockedFunction<
+	typeof useDisputesSummary
+>;
+
 declare const global: {
 	wcpaySettings: {
 		zeroDecimalCurrencies: string[];
@@ -37,32 +75,6 @@ declare const global: {
 		};
 	};
 };
-
-jest.mock( 'data/index', () => ( {
-	useDisputes: jest.fn(),
-	useDisputesSummary: jest.fn(),
-} ) );
-
-const mockUseDisputes = useDisputes as jest.MockedFunction<
-	typeof useDisputes
->;
-
-const mockUseDisputesSummary = useDisputesSummary as jest.MockedFunction<
-	typeof useDisputesSummary
->;
-
-jest.mock( '@woocommerce/csv-export', () => {
-	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
-
-	return {
-		...actualModule,
-		downloadCSVFile: jest.fn(),
-	};
-} );
-
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
 
 const mockDisputes = [
 	{
@@ -200,14 +212,6 @@ describe( 'Disputes list', () => {
 					count: 25,
 				},
 			} );
-		} );
-
-		afterEach( () => {
-			jest.resetAllMocks();
-		} );
-
-		afterAll( () => {
-			jest.restoreAllMocks();
 		} );
 
 		test( 'should render expected columns in CSV when the download button is clicked ', () => {
