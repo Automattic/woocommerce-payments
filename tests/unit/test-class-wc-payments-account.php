@@ -32,8 +32,8 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Set the request as if the user was in the Payments onboarding page so the "wp_redirect(); exit();" code doesn't run.
 		$_GET = [
@@ -49,11 +49,11 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 		delete_transient( WC_Payments_Account::ON_BOARDING_DISABLED_TRANSIENT );
 		unset( $_GET );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {
@@ -197,6 +197,60 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		// Second call, on-boarding re-enabled.
 		$this->wcpay_account->maybe_redirect_to_onboarding();
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
+	}
+
+	public function test_maybe_redirect_to_wcpay_connect_do_redirect() {
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Set the redirection parameter.
+		$_GET['wcpay-connect-redirect'] = 1;
+
+		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
+		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
+			->setMethods( [ 'redirect_to' ] )
+			->setConstructorArgs( [ $this->mock_api_client ] )
+			->getMock();
+
+		$mock_wcpay_account->expects( $this->once() )->method( 'redirect_to' );
+
+		$this->assertTrue( $mock_wcpay_account->maybe_redirect_to_wcpay_connect() );
+	}
+
+	public function test_maybe_redirect_to_wcpay_connect_unauthorized_user() {
+		// Test as an editor user.
+		$editor_user = $this->factory()->user->create( [ 'role' => 'editor' ] );
+		wp_set_current_user( $editor_user );
+
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_wcpay_connect() );
+	}
+
+	public function test_maybe_redirect_to_wcpay_connect_doing_ajax() {
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Set the redirection parameter.
+		$_GET['wcpay-connect-redirect'] = 1;
+
+		// Simulate we're in an AJAX request.
+		add_filter( 'wp_doing_ajax', '__return_true' );
+
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_wcpay_connect() );
+
+		// Cleaning up.
+		remove_filter( 'wp_doing_ajax', '__return_true' );
+	}
+
+	public function test_maybe_redirect_to_wcpay_connect_wrong_page() {
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Set the redirection parameter.
+		$_GET['wcpay-connect-redirect'] = 1;
+
+		$_GET['path'] = '/payments/overview';
+
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_wcpay_connect() );
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected() {
@@ -407,6 +461,47 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 
 		remove_filter( 'wcpay_dev_mode', '__return_true' );
+	}
+
+	public function test_is_account_rejected_returns_true() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_test_',
+				'test_publishable_key'     => 'pk_live_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'status'                   => 'rejected.tos',
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_account_rejected() );
+	}
+
+	public function test_is_account_rejected_returns_false_when_not_rejected() {
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_test_',
+				'test_publishable_key'     => 'pk_live_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'status'                   => 'complete',
+			]
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_account_rejected() );
+	}
+
+	public function test_is_account_rejected_returns_false_on_error() {
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_account_data' )
+			->willThrowException( new API_Exception( 'test', 'wcpay_mock', 500 ) );
+
+		$this->assertFalse( $this->wcpay_account->is_account_rejected() );
 	}
 
 	public function test_refresh_account_data_with_empty_cache() {
@@ -719,7 +814,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			'is_live'                  => true,
 			'statement_descriptor'     => 'WCPAY',
 		];
-
 		add_option(
 			WC_Payments_Account::ACCOUNT_OPTION,
 			[
@@ -750,7 +844,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_note() {
-
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
@@ -773,7 +866,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_note_not_eligible() {
-
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
@@ -791,7 +883,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function test_handle_instant_deposits_inbox_reminder() {
-
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
@@ -815,6 +906,137 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		// So we make sure the two are different.
 		$this->assertNotSame( $first_note, $second_note );
+	}
+
+	public function loan_approved_no_action_account_states() {
+		return [
+			[ [] ],
+			[ [ 'capital' => [] ] ],
+			[ [ 'capital' => [ 'has_active_loan' => false ] ] ],
+		];
+	}
+
+	/**
+	 * @dataProvider loan_approved_no_action_account_states
+	 */
+	public function test_handle_loan_approved_inbox_note_not_created( $account ) {
+
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$this->wcpay_account->handle_loan_approved_inbox_note( $account );
+		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+	}
+
+	public function get_cached_account_loan_data() {
+		return [
+			'capital' => [ 'has_active_loan' => true ],
+		];
+	}
+
+	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_throws_exception() {
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_active_loan_summary' )
+			->willThrowException( new API_Exception( 'test_exception', 0, 400 ) );
+		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
+		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+	}
+
+	public function test_handle_loan_approved_inbox_note_not_created_when_loan_summary_returns_invalid_data() {
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_active_loan_summary' )
+			->willReturn( [ 'test' ] );
+		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
+		$note_id = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+	}
+
+	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data() {
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$advance_amount           = 1234567;
+		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100 ) ) ); // Match it with note content sanitization process.
+		$time                     = time();
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_active_loan_summary' )
+			->willReturn(
+				[
+					'details' => [
+						'advance_amount'      => $advance_amount,
+						'advance_paid_out_at' => $time,
+						'currency'            => 'USD',
+					],
+				]
+			);
+
+		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
+		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
+		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$data_store = WC_Data_Store::load( 'admin-note' );
+		$notes      = $data_store->get_notes_with_name( $note_id );
+		$this->assertCount( 1, $notes );
+		$note      = $notes_class::get_note( $notes[0] );
+		$note_data = (array) $note->get_content_data();
+		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
+		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
+		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
+		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
+	}
+
+	public function test_handle_loan_approved_inbox_note_created_when_loan_summary_returns_valid_data_with_different_currency() {
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$advance_amount           = 1234567;
+		$formatted_advance_amount = wp_kses_normalize_entities( wp_strip_all_tags( wc_price( $advance_amount / 100, [ 'currency' => 'CHF' ] ) ) ); // Match it with note content sanitization process.
+		$time                     = time();
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_active_loan_summary' )
+			->willReturn(
+				[
+					'details' => [
+						'advance_amount'      => $advance_amount,
+						'advance_paid_out_at' => $time,
+						'currency'            => 'CHF',
+					],
+				]
+			);
+
+		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
+		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
+		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
+		$data_store = WC_Data_Store::load( 'admin-note' );
+		$notes      = $data_store->get_notes_with_name( $note_id );
+		$this->assertCount( 1, $notes );
+		$note      = $notes_class::get_note( $notes[0] );
+		$note_data = (array) $note->get_content_data();
+		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
+		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
+		$this->assertEquals( $time, $note_data['advance_paid_out_at'] );
+		$this->assertStringContainsString( $formatted_advance_amount, $note->get_content() );
 	}
 
 	/**

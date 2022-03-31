@@ -138,7 +138,7 @@ class WC_Payments_Explicit_Price_Formatter {
 		if ( ! empty( $currency_code ) ) {
 			$price_to_check = html_entity_decode( wp_strip_all_tags( $price ) );
 
-			if ( ! str_contains( $price_to_check, trim( $currency_code ) ) ) {
+			if ( false === strpos( $price_to_check, trim( $currency_code ) ) ) {
 				return $price . ' ' . $currency_code;
 			}
 		}
@@ -157,7 +157,7 @@ class WC_Payments_Explicit_Price_Formatter {
 		if ( false === static::should_output_explicit_price() ) {
 			return $args;
 		}
-		if ( ! str_contains( $args['price_format'], $args['currency'] ) ) {
+		if ( false === strpos( $args['price_format'], $args['currency'] ) ) {
 			$args['price_format'] = sprintf( '%s&nbsp;%s', $args['price_format'], $args['currency'] );
 		}
 		return $args;

@@ -66,6 +66,7 @@ const TransactionsAndDeposits = () => {
 				<CheckboxControl
 					checked={ isManualCaptureEnabled }
 					onChange={ setIsManualCaptureEnabled }
+					data-testid={ 'capture-later-checkbox' }
 					label={ __(
 						'Issue an authorization on checkout, and capture later',
 						'woocommerce-payments'
@@ -110,6 +111,7 @@ const TransactionsAndDeposits = () => {
 						value={ accountStatementDescriptor }
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
+						data-testid={ 'store-name-bank-statement' }
 					/>
 					<span className="input-help-text" aria-hidden="true">
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }

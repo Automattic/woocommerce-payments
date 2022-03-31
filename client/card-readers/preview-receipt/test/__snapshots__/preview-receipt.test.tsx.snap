@@ -1,0 +1,78 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PreviewReceipt should render error when fetch from API fails 1`] = `
+<div>
+  <div
+    class="wcpay-card-readers-preview-receipt-page woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-card__body is-size-small css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="components-notice is-error"
+        >
+          <div
+            class="components-notice__content"
+          >
+            There was a problem generating the receipt preview. Please try again later.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PreviewReceipt should render loading block while fetching from API 1`] = `
+<div>
+  <div
+    class="wcpay-card-readers-preview-receipt-page woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-card__body is-size-small css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <p>
+          Generating preview.
+        </p>
+        <span
+          aria-busy="true"
+          class="is-loadable-placeholder is-block"
+        >
+          <p
+            style="line-height: 25;"
+          >
+            Block placeholder
+          </p>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`PreviewReceipt should render preview when fetch from API succeeds 1`] = `
+<div>
+  <div
+    class="wcpay-card-readers-preview-receipt-page woocommerce-payments-page is-narrow"
+  >
+    <div
+      class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-card__body is-size-small css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <iframe
+          class="card-readers-preview-receipt__preview"
+          title="Preview Receipt"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;

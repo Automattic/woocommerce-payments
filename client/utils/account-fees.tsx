@@ -222,19 +222,19 @@ export const formatAccountFeesDescription = (
 		...customFormats,
 	};
 
+	// Some payment methods doesn't have base percentage rate. In this case, the lowest rate will be shown as a start value
+	let displayFeePercentageRate = baseFee.percentage_rate;
+	if ( displayFeePercentageRate <= 0 ) {
+		displayFeePercentageRate =
+			additionalFee.percentage_rate < fxFee.percentage_rate
+				? additionalFee.percentage_rate
+				: fxFee.percentage_rate;
+	}
 	const feeDescription = sprintf(
 		formats.fee,
-		formatFee(
-			baseFee.percentage_rate +
-				additionalFee.percentage_rate +
-				fxFee.percentage_rate
-		),
-		formatCurrency(
-			baseFee.fixed_rate + additionalFee.fixed_rate + fxFee.fixed_rate,
-			baseFee.currency
-		)
+		formatFee( displayFeePercentageRate ),
+		formatCurrency( baseFee.fixed_rate, baseFee.currency )
 	);
-
 	const isFormattingWithDiscount =
 		currentFee.percentage_rate !== baseFee.percentage_rate ||
 		currentFee.fixed_rate !== baseFee.fixed_rate ||
@@ -292,7 +292,7 @@ export const formatMethodFeesDescription = (
 	}
 
 	/* translators: %1: Percentage part of the fee. %2: Fixed part of the fee */
-	const format = __( '%1$f%% + %2$s', 'woocommerce-payments' );
+	const format = __( 'From %1$f%% + %2$s', 'woocommerce-payments' );
 
 	return formatAccountFeesDescription( methodFees, {
 		fee: format,
@@ -316,6 +316,8 @@ export const getTransactionsPaymentMethodName = (
 			return __( 'Card transactions', 'woocommerce-payments' );
 		case 'card_present':
 			return __( 'In-person transactions', 'woocommerce-payments' );
+		case 'eps':
+			return __( 'EPS transactions', 'woocommerce-payments' );
 		case 'giropay':
 			return __( 'GiroPay transactions', 'woocommerce-payments' );
 		case 'ideal':

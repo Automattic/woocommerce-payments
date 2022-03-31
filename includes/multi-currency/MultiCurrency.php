@@ -200,7 +200,7 @@ class MultiCurrency {
 		$this->compatibility           = new Compatibility( $this, $this->utils );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
-		if ( is_admin() ) {
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 			add_action( 'admin_head', [ $this, 'set_client_format_and_rounding_precision' ] );
@@ -324,6 +324,8 @@ class MultiCurrency {
 		// Output the settings JS and CSS only on the settings page.
 		if ( 'wcpay_multi_currency' === $current_tab ) {
 			$this->register_admin_scripts();
+			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
+			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 		}
@@ -361,8 +363,8 @@ class MultiCurrency {
 			return $cache_data;
 		}
 
-		// If connection to server cannot be established, or if Stripe is not connected, return expired data or null.
-		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_stripe_connected() ) {
+		// If connection to server cannot be established, or if Stripe is not connected, or if the account is rejected, return expired data or null.
+		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_stripe_connected() || $this->payments_account->is_account_rejected() ) {
 			return $cache_data ?? null;
 		}
 
@@ -848,7 +850,13 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public static function add_woo_admin_notes() {
+		// Do not try to add notes on ajax requests to improve their performance.
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			NoteMultiCurrencyAvailable::set_account( WC_Payments::get_account_service() );
 			NoteMultiCurrencyAvailable::possibly_add_note();
 		}
 	}

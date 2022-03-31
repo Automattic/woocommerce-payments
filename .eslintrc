@@ -32,6 +32,7 @@
 			"typescript": {}
 		}
 	},
+	"ignorePatterns": [ "docs/rest-api/source/**/*.js" ],
 	"rules": {
 		"camelcase": [
 			"error",
@@ -128,7 +129,9 @@
 				"no-use-before-define": "off",
 				"@typescript-eslint/no-use-before-define": [ "error" ],
 				"wpcalypso/jsx-classname-namespace": "off",
-				"react/react-in-jsx-scope": "error"
+				"react/react-in-jsx-scope": "error",
+				"no-shadow": "off",
+				"@typescript-eslint/no-shadow": "error"
 			}
 		}
 	]

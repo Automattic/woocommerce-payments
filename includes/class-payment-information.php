@@ -64,11 +64,18 @@ class Payment_Information {
 	private $payment_type;
 
 	/**
-	 * Indicates whether the payment method should be saved.
+	 * Indicates whether the payment method should be saved to the store.
 	 *
 	 * @var bool
 	 */
-	private $save_payment_method = false;
+	private $save_payment_method_to_store = false;
+
+	/**
+	 * Indicates whether the payment method should be saved to the platform.
+	 *
+	 * @var bool
+	 */
+	private $save_payment_method_to_platform = false;
 
 	/**
 	 * Indicates whether user is changing payment method for subscriptions order.
@@ -276,19 +283,35 @@ class Payment_Information {
 	}
 
 	/**
-	 * Forces the payment method to be saved when the payment gets processed.
+	 * Forces the payment method to be saved to merchant store when the payment gets processed.
 	 */
-	public function must_save_payment_method() {
-		$this->save_payment_method = true;
+	public function must_save_payment_method_to_store() {
+		$this->save_payment_method_to_store = true;
 	}
 
 	/**
-	 * Indicates whether the payment method needs be saved for later usage.
+	 * Forces the payment method to be saved to platform when the payment gets processed.
+	 */
+	public function must_save_payment_method_to_platform() {
+		$this->save_payment_method_to_platform = true;
+	}
+
+	/**
+	 * Indicates whether the payment method needs to be saved to the store for later usage.
 	 *
 	 * @return bool The flag.
 	 */
-	public function should_save_payment_method() {
-		return ! $this->is_using_saved_payment_method() && $this->save_payment_method;
+	public function should_save_payment_method_to_store() {
+		return ! $this->is_using_saved_payment_method() && $this->save_payment_method_to_store;
+	}
+
+	/**
+	 * Indicates whether the payment method needs to be saved to the platform for later usage.
+	 *
+	 * @return bool The flag.
+	 */
+	public function should_save_payment_method_to_platform() {
+		return ! $this->is_using_saved_payment_method() && $this->save_payment_method_to_platform;
 	}
 
 	/**

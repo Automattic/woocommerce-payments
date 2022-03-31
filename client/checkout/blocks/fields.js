@@ -11,6 +11,7 @@ import { useEffect, useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import './style.scss';
 import generatePaymentMethod from './generate-payment-method.js';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
 import { usePaymentCompleteHandler } from './hooks';

@@ -103,9 +103,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
                 type="file"
               />
             </div>
-            <span
-              class="upload-message"
-            />
+            
           </div>
         </div>
       </div>
@@ -281,9 +279,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
                 type="file"
               />
             </div>
-            <span
-              class="upload-message"
-            />
+            
           </div>
         </div>
       </div>
@@ -437,6 +433,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
               >
                 <select
                   class="components-select-control__input css-1hft3f5-Select e12x0a390"
+                  data-testid="dispute-challenge-product-type-selector"
                   id="inspector-select-control-0"
                 >
                   <option

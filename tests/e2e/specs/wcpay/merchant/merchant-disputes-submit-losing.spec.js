@@ -60,9 +60,12 @@ describe( 'Disputes > Submit losing dispute', () => {
 		);
 
 		// Get the link to the dispute details
-		const disputeDetailsLink = await page.$eval(
-			'div.woocommerce-timeline-item__body a',
-			( anchor ) => anchor.getAttribute( 'href' )
+		const disputeDetailsElement = await page.$(
+			'[data-testid="view-dispute-button"]'
+		);
+		const disputeDetailsLink = await page.evaluate(
+			( anchor ) => anchor.getAttribute( 'href' ),
+			disputeDetailsElement
 		);
 
 		// Open the dispute details
@@ -116,9 +119,12 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
 		// Get the link to the dispute details
-		const disputeDetailsLink = await page.$eval(
-			'div.woocommerce-timeline-item__body a',
-			( anchor ) => anchor.getAttribute( 'href' )
+		const disputeDetailsElement = await page.$(
+			'[data-testid="view-dispute-button"]'
+		);
+		const disputeDetailsLink = await page.evaluate(
+			( anchor ) => anchor.getAttribute( 'href' ),
+			disputeDetailsElement
 		);
 
 		// Open the dispute details

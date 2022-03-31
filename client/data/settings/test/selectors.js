@@ -19,6 +19,8 @@ import {
 	getAccountBrandingIcon,
 	getAccountBrandingPrimaryColor,
 	getAccountBrandingSecondaryColor,
+	getIsPlatformCheckoutEnabled,
+	getPlatformCheckoutCustomMessage,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -208,6 +210,54 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: { data: {} } } ],
 		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
 			expect( getPaymentRequestLocations( state ) ).toEqual( [] );
+		} );
+	} );
+
+	describe( 'getIsPlatformCheckoutEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_platform_checkout_enabled', () => {
+			const state = {
+				settings: {
+					data: {
+						is_platform_checkout_enabled: true,
+					},
+				},
+			};
+
+			expect( getIsPlatformCheckoutEnabled( state ) ).toBeTruthy();
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns false if missing (tested state: %j)', ( state ) => {
+			expect( getIsPlatformCheckoutEnabled( state ) ).toBeFalsy();
+		} );
+	} );
+
+	describe( 'getPlatformCheckoutCustomMessage()', () => {
+		test( 'returns the value of state.settings.data.platform_checkout_custom_message', () => {
+			const state = {
+				settings: {
+					data: {
+						platform_checkout_custom_message: 'test',
+					},
+				},
+			};
+
+			expect( getPlatformCheckoutCustomMessage( state ) ).toEqual(
+				'test'
+			);
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
+			expect( getPlatformCheckoutCustomMessage( state ) ).toEqual( '' );
 		} );
 	} );
 

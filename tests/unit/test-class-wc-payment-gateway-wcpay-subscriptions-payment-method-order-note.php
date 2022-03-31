@@ -54,14 +54,28 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	private $mock_action_scheduler_service;
 
 	/**
+	 * Mock Session_Rate_Limiter.
+	 *
+	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_session_rate_limiter;
+
+	/**
+	 * Mock WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_order_service;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
 	 */
 	private $wcpay_account;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		wp_set_current_user( self::USER_ID );
 
@@ -83,12 +97,22 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_session_rate_limiter = $this->getMockBuilder( 'Session_Rate_Limiter' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->mock_order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->wcpay_account,
 			$this->mock_customer_service,
 			$this->mock_token_service,
-			$this->mock_action_scheduler_service
+			$this->mock_action_scheduler_service,
+			$this->mock_session_rate_limiter,
+			$this->mock_order_service
 		);
 
 		$this->renewal_order = WC_Helper_Order::create_order( self::USER_ID );
@@ -159,8 +183,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
-		$this->assertContains( $this->last4digits[1], $old_payment_method_title_modified );
-		$this->assertContains( $this->last4digits[2], $new_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[2], $new_payment_method_title_modified );
 	}
 
 	public function test_failed_renewal_using_new_payment_method() {
@@ -185,8 +209,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			);
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
-		$this->assertContains( $this->last4digits[1], $old_payment_method_title_modified );
-		$this->assertContains( $this->last4digits[3], $new_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[3], $new_payment_method_title_modified );
 	}
 
 	/**
@@ -209,8 +233,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
-		$this->assertContains( $this->last4digits[1], $old_payment_method_title_modified );
-		$this->assertContains( $this->last4digits[2], $new_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[2], $new_payment_method_title_modified );
 	}
 
 	/**
@@ -240,8 +264,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			);
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
-		$this->assertContains( $this->last4digits[1], $old_payment_method_title_modified );
-		$this->assertContains( $this->last4digits[3], $new_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[3], $new_payment_method_title_modified );
 	}
 
 	/**
@@ -291,8 +315,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $mock_subscription );
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $mock_subscription );
-		$this->assertContains( $this->last4digits[1], $old_payment_method_title_modified );
-		$this->assertContains( $this->last4digits[3], $new_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[3], $new_payment_method_title_modified );
 
 		// If previous method tokens are unavailable, payment method title
 		// should not change.
@@ -321,7 +345,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->subscription->set_payment_method( $new_payment_method );
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $this->subscription );
 		$new_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_new_payment_method_title', $new_payment_method_title, $new_payment_method, $this->subscription );
-		$this->assertContains( $this->last4digits[1], $old_payment_method_title_modified );
+		$this->assertStringContainsString( $this->last4digits[1], $old_payment_method_title_modified );
 		$this->assertEquals( $new_payment_method_title, $new_payment_method_title_modified );
 	}
 

@@ -8,27 +8,32 @@
     "minimum-stability": "dev",
     "config": {
       "platform": {
-        "php": "7.1"
-      }
+        "php": "7.3"
+      },
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "composer/package-versions-deprecated": true,
+            "composer/installers": true,
+            "automattic/jetpack-autoloader": true,
+            "cweagans/composer-patches": true,
+            "kalessil/production-dependencies-guard": true
+        }
     },
     "require": {
       "php": "7.*",
       "ext-json": "*",
-      "automattic/jetpack-connection": "1.30.13",
-      "automattic/jetpack-config": "1.5.3",
-      "automattic/jetpack-autoloader": "2.10.10",
+      "automattic/jetpack-connection": "1.36.0",
+      "automattic/jetpack-config": "1.6.1",
+      "automattic/jetpack-autoloader": "2.10.11",
+      "automattic/jetpack-identity-crisis": "0.7.0",
+      "automattic/jetpack-sync": "1.29.2",
+      "automattic/jetpack-tracking": "1.14.1",
       "myclabs/php-enum": "1.7.7",
-      "woocommerce/subscriptions-core": "1.6.2",
-      "symfony/polyfill-php71": "1.20.0",
-      "symfony/polyfill-php72": "1.23.0",
-      "symfony/polyfill-php73": "1.23.0",
-      "symfony/polyfill-php74": "1.23.0",
-      "symfony/polyfill-php80": "1.23.1",
-      "symfony/polyfill-php81": "1.23.0"
+      "woocommerce/subscriptions-core": "1.7.0"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
-      "phpunit/phpunit": "7.5.20",
+      "phpunit/phpunit": "9.5.14",
       "woocommerce/woocommerce-sniffs": "0.1.0",
       "woocommerce/action-scheduler": "3.1.6",
       "kalessil/production-dependencies-guard": "dev-master",
@@ -36,8 +41,9 @@
       "php-stubs/wordpress-stubs": "5.8.2",
       "php-stubs/woocommerce-stubs": "5.9.0",
       "rregeer/phpunit-coverage-check": "0.3.1",
-      "yoast/phpunit-polyfills": "1.0.1",
-      "cweagans/composer-patches": "1.7.1"
+      "yoast/phpunit-polyfills": "1.0.3",
+      "cweagans/composer-patches": "1.7.1",
+      "automattic/jetpack-changelogger": "^3.0.7"
     },
     "scripts": {
       "test": [
@@ -63,10 +69,20 @@
       ],
       "composer-exit-on-patch-failure": true,
       "patches": {
-        "phpunit/phpunit": {
-          "PHP 8.1 compatibility: globals": "tests/phpunit-patches/globals-usage-compatibility.diff"
+      },
+      "changelogger": {
+            "changelog": "changelog.txt",
+            "types": {
+                "add": "Add",
+                "fix": "Fix",
+                "update": "Update",
+                "dev": "Dev"
+            },
+            "formatter": {
+                "filename": "bin/class-wcpay-changelog-formatter.php"
+            },
+            "changes-dir": "changelog"
         }
-      }
     },
     "autoload": {
       "psr-4": {

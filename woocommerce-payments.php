@@ -8,11 +8,11 @@
  * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
- * WC requires at least: 4.5
- * WC tested up to: 6.1
- * Requires at least: 5.6
+ * WC requires at least: 5.2
+ * WC tested up to: 6.3.1
+ * Requires at least: 5.7
  * Requires PHP: 7.0
- * Version: 3.6.0
+ * Version: 3.9.1
  *
  * @package WooCommerce\Payments
  */
@@ -67,7 +67,7 @@ if ( ! $is_autoloading_ready ) {
 add_filter( 'woocommerce_translations_updates_for_woocommerce-payments', '__return_true' );
 
 /**
- * Initialize the Jetpack connection functionality.
+ * Initialize the Jetpack functionalities: connection, identity crisis, etc.
  */
 function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
@@ -80,6 +80,52 @@ function wcpay_jetpack_init() {
 			'slug' => 'woocommerce-payments',
 			'name' => __( 'WooCommerce Payments', 'woocommerce-payments' ),
 		]
+	);
+	$jetpack_config->ensure(
+		'identity_crisis',
+		[
+			'slug'          => 'woocommerce-payments',
+			'customContent' => wcpay_get_jetpack_idc_custom_content(),
+			'logo'          => plugins_url( 'assets/images/logo.svg', WCPAY_PLUGIN_FILE ),
+			'admin_page'    => '/wp-admin/admin.php?page=wc-admin',
+			'priority'      => 5,
+		]
+	);
+
+	// When only WooCommerce Payments is active, minimize the data to send back to WPcom for supporting Woo Mobile apps.
+	$jetpack_config->ensure(
+		'sync',
+		array_merge_recursive(
+			\Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS,
+			[
+				'jetpack_sync_modules'           =>
+					[
+						'Automattic\\Jetpack\\Sync\\Modules\\Options',
+						'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
+					],
+				'jetpack_sync_options_whitelist' =>
+					[
+						'active_plugins',
+						'blogdescription',
+						'blogname',
+						'timezone_string',
+						'gmt_offset',
+					],
+			]
+		)
+	);
+
+	// Trigger the first Jetpack full-sync when updating from old WCPay versions,
+	// which do not have Jetpack Sync package.
+	add_action(
+		'woocommerce_woocommerce_payments_updated',
+		function () {
+			$version_check = version_compare( '3.8.0', get_option( 'woocommerce_woocommerce_payments_version' ), '>' );
+			$method_check  = method_exists( '\Automattic\Jetpack\Sync\Actions', 'do_only_first_initial_sync' );
+			if ( $version_check && $method_check ) {
+				\Automattic\Jetpack\Sync\Actions::do_only_first_initial_sync();
+			}
+		}
 	);
 }
 // Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
@@ -187,4 +233,55 @@ function wcpay_show_old_jetpack_notice() {
 		<p><?php echo esc_html( __( 'The version of Jetpack installed is too old to be used with WooCommerce Payments. WooCommerce Payments has been disabled. Please deactivate or update Jetpack.', 'woocommerce-payments' ) ); ?></p>
 	</div>
 	<?php
+}
+
+/**
+ * Get custom texts for Jetpack Identity Crisis (IDC) module.
+ *
+ * @return array
+ */
+function wcpay_get_jetpack_idc_custom_content(): array {
+	$custom_content = [
+		'headerText'            => __( 'Safe Mode', 'woocommerce-payments' ),
+		'mainTitle'             => __( 'Safe Mode activated', 'woocommerce-payments' ),
+		'mainBodyText'          => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
+		'migratedTitle'         => __( 'WooCommerce Payments connection successfully transferred', 'woocommerce-payments' ),
+		'migratedBodyText'      => __( 'Safe Mode has been deactivated and WooCommerce Payments is fully functional.', 'woocommerce-payments' ),
+		'migrateCardTitle'      => __( 'Transfer connection', 'woocommerce-payments' ),
+		'migrateButtonLabel'    => __( 'Transfer your connection', 'woocommerce-payments' ),
+		'startFreshCardTitle'   => __( 'Create a new connection', 'woocommerce-payments' ),
+		'startFreshButtonLabel' => __( 'Create a new connection', 'woocommerce-payments' ),
+		'nonAdminTitle'         => __( 'Safe Mode activated', 'woocommerce-payments' ),
+		'nonAdminBodyText'      => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
+		'supportURL'            => 'https://woocommerce.com/document/payments/faq/safe-mode/',
+		'adminBarSafeModeLabel' => __( 'WooCommerce Payments Safe Mode', 'woocommerce-payments' ),
+	];
+
+	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();
+	if ( false !== $urls ) {
+		$current_url = untrailingslashit( $urls['current_url'] );
+		$wpcom_url   = untrailingslashit( $urls['wpcom_url'] );
+
+		$custom_content['migrateCardBodyText'] = sprintf(
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly.*/
+			__(
+				'Transfer your WooCommerce Payments connection from <hostname>%2$s</hostname> to this site <hostname>%1$s</hostname>. <hostname>%2$s</hostname> will be disconnected from WooCommerce Payments.',
+				'woocommerce-payments'
+			),
+			$current_url,
+			$wpcom_url
+		);
+
+		$custom_content['startFreshCardBodyText'] = sprintf(
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly. */
+			__(
+				'Create a new connection to WooCommerce Payments for <hostname>%1$s</hostname>. You’ll have to re-verify your business details to begin accepting payments. Your <hostname>%2$s</hostname> connection will remain as is.',
+				'woocommerce-payments'
+			),
+			$current_url,
+			$wpcom_url
+		);
+	}
+
+	return $custom_content;
 }

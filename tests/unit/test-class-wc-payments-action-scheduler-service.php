@@ -29,8 +29,8 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 

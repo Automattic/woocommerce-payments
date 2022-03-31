@@ -30,8 +30,8 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
@@ -64,8 +64,8 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 	/**
 	 * Post test cleanup
 	 */
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 		delete_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY );
 	}
 

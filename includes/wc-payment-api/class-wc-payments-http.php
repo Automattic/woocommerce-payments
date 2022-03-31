@@ -131,6 +131,25 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 		return $this->connection_manager->is_plugin_enabled() && $this->connection_manager->is_active();
 	}
 
+
+	/**
+	 * Checks if the current user is connected to WordPress.com.
+	 *
+	 * @return bool true if the current user is connected.
+	 */
+	public function is_user_connected() {
+		return $this->connection_manager->is_user_connected();
+	}
+
+	/**
+	 * Get the wpcom user data of the current connected user.
+	 *
+	 * @return bool|array An array with the WPCOM user data on success, false otherwise.
+	 */
+	public function get_connected_user_data() {
+		return $this->connection_manager->get_connected_user_data();
+	}
+
 	/**
 	 * Checks if the site has an admin who is also a connection owner.
 	 *

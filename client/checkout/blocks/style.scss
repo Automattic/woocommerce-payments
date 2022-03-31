@@ -2,14 +2,24 @@
 	margin-bottom: 2rem;
 }
 
+.wcpay-card-mounted {
+	background-color: #fff;
+}
+
 /* stylelint-disable-next-line selector-id-pattern */
 #express-payment-method-platform_checkout {
 	width: 100%;
 }
 
-.platform-checkout-sms-otp-iframe {
-	border: none;
-	height: 36rem;
-	margin-top: 1rem;
-	width: 100%;
+.wc-block-components-main
+	.wc-block-components-checkout-step--with-step-number
+	.wc-block-components-checkout-step__content
+	> :last-child {
+	padding: 0;
 }
+
+#contact-fields {
+	padding-bottom: 1.5em;
+}
+
+@import '../platform-checkout/style';

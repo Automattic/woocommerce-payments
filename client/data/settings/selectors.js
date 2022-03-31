@@ -15,6 +15,10 @@ export const getSettings = ( state ) => {
 	return getSettingsState( state ).data || EMPTY_OBJ;
 };
 
+const getSupportAddressState = ( state ) => {
+	return getSettings( state ).account_business_support_address || EMPTY_OBJ;
+};
+
 export const getIsWCPayEnabled = ( state ) => {
 	return getSettings( state ).is_wcpay_enabled || false;
 };
@@ -52,35 +56,27 @@ export const getAccountBusinessSupportAddress = ( state ) => {
 };
 
 export const getAccountBusinessSupportAddressCountry = ( state ) => {
-	if ( ! getSettings( state ).account_business_support_address ) return '';
-
-	return getSettings( state ).account_business_support_address.country || '';
+	return getSupportAddressState( state ).country || '';
 };
 
 export const getAccountBusinessSupportAddressLine1 = ( state ) => {
-	if ( ! getSettings( state ).account_business_support_address ) return '';
-
-	return getSettings( state ).account_business_support_address.line1 || '';
+	return getSupportAddressState( state ).line1 || '';
 };
 
 export const getAccountBusinessSupportAddressLine2 = ( state ) => {
-	if ( ! getSettings( state ).account_business_support_address ) return '';
-
-	return getSettings( state ).account_business_support_address.line2 || '';
+	return getSupportAddressState( state ).line2 || '';
 };
 
 export const getAccountBusinessSupportAddressCity = ( state ) => {
-	if ( ! getSettings( state ).account_business_support_address ) return '';
+	return getSupportAddressState( state ).city || '';
+};
 
-	return getSettings( state ).account_business_support_address.city || '';
+export const getAccountBusinessSupportAddressState = ( state ) => {
+	return getSupportAddressState( state ).state || '';
 };
 
 export const getAccountBusinessSupportAddressPostalCode = ( state ) => {
-	if ( ! getSettings( state ).account_business_support_address ) return '';
-
-	return (
-		getSettings( state ).account_business_support_address.postal_code || ''
-	);
+	return getSupportAddressState( state ).postal_code || '';
 };
 
 export const getAccountBusinessSupportEmail = ( state ) => {
@@ -169,4 +165,16 @@ export const getIsWCPaySubscriptionsEligible = ( state ) => {
 
 export const getIsSubscriptionsPluginActive = ( state ) => {
 	return getSettings( state ).is_subscriptions_plugin_active || false;
+};
+
+export const getIsPlatformCheckoutEnabled = ( state ) => {
+	return getSettings( state ).is_platform_checkout_enabled || false;
+};
+
+export const getPlatformCheckoutCustomMessage = ( state ) => {
+	return getSettings( state ).platform_checkout_custom_message || '';
+};
+
+export const getIsFraudProtectionEnabled = ( state ) => {
+	return getSettings( state ).is_fraud_prevention_enabled || false;
 };

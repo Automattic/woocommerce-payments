@@ -18,7 +18,6 @@ import Visa from './cards/visa.js';
 import MasterCard from './cards/mastercard.js';
 import Amex from './cards/amex.js';
 import ApplePay from './cards/applepay.js';
-import CB from './cards/cb.js';
 import DinersClub from './cards/diners.js';
 import Discover from './cards/discover.js';
 import GPay from './cards/gpay.js';
@@ -50,7 +49,6 @@ const PaymentMethods = () => (
 		<MasterCard />
 		<Amex />
 		<DinersClub />
-		<CB />
 		<Discover />
 		<UnionPay />
 		<JCB />

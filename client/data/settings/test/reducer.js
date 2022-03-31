@@ -18,6 +18,8 @@ import {
 	updateAccountBrandingIcon,
 	updateAccountBrandingPrimaryColor,
 	updateAccountBrandingSecondaryColor,
+	updateIsPlatformCheckoutEnabled,
+	updatePlatformCheckoutCustomMessage,
 } from '../actions';
 
 describe( 'Settings reducer tests', () => {
@@ -388,5 +390,92 @@ describe( 'Settings reducer tests', () => {
 				} );
 			}
 		);
+	} );
+
+	describe( 'SET_IS_PLATFORM_CHECKOUT_ENABLED', () => {
+		test( 'toggles `data.is_platform_checkout_enabled`', () => {
+			const oldState = {
+				data: {
+					is_platform_checkout_enabled: false,
+				},
+				savingError: null,
+			};
+
+			const state = reducer(
+				oldState,
+				updateIsPlatformCheckoutEnabled( true )
+			);
+
+			expect( state.data.is_platform_checkout_enabled ).toBeTruthy();
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					is_platform_checkout_enabled: false,
+					baz: 'quux',
+				},
+				savingError: {},
+			};
+
+			const state = reducer(
+				oldState,
+				updateIsPlatformCheckoutEnabled( true )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				savingError: null,
+				data: {
+					is_platform_checkout_enabled: true,
+					baz: 'quux',
+				},
+			} );
+		} );
+	} );
+
+	describe( 'SET_PLATFORM_CHECKOUT_CUSTOM_MESSAGE', () => {
+		test( 'toggle `data.platform_checkout_custom_message`', () => {
+			const oldState = {
+				data: {
+					platform_checkout_custom_message: '',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updatePlatformCheckoutCustomMessage( 'test' )
+			);
+
+			expect( state.data.platform_checkout_custom_message ).toEqual(
+				'test'
+			);
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					platform_checkout_custom_message: '',
+					baz: 'quux',
+				},
+				savingError: {},
+			};
+
+			const state = reducer(
+				oldState,
+				updatePlatformCheckoutCustomMessage( 'test' )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					platform_checkout_custom_message: 'test',
+					baz: 'quux',
+				},
+				savingError: null,
+			} );
+		} );
 	} );
 } );

@@ -4,8 +4,11 @@
 import React from 'react';
 
 import { Button, Icon, Modal } from '@wordpress/components';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
-import { useEffect, useState } from '@wordpress/element';
+import {
+	createInterpolateElement,
+	useEffect,
+	useState,
+} from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
 import { removeQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';

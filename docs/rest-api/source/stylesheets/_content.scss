@@ -1,0 +1,32 @@
+////////////////////////////////////////////////////////////////////////////////
+// CUSTOM CONTENT STYLES
+////////////////////////////////////////////////////////////////////////////////
+.content {
+	a {
+		color: $link-color;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	h4,
+	h5,
+	h6 {
+		font-size: 13px;
+	}
+
+	aside {
+		color: #fff;
+
+		a {
+			color: #fff;
+			text-decoration: underline;
+
+			&:hover {
+				text-decoration: none;
+			}
+		}
+	}
+}

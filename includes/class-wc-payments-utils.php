@@ -251,90 +251,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Updates the order when the payment authorization has expired without being captured.
-	 * It updates the order status, adds an order note, and updates the metadata so the "Capture" action
-	 * button isn't displayed anymore.
-	 *
-	 * @param WC_Order $order Order object.
-	 */
-	public static function mark_payment_expired( $order ) {
-		$order->update_meta_data( '_intention_status', 'canceled' );
-		$order->update_status(
-			'cancelled',
-			sprintf(
-				self::esc_interpolated_html(
-				/* translators: %1: transaction ID of the payment */
-					__( 'Payment authorization has <strong>expired</strong> (<code>%1$s</code>).', 'woocommerce-payments' ),
-					[
-						'strong' => '<strong>',
-						'code'   => '<code>',
-					]
-				),
-				$order->get_transaction_id()
-			)
-		);
-	}
-
-	/**
-	 * Updates an order when the payment is complete. Also implements a lock to ensure the order cannot be marked as complete multiple times due to
-	 * possible race conditions when the paid webhook from Stripe is handled during this request.
-	 *
-	 * @param WC_Order $order     The order.
-	 * @param string   $intent_id The ID of the intent associated with this order.
-	 *
-	 * @return void
-	 */
-	public static function mark_payment_completed( $order, $intent_id ) {
-		// Read the latest order properties from the database to avoid race conditions when the paid webhook was handled during this request.
-		$order->get_data_store()->read( $order );
-
-		if ( $order->has_status( [ 'processing', 'completed' ] ) ) {
-			return;
-		}
-
-		if ( self::is_order_locked( $order, $intent_id ) ) {
-			return;
-		}
-
-		self::lock_order_payment( $order, $intent_id );
-		$order->payment_complete( $intent_id );
-		self::unlock_order_payment( $order );
-	}
-
-	/**
-	 * Updates an order to failed status, while adding a note with a link to the failed transaction.
-	 *
-	 * @param WC_Order $order   Order object.
-	 * @param string   $message Optional message to add to the failed note.
-	 *
-	 * @return void
-	 */
-	public static function mark_payment_failed( $order, $message = '' ) {
-
-		$transaction_url = self::compose_transaction_url( $order->get_meta( '_charge_id' ) );
-		$note            = sprintf(
-			self::esc_interpolated_html(
-				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s <strong>failed</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-				[
-					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-				]
-			),
-			WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order ),
-			$order->get_meta( '_intent_id' )
-		);
-
-		if ( $message ) {
-			$note .= ' ' . $message;
-		}
-
-		$order->add_order_note( $note );
-		$order->update_meta_data( '_intention_status', 'failed' );
-		$order->update_status( 'failed' );
-	}
-
-	/**
 	 * Returns the charge_id for an "Order #" search term
 	 * or all charge_ids for a "Subscription #" search term.
 	 *
@@ -344,7 +260,7 @@ class WC_Payments_Utils {
 	 */
 	public static function get_charge_ids_from_search_term( $term ) {
 		$order_term = __( 'Order #', 'woocommerce-payments' );
-		if ( str_starts_with( $term, $order_term ) ) {
+		if ( substr( $term, 0, strlen( $order_term ) ) === $order_term ) {
 			$term_parts = explode( $order_term, $term, 2 );
 			$order_id   = isset( $term_parts[1] ) ? $term_parts[1] : '';
 			$order      = wc_get_order( $order_id );
@@ -354,7 +270,7 @@ class WC_Payments_Utils {
 		}
 
 		$subscription_term = __( 'Subscription #', 'woocommerce-payments' );
-		if ( function_exists( 'wcs_get_subscription' ) && str_starts_with( $term, $subscription_term ) ) {
+		if ( function_exists( 'wcs_get_subscription' ) && substr( $term, 0, strlen( $subscription_term ) ) === $subscription_term ) {
 			$term_parts      = explode( $subscription_term, $term, 2 );
 			$subscription_id = isset( $term_parts[1] ) ? $term_parts[1] : '';
 			$subscription    = wcs_get_subscription( $subscription_id );
@@ -495,7 +411,7 @@ class WC_Payments_Utils {
 			is_admin()
 			&& $current_tab && $current_section
 			&& 'checkout' === $current_tab
-			&& str_starts_with( $current_section, 'woocommerce_payments' )
+			&& 0 === strpos( $current_section, 'woocommerce_payments' )
 		);
 	}
 
@@ -702,5 +618,30 @@ class WC_Payments_Utils {
 			],
 			admin_url( 'admin.php' )
 		);
+	}
+
+	/**
+	 * Retrieve last WC refund from order ID.
+	 *
+	 * @param int $order_id WC Order ID.
+	 *
+	 * @return null|WC_Order_Refund
+	 */
+	public static function get_last_refund_from_order_id( $order_id ) {
+		$wc_refunds = wc_get_orders(
+			[
+				'type'    => 'shop_order_refund',
+				'parent'  => $order_id,
+				'limit'   => 1,
+				'orderby' => 'ID',
+				'order'   => 'DESC',
+			]
+		);
+
+		if ( is_array( $wc_refunds ) && ! empty( $wc_refunds ) && is_a( $wc_refunds[0], WC_Order_Refund::class ) ) {
+			return $wc_refunds[0];
+		}
+
+		return null;
 	}
 }

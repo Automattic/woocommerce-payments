@@ -57,9 +57,6 @@ declare namespace AccountOverview {
 	}
 }
 
-declare module 'wcpay/data' {
-	function useAllDeposistsOverviews(): AccountOverview.OverviewsResponse;
-}
 declare module 'gridicons' {
 	type GridiconParams = {
 		icon: string;
@@ -74,7 +71,8 @@ declare module 'gridicons' {
 declare module '@woocommerce/components' {
 	type LinkParams = {
 		href: string;
-		children: React.ReactNode;
+		children?: React.ReactNode;
+		type?: string;
 	};
 	const Link: ( props: LinkParams ) => JSX.Element;
 }

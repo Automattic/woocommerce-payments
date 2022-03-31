@@ -56,7 +56,7 @@ class Analytics {
 	 * @return void
 	 */
 	public function init() {
-		if ( is_admin() ) {
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		}
 
@@ -188,7 +188,7 @@ class Analytics {
 			}
 
 			foreach ( $replacements_array as $find => $replace ) {
-				if ( str_contains( $clause, $find ) ) {
+				if ( strpos( $clause, $find ) !== false ) {
 					$clause = str_replace(
 						$find,
 						$replace,
@@ -291,7 +291,7 @@ class Analytics {
 		global $wpdb;
 
 		foreach ( $clauses as $clause ) {
-			if ( str_contains( $clause, "{$wpdb->prefix}wc_order_stats" ) ) {
+			if ( strpos( $clause, "{$wpdb->prefix}wc_order_stats" ) !== false ) {
 				return true;
 			}
 		}

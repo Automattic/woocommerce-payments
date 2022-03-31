@@ -19,8 +19,8 @@ class Track_Upe_Status_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		delete_option( Track_Upe_Status::IS_TRACKED_OPTION );
 	}
@@ -28,8 +28,8 @@ class Track_Upe_Status_Test extends WP_UnitTestCase {
 	/**
 	 * After-test cleanup
 	 */
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		Tracker::remove_admin_event( 'wcpay_upe_enabled' );
 		Tracker::remove_admin_event( 'wcpay_upe_disabled' );

@@ -75,6 +75,11 @@
 	background-size: contain;
 }
 
+.payment-method__brand--eps {
+	background: no-repeat url( '../images/payment-methods/eps.svg' );
+	background-size: contain;
+}
+
 .payment-method__brand--p24 {
 	background: no-repeat url( '../images/payment-methods/przelewy24.svg' );
 	background-size: contain;

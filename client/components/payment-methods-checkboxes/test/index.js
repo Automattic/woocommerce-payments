@@ -20,6 +20,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 
 		const upeMethods = [
 			[ 'Bancontact', true ],
+			[ 'EPS', false ],
 			[ 'giropay', false ],
 			[ 'iDEAL', false ],
 			[ 'Przelewy24 (P24)', false ],
@@ -43,13 +44,15 @@ describe( 'PaymentMethodsCheckboxes', () => {
 
 		const paymentMethods = screen.getAllByRole( 'listitem' );
 		const bancontact = within( paymentMethods[ 0 ] );
-		const giropay = within( paymentMethods[ 1 ] );
-		const ideal = within( paymentMethods[ 2 ] );
-		const p24 = within( paymentMethods[ 3 ] );
-		const sepa = within( paymentMethods[ 4 ] );
-		const sofort = within( paymentMethods[ 5 ] );
+		const eps = within( paymentMethods[ 1 ] );
+		const giropay = within( paymentMethods[ 2 ] );
+		const ideal = within( paymentMethods[ 3 ] );
+		const p24 = within( paymentMethods[ 4 ] );
+		const sepa = within( paymentMethods[ 5 ] );
+		const sofort = within( paymentMethods[ 6 ] );
 
 		expect( bancontact.getByRole( 'checkbox' ) ).toBeChecked();
+		expect( eps.getByRole( 'checkbox' ) ).not.toBeChecked();
 		expect( giropay.getByRole( 'checkbox' ) ).not.toBeChecked();
 		expect( ideal.getByRole( 'checkbox' ) ).not.toBeChecked();
 		expect( p24.getByRole( 'checkbox' ) ).not.toBeChecked();
@@ -59,6 +62,7 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		jest.useFakeTimers();
 		act( () => {
 			userEvent.click( bancontact.getByRole( 'checkbox' ) );
+			userEvent.click( eps.getByRole( 'checkbox' ) );
 			userEvent.click( giropay.getByRole( 'checkbox' ) );
 			userEvent.click( ideal.getByRole( 'checkbox' ) );
 			userEvent.click( p24.getByRole( 'checkbox' ) );
@@ -74,19 +78,19 @@ describe( 'PaymentMethodsCheckboxes', () => {
 			'Bancontact',
 			false
 		);
-		expect( handleChange ).toHaveBeenNthCalledWith( 2, 'giropay', true );
-		expect( handleChange ).toHaveBeenNthCalledWith( 3, 'iDEAL', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 3, 'giropay', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 4, 'iDEAL', true );
 		expect( handleChange ).toHaveBeenNthCalledWith(
-			4,
+			5,
 			'Przelewy24 (P24)',
 			true
 		);
 		expect( handleChange ).toHaveBeenNthCalledWith(
-			5,
+			6,
 			'SEPA Direct Debit',
 			true
 		);
-		expect( handleChange ).toHaveBeenNthCalledWith( 6, 'Sofort', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 7, 'Sofort', true );
 		jest.useRealTimers();
 	} );
 

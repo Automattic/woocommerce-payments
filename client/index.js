@@ -14,7 +14,7 @@ import 'wp-mediaelement';
  * Internal dependencies
  */
 import './style.scss';
-import ConnectAccountPage from 'connect-account-page';
+import ConnectAccountPageExperiment from 'connect-account-page-experiment';
 import DepositsPage from 'deposits';
 import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
@@ -25,7 +25,10 @@ import DisputeEvidencePage from 'disputes/evidence';
 import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
 import MultiCurrencySetupPage from 'wcpay/multi-currency-setup';
 import CardReadersPage from 'card-readers';
+import CapitalPage from 'capital';
+import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
+import DocumentsPage from 'documents';
 import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
@@ -41,13 +44,14 @@ addFilter(
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
-			container: ConnectAccountPage,
+			container: ConnectAccountPageExperiment,
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
 			navArgs: {
 				id: 'wc-payments',
 			},
+			capability: 'manage_woocommerce',
 		} );
 
 		pages.push( {
@@ -58,6 +62,7 @@ addFilter(
 			navArgs: {
 				id: 'wc-payments-overview',
 			},
+			capability: 'manage_woocommerce',
 		} );
 
 		pages.push( {
@@ -68,6 +73,7 @@ addFilter(
 			navArgs: {
 				id: 'wc-payments-deposits',
 			},
+			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
 			container: DepositDetailsPage,
@@ -81,6 +87,7 @@ addFilter(
 				],
 				__( 'Deposit details', 'woocommerce-payments' ),
 			],
+			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
 			container: TransactionsPage,
@@ -93,6 +100,7 @@ addFilter(
 			navArgs: {
 				id: 'wc-payments-transactions',
 			},
+			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
 			container: PaymentDetailsPage,
@@ -106,6 +114,7 @@ addFilter(
 				],
 				__( 'Payment details', 'woocommerce-payments' ),
 			],
+			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
 			container: DisputesPage,
@@ -115,6 +124,7 @@ addFilter(
 			navArgs: {
 				id: 'wc-payments-disputes',
 			},
+			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
 			container: DisputeDetailsPage,
@@ -128,6 +138,7 @@ addFilter(
 				],
 				__( 'Dispute details', 'woocommerce-payments' ),
 			],
+			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
 			container: DisputeEvidencePage,
@@ -141,6 +152,7 @@ addFilter(
 				],
 				__( 'Challenge dispute', 'woocommerce-payments' ),
 			],
+			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
 			container: AdditionalMethodsPage,
@@ -150,6 +162,7 @@ addFilter(
 				rootLink,
 				__( 'Add additional payment methods', 'woocommerce-payments' ),
 			],
+			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
 			container: MultiCurrencySetupPage,
@@ -159,6 +172,7 @@ addFilter(
 				rootLink,
 				__( 'Set up multiple currencies', 'woocommerce-payments' ),
 			],
+			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
 			container: CardReadersPage,
@@ -171,7 +185,45 @@ addFilter(
 			navArgs: {
 				id: 'wc-payments-card-readers',
 			},
+			capability: 'manage_woocommerce',
 		} );
+		pages.push( {
+			container: CapitalPage,
+			path: '/payments/loans',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Capital Loans', 'woocommerce-payments' ),
+			],
+			navArgs: {
+				id: 'wc-payments-capital',
+			},
+			capability: 'manage_woocommerce',
+		} );
+		pages.push( {
+			container: PreviewReceiptPage,
+			path: '/payments/card-readers/preview-receipt',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Preview a printed receipt', 'woocommerce-payments' ),
+			],
+		} );
+		if ( wcpaySettings && wcpaySettings.featureFlags.documents ) {
+			pages.push( {
+				container: DocumentsPage,
+				path: '/payments/documents',
+				wpOpenMenu: menuID,
+				breadcrumbs: [
+					rootLink,
+					__( 'Documents', 'woocommerce-payments' ),
+				],
+				navArgs: {
+					id: 'wc-payments-documents',
+				},
+				capability: 'manage_woocommerce',
+			} );
+		}
 		return pages;
 	}
 );

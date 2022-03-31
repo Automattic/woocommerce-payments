@@ -35,7 +35,7 @@ Add as many details as possible to help others reproduce the issue and test the 
 
 -------------------
 
-- [ ] Added changelog entries to both `readme.txt` and `changelog.txt` (or does not apply)
+- [ ] Run `npm run changelog` to add a changelog file, choose `patch` to leave it empty if the change is not significant. You can add multiple changelog files in one PR by running this command a few times. 
 - [ ] Covered with tests (or have a good reason not to test in description ☝️)
 - [ ] Tested on mobile (or does not apply)
 

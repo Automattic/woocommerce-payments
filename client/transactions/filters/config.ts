@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __, _x } from '@wordpress/i18n';
+import { __, _x, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -33,6 +33,24 @@ const transactionTypesOptions = Object.entries( displayType )
 	.filter( function ( el ) {
 		return el != null;
 	} );
+
+const loanDefinitions =
+	'undefined' !== typeof wcpaySettings
+		? wcpaySettings.accountLoans.loans
+		: [];
+
+const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
+	const loanDefinitionSplitted = loanDefinition.split( '|' );
+	const loanDisplayValue = sprintf(
+		'ID: %s | %s',
+		loanDefinitionSplitted[ 0 ],
+		'active' === loanDefinitionSplitted[ 1 ]
+			? __( 'In Progress', 'woocommerce-payments' )
+			: __( 'Paid in Full', 'woocommerce-payments' )
+	);
+
+	return { label: loanDisplayValue, value: loanDefinitionSplitted[ 0 ] };
+}, [] );
 
 export const filters: [ TransactionsFilterType, TransactionsFilterType ] = [
 	{
@@ -88,7 +106,7 @@ export const filters: [ TransactionsFilterType, TransactionsFilterType ] = [
 
 /*eslint-disable max-len*/
 export const advancedFilters = {
-	/** translators: A sentence describing filters for Transactions. See screen shot for context: https://d.pr/i/NcGpwL */
+	/** translators: A sentence describing filters for Transactions. */
 	title: __(
 		'Transactions match {{select /}} filters',
 		'woocommerce-payments'
@@ -105,7 +123,7 @@ export const advancedFilters = {
 					'Select a transaction date filter match',
 					'woocommerce-payments'
 				),
-				/* translators: A sentence describing a Transaction date filter. See screen shot for context: https://d.pr/i/NcGpwL */
+				/* translators: A sentence describing a Transaction date filter. */
 				title: __(
 					'{{title}}Date{{/title}} {{rule /}} {{filter /}}',
 					'woocommerce-payments'
@@ -144,7 +162,7 @@ export const advancedFilters = {
 					'Select a transaction type filter match',
 					'woocommerce-payments'
 				),
-				/* translators: A sentence describing a Transaction type filter. See screen shot for context: https://d.pr/i/NcGpwL */
+				/* translators: A sentence describing a Transaction type filter. */
 				title: __(
 					'{{title}}Type{{/title}} {{rule /}} {{filter /}}',
 					'woocommerce-payments'
@@ -157,7 +175,7 @@ export const advancedFilters = {
 			rules: [
 				{
 					value: 'is',
-					/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction type. Screenshot for context: https://d.pr/i/NcGpwL */
+					/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction type. */
 					label: _x(
 						'Is',
 						'transaction type',
@@ -166,7 +184,7 @@ export const advancedFilters = {
 				},
 				{
 					value: 'is_not',
-					/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction type. Screenshot for context: https://d.pr/i/NcGpwL */
+					/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction type. */
 					label: _x(
 						'Is not',
 						'transaction type',
@@ -177,6 +195,24 @@ export const advancedFilters = {
 			input: {
 				component: 'SelectControl',
 				options: transactionTypesOptions,
+			},
+		},
+		loan_id_is: {
+			labels: {
+				add: __( 'Loan', 'woocommerce-payments' ),
+				remove: __( 'Remove loan filter', 'woocommerce-payments' ),
+				rule: __( 'Select a loan', 'woocommerce-payments' ),
+				/* translators: A sentence describing a Loan ID filter. */
+				title: __(
+					'{{title}}Loan{{/title}} {{rule /}} {{filter /}}',
+					'woocommerce-payments'
+				),
+				filter: __( 'Select a loan', 'woocommerce-payments' ),
+			},
+			input: {
+				component: 'SelectControl',
+				type: 'loans',
+				options: loanSelectionOptions,
 			},
 		},
 	},

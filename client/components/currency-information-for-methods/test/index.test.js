@@ -55,6 +55,7 @@ describe( 'CurrencyInformationForMethods', () => {
 					selectedMethods={ [
 						'card',
 						'bancontact',
+						'eps',
 						'giropay',
 						'ideal',
 						'p24',
@@ -78,6 +79,7 @@ describe( 'CurrencyInformationForMethods', () => {
 					selectedMethods={ [
 						'card',
 						'bancontact',
+						'eps',
 						'giropay',
 						'ideal',
 						'p24',
@@ -108,6 +110,7 @@ describe( 'CurrencyInformationForMethods', () => {
 					selectedMethods={ [
 						'card',
 						'bancontact',
+						'eps',
 						'giropay',
 						'ideal',
 						'p24',

@@ -91,9 +91,11 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transactions_export( $request ) {
-		$filters = $this->get_transactions_filters( $request );
+		$user_email = $request->get_param( 'user_email' );
+		$deposit_id = $request->get_param( 'deposit_id' );
+		$filters    = $this->get_transactions_filters( $request );
 
-		return $this->forward_request( 'get_transactions_export', [ $filters ] );
+		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email, $deposit_id ] );
 	}
 
 	/**
@@ -142,6 +144,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'type_is'           => $request->get_param( 'type_is' ),
 				'type_is_not'       => $request->get_param( 'type_is_not' ),
 				'store_currency_is' => $request->get_param( 'store_currency_is' ),
+				'loan_id_is'        => $request->get_param( 'loan_id_is' ),
 				'search'            => $request->get_param( 'search' ),
 			],
 			static function ( $filter ) {

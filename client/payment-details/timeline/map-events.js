@@ -8,7 +8,7 @@ import Gridicon from 'gridicons';
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 
 /**
@@ -123,6 +123,59 @@ const getDepositTimelineItem = (
 	return {
 		date: new Date( event.datetime * 1000 ),
 		icon: getIcon( isPositive ? 'plus' : 'minus' ),
+		headline,
+		body,
+	};
+};
+
+/**
+ * Creates a timeline item about a financing paydown
+ *
+ * @param {Object} event An event affecting the deposit
+ * @param {string} formattedAmount Formatted amount string
+ * @param {Array} body Any extra subitems that should be included as item body
+ *
+ * @return {Object} Deposit timeline item
+ */
+const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
+	let headline = '';
+	if ( event.deposit ) {
+		headline = sprintf(
+			// translators: %1$s - formatted amount, %2$s - deposit arrival date, <a> - link to the deposit
+			__(
+				'%1$s was subtracted from your <a>%2$s deposit</a>.',
+				'woocommerce-payments'
+			),
+			formattedAmount,
+			dateI18n(
+				'M j, Y',
+				moment( event.deposit.arrival_date * 1000 ).toISOString()
+			)
+		);
+
+		const depositUrl = getAdminUrl( {
+			page: 'wc-admin',
+			path: '/payments/deposits/details',
+			id: event.deposit.id,
+		} );
+
+		headline = createInterpolateElement( headline, {
+			// eslint-disable-next-line jsx-a11y/anchor-has-content
+			a: <Link href={ depositUrl } />,
+		} );
+	} else {
+		headline = sprintf(
+			__(
+				'%s will be subtracted from a future deposit.',
+				'woocommerce-payments'
+			),
+			formattedAmount
+		);
+	}
+
+	return {
+		date: new Date( event.datetime * 1000 ),
+		icon: getIcon( 'minus' ),
 		headline,
 		body,
 	};
@@ -256,6 +309,41 @@ const composeFXString = ( event ) => {
 			amount: storeAmount,
 		}
 	);
+};
+
+// Conditionally adds the ARN details to the timeline in case they're available.
+const getRefundTrackingDetails = ( event ) => {
+	return 'available' === event.acquirer_reference_number_status
+		? sprintf(
+				/* translators: %s is a trcking reference number */
+				__(
+					'Acquirer Reference Number (ARN) %s',
+					'woocommerce-payments'
+				),
+				event.acquirer_reference_number
+		  )
+		: '';
+};
+
+// Converts the failure reason enums to error messages.
+const getRefundFailureReason = ( event ) => {
+	switch ( event.failure_reason ) {
+		case 'expired_or_canceled_card':
+			return __(
+				'the card being expired or canceled.',
+				'woocommerce-payments'
+			);
+		case 'lost_or_stolen_card':
+			return __(
+				'the card being lost or stolen.',
+				'woocommerce-payments'
+			);
+		case 'unknown':
+			return __(
+				'the card being lost or stolen.',
+				'woocommerce-payments'
+			);
+	}
 };
 
 /**
@@ -539,6 +627,28 @@ const mapEventToTimelineItems = ( event ) => {
 					[ composeFXString( event ) ]
 				),
 			];
+		case 'refund_failed':
+			const formattedRefundFailureAmount = formatExplicitCurrency(
+				event.amount_refunded,
+				event.currency
+			);
+			return [
+				getMainTimelineItem(
+					event,
+					sprintf(
+						__(
+							/* translators: %s is a monetary amount */
+							'%s refund was attempted but failed due to %s',
+							'woocommerce-payments'
+						),
+						formattedRefundFailureAmount,
+						getRefundFailureReason( event )
+					),
+					'notice-outline',
+					'is-error',
+					[ getRefundTrackingDetails( event ) ]
+				),
+			];
 		case 'failed':
 			return [
 				getStatusChangeTimelineItem(
@@ -637,7 +747,10 @@ const mapEventToTimelineItems = ( event ) => {
 					'is-error',
 					[
 						// eslint-disable-next-line react/jsx-key
-						<Link href={ disputeUrl }>
+						<Link
+							href={ disputeUrl }
+							data-testid={ 'view-dispute-button' }
+						>
 							{ __( 'View dispute', 'woocommerce-payments' ) }
 						</Link>,
 					]
@@ -729,6 +842,37 @@ const mapEventToTimelineItems = ( event ) => {
 					),
 					'notice-outline',
 					'is-success'
+				),
+			];
+		case 'financing_paydown':
+			return [
+				getFinancingPaydownTimelineItem(
+					event,
+					formatCurrency( Math.abs( event.amount ) ),
+					[
+						createInterpolateElement(
+							sprintf(
+								__(
+									'Loan repayment: <a>Loan %s</a>',
+									'woocommerce-payments'
+								),
+								event.loan_id
+							),
+							{
+								a: (
+									<Link
+										href={ getAdminUrl( {
+											page: 'wc-admin',
+											path: '/payments/transactions',
+											type: 'charge',
+											filter: 'advanced',
+											loan_id_is: event.loan_id,
+										} ) }
+									/>
+								),
+							}
+						),
+					]
 				),
 			];
 		default:

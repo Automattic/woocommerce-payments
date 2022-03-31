@@ -172,6 +172,7 @@ export const useAccountBusinessSupportAddress = () => {
 				getAccountBusinessSupportAddressLine1,
 				getAccountBusinessSupportAddressLine2,
 				getAccountBusinessSupportAddressCity,
+				getAccountBusinessSupportAddressState,
 				getAccountBusinessSupportAddressPostalCode,
 			} = select( STORE_NAME );
 
@@ -181,6 +182,7 @@ export const useAccountBusinessSupportAddress = () => {
 				getAccountBusinessSupportAddressLine1(),
 				getAccountBusinessSupportAddressLine2(),
 				getAccountBusinessSupportAddressCity(),
+				getAccountBusinessSupportAddressState(),
 				getAccountBusinessSupportAddressPostalCode(),
 				updateAccountBusinessSupportAddress,
 			];
@@ -414,4 +416,43 @@ export const useGetSavingError = () => {
 
 		return getSavingError();
 	}, [] );
+};
+
+export const usePlatformCheckoutEnabledSettings = () => {
+	const { updateIsPlatformCheckoutEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getIsPlatformCheckoutEnabled } = select( STORE_NAME );
+
+		return [
+			getIsPlatformCheckoutEnabled(),
+			updateIsPlatformCheckoutEnabled,
+		];
+	} );
+};
+
+export const usePlatformCheckoutCustomMessage = () => {
+	const { updatePlatformCheckoutCustomMessage } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getPlatformCheckoutCustomMessage } = select( STORE_NAME );
+
+			return [
+				getPlatformCheckoutCustomMessage(),
+				updatePlatformCheckoutCustomMessage,
+			];
+		},
+		[ updatePlatformCheckoutCustomMessage ]
+	);
+};
+
+export const useFraudProtection = () => {
+	const { updateIsFraudPreventionEnabled } = useDispatch( STORE_NAME );
+
+	const isFraudProtectionEnabled = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsFraudProtectionEnabled();
+	}, [] );
+
+	return [ isFraudProtectionEnabled, updateIsFraudPreventionEnabled ];
 };

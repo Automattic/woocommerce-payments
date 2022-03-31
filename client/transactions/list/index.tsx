@@ -218,11 +218,21 @@ export const TransactionsList = (
 			( txn.metadata && 'card_reader_fee' === txn.metadata.charge_type
 				? txn.metadata.charge_type
 				: txn.type );
-		const clickable = ( children: JSX.Element | string ) => (
-			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
-		);
+		const clickable =
+			'financing_payout' !== txn.type &&
+			! ( 'financing_paydown' === txn.type && '' === txn.charge_id )
+				? ( children: JSX.Element | string ) => (
+						<ClickableCell href={ detailsURL }>
+							{ children }
+						</ClickableCell>
+				  )
+				: ( children: JSX.Element | string ) => children;
 
-		const orderUrl = <OrderLink order={ txn.order } />;
+		const orderUrl = txn.order ? (
+			<OrderLink order={ txn.order } />
+		) : (
+			__( 'N/A', 'woocommerce-payments' )
+		);
 		const orderSubscriptions = txn.order && txn.order.subscriptions;
 		const subscriptionsValue =
 			wcpaySettings.isSubscriptionsActive && orderSubscriptions
@@ -266,6 +276,7 @@ export const TransactionsList = (
 		const dataType = txn.metadata ? txn.metadata.charge_type : txn.type;
 		const formatAmount = () => {
 			const amount = txn.metadata ? 0 : txn.amount;
+			const fromAmount = txn.customer_amount ? txn.customer_amount : 0;
 
 			return {
 				value: amount / 100,
@@ -273,7 +284,7 @@ export const TransactionsList = (
 					<ConvertedAmount
 						amount={ amount }
 						currency={ currency }
-						fromAmount={ amount }
+						fromAmount={ fromAmount }
 						fromCurrency={ txn.customer_currency.toUpperCase() }
 					/>
 				),
@@ -282,13 +293,17 @@ export const TransactionsList = (
 		const formatFees = () => {
 			const isCardReader =
 				txn.metadata && txn.metadata.charge_type === 'card_reader_fee';
+			const feeAmount =
+				( isCardReader ? txn.amount : txn.fees * -1 ) / 100;
 			return {
-				value: ( isCardReader ? txn.amount : txn.fees * -1 ) / 100,
+				value: feeAmount,
 				display: clickable(
-					formatCurrency(
-						isCardReader ? txn.amount : txn.fees * -1,
-						currency
-					)
+					0 !== feeAmount
+						? formatCurrency(
+								isCardReader ? txn.amount : txn.fees * -1,
+								currency
+						  )
+						: __( 'N/A', 'woocommerce-payments' )
 				),
 			};
 		};
@@ -296,6 +311,10 @@ export const TransactionsList = (
 		const depositStatus = txn.deposit_status
 			? displayDepositStatus[ txn.deposit_status ]
 			: '';
+
+		const isFinancingType =
+			-1 !==
+			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
 
 		// Map transaction into table row.
 		const data = {
@@ -320,10 +339,14 @@ export const TransactionsList = (
 			},
 			source: {
 				value: txn.source,
-				display: clickable(
-					<span
-						className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-					/>
+				display: ! isFinancingType ? (
+					clickable(
+						<span
+							className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+						/>
+					)
+				) : (
+					<span className={ 'payment-method__brand' }>—</span>
 				),
 			},
 			order: {
@@ -336,11 +359,15 @@ export const TransactionsList = (
 			},
 			customer_name: {
 				value: txn.customer_name,
-				display: customerName,
+				display: ! isFinancingType
+					? customerName
+					: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_email: {
 				value: txn.customer_email,
-				display: customerEmail,
+				display: ! isFinancingType
+					? customerEmail
+					: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_country: {
 				value: txn.customer_country,
@@ -409,6 +436,7 @@ export const TransactionsList = (
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
+		const userEmail = wcpaySettings.currentUserEmail;
 
 		if ( 'endpoint' === downloadType ) {
 			const {
@@ -420,6 +448,7 @@ export const TransactionsList = (
 				type_is: typeIs,
 				type_is_not: typeIsNot,
 			} = params;
+			const depositId = props.depositId;
 
 			const isFiltered =
 				!! dateAfter ||
@@ -448,6 +477,7 @@ export const TransactionsList = (
 						exported_transactions: exportedTransactions,
 					} = await apiFetch( {
 						path: getTransactionsCSV( {
+							userEmail,
 							dateAfter,
 							dateBefore,
 							dateBetween,
@@ -455,15 +485,19 @@ export const TransactionsList = (
 							search,
 							typeIs,
 							typeIsNot,
+							depositId,
 						} ),
 						method: 'POST',
 					} );
 
 					createNotice(
 						'success',
-						__(
-							'Your export will be emailed to you.',
-							'woocommerce-payments'
+						sprintf(
+							__(
+								'Your export will be emailed to %s',
+								'woocommerce-payments'
+							),
+							userEmail
 						)
 					);
 

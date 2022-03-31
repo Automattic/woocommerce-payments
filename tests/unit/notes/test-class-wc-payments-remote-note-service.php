@@ -26,8 +26,8 @@ class WC_Payments_Remote_Note_Service_Test extends WP_UnitTestCase {
 	 */
 	private $mock_data_store;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_data_store = $this->getMockBuilder( WC_Data_Store::class )
 			->disableOriginalConstructor()

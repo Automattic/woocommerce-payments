@@ -40,8 +40,8 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_account    = $this->createMock( WC_Payments_Account::class );
@@ -52,13 +52,13 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Post-test teardown
 	 */
-	public function tearDown() {
+	public function tear_down() {
 		delete_user_option( 1, self::CUSTOMER_LIVE_META_KEY );
 		delete_user_option( 1, self::CUSTOMER_TEST_META_KEY );
 		delete_user_option( 1, '_wcpay_customer_id' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 		WC()->session->__unset( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	/**

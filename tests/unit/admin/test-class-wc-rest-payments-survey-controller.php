@@ -32,8 +32,8 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );

@@ -38,8 +38,8 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );
 		$this->mock_utils                = $this->createMock( Utils::class );
@@ -55,13 +55,13 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 		$this->mock_coupon = $this->createMock( \WC_Coupon::class );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		// Reset cart checks so future tests can pass.
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->mock_wcs_get_order_type_cart_items( false );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 

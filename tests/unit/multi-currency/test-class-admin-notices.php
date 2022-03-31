@@ -19,8 +19,8 @@ class WCPay_Multi_Currency_Admin_Notices_Tests extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->admin_notices = new WCPay\MultiCurrency\AdminNotices();
 	}

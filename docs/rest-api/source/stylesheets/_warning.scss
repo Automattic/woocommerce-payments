@@ -1,0 +1,31 @@
+////////////////////////////////////////////////////////////////////////////////
+// PAGE WARNING
+////////////////////////////////////////////////////////////////////////////////
+
+#warning-top {
+	text-shadow: 0 1px 0 lighten( $aside-warning-bg, 5% );
+	box-shadow: 0 0 5px black;
+	font-weight: bold;
+	left: 0;
+	line-height: 2.5;
+	overflow: hidden;
+	position: fixed;
+	right: 0;
+	text-align: center;
+	top: 0;
+	z-index: 99999;
+	background-color: $aside-warning-bg;
+	color: lighten( $aside-notice-bg, 80% );
+
+	a {
+		color: lighten( $aside-notice-bg, 80% );
+		text-decoration: underline;
+	}
+
+	.info:before {
+		@extend %icon-exclamation-sign;
+		font-size: 14px;
+		padding-right: 0.5em;
+		vertical-align: middle;
+	}
+}

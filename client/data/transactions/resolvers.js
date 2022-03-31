@@ -3,8 +3,9 @@
 /**
  * External dependencies
  */
-import { apiFetch } from '@wordpress/data-controls';
+import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -19,6 +20,7 @@ import {
 import { formatDateValue } from 'utils';
 
 export const formatQueryFilters = ( query ) => ( {
+	user_email: query.userEmail,
 	match: query.match,
 	date_before: formatDateValue( query.dateBefore, true ),
 	date_after: formatDateValue( query.dateAfter ),
@@ -29,6 +31,7 @@ export const formatQueryFilters = ( query ) => ( {
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
 	store_currency_is: query.storeCurrencyIs,
+	loan_id_is: query.loanIdIs,
 	deposit_id: query.depositId,
 	search: query.search,
 } );
@@ -51,6 +54,11 @@ export function* getTransactions( query ) {
 		const results = yield apiFetch( { path } );
 		yield updateTransactions( query, results.data || [] );
 	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__( 'Error retrieving transactions.', 'woocommerce-payments' )
+		);
 		yield updateErrorForTransactions( query, null, e );
 	}
 }

@@ -1,11 +1,100 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.7.0 - 2022-xx-xx =
+= 3.9.1 - 2022-03-29 =
+* Fix - Fix single currency settings page error.
+
+= 3.9.0 - 2022-03-24 =
+* Add - Add compatibility between Multi-Currency and WooCommerce Name Your Price.
+* Add - Add wcpay_is_wcpay_subscriptions_enabled filter
+* Add - Add Webhook_Reliability service to fetch and process failed webhook events.
+* Add - Add `wcpay_metadata_from_order` filter which allows for injecting of arbitrary metadata and/or overriding of the `payment_context`
+* Add - Allow handling of previously paid for payment intents via the Checkout Store API
+* Add - Allow saving credit cards to platform account from classic checkout.
+* Add - Implement Tracks events to capture OTP usage
+* Add - New filter introduced: 'wc_payments_account_id_for_intent_confirmation'.
+* Add - Redirect merchants to the onboarding flow when a URL parameter is present
+* Add - Tracking for checkout start and completion
+* Add - Tracking for when platform checkout is offered
+* Fix - Add - when order data has no billing last name (ex. Google Pay payment)
+* Fix - Add all subscription line items not just subscription products when creating WCPay Subscriptions.
+* Fix - Check for variables before using them to prevent possible errors during UPE checkout process.
+* Fix - Don't anonymize new subscriptions related to old subscriptions via a resubscribe relationship
+* Fix - Do not show multi-currency inbox note until the merchant has set up a WCPay account
+* Fix - Fix bug when woocommerce_order_actions is called by a plugin or custom code.
+* Fix - Fix checkout as guest on platform checkout
+* Fix - Fixed failed order getting updated on successful payment in UPE
+* Fix - Fix Printed receipt endpoint throws error when called from Jetpack API
+* Fix - Fix the conversion from amount in the transactions list.
+* Fix - Fix the number formatting issues in Capital loans page loans list
+* Fix - Fix `is_platform_payment_method` flag on blocks checkout
+* Fix - Improve visibility of checkout fields for WCPay payment options on a darker theme
+* Fix - Load currencies from WooCommerce core.
+* Fix - Remove account business URL validation to allow values without http/s:// prefix.
+* Fix - Sets up subscriptions integration with the Mini Cart Block and adds new hook to filter compatible blocks.
+* Fix - Show currencies based on store country currency
+* Fix - Subscription token notices that appear on the My account > Payment methods page should be translatable.
+* Fix - update the menu count html tag for wp.com
+* Fix - When there is only one Shipping Method available in the recurring shipping package, make sure that this method is treated as selected in the current session and the `woocommerce_after_shipping_rate` action runs.
+* Update - Bump minimum required version of WooCommerce from 4.8 to 5.0.
+* Update - Fixes fee display that caused confusion for Merchants
+* Update - Remove feature flagged code that enable platform checkout inside UPE block.
+* Update - Update payment methods icons.
+* Update - Update transaction csv download emails to be sent to the current logged in admin.
+* Dev - Document usage of metadata generated from order
+* Dev - Do not enqueue admin assets if user cannot manage_woocommerce.
+* Dev - Refactor the processing part of Webhook Controller to a separate service.
+* Dev - Remove type "Tweak" from the list of changelog types.
+* Dev - REST API documentation
+* Dev - Skip e2e tests if WC version is 5.0.0 because of WooCommerce Checkout Blocks minimum WC Required version
+* Dev - Unit test support for PHP 8 and upgrade PHPUnit version to 9.5.14
+* Dev - Updated contribution notes (how to add a changelog)
+
+= 3.8.2 - 2022-03-03 =
+* Fix - Fix fatal error when a subscription renews automatically.
+
+= 3.8.1 - 2022-03-03 =
+* Fix - Fix JavaScript error in blocks checkout and Customizer.
+
+= 3.8.0 - 2022-03-02 =
+* Add - Add a preview of uploaded logo and icon on terminal card reader receipt settings page.
+* Add - Add endpoint to retrieve a file content via API.
+* Add - Add jetpack-sync package to support Woo Mobile.
+* Add - Add jetpack-tracking module to track platform-checkout events.
+* Add - Add logic and UI to accept and see information about business loans, powered by Stripe Capital.
+* Add - Add merchant branding logo to print receipt.
+* Add - Add Preview printed version of IPP receipt to Card Readers settings page.
+* Add - Introduce `wcpay_payment_request_payment_method_title_suffix` filter. Allows plugins to replace "(WooCommerce Payments)" suffix on title of payment request buttons.
+* Fix - Conditionally add subscription payment gateway features.
+* Fix - Fix email download for deposit transactions.
+* Fix - Fix Stripe Level 3 data API limit when basket size is more than 200 items.
+* Fix - Styling issue in the subscription product publish modal.
+* Update - Add tracking for enabling and disabling platform checkout.
+* Update - Bump minimum required version of WooCommerce from 4.6 to 4.8.
+* Update - Enable capture terminal payment for succeeded intents.
+* Dev - Use Jetpack Changelogger to manage changelog files.
+* Tweak - Only add admin notes on non-AJAX requests.
+* Tweak - Refactor to add Order Service for updating order statuses.
+
+= 3.7.0 - 2022-02-10 =
+* Add - Filter by currency in disputes list
+* Add - Link to customer in disputes list
+* Update - Bump minimum required version of WordPress from 5.6 to 5.7.
+* Update - Bump minimum required version of WooCommerce from 4.5 to 4.6.
 * Add - Introduce sorting on disputes page.
 * Fix - Currency name not translated the Overview card title.
 * Add - Introduce advance filters on disputes page.
 * Add - UPE payment methods - BECS Direct Debit.
 * Fix - Missing currency field in disputes export file.
+* Add - Implement Jetpack Identity Crisis / Safe Mode banner.
+* Fix - Checkout with block-based themes.
+* Add - UPE payment method - EPS.
+* Fix - Replace uses of is_ajax() with wp_doing_ajax() in subscriptions-core.
+* Update - Improve handling of session data.
+* Fix - When changing the payment method, make sure the subscription total returns $0 when `subscriptions-core` is loaded after the `woocommerce_loaded` action hook.
+
+= 3.6.1 - 2022-01-27 =
+* Fix - Remove packages not compatible with PHP 7.0
+* Update - Security update.
 
 = 3.6.0 - 2022-01-20 =
 * Update - Bump minimum required version of WooCommerce from 4.4 to 4.5.
@@ -71,7 +160,6 @@
 * Update - Capture order-related metadata not captured by mobile app for in-person payment transactions.
 * Add - REST endpoint to print IPP receipts.
 * Add - Deposit Status to Transaction export.
-
 
 = 3.3.0 - 2021-11-18 =
 * Add - Add Idempotency Key to POST headers.
@@ -275,13 +363,13 @@
 * Add - When setting WooCommerce Payments up, inform if merchant business country is not supported.
 * Update - Bump minimum supported version of WooCommerce from 4.8 to 5.2.
 * Add - Introduce advance filters on deposits page.
-* Update: Prefill OAuth flow with WC store country
+* Update - Prefill OAuth flow with WC store country.
 
 = 2.5.0 - 2021-06-02 =
 * Fix - Fix hover dialog for close button on modals, unify styling and layout of modal buttons.
 * Update - Use Site Language when rendering Stripe elements.
 * Update - Use blog ID for authenticating most of the requests.
-* Fix: Misaligned columns on Deposits page.
+* Fix - Misaligned columns on Deposits page.
 * Add - Tracking for returning from OAuth connection.
 * Fix - Transactions and deposits counts on the table summary are rendered as "undefined".
 * Update - Deposit overview details.
@@ -509,7 +597,7 @@
 * Fix - Add logging for OAuth initialization failures
 
 = 0.9.0 - 2020-04-08 =
-* Release for Public Beta
+* Add - Release for Public Beta.
 
 = 0.8.2 - 2020-03-10 =
 * Add - Dispute file evidence upload support
@@ -520,10 +608,10 @@
 * Fix - Improve Jetpack connection checking
 
 = 0.8.1 - 2020-02-25 =
-* Update link to test card documentation
+* Update - Link to test card documentation.
 
 = 0.8.0 - 2020-02-24 =
-* First beta release
+* Add - First beta release.
 
 = 0.7.0 - 2020-02-05 =
-* Alpha release
+* Add - Alpha release.

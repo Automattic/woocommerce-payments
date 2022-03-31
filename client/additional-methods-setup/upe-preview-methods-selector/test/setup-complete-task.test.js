@@ -30,6 +30,7 @@ describe( 'SetupComplete', () => {
 			[
 				'card',
 				'bancontact',
+				'eps',
 				'giropay',
 				'sofort',
 				'ideal',
@@ -103,6 +104,7 @@ describe( 'SetupComplete', () => {
 							initialMethods: [
 								'card',
 								'bancontact',
+								'eps',
 								'giropay',
 								'ideal',
 								'p24',
@@ -137,6 +139,7 @@ describe( 'SetupComplete', () => {
 							initialMethods: [
 								'card',
 								'bancontact',
+								'eps',
 								'giropay',
 								'ideal',
 								'p24',
@@ -187,6 +190,7 @@ describe( 'SetupComplete', () => {
 	it( 'renders setup complete messaging when context value says that more than one payment method has been added', () => {
 		const additionalMethods = [
 			'bancontact',
+			'eps',
 			'giropay',
 			'ideal',
 			'p24',

@@ -49,6 +49,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'bancontact',
+			'eps',
 			'giropay',
 			'ideal',
 			'p24',
@@ -61,6 +62,10 @@ describe( 'AddPaymentMethodsTask', () => {
 				requirements: [],
 			},
 			bancontact_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
+				requirements: [],
+			},
+			eps_payments: {
 				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
 			},
@@ -162,6 +167,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		// The payment methods should all be checked.
 		const expectedToBeUnchecked = [
 			'Bancontact',
+			'EPS',
 			'giropay',
 			'iDEAL',
 			'Przelewy24 (P24)',
@@ -219,6 +225,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		// The payment methods should all be checked.
 		const expectedToBeUnchecked = [
 			'Bancontact',
+			'EPS',
 			'giropay',
 			'iDEAL',
 			'Przelewy24 (P24)',
@@ -267,6 +274,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		const initialMethods = [
 			'card',
 			'bancontact',
+			'eps',
 			'giropay',
 			'p24',
 			'ideal',
@@ -289,6 +297,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		// The payment methods should all be checked.
 		const expectedToBeUnchecked = [
 			'Bancontact',
+			'EPS',
 			'giropay',
 			'iDEAL',
 			'Przelewy24 (P24)',
@@ -336,6 +345,10 @@ describe( 'AddPaymentMethodsTask', () => {
 			},
 			bancontact_payments: {
 				status: upeCapabilityStatuses.INACTIVE,
+				requirements: [],
+			},
+			eps_payments: {
+				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
 			},
 			giropay_payments: {

@@ -1,0 +1,88 @@
+.express-checkout-settings {
+	&__breadcrumbs {
+		margin-bottom: 40px;
+	}
+
+	&__option-muted-text {
+		color: #757575;
+	}
+
+	&__option-help-text {
+		color: #757575;
+		padding-left: 30px;
+
+		@media ( min-width: 600px ) {
+			padding-left: 26px;
+		}
+	}
+
+	&__cta-selection {
+		.components-base-control__label {
+			// hack until the `hideLabelFromVision` is fixed for radio controls in Gutenberg
+			display: none;
+		}
+	}
+
+	&__preview {
+		border: 1px dashed #ddd;
+		box-sizing: border-box;
+		border-radius: 3px;
+		background-color: #f0f0f0;
+		padding: 16px;
+	}
+
+	&__preview-help-text {
+		font-style: italic;
+	}
+
+	&__icon {
+		border-radius: 2px;
+		display: flex;
+		width: 64px;
+		height: 40px;
+		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
+		box-shadow: 0 0 0 1px #ddd;
+		background: #fff;
+
+		svg {
+			display: inline-block;
+		}
+	}
+}
+
+.components-radio-control__input[type='radio']:checked::before {
+	box-sizing: border-box;
+}
+
+.platform-checkout-settings {
+	.components-base-control:first-child {
+		margin-bottom: 2em;
+	}
+
+	&__custom-message-wrapper {
+		max-width: 500px;
+		position: relative;
+
+		.components-base-control__field .components-text-control__input {
+			padding-right: 70px;
+		}
+
+		.input-help-text {
+			position: absolute;
+			right: 10px;
+			top: 42px;
+			font-size: 12px;
+			color: #757575;
+
+			@media ( min-width: 783px ) {
+				top: 38px;
+			}
+		}
+	}
+}
+
+.payment-request-settings {
+	&__location {
+		margin-bottom: 26px;
+	}
+}

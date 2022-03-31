@@ -94,6 +94,7 @@ declare module '@woocommerce/components' {
 		query?: Query;
 		onQueryChange?: unknown;
 		actions?: React.ReactNode[];
+		showMenu?: boolean;
 	}
 	const TableCard: ( props: TableCardProps ) => JSX.Element;
 }
@@ -114,6 +115,7 @@ declare module '@woocommerce/navigation' {
 		type_is?: unknown;
 		type_is_not?: unknown;
 		store_currency_is?: string;
+		loan_id_is?: string;
 		search?: string[];
 		status_is?: string;
 		status_is_not?: string;

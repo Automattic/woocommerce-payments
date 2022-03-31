@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PrintedReceiptPreviewer should render correctly 1`] = `
+<div>
+  <iframe
+    class="card-readers-preview-receipt__preview"
+    title="Preview Receipt"
+  />
+</div>
+`;

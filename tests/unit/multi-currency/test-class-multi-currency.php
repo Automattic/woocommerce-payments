@@ -82,8 +82,8 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	 */
 	private $mock_localization_service;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_currency_settings(
 			'GBP',
@@ -107,7 +107,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->init_multi_currency();
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
@@ -122,7 +122,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		delete_option( self::ENABLED_CURRENCIES_OPTION );
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'no' );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_available_currencies_uses_wc_currencies_when_no_stripe_account() {
@@ -345,12 +345,12 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	public function test_update_selected_currency_recalculates_cart() {
 		wp_set_current_user( self::LOGGED_IN_USER_ID );
 
-		$this->assertContains( '&#36;', WC()->cart->get_total() );
+		$this->assertStringContainsString( '&#36;', WC()->cart->get_total() );
 
 		$this->multi_currency->update_selected_currency( 'GBP' );
 
-		$this->assertContains( '&pound;', WC()->cart->get_total() );
-		$this->assertNotContains( '&#36;', WC()->cart->get_total() );
+		$this->assertStringContainsString( '&pound;', WC()->cart->get_total() );
+		$this->assertStringNotContainsString( '&#36;', WC()->cart->get_total() );
 
 	}
 
@@ -560,6 +560,24 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$this->init_multi_currency( $mock_api_client );
 		$this->assertEquals(
 			$this->mock_cached_currencies,
+			$this->multi_currency->get_cached_currencies()
+		);
+	}
+
+	public function test_get_cached_currencies_with_account_rejected() {
+		update_option( self::CACHED_CURRENCIES_OPTION, null );
+
+		$this->mock_account
+			->expects( $this->once() )
+			->method( 'is_account_rejected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_currency_rates' );
+
+		$this->assertEquals(
+			null,
 			$this->multi_currency->get_cached_currencies()
 		);
 	}
@@ -874,10 +892,10 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		}
 	}
 
-	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true ) {
+	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null ) {
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
-		$this->mock_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_account = $mock_account ?? $this->createMock( WC_Payments_Account::class );
 		$this->mock_account->method( 'is_stripe_connected' )->willReturn( $wcpay_account_connected );
 
 		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );

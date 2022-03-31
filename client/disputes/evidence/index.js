@@ -27,7 +27,7 @@ import moment from 'moment';
 import '../style.scss';
 import { useDisputeEvidence } from 'wcpay/data';
 import evidenceFields from './fields';
-import { FileUploadControl } from './file-upload';
+import { FileUploadControl } from 'components/file-upload';
 import Info from '../info';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
@@ -316,6 +316,9 @@ export const DisputeEvidencePage = ( props ) => {
 							<SelectControl
 								value={ productType }
 								onChange={ onChangeProductType }
+								data-testid={
+									'dispute-challenge-product-type-selector'
+								}
 								options={ [
 									{
 										label: __(

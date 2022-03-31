@@ -8,7 +8,7 @@ const {
 	} = require( '@woocommerce/e2e-utils' ),
 	{ testAdminOnboardingWizard } = require( '@woocommerce/admin-e2e-tests' );
 
-describe( 'Onboarding > Resetting to defaults', () => {
+describe.skip( 'Onboarding > Resetting to defaults', () => {
 	beforeAll( async () => {
 		await merchant.login();
 	} );
@@ -36,7 +36,7 @@ describe( 'Onboarding > Resetting to defaults', () => {
 	} );
 } );
 
-describe( 'Onboarding > Start and complete onboarding', () => {
+describe.skip( 'Onboarding > Start and complete onboarding', () => {
 	// Reset onboarding profile when re-running tests on a site
 	if ( IS_RETEST_MODE ) {
 		withRestApi.resetOnboarding();

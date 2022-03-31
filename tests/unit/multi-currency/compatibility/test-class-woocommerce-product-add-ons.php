@@ -38,8 +38,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_multi_currency         = $this->createMock( MultiCurrency::class );
 		$this->mock_utils                  = $this->createMock( Utils::class );
@@ -119,13 +119,13 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 	}
 
 	public function test_get_addons_price_returns_converted_price() {
-		$this->mock_multi_currency->method( 'get_price' )->with( 50, 'product' )->willReturn( 75 );
-		$this->assertEquals( 75, $this->woocommerce_product_add_ons->get_addons_price( 50, [ 'price_type' => 'flat_fee' ] ) );
+		$this->mock_multi_currency->method( 'get_price' )->with( 50, 'product' )->willReturn( 75.00 );
+		$this->assertEquals( 75.00, $this->woocommerce_product_add_ons->get_addons_price( 50, [ 'price_type' => 'flat_fee' ] ) );
 	}
 
 	public function test_get_product_calculation_price_returns_correctly() {
 		$price = 42;
-		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( $price );
+		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price );
 		for ( $i = 1; $i < 5; $i++ ) {
 			$expected = $price * $i;
 			$this->assertEquals( $expected, $this->woocommerce_product_add_ons->get_product_calculation_price( $expected, $i, WC_Helper_Product::create_simple_product() ) );
@@ -134,11 +134,11 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 
 	public function test_order_line_item_meta_returns_flat_fee_data_correctly() {
 		$price = 42;
-		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( $price * 2 );
+		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price * 2 );
 		$addon = [
 			'name'       => 'checkboxes',
 			'value'      => 'flat fee',
-			'price'      => $price,
+			'price'      => (float) $price,
 			'field_type' => 'checkbox',
 			'price_type' => 'flat_fee',
 		];
@@ -180,11 +180,11 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 	public function test_order_line_item_meta_returns_input_multiplier_data_correctly() {
 		$price = 42;
 		$value = 2;
-		$this->mock_multi_currency->method( 'get_price' )->with( $price / $value, 'product' )->willReturn( $price / $value );
+		$this->mock_multi_currency->method( 'get_price' )->with( ( $price / $value ), 'product' )->willReturn( (float) $price / $value );
 		$addon = [
 			'name'       => 'quantity',
 			'value'      => $value,
-			'price'      => $price,
+			'price'      => (float) $price,
 			'field_type' => 'input_multiplier',
 			'price_type' => 'flat_fee',
 		];
@@ -203,11 +203,11 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 
 	public function test_order_line_item_meta_returns_custom_price_data_correctly() {
 		$price = 42;
-		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( $price * 2 );
+		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price * 2 );
 		$addon = [
 			'name'       => 'checkboxes',
 			'value'      => 'custom price',
-			'price'      => $price,
+			'price'      => (float) $price,
 			'field_type' => 'custom_price',
 			'price_type' => '',
 		];
@@ -219,7 +219,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 
 		$expected = [
 			'key'   => 'checkboxes ($42.00)',
-			'value' => 42,
+			'value' => 42.0,
 		];
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
 	}
@@ -477,8 +477,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 				[ $price / $value, 'product' ]
 			)
 			->willReturn(
-				$price,
-				$price / $value
+				(float) $price,
+				(float) $price / $value
 			);
 
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
@@ -505,7 +505,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 			'display' => '',
 		];
 
-		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( $price );
+		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price );
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
 	}
 
@@ -531,7 +531,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCas
 			'display' => '',
 		];
 
-		$this->mock_multi_currency->method( 'get_price' )->with( 10, 'product' )->willReturn( 10 );
+		$this->mock_multi_currency->method( 'get_price' )->with( 10, 'product' )->willReturn( 10.00 );
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
 	}
 }

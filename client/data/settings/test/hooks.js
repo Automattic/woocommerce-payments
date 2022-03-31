@@ -15,6 +15,8 @@ import {
 	useTestMode,
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
+	usePlatformCheckoutEnabledSettings,
+	usePlatformCheckoutCustomMessage,
 } from '../hooks';
 import { STORE_NAME } from '../../constants';
 
@@ -262,6 +264,61 @@ describe( 'Settings hooks tests', () => {
 			expect(
 				actions.updatePaymentRequestLocations
 			).toHaveBeenCalledWith( locationsAfterUpdate );
+		} );
+	} );
+
+	describe( 'usePlatformCheckoutEnabledSettings()', () => {
+		test( 'returns platform checkout setting from selector', () => {
+			actions = {
+				updateIsPlatformCheckoutEnabled: jest.fn(),
+			};
+
+			selectors = {
+				getIsPlatformCheckoutEnabled: jest.fn( () => true ),
+			};
+
+			const [
+				isPlatformCheckoutEnabled,
+				updateIsPlatformCheckoutEnabled,
+			] = usePlatformCheckoutEnabledSettings();
+
+			updateIsPlatformCheckoutEnabled( false );
+
+			expect( isPlatformCheckoutEnabled ).toEqual( true );
+			expect(
+				actions.updateIsPlatformCheckoutEnabled
+			).toHaveBeenCalledWith( false );
+		} );
+	} );
+
+	describe( 'usePlatformCheckoutCustomMessage()', () => {
+		test( 'returns and updates platform checkout custom message', () => {
+			const messageBeforeUpdate = '';
+			const messageAfterUpdate = 'test';
+
+			actions = {
+				updatePlatformCheckoutCustomMessage: jest.fn(),
+			};
+
+			selectors = {
+				getPlatformCheckoutCustomMessage: jest.fn(
+					() => messageBeforeUpdate
+				),
+			};
+
+			const [
+				platformCheckoutCustomMessage,
+				updatePlatformCheckoutCustomMessage,
+			] = usePlatformCheckoutCustomMessage();
+
+			updatePlatformCheckoutCustomMessage( messageAfterUpdate );
+
+			expect( platformCheckoutCustomMessage ).toEqual(
+				messageBeforeUpdate
+			);
+			expect(
+				actions.updatePlatformCheckoutCustomMessage
+			).toHaveBeenCalledWith( messageAfterUpdate );
 		} );
 	} );
 } );

@@ -1,0 +1,13 @@
+.woocommerce-filters-transactions {
+	.woocommerce-filters-advanced {
+		&__fieldset {
+			display: grid;
+			grid-template-columns: 100px auto 1fr;
+		}
+	}
+	.components-select-control
+		.components-input-control__container
+		.components-select-control__input {
+		padding-right: var( --main-gap );
+	}
+}

@@ -7,6 +7,7 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
+use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
@@ -63,8 +64,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		require_once __DIR__ . '/../helpers/class-wc-blocks-rest-api-registration-preventer.php';
 		WC_Blocks_REST_API_Registration_Preventer::prevent();
@@ -80,8 +81,18 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $account );
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
+		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
+		$order_service            = new WC_Payments_Order_Service();
 
-		$this->gateway    = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+		$this->gateway    = new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$account,
+			$customer_service,
+			$token_service,
+			$action_scheduler_service,
+			$mock_rate_limiter,
+			$order_service
+		);
 		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
 
 		$mock_payment_methods   = [];
@@ -89,6 +100,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			Becs_Payment_Method::class,
 			CC_Payment_Method::class,
 			Bancontact_Payment_Method::class,
+			Eps_Payment_Method::class,
 			Giropay_Payment_Method::class,
 			Sofort_Payment_Method::class,
 			Sepa_Payment_Method::class,
@@ -107,9 +119,16 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			$mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 		}
 
-		$mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
-
-		$this->upe_gateway    = new UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $mock_payment_methods, $mock_rate_limiter );
+		$this->upe_gateway    = new UPE_Payment_Gateway(
+			$this->mock_api_client,
+			$account,
+			$customer_service,
+			$token_service,
+			$action_scheduler_service,
+			$mock_payment_methods,
+			$mock_rate_limiter,
+			$order_service
+		);
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
 
 		$this->mock_api_client
@@ -127,8 +146,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			);
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 	}
@@ -156,7 +175,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'card', 'au_becs_debit', 'bancontact', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24' ],
+			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24' ],
 			$enabled_method_ids
 		);
 	}
@@ -549,10 +568,84 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 				],
 				$request,
 				'account_business_support_address',
-				new WP_Error( 'rest_invalid_pattern', 'Invalid address format!' ),
+				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid address format!' ),
 			],
 		];
 	}
 
+	/**
+	 * Tests account business support email validator
+	 *
+	 * @dataProvider account_business_support_email_validation_provider
+	 */
+	public function test_validate_business_support_email( $value, $request, $param, $expected ) {
+		$return = $this->controller->validate_business_support_email_address( $value, $request, $param );
+		$this->assertEquals( $return, $expected );
+	}
 
+	/**
+	 * Provider for test_validate_business_support_email.
+	 * @return array[] test method params.
+	 */
+	public function account_business_support_email_validation_provider() {
+		$request = new WP_REST_Request();
+		return [
+			[
+				'test@test.com',
+				$request,
+				'account_business_support_email',
+				true,
+			],
+			[
+				'', // Empty value should trigger error.
+				$request,
+				'account_business_support_email',
+				true,
+			],
+			[
+				'test@test',
+				$request,
+				'account_business_support_email',
+				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid email address: test@test' ),
+			],
+		];
+	}
+
+	/**
+	 * Tests account business support phone validator
+	 *
+	 * @dataProvider account_business_support_phone_validation_provider
+	 */
+	public function test_validate_business_support_phone( $value, $request, $param, $expected ) {
+		$return = $this->controller->validate_business_support_phone( $value, $request, $param );
+		$this->assertEquals( $return, $expected );
+	}
+
+	/**
+	 * Provider for test_validate_business_support_phone.
+	 * @return array[] test method params.
+	 */
+	public function account_business_support_phone_validation_provider() {
+		$request = new WP_REST_Request();
+		return [
+			[
+				'123-123456',
+				$request,
+				'account_business_support_phone',
+				true,
+			],
+			[
+				'', // Empty value should be allowed.
+				$request,
+				'account_business_support_phone',
+				true,
+			],
+			[
+				'123test',
+				$request,
+				'account_business_support_phone',
+				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid phone number: 123test' ),
+			],
+		];
+	}
 }
