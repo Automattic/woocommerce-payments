@@ -18,6 +18,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -617,6 +618,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
+		$platform_checkout_util = new Platform_Checkout_Utilities();
+
 		return [
 			'publishableKey'                 => $this->account->get_publishable_key( $this->is_in_test_mode() ),
 			'accountId'                      => $this->account->get_stripe_account_id(),
@@ -633,7 +636,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'            => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled'      => WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === $this->get_option( 'platform_checkout', 'no' ),
+			'isPlatformCheckoutEnabled'      => $platform_checkout_util->should_enable_platform_checkout( $this ),
 			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
