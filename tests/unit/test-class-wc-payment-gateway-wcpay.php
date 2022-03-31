@@ -9,6 +9,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Constants\Payment_Type;
+use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Information;
 
 // Need to use WC_Mock_Data_Store.
@@ -282,6 +284,57 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
 
 		$this->assertTrue( $result );
+	}
+
+	/**
+	 * Test saving WCPay refund id to WC Refund meta and WC Order Note.
+	 */
+	public function test_process_refund_save_wcpay_refund_id_to_refund_meta_and_order_note() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$refund = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
+			$this->returnValue(
+				[
+					'id'                       => 're_123456789',
+					'object'                   => 'refund',
+					'amount'                   => 19.99,
+					'balance_transaction'      => 'txn_987654321',
+					'charge'                   => 'ch_121212121212',
+					'created'                  => 1610123467,
+					'payment_intent'           => 'pi_1234567890',
+					'reason'                   => null,
+					'reciept_number'           => null,
+					'source_transfer_reversal' => null,
+					'status'                   => 'succeeded',
+					'transfer_reversal'        => null,
+					'currency'                 => 'usd',
+				]
+			)
+		);
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 1,
+			]
+		);
+		$latest_wcpay_note = $notes[0];
+
+		$this->assertTrue( $result );
+		$this->assertEquals( 're_123456789', $refund->get_meta( '_wcpay_refund_id', true ) );
+		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'USD' ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( 're_123456789', $latest_wcpay_note->content );
 	}
 
 	public function test_process_refund_non_usd() {
@@ -609,7 +662,31 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			function ( $output ) {
 				$result = preg_match_all( '/.*<input.*id="wc-woocommerce_payments-new-payment-method".*\/>.*/', $output );
 
-				$this->assertEquals( 0, $result );
+				$this->assertSame( 0, $result );
+			}
+		);
+
+		$this->wcpay_gateway->payment_fields();
+	}
+
+	public function test_fraud_prevention_token_added_when_enabled() {
+		$token_value                   = 'test-token';
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'get_token' )
+			->willReturn( $token_value );
+
+		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
+		$this->setOutputCallback(
+			function ( $output ) use ( $token_value ) {
+				$result = preg_match_all( '/.*<input.*type="hidden".*name="wcpay-fraud-prevention-token".*value="' . $token_value . '".*\/>.*/', $output );
+
+				$this->assertSame( 0, $result );
 			}
 		);
 
@@ -2087,6 +2164,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
 
+		$this->get_fraud_prevention_service_mock()
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
@@ -2103,6 +2185,78 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
 			throw $e;
 		}
+	}
+
+	public function test_process_payment_rejects_if_missing_fraud_prevention_token() {
+		$order = WC_Helper_Order::create_order();
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Your payment was not processed.' );
+		$this->wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_process_payment_rejects_if_invalid_fraud_prevention_token() {
+		$order = WC_Helper_Order::create_order();
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'incorrect-token' )
+			->willReturn( false );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'incorrect-token';
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Your payment was not processed.' );
+		$this->wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_process_payment_continues_if_valid_fraud_prevention_token() {
+		$order = WC_Helper_Order::create_order();
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'correct-token' )
+			->willReturn( true );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'prepare_payment_information' );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' );
+
+		$mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {
@@ -2285,20 +2439,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_force_network_saved_cards_is_returned_as_true_if_should_use_stripe_platform() {
-		$mock_wcpay_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
-			->setConstructorArgs(
-				[
-					$this->mock_api_client,
-					$this->mock_wcpay_account,
-					$this->mock_customer_service,
-					$this->mock_token_service,
-					$this->mock_action_scheduler_service,
-					$this->mock_rate_limiter,
-					$this->order_service,
-				]
-			)
-			->setMethods( [ 'should_use_stripe_platform_on_checkout_page' ] )
-			->getMock();
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'should_use_stripe_platform_on_checkout_page' ] );
 
 		$mock_wcpay_gateway
 			->expects( $this->once() )
@@ -2321,5 +2462,55 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	public function test_is_platform_checkout_enabled_returns_false_if_account_missing() {
 		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [] ] );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+	}
+
+	public function is_platform_checkout_falsy_value_provider() {
+		return [
+			[ '0' ],
+			[ 0 ],
+			[ null ],
+			[ false ],
+			'(bool) true is not strictly equal to (int) 1' => [ true ],
+			[ 'foo' ],
+			[ [] ],
+		];
+	}
+
+	/**
+	 * Create a partial mock for WC_Payment_Gateway_WCPay class.
+	 *
+	 * @param array $methods Method names that need to be mocked.
+	 * @return MockObject|WC_Payment_Gateway_WCPay
+	 */
+	private function get_partial_mock_for_gateway( array $methods = [] ) {
+		return $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethods( $methods )
+			->getMock();
+	}
+
+	/**
+	 * Mocks Fraud_Prevention_Service.
+	 *
+	 * @return MockObject|Fraud_Prevention_Service
+	 */
+	private function get_fraud_prevention_service_mock() {
+		$fraud_prevention_service_mock = $this->getMockBuilder( Fraud_Prevention_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
+
+		return $fraud_prevention_service_mock;
 	}
 }

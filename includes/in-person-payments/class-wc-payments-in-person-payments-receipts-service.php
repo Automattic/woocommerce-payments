@@ -37,6 +37,8 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 				'coupon_lines' => $order->get_items( 'coupon' ),
 				'tax_lines'    => $order->get_items( 'tax' ),
 				'total'        => $order->get_total(),
+				'shipping_tax' => $order->get_shipping_methods() ? $order->get_shipping_total() : 0,
+				'total_fees'   => $order->get_total_fees(),
 			];
 			$line_items_data = $this->format_line_items( $order_data );
 		}
