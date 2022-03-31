@@ -23,12 +23,12 @@ use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
  */
 class WC_Payments {
-
 	/**
 	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
 	 *
@@ -239,21 +239,16 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
+		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
+		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 		}
 
-		// Load platform checkout save user section if feature is enabled.
-		if ( WC_Payments_Features::is_platform_checkout_eligible() ) {
-			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
-			// Load platform checkout tracking.
-			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
-
-			new Platform_Checkout_Save_User();
-			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
-		}
+		// // Load platform checkout save user section if feature is enabled.
+		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_platform_checkout' ] );
 
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
@@ -872,8 +867,6 @@ class WC_Payments {
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
 			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
-			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
 		}
 	}
 
@@ -1009,4 +1002,25 @@ class WC_Payments {
 		return $field;
 	}
 
+	/**
+	 * Register platform checkout hooks and scripts if feature is available.
+	 *
+	 * @return void
+	 */
+	public static function init_platform_checkout() {
+		// Load platform checkout save user section if feature is enabled.
+		$platform_checkout_util = new Platform_Checkout_Utilities();
+		if ( $platform_checkout_util->should_enable_platform_checkout( self::get_gateway() ) ) {
+			// Update email field location.
+			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
+			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );
+
+			include_once __DIR__ . '/platform-checkout-user/class-platform-checkout-save-user.php';
+			// Load platform checkout tracking.
+			include_once WCPAY_ABSPATH . 'includes/class-platform-checkout-tracker.php';
+
+			new Platform_Checkout_Save_User();
+			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
+		}
+	}
 }

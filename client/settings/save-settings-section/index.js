@@ -14,7 +14,7 @@ import wcpayTracks from '../../tracks';
 import SettingsSection from '../settings-section';
 import './style.scss';
 
-const SaveSettingsSection = () => {
+const SaveSettingsSection = ( { disabled = false } ) => {
 	const { saveSettings, isSaving, isLoading, settings } = useSettings();
 
 	// Keep the inital value of is_payment_request_enabled
@@ -63,7 +63,7 @@ const SaveSettingsSection = () => {
 			<Button
 				isPrimary
 				isBusy={ isSaving }
-				disabled={ isSaving || isLoading }
+				disabled={ isSaving || isLoading || disabled }
 				onClick={ saveOnClick }
 			>
 				{ __( 'Save changes', 'woocommerce-payments' ) }
