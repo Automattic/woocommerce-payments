@@ -54,14 +54,6 @@ const SingleCurrencySettings = () => {
 		? currencies.available[ currency ]
 		: {};
 
-	// Polyfill for window.wcpaySettings.zeroDecimalCurrencies.
-	// It's needed for wcpay/currency/utils library to format currencies correctly.
-	window.wcpaySettings = window.wcpaySettings || {
-		zeroDecimalCurrencies: Object.values( currencies.available )
-			.filter( ( currencyInfo ) => currencyInfo.is_zero_decimal )
-			.map( ( currencyInfo ) => currencyInfo.code ),
-	};
-
 	const targetCurrencyRoundingOptions = targetCurrency.is_zero_decimal
 		? zeroDecimalCurrencyRoundingOptions
 		: decimalCurrencyRoundingOptions;

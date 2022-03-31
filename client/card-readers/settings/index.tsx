@@ -6,6 +6,7 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -44,13 +45,17 @@ const ReadersSettingsDescription = (): JSX.Element => (
 );
 
 const ReceiptSettings = (): JSX.Element => {
+	const [ isSaveDisabled, setSaveDisabled ] = useState( false );
+
 	return (
 		<SettingsLayout displayBanner={ false }>
 			<SettingsSection description={ ReadersSettingsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<Card className="card-readers-settings__wrapper">
 						<CardBody>
-							<BusinessDetailsSection />
+							<BusinessDetailsSection
+								setSaveDisabled={ setSaveDisabled }
+							/>
 							<ContactsDetailsSection />
 							<AddressDetailsSection />
 							{ isBrandingEnabled && <BrandingDetailsSection /> }
@@ -58,7 +63,7 @@ const ReceiptSettings = (): JSX.Element => {
 					</Card>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SaveSettingsSection />
+			<SaveSettingsSection disabled={ isSaveDisabled } />
 		</SettingsLayout>
 	);
 };
