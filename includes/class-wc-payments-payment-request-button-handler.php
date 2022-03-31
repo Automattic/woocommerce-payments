@@ -224,7 +224,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$product  = $this->get_product();
 		$currency = get_woocommerce_currency();
 
-		if ( 'variable' === $product->get_type() ) {
+		if ( 'variable' === $product->get_type() || 'variable-subscription' === $product->get_type() ) {
 			$variation_attributes = $product->get_variation_attributes();
 			$attributes           = [];
 
