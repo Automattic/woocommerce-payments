@@ -2193,6 +2193,6 @@ class WC_Payments_API_Client {
 	 * @return bool True if store has fraud prevention enabled.
 	 */
 	public function is_fraud_prevention_enabled_for_store() {
-		return false;
+		return 'yes' === WC_Payments::get_gateway()->get_option( 'is_fraud_prevention_enabled' );
 	}
 }
