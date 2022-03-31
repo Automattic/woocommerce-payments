@@ -5,13 +5,16 @@
 import { React, useLayoutEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl, Notice } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import { useAccountBusinessName, useAccountBusinessURL } from '../../../data';
 
-const BusinessDetailsSection = ( { isDisabled, setDisabled } ) => {
+const BusinessDetailsSection = ( { setSaveDisabled } ) => {
+	const [ hasError, setHasError ] = useState( false );
+
 	const [
 		accountBusinessName,
 		setAccountBusinessName,
@@ -32,9 +35,11 @@ const BusinessDetailsSection = ( { isDisabled, setDisabled } ) => {
 
 	const validateBusinessURL = ( event ) => {
 		if ( event.target.checkValidity() ) {
-			setDisabled( false );
+			setHasError( false );
+			setSaveDisabled( false );
 		} else {
-			setDisabled( true );
+			setHasError( true );
+			setSaveDisabled( true );
 		}
 	};
 
@@ -47,7 +52,7 @@ const BusinessDetailsSection = ( { isDisabled, setDisabled } ) => {
 				value={ accountBusinessName }
 				onChange={ setAccountBusinessName }
 			/>
-			{ isDisabled && (
+			{ hasError && (
 				<Notice status="error" isDismissible={ false }>
 					<span>
 						{ __(

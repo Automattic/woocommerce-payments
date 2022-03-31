@@ -45,7 +45,7 @@ const ReadersSettingsDescription = (): JSX.Element => (
 );
 
 const ReceiptSettings = (): JSX.Element => {
-	const [ isSaveDisabled, setDisabled ] = useState( false );
+	const [ isSaveDisabled, setSaveDisabled ] = useState( false );
 
 	return (
 		<SettingsLayout displayBanner={ false }>
@@ -54,8 +54,7 @@ const ReceiptSettings = (): JSX.Element => {
 					<Card className="card-readers-settings__wrapper">
 						<CardBody>
 							<BusinessDetailsSection
-								isDisabled={ isSaveDisabled }
-								setDisabled={ setDisabled }
+								setSaveDisabled={ setSaveDisabled }
 							/>
 							<ContactsDetailsSection />
 							<AddressDetailsSection />
