@@ -1082,7 +1082,7 @@ class WC_Payments_API_Client {
 
 		return $this->request(
 			$params,
-			self::ONBOARDING_API,
+			self::ONBOARDING_API . '/required_verification_information',
 			self::GET
 		);
 	}

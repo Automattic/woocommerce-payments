@@ -100,9 +100,11 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				throw new Rest_Request_Exception( __( 'Country or type parameter was missing', 'woocommerce-payments' ) );
 			}
 
+			$verification_info = $this->onboarding_service->get_required_verification_information( $country_code, $type, $structure );
+
 			return rest_ensure_response(
 				[
-					'data' => $this->onboarding_service->get_required_verification_information( $country_code, $type, $structure ),
+					'data' => $verification_info,
 				]
 			);
 		} catch ( Rest_Request_Exception $e ) {
