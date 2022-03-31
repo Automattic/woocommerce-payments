@@ -25,7 +25,7 @@ echo sprintf( esc_html__( 'Hi %s,', 'woocommerce-payments' ), esc_html( $order->
 /* translators: %s: Order number */
 echo sprintf( esc_html__( 'This is the receipt for your order #%s:', 'woocommerce-payments' ), esc_html( $order->get_order_number() ) ) . "\n\n";
 
-do_action( 'woocommerce_payments_email_receipt_store_details', $merchant_settings, $plain_text );
+do_action( 'woocommerce_payments_email_ipp_receipt_store_details', $merchant_settings, $plain_text );
 
 echo "\n----------------------------------------\n\n";
 
@@ -39,7 +39,7 @@ do_action( 'woocommerce_email_order_details', $order, $sent_to_admin, $plain_tex
 
 echo "\n----------------------------------------\n\n";
 
-do_action( 'woocommerce_payments_email_receipt_compliance_details', $charge, $plain_text );
+do_action( 'woocommerce_payments_email_ipp_receipt_compliance_details', $charge, $plain_text );
 
 echo "\n\n----------------------------------------\n\n";
 
