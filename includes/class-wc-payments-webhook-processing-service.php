@@ -62,6 +62,13 @@ class WC_Payments_Webhook_Processing_Service {
 	private $receipt_service;
 
 	/**
+	 * WC_Payment_Gateway_WCPay
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $wcpay_gateway;
+
+	/**
 	 * WC_Payments_Webhook_Processing_Service constructor.
 	 *
 	 * @param WC_Payments_API_Client                          $api_client          WooCommerce Payments API client.
@@ -69,7 +76,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @param WC_Payments_Account                             $account             WC_Payments_Account instance.
 	 * @param WC_Payments_Remote_Note_Service                 $remote_note_service WC_Payments_Remote_Note_Service instance.
 	 * @param WC_Payments_Order_Service                       $order_service       WC_Payments_Order_Service instance.
-	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service       WC_Payments_In_Person_Payments_Receipts_Service instance.
+	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
+	 * @param WC_Payment_Gateway_WCPay                        $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
@@ -77,7 +85,8 @@ class WC_Payments_Webhook_Processing_Service {
 		WC_Payments_Account $account,
 		WC_Payments_Remote_Note_Service $remote_note_service,
 		WC_Payments_Order_Service $order_service,
-		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service
+		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service,
+		WC_Payment_Gateway_WCPay $wcpay_gateway
 	) {
 		$this->wcpay_db            = $wcpay_db;
 		$this->account             = $account;
@@ -85,6 +94,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service       = $order_service;
 		$this->api_client          = $api_client;
 		$this->receipt_service     = $receipt_service;
+		$this->wcpay_gateway       = $wcpay_gateway;
 	}
 
 	/**
@@ -343,14 +353,13 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 
 		// Send the customer a card reader receipt if it's an in person payment type.
-		if ( array_key_exists( 'payment_method_details', $charges_data[0] ) && 'card_present' === $this->read_webhook_property( $charges_data[0]['payment_method_details'], 'type' ) ) {
-			$wcpay_gateway     = WC_Payments::get_gateway();
+		if ( \WCPay\Constants\Payment_Method::CARD_PRESENT === ( $charges_data[0]['payment_method_details']['type'] ?? null ) ) {
 			$merchant_settings = [
-				'business_name' => $wcpay_gateway->get_option( 'account_business_name' ),
+				'business_name' => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'support_info'  => [
-					'address' => $wcpay_gateway->get_option( 'account_business_support_address' ),
-					'phone'   => $wcpay_gateway->get_option( 'account_business_support_phone' ),
-					'email'   => $wcpay_gateway->get_option( 'account_business_support_email' ),
+					'address' => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
+					'phone'   => $this->wcpay_gateway->get_option( 'account_business_support_phone' ),
+					'email'   => $this->wcpay_gateway->get_option( 'account_business_support_email' ),
 				],
 			];
 			$this->receipt_service->send_customer_ipp_receipt_email( $order, $merchant_settings, $charges_data[0] );

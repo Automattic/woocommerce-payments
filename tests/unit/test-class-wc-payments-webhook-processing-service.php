@@ -43,9 +43,16 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	/**
 	 * receipt_service
 	 *
-	 * @var mixed
+	 * @var WC_Payments_In_Person_Payments_Receipts_Service|MockObject
 	 */
 	private $mock_receipt_service;
+
+	/**
+	 * mock_wcpay_gateway
+	 *
+	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 */
+	private $mock_wcpay_gateway;
 
 	/**
 	 * @var array
@@ -76,7 +83,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_receipt_service = $this->createMock( WC_Payments_In_Person_Payments_Receipts_Service::class );
 
-		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service );
+		$this->mock_wcpay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+
+		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service, $this->mock_wcpay_gateway );
 
 		// Build the event body data.
 		$event_object = [];
@@ -536,6 +545,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'send_customer_ipp_receipt_email' );
 
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'get_option' );
+
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -593,6 +606,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'send_customer_ipp_receipt_email' );
 
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'get_option' );
+
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -644,6 +661,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'send_customer_ipp_receipt_email' );
 
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'get_option' );
+
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 
@@ -673,6 +694,15 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			'status'   => 'succeeded',
 		];
 
+		$mock_merchant_settings = [
+			'business_name' => 'Test Business',
+			'support_info'  => [
+				'address' => [],
+				'phone'   => '42424',
+				'email'   => 'some@example.com',
+			],
+		];
+
 		$mock_order = $this->createMock( WC_Order::class );
 
 		$mock_order
@@ -700,15 +730,24 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->method( 'send_customer_ipp_receipt_email' )
 			->with(
 				$mock_order,
-				[
-					'business_name' => '',
-					'support_info'  => [
-						'address' => [],
-						'phone'   => '',
-						'email'   => '',
-					],
-				],
+				$mock_merchant_settings,
 				$this->event_body['data']['object']['charges']['data'][0]
+			);
+
+		$this->mock_wcpay_gateway
+			->expects( $this->exactly( 4 ) )
+			->method( 'get_option' )
+			->withConsecutive(
+				[ 'account_business_name' ],
+				[ 'account_business_support_address' ],
+				[ 'account_business_support_phone' ],
+				[ 'account_business_support_email' ]
+			)
+			->willReturnOnConsecutiveCalls(
+				$mock_merchant_settings['business_name'],
+				$mock_merchant_settings['support_info']['address'],
+				$mock_merchant_settings['support_info']['phone'],
+				$mock_merchant_settings['support_info']['email']
 			);
 
 		// Run the test.
