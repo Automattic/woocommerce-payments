@@ -36,7 +36,7 @@ export function* getRequiredVerificationInfo(
 	query: RequiredVerificationInfoParams
 ): unknown {
 	const path = addQueryArgs(
-		`${ NAMESPACE }/onboarding/required_verification_info`,
+		`${ NAMESPACE }/onboarding/required_verification_information`,
 		query
 	);
 

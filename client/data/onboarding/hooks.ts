@@ -41,7 +41,7 @@ export const useRequiredVerificationInfo = (
 		}
 
 		return {
-			requiredFields: getRequiredVerificationInfo(),
+			requiredFields: getRequiredVerificationInfo( query ),
 			isLoading: isResolving( 'getRequiredVerificationInfo', query ),
 		};
 	}, [] );

@@ -5,12 +5,16 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Exceptions\Rest_Request_Exception;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
  * REST controller for account details and status.
  */
 class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller {
+
+	const RESULT_BAD_REQUEST = 'bad_request';
 
 	/**
 	 * Onboarding Service.
@@ -83,16 +87,26 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 * @param WP_REST_Request $request Request object.
 	 *
 	 * @return WP_REST_Response|WP_Error
+	 *
+	 * @throws Rest_Request_Exception
 	 */
 	public function get_required_verification_information( $request ) {
-		$country_code = $request->get_param( 'country' );
-		$type         = $request->get_param( 'type' );
+		$country_code = $request->get_param( 'country' ) ?? null;
+		$type         = $request->get_param( 'type' ) ?? null;
 		$structure    = $request->get_param( 'structure' ) ?? null;
 
-		return rest_ensure_response(
-			[
-				'data' => $this->onboarding_service->get_required_verification_information( $country_code, $type, $structure ),
-			]
-		);
+		try {
+			if ( ! $country_code || ! $type ) {
+				throw new Rest_Request_Exception( __( 'Country or type parameter was missing', 'woocommerce-payments' ) );
+			}
+
+			return rest_ensure_response(
+				[
+					'data' => $this->onboarding_service->get_required_verification_information( $country_code, $type, $structure ),
+				]
+			);
+		} catch ( Rest_Request_Exception $e ) {
+			return new WP_REST_Response( [ 'result' => self::RESULT_BAD_REQUEST ], 400 );
+		}
 	}
 }
