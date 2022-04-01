@@ -135,6 +135,21 @@ class WC_Payments_Onboarding_Service_Test extends WP_UnitTestCase {
 		delete_option( WC_Payments_Onboarding_Service::BUSINESS_TYPES_OPTION );
 	}
 
+	public function test_get_required_verification_information() {
+		$mock_requirements = [ 'requirement1', 'requirement2', 'requirement3' ];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_required_verification_information' )
+			->with( 'US', 'company', 'sole_propietorship' )
+			->willReturn( $mock_requirements );
+
+		$this->assertEquals(
+			$mock_requirements,
+			$this->onboarding_service->get_required_verification_information( 'US', 'company', 'sole_propietorship' )
+		);
+	}
+
 	public function test_get_cached_business_types_with_no_server_connection() {
 		$this->mock_api_client
 			->expects( $this->once() )
