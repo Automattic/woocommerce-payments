@@ -9,7 +9,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import RequiredVerificationInfo from '../';
+import RequiredVerificationInfo from '../required-verification-info';
 import { useRequiredVerificationInfo } from 'wcpay/data/onboarding';
 
 jest.mock( 'wcpay/data/onboarding', () => ( {
@@ -47,6 +47,7 @@ describe( 'RequiredVerificationInfoTask', () => {
 		useRequiredVerificationInfo.mockReturnValue( {
 			requiredFields: requirements,
 			isLoading: true,
+			getRequiredVerificationInfo: () => requirements,
 		} );
 
 		const { container: task } = render( <RequiredVerificationInfo /> );
@@ -57,6 +58,7 @@ describe( 'RequiredVerificationInfoTask', () => {
 		useRequiredVerificationInfo.mockReturnValue( {
 			requiredFields: requirements,
 			isLoading: false,
+			getRequiredVerificationInfo: () => requirements,
 		} );
 
 		const { container: task } = render( <RequiredVerificationInfo /> );
