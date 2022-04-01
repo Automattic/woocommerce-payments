@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import interpolateComponents from 'interpolate-components';
 
 /**
  * Internal dependencies
@@ -15,17 +16,32 @@ const AdditionalInformation = () => {
 			<div className="additional-information">
 				<PhoneIcon />
 				<span>
-					{ __(
-						"Next time time you checkout, we'll send you a text message to access your saved information.",
-						'woocommerce-payments'
-					) }
+					{ interpolateComponents( {
+						mixedString: __(
+							'Enter your mobile phone number to save your checkout information for faster checkouts here, ' +
+								'and at other stores powered by {{wooPay/}}.',
+							'woocommerce-payments'
+						),
+						components: {
+							wooPay: (
+								<a
+									target="_blank"
+									href="https://wordpress.com/tos/"
+									rel="noopener noreferrer"
+								>
+									{ __( 'WooPay', 'woocommerce-payments' ) }
+								</a>
+							),
+						},
+					} ) }
 				</span>
 			</div>
 			<div className="additional-information">
 				<LockIcon />
 				<span>
 					{ __(
-						'Your personal details will be encrypted from end to end and payments go through 100% secure servers.',
+						'Next time you checkout on a WooPay powered store, you’ll receive ' +
+							'a code by text message to quickly and securly complete your purchase with your saved information.',
 						'woocommerce-payments'
 					) }
 				</span>
