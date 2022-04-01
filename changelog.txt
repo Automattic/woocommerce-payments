@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 3.9.2 - 2022-xx-xx =
+* Fix - Fixing error related to some currencies
+
 = 3.9.1 - 2022-03-29 =
 * Fix - Fix single currency settings page error.
 

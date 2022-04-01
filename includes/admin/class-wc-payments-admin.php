@@ -396,11 +396,11 @@ class WC_Payments_Admin {
 
 		foreach ( $locale_info as $key => $value ) {
 			$currency_data[ $key ] = [
-				'code'              => $value['currency_code'],
-				'symbol'            => $value['short_symbol'],
-				'symbolPosition'    => $value['currency_pos'],
-				'thousandSeparator' => $value['thousand_sep'],
-				'decimalSeparator'  => $value['decimal_sep'],
+				'code'              => $value['currency_code'] ?? '',
+				'symbol'            => $value['short_symbol'] ?? '',
+				'symbolPosition'    => $value['currency_pos'] ?? '',
+				'thousandSeparator' => $value['thousand_sep'] ?? '',
+				'decimalSeparator'  => $value['decimal_sep'] ?? '',
 				'precision'         => $value['num_decimals'],
 			];
 		}
