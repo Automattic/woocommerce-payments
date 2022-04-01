@@ -1520,6 +1520,18 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
 	}
 
+	public function test_get_platform_checkout_eligibility_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'platform_checkout_eligible' => true,
+			]
+		);
+
+		$response = $this->payments_api_client->get_platform_checkout_eligibility();
+		$this->assertTrue( $response['platform_checkout_eligible'] );
+	}
+
 	/** Test a successful fetch of a list of documents
 	 *
 	 * @throws Exception
