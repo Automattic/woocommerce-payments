@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
-import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 
 /**
@@ -13,6 +12,7 @@ import { Card, CardBody } from '@wordpress/components';
 import { LoadableBlock } from 'components/loadable';
 import { useRequiredVerificationInfo } from 'data/onboarding';
 import Requirements from 'onboarding/requirements';
+import strings from 'onboarding/strings';
 
 const RequiredVerificationInfo = ( { country, type, structure } ) => {
 	const {
@@ -33,19 +33,14 @@ const RequiredVerificationInfo = ( { country, type, structure } ) => {
 		<Card size="large" className="wcpay-required-info-card">
 			<CardBody>
 				<p>
-					<b>
-						{ __(
-							"To verify your details, we'll require:",
-							'woocommerce-payments'
-						) }
-					</b>
+					<b>{ strings.onboarding.requirementsDescription }</b>
 				</p>
-				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
 					<Requirements type={ type } keys={ requiredFields } />
 				</LoadableBlock>
 
-				<LoadableBlock isLoading={ isLoading } numLines={ 4 } />
-				<LoadableBlock isLoading={ isLoading } numLines={ 4 } />
+				<LoadableBlock isLoading={ isLoading } numLines={ 2 } />
+				<LoadableBlock isLoading={ isLoading } numLines={ 2 } />
 			</CardBody>
 		</Card>
 	);

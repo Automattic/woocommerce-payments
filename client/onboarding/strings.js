@@ -19,12 +19,17 @@ export default {
 			'woocommerce-payments'
 		),
 		description: __(
-			"Preview the details we'll require to verify your business and enable despoits.",
+			'Preview the details we may require to verify your business and enable despoits.',
 			'woocommerce-payments'
 		),
 
 		countryDescription: __(
 			'The primary country where your business operates',
+			'woocommerce-payments'
+		),
+
+		requirementsDescription: __(
+			'Verifying your details can require:',
 			'woocommerce-payments'
 		),
 	},

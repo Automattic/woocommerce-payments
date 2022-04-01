@@ -10,7 +10,7 @@ exports[`RequiredVerificationInfoTask shows a loadable block 1`] = `
     >
       <p>
         <b>
-          To verify your details, we'll require:
+          Verifying your details can require:
         </b>
       </p>
       <span
@@ -18,7 +18,7 @@ exports[`RequiredVerificationInfoTask shows a loadable block 1`] = `
         class="is-loadable-placeholder is-block"
       >
         <p
-          style="line-height: 4;"
+          style="line-height: 2;"
         >
           Block placeholder
         </p>
@@ -28,7 +28,7 @@ exports[`RequiredVerificationInfoTask shows a loadable block 1`] = `
         class="is-loadable-placeholder is-block"
       >
         <p
-          style="line-height: 4;"
+          style="line-height: 2;"
         >
           Block placeholder
         </p>
@@ -38,7 +38,7 @@ exports[`RequiredVerificationInfoTask shows a loadable block 1`] = `
         class="is-loadable-placeholder is-block"
       >
         <p
-          style="line-height: 4;"
+          style="line-height: 2;"
         >
           Block placeholder
         </p>
@@ -58,7 +58,7 @@ exports[`RequiredVerificationInfoTask shows the requirements 1`] = `
     >
       <p>
         <b>
-          To verify your details, we'll require:
+          Verifying your details can require:
         </b>
       </p>
       <div
