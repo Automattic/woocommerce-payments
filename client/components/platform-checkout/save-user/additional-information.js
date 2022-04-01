@@ -7,14 +7,16 @@ import interpolateComponents from 'interpolate-components';
 /**
  * Internal dependencies
  */
-import LockIcon from '../icons/lock-icon';
-import PhoneIcon from '../icons/phone-icon';
+import LockIcon from '../icons/lock';
+import PhoneIcon from '../icons/phone';
 
 const AdditionalInformation = () => {
 	return (
 		<div>
 			<div className="additional-information">
-				<PhoneIcon />
+				<div>
+					<PhoneIcon />
+				</div>
 				<span>
 					{ interpolateComponents( {
 						mixedString: __(
@@ -37,7 +39,9 @@ const AdditionalInformation = () => {
 				</span>
 			</div>
 			<div className="additional-information">
-				<LockIcon />
+				<div>
+					<LockIcon />
+				</div>
 				<span>
 					{ __(
 						'Next time you checkout on a WooPay powered store, you’ll receive ' +
