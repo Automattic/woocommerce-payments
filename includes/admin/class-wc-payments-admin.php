@@ -22,13 +22,6 @@ class WC_Payments_Admin {
 	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1"><span class="plugin-count">1</span></span>';
 
 	/**
-	 * Option name used to hide Card Readers page behind a feature flag.
-	 *
-	 * @var string
-	 */
-	const CARD_READERS_FLAG_NAME = '_wcpay_feature_card_readers';
-
-	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -136,15 +129,6 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Checks whether the Card Readers page is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_card_readers_page_enabled() {
-		return '1' === get_option( self::CARD_READERS_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Add deposits and transactions menus for wcpay_empty_state_preview_mode_v1 experiment's treatment group.
 	 * This code can be removed once we're done with the experiment.
 	 */
@@ -237,7 +221,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( $should_render_full_menu ) {
-			if ( self::is_card_readers_page_enabled() && $this->account->is_card_present_eligible() ) {
+			if ( $this->account->is_card_present_eligible() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [
 					'id'       => 'wc-payments-card-readers',
 					'title'    => __( 'Card Readers', 'woocommerce-payments' ),
