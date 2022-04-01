@@ -39,7 +39,6 @@ import { DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 
 import './style.scss';
-import { title } from 'process';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -250,6 +249,7 @@ export const DisputesList = (): JSX.Element => {
 
 	const onDownload = async () => {
 		setIsDownloading( true );
+		const title = __( 'Disputes', 'woocommerce-payments' );
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
 		const userEmail = wcpaySettings.currentUserEmail;
 
@@ -259,18 +259,16 @@ export const DisputesList = (): JSX.Element => {
 				date_after: dateAfter,
 				date_between: dateBetween,
 				match,
-				search,
-				type_is: typeIs,
-				type_is_not: typeIsNot,
+				status_is: statusIs,
+				status_is_not: statusIsNot,
 			} = getQuery();
 
 			const isFiltered =
 				!! dateBefore ||
 				!! dateAfter ||
 				!! dateBetween ||
-				!! typeIs ||
-				!! typeIsNot ||
-				!! search;
+				!! statusIs ||
+				!! statusIsNot;
 
 			const confirmThreshold = 1000;
 			const confirmMessage = sprintf(
@@ -296,9 +294,8 @@ export const DisputesList = (): JSX.Element => {
 							dateBefore,
 							dateBetween,
 							match,
-							search,
-							typeIs,
-							typeIsNot,
+							statusIs,
+							statusIsNot,
 						} ),
 						method: 'POST',
 					} );

@@ -19,7 +19,7 @@ import {
 	updateDisputesSummary,
 } from './actions';
 
-export const formatQueryFilters = ( query ) => ( {
+const formatQueryFilters = ( query ) => ( {
 	match: query.match,
 	store_currency_is: query.storeCurrencyIs,
 	date_before: formatDateValue( query.dateBefore, true ),
