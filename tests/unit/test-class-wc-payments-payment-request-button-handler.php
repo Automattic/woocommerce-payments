@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Session_Rate_Limiter;
+
 /**
  * WC_Payments_Payment_Request_Button_Handler_Test class.
  */
