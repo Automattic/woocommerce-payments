@@ -12,6 +12,13 @@ namespace WCPay\Fraud_Prevention;
  */
 class Buyer_Fingerprinting_Service {
 	/**
+	 * Singleton instance.
+	 *
+	 * @var Buyer_Fingerprinting_Service
+	 */
+	private static $instance;
+
+	/**
 	 * Fraud prevention service instance.
 	 *
 	 * @var Fraud_Prevention_Service
@@ -35,11 +42,21 @@ class Buyer_Fingerprinting_Service {
 	 * @return Buyer_Fingerprinting_Service
 	 */
 	public static function get_instance( $fraud_prevention_service = null ): self {
-		if ( null === self::$fraud_prevention_service ) {
-			self::$fraud_prevention_service = new self( $fraud_prevention_service ?? Fraud_Prevention_Service::get_instance() );
+		if ( null === self::$instance ) {
+			self::$instance = new self( $fraud_prevention_service ?? Fraud_Prevention_Service::get_instance() );
 		}
 
-		return self::$fraud_prevention_service;
+		return self::$instance;
+	}
+
+	/**
+	 * Sets a instance to be used in request cycle.
+	 * Introduced primarily for supporting unit tests.
+	 *
+	 * @param Buyer_Fingerprinting_Service|null $instance Instance of self.
+	 */
+	public static function set_instance( self $instance = null ) {
+		self::$instance = $instance;
 	}
 
 	/**
