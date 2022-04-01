@@ -209,7 +209,7 @@ describe( 'Disputes list', () => {
 			mockUseDisputesSummary.mockReturnValue( {
 				isLoading: false,
 				disputesSummary: {
-					count: 25,
+					count: 3,
 				},
 			} );
 		} );
