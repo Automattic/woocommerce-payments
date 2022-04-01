@@ -15,12 +15,20 @@ const Agreement = () => {
 				),
 				components: {
 					termsOfService: (
-						<a href="?TODO">
+						<a
+							href="https://wordpress.com/tos/"
+							target="_blank"
+							rel="noreferrer"
+						>
 							{ __( 'Terms of Service', 'woocommerce-payments' ) }
 						</a>
 					),
 					privacyPolicy: (
-						<a href="?TODO">
+						<a
+							href="https://automattic.com/privacy/"
+							target="_blank"
+							rel="noreferrer"
+						>
 							{ __( 'Privacy Policy', 'woocommerce-payments' ) }
 						</a>
 					),

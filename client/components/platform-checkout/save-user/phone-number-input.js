@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
-import { TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import intlTelInput from 'intl-tel-input';
 
@@ -19,7 +18,8 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 	const [ inputInstance, setInputInstance ] = useState( null );
 	const [ isValid, setIsValid ] = useState( true );
 
-	const handlePhoneNumberInputChange = ( value = inputValue ) => {
+	const handlePhoneNumberInputChange = ( e ) => {
+		const value = e.target.value || inputValue;
 		setInputValue( value );
 		if ( inputInstance ) {
 			handlePhoneNumberChange( inputInstance.getNumber() );
@@ -114,7 +114,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 
 	return (
 		<>
-			<TextControl
+			<input
 				type="tel"
 				aria-label={ __(
 					'Mobile phone number',
@@ -125,7 +125,11 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 				value={ inputValue }
 				onChange={ handlePhoneNumberInputChange }
 				onBlur={ handlePhoneNumberValidation }
-				className={ ! isValid ? 'has-error' : '' }
+				className={
+					! isValid
+						? 'phone-input input-text has-error'
+						: 'phone-input input-text'
+				}
 			/>
 			<ErrorText />
 		</>
