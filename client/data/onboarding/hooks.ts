@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 import { RequiredVerificationInfoParams } from './types';
 
@@ -22,30 +22,24 @@ export const useBusinessTypes = (): unknown =>
 	}, [] );
 
 export const useRequiredVerificationInfo = (
-	country: string,
-	type: string,
-	structure: string
-): unknown =>
-	useSelect( ( select ) => {
-		const {
-			getRequiredVerificationInfo,
-			isResolving,
-			hasFinishedResolution,
-		} = select( STORE_NAME );
-
-		const query: RequiredVerificationInfoParams = {
-			country: country,
-			type: type,
-		};
-
-		if ( structure.length > 0 ) {
-			query.structure = structure;
-		}
+	query: RequiredVerificationInfoParams
+): unknown => {
+	const { requiredFields, isLoading } = useSelect( ( select ) => {
+		const { getRequiredVerificationInfo, isResolving } = select(
+			STORE_NAME
+		);
 
 		return {
 			requiredFields: getRequiredVerificationInfo( query ),
-			isRequirementsLoading:
-				isResolving( 'getRequiredVerificationInfo', [] ) ||
-				! hasFinishedResolution( 'getRequiredVerificationInfo', [] ),
+			isLoading: isResolving( 'getRequiredVerificationInfo', [] ),
 		};
 	}, [] );
+
+	const { getRequiredVerificationInfo } = useDispatch( STORE_NAME );
+
+	return {
+		requiredFields,
+		isLoading,
+		getRequiredVerificationInfo,
+	};
+};
