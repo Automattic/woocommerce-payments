@@ -40,9 +40,12 @@ const RequiredVerificationInfo = ( { country, type, structure } ) => {
 						) }
 					</b>
 				</p>
-				<LoadableBlock isLoading={ isLoading }>
+				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<Requirements type={ type } keys={ requiredFields } />
 				</LoadableBlock>
+
+				<LoadableBlock isLoading={ isLoading } numLines={ 4 } />
+				<LoadableBlock isLoading={ isLoading } numLines={ 4 } />
 			</CardBody>
 		</Card>
 	);
