@@ -27,9 +27,11 @@ export const useRequiredVerificationInfo = (
 	structure: string
 ): unknown =>
 	useSelect( ( select ) => {
-		const { getRequiredVerificationInfo, isResolving } = select(
-			STORE_NAME
-		);
+		const {
+			getRequiredVerificationInfo,
+			isResolving,
+			hasFinishedResolution,
+		} = select( STORE_NAME );
 
 		const query: RequiredVerificationInfoParams = {
 			country: country,
@@ -42,9 +44,8 @@ export const useRequiredVerificationInfo = (
 
 		return {
 			requiredFields: getRequiredVerificationInfo( query ),
-			isRequirementsLoading: isResolving(
-				'getRequiredVerificationInfo',
-				query
-			),
+			isRequirementsLoading:
+				isResolving( 'getRequiredVerificationInfo', [] ) ||
+				! hasFinishedResolution( 'getRequiredVerificationInfo', [] ),
 		};
 	}, [] );

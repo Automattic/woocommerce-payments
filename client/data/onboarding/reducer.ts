@@ -25,7 +25,7 @@ export default (
 		case ACTION_TYPES.SET_REQUIRED_VERIFICATION_INFO:
 			return {
 				...state,
-				required_fields: action.data,
+				requiredFields: action.data,
 			};
 		default:
 			return state;

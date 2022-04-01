@@ -40,7 +40,7 @@ export interface RequiredVerificationInfoParams {
 
 export interface OnboardingState {
 	countries: Country[];
-	required_fields?: string[];
+	requiredFields?: string[];
 }
 
 export interface State {

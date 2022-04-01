@@ -32,5 +32,5 @@ export const getBusinessTypes = ( state: State ): Country[] => {
 };
 
 export const getRequiredVerificationInfo = ( state: State ): string[] => {
-	return state.onboarding.required_fields ?? [];
+	return state.onboarding.requiredFields ?? [];
 };
