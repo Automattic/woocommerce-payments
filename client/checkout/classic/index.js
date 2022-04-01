@@ -15,6 +15,7 @@ import { getConfig } from 'utils/checkout';
 import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
+import { isWCPayChosen } from '../utils/upe';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -137,15 +138,6 @@ jQuery( function ( $ ) {
 
 		$.scroll_to_notices( scrollElement );
 		$( document.body ).trigger( 'checkout_error' );
-	};
-
-	/**
-	 * Check if Card payment is being used.
-	 *
-	 * @return {boolean} Boolean indicating whether or not Card payment is being used.
-	 */
-	const isWCPayChosen = function () {
-		return $( '#payment_method_woocommerce_payments' ).is( ':checked' );
 	};
 
 	/**
