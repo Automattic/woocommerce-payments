@@ -26,3 +26,13 @@ export const getTerms = ( paymentMethodsConfig, value = 'always' ) => {
 export const getCookieValue = ( name ) =>
 	document.cookie.match( '(^|;)\\s*' + name + '\\s*=\\s*([^;]+)' )?.pop() ||
 	'';
+
+/**
+ * Check if Card payment is being used.
+ *
+ * @return {boolean} Boolean indicating whether or not Card payment is being used.
+ */
+export const isWCPayChosen = function () {
+	return document.getElementById( 'payment_method_woocommerce_payments' )
+		.checked;
+};
