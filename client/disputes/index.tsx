@@ -251,6 +251,7 @@ export const DisputesList = (): JSX.Element => {
 	const onDownload = async () => {
 		setIsDownloading( true );
 		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
+		const userEmail = wcpaySettings.currentUserEmail;
 
 		if ( 'endpoint' === downloadType ) {
 			const {
@@ -290,6 +291,7 @@ export const DisputesList = (): JSX.Element => {
 						exported_disputes: exportedDisputes,
 					} = await apiFetch( {
 						path: getDisputesCSV( {
+							userEmail,
 							dateAfter,
 							dateBefore,
 							dateBetween,
@@ -303,15 +305,18 @@ export const DisputesList = (): JSX.Element => {
 
 					createNotice(
 						'success',
-						__(
-							'Your export will be emailed to you.',
-							'woocommerce-payments'
+						sprintf(
+							__(
+								'Your export will be emailed to %s',
+								'woocommerce-payments'
+							),
+							userEmail
 						)
 					);
 
-					wcpayTracks.recordEvent( 'wcpay_transactions_download', {
-						exported_transactions: exportedDisputes,
-						total_transactions: exportedDisputes,
+					wcpayTracks.recordEvent( 'wcpay_disputes_download', {
+						exported_disputes: exportedDisputes,
+						total_disputes: exportedDisputes,
 						download_type: 'endpoint',
 					} );
 				} catch {
@@ -374,6 +379,7 @@ export const DisputesList = (): JSX.Element => {
 			wcpayTracks.recordEvent( 'wcpay_disputes_download', {
 				exported_disputes: csvRows.length,
 				total_disputes: disputesSummary.count,
+				download_type: 'browser',
 			} );
 		}
 
