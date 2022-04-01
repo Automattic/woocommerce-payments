@@ -1564,11 +1564,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order The order to get the payment method type for.
 	 * @return string
 	 */
-	protected function get_payment_method_type_for_order( $order ) {
+	private function get_payment_method_type_for_order( $order ) {
 		$payment_method_id = $order->get_meta( '_payment_method_id', true );
 
 		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
-		$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : 'unknown';
+		$payment_method_type    = $payment_method_details['type'] ?? 'unknown';
 		return $payment_method_type;
 	}
 
