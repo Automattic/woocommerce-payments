@@ -42,7 +42,8 @@ export function* getRequiredVerificationInfo(
 ): unknown {
 	try {
 		yield dispatch( STORE_NAME ).startResolution(
-			'getRequiredVerificationInfo'
+			'getRequiredVerificationInfo',
+			[]
 		);
 
 		const path = addQueryArgs(
@@ -62,7 +63,8 @@ export function* getRequiredVerificationInfo(
 		);
 	} finally {
 		yield dispatch( STORE_NAME ).finishResolution(
-			'getRequiredVerificationInfo'
+			'getRequiredVerificationInfo',
+			[]
 		);
 	}
 }
