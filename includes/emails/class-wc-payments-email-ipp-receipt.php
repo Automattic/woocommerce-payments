@@ -108,13 +108,11 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			$this->merchant_settings = $merchant_settings;
 			$this->charge            = $charge;
 
-			if ( 'true' !== $email_already_sent ) {
-				if ( $this->is_enabled() && $this->get_recipient() ) {
-					$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+			if ( 'true' !== $email_already_sent && $this->is_enabled() && $this->get_recipient() ) {
+				$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 
-					$order->update_meta_data( '_new_receipt_email_sent', 'true' );
-					$order->save();
-				}
+				$order->update_meta_data( '_new_receipt_email_sent', 'true' );
+				$order->save();
 			}
 
 			$this->restore_locale();
@@ -236,7 +234,6 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		/**
 		 * Default content to show below main email content.
 		 *
-		 * @since 3.7.0
 		 * @return string
 		 */
 		public function get_default_additional_content(): string {
