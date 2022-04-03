@@ -20,9 +20,13 @@ import {
 } from '../../data';
 import { FetchReceiptPayload } from 'wcpay/types/card-readers';
 
+interface PreviewReceiptHtmlContent {
+	html_content: string;
+}
+
 async function fetchReceiptHtml(
 	payload: FetchReceiptPayload
-): Promise< string > {
+): Promise< PreviewReceiptHtmlContent > {
 	const path = '/wc/v3/payments/readers/receipts/preview';
 	return apiFetch( { path, data: payload, method: 'post' } );
 }
@@ -56,7 +60,7 @@ const PreviewReceipt = (): JSX.Element => {
 
 				if ( ! didCancel && data ) {
 					setIsLoading( false );
-					setReceiptHtml( data );
+					setReceiptHtml( data.html_content );
 				}
 			} catch ( error ) {
 				setIsLoading( false );

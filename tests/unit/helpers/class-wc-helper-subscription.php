@@ -231,4 +231,8 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public function set_requires_manual_renewal( $bool ) {
 		$this->manual = $bool;
 	}
+
+	public function update_status( $status ) {
+		$this->status = $status;
+	}
 }

@@ -41,6 +41,20 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	private $order_service;
 
 	/**
+	 * receipt_service
+	 *
+	 * @var WC_Payments_In_Person_Payments_Receipts_Service|MockObject
+	 */
+	private $mock_receipt_service;
+
+	/**
+	 * mock_wcpay_gateway
+	 *
+	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 */
+	private $mock_wcpay_gateway;
+
+	/**
 	 * @var array
 	 */
 	private $event_body;
@@ -67,7 +81,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
 
-		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service );
+		$this->mock_receipt_service = $this->createMock( WC_Payments_In_Person_Payments_Receipts_Service::class );
+
+		$this->mock_wcpay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+
+		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service, $this->mock_wcpay_gateway );
 
 		// Build the event body data.
 		$event_object = [];
@@ -173,6 +191,52 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->method( 'order_from_charge_id' )
 			->with( 'test_charge_id' )
 			->willReturn( $mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Test a vaild refund failure deletes WooCommerce Refund.
+	 */
+	public function test_valid_failed_refund_webhook_deletes_wc_refund() {
+		// Setup test request data.
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['data']['object'] = [
+			'status'   => 'failed',
+			'charge'   => 'test_charge_id',
+			'id'       => 'test_refund_id',
+			'amount'   => 999,
+			'currency' => 'usd',
+		];
+
+		$mock_refund_1 = $this->createMock( WC_Order_Refund::class );
+		$mock_refund_1->method( 'get_meta' )->willReturn( 'another_test_refund_id' );
+
+		$mock_refund_2 = $this->createMock( WC_Order_Refund::class );
+		$mock_refund_2->method( 'get_meta' )->willReturn( 'test_refund_id' );
+
+		$mock_order = $this->createMock( WC_Order::class );
+		$mock_order->method( 'get_refunds' )->willReturn(
+			[
+				$mock_refund_1,
+				$mock_refund_2,
+			]
+		);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $mock_order );
+
+		$mock_refund_1
+			->expects( $this->never() )
+			->method( 'delete' );
+
+		$mock_refund_2
+			->expects( $this->once() )
+			->method( 'delete' );
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
@@ -477,6 +541,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
+		$this->mock_receipt_service
+			->expects( $this->never() )
+			->method( 'send_customer_ipp_receipt_email' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'get_option' );
+
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -530,6 +602,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
+		$this->mock_receipt_service
+			->expects( $this->never() )
+			->method( 'send_customer_ipp_receipt_email' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'get_option' );
+
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -577,9 +657,101 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
+		$this->mock_receipt_service
+			->expects( $this->never() )
+			->method( 'send_customer_ipp_receipt_email' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'get_option' );
+
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 
+	}
+
+	/**
+	 * Tests that a payment_intent.succeeded event will complete the order and
+	 * send the card reader receipt to the customer.
+	 */
+	public function test_payment_intent_successful_and_send_card_reader_receipt() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123', // payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => 'py_123123123123123',
+						'payment_method_details' => [
+							'type' => 'card_present',
+						],
+					],
+				],
+			],
+			'currency' => 'eur',
+			'status'   => 'succeeded',
+		];
+
+		$mock_merchant_settings = [
+			'business_name' => 'Test Business',
+			'support_info'  => [
+				'address' => [],
+				'phone'   => '42424',
+				'email'   => 'some@example.com',
+			],
+		];
+
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'has_status' )
+			->with( [ 'processing', 'completed' ] )
+			->willReturn( false );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $mock_order );
+
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_receipt_service
+			->expects( $this->once() )
+			->method( 'send_customer_ipp_receipt_email' )
+			->with(
+				$mock_order,
+				$mock_merchant_settings,
+				$this->event_body['data']['object']['charges']['data'][0]
+			);
+
+		$this->mock_wcpay_gateway
+			->expects( $this->exactly( 4 ) )
+			->method( 'get_option' )
+			->withConsecutive(
+				[ 'account_business_name' ],
+				[ 'account_business_support_address' ],
+				[ 'account_business_support_phone' ],
+				[ 'account_business_support_email' ]
+			)
+			->willReturnOnConsecutiveCalls(
+				$mock_merchant_settings['business_name'],
+				$mock_merchant_settings['support_info']['address'],
+				$mock_merchant_settings['support_info']['phone'],
+				$mock_merchant_settings['support_info']['email']
+			);
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**

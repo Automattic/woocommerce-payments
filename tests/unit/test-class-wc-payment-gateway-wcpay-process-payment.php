@@ -1081,6 +1081,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->method( 'should_use_stripe_platform_on_checkout_page' )
 			->willReturn( true );
 
+		$_POST['wcpay-is-platform-payment-method'] = 1;
+
 		// Arrange: Return a successful response from create_and_confirm_intention().
 		$intent = new WC_Payments_API_Intention(
 			'pi_123',

@@ -1,0 +1,16 @@
+.lang-selector {
+	a {
+		border-top: 4px solid $lang-select-bg;
+		padding: 10px 20px;
+
+		&:active,
+		&:focus,
+		&:hover {
+			border-top-color: #9b5c8f;
+		}
+
+		&.active {
+			border-top-color: #9b5c8f;
+		}
+	}
+}

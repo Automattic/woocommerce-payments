@@ -2,20 +2,19 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import { React, useLayoutEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl, Notice } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import {
-	useAccountBusinessName,
-	useAccountBusinessURL,
-	useGetSavingError,
-} from '../../../data';
+import { useAccountBusinessName, useAccountBusinessURL } from '../../../data';
 
-const BusinessDetailsSection = () => {
+const BusinessDetailsSection = ( { setSaveDisabled } ) => {
+	const [ hasError, setHasError ] = useState( false );
+
 	const [
 		accountBusinessName,
 		setAccountBusinessName,
@@ -26,8 +25,23 @@ const BusinessDetailsSection = () => {
 		setAccountBusinessURL,
 	] = useAccountBusinessURL();
 
-	const businessSuppotURLErrorMessage = useGetSavingError()?.data?.details
-		?.account_business_url?.message;
+	useLayoutEffect( () => {
+		const businessUrl = document.querySelector(
+			'.card-readers-business-url-input input'
+		);
+		businessUrl.focus();
+		businessUrl.blur();
+	}, [] );
+
+	const validateBusinessURL = ( event ) => {
+		if ( event.target.checkValidity() ) {
+			setHasError( false );
+			setSaveDisabled( false );
+		} else {
+			setHasError( true );
+			setSaveDisabled( true );
+		}
+	};
 
 	return (
 		<>
@@ -38,9 +52,14 @@ const BusinessDetailsSection = () => {
 				value={ accountBusinessName }
 				onChange={ setAccountBusinessName }
 			/>
-			{ businessSuppotURLErrorMessage && (
+			{ hasError && (
 				<Notice status="error" isDismissible={ false }>
-					<span>{ businessSuppotURLErrorMessage }</span>
+					<span>
+						{ __(
+							'Error: Invalid business URL, should start with http:// or https:// prefix.',
+							'woocommerce-payments'
+						) }
+					</span>
 				</Notice>
 			) }
 			<TextControl
@@ -48,6 +67,7 @@ const BusinessDetailsSection = () => {
 				label={ __( 'Business URL', 'woocommerce-payments' ) }
 				value={ accountBusinessURL }
 				onChange={ setAccountBusinessURL }
+				onBlur={ validateBusinessURL }
 				type="url"
 			/>
 		</>

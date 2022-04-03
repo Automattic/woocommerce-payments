@@ -648,42 +648,4 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			],
 		];
 	}
-
-	/**
-	 * Tests account business support URL validator
-	 *
-	 * @dataProvider account_business_support_uri_validation_provider
-	 */
-	public function test_validate_business_support_uri( $value, $request, $param, $expected ) {
-		$return = $this->controller->validate_business_support_uri( $value, $request, $param );
-		$this->assertEquals( $return, $expected );
-	}
-
-	/**
-	 * Provider for test_validate_business_support_uri.
-	 * @return array[] test method params.
-	 */
-	public function account_business_support_uri_validation_provider() {
-		$request = new WP_REST_Request();
-		return [
-			[
-				'http://test.com',
-				$request,
-				'account_business_url',
-				true,
-			],
-			[
-				'', // Empty value should be allowed.
-				$request,
-				'account_business_url',
-				true,
-			],
-			[
-				'test',
-				$request,
-				'account_business_url',
-				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid business URL: test' ),
-			],
-		];
-	}
 }

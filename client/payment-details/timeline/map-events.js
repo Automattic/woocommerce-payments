@@ -311,6 +311,41 @@ const composeFXString = ( event ) => {
 	);
 };
 
+// Conditionally adds the ARN details to the timeline in case they're available.
+const getRefundTrackingDetails = ( event ) => {
+	return 'available' === event.acquirer_reference_number_status
+		? sprintf(
+				/* translators: %s is a trcking reference number */
+				__(
+					'Acquirer Reference Number (ARN) %s',
+					'woocommerce-payments'
+				),
+				event.acquirer_reference_number
+		  )
+		: '';
+};
+
+// Converts the failure reason enums to error messages.
+const getRefundFailureReason = ( event ) => {
+	switch ( event.failure_reason ) {
+		case 'expired_or_canceled_card':
+			return __(
+				'the card being expired or canceled.',
+				'woocommerce-payments'
+			);
+		case 'lost_or_stolen_card':
+			return __(
+				'the card being lost or stolen.',
+				'woocommerce-payments'
+			);
+		case 'unknown':
+			return __(
+				'the card being lost or stolen.',
+				'woocommerce-payments'
+			);
+	}
+};
+
 /**
  * Returns an array containing fee breakdown.
  *
@@ -592,6 +627,28 @@ const mapEventToTimelineItems = ( event ) => {
 					[ composeFXString( event ) ]
 				),
 			];
+		case 'refund_failed':
+			const formattedRefundFailureAmount = formatExplicitCurrency(
+				event.amount_refunded,
+				event.currency
+			);
+			return [
+				getMainTimelineItem(
+					event,
+					sprintf(
+						__(
+							/* translators: %s is a monetary amount */
+							'%s refund was attempted but failed due to %s',
+							'woocommerce-payments'
+						),
+						formattedRefundFailureAmount,
+						getRefundFailureReason( event )
+					),
+					'notice-outline',
+					'is-error',
+					[ getRefundTrackingDetails( event ) ]
+				),
+			];
 		case 'failed':
 			return [
 				getStatusChangeTimelineItem(
@@ -804,11 +861,13 @@ const mapEventToTimelineItems = ( event ) => {
 							{
 								a: (
 									<Link
-										href={
-											'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions' +
-											'&type=charge&filter=advanced&loan_id_is=' +
-											event.loan_id
-										}
+										href={ getAdminUrl( {
+											page: 'wc-admin',
+											path: '/payments/transactions',
+											type: 'charge',
+											filter: 'advanced',
+											loan_id_is: event.loan_id,
+										} ) }
 									/>
 								),
 							}

@@ -296,31 +296,13 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			];
 
 			/* Generate receipt */
-			$receipt_data = $this->receipts_service->get_receipt_markup( $settings, $order, $charge );
+			$response = [ 'html_content' => $this->receipts_service->get_receipt_markup( $settings, $order, $charge ) ];
 		} catch ( \Throwable $e ) {
 			$error_status_code = $e instanceof API_Exception ? $e->get_http_code() : 500;
-			return rest_ensure_response( new WP_Error( 'generate_print_receipt_error', $e->getMessage(), [ 'status' => $error_status_code ] ) );
+			$response          = new WP_Error( 'generate_print_receipt_error', $e->getMessage(), [ 'status' => $error_status_code ] );
 		}
 
-		/**
-		 * WP_REST_Server will convert the response data to JSON prior to output it.
-		 * Using this filter to prevent it, and output the data from WP_HTTP_Response instead.
-		 */
-		add_filter(
-			'rest_pre_serve_request',
-			function ( bool $served, WP_HTTP_Response $response ) : bool {
-				echo $response->get_data(); // @codingStandardsIgnoreLine
-				return true;
-			},
-			10,
-			2
-		);
-
-		return new WP_HTTP_Response(
-			$receipt_data,
-			200,
-			[ 'Content-Type' => 'text/html; charset=UTF-8' ]
-		);
+		return rest_ensure_response( $response );
 	}
 	/**
 	 * Returns HTML to preview a print receipt
@@ -330,13 +312,13 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	 * @throws \RuntimeException Error collecting data.
 	 */
 	public function preview_print_receipt( WP_REST_Request $request ) {
-		return rest_ensure_response(
-			$this->receipts_service->get_receipt_markup(
-				$this->create_print_preview_receipt_settings_data( $request->get_json_params() ),
-				new WC_Payments_Printed_Receipt_Sample_Order(),
-				self::PREVIEW_RECEIPT_CHARGE_DATA
-			)
+		$preview = $this->receipts_service->get_receipt_markup(
+			$this->create_print_preview_receipt_settings_data( $request->get_json_params() ),
+			new WC_Payments_Printed_Receipt_Sample_Order(),
+			self::PREVIEW_RECEIPT_CHARGE_DATA
 		);
+
+		return rest_ensure_response( [ 'html_content' => $preview ] );
 	}
 
 	/**

@@ -200,7 +200,7 @@ class MultiCurrency {
 		$this->compatibility           = new Compatibility( $this, $this->utils );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
-		if ( is_admin() ) {
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 			add_action( 'admin_head', [ $this, 'set_client_format_and_rounding_precision' ] );
@@ -324,6 +324,8 @@ class MultiCurrency {
 		// Output the settings JS and CSS only on the settings page.
 		if ( 'wcpay_multi_currency' === $current_tab ) {
 			$this->register_admin_scripts();
+			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
+			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 		}

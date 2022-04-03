@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Add Webhook_Reliability service to fetch and process failed webhook events.

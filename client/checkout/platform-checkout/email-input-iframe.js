@@ -33,6 +33,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	);
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
 
+	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
+	iframe.classList.add( 'intrinsic-ignore' );
+
 	// Make the iframe arrow.
 	const iframeArrow = document.createElement( 'span' );
 	iframeArrow.setAttribute( 'aria-hidden', 'true' );
@@ -270,7 +273,11 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
 				);
 				api.initPlatformCheckout().then( ( response ) => {
-					window.location = response.url;
+					if ( 'success' === response.result ) {
+						window.location = response.url;
+					} else {
+						closeIframe();
+					}
 				} );
 				break;
 			case 'otp_validation_failed':

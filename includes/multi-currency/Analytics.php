@@ -56,7 +56,7 @@ class Analytics {
 	 * @return void
 	 */
 	public function init() {
-		if ( is_admin() ) {
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		}
 

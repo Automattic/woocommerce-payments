@@ -9,6 +9,35 @@ describe( 'mapTimelineEvents', () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+				GB: {
+					code: 'GBP',
+					symbol: '£',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 
@@ -116,6 +145,22 @@ describe( 'mapTimelineEvents', () => {
 					datetime: 1585859207,
 					type: 'dispute_in_review',
 					user_id: 1,
+				},
+			] )
+		).toMatchSnapshot();
+	} );
+
+	test( 'formats refund_failed events', () => {
+		expect(
+			mapTimelineEvents( [
+				{
+					datetime: 1585859207,
+					type: 'refund_failed',
+					user_id: 1,
+					acquirer_reference_number_status: 'available',
+					acquirer_reference_number: '4785767637658864',
+					failure_reason: 'expired_or_canceled_card',
+					amount_refunded: '100',
 				},
 			] )
 		).toMatchSnapshot();
@@ -426,6 +471,8 @@ describe( 'mapTimelineEvents', () => {
 		} );
 
 		test( 'formats partial_refund events', () => {
+			global.wcpaySettings.connect.country = 'FR';
+
 			expect(
 				mapTimelineEvents( [
 					{
@@ -448,6 +495,8 @@ describe( 'mapTimelineEvents', () => {
 		} );
 
 		test( 'formats full_refund events', () => {
+			global.wcpaySettings.connect.country = 'FR';
+
 			expect(
 				mapTimelineEvents( [
 					{

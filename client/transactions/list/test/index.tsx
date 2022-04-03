@@ -70,6 +70,19 @@ declare const global: {
 		};
 		zeroDecimalCurrencies: string[];
 		currentUserEmail: string;
+		connect: {
+			country: string;
+		};
+		currencyData: {
+			[ key: string ]: {
+				code: string;
+				symbol: string;
+				symbolPosition: string;
+				thousandSeparator: string;
+				decimalSeparator: string;
+				precision: number;
+			};
+		};
 	};
 };
 
@@ -154,6 +167,19 @@ describe( 'Transactions list', () => {
 			isSubscriptionsActive: false,
 			zeroDecimalCurrencies: [],
 			currentUserEmail: 'mock@example.com',
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 
