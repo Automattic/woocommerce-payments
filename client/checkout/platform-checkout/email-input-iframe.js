@@ -244,26 +244,17 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		return pattern.test( value );
 	};
 
-	// Prevent show platform checkout iframe if the page comes from browser back button
-	// or from the back button on platform checkout itself.
-	window.addEventListener( 'pageshow', function ( event ) {
-		const historyTraversal =
-			event.persisted ||
-			( 'undefined' !== typeof performance &&
-				'back_forward' ===
-					performance.getEntriesByType( 'navigation' )[ 0 ].type );
+	// Prevent show platform checkout iframe if the page comes from
+	// the back button on platform checkout itself.
+	const searchParams = new URLSearchParams( window.location.search );
 
-		const searchParams = new URLSearchParams( window.location.search );
-
-		if (
-			! historyTraversal &&
-			'true' !== searchParams.get( 'skip_platform_checkout' ) &&
-			validateEmail( platformCheckoutEmailInput.value )
-		) {
-			// Check the initial value of the email input and trigger input validation.
-			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
-		}
-	} );
+	if (
+		'true' !== searchParams.get( 'skip_platform_checkout' ) &&
+		validateEmail( platformCheckoutEmailInput.value )
+	) {
+		// Check the initial value of the email input and trigger input validation.
+		platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+	}
 
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
 		const email = e.currentTarget.value;
