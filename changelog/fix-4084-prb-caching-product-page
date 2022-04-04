@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Payment Request Button - Do not set WC session cookie and HTML container on the product page if not enabled.
