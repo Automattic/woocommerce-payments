@@ -2,8 +2,9 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { downloadCSVFile } from '@woocommerce/csv-export';
+import apiFetch from '@wordpress/api-fetch';
 import os from 'os';
 
 /**
@@ -28,6 +29,8 @@ jest.mock( '@woocommerce/csv-export', () => {
 	};
 } );
 
+jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
 // Workaround for mocking @wordpress/data.
 // See https://github.com/WordPress/gutenberg/issues/15031
 jest.mock( '@wordpress/data', () => ( {
@@ -49,6 +52,8 @@ const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
 
+const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
+
 const mockUseDisputes = useDisputes as jest.MockedFunction<
 	typeof useDisputes
 >;
@@ -63,6 +68,7 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		currentUserEmail: string;
 		currencyData: {
 			[ key: string ]: {
 				code: string;
@@ -143,6 +149,7 @@ describe( 'Disputes list', () => {
 			connect: {
 				country: 'US',
 			},
+			currentUserEmail: 'mock@example.com',
 			currencyData: {
 				US: {
 					code: 'USD',
@@ -212,6 +219,34 @@ describe( 'Disputes list', () => {
 				disputesSummary: {
 					count: 3,
 				},
+			} );
+		} );
+
+		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 1000.', async () => {
+			window.confirm = jest.fn( () => true );
+			mockUseDisputesSummary.mockReturnValue( {
+				disputesSummary: {
+					count: 1100,
+				},
+				isLoading: false,
+			} );
+
+			const { getByRole } = render( <DisputesList /> );
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
+			expect( window.confirm ).toHaveBeenCalledWith(
+				"You are about to export 1100 disputes. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+				expect( mockApiFetch ).toHaveBeenCalledWith( {
+					method: 'POST',
+					path:
+						'/wc/v3/payments/disputes/download?user_email=mock%40example.com',
+				} );
 			} );
 		} );
 
