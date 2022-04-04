@@ -456,3 +456,16 @@ export const useFraudProtection = () => {
 
 	return [ isFraudProtectionEnabled, updateIsFraudPreventionEnabled ];
 };
+
+export const useStripeLinkCheckoutEnabledSettings = () => {
+	const { updateIsStripeLinkCheckoutEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getIsStripeLinkCheckoutEnabled } = select( STORE_NAME );
+
+		return [
+			getIsStripeLinkCheckoutEnabled(),
+			updateIsStripeLinkCheckoutEnabled,
+		];
+	} );
+};

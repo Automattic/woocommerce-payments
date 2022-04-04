@@ -15,12 +15,14 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
 import {
 	usePaymentRequestEnabledSettings,
 	usePlatformCheckoutEnabledSettings,
+	useStripeLinkCheckoutEnabledSettings,
 } from 'wcpay/data';
 import CardBody from '../card-body';
 import PaymentRequestIcon from '../../gateway-icons/payment-request';
 import WooIcon from '../../gateway-icons/woo';
 import './style.scss';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import LinkIcon from '../../gateway-icons/link';
 
 const ExpressCheckout = () => {
 	const [
@@ -32,6 +34,11 @@ const ExpressCheckout = () => {
 		isPlatformCheckoutEnabled,
 		updateIsPlatformCheckoutEnabled,
 	] = usePlatformCheckoutEnabledSettings();
+
+	const [
+		isStripeLinkCheckoutEnabled,
+		updateIsStripeLinkCheckoutEnabled,
+	] = useStripeLinkCheckoutEnabledSettings();
 
 	const {
 		featureFlags: {
@@ -136,6 +143,26 @@ const ExpressCheckout = () => {
 							>
 								{ __( 'Customize', 'woocommerce-payments' ) }
 							</a>
+						</div>
+					</li>
+					<li className="express-checkout has-icon-border">
+						<div className="express-checkout__checkbox">
+							<CheckboxControl
+								checked={ isStripeLinkCheckoutEnabled }
+								onChange={ updateIsStripeLinkCheckoutEnabled }
+							/>
+							<div className="express-checkout__icon">
+								<LinkIcon />
+							</div>
+							<div className="express-checkout__label-container">
+								<div className="express-checkout__label">
+									{ __(
+										'Stripe Link',
+										'woocommerce-payments'
+									) }
+								</div>
+								<div className="express-checkout__description"></div>
+							</div>
 						</div>
 					</li>
 				</ul>
