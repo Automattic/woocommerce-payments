@@ -17,7 +17,9 @@ describe( 'SetupCompleteTask', () => {
 			connectUrl: '/connect',
 		};
 
-		const { container: task } = render( <SetupCompleteTask /> );
+		const { container: task } = render(
+			<SetupCompleteTask args={ { country: 'US', type: 'individual' } } />
+		);
 		expect( task ).toMatchSnapshot();
 	} );
 } );

@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardBody } from '@wordpress/components';
 
 /**
@@ -17,6 +17,8 @@ import SetupCompleteTask from './tasks/setup-complete-task';
 import './index.scss';
 
 const OnboardingPage = () => {
+	const [ selectedData, setSelectedData ] = useState();
+
 	return (
 		<Card
 			size="large"
@@ -26,10 +28,10 @@ const OnboardingPage = () => {
 				<Wizard defaultActiveTask="complete-business-info">
 					<WizardTaskList>
 						<WizardTask id="complete-business-info">
-							<AddBusinessInfoTask />
+							<AddBusinessInfoTask onChange={ setSelectedData } />
 						</WizardTask>
 						<WizardTask id="setup-complete">
-							<SetupCompleteTask />
+							<SetupCompleteTask args={ selectedData } />
 						</WizardTask>
 					</WizardTaskList>
 				</Wizard>
