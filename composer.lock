@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "836370b794a83f8935093420ed385cd8",
+    "content-hash": "65f6b3507b8b69abb5016ba52619b93c",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -799,69 +799,23 @@
             "time": "2022-03-29T18:21:27+00:00"
         },
         {
-            "name": "automattic/jetpack-terms-of-service",
-            "version": "v1.10.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Automattic/jetpack-terms-of-service.git",
-                "reference": "d8915f4f1a903597fabebca262fef21f39b6bd0b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-terms-of-service/zipball/d8915f4f1a903597fabebca262fef21f39b6bd0b",
-                "reference": "d8915f4f1a903597fabebca262fef21f39b6bd0b",
-                "shasum": ""
-            },
-            "require": {
-                "automattic/jetpack-connection": "^1.37"
-            },
-            "require-dev": {
-                "automattic/jetpack-changelogger": "^3.0"
-            },
-            "type": "jetpack-library",
-            "extra": {
-                "autotagger": true,
-                "mirror-repo": "Automattic/jetpack-terms-of-service",
-                "changelogger": {
-                    "link-template": "https://github.com/Automattic/jetpack-terms-of-service/compare/v${old}...v${new}"
-                },
-                "branch-alias": {
-                    "dev-master": "1.10.x-dev"
-                }
-            },
-            "autoload": {
-                "classmap": []
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GPL-2.0-or-later"
-            ],
-            "description": "Everything need to manage the terms of service state. This is a deprecated package, use automattic/jetpack-connection.",
-            "support": {
-                "source": "https://github.com/Automattic/jetpack-terms-of-service/tree/v1.10.0"
-            },
-            "abandoned": "automattic/jetpack-connection",
-            "time": "2022-03-16T21:26:07+00:00"
-        },
-        {
             "name": "automattic/jetpack-tracking",
-            "version": "v1.14.1",
+            "version": "v1.14.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-tracking.git",
-                "reference": "68a0fe8a7fc498915c4944e07c6d0f7ec54da562"
+                "reference": "aadc1a8c48145bfddea163eb55293b9211154872"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-tracking/zipball/68a0fe8a7fc498915c4944e07c6d0f7ec54da562",
-                "reference": "68a0fe8a7fc498915c4944e07c6d0f7ec54da562",
+                "url": "https://api.github.com/repos/Automattic/jetpack-tracking/zipball/aadc1a8c48145bfddea163eb55293b9211154872",
+                "reference": "aadc1a8c48145bfddea163eb55293b9211154872",
                 "shasum": ""
             },
             "require": {
                 "automattic/jetpack-assets": "^1.17",
                 "automattic/jetpack-options": "^1.14",
-                "automattic/jetpack-status": "^1.10",
-                "automattic/jetpack-terms-of-service": "^1.9"
+                "automattic/jetpack-status": "^1.12"
             },
             "require-dev": {
                 "automattic/jetpack-changelogger": "^3.0",
@@ -892,9 +846,9 @@
             ],
             "description": "Tracking for Jetpack",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-tracking/tree/v1.14.1"
+                "source": "https://github.com/Automattic/jetpack-tracking/tree/v1.14.5"
             },
-            "time": "2022-01-25T17:38:53+00:00"
+            "time": "2022-03-29T18:21:15+00:00"
         },
         {
             "name": "composer/installers",
