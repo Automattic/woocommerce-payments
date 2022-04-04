@@ -45,7 +45,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<document_id>\w+)',
+			'/' . $this->rest_base . '/(?P<document_id>[\w-]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_document' ],
