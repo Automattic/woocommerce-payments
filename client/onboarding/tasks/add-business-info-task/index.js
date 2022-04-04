@@ -17,7 +17,7 @@ import { useBusinessTypes } from 'data/onboarding';
 import RequiredVerificationInfo from './required-verification-info';
 import strings from '../../strings';
 
-const AddBusinessInfoTask = () => {
+const AddBusinessInfoTask = ( { onChange } ) => {
 	const { isCompleted, setCompleted } = useContext( WizardTaskContext );
 	const { businessTypes, isLoading } = useBusinessTypes();
 
@@ -33,6 +33,14 @@ const AddBusinessInfoTask = () => {
 			)
 		);
 	}, [ businessTypes ] );
+
+	useEffect( () => {
+		onChange( {
+			country: businessCountry?.key,
+			type: businessType?.key,
+			structure: businessStructure?.key,
+		} );
+	}, [ businessCountry, businessType, businessStructure, onChange ] );
 
 	const handleBusinessCountryUpdate = ( country ) => {
 		setBusinessCountry( country );
