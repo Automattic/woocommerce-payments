@@ -48,7 +48,7 @@ class Buyer_Fingerprinting_Service_Test extends WP_UnitTestCase {
 		$order_hashes          = $this->buyer_fingerprinting_service->get_hashed_data_for_order( $order->get_order_number() );
 		$expected_hashed_array = [
 			'shopper_ip_hash'        => hash( 'sha512', $order->get_customer_ip_address() ),
-			'shopper_useragent_hash' => hash( 'sha512', $order->get_customer_user_agent() ) . 'hey',
+			'shopper_useragent_hash' => hash( 'sha512', $order->get_customer_user_agent() ),
 		];
 
 		$this->assertEquals( $order_hashes, $expected_hashed_array );
