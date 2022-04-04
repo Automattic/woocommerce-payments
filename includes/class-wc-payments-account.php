@@ -805,19 +805,32 @@ class WC_Payments_Account {
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
 
-		$country = WC()->countries->get_base_country();
+		// Pre-fill from new KYC flow experiment in treatment mode.
+		$prefill         = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
+		$prefill_country = $prefill['country'] ?? null;
+		$prefill_rest    = [
+			'business_type' => $prefill['type'] ?? null,
+			'company'       => [
+				'structure' => $prefill['structure'] ?? null,
+			],
+		];
+
+		$country = $prefill_country ?? WC()->countries->get_base_country();
 		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
 			$country = null;
 		}
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
-			[
-				'email'         => $current_user->user_email,
-				'business_name' => get_bloginfo( 'name' ),
-				'url'           => get_home_url(),
-				'country'       => $country,
-			],
+			array_merge(
+				[
+					'email'         => $current_user->user_email,
+					'business_name' => get_bloginfo( 'name' ),
+					'url'           => get_home_url(),
+					'country'       => $country,
+				],
+				array_filter( $prefill_rest )
+			),
 			[
 				'site_username' => $current_user->user_login,
 			],
