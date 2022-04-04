@@ -66,6 +66,9 @@ const businessTypes = [
 	},
 ];
 
+const renderTask = () =>
+	render( <AddBusinessInfoTask onChange={ () => {} } /> );
+
 describe( 'AddBusinessInfoTask', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -82,7 +85,7 @@ describe( 'AddBusinessInfoTask', () => {
 			isLoading: true,
 		} );
 
-		const { container: task } = render( <AddBusinessInfoTask /> );
+		const { container: task } = renderTask();
 		expect( task ).toMatchSnapshot();
 	} );
 
@@ -92,7 +95,7 @@ describe( 'AddBusinessInfoTask', () => {
 			isLoading: false,
 		} );
 
-		const { container: task } = render( <AddBusinessInfoTask /> );
+		const { container: task } = renderTask();
 		expect( task ).toMatchSnapshot();
 	} );
 
@@ -107,7 +110,7 @@ describe( 'AddBusinessInfoTask', () => {
 			isLoading: false,
 		} );
 
-		const { container: task } = render( <AddBusinessInfoTask /> );
+		const { container: task } = renderTask();
 
 		user.click( screen.getByRole( 'button', { name: /country/i } ) );
 		user.click(
@@ -146,7 +149,7 @@ describe( 'AddBusinessInfoTask', () => {
 			isLoading: false,
 		} );
 
-		const { container: task } = render( <AddBusinessInfoTask /> );
+		const { container: task } = renderTask();
 
 		user.click( screen.getByRole( 'button', { name: /country/i } ) );
 		user.click(

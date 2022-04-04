@@ -49,7 +49,7 @@ exports[`SetupCompleteTask renders page 1`] = `
       >
         <a
           class="components-button is-primary"
-          href="/connect"
+          href="/connect?prefill%5Bcountry%5D=US&prefill%5Btype%5D=individual"
         >
           Connect
         </a>
