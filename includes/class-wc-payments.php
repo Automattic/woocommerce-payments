@@ -25,6 +25,7 @@ use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Database_Cache;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -143,6 +144,13 @@ class WC_Payments {
 	private static $failed_transaction_rate_limiter;
 
 	/**
+	 * Instance of Database_Cache utils
+	 *
+	 * @var Database_Cache
+	 */
+	private static $database_cache;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -199,6 +207,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
+		include_once __DIR__ . '/class-database-cache.php';
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
@@ -257,7 +266,8 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account                             = new WC_Payments_Account( self::$api_client );
+		self::$database_cache                      = new Database_Cache();
+		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache );
 		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
 		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );

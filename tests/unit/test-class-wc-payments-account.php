@@ -665,11 +665,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		// Assert that the "no account connected" special case is returned as expected.
 		$this->assertSame( [], $account );
-
-		// Test to check that scheduled action was not created.
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
-		$action_hook              = WC_Payments_Account::ACCOUNT_CACHE_REFRESH_ACTION;
-		$this->assertNotTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
 	}
 
 	public function test_get_cached_account_data_handle_previous_account_retrieval_error() {
@@ -680,11 +675,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$account = $this->wcpay_account->get_cached_account_data();
 
 		$this->assertFalse( $account );
-
-		// Test to check that scheduled action was not created.
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
-		$action_hook              = WC_Payments_Account::ACCOUNT_CACHE_REFRESH_ACTION;
-		$this->assertNotTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
 	}
 
 	public function test_get_cached_account_data_refetches_when_cache_has_expired() {
@@ -720,11 +710,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		// Assert that we see the new account information instead of the cached information.
 		$this->assertSame( $updated_account, $account );
-
-		// Test to see if scheduled action was created.
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
-		$action_hook              = WC_Payments_Account::ACCOUNT_CACHE_REFRESH_ACTION;
-		$this->assertTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
 	}
 
 	public function test_get_cached_account_data_handles_missing_account_key() {
@@ -757,11 +742,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		// Assert that we see the new account information instead of the cached information.
 		$this->assertSame( $updated_account, $account );
-
-		// Test to see if scheduled action was created.
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
-		$action_hook              = WC_Payments_Account::ACCOUNT_CACHE_REFRESH_ACTION;
-		$this->assertTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
 	}
 
 	public function test_get_cached_account_data_handles_missing_expires_key() {
@@ -797,11 +777,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		// Assert that we see the new account information instead of the cached information.
 		$this->assertSame( $updated_account, $account );
-
-		// Test to see if scheduled action was created.
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
-		$action_hook              = WC_Payments_Account::ACCOUNT_CACHE_REFRESH_ACTION;
-		$this->assertTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
 	}
 
 	public function test_get_cached_account_data_with_force_refresh() {
@@ -836,11 +811,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		// Assert that we see the new account information instead of the cached information.
 		$this->assertSame( $updated_account, $account );
-
-		// Test to see if scheduled action was created.
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
-		$action_hook              = WC_Payments_Account::ACCOUNT_CACHE_REFRESH_ACTION;
-		$this->assertTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_note() {
