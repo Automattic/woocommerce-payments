@@ -201,6 +201,7 @@ describe( 'Disputes list', () => {
 
 	describe( 'CSV download', () => {
 		beforeEach( () => {
+			jest.restoreAllMocks();
 			mockUseDisputes.mockReturnValue( {
 				disputes: mockDisputes,
 				isLoading: false,
@@ -236,7 +237,6 @@ describe( 'Disputes list', () => {
 			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
 			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
 			expect( csvHeaderRow ).toEqual( expected );
-			jest.restoreAllMocks();
 		} );
 
 		test( 'should match the visible rows', () => {
