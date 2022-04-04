@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { apiFetch } from '@wordpress/data-controls';
+import { dispatch } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -23,9 +24,7 @@ export function* getBusinessTypes(): unknown {
 		const result = yield apiFetch( { path } );
 		yield updateBusinessTypes( result.data as Country[] );
 	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
+		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving business types', 'woocommerce-payments' )
 		);
 	}
