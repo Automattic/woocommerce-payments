@@ -56,6 +56,14 @@ const businessStructureStrings: StructureKeyMap = {
 		private_corporation: __( 'Corporation', 'woocommerce-payments' ),
 		sole_proprietorship: __( 'Sole trader', 'woocommerce-payments' ),
 		private_partnership: __( 'Partnership', 'woocommerce-payments' ),
+		incorporated_non_profit: __(
+			'Incorporated non-profit',
+			'woocommerce-payments'
+		),
+		unincorporated_non_profit: __(
+			'Unincorporated non-profit',
+			'woocommerce-payments'
+		),
 	},
 	SG: {
 		sole_proprietorship: __(
@@ -95,7 +103,7 @@ const businessStructureStrings: StructureKeyMap = {
 			'Unincorporated non-profit',
 			'woocommerce-payments'
 		),
-		government_unit: __( 'Government unit', 'woocommerce-payments' ),
+		governmental_unit: __( 'Governmental unit', 'woocommerce-payments' ),
 		government_instrumentality: __(
 			'Government instrumentality proprietorship',
 			'woocommerce-payments'
