@@ -27,12 +27,14 @@ const AddBusinessInfoTask = ( { onChange } ) => {
 	const [ displayStructures, setDisplayStructures ] = useState( false );
 
 	useEffect( () => {
-		setBusinessCountry(
-			businessTypes.find(
-				( country ) => country.key === wcpaySettings.connect.country
-			)
-		);
-	}, [ businessTypes ] );
+		if ( ! businessCountry ) {
+			setBusinessCountry(
+				businessTypes.find(
+					( country ) => country.key === wcpaySettings.connect.country
+				)
+			);
+		}
+	}, [ businessTypes, businessCountry ] );
 
 	useEffect( () => {
 		onChange( {
