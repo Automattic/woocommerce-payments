@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Additional checks for domain verification file operations to prevent throwing Warnings on hosts that do not allow for suppression with `@`
