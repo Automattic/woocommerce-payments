@@ -79,6 +79,19 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Get the required verification information for the selected country/type/structure combination from the API.
+	 *
+	 * @param string      $country_code The currently selected country code.
+	 * @param string      $type         The currently selected business type.
+	 * @param string|null $structure    The currently selected business structure (optional).
+	 *
+	 * @return array
+	 */
+	public function get_required_verification_information( string $country_code, string $type, $structure = null ): array {
+		return $this->payments_api_client->get_onboarding_required_verification_information( $country_code, $type, $structure );
+	}
+
+	/**
 	 * Caches the business types for a period of time.
 	 *
 	 * @param string|array $business_types - The business types to cache, or the business types retrieval error.

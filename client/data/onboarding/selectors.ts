@@ -30,3 +30,7 @@ export const getBusinessTypes = ( state: State ): Country[] => {
 		} ) )
 		.sort( ( a, b ) => a.name.localeCompare( b.name ) );
 };
+
+export const getRequiredVerificationInfo = ( state: State ): string[] => {
+	return state.onboarding.requiredFields ?? [];
+};

@@ -5,7 +5,6 @@
  */
 import React, { useState, useContext, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -15,6 +14,7 @@ import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
 import CustomSelectControl from 'components/custom-select-control';
 import { LoadableBlock } from 'components/loadable';
 import { useBusinessTypes } from 'data/onboarding';
+import RequiredVerificationInfo from './required-verification-info';
 import strings from '../../strings';
 
 const AddBusinessInfoTask = () => {
@@ -45,8 +45,8 @@ const AddBusinessInfoTask = () => {
 	const handleBusinessTypeUpdate = ( type ) => {
 		setBusinessType( type );
 		setBusinessStructure( '' );
-		setCompleted( 0 === type.structures.length );
 		setDisplayStructures( 0 < type.structures.length );
+		setCompleted( 0 === type.structures.length );
 	};
 
 	const handleBusinessStructureUpdate = ( structure ) => {
@@ -118,18 +118,11 @@ const AddBusinessInfoTask = () => {
 			</LoadableBlock>
 			<LoadableBlock isLoading={ isLoading } numLines={ 4 } />
 			{ isCompleted && (
-				<Card size="large" className="wcpay-required-info-card">
-					<CardBody>
-						<p>
-							<b>
-								{ __(
-									"To verify your details, we'll require:",
-									'woocommerce-payments'
-								) }
-							</b>
-						</p>
-					</CardBody>
-				</Card>
+				<RequiredVerificationInfo
+					country={ businessCountry.key }
+					type={ businessType.key }
+					structure={ businessStructure.key }
+				/>
 			) }
 		</WizardTaskItem>
 	);
