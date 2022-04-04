@@ -20,6 +20,7 @@ import {
 } from './actions';
 
 const formatQueryFilters = ( query ) => ( {
+	user_email: query.userEmail,
 	match: query.match,
 	store_currency_is: query.storeCurrencyIs,
 	date_before: formatDateValue( query.dateBefore, true ),
