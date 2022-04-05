@@ -20,18 +20,24 @@ interface IFrameComponentProps {
 }
 
 const IFrameComponent = ( { title, children }: IFrameComponentProps ) => {
-	const [ contentRef, setContentRef ] = useState< HTMLIFrameElement | null >(
+	const [ iframeBody, setIframeBody ] = useState< HTMLElement | null >(
 		null
 	);
-	const mountNode = contentRef?.contentWindow?.document?.body;
+	const handleLoad = ( event: React.SyntheticEvent< HTMLIFrameElement > ) => {
+		const iframe = event.target as HTMLIFrameElement;
+		if ( iframe?.contentDocument ) {
+			setIframeBody( iframe.contentDocument.body );
+		}
+	};
 
 	return (
 		<iframe
-			title={ title }
-			ref={ setContentRef }
 			className="card-readers-preview-receipt__preview"
+			srcDoc={ `<!DOCTYPE html>` }
+			title={ title }
+			onLoad={ handleLoad }
 		>
-			{ mountNode && createPortal( children, mountNode ) }
+			{ iframeBody && createPortal( children, iframeBody ) }
 		</iframe>
 	);
 };
