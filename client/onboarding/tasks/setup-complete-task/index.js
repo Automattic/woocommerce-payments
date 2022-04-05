@@ -26,7 +26,6 @@ const SetupCompleteTask = ( { args } ) => {
 			) }
 		>
 			<div className="wcpay-onboarding-setup-complete-task__buttons">
-				{ /* Todo: pass the selected form parameters to the onboarding. */ }
 				<Button
 					href={ url }
 					isPrimary
