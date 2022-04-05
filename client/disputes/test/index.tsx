@@ -2,8 +2,9 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { downloadCSVFile } from '@woocommerce/csv-export';
+import apiFetch from '@wordpress/api-fetch';
 import os from 'os';
 
 /**
@@ -19,12 +20,55 @@ import {
 	CachedDispute,
 } from 'wcpay/types/disputes';
 
+jest.mock( '@woocommerce/csv-export', () => {
+	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
+
+	return {
+		...actualModule,
+		downloadCSVFile: jest.fn(),
+	};
+} );
+
+jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
+// Workaround for mocking @wordpress/data.
+// See https://github.com/WordPress/gutenberg/issues/15031
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+} ) );
+
+jest.mock( 'data/index', () => ( {
+	useDisputes: jest.fn(),
+	useDisputesSummary: jest.fn(),
+} ) );
+
+const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
+	typeof downloadCSVFile
+>;
+
+const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
+
+const mockUseDisputes = useDisputes as jest.MockedFunction<
+	typeof useDisputes
+>;
+
+const mockUseDisputesSummary = useDisputesSummary as jest.MockedFunction<
+	typeof useDisputesSummary
+>;
+
 declare const global: {
 	wcpaySettings: {
 		zeroDecimalCurrencies: string[];
 		connect: {
 			country: string;
 		};
+		currentUserEmail: string;
 		currencyData: {
 			[ key: string ]: {
 				code: string;
@@ -37,32 +81,6 @@ declare const global: {
 		};
 	};
 };
-
-jest.mock( 'data/index', () => ( {
-	useDisputes: jest.fn(),
-	useDisputesSummary: jest.fn(),
-} ) );
-
-const mockUseDisputes = useDisputes as jest.MockedFunction<
-	typeof useDisputes
->;
-
-const mockUseDisputesSummary = useDisputesSummary as jest.MockedFunction<
-	typeof useDisputesSummary
->;
-
-jest.mock( '@woocommerce/csv-export', () => {
-	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
-
-	return {
-		...actualModule,
-		downloadCSVFile: jest.fn(),
-	};
-} );
-
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
 
 const mockDisputes = [
 	{
@@ -131,6 +149,7 @@ describe( 'Disputes list', () => {
 			connect: {
 				country: 'US',
 			},
+			currentUserEmail: 'mock@example.com',
 			currencyData: {
 				US: {
 					code: 'USD',
@@ -189,6 +208,7 @@ describe( 'Disputes list', () => {
 
 	describe( 'CSV download', () => {
 		beforeEach( () => {
+			jest.restoreAllMocks();
 			mockUseDisputes.mockReturnValue( {
 				disputes: mockDisputes,
 				isLoading: false,
@@ -197,17 +217,37 @@ describe( 'Disputes list', () => {
 			mockUseDisputesSummary.mockReturnValue( {
 				isLoading: false,
 				disputesSummary: {
-					count: 25,
+					count: 3,
 				},
 			} );
 		} );
 
-		afterEach( () => {
-			jest.resetAllMocks();
-		} );
+		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 1000.', async () => {
+			window.confirm = jest.fn( () => true );
+			mockUseDisputesSummary.mockReturnValue( {
+				disputesSummary: {
+					count: 1100,
+				},
+				isLoading: false,
+			} );
 
-		afterAll( () => {
-			jest.restoreAllMocks();
+			const { getByRole } = render( <DisputesList /> );
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
+			expect( window.confirm ).toHaveBeenCalledWith(
+				"You are about to export 1100 disputes. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+				expect( mockApiFetch ).toHaveBeenCalledWith( {
+					method: 'POST',
+					path:
+						'/wc/v3/payments/disputes/download?user_email=mock%40example.com',
+				} );
+			} );
 		} );
 
 		test( 'should render expected columns in CSV when the download button is clicked ', () => {
