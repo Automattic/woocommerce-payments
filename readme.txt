@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 3.9.3 - 2022-xx-xx =
+* Fix - Payment Request Button - Do not set WC session cookie and HTML container on the product page if not enabled.
+
 = 3.9.2 - 2022-04-01 =
 * Fix - Fixing error related to some currencies
 
