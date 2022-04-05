@@ -47,7 +47,7 @@ exports[`AddBusinessInfoTask hides the structure when no structures are availabl
       <p
         class="complete-business-info-task__subheading"
       >
-        Preview the details we may require to verify your business and enable despoits.
+        Preview the details we may require to verify your business and enable deposits.
       </p>
       <div
         class="wcpay components-custom-select-control"
@@ -194,7 +194,7 @@ exports[`AddBusinessInfoTask shows a loadable block 1`] = `
       <p
         class="complete-business-info-task__subheading"
       >
-        Preview the details we may require to verify your business and enable despoits.
+        Preview the details we may require to verify your business and enable deposits.
       </p>
       <span
         aria-busy="true"
@@ -268,7 +268,7 @@ exports[`AddBusinessInfoTask shows business type and structure from a selected c
       <p
         class="complete-business-info-task__subheading"
       >
-        Preview the details we may require to verify your business and enable despoits.
+        Preview the details we may require to verify your business and enable deposits.
       </p>
       <div
         class="wcpay components-custom-select-control"
@@ -459,7 +459,7 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
       <p
         class="complete-business-info-task__subheading"
       >
-        Preview the details we may require to verify your business and enable despoits.
+        Preview the details we may require to verify your business and enable deposits.
       </p>
       <div
         class="wcpay components-custom-select-control"
