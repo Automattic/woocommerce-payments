@@ -34,12 +34,13 @@
 	}
 
 	.save-details-checkbox {
+		margin-right: $gap-smallest;
 		> div {
 			margin-bottom: 0;
 		}
 	}
 
-	.save-details-form {
+	.save-details-form.form-row {
 		display: flex;
 		flex-direction: column;
 		font-size: 16px;

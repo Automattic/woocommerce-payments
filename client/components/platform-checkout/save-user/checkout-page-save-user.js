@@ -39,23 +39,25 @@ const CheckoutPageSaveUser = () => {
 		<>
 			<h3>Remember your details?</h3>
 			<span>
-				<input
-					type="checkbox"
-					checked={ isSaveDetailsChecked }
-					onChange={ () => {
-						setIsSaveDetailsChecked( ! isSaveDetailsChecked );
-					} }
-					name="save_user_in_platform_checkout"
-					id="save_user_in_platform_checkout"
-					value="true"
-					className="save-details-checkbox"
-					aria-checked={ isSaveDetailsChecked }
-				/>
 				<label htmlFor="save_user_in_platform_checkout">
-					{ __(
-						'Save my information for faster checkouts',
-						'woocommerce-payments'
-					) }
+					<input
+						type="checkbox"
+						checked={ isSaveDetailsChecked }
+						onChange={ () => {
+							setIsSaveDetailsChecked( ! isSaveDetailsChecked );
+						} }
+						name="save_user_in_platform_checkout"
+						id="save_user_in_platform_checkout"
+						value="true"
+						className="save-details-checkbox"
+						aria-checked={ isSaveDetailsChecked }
+					/>
+					<span>
+						{ __(
+							'Save my information for faster checkouts',
+							'woocommerce-payments'
+						) }
+					</span>
 				</label>
 			</span>
 			{ isSaveDetailsChecked && (
