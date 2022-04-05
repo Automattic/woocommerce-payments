@@ -8,11 +8,11 @@
  * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
- * WC requires at least: 5.0
+ * WC requires at least: 5.2
  * WC tested up to: 6.3.1
  * Requires at least: 5.7
  * Requires PHP: 7.0
- * Version: 3.9.0
+ * Version: 3.9.2
  *
  * @package WooCommerce\Payments
  */
@@ -242,19 +242,21 @@ function wcpay_show_old_jetpack_notice() {
  */
 function wcpay_get_jetpack_idc_custom_content(): array {
 	$custom_content = [
-		'headerText'            => __( 'Safe Mode', 'woocommerce-payments' ),
-		'mainTitle'             => __( 'Safe Mode activated', 'woocommerce-payments' ),
-		'mainBodyText'          => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
-		'migratedTitle'         => __( 'WooCommerce Payments connection successfully transferred', 'woocommerce-payments' ),
-		'migratedBodyText'      => __( 'Safe Mode has been deactivated and WooCommerce Payments is fully functional.', 'woocommerce-payments' ),
-		'migrateCardTitle'      => __( 'Transfer connection', 'woocommerce-payments' ),
-		'migrateButtonLabel'    => __( 'Transfer your connection', 'woocommerce-payments' ),
-		'startFreshCardTitle'   => __( 'Create a new connection', 'woocommerce-payments' ),
-		'startFreshButtonLabel' => __( 'Create a new connection', 'woocommerce-payments' ),
-		'nonAdminTitle'         => __( 'Safe Mode activated', 'woocommerce-payments' ),
-		'nonAdminBodyText'      => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
-		'supportURL'            => 'https://woocommerce.com/document/payments/faq/safe-mode/',
-		'adminBarSafeModeLabel' => __( 'WooCommerce Payments Safe Mode', 'woocommerce-payments' ),
+		'headerText'                => __( 'Safe Mode', 'woocommerce-payments' ),
+		'mainTitle'                 => __( 'Safe Mode activated', 'woocommerce-payments' ),
+		'mainBodyText'              => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
+		'migratedTitle'             => __( 'WooCommerce Payments connection successfully transferred', 'woocommerce-payments' ),
+		'migratedBodyText'          => __( 'Safe Mode has been deactivated and WooCommerce Payments is fully functional.', 'woocommerce-payments' ),
+		'migrateCardTitle'          => __( 'Transfer connection', 'woocommerce-payments' ),
+		'migrateButtonLabel'        => __( 'Transfer your connection', 'woocommerce-payments' ),
+		'startFreshCardTitle'       => __( 'Create a new connection', 'woocommerce-payments' ),
+		'startFreshButtonLabel'     => __( 'Create a new connection', 'woocommerce-payments' ),
+		'nonAdminTitle'             => __( 'Safe Mode activated', 'woocommerce-payments' ),
+		'nonAdminBodyText'          => __( 'We’ve detected that you have duplicate sites connected to WooCommerce Payments. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
+		'supportURL'                => 'https://woocommerce.com/document/payments/faq/safe-mode/',
+		'adminBarSafeModeLabel'     => __( 'WooCommerce Payments Safe Mode', 'woocommerce-payments' ),
+		'dynamicSiteUrlText'        => __( "<strong>Notice:</strong> It appears that your 'wp-config.php' file might be using dynamic site URL values. Dynamic site URLs could cause WooCommerce Payments to enter Safe Mode. <dynamicSiteUrlSupportLink>Learn how to set a static site URL.</dynamicSiteUrlSupportLink>", 'woocommerce-payments' ),
+		'dynamicSiteUrlSupportLink' => 'https://woocommerce.com/document/payments/faq/safe-mode/#dynamic-site-urls',
 	];
 
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();

@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 
 /**
  * WC_Payments_API_Client unit tests.
@@ -100,6 +101,47 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $expected_amount, $result->get_amount() );
 		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+	/**
+	 * Test a successful call to create_intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_and_confirm_intention_failed_fraudulent_payment() {
+		$this->set_http_mock_response(
+			402,
+			[
+				'error' => [
+					'code'         => 'card_declined',
+					'decline_code' => 'fraudulent',
+					'message'      => 'Your card was declined.',
+				],
+			]
+		);
+
+		$fraud_prevention_service_mock = $this->getMockBuilder( Fraud_Prevention_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		// Assertion.
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'regenerate_token' );
+
+		$this->expectException( API_Exception::class );
+		$this->payments_api_client->create_and_confirm_intention(
+			123,
+			'usd',
+			'pm_123456789',
+			1
+		);
 	}
 
 	/**
@@ -1476,6 +1518,18 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$disputes_summary = $this->payments_api_client->get_disputes_summary();
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
+	}
+
+	public function test_get_platform_checkout_eligibility_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'platform_checkout_eligible' => true,
+			]
+		);
+
+		$response = $this->payments_api_client->get_platform_checkout_eligibility();
+		$this->assertTrue( $response['platform_checkout_eligible'] );
 	}
 
 	/** Test a successful fetch of a list of documents
