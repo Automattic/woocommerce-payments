@@ -25,6 +25,8 @@ use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\StoreApi\RoutesController;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -906,6 +908,7 @@ class WC_Payments {
 
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
+		$store_api_url          = Package::container()->get( RoutesController::class )->get( 'cart' )->get_namespace();
 		$body                   = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
@@ -918,6 +921,7 @@ class WC_Payments {
 				'blog_id'           => Jetpack_Options::get_option( 'id' ),
 				'blog_url'          => get_site_url(),
 				'blog_checkout_url' => wc_get_checkout_url(),
+				'store_api_url'     => $store_api_url,
 				'account_id'        => $account_id,
 			],
 		];
