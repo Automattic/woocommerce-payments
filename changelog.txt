@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 3.9.3 - 2022-xx-xx =
+= 3.9.3 - 2022-04-05 =
 * Fix - Payment Request Button - Do not set WC session cookie and HTML container on the product page if not enabled.
 
 = 3.9.2 - 2022-04-01 =
