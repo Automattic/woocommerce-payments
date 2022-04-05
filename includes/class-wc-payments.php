@@ -336,6 +336,10 @@ class WC_Payments {
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
+
+			include_once WCPAY_ABSPATH . '/includes/class-platform-checkout-webhooks.php';
+			include_once WCPAY_ABSPATH . '/includes/class-platform-checkout-webhook.php';
+			Platform_Checkout_Webhooks::init();
 		}
 
 		// Load WCPay Subscriptions.
