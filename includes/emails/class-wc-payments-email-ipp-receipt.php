@@ -41,9 +41,6 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		 * Constructor.
 		 */
 		public function __construct() {
-			// Call parent constructor.
-			parent::__construct();
-
 			$this->id             = 'new_receipt';
 			$this->customer_email = true;
 			$this->title          = __( 'New receipt', 'woocommerce-payments' );
@@ -62,6 +59,9 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 
 			// Triggers for this email.
 			add_action( 'woocommerce_payments_email_ipp_receipt_notification', [ $this, 'trigger' ], 10, 3 );
+
+			// Call parent constructor.
+			parent::__construct();
 
 		}
 
