@@ -19,8 +19,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 	const [ isValid, setIsValid ] = useState( true );
 
 	const handlePhoneNumberInputChange = ( e ) => {
-		const value = e.target.value || inputValue;
-		setInputValue( value );
+		setInputValue( e.target.value );
 		if ( inputInstance ) {
 			handlePhoneNumberChange( inputInstance.getNumber() );
 		}
