@@ -19,7 +19,7 @@ export default {
 			'woocommerce-payments'
 		),
 		description: __(
-			'Preview the details we may require to verify your business and enable despoits.',
+			'Preview the details we may require to verify your business and enable deposits.',
 			'woocommerce-payments'
 		),
 

@@ -36,7 +36,10 @@ const businessStructureStrings: StructureKeyMap = {
 		),
 	},
 	HK: {
-		sole_proprietorship: __( 'Sole propietorship', 'woocommerce-payments' ),
+		sole_proprietorship: __(
+			'Sole proprietorship',
+			'woocommerce-payments'
+		),
 		private_company: __( 'Private company', 'woocommerce-payments' ),
 		private_partnership: __(
 			'Private partnership',
