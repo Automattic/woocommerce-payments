@@ -150,8 +150,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return void
 	 */
 	public function set_session() {
+		// Don't set session cookies on product pages to allow for caching when payment request
+		// buttons are disabled. But keep cookies if there is already an active WC session in place.
 		if (
-			! ( $this->is_product() && $this->is_available_at( 'product' ) )
+			! ( $this->is_product() && $this->should_show_payment_request_button() )
 			|| ( isset( WC()->session ) && WC()->session->has_session() )
 		) {
 			return;
