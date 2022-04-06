@@ -15,6 +15,7 @@ use WCPay\Exceptions\Connection_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Logger;
 use WCPay\MultiCurrency\Currency;
+use WCPay\Session_Rate_Limiter;
 
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
@@ -34,7 +35,6 @@ use WC_Subscriptions_Cart;
 use WP_UnitTestCase;
 use WP_User;
 use Exception;
-use Session_Rate_Limiter;
 
 /**
  * Overriding global function within namespace for testing
