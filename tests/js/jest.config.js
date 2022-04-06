@@ -4,8 +4,6 @@ module.exports = {
 	rootDir: '../../',
 	moduleDirectories: [ 'node_modules', '<rootDir>/client' ],
 	moduleNameMapper: {
-		'^client/components/platform-checkout/(.*).(svg)$':
-			'<rootDir>/tests/js/jest-file-mock.js',
 		'^react$': '<rootDir>/node_modules/react',
 		'^react-dom$': '<rootDir>/node_modules/react-dom',
 		'^moment$': '<rootDir>/node_modules/moment',
