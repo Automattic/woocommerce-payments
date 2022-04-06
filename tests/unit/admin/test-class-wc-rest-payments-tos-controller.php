@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * WC_REST_Payments_Tos_Controller unit tests.
