@@ -1,5 +1,3 @@
-/** @format */
-
 /**
  * This is a copy of the CustomSelectControl component, found here:
  * https://github.com/WordPress/gutenberg/tree/7aa042605ff42bb437e650c39132c0aa8eb4ef95/packages/components/src/custom-select-control
@@ -11,26 +9,45 @@
 /**
  * External Dependencies
  */
+import React from 'react';
 import { Button } from '@wordpress/components';
 import { Icon, check, chevronDown } from '@wordpress/icons';
 import { useCallback } from '@wordpress/element';
 import classNames from 'classnames';
 import { __, sprintf } from '@wordpress/i18n';
-import { useSelect } from 'downshift';
+import { useSelect, UseSelectState } from 'downshift';
 
 /**
  * Internal Dependencies
  */
 import './style.scss';
 
-const itemToString = ( item ) => item?.name;
+export interface Item {
+	key: string;
+	name?: string;
+	className?: string;
+	style?: React.CSSProperties;
+}
+
+interface ControlProps< T > {
+	className?: string;
+	label: string;
+	describedBy?: string;
+	options: T[];
+	value?: T;
+	placeholder?: string;
+	onChange?: ( changes: Partial< UseSelectState< T > > ) => void;
+	children?: ( item: T ) => JSX.Element;
+}
+
+const itemToString = ( item: { name?: string } ) => item?.name || '';
 // This is needed so that in Windows, where
 // the menu does not necessarily open on
 // key up/down, you can still switch between
 // options with the menu closed.
 const stateReducer = (
-	{ selectedItem },
-	{ type, changes, props: { items } }
+	{ selectedItem }: any,
+	{ type, changes, props: { items } }: any
 ) => {
 	switch ( type ) {
 		case useSelect.stateChangeTypes.ToggleButtonKeyDownArrowDown:
@@ -62,16 +79,17 @@ const stateReducer = (
 			return changes;
 	}
 };
-export default function CustomSelectControl( {
+
+function CustomSelectControl< T extends Item >( {
 	className,
 	label,
 	describedBy,
 	options: items,
 	onChange: onSelectedItemChange,
-	value: _selectedItem,
+	value,
 	placeholder,
 	children,
-} ) {
+}: ControlProps< T > ): JSX.Element {
 	const {
 		getLabelProps,
 		getToggleButtonProps,
@@ -85,23 +103,23 @@ export default function CustomSelectControl( {
 		items,
 		itemToString,
 		onSelectedItemChange,
-		...( 'undefined' !== typeof _selectedItem && null !== _selectedItem
-			? { selectedItem: _selectedItem }
-			: undefined ),
+		selectedItem: value || ( {} as T ),
 		stateReducer,
 	} );
+
+	const itemString = itemToString( selectedItem );
 
 	function getDescribedBy() {
 		if ( describedBy ) {
 			return describedBy;
 		}
 
-		if ( ! selectedItem ) {
+		if ( ! itemString ) {
 			return __( 'No selection' );
 		}
 
 		// translators: %s: The selected option.
-		return sprintf( __( 'Currently selected: %s' ), selectedItem.name );
+		return sprintf( __( 'Currently selected: %s' ), itemString );
 	}
 
 	const menuProps = getMenuProps( {
@@ -148,11 +166,11 @@ export default function CustomSelectControl( {
 					'aria-describedby': getDescribedBy(),
 					className: classNames(
 						'components-custom-select-control__button',
-						{ placeholder: ! selectedItem }
+						{ placeholder: ! itemString }
 					),
 				} ) }
 			>
-				{ itemToString( selectedItem ) || placeholder }
+				{ itemString || placeholder }
 				<Icon
 					icon={ chevronDown }
 					className="components-custom-select-control__button-icon"
@@ -192,3 +210,5 @@ export default function CustomSelectControl( {
 		</div>
 	);
 }
+
+export default CustomSelectControl;
