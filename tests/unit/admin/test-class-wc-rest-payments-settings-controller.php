@@ -78,8 +78,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$account                  = new WC_Payments_Account( $this->mock_api_client );
-		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $account );
+		$mock_wcpay_account       = $this->createMock( WC_Payments_Account::class );
+		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $mock_wcpay_account );
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
@@ -87,7 +87,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
-			$account,
+			$mock_wcpay_account,
 			$customer_service,
 			$token_service,
 			$action_scheduler_service,
@@ -122,7 +122,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->upe_gateway    = new UPE_Payment_Gateway(
 			$this->mock_api_client,
-			$account,
+			$mock_wcpay_account,
 			$customer_service,
 			$token_service,
 			$action_scheduler_service,

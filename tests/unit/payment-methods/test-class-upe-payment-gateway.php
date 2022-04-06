@@ -116,7 +116,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	 *
 	 * @var WC_Payments_Account
 	 */
-	private $wcpay_account;
+	private $mock_wcpay_account;
 
 	/**
 	 * Mocked value of return_url.
@@ -163,8 +163,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			)
 			->getMock();
 
-		// Arrange: Create new WC_Payments_Account instance to use later.
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
@@ -212,7 +211,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
-					$this->wcpay_account,
+					$this->mock_wcpay_account,
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
