@@ -163,7 +163,12 @@ class Platform_Checkout_Tracker extends Tracking {
 	 * Record a Tracks event that user chose to save payment information in platform checkout.
 	 */
 	public function must_save_payment_method_to_platform() {
-		$this->maybe_record_event( 'platform_checkout_registered' );
+		$this->maybe_record_event(
+			'platform_checkout_registered',
+			[
+				'source' => 'checkout',
+			]
+		);
 	}
 
 }
