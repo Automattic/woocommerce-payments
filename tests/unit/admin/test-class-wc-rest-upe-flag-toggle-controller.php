@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Session_Rate_Limiter;
+
 /**
  * WC_REST_UPE_Flag_Toggle_Controller unit tests.
  */
