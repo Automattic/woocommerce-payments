@@ -23,7 +23,7 @@ const IFrameComponent = ( { title, children }: IFrameComponentProps ) => {
 	const [ iframeBody, setIframeBody ] = useState< HTMLElement | null >(
 		null
 	);
-	const handleLoad = ( event: React.SyntheticEvent< HTMLIFrameElement > ) => {
+	const handleLoad = ( event: React.SyntheticEvent ) => {
 		const iframe = event.target as HTMLIFrameElement;
 		if ( iframe?.contentDocument ) {
 			setIframeBody( iframe.contentDocument.body );
