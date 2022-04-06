@@ -31,9 +31,9 @@ class Platform_Checkout_Webhooks {
 		add_filter( 'woocommerce_webhook_topic_hooks', [ __CLASS__, 'add_topics' ], 20, 2 );
 		add_filter( 'woocommerce_webhook_payload', [ __CLASS__, 'create_payload' ], 10, 4 );
 		add_filter( 'woocommerce_valid_webhook_resources', [ __CLASS__, 'add_resource' ], 10, 1 );
-		//phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-		// add_filter( 'woocommerce_valid_webhook_events', [__CLASS__, 'add_event'], 10, 1 ); .
+		add_filter( 'woocommerce_valid_webhook_events', [ __CLASS__, 'add_event' ], 10, 1 );
 		add_filter( 'woocommerce_webhook_topics', [ __CLASS__, 'add_topics_admin_menu' ], 10, 1 );
+		add_action( 'woocommerce_order_status_changed', [ __CLASS__, 'send_webhook' ], 10, 3 );
 
 		self::maybe_create_platform_checkout_order_webhook();
 	}
@@ -65,8 +65,7 @@ class Platform_Checkout_Webhooks {
 		$webhook = new WC_Webhook();
 		$webhook->set_name( __( 'Platform Checkout order status sync', 'woocommerce-payments' ) );
 		$webhook->set_user_id( $user->ID );
-		// TODO: change to the custom `order.status_changed` event.
-		$webhook->set_topic( 'order.updated' );
+		$webhook->set_topic( 'order.status_changed' );
 		$webhook->set_secret( wp_generate_password( 50, false ) );
 		$webhook->set_delivery_url( self::$delivery_url );
 		$webhook->set_status( 'active' );
@@ -117,7 +116,7 @@ class Platform_Checkout_Webhooks {
 	 * @param array $topic_hooks List of WooCommerce's standard webhook topics and hooks.
 	 */
 	public static function add_topics( $topic_hooks ) {
-		$topic_hooks['order.status_changed'][] = 'wcpay_webhook_order_status_changed';
+		$topic_hooks['order.status_changed'][] = 'wcpay_webhook_platform_checkout_order_status_changed';
 
 		return $topic_hooks;
 	}
@@ -144,7 +143,10 @@ class Platform_Checkout_Webhooks {
 	 * @param integer $id          ID of the webhook.
 	 */
 	public static function create_payload( $payload, $resource, $resource_id, $id ) {
-		return $payload;
+		return [
+			'resource' => $resource,
+			'data'     => $payload,
+		];
 	}
 
 	/**
@@ -158,4 +160,26 @@ class Platform_Checkout_Webhooks {
 		return $resources;
 	}
 
+	/**
+	 * Undocumented function
+	 *
+	 * @param array $topic_events List of available topic events.
+	 */
+	public static function add_event( $topic_events ) {
+		$topic_events[] = 'status_changed';
+
+		return $topic_events;
+	}
+
+	/**
+	 * Trigger webhook delivery.
+	 *
+	 * @param int    $id Order id.
+	 * @param string $previous_status the old WooCommerce order status.
+	 * @param string $next_status the new WooCommerce order status.
+	 * @return void
+	 */
+	public static function send_webhook( $id, $previous_status, $next_status ) {
+		do_action( 'wcpay_webhook_platform_checkout_order_status_changed', $id, $next_status );
+	}
 }
