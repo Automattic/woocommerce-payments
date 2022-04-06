@@ -100,7 +100,7 @@ const getDocumentDescription = ( document: Document ) => {
 				);
 			}
 			return __(
-				'VAT invoice without proper period dates.',
+				'VAT invoice without proper period dates',
 				'woocommerce-payments'
 			);
 			break;
