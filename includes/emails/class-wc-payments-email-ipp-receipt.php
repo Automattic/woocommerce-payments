@@ -48,6 +48,7 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			$this->template_base  = WCPAY_ABSPATH . 'templates/';
 			$this->template_html  = 'emails/customer-ipp-receipt.php';
 			$this->template_plain = 'emails/plain/customer-ipp-receipt.php';
+			$this->plugin_id      = 'woocommerce_woocommerce_payments_';
 			$this->placeholders   = [
 				'{order_date}'   => '',
 				'{order_number}' => '',
@@ -60,9 +61,15 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			// Triggers for this email.
 			add_action( 'woocommerce_payments_email_ipp_receipt_notification', [ $this, 'trigger' ], 10, 3 );
 
-			// Call parent constructor.
+			/**
+			 * Please don't move. The call to the parent constructor here is intentional. It allows this class to merge
+			 * its placeholders with the parent's and prefix the settings with its own identifier.
+			 * Moving this call to the top of the constructor will cause the placeholders to stop working and
+			 * loose the woocommerce_payments_ prefix in the settings.
+			 *
+			 * @see: WC_Email::_construct()
+			*/
 			parent::__construct();
-
 		}
 
 		/**
