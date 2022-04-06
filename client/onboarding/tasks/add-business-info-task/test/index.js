@@ -33,7 +33,7 @@ const businessTypes = [
 				structures: [
 					{
 						key: 'sole_proprietorship',
-						name: 'Sole propietorship',
+						name: 'Sole proprietorship',
 					},
 					{
 						key: 'single_member_llc',
