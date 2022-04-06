@@ -1479,7 +1479,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		try {
 			// If the payment method is Interac_Present, the refund should already have been done in the mobile app, so we only record the refund without actioning it.
-			if ( Payment_Method::INTERAC_PRESENT !== $this->get_payment_method_type_for_order( $order ) ) {
+			if ( Payment_Method::INTERAC_PRESENT === $this->get_payment_method_type_for_order( $order ) ) {
+				$refunds = $order->get_refunds();
+
+				$expected_refund_amount = $amount ?? $order->get_total();
+
+				$refund = array_filter(
+					$refunds,
+					function ( $r ) use ( $expected_refund_amount ) {
+						return false === $r->get_refunded_payment() && $expected_refund_amount === $r->get_amount();
+					}
+				)[0];
+
+				$refund->set_refunded_payment( true );
+				$refund->save();
+			} else {
 				if ( is_null( $amount ) ) {
 					// If amount is null, the default is the entire charge.
 					$refund = $this->payments_api_client->refund_charge( $charge_id );
