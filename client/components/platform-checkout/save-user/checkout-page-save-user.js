@@ -43,8 +43,8 @@ const CheckoutPageSaveUser = () => {
 					<input
 						type="checkbox"
 						checked={ isSaveDetailsChecked }
-						onChange={ ( e ) =>
-							setIsSaveDetailsChecked( e.target.checked )
+						onChange={ () =>
+							setIsSaveDetailsChecked( ( v ) => ! v )
 						}
 						name="save_user_in_platform_checkout"
 						id="save_user_in_platform_checkout"
