@@ -1,18 +1,18 @@
-/** @format */
-
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
 import React from 'react';
+import { render } from '@testing-library/react';
+import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
  */
 import RequiredVerificationInfo from '../required-verification-info';
-import { useRequiredVerificationInfo } from 'wcpay/data/onboarding';
+import { useRequiredVerificationInfo } from 'onboarding/hooks';
+import { BusinessType } from 'onboarding/types';
 
-jest.mock( 'wcpay/data/onboarding', () => ( {
+jest.mock( 'onboarding/hooks', () => ( {
 	useRequiredVerificationInfo: jest.fn(),
 } ) );
 
@@ -38,30 +38,38 @@ const requirements = [
 	'external_account',
 ];
 
+const props = {
+	country: 'US',
+	type: 'company' as BusinessType[ 'key' ],
+	structure: 'private_comporation',
+};
+
 describe( 'RequiredVerificationInfoTask', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 	} );
 
 	it( 'shows a loadable block', () => {
-		useRequiredVerificationInfo.mockReturnValue( {
-			requiredFields: requirements,
+		mocked( useRequiredVerificationInfo ).mockReturnValue( {
+			requiredInfo: requirements,
 			isLoading: true,
-			getRequiredVerificationInfo: () => requirements,
 		} );
 
-		const { container: task } = render( <RequiredVerificationInfo /> );
+		const { container: task } = render(
+			<RequiredVerificationInfo { ...props } />
+		);
 		expect( task ).toMatchSnapshot();
 	} );
 
 	it( 'shows the requirements', () => {
-		useRequiredVerificationInfo.mockReturnValue( {
-			requiredFields: requirements,
+		mocked( useRequiredVerificationInfo ).mockReturnValue( {
+			requiredInfo: requirements,
 			isLoading: false,
-			getRequiredVerificationInfo: () => requirements,
 		} );
 
-		const { container: task } = render( <RequiredVerificationInfo /> );
+		const { container: task } = render(
+			<RequiredVerificationInfo { ...props } />
+		);
 		expect( task ).toMatchSnapshot();
 	} );
 } );

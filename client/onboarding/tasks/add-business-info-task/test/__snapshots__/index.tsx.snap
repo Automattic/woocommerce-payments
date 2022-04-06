@@ -554,7 +554,6 @@ exports[`AddBusinessInfoTask shows the form 1`] = `
           tabindex="-1"
         />
       </div>
-      
     </div>
   </li>
 </div>

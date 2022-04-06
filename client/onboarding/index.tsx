@@ -1,5 +1,3 @@
-/** @format */
-
 /**
  * External dependencies
  */
@@ -14,10 +12,12 @@ import WizardTaskList from 'additional-methods-setup/wizard/task-list';
 import WizardTask from 'additional-methods-setup/wizard/task';
 import AddBusinessInfoTask from './tasks/add-business-info-task';
 import SetupCompleteTask from './tasks/setup-complete-task';
-import './index.scss';
+import { OnboardingState } from './types';
+import './style.scss';
+import RequiredVerificationInfo from './tasks/add-business-info-task/required-verification-info';
 
-const OnboardingPage = () => {
-	const [ selectedData, setSelectedData ] = useState();
+const OnboardingPage = (): JSX.Element => {
+	const [ state, setState ] = useState< OnboardingState >( {} );
 
 	return (
 		<Card
@@ -28,10 +28,10 @@ const OnboardingPage = () => {
 				<Wizard defaultActiveTask="complete-business-info">
 					<WizardTaskList>
 						<WizardTask id="complete-business-info">
-							<AddBusinessInfoTask onChange={ setSelectedData } />
+							<AddBusinessInfoTask onChange={ setState } />
 						</WizardTask>
 						<WizardTask id="setup-complete">
-							<SetupCompleteTask args={ selectedData } />
+							<SetupCompleteTask args={ state } />
 						</WizardTask>
 					</WizardTaskList>
 				</Wizard>
