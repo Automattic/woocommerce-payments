@@ -1480,19 +1480,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			// If the payment method is Interac_Present, the refund should already have been done in the mobile app, so we only record the refund without actioning it.
 			if ( Payment_Method::INTERAC_PRESENT === $this->get_payment_method_type_for_order( $order ) ) {
-				$refunds = $order->get_refunds();
+				$refunds = $this->payments_api_client->list_refunds( $charge_id )['data'];
 
-				$expected_refund_amount = $amount ?? $order->get_total();
+				$expected_refund_amount        = $amount ?? $order->get_total();
+				$stripe_expected_refund_amount = WC_Payments_Utils::prepare_amount( $expected_refund_amount, $order->get_currency() );
 
-				$refund = array_filter(
+				$filtered_refunds = array_filter(
 					$refunds,
-					function ( $r ) use ( $expected_refund_amount ) {
-						return false === $r->get_refunded_payment() && $expected_refund_amount === $r->get_amount();
+					function ( $r ) use ( $stripe_expected_refund_amount ) {
+						return 'succeeded' === $r['status'] && $stripe_expected_refund_amount === $r['amount'];
 					}
-				)[0];
+				);
 
-				$refund->set_refunded_payment( true );
-				$refund->save();
+				if ( isset( $filtered_refunds[0] ) ) {
+					$refund = $filtered_refunds[0];
+				} else {
+					$interac_refund_error = __( 'Interac in-person payments must be refunded using the mobile app, with the customer present.', 'woocommerce-payments' );
+					return new WP_Error( 'wcpay_edit_order_interac_present_refund_failure', $interac_refund_error, [ 'status' => 404 ] );
+				}
 			} else {
 				if ( is_null( $amount ) ) {
 					// If amount is null, the default is the entire charge.
