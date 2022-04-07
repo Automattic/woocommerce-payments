@@ -187,7 +187,7 @@ export const DepositsList = (): JSX.Element => {
 	const downloadable = !! rows.length;
 
 	const onDownload = () => {
-		const { page, path, ...params } = getQuery();
+		const params = getQuery();
 
 		const csvColumns = [
 			{

@@ -129,7 +129,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * Verify domain upon plugin update only in case the domain association file has changed.
 	 */
 	public function verify_domain_on_update() {
-		if ( ! $this->is_hosted_domain_association_file_up_to_date() ) {
+		if ( $this->is_enabled() && ! $this->is_hosted_domain_association_file_up_to_date() ) {
 			$this->verify_domain_if_configured();
 		}
 	}
@@ -141,10 +141,13 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return bool Whether file is up to date or not.
 	 */
 	private function is_hosted_domain_association_file_up_to_date() {
+		$fullpath = untrailingslashit( ABSPATH ) . '/' . self::DOMAIN_ASSOCIATION_FILE_DIR . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
+		if ( ! file_exists( $fullpath ) ) {
+			return false;
+		}
 		// Contents of domain association file from plugin dir.
 		$new_contents = @file_get_contents( WCPAY_ABSPATH . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME ); // @codingStandardsIgnoreLine
 		// Get file contents from local path and remote URL and check if either of which matches.
-		$fullpath        = untrailingslashit( ABSPATH ) . '/' . self::DOMAIN_ASSOCIATION_FILE_DIR . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
 		$local_contents  = @file_get_contents( $fullpath ); // @codingStandardsIgnoreLine
 		$url             = get_site_url() . '/' . self::DOMAIN_ASSOCIATION_FILE_DIR . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
 		$response        = @wp_remote_get( $url ); // @codingStandardsIgnoreLine

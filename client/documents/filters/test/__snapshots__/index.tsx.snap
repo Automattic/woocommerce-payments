@@ -7,5 +7,10 @@ HTMLOptionsCollection [
   >
     Test Document
   </option>,
+  <option
+    value="vat_invoice"
+  >
+    VAT Invoice
+  </option>,
 ]
 `;
