@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
-import { TextControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import intlTelInput from 'intl-tel-input';
 
@@ -19,8 +18,8 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 	const [ inputInstance, setInputInstance ] = useState( null );
 	const [ isValid, setIsValid ] = useState( true );
 
-	const handlePhoneNumberInputChange = ( value = inputValue ) => {
-		setInputValue( value );
+	const handlePhoneNumberInputChange = ( e ) => {
+		setInputValue( e.target.value );
 		if ( inputInstance ) {
 			handlePhoneNumberChange( inputInstance.getNumber() );
 		}
@@ -112,9 +111,11 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 		};
 	}, [ handlePhoneNumberChange ] );
 
+	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
+	// alters the DOM and we'll get warnings about "removing content without using React."
 	return (
-		<>
-			<TextControl
+		<div>
+			<input
 				type="tel"
 				aria-label={ __(
 					'Mobile phone number',
@@ -125,10 +126,14 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 				value={ inputValue }
 				onChange={ handlePhoneNumberInputChange }
 				onBlur={ handlePhoneNumberValidation }
-				className={ ! isValid ? 'has-error' : '' }
+				className={
+					! isValid
+						? 'phone-input input-text has-error'
+						: 'phone-input input-text'
+				}
 			/>
 			<ErrorText />
-		</>
+		</div>
 	);
 };
 

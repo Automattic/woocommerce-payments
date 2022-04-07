@@ -69,6 +69,7 @@ exports[`PreviewReceipt should render preview when fetch from API succeeds 1`] =
       >
         <iframe
           class="card-readers-preview-receipt__preview"
+          srcdoc="<!DOCTYPE html>"
           title="Preview Receipt"
         />
       </div>
