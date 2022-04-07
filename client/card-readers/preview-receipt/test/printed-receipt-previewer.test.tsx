@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import React from 'react';
 
 /**
@@ -18,6 +18,9 @@ describe( 'PrintedReceiptPreviewer', () => {
 		const iframeElement = getByTitle(
 			'Preview Receipt'
 		) as HTMLIFrameElement;
+
+		// Manually trigger the load event.
+		fireEvent.load( iframeElement );
 
 		expect( iframeElement?.contentWindow?.document.body.innerHTML ).toEqual(
 			`<div>${ expected }</div>`

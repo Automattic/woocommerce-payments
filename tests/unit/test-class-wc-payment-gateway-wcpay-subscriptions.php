@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -97,7 +98,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->mock_session_rate_limiter = $this->getMockBuilder( 'Session_Rate_Limiter' )
+		$this->mock_session_rate_limiter = $this->getMockBuilder( Session_Rate_Limiter::class )
 			->disableOriginalConstructor()
 			->getMock();
 

@@ -243,7 +243,7 @@ const PaymentMethods = () => {
 				<CardBody size={ null }>
 					<PaymentMethodsList className="payment-methods__available-methods">
 						{ availableMethods.map(
-							( { id, label, description, Icon } ) => (
+							( { id, label, description, icon: Icon } ) => (
 								<PaymentMethod
 									id={ id }
 									key={ id }
