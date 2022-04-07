@@ -148,16 +148,20 @@ const WCPayUPEFields = ( {
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const upeOnChange = ( event ) => {
-		getPaymentMethods()[
-			PAYMENT_METHOD_NAME_CARD
-		].supports.showSaveOption =
-			( getConfig( 'isSavedCardsEnabled' ) &&
-				! getConfig( 'cartContainsSubscription' ) &&
-				paymentMethodsConfig[ event.value.type ].isReusable ) ??
-			false;
 		setIsUPEComplete( event.complete );
 		setSelectedUPEPaymentType( event.value.type );
 		setPaymentCountry( event.value.country );
+
+		// Update WC Blocks gateway config based on selected UPE payment method.
+		const gatewayConfig = getPaymentMethods()[ PAYMENT_METHOD_NAME_CARD ];
+
+		if (
+			getConfig( 'isSavedCardsEnabled' ) &&
+			! getConfig( 'cartContainsSubscription' ) &&
+			paymentMethodsConfig[ event.value.type ].isReusable
+		) {
+			gatewayConfig.supports.showSaveOption = false;
+		}
 	};
 
 	const elementOptions = {
