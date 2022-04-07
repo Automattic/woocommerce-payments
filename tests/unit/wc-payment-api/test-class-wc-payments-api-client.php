@@ -117,6 +117,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
 		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
 
+		Buyer_Fingerprinting_Service::set_instance( $mock_fingerprinting );
+		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
+
 		$mock_fraud_prevention
 			->expects( $this->exactly( 1 ) )
 			->method( 'is_enabled' )
