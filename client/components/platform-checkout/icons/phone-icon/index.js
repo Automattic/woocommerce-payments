@@ -1,8 +1,12 @@
 /**
  * Internal dependencies
  */
-import icon from './icon.svg';
+import Icon from './icon.svg';
 
-const PhoneIcon = () => <img src={ icon } alt="" />;
+const PhoneIcon = () => (
+	<span>
+		<Icon />
+	</span>
+);
 
 export default PhoneIcon;

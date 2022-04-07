@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Update Jetpack IDC package, and add two new options dynamicSiteUrlText and dynamicSiteUrlSupportLink.
