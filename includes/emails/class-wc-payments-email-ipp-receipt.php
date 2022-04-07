@@ -65,7 +65,7 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			 * Please don't move. The call to the parent constructor here is intentional. It allows this class to merge
 			 * its placeholders with the parent's and prefix the settings with its own identifier.
 			 * Moving this call to the top of the constructor will cause the placeholders to stop working and
-			 * loose the woocommerce_payments_ prefix in the settings.
+			 * lose the woocommerce_payments_ prefix in the settings.
 			 *
 			 * @see: WC_Email::_construct()
 			*/
