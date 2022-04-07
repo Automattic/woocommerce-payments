@@ -17,6 +17,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
