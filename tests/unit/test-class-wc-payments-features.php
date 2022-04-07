@@ -32,6 +32,8 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 
 		// Restore the account service in the main class.
 		WC_Payments::set_account_service( $this->_account );
+
+		parent::tear_down();
 	}
 
 	/**

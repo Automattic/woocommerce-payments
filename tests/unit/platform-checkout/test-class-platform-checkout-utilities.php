@@ -24,6 +24,7 @@ class Platform_Checkout_Utilities_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		// Restore the account service in the main class.
 		WC_Payments::set_account_service( $this->_account );
+		parent::tear_down();
 	}
 
 	/**

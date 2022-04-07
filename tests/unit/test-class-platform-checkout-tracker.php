@@ -49,6 +49,8 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		// Restore the account service in the main class.
 		WC_Payments::set_account_service( $this->_account );
+
+		parent::tear_down();
 	}
 
 	public function test_should_track_obeys_platform_checkout_flag() {

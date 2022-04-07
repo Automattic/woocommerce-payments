@@ -29,6 +29,8 @@ class WC_Payments_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		// Restore the account service in the main class.
 		WC_Payments::set_account_service( $this->_account );
+
+		parent::tear_down();
 	}
 
 	public function test_it_runs_upgrade_routines_during_init_at_priority_10() {
