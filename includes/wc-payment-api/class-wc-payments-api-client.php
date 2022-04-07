@@ -922,6 +922,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get status of onboarding
+	 *
+	 * @return boolean Has onboarding started
+	 *
+	 * @throws API_Exception - Error contacting the API.
+	 */
+	public function has_onboarding_started() {
+		return (bool) $this->request(
+			[
+				'test_mode' => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+			],
+			self::ACCOUNTS_API . '/has_onboarding_started',
+			self::GET
+		);
+	}
+
+	/**
 	 * Retrieve a file details via API.
 	 *
 	 * @param string $file_id - API file id.
