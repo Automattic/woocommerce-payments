@@ -1753,7 +1753,7 @@ class WC_Payments_API_Client {
 	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
 	 * @param bool   $raw_response     - If true, the raw response will be returned. Defaults to false.
 	 *
-	 * @return array
+	 * @return mixed
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
 	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false ) {
