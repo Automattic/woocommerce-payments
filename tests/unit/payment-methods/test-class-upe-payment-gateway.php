@@ -164,6 +164,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->getMock();
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
