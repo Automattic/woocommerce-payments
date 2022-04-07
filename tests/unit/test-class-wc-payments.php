@@ -19,8 +19,16 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		'woocommerce_store_api_disable_nonce_check' => '__return_true',
 	];
 
+	public function set_up() {
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		// Mock the main class's account service.
+		$this->_account = WC_Payments::get_account_service();
+		WC_Payments::set_account_service( $this->mock_wcpay_account );
+	}
+
 	public function tear_down() {
-		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
+		// Restore the account service in the main class.
+		WC_Payments::set_account_service( $this->_account );
 	}
 
 	public function test_it_runs_upgrade_routines_during_init_at_priority_10() {
@@ -109,7 +117,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 			remove_filter( $hook, $callback );
 		}
 
-		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => $is_enabled ] ] );
+		$this->mock_wcpay_account->method( 'get_platform_checkout_eligible' )->willReturn( $is_enabled );
 		// Testing feature flag, so platform_checkout setting should always be on.
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 
@@ -123,7 +131,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		}
 
 		// Testing platform_checkout, so feature flag should always be on.
-		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => true ] ] );
+		$this->mock_wcpay_account->method( 'get_platform_checkout_eligible' )->willReturn( true );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', $is_enabled ? 'yes' : 'no' );
 
 		WC_Payments::maybe_register_platform_checkout_hooks();

@@ -25,6 +25,13 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 	private $http_client_stub;
 
 	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_account;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -32,6 +39,16 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 
 		$this->http_client_stub = $this->getMockBuilder( WC_Payments_Http::class )->disableOriginalConstructor()->setMethods( [ 'wpcom_json_api_request_as_user' ] )->getMock();
 		$this->tracker          = new WCPay\Platform_Checkout_Tracker( $this->http_client_stub );
+
+		// Mock the main class's account service.
+		$this->_account     = WC_Payments::get_account_service();
+		$this->mock_account = $this->createMock( WC_Payments_Account::class );
+		WC_Payments::set_account_service( $this->mock_account );
+	}
+
+	public function tear_down() {
+		// Restore the account service in the main class.
+		WC_Payments::set_account_service( $this->_account );
 	}
 
 	public function test_should_track_obeys_platform_checkout_flag() {
@@ -86,11 +103,6 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 	 * @param $account
 	 */
 	private function set_is_platform_checkout_eligible( $is_platform_checkout_eligible ) {
-		add_option(
-			WC_Payments_Account::ACCOUNT_OPTION,
-			[
-				'account' => [ 'platform_checkout_eligible' => $is_platform_checkout_eligible ],
-			]
-		);
+		$this->mock_account->method( 'get_platform_checkout_eligible' )->willReturn( $is_platform_checkout_eligible );
 	}
 }

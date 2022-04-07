@@ -17,12 +17,21 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 		'_wcpay_feature_documents'               => 'documents',
 	];
 
+	public function set_up() {
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		// Mock the main class's account service.
+		$this->_account = WC_Payments::get_account_service();
+		WC_Payments::set_account_service( $this->mock_wcpay_account );
+	}
+
 	public function tear_down() {
 		// Remove pre_option filters.
 		foreach ( array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) as $flag ) {
 			remove_all_filters( 'pre_option_' . $flag );
 		}
-		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
+
+		// Restore the account service in the main class.
+		WC_Payments::set_account_service( $this->_account );
 	}
 
 	/**
@@ -74,17 +83,12 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_platform_checkout_eligible_returns_true() {
-		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => true ] ] );
+		$this->mock_wcpay_account->method( 'get_platform_checkout_eligible' )->willReturn( true );
 		$this->assertTrue( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
 	public function test_is_platform_checkout_eligible_returns_false() {
-		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => false ] ] );
-		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
-	}
-
-	public function test_is_platform_checkout_eligible_returns_false_if_account_missing() {
-		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [] ] );
+		$this->mock_wcpay_account->method( 'get_platform_checkout_eligible' )->willReturn( false );
 		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 

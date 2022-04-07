@@ -60,7 +60,6 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	}
 
 	public function tear_down() {
-		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
 		delete_transient( WC_Payments_Account::ON_BOARDING_DISABLED_TRANSIENT );
 		unset( $_GET );
 		parent::tear_down();

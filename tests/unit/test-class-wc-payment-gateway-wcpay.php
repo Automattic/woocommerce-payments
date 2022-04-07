@@ -113,6 +113,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->any() )->method( 'get_blog_id' )->willReturn( 1234567 );
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		// Mock the main class's account service.
+		$this->_account = WC_Payments::get_account_service();
+		WC_Payments::set_account_service( $this->mock_wcpay_account );
 
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 
@@ -142,7 +145,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		parent::tear_down();
 
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
-		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
+
+		// Restore the account service in the main class.
+		WC_Payments::set_account_service( $this->_account );
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
@@ -2378,7 +2383,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_platform_checkout_enabled_returns_true() {
-		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => true ] ] );
+		$this->mock_wcpay_account->method( 'get_platform_checkout_eligible' )->willReturn( true );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
@@ -2395,17 +2400,12 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_platform_checkout_enabled_returns_false_if_ineligible() {
-		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => false ] ] );
+		$this->mock_wcpay_account->method( 'get_platform_checkout_eligible' )->willReturn( false );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
 	public function test_is_platform_checkout_enabled_returns_false_if_ineligible_and_enabled() {
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
-	}
-
-	public function test_is_platform_checkout_enabled_returns_false_if_account_missing() {
-		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [] ] );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 

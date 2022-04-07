@@ -179,6 +179,9 @@ class WC_Payments {
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 
+		include_once __DIR__ . '/class-database-cache.php';
+		self::$database_cache = new Database_Cache();
+
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
 		self::$dependency_service = new WC_Payments_Dependency_Service();
@@ -207,7 +210,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
-		include_once __DIR__ . '/class-database-cache.php';
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
@@ -266,7 +268,6 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$database_cache                      = new Database_Cache();
 		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache );
 		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
 		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
@@ -719,12 +720,30 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the Database_Cache instance.
+	 *
+	 * @return Database_Cache Database_Cache instance.
+	 */
+	public static function get_database_cache(): Database_Cache {
+		return self::$database_cache;
+	}
+
+	/**
 	 * Returns the WC_Payments_Account instance
 	 *
 	 * @return WC_Payments_Account account service instance
 	 */
 	public static function get_account_service() {
 		return self::$account;
+	}
+
+	/**
+	 * Sets the account service instance.
+	 *
+	 * @param WC_Payments_Account $account The account instance.
+	 */
+	public static function set_account_service( WC_Payments_Account $account ) {
+		self::$account = $account;
 	}
 
 	/**

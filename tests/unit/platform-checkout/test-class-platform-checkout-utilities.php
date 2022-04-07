@@ -14,6 +14,16 @@ class Platform_Checkout_Utilities_Test extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 		$this->gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
+
+		// Mock the main class's account service.
+		$this->_account     = WC_Payments::get_account_service();
+		$this->mock_account = $this->createMock( WC_Payments_Account::class );
+		WC_Payments::set_account_service( $this->mock_account );
+	}
+
+	public function tear_down() {
+		// Restore the account service in the main class.
+		WC_Payments::set_account_service( $this->_account );
 	}
 
 	/**
@@ -60,12 +70,7 @@ class Platform_Checkout_Utilities_Test extends WP_UnitTestCase {
 	 * @param $account
 	 */
 	private function set_is_platform_checkout_eligible( $is_platform_checkout_eligible ) {
-		add_option(
-			WC_Payments_Account::ACCOUNT_OPTION,
-			[
-				'account' => [ 'platform_checkout_eligible' => $is_platform_checkout_eligible ],
-			]
-		);
+		$this->mock_account->method( 'get_platform_checkout_eligible' )->willReturn( $is_platform_checkout_eligible );
 	}
 
 	/**
