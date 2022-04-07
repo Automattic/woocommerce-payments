@@ -48,7 +48,8 @@ class Database_Cache {
 		$data           = null;
 		$old_data       = null;
 		if ( is_array( $cache_contents ) && array_key_exists( 'data', $cache_contents ) && $validate_data( $cache_contents['data'] ) ) {
-			$old_data = $cache_contents['data'];
+			$data     = $cache_contents['data'];
+			$old_data = $data;
 		}
 
 		if ( $this->should_refresh_cache( $key, $cache_contents, $validate_data, $force_refresh ) ) {
