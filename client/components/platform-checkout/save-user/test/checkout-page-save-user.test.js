@@ -19,6 +19,10 @@ jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 
+// Mock the SVG icons.
+jest.mock( '../../icons/phone-icon', () => () => null );
+jest.mock( '../../icons/lock-icon', () => () => null );
+
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
 		usePlatformCheckoutUser.mockImplementation( () => false );
