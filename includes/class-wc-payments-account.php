@@ -323,16 +323,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Gets the platform checkout eligibility flag.
-	 *
-	 * @return bool True if eligible.
-	 */
-	public function get_platform_checkout_eligible(): bool {
-		$account = $this->get_cached_account_data();
-		return is_array( $account ) && ( $account['account']['platform_checkout_eligible'] ?? false );
-	}
-
-	/**
 	 * Gets the current account email for rendering on the settings page.
 	 *
 	 * @return string Email.

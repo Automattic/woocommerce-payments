@@ -113,9 +113,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->any() )->method( 'get_blog_id' )->willReturn( 1234567 );
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		// Mock the main class's account service.
-		$this->_account = WC_Payments::get_account_service();
-		WC_Payments::set_account_service( $this->mock_wcpay_account );
+
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
 
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 
@@ -146,8 +148,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 
-		// Restore the account service in the main class.
-		WC_Payments::set_account_service( $this->_account );
+		// Restore the cache service in the main class.
+		WC_Payments::set_database_cache( $this->_cache );
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
@@ -2383,7 +2385,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_platform_checkout_enabled_returns_true() {
-		$this->mock_wcpay_account->method( 'get_platform_checkout_eligible' )->willReturn( true );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
@@ -2400,7 +2402,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_is_platform_checkout_enabled_returns_false_if_ineligible() {
-		$this->mock_wcpay_account->method( 'get_platform_checkout_eligible' )->willReturn( false );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 

@@ -94,7 +94,8 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_platform_checkout_eligible() {
-		return WC_Payments::get_account_service()->get_platform_checkout_eligible();
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
+		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
 	}
 
 	/**

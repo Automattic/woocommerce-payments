@@ -729,6 +729,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Sets the Database_Cache instance.
+	 *
+	 * @param Database_Cache $database_cache The cache instance.
+	 */
+	public static function set_database_cache( Database_Cache $database_cache ) {
+		self::$database_cache = $database_cache;
+	}
+
+	/**
 	 * Returns the WC_Payments_Account instance
 	 *
 	 * @return WC_Payments_Account account service instance

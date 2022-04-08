@@ -20,15 +20,15 @@ class WC_Payments_Test extends WP_UnitTestCase {
 	];
 
 	public function set_up() {
-		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		// Mock the main class's account service.
-		$this->_account = WC_Payments::get_account_service();
-		WC_Payments::set_account_service( $this->mock_wcpay_account );
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
 	}
 
 	public function tear_down() {
-		// Restore the account service in the main class.
-		WC_Payments::set_account_service( $this->_account );
+		// Restore the cache service in the main class.
+		WC_Payments::set_database_cache( $this->_cache );
 
 		parent::tear_down();
 	}
@@ -119,7 +119,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 			remove_filter( $hook, $callback );
 		}
 
-		$this->mock_wcpay_account->method( 'get_platform_checkout_eligible' )->willReturn( $is_enabled );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_enabled ] );
 		// Testing feature flag, so platform_checkout setting should always be on.
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 
@@ -133,7 +133,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		}
 
 		// Testing platform_checkout, so feature flag should always be on.
-		$this->mock_wcpay_account->method( 'get_platform_checkout_eligible' )->willReturn( true );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', $is_enabled ? 'yes' : 'no' );
 
 		WC_Payments::maybe_register_platform_checkout_hooks();
