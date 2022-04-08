@@ -908,8 +908,13 @@ class WC_Payments {
 
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
-		$store_api_url          = Package::container()->get( RoutesController::class )->get( 'cart' )->get_namespace();
-		$body                   = [
+
+		if ( class_exists( 'RoutesController' ) ) {
+			$cart          = Package::container()->get( RoutesController::class )->get( 'cart' );
+			$store_api_url = method_exists( $cart, 'get_namespace' ) ? $cart->get_namespace() : 'wc/store';
+		}
+
+		$body = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
 			'session_cookie_name'  => $session_cookie_name,
@@ -921,7 +926,7 @@ class WC_Payments {
 				'blog_id'           => Jetpack_Options::get_option( 'id' ),
 				'blog_url'          => get_site_url(),
 				'blog_checkout_url' => wc_get_checkout_url(),
-				'store_api_url'     => $store_api_url,
+				'store_api_url'     => $store_api_url ?? 'wc/store',
 				'account_id'        => $account_id,
 			],
 		];
