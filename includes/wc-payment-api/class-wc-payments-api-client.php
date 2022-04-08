@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
@@ -264,6 +265,11 @@ class WC_Payments_API_Client {
 		$request['description']          = $this->get_intent_description( $order_id );
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
+
+		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
+			$request['metadata']['fraud_prevention_data_available'] = true;
+			$request['metadata']['fraud_prevention_data']           = Buyer_Fingerprinting_Service::get_instance()->hash_data_for_fraud_prevention( $order_id );
+		}
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
