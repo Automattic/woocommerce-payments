@@ -220,6 +220,23 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() && ! $should_render_full_menu ) {
+				wc_admin_register_page(
+					[
+						'id'         => 'wc-payments-onboarding',
+						'title'      => __( 'Onboarding', 'woocommerce-payments' ),
+						'parent'     => 'wc-payments',
+						'path'       => '/payments/onboarding',
+						'capability' => 'manage_woocommerce',
+						'nav_args'   => [
+							'parent' => 'wc-payments',
+						],
+					]
+				);
+				global $submenu;
+				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
+		}
+
 		if ( $should_render_full_menu ) {
 			if ( $this->account->is_card_present_eligible() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [
