@@ -1494,12 +1494,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					}
 				);
 
-				if ( isset( $filtered_refunds[0] ) ) {
-					$refund = $filtered_refunds[0];
-				} else {
+				if ( ! isset( $filtered_refunds[0] ) ) {
 					$interac_refund_error = __( 'Interac in-person payments must be refunded using the mobile app, with the customer present.', 'woocommerce-payments' );
 					return new WP_Error( 'wcpay_edit_order_interac_present_refund_failure', $interac_refund_error, [ 'status' => 404 ] );
 				}
+				
+				$refund = $filtered_refunds[0];
 			} else {
 				if ( is_null( $amount ) ) {
 					// If amount is null, the default is the entire charge.
