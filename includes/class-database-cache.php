@@ -33,11 +33,10 @@ class Database_Cache {
 
 	/**
 	 * Gets a value from cache or regenerates and adds it to the cache.
-	 * Doesn't cache null or the bool value of false.
 	 *
 	 * @param string   $key           The options key to cache the data under.
-	 * @param callable $generator     Function/callable regenerating the missing value. If null or false is returned, it will not be cached.
-	 * @param callable $validate_data Function/callable validating the data after it is retrieved from the cache. If it returns false, the cache will be regenerated.
+	 * @param callable $generator     Function/callable regenerating the missing value. If null or false is returned, it will be treated as an error.
+	 * @param callable $validate_data Function/callable validating the data after it is retrieved from the cache. If it returns false, the cache will be refreshed.
 	 * @param boolean  $force_refresh Regenerates the cache regardless of its state if true.
 	 * @param boolean  $refreshed     Is set to true if the cache has been refreshed without errors and with a non-empty value.
 	 *
@@ -47,6 +46,9 @@ class Database_Cache {
 		$cache_contents = get_option( $key );
 		$data           = null;
 		$old_data       = null;
+
+		// If the stored data is valid, prepare it for return in case we don't need to refresh.
+		// Also initialize old_data in case of errors.
 		if ( is_array( $cache_contents ) && array_key_exists( 'data', $cache_contents ) && $validate_data( $cache_contents['data'] ) ) {
 			$data     = $cache_contents['data'];
 			$old_data = $data;
@@ -56,12 +58,13 @@ class Database_Cache {
 			$errored = false;
 
 			try {
-				$data      = $generator();
-				$errored   = false === $data || null === $data;
-				$refreshed = ! $errored;
+				$data    = $generator();
+				$errored = false === $data || null === $data;
 			} catch ( \Throwable $e ) {
 				$errored = true;
 			}
+
+			$refreshed = ! $errored;
 
 			if ( $errored ) {
 				// Still return the old data on error and refresh the cache with it.
@@ -94,7 +97,7 @@ class Database_Cache {
 	}
 
 	/**
-	 * Stores a value in the cache. Will not store null/false.
+	 * Stores a value in the cache.
 	 *
 	 * @param string $key  The key to store the value under.
 	 * @param mixed  $data The value to store.
@@ -165,8 +168,11 @@ class Database_Cache {
 			return true;
 		}
 
-		// If the data is invalid, refresh it.
-		if ( ! $validate_data( $cache_contents['data'] ) ) {
+		// If the data is not errored and invalid, refresh it.
+		if (
+			! $cache_contents['errored'] &&
+			! $validate_data( $cache_contents['data'] )
+		) {
 			return true;
 		}
 
@@ -180,7 +186,6 @@ class Database_Cache {
 
 	/**
 	 * Wraps the data in the cache metadata and stores it.
-	 * Does not store if data is null or false.
 	 *
 	 * @param string  $key     The key to store the data under.
 	 * @param mixed   $data    The data to store.
@@ -194,11 +199,6 @@ class Database_Cache {
 		$cache_contents['data']    = $data;
 		$cache_contents['fetched'] = time();
 		$cache_contents['errored'] = $errored;
-
-		// Avoid writing null/false data to the cache.
-		if ( null === $data || false === $data ) {
-			return $cache_contents;
-		}
 
 		// Create or update the account option cache.
 		if ( false === get_option( $key ) ) {

@@ -21,7 +21,6 @@ class WC_Payments_Account {
 
 	// ACCOUNT_OPTION is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
 	const ACCOUNT_OPTION                   = 'wcpay_account_data';
-	const ACCOUNT_RETRIEVAL_ERROR          = 'ERROR';
 	const ON_BOARDING_DISABLED_TRANSIENT   = 'wcpay_on_boarding_disabled';
 	const ON_BOARDING_STARTED_TRANSIENT    = 'wcpay_on_boarding_started';
 	const ERROR_MESSAGE_TRANSIENT          = 'wcpay_error_message';
@@ -968,13 +967,8 @@ class WC_Payments_Account {
 	 * @return bool True if the cached account is valid.
 	 */
 	public function is_valid_cached_account( $account ) {
-		// false means no account has been cached.
-		if ( false === $account ) {
-			return false;
-		}
-
-		// the rate limiting mechanism has detected an error - not a valid account.
-		if ( self::ACCOUNT_RETRIEVAL_ERROR === $account ) {
+		// null/false means no account has been cached.
+		if ( null === $account || false === $account ) {
 			return false;
 		}
 

@@ -157,7 +157,29 @@ class Database_Cache_Test extends WP_UnitTestCase {
 		$this->assertTrue( $called_generator );
 		$this->assertEquals( $old, $res );
 		$this->assertFalse( $refreshed );
-		$this->assert_cache_contains( $old );
+		$this->assert_cache_contains( $old, true );
+	}
+
+	public function test_get_or_add_handles_error_when_there_was_no_old_data() {
+		$refreshed        = false;
+		$called_generator = false;
+		$value            = [ 'mock' => true ];
+
+		$res = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function() use ( &$called_generator ) {
+				$called_generator = true;
+				throw new \Exception( 'test' );
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertTrue( $called_generator );
+		$this->assertNull( $res );
+		$this->assertFalse( $refreshed );
+		$this->assert_cache_contains( null, true );
 	}
 
 	public function test_get_or_add_refreshes_on_legacy_or_malformed_data() {
@@ -212,6 +234,28 @@ class Database_Cache_Test extends WP_UnitTestCase {
 		$this->assert_cache_contains( $old );
 	}
 
+	public function test_get_or_add_does_not_refresh_errored_out_invalid_value() {
+		$refreshed = false;
+		$value     = [ 'mock' => true ];
+		$old       = [ 'old' => true ];
+
+		$this->write_mock_cache( $old, time() + YEAR_IN_SECONDS, true );
+
+		$res = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function() use ( $value ) {
+				return $value;
+			},
+			'__return_false',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $old, $res );
+		$this->assertFalse( $refreshed );
+		$this->assert_cache_contains( $old, true );
+	}
+
 	private function write_mock_cache( $data, ?int $fetch_time = null, bool $errored = false ) {
 		update_option(
 			self::MOCK_KEY,
@@ -223,9 +267,10 @@ class Database_Cache_Test extends WP_UnitTestCase {
 		);
 	}
 
-	private function assert_cache_contains( $data ) {
+	private function assert_cache_contains( $data, $errored = false ) {
 		$cache_contents = get_option( self::MOCK_KEY );
 		$this->assertIsArray( $cache_contents );
 		$this->assertEquals( $data, $cache_contents['data'] );
+		$this->assertEquals( $errored, $cache_contents['errored'] );
 	}
 }
