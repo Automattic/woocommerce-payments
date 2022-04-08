@@ -34,12 +34,9 @@ const PlatformCheckoutSettings = () => {
 				<CheckboxControl
 					checked={ isPlatformCheckoutEnabled }
 					onChange={ updateIsPlatformCheckoutEnabled }
-					label={ __(
-						'Enable Platform Checkout',
-						'woocommerce-payments'
-					) }
+					label={ __( 'Enable WooPay', 'woocommerce-payments' ) }
 					help={ __(
-						'When enabled, customers will be able to checkout using Platform Checkout.',
+						'When enabled, customers will be able to checkout using WooPay',
 						'woocommerce-payments'
 					) }
 				/>

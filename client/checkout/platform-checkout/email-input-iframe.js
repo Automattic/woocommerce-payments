@@ -27,10 +27,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	// Make the iframe.
 	const iframe = document.createElement( 'iframe' );
-	iframe.title = __(
-		'Platform checkout SMS code verification',
-		'woocommerce-payments'
-	);
+	iframe.title = __( 'WooPay SMS code verification', 'woocommerce-payments' );
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
 
 	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
