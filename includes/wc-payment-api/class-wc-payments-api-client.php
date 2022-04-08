@@ -338,14 +338,20 @@ class WC_Payments_API_Client {
 	 *
 	 * @param string $intention_id - The ID of the intention to update.
 	 * @param array  $metadata     - Meta data values to be sent along with payment intent creation.
+	 * @param bolean $remove_receipt_email - Whether to remove the receipt_email.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
 	 */
-	public function update_intention_metadata( $intention_id, $metadata ) {
+	public function update_intention_metadata( $intention_id, $metadata, $remove_receipt_email = false ) {
 		$request = [
 			'metadata' => $metadata,
 		];
+
+		if ( $remove_receipt_email ) {
+			// I tried to set this to null but then Stripe did not remove the email.
+			$request['receipt_email'] = '';
+		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
 
