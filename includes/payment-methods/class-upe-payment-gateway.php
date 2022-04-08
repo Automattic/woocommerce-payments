@@ -926,6 +926,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 		}
 
+		if ( in_array( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) &&
+			'yes' === $this->get_option( 'stripe_link_checkout' ) ) {
+			$enabled_payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		}
+
 		return $enabled_payment_methods;
 	}
 
@@ -948,6 +953,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$methods[] = 'sofort';
 		$methods[] = 'sepa_debit';
 		$methods[] = 'p24';
+		$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$methods = array_values(
 			apply_filters(
@@ -957,6 +963,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		);
 
 		$methods_with_fees = array_values( array_intersect( $methods, array_keys( $fees ) ) );
+
+		// @TODO we don't have fees defined for this payment method at this time. we should remove this when we will have fees in place
+		$methods_with_fees[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		return $methods_with_fees;
 	}

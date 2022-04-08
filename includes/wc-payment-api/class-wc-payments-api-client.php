@@ -12,6 +12,8 @@ use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
+use WCPay\Payment_Methods\Link_Payment_Method;
+use WCPay\Payment_Methods\CC_Payment_Method;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -307,6 +309,13 @@ class WC_Payments_API_Client {
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
+
+			if (
+				CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type &&
+				in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, \WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true )
+			) {
+				$request['payment_method_types'] = [ $selected_upe_payment_type, Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID ];
+			}
 		}
 		if ( $payment_country && ! WC_Payments::get_gateway()->is_in_dev_mode() ) {
 			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.

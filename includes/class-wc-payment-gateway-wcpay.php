@@ -321,6 +321,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'card'          => 'card_payments',
 			'sepa_debit'    => 'sepa_debit_payments',
 			'au_becs_debit' => 'au_becs_debit_payments',
+			'link'          => 'link_payments',
 		];
 
 		// Load the settings.

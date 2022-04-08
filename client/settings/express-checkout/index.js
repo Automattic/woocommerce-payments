@@ -13,6 +13,7 @@ import { useContext } from '@wordpress/element';
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import {
+	useEnabledPaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	usePlatformCheckoutEnabledSettings,
 	useStripeLinkCheckoutEnabledSettings,
@@ -39,6 +40,25 @@ const ExpressCheckout = () => {
 		isStripeLinkCheckoutEnabled,
 		updateIsStripeLinkCheckoutEnabled,
 	] = useStripeLinkCheckoutEnabledSettings();
+
+	const [
+		enabledMethodIds,
+		updateEnabledMethodIds,
+	] = useEnabledPaymentMethodIds();
+
+	const updateStripeLinkCheckout = ( isEnabled ) => {
+		if ( isEnabled ) {
+			updateEnabledMethodIds( [
+				...new Set( [ ...enabledMethodIds, 'link' ] ),
+			] );
+		} else {
+			updateEnabledMethodIds( [
+				...enabledMethodIds.filter( ( id ) => 'link' !== id ),
+			] );
+		}
+		updateIsStripeLinkCheckoutEnabled( isEnabled );
+	};
+	const displayLinkPaymentMethod = enabledMethodIds.includes( 'card' );
 
 	const {
 		featureFlags: {
@@ -145,26 +165,29 @@ const ExpressCheckout = () => {
 							</a>
 						</div>
 					</li>
-					<li className="express-checkout has-icon-border">
-						<div className="express-checkout__checkbox">
-							<CheckboxControl
-								checked={ isStripeLinkCheckoutEnabled }
-								onChange={ updateIsStripeLinkCheckoutEnabled }
-							/>
-							<div className="express-checkout__icon">
-								<LinkIcon />
-							</div>
-							<div className="express-checkout__label-container">
-								<div className="express-checkout__label">
-									{ __(
-										'Stripe Link',
-										'woocommerce-payments'
-									) }
+					{ displayLinkPaymentMethod && (
+						<li className="express-checkout has-icon-border">
+							<div className="express-checkout__checkbox">
+								<CheckboxControl
+									checked={ isStripeLinkCheckoutEnabled }
+									// onChange={ updateIsStripeLinkCheckoutEnabled }
+									onChange={ updateStripeLinkCheckout }
+								/>
+								<div className="express-checkout__icon">
+									<LinkIcon />
 								</div>
-								<div className="express-checkout__description"></div>
+								<div className="express-checkout__label-container">
+									<div className="express-checkout__label">
+										{ __(
+											'Stripe Link',
+											'woocommerce-payments'
+										) }
+									</div>
+									<div className="express-checkout__description"></div>
+								</div>
 							</div>
-						</div>
-					</li>
+						</li>
+					) }
 				</ul>
 			</CardBody>
 		</Card>

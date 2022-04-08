@@ -122,9 +122,9 @@ const PaymentMethods = () => {
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
-	const availableMethods = availablePaymentMethodIds.map(
-		( methodId ) => methodsConfiguration[ methodId ]
-	);
+	const availableMethods = availablePaymentMethodIds
+		.filter( ( id ) => 'link' !== id )
+		.map( ( methodId ) => methodsConfiguration[ methodId ] );
 
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
 		null
