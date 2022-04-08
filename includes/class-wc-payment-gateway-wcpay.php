@@ -1674,7 +1674,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_is_platform_checkout_enabled( $is_platform_checkout_enabled ) {
 		$current_is_platform_checkout_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
 		if ( $is_platform_checkout_enabled !== $current_is_platform_checkout_enabled ) {
-			wc_admin_record_tracks_event( $is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled' );
+			wc_admin_record_tracks_event(
+				$is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled',
+				[ 'test_mode' => $this->is_in_test_mode() ]
+			);
 			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
 		}
 	}
