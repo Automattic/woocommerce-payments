@@ -14,10 +14,15 @@ import { LoadableBlock } from 'components/loadable';
 import { useBusinessTypes } from 'onboarding/hooks';
 import RequiredVerificationInfo from './required-verification-info';
 import strings from 'onboarding/strings';
-import { Country, BusinessType, BusinessStructure } from 'onboarding/types';
+import {
+	Country,
+	BusinessType,
+	BusinessStructure,
+	OnboardingProps,
+} from 'onboarding/types';
 
 interface TaskProps {
-	onChange: ( data: { [ key: string ]: string | undefined } ) => void;
+	onChange: ( data: Partial< OnboardingProps > ) => void;
 }
 
 const AddBusinessInfoTask = ( { onChange }: TaskProps ): JSX.Element => {
@@ -31,7 +36,7 @@ const AddBusinessInfoTask = ( { onChange }: TaskProps ): JSX.Element => {
 	>();
 
 	useEffect( () => {
-		if ( ! businessCountry ) {
+		if ( ! businessCountry && countries.length ) {
 			setBusinessCountry(
 				countries.find(
 					( country ) => country.key === wcpaySettings.connect.country
