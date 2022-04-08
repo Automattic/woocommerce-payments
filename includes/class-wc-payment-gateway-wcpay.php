@@ -448,6 +448,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
+		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+			return admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
+		}
 		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
 	}
 
@@ -2734,6 +2737,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Connection URL.
 	 */
 	public function get_connection_url() {
+		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+			// Configure step button will show `Set up` instead of `Connect`.
+			return '';
+		}
 		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
 	}
 
