@@ -1,5 +1,3 @@
-/** @format */
-
 /**
  * External dependencies
  */
@@ -13,28 +11,39 @@ import WizardTaskItem from 'additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
 import CustomSelectControl from 'components/custom-select-control';
 import { LoadableBlock } from 'components/loadable';
-import { useBusinessTypes } from 'data/onboarding';
+import { useBusinessTypes } from 'onboarding/hooks';
 import RequiredVerificationInfo from './required-verification-info';
-import strings from '../../strings';
+import strings from 'onboarding/strings';
+import {
+	Country,
+	BusinessType,
+	BusinessStructure,
+	OnboardingProps,
+} from 'onboarding/types';
 
-const AddBusinessInfoTask = ( { onChange } ) => {
+interface TaskProps {
+	onChange: ( data: Partial< OnboardingProps > ) => void;
+}
+
+const AddBusinessInfoTask = ( { onChange }: TaskProps ): JSX.Element => {
 	const { isCompleted, setCompleted } = useContext( WizardTaskContext );
-	const { businessTypes, isLoading } = useBusinessTypes();
+	const { countries, isLoading } = useBusinessTypes();
 
-	const [ businessCountry, setBusinessCountry ] = useState( '' );
-	const [ businessType, setBusinessType ] = useState( '' );
-	const [ businessStructure, setBusinessStructure ] = useState( '' );
-	const [ displayStructures, setDisplayStructures ] = useState( false );
+	const [ businessCountry, setBusinessCountry ] = useState< Country >();
+	const [ businessType, setBusinessType ] = useState< BusinessType >();
+	const [ businessStructure, setBusinessStructure ] = useState<
+		BusinessStructure
+	>();
 
 	useEffect( () => {
-		if ( ! businessCountry ) {
+		if ( ! businessCountry && countries.length ) {
 			setBusinessCountry(
-				businessTypes.find(
+				countries.find(
 					( country ) => country.key === wcpaySettings.connect.country
 				)
 			);
 		}
-	}, [ businessTypes, businessCountry ] );
+	}, [ countries, businessCountry ] );
 
 	useEffect( () => {
 		onChange( {
@@ -44,22 +53,20 @@ const AddBusinessInfoTask = ( { onChange } ) => {
 		} );
 	}, [ businessCountry, businessType, businessStructure, onChange ] );
 
-	const handleBusinessCountryUpdate = ( country ) => {
+	const handleBusinessCountryUpdate = ( country?: Country ) => {
 		setBusinessCountry( country );
-		setBusinessType( '' );
-		setBusinessStructure( '' );
-		setDisplayStructures( false );
+		setBusinessType( undefined );
+		setBusinessStructure( undefined );
 		setCompleted( false );
 	};
 
-	const handleBusinessTypeUpdate = ( type ) => {
+	const handleBusinessTypeUpdate = ( type?: BusinessType ) => {
 		setBusinessType( type );
-		setBusinessStructure( '' );
-		setDisplayStructures( 0 < type.structures.length );
-		setCompleted( 0 === type.structures.length );
+		setBusinessStructure( undefined );
+		setCompleted( 0 === type?.structures.length );
 	};
 
-	const handleBusinessStructureUpdate = ( structure ) => {
+	const handleBusinessStructureUpdate = ( structure?: BusinessStructure ) => {
 		setBusinessStructure( structure );
 		setCompleted( true );
 	};
@@ -80,7 +87,7 @@ const AddBusinessInfoTask = ( { onChange } ) => {
 					onChange={ ( { selectedItem } ) =>
 						handleBusinessCountryUpdate( selectedItem )
 					}
-					options={ businessTypes }
+					options={ countries }
 				/>
 				<p className="complete-business-info-task__description">
 					{ strings.onboarding.countryDescription }
@@ -108,7 +115,7 @@ const AddBusinessInfoTask = ( { onChange } ) => {
 						) }
 					</CustomSelectControl>
 				) }
-				{ businessType && displayStructures && (
+				{ businessType && businessType.structures?.length > 0 && (
 					<CustomSelectControl
 						label={ __(
 							'Business Structure',
@@ -127,11 +134,11 @@ const AddBusinessInfoTask = ( { onChange } ) => {
 				) }
 			</LoadableBlock>
 			<LoadableBlock isLoading={ isLoading } numLines={ 4 } />
-			{ isCompleted && (
+			{ businessCountry && businessType && isCompleted && (
 				<RequiredVerificationInfo
 					country={ businessCountry.key }
 					type={ businessType.key }
-					structure={ businessStructure.key }
+					structure={ businessStructure?.key }
 				/>
 			) }
 		</WizardTaskItem>

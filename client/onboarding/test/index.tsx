@@ -1,10 +1,9 @@
-/** @format */
-
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
 import React from 'react';
+import { render } from '@testing-library/react';
+import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
@@ -18,8 +17,10 @@ jest.mock( '../tasks/setup-complete-task', () => jest.fn() );
 
 describe( 'OnboardingPage', () => {
 	beforeEach( () => {
-		AddBusinessInfoTask.mockReturnValue( <p>Add Business Info</p> );
-		SetupCompleteTask.mockReturnValue( <p>Setup Complete</p> );
+		mocked( AddBusinessInfoTask ).mockReturnValue(
+			<p>Add Business Info</p>
+		);
+		mocked( SetupCompleteTask ).mockReturnValue( <p>Setup Complete</p> );
 	} );
 
 	afterEach( () => {

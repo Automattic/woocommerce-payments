@@ -1,5 +1,3 @@
-/** @format */
-
 /**
  * External dependencies
  */
@@ -10,8 +8,13 @@ import { addQueryArgs } from '@wordpress/url';
 
 import WizardTaskItem from 'additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
+import { OnboardingProps } from 'onboarding/types';
 
-const SetupCompleteTask = ( { args } ) => {
+interface TaskProps {
+	args: Partial< OnboardingProps >;
+}
+
+const SetupCompleteTask = ( { args }: TaskProps ): JSX.Element => {
 	const { connectUrl } = wcpaySettings;
 	const { setCompleted } = useContext( WizardTaskContext );
 
@@ -24,6 +27,7 @@ const SetupCompleteTask = ( { args } ) => {
 				'Connect your account and finish setup',
 				'woocommerce-payments'
 			) }
+			className={ null }
 		>
 			<div className="wcpay-onboarding-setup-complete-task__buttons">
 				<Button

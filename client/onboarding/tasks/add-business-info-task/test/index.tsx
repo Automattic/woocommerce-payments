@@ -1,23 +1,30 @@
-/** @format */
-
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
-import React from 'react';
+import { mocked } from 'ts-jest/utils';
 
 /**
  * Internal dependencies
  */
 import AddBusinessInfoTask from '../';
-import { useBusinessTypes } from 'wcpay/data/onboarding';
+import { useBusinessTypes } from 'onboarding/hooks';
 
-jest.mock( 'wcpay/data/onboarding', () => ( {
+declare const global: {
+	wcpaySettings: {
+		connect: {
+			country: string;
+		};
+	};
+};
+
+jest.mock( 'onboarding/hooks', () => ( {
 	useBusinessTypes: jest.fn(),
 } ) );
 
-const businessTypes = [
+const countries = [
 	{
 		key: 'US',
 		name: 'United States',
@@ -25,11 +32,13 @@ const businessTypes = [
 			{
 				key: 'individual',
 				name: 'Individual',
+				description: 'Individual',
 				structures: [],
 			},
 			{
 				key: 'company',
 				name: 'Company',
+				description: 'Company',
 				structures: [
 					{
 						key: 'sole_proprietorship',
@@ -50,16 +59,19 @@ const businessTypes = [
 			{
 				key: 'individual',
 				name: 'Individual',
+				description: 'Individual',
 				structures: [],
 			},
 			{
 				key: 'company',
 				name: 'Company',
+				description: 'Company',
 				structures: [],
 			},
 			{
 				key: 'non_profit',
 				name: 'Non-profit',
+				description: 'Non-profit',
 				structures: [],
 			},
 		],
@@ -67,7 +79,7 @@ const businessTypes = [
 ];
 
 const renderTask = () =>
-	render( <AddBusinessInfoTask onChange={ () => {} } /> );
+	render( <AddBusinessInfoTask onChange={ jest.fn() } /> );
 
 describe( 'AddBusinessInfoTask', () => {
 	beforeEach( () => {
@@ -80,8 +92,8 @@ describe( 'AddBusinessInfoTask', () => {
 	} );
 
 	it( 'shows a loadable block', () => {
-		useBusinessTypes.mockReturnValue( {
-			businessTypes: [],
+		mocked( useBusinessTypes ).mockReturnValue( {
+			countries: [],
 			isLoading: true,
 		} );
 
@@ -90,8 +102,8 @@ describe( 'AddBusinessInfoTask', () => {
 	} );
 
 	it( 'shows the form', () => {
-		useBusinessTypes.mockReturnValue( {
-			businessTypes,
+		mocked( useBusinessTypes ).mockReturnValue( {
+			countries,
 			isLoading: false,
 		} );
 
@@ -105,8 +117,8 @@ describe( 'AddBusinessInfoTask', () => {
 				country: 'FR',
 			},
 		};
-		useBusinessTypes.mockReturnValue( {
-			businessTypes,
+		mocked( useBusinessTypes ).mockReturnValue( {
+			countries,
 			isLoading: false,
 		} );
 
@@ -144,8 +156,8 @@ describe( 'AddBusinessInfoTask', () => {
 				country: 'FR',
 			},
 		};
-		useBusinessTypes.mockReturnValue( {
-			businessTypes,
+		mocked( useBusinessTypes ).mockReturnValue( {
+			countries,
 			isLoading: false,
 		} );
 

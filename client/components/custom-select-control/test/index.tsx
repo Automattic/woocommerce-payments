@@ -10,22 +10,13 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import _CustomSelectControl from '../';
+import CustomSelectControl from '../';
 
 interface Item {
 	key: string;
 	name: string;
 	icon: string;
 }
-
-const CustomSelectControl = _CustomSelectControl as React.FunctionComponent< {
-	className?: string;
-	label?: string;
-	options: Item[];
-	value?: Item | string;
-	placeholder?: string;
-	children?: ( item: Item ) => JSX.Element;
-} >;
 
 const options = [
 	{
@@ -53,7 +44,7 @@ function renderCustomSelectControl(
 		<CustomSelectControl
 			className="onboarding-select-control"
 			label="Favourite fruit"
-			value={ placeholder ? '' : options[ 0 ] }
+			value={ placeholder ? undefined : options[ 0 ] }
 			placeholder={ placeholder }
 			options={ options }
 			children={ children }
