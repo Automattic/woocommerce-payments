@@ -26,7 +26,7 @@ const Agreement = () => {
 					privacyPolicy: (
 						<a
 							target="_blank"
-							href="https://href.li/?https://automattic.com/privacy/"
+							href="https://automattic.com/privacy/"
 							rel="noopener noreferrer"
 						>
 							{ __( 'Privacy Policy', 'woocommerce-payments' ) }

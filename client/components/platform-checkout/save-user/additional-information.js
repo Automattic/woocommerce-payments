@@ -31,7 +31,7 @@ const AdditionalInformation = () => {
 				<span>
 					{ __(
 						'Next time you checkout on a WooPay powered store, you’ll receive ' +
-							'a code by text message to quickly and securly complete your purchase with your saved information.',
+							'a code by text message to quickly and securely complete your purchase with your saved information.',
 						'woocommerce-payments'
 					) }
 				</span>
