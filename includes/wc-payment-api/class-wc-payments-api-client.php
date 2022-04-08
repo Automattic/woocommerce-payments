@@ -373,22 +373,15 @@ class WC_Payments_API_Client {
 	 * List refunds
 	 *
 	 * @param string $charge_id - The charge to retrieve the list of refunds for.
-	 * @param string $payment_intent_id - The payment intent to retrieve the list of refunds for.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function list_refunds( string $charge_id = null, string $payment_intent_id = null ) {
-		$query = [ 'limit' => 100 ];
-		if ( ! empty( $charge_id ) ) {
-			$query['charge'] = $charge_id;
-		}
+	public function list_refunds( $charge_id ) {
+		$request           = [];
+		$request['charge'] = $charge_id;
 
-		if ( ! empty( $payment_intent_id ) ) {
-			$query['payment_intent'] = $payment_intent_id;
-		}
-
-		return $this->request( $query, self::REFUNDS_API, self::GET );
+		return $this->request( $request, self::REFUNDS_API, self::GET );
 	}
 
 	/**

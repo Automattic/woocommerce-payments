@@ -1480,35 +1480,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$charge_id = $order->get_meta( '_charge_id', true );
 
 		try {
-			// If the payment method is Interac_Present, the refund should already have been done in the mobile app, so we only record the refund without actioning it.
-			if ( Payment_Method::INTERAC_PRESENT === $this->get_payment_method_type_for_order( $order ) ) {
-				$refunds = $this->payments_api_client->list_refunds( $charge_id )['data'];
-
-				$expected_refund_amount        = $amount ?? $order->get_total();
-				$stripe_expected_refund_amount = WC_Payments_Utils::prepare_amount( $expected_refund_amount, $order->get_currency() );
-
-				$filtered_refunds = array_filter(
-					$refunds,
-					function ( $r ) use ( $stripe_expected_refund_amount ) {
-						return 'succeeded' === $r['status'] && $stripe_expected_refund_amount === $r['amount'];
+			// If the payment method is Interac, the refund already exists (refunded via Mobile app).
+			$is_refunded_off_session = Payment_Method::INTERAC_PRESENT === $this->get_payment_method_type_for_order( $order );
+			if ( $is_refunded_off_session ) {
+				$refund_amount = WC_Payments_Utils::prepare_amount( $amount ?? $order->get_total(), $order->get_currency() );
+				$refunds       = array_filter(
+					$this->payments_api_client->list_refunds( $charge_id )['data'],
+					static function ( $refund ) use ( $refund_amount ) {
+							return 'succeeded' === $refund['status'] && $refund_amount === $refund['amount'];
 					}
 				);
 
-				if ( ! isset( $filtered_refunds[0] ) ) {
-					$interac_refund_error = __( 'Interac in-person payments must be refunded using the mobile app, with the customer present.', 'woocommerce-payments' );
-					return new WP_Error( 'wcpay_edit_order_interac_present_refund_failure', $interac_refund_error, [ 'status' => 404 ] );
+				if ( [] === $refunds ) {
+					return new WP_Error(
+						'wcpay_edit_order_refund_not_possible',
+						__( 'You shall refund this payment in the same application where the payment was made.', 'woocommerce-payments' )
+					);
 				}
-				
-				$refund = $filtered_refunds[0];
+
+				$refund = array_pop( $refunds );
 			} else {
-				if ( is_null( $amount ) ) {
+				if ( null === $amount ) {
 					// If amount is null, the default is the entire charge.
 					$refund = $this->payments_api_client->refund_charge( $charge_id );
 				} else {
 					$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 				}
-				$currency = strtoupper( $refund['currency'] );
 			}
+			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
 
@@ -1585,12 +1584,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order $order The order to get the payment method type for.
 	 * @return string
 	 */
-	private function get_payment_method_type_for_order( $order ) {
-		$payment_method_id = $order->get_meta( '_payment_method_id', true );
-
+	private function get_payment_method_type_for_order( $order ): string {
+		$payment_method_id      = $order->get_meta( '_payment_method_id', true );
 		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
-		$payment_method_type    = $payment_method_details['type'] ?? 'unknown';
-		return $payment_method_type;
+
+		return $payment_method_details['type'] ?? 'unknown';
 	}
 
 	/**
