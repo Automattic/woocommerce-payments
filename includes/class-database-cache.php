@@ -245,7 +245,7 @@ class Database_Cache {
 					$ttl = 2 * MINUTE_IN_SECONDS;
 				} else {
 					// If the data was fetched successfully, fetch it every 2h.
-					$ttl = 2 * MINUTE_IN_SECONDS;
+					$ttl = 2 * HOUR_IN_SECONDS;
 				}
 			} else {
 				// Non-admin requests should always refresh only after 24h since the last fetch.
