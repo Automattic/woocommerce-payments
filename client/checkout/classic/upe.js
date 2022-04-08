@@ -263,6 +263,32 @@ jQuery( function ( $ ) {
 		};
 	};
 
+	const enableStripeLinkPaymentMethod = () => {
+		const linkAutofill = api.getStripe().linkAutofillModal( elements );
+
+		document
+			.getElementById( 'billing_email' )
+			.addEventListener( 'keyup', ( event ) => {
+				const email = event.target.value;
+				linkAutofill.launch( { email } );
+			} );
+
+		linkAutofill.on( 'autofill', ( event ) => {
+			const { billingAddress } = event.value;
+			const fillWith = ( nodeId, key ) => {
+				document.getElementById( nodeId ).value =
+					billingAddress.address[ key ];
+			};
+
+			fillWith( 'billing_address_1', 'line1' );
+			fillWith( 'billing_address_2', 'line2' );
+			fillWith( 'billing_city', 'city' );
+			fillWith( 'billing_state', 'state' );
+			fillWith( 'billing_postcode', 'postal_code' );
+			fillWith( 'billing_country', 'country' );
+		} );
+	};
+
 	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
@@ -335,11 +361,19 @@ jQuery( function ( $ ) {
 			api.saveUPEAppearance( appearance );
 		}
 
-		elements = api.getStripe().elements( {
+		const strp = api.getStripe();
+		elements = strp.elements( {
 			clientSecret,
 			appearance,
 			fonts: getFontRulesFromPage(),
 		} );
+
+		if (
+			paymentMethodsConfig.link !== undefined &&
+			paymentMethodsConfig.card !== undefined
+		) {
+			enableStripeLinkPaymentMethod();
+		}
 
 		const upeSettings = {};
 		if ( getConfig( 'cartContainsSubscription' ) ) {
