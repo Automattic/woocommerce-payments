@@ -248,12 +248,21 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	// the back button on platform checkout itself.
 	const searchParams = new URLSearchParams( window.location.search );
 
-	if (
-		'true' !== searchParams.get( 'skip_platform_checkout' ) &&
-		validateEmail( platformCheckoutEmailInput.value )
-	) {
+	if ( 'true' !== searchParams.get( 'skip_platform_checkout' ) ) {
 		// Check the initial value of the email input and trigger input validation.
-		platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
+			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+		}
+	} else {
+		searchParams.delete( 'skip_platform_checkout' );
+
+		let { pathname } = window.location;
+
+		if ( '' !== searchParams.toString() ) {
+			pathname += '?' + searchParams.toString();
+		}
+
+		history.replaceState( null, null, pathname );
 	}
 
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
