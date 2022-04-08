@@ -25,7 +25,6 @@ class Buyer_Fingerprinting_Service {
 	 */
 	private $fraud_prevention_service;
 
-
 	/**
 	 * Buyer_Fingerprinting_Service constructor.
 	 *
