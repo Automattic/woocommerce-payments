@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Session_Rate_Limiter;
+
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */

@@ -19,7 +19,7 @@ describe( 'PhoneNumberInput', () => {
 			/>
 		);
 		expect(
-			screen.queryByText( 'Mobile phone number' )
+			screen.queryByLabelText( 'Mobile phone number' )
 		).toBeInTheDocument();
 	} );
 

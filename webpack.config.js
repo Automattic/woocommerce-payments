@@ -88,8 +88,16 @@ const webpackConfig = {
 			},
 			{
 				test: /\.(svg|png)$/,
-				exclude: /node_modules/,
+				exclude: [
+					/node_modules/,
+					/client\/components\/platform-checkout\/icons/,
+				],
 				type: 'asset/inline',
+			},
+			{
+				test: /\.svg$/,
+				use: [ '@svgr/webpack' ],
+				include: [ /client\/components\/platform-checkout/ ],
 			},
 		],
 	},

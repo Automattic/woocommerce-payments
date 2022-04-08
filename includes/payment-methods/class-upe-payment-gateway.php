@@ -15,6 +15,7 @@ use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
+use WCPay\Session_Rate_Limiter;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
@@ -25,7 +26,6 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payments;
 use WC_Payments_Utils;
-use Session_Rate_Limiter;
 
 use Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
