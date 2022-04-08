@@ -65,18 +65,18 @@ class Buyer_Fingerprinting_Service {
 	 *
 	 * @return string Hashed data.
 	 */
-	public function hash_data_for_fraud_prevention( $data ) {
+	public function hash_data_for_fraud_prevention( string $data ): string {
 		return hash( 'sha512', $data );
 	}
 
 	/**
 	 * Returns fraud prevention data for an order.
 	 *
-	 * @param string $order_id The WC order id.
+	 * @param int $order_id The WC order id.
 	 *
 	 * @return string[] An array of hashed data for an order.
 	 */
-	public function get_hashed_data_for_order( $order_id ) {
+	public function get_hashed_data_for_order( int $order_id ): array {
 		$order = wc_get_order( $order_id );
 
 		return [
