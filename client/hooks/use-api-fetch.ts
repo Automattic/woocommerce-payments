@@ -12,19 +12,19 @@ interface UseApiFetchParams {
 	errorMessage?: string;
 }
 
-interface ApiResponse< T > {
-	data: T;
+interface ApiResponse< DataType > {
+	data: DataType;
 }
 
-export function useApiFetch< T >( {
+export function useApiFetch< DataType >( {
 	path,
 	errorMessage,
 }: UseApiFetchParams ): {
-	data?: T;
+	data?: DataType;
 	isLoading: boolean;
 } {
 	const cache = useContext( cacheContext );
-	const [ data, setData ] = useState< T >();
+	const [ data, setData ] = useState< DataType >();
 	const [ isLoading, setLoading ] = useState( false );
 
 	useEffect( () => {
@@ -34,7 +34,7 @@ export function useApiFetch< T >( {
 				if ( cache[ path ] ) {
 					setData( cache[ path ] );
 				} else {
-					const result = await apiFetch< ApiResponse< T > >( {
+					const result = await apiFetch< ApiResponse< DataType > >( {
 						path,
 					} );
 					cache[ path ] = result.data;

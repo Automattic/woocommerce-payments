@@ -29,15 +29,15 @@ export interface Item {
 	style?: React.CSSProperties;
 }
 
-interface ControlProps< T > {
+interface ControlProps< ItemType > {
 	className?: string;
 	label: string;
 	describedBy?: string;
-	options: T[];
-	value?: T;
+	options: ItemType[];
+	value?: ItemType;
 	placeholder?: string;
-	onChange?: ( changes: Partial< UseSelectState< T > > ) => void;
-	children?: ( item: T ) => JSX.Element;
+	onChange?: ( changes: Partial< UseSelectState< ItemType > > ) => void;
+	children?: ( item: ItemType ) => JSX.Element;
 }
 
 const itemToString = ( item: { name?: string } ) => item?.name || '';
@@ -80,7 +80,7 @@ const stateReducer = (
 	}
 };
 
-function CustomSelectControl< T extends Item >( {
+function CustomSelectControl< ItemType extends Item >( {
 	className,
 	label,
 	describedBy,
@@ -89,7 +89,7 @@ function CustomSelectControl< T extends Item >( {
 	value,
 	placeholder,
 	children,
-}: ControlProps< T > ): JSX.Element {
+}: ControlProps< ItemType > ): JSX.Element {
 	const {
 		getLabelProps,
 		getToggleButtonProps,
@@ -103,7 +103,7 @@ function CustomSelectControl< T extends Item >( {
 		items,
 		itemToString,
 		onSelectedItemChange,
-		selectedItem: value || ( {} as T ),
+		selectedItem: value || ( {} as ItemType ),
 		stateReducer,
 	} );
 
