@@ -210,6 +210,31 @@ class Database_Cache_Test extends WP_UnitTestCase {
 		$this->assert_cache_contains( $value );
 	}
 
+	public function test_get_or_add_does_not_refresh_errored_out_invalid_value() {
+		$refreshed        = false;
+		$value            = [ 'mock' => true ];
+		$old              = [ 'old' => true ];
+		$called_generator = false;
+
+		$this->write_mock_cache( $old, time() + YEAR_IN_SECONDS, true );
+
+		$res = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function() use ( $value ) {
+				$called_generator = true;
+				return $value;
+			},
+			'__return_false',
+			false,
+			$refreshed
+		);
+
+		$this->assertNull( $res );
+		$this->assertFalse( $refreshed );
+		$this->assertFalse( $called_generator );
+		$this->assert_cache_contains( $old, true );
+	}
+
 	public function test_get_or_add_does_not_refresh_if_disabled() {
 		$refreshed = false;
 		$value     = [ 'mock' => true ];
@@ -232,28 +257,6 @@ class Database_Cache_Test extends WP_UnitTestCase {
 		$this->assertEquals( $old, $res );
 		$this->assertFalse( $refreshed );
 		$this->assert_cache_contains( $old );
-	}
-
-	public function test_get_or_add_does_not_refresh_errored_out_invalid_value() {
-		$refreshed = false;
-		$value     = [ 'mock' => true ];
-		$old       = [ 'old' => true ];
-
-		$this->write_mock_cache( $old, time() + YEAR_IN_SECONDS, true );
-
-		$res = $this->database_cache->get_or_add(
-			self::MOCK_KEY,
-			function() use ( $value ) {
-				return $value;
-			},
-			'__return_false',
-			false,
-			$refreshed
-		);
-
-		$this->assertEquals( $old, $res );
-		$this->assertFalse( $refreshed );
-		$this->assert_cache_contains( $old, true );
 	}
 
 	private function write_mock_cache( $data, ?int $fetch_time = null, bool $errored = false ) {
