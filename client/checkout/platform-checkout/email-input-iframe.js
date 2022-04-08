@@ -241,9 +241,25 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		return pattern.test( value );
 	};
 
-	// Check the initial value of the email input and trigger input validation.
-	if ( validateEmail( platformCheckoutEmailInput.value ) ) {
-		platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+	// Prevent show platform checkout iframe if the page comes from
+	// the back button on platform checkout itself.
+	const searchParams = new URLSearchParams( window.location.search );
+
+	if ( 'true' !== searchParams.get( 'skip_platform_checkout' ) ) {
+		// Check the initial value of the email input and trigger input validation.
+		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
+			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+		}
+	} else {
+		searchParams.delete( 'skip_platform_checkout' );
+
+		let { pathname } = window.location;
+
+		if ( '' !== searchParams.toString() ) {
+			pathname += '?' + searchParams.toString();
+		}
+
+		history.replaceState( null, null, pathname );
 	}
 
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
