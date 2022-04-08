@@ -205,7 +205,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'platform_checkout_custom_message'  => [
-						'description'       => __( 'Custom message to display to platform checkout customers.', 'woocommerce-payments' ),
+						'description'       => __( 'Custom message to display to WooPay customers.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
