@@ -162,8 +162,8 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			1
 		);
 
-		$this->assertEquals( $expected_amount, $result->get_amount() );
-		$this->assertEquals( $expected_status, $result->get_status() );
+		$this->assertSame( $expected_amount, $result->get_amount() );
+		$this->assertSame( $expected_status, $result->get_status() );
 	}
 
 	/**
