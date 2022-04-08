@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
@@ -264,6 +265,11 @@ class WC_Payments_API_Client {
 		$request['description']          = $this->get_intent_description( $order_id );
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
+
+		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
+			$request['metadata']['fraud_prevention_data_available'] = true;
+			$request['metadata']['fraud_prevention_data']           = Buyer_Fingerprinting_Service::get_instance()->hash_data_for_fraud_prevention( $order_id );
+		}
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -840,6 +846,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Initiates disputes export via API.
+	 *
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to search for.
+	 *
+	 * @return array Export summary
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes_export( $filters = [], $user_email = '' ) {
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+
+		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
+	}
+
+	/**
 	 * Upload file and return file object.
 	 *
 	 * @param WP_REST_Request $request request object received.
@@ -1062,6 +1086,49 @@ class WC_Payments_API_Client {
 		);
 
 		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
+	}
+
+	/**
+	 * Get the business types, needed for our KYC onboarding flow.
+	 *
+	 * @return array An array containing the business types.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_onboarding_business_types() {
+		return $this->request(
+			[],
+			self::ONBOARDING_API . '/business_types',
+			self::GET
+		);
+	}
+
+	/**
+	 * Get the required verification information, needed for our KYC onboarding flow.
+	 *
+	 * @param string      $country_code The country code.
+	 * @param string      $type         The business type.
+	 * @param string|null $structure    The business structure (optional).
+	 *
+	 * @return array An array containing the required verification information.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_onboarding_required_verification_information( string $country_code, string $type, $structure = null ) {
+		$params = [
+			'country' => $country_code,
+			'type'    => $type,
+		];
+
+		if ( ! is_null( $structure ) ) {
+			$params = array_merge( $params, [ 'structure' => $structure ] );
+		}
+
+		return $this->request(
+			$params,
+			self::ONBOARDING_API . '/required_verification_information',
+			self::GET
+		);
 	}
 
 	/**

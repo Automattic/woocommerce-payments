@@ -1,8 +1,12 @@
 /**
  * Internal dependencies
  */
-import icon from './icon.svg';
+import Icon from './icon.svg';
 
-const LockIcon = () => <img src={ icon } alt="" />;
+const LockIcon = () => (
+	<span>
+		<Icon />
+	</span>
+);
 
 export default LockIcon;
