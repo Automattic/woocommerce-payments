@@ -200,7 +200,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_platform_checkout_enabled'      => [
-						'description'       => __( 'If WooCommerce Payments platform checkout should be enabled.', 'woocommerce-payments' ),
+						'description'       => __( 'If WooPay should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
