@@ -10,7 +10,6 @@ import { mocked } from 'ts-jest/utils';
  */
 import RequiredVerificationInfo from '../required-verification-info';
 import { useRequiredVerificationInfo } from 'onboarding/hooks';
-import { BusinessType } from 'onboarding/types';
 
 jest.mock( 'onboarding/hooks', () => ( {
 	useRequiredVerificationInfo: jest.fn(),

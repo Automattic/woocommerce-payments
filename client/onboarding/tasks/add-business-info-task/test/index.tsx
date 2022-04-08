@@ -11,7 +11,6 @@ import { mocked } from 'ts-jest/utils';
  */
 import AddBusinessInfoTask from '../';
 import { useBusinessTypes } from 'onboarding/hooks';
-import { BusinessType } from 'onboarding/types';
 
 declare const global: {
 	wcpaySettings: {
