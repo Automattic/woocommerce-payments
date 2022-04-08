@@ -31,13 +31,13 @@ const countries = [
 		name: 'United States',
 		types: [
 			{
-				key: 'individual' as BusinessType[ 'key' ],
+				key: 'individual',
 				name: 'Individual',
 				description: 'Individual',
 				structures: [],
 			},
 			{
-				key: 'company' as BusinessType[ 'key' ],
+				key: 'company',
 				name: 'Company',
 				description: 'Company',
 				structures: [
@@ -58,19 +58,19 @@ const countries = [
 		name: 'France',
 		types: [
 			{
-				key: 'individual' as BusinessType[ 'key' ],
+				key: 'individual',
 				name: 'Individual',
 				description: 'Individual',
 				structures: [],
 			},
 			{
-				key: 'company' as BusinessType[ 'key' ],
+				key: 'company',
 				name: 'Company',
 				description: 'Company',
 				structures: [],
 			},
 			{
-				key: 'non_profit' as BusinessType[ 'key' ],
+				key: 'non_profit',
 				name: 'Non-profit',
 				description: 'Non-profit',
 				structures: [],

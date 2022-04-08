@@ -5,7 +5,7 @@ export interface Country {
 }
 
 export interface BusinessType {
-	key: 'individual' | 'company' | 'non_profit' | 'government_entity';
+	key: string;
 	name: string;
 	description: string;
 	structures: BusinessStructure[];
@@ -16,8 +16,8 @@ export interface BusinessStructure {
 	name: string;
 }
 
-export interface OnboardingState {
-	country?: string;
-	type?: BusinessType[ 'key' ];
+export interface OnboardingProps {
+	country: string;
+	type: string;
 	structure?: string;
 }

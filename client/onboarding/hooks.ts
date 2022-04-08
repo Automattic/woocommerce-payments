@@ -9,16 +9,10 @@ import { NAMESPACE } from 'data/constants';
  * Internal dependencies
  */
 import { useApiFetch } from 'hooks/use-api-fetch';
-import { Country } from './types';
+import { Country, OnboardingProps } from './types';
 import businessTypeStrings from 'wcpay/onboarding/translations/types';
 import businessStructureStrings from 'wcpay/onboarding/translations/structures';
 import businessTypeDescriptionStrings from 'wcpay/onboarding/translations/descriptions';
-
-interface VerificationInfoParams {
-	country: string;
-	type: string;
-	structure?: string;
-}
 
 type VerificationInfoData = string[];
 
@@ -28,7 +22,7 @@ interface VerificationInfoReturn {
 }
 
 export const useRequiredVerificationInfo = (
-	query: VerificationInfoParams
+	query: OnboardingProps
 ): VerificationInfoReturn => {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/onboarding/required_verification_information`,

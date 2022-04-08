@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useContext, useEffect, useCallback } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**

@@ -10,20 +10,14 @@ import { Card, CardBody } from '@wordpress/components';
 import { LoadableBlock } from 'components/loadable';
 import { useRequiredVerificationInfo } from 'onboarding/hooks';
 import Requirements from 'onboarding/requirements';
-import { BusinessType } from 'onboarding/types';
+import { OnboardingProps } from 'onboarding/types';
 import strings from 'onboarding/strings';
-
-interface RequiredVerificationInfoProps {
-	country: string;
-	type: BusinessType[ 'key' ];
-	structure?: string;
-}
 
 const RequiredVerificationInfo = ( {
 	country,
 	type,
 	structure,
-}: RequiredVerificationInfoProps ): JSX.Element => {
+}: OnboardingProps ): JSX.Element => {
 	const { requiredInfo, isLoading } = useRequiredVerificationInfo( {
 		country,
 		type,

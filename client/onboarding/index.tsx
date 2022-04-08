@@ -12,12 +12,11 @@ import WizardTaskList from 'additional-methods-setup/wizard/task-list';
 import WizardTask from 'additional-methods-setup/wizard/task';
 import AddBusinessInfoTask from './tasks/add-business-info-task';
 import SetupCompleteTask from './tasks/setup-complete-task';
-import { OnboardingState } from './types';
+import { OnboardingProps } from './types';
 import './style.scss';
-import RequiredVerificationInfo from './tasks/add-business-info-task/required-verification-info';
 
 const OnboardingPage = (): JSX.Element => {
-	const [ state, setState ] = useState< OnboardingState >( {} );
+	const [ state, setState ] = useState< Partial< OnboardingProps > >( {} );
 
 	return (
 		<Card

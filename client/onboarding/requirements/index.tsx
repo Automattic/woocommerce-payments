@@ -8,10 +8,9 @@ import React from 'react';
  */
 import IndividualRequirements from './individual';
 import CompanyRequirements from './company';
-import { BusinessType } from '../types';
 
 interface RequirementsProps {
-	type: BusinessType[ 'key' ];
+	type?: string;
 	keys: string[];
 }
 

@@ -40,7 +40,7 @@ const requirements = [
 
 const props = {
 	country: 'US',
-	type: 'company' as BusinessType[ 'key' ],
+	type: 'company',
 	structure: 'private_comporation',
 };
 

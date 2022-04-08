@@ -8,10 +8,10 @@ import { addQueryArgs } from '@wordpress/url';
 
 import WizardTaskItem from 'additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
-import { OnboardingState } from 'onboarding/types';
+import { OnboardingProps } from 'onboarding/types';
 
 interface TaskProps {
-	args: OnboardingState;
+	args: Partial< OnboardingProps >;
 }
 
 const SetupCompleteTask = ( { args }: TaskProps ): JSX.Element => {
