@@ -13,7 +13,7 @@ import CustomSelectControl from 'components/custom-select-control';
 import { LoadableBlock } from 'components/loadable';
 import { useBusinessTypes } from 'onboarding/hooks';
 import RequiredVerificationInfo from './required-verification-info';
-import strings from '../../strings';
+import strings from 'onboarding/strings';
 import { Country, BusinessType, BusinessStructure } from 'onboarding/types';
 
 interface TaskProps {

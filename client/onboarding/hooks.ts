@@ -10,9 +10,9 @@ import { NAMESPACE } from 'data/constants';
  */
 import { useApiFetch } from 'hooks/use-api-fetch';
 import { Country, OnboardingProps } from './types';
-import businessTypeStrings from 'wcpay/onboarding/translations/types';
-import businessStructureStrings from 'wcpay/onboarding/translations/structures';
-import businessTypeDescriptionStrings from 'wcpay/onboarding/translations/descriptions';
+import businessTypeStrings from 'onboarding/translations/types';
+import businessStructureStrings from 'onboarding/translations/structures';
+import businessTypeDescriptionStrings from 'onboarding/translations/descriptions';
 
 type VerificationInfoData = string[];
 
