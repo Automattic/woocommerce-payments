@@ -1,4 +1,4 @@
 Significance: minor
 Type: fix
 
-Prevent impossible server-side refund of interac_present charges
+Prevent refunding Interact payments (managed by Mobile apps)
