@@ -1,0 +1,27 @@
+.onboarding__requirement-group {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	column-gap: $gap-smaller;
+	align-items: center;
+	margin: $gap-smaller;
+
+	svg {
+		background-color: $studio-purple-0;
+		border-radius: 4px;
+		fill: $studio-purple-60;
+		padding: 2px;
+	}
+
+	.headline {
+		color: $gray-900;
+	}
+
+	.subline {
+		grid-column: 2;
+		font-size: $helptext-font-size;
+		color: $gray-700;
+		&::first-letter {
+			text-transform: capitalize;
+		}
+	}
+}

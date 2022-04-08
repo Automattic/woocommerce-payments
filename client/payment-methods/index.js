@@ -182,7 +182,7 @@ const PaymentMethods = () => {
 			handleDeleteModalOpen( {
 				id: itemId,
 				label: methodConfig.label,
-				Icon: methodConfig.Icon,
+				Icon: methodConfig.icon,
 			} );
 		} else {
 			completeDeleteAction( itemId );
@@ -243,7 +243,7 @@ const PaymentMethods = () => {
 				<CardBody size={ null }>
 					<PaymentMethodsList className="payment-methods__available-methods">
 						{ availableMethods.map(
-							( { id, label, description, Icon } ) => (
+							( { id, label, description, icon: Icon } ) => (
 								<PaymentMethod
 									id={ id }
 									key={ id }
@@ -290,7 +290,7 @@ const PaymentMethods = () => {
 				<ConfirmPaymentMethodDeleteModal
 					id={ deleteModalParams.id }
 					label={ deleteModalParams.label }
-					Icon={ deleteModalParams.Icon }
+					icon={ deleteModalParams.Icon }
 					onConfirm={ () => {
 						completeDeleteAction( deleteModalParams.id );
 					} }

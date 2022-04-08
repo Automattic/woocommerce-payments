@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
@@ -17,6 +18,8 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -351,6 +354,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
 	}
 
 	/**
@@ -444,6 +448,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
+		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+			return admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
+		}
 		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
 	}
 
@@ -615,6 +622,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
+		$platform_checkout_util = new Platform_Checkout_Utilities();
+
 		return [
 			'publishableKey'                 => $this->account->get_publishable_key( $this->is_in_test_mode() ),
 			'accountId'                      => $this->account->get_stripe_account_id(),
@@ -631,7 +640,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'            => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled'      => WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === $this->get_option( 'platform_checkout', 'no' ),
+			'isPlatformCheckoutEnabled'      => $platform_checkout_util->should_enable_platform_checkout( $this ),
 			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
@@ -829,6 +838,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			?>
 
 			</fieldset>
+
+
+			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
+				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
+			<?php endif; ?>
+
 			<?php
 
 			do_action( 'wcpay_payment_fields_wcpay', $this->id );
@@ -866,6 +881,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
+			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
+				throw new Process_Payment_Exception(
+					__( 'Your payment was not processed.', 'woocommerce-payments' ),
+					'fraud_prevention_enabled'
+				);
+			}
+
 			if ( $this->failed_transaction_rate_limiter->is_limited() ) {
 				throw new Process_Payment_Exception(
 					__( 'Your payment was not processed.', 'woocommerce-payments' ),
@@ -971,6 +995,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 		if ( ! empty( $_POST['save_user_in_platform_checkout'] ) && filter_var( $_POST['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ) {
+			do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
 			$payment_information->must_save_payment_method_to_platform();
 		}
 
@@ -1485,17 +1510,36 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( empty( $reason ) ) {
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount */
-				__( 'A refund of %1$s was successfully processed using WooCommerce Payments.', 'woocommerce-payments' ),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order )
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the successfully charged amount, %2: refund id */
+					__( 'A refund of %1$s was successfully processed using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
+				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
+				$refund['id']
 			);
 		} else {
 			$note = sprintf(
-				/* translators: %1: the successfully charged amount, %2: reason */
-				__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s', 'woocommerce-payments' ),
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the successfully charged amount, %2: refund id, %3: reason */
+					__( 'A refund of %1$s was successfully processed using WooCommerce Payments. Reason: %2$s. (<code>%3$s</code>)', 'woocommerce-payments' ),
+					[
+						'code' => '<code>',
+					]
+				),
 				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-				$reason
+				$reason,
+				$refund['id']
 			);
+		}
+
+		// Get the last created WC refund from order and save WCPay refund id as meta.
+		$wc_last_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order_id );
+		if ( $wc_last_refund ) {
+			$wc_last_refund->update_meta_data( '_wcpay_refund_id', $refund['id'] );
+			$wc_last_refund->save_meta_data();
 		}
 
 		$order->add_order_note( $note );
@@ -2693,6 +2737,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string Connection URL.
 	 */
 	public function get_connection_url() {
+		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+			// Configure step button will show `Set up` instead of `Connect`.
+			return '';
+		}
 		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
 	}
 

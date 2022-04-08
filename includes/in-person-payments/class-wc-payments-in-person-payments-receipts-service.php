@@ -13,6 +13,23 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_In_Person_Payments_Receipts_Service {
 
 	/**
+	 * WC_Emails instance.
+	 *
+	 * @var WC_Emails
+	 */
+	private $mailer;
+
+	/**
+	 * __construct
+	 *
+	 * @param  WC_Emails $mailer instance.
+	 * @return void
+	 */
+	public function __construct( WC_Emails $mailer ) {
+		$this->mailer = $mailer;
+	}
+
+	/**
 	 * Renders the receipt template.
 	 *
 	 * @param  array    $settings Merchant settings.
@@ -37,6 +54,8 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 				'coupon_lines' => $order->get_items( 'coupon' ),
 				'tax_lines'    => $order->get_items( 'tax' ),
 				'total'        => $order->get_total(),
+				'shipping_tax' => $order->get_shipping_methods() ? $order->get_shipping_total() : 0,
+				'total_fees'   => $order->get_total_fees(),
 			];
 			$line_items_data = $this->format_line_items( $order_data );
 		}
@@ -64,6 +83,22 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 		);
 
 		return ob_get_clean();
+	}
+
+
+	/**
+	 * Send card reader receipt to customer by email
+	 *
+	 * @param  WC_Order $order the order.
+	 * @param array    $merchant_settings The merchant settings.
+	 * @param  array    $charge the charge.
+	 * @return void
+	 */
+	public function send_customer_ipp_receipt_email( WC_Order $order, array $merchant_settings, array $charge ) {
+		$email_receipt = $this->mailer->get_emails()['WC_Payments_Email_IPP_Receipt'];
+		if ( $email_receipt instanceof WC_Payments_Email_IPP_Receipt ) {
+			$email_receipt->trigger( $order, $merchant_settings, $charge );
+		}
 	}
 
 	/**

@@ -1,5 +1,14 @@
 *** WooCommerce Payments Changelog ***
 
+= 3.9.3 - 2022-04-05 =
+* Fix - Payment Request Button - Do not set WC session cookie and HTML container on the product page if not enabled.
+
+= 3.9.2 - 2022-04-01 =
+* Fix - Fixing error related to some currencies
+
+= 3.9.1 - 2022-03-29 =
+* Fix - Fix single currency settings page error.
+
 = 3.9.0 - 2022-03-24 =
 * Add - Add compatibility between Multi-Currency and WooCommerce Name Your Price.
 * Add - Add wcpay_is_wcpay_subscriptions_enabled filter

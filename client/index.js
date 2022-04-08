@@ -14,7 +14,7 @@ import 'wp-mediaelement';
  * Internal dependencies
  */
 import './style.scss';
-import ConnectAccountPage from 'connect-account-page';
+import ConnectAccountPageExperiment from 'connect-account-page-experiment';
 import DepositsPage from 'deposits';
 import DepositDetailsPage from 'deposits/details';
 import TransactionsPage from 'transactions';
@@ -28,6 +28,8 @@ import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
 import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
+import DocumentsPage from 'documents';
+import OnboardingPage from 'onboarding';
 import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
@@ -43,12 +45,26 @@ addFilter(
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
-			container: ConnectAccountPage,
+			container: ConnectAccountPageExperiment,
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
 			navArgs: {
 				id: 'wc-payments',
+			},
+			capability: 'manage_woocommerce',
+		} );
+
+		pages.push( {
+			container: OnboardingPage,
+			path: '/payments/onboarding',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				__( 'Onboarding', 'woocommerce-payments' ),
+			],
+			navArgs: {
+				id: 'wc-payments-onboarding',
 			},
 			capability: 'manage_woocommerce',
 		} );
@@ -208,6 +224,21 @@ addFilter(
 				__( 'Preview a printed receipt', 'woocommerce-payments' ),
 			],
 		} );
+		if ( wcpaySettings && wcpaySettings.featureFlags.documents ) {
+			pages.push( {
+				container: DocumentsPage,
+				path: '/payments/documents',
+				wpOpenMenu: menuID,
+				breadcrumbs: [
+					rootLink,
+					__( 'Documents', 'woocommerce-payments' ),
+				],
+				navArgs: {
+					id: 'wc-payments-documents',
+				},
+				capability: 'manage_woocommerce',
+			} );
+		}
 		return pages;
 	}
 );

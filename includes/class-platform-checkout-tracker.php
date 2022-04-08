@@ -51,6 +51,7 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_blocks_enqueue_checkout_block_scripts_after', [ $this, 'checkout_start' ] );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
+		add_action( 'woocommerce_payments_save_user_in_platform_checkout', [ $this, 'must_save_payment_method_to_platform' ] );
 	}
 
 	/**
@@ -280,6 +281,18 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 			'order_checkout_complete',
 			[
 				'source' => isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) ? 'platform' : 'standard',
+			]
+		);
+	}
+
+	/**
+	 * Record a Tracks event that user chose to save payment information in platform checkout.
+	 */
+	public function must_save_payment_method_to_platform() {
+		$this->maybe_record_event(
+			'platform_checkout_registered',
+			[
+				'source' => 'checkout',
 			]
 		);
 	}

@@ -134,6 +134,11 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes_2 );
 	}
 
 	/**
@@ -162,6 +167,11 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_payment_failed( $this->order, $this->intent_id, $intent_status, $this->charge_id, $message );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes_2 );
 	}
 
 	/**
@@ -419,6 +429,11 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_payment_capture_expired( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes_2 );
 	}
 
 	/**
@@ -467,6 +482,11 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
 		$this->assertStringContainsString( 'Payment has been disputed as product_not_received', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $reason );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes_2 );
 	}
 
 	/**
@@ -489,6 +509,11 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Pending payment to Completed', $notes[1]->content );
 		$this->assertStringContainsString( 'Payment dispute has been closed with status won', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/disputes/details&id=dp_123" target="_blank" rel="noopener noreferrer">dispute overview', $notes[0]->content );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 2, $notes_2 );
 	}
 
 	/**
@@ -517,6 +542,11 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 		$refunds = $this->order->get_refunds();
 		$this->assertCount( 1, $refunds );
 		$this->assertEquals( '-' . $this->order->get_total(), $refunds[0]->get_total() );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( 3, $notes_2 );
 	}
 
 	/**
@@ -542,5 +572,26 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * @dataProvider provider_order_note_exists
+	 */
+	public function test_order_note_exists( array $notes, string $note_to_check, bool $expected ) {
+
+		foreach ( $notes as $note ) {
+			$this->order->add_order_note( $note );
+		}
+
+		$this->assertSame( $expected, $this->order_service->order_note_exists( $this->order, $note_to_check ) );
+	}
+
+	public function provider_order_note_exists(): array {
+		return [
+			'Note does not exist'                        => [ [ 'note 1', 'note 2' ], 'check_string', false ],
+			'Note does not exist when order has no note' => [ [], 'check_string', false ],
+			'Note exists at the beginning'               => [ [ 'check_string', 'note 1', 'note 2' ], 'check_string', true ],
+			'Note exists at the end'                     => [ [ 'note 1', 'note 2', 'check_string' ], 'check_string', true ],
+		];
 	}
 }

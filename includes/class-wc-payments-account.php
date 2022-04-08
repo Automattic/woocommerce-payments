@@ -498,10 +498,18 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		// We could use a value for this parameter for tracking the email that brought the user here.
 		if ( ! isset( $_GET['wcpay-connect-redirect'] ) ) {
 			return false;
 		}
+
+		$redirect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect-redirect'] ) );
+
+		// Let's record in Tracks merchants returning via the KYC reminder email.
+		$track_props = [
+			'type'          => 'initial' === $redirect_param ? 'initial' : 'follow',
+			'follow_number' => in_array( $redirect_param, [ '1', '2', '3', '4' ], true ) ? $redirect_param : '0',
+		];
+		wc_admin_record_tracks_event( 'wcpay_kyc_reminder_merchant_returned', $track_props );
 
 		// Take the user to the 'wcpay-connect' URL.
 		// We handle creating and redirecting to the account link there.
@@ -559,6 +567,12 @@ class WC_Payments_Account {
 
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
+
+			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
+			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
+			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) && WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+				$this->redirect_to( admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' ) );
+			}
 
 			// Hide menu notification badge upon starting setup.
 			update_option( 'wcpay_menu_badge_hidden', 'yes' );
@@ -799,19 +813,32 @@ class WC_Payments_Account {
 		$current_user = wp_get_current_user();
 		$return_url   = $this->get_onboarding_return_url( $wcpay_connect_from );
 
-		$country = WC()->countries->get_base_country();
+		// Pre-fill from new KYC flow experiment in treatment mode.
+		$prefill         = isset( $_GET['prefill'] ) ? wc_clean( wp_unslash( $_GET['prefill'] ) ) : [];
+		$prefill_country = $prefill['country'] ?? null;
+		$prefill_rest    = [
+			'business_type' => $prefill['type'] ?? null,
+			'company'       => [
+				'structure' => $prefill['structure'] ?? null,
+			],
+		];
+
+		$country = $prefill_country ?? WC()->countries->get_base_country();
 		if ( ! array_key_exists( $country, WC_Payments_Utils::supported_countries() ) ) {
 			$country = null;
 		}
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
-			[
-				'email'         => $current_user->user_email,
-				'business_name' => get_bloginfo( 'name' ),
-				'url'           => get_home_url(),
-				'country'       => $country,
-			],
+			array_merge(
+				[
+					'email'         => $current_user->user_email,
+					'business_name' => get_bloginfo( 'name' ),
+					'url'           => get_home_url(),
+					'country'       => $country,
+				],
+				array_filter( $prefill_rest )
+			),
 			[
 				'site_username' => $current_user->user_login,
 			],

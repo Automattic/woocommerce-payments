@@ -20,6 +20,7 @@ import {
 } from './actions';
 
 const formatQueryFilters = ( query ) => ( {
+	user_email: query.userEmail,
 	match: query.match,
 	store_currency_is: query.storeCurrencyIs,
 	date_before: formatDateValue( query.dateBefore, true ),
@@ -31,6 +32,15 @@ const formatQueryFilters = ( query ) => ( {
 	status_is: query.statusIs,
 	status_is_not: query.statusIsNot,
 } );
+
+export function getDisputesCSV( query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/disputes/download`,
+		formatQueryFilters( query )
+	);
+
+	return path;
+}
 
 /**
  * Retrieve a single dispute from the disputes API.
