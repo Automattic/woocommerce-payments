@@ -1200,14 +1200,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Handles action scheduler job to refresh the account cache. Will clear the cache, and
-	 * then fetch the account data from the server, also forcing it to be re-cached.
-	 */
-	public function handle_account_cache_refresh() {
-		$this->get_cached_account_data( true );
-	}
-
-	/**
 	 * Checks to see if the account is eligible for Instant Deposits.
 	 *
 	 * @param array $account The account data.
