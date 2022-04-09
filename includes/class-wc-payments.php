@@ -930,7 +930,7 @@ class WC_Payments {
 				'account_id'        => $account_id,
 			],
 		];
-		$args                   = [
+		$args = [
 			'url'     => $url,
 			'method'  => 'POST',
 			'timeout' => 30,
