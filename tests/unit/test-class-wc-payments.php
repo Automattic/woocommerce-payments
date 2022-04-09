@@ -21,6 +21,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 
 	public function tear_down() {
 		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
+		remove_all_filters( 'wcpay_dev_mode' );
 	}
 
 	public function test_it_runs_upgrade_routines_during_init_at_priority_10() {
@@ -109,11 +110,24 @@ class WC_Payments_Test extends WP_UnitTestCase {
 			remove_filter( $hook, $callback );
 		}
 
+		if ( $is_enabled ) {
+			// Make sure dev mode is on so the right filters get enabled.
+			add_filter(
+				'wcpay_dev_mode',
+				function () {
+					return true;
+				}
+			);
+		}
+
 		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => $is_enabled ] ] );
 		// Testing feature flag, so platform_checkout setting should always be on.
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
 
 		WC_Payments::maybe_register_platform_checkout_hooks();
+
+		// Trigger the addition of the disable nonce filter.
+		apply_filters( 'rest_request_before_callbacks', [], [], null );
 	}
 
 	private function set_platform_checkout_enabled( $is_enabled ) {
@@ -122,10 +136,23 @@ class WC_Payments_Test extends WP_UnitTestCase {
 			remove_filter( $hook, $callback );
 		}
 
+		if ( $is_enabled ) {
+			// Make sure dev mode is on so the right filters get enabled.
+			add_filter(
+				'wcpay_dev_mode',
+				function () {
+					return true;
+				}
+			);
+		}
+
 		// Testing platform_checkout, so feature flag should always be on.
 		add_option( WC_Payments_Account::ACCOUNT_OPTION, [ 'account' => [ 'platform_checkout_eligible' => true ] ] );
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', $is_enabled ? 'yes' : 'no' );
 
 		WC_Payments::maybe_register_platform_checkout_hooks();
+
+		// Trigger the addition of the disable nonce filter.
+		apply_filters( 'rest_request_before_callbacks', [], [], null );
 	}
 }
