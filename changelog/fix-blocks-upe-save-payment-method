@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix saving UPE payment methods with WooCommerce Blocks checkout when a non-reusable payment method is enabled.
