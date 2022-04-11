@@ -370,6 +370,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * List refunds
+	 *
+	 * @param string $charge_id - The charge to retrieve the list of refunds for.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function list_refunds( $charge_id ) {
+		$request = [
+			'limit'  => 100,
+			'charge' => $charge_id,
+		];
+
+		return $this->request( $request, self::REFUNDS_API, self::GET );
+	}
+
+	/**
 	 * Capture an intention
 	 *
 	 * @param string $intention_id - The ID of the intention to capture.
@@ -861,6 +878,24 @@ class WC_Payments_API_Client {
 		}
 
 		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
+	}
+
+	/**
+	 * Initiates deposits export via API.
+	 *
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to send export to.
+	 *
+	 * @return array Export summary
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_deposits_export( $filters = [], $user_email = '' ) {
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+
+		return $this->request( $filters, self::DEPOSITS_API . '/download', self::POST );
 	}
 
 	/**
