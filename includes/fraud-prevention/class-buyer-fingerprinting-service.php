@@ -80,8 +80,8 @@ class Buyer_Fingerprinting_Service {
 		$order = wc_get_order( $order_id );
 
 		return [
-			'shopper_ip_hash'        => self::hash_data_for_fraud_prevention( $order->get_customer_ip_address() ),
-			'shopper_useragent_hash' => self::hash_data_for_fraud_prevention( strtolower( $order->get_customer_user_agent() ) ),
+			'shopper_ip_hash'        => $this->hash_data_for_fraud_prevention( $order->get_customer_ip_address() ),
+			'shopper_useragent_hash' => $this->hash_data_for_fraud_prevention( strtolower( $order->get_customer_user_agent() ) ),
 		];
 	}
 }
