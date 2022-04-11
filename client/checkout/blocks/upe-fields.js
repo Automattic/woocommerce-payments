@@ -53,6 +53,8 @@ const WCPayUPEFields = ( {
 		</p>
 	);
 
+	const gatewayConfig = getPaymentMethods()[ PAYMENT_METHOD_NAME_CARD ];
+
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
 		() =>
@@ -76,6 +78,7 @@ const WCPayUPEFields = ( {
 				}
 
 				if (
+					gatewayConfig.supports.showSaveOption &&
 					shouldSavePayment &&
 					! paymentMethodsConfig[ selectedUPEPaymentType ].isReusable
 				) {
@@ -153,9 +156,6 @@ const WCPayUPEFields = ( {
 			getConfig( 'isSavedCardsEnabled' ) &&
 			! getConfig( 'cartContainsSubscription' )
 		) {
-			const gatewayConfig = getPaymentMethods()[
-				PAYMENT_METHOD_NAME_CARD
-			];
 			gatewayConfig.supports.showSaveOption =
 				paymentMethodsConfig[ event.value.type ].isReusable;
 		}
