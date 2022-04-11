@@ -25,6 +25,7 @@ use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Database_Cache;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -150,6 +151,13 @@ class WC_Payments {
 	private static $failed_transaction_rate_limiter;
 
 	/**
+	 * Instance of Database_Cache utils
+	 *
+	 * @var Database_Cache
+	 */
+	private static $database_cache;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -177,6 +185,9 @@ class WC_Payments {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
+
+		include_once __DIR__ . '/class-database-cache.php';
+		self::$database_cache = new Database_Cache();
 
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
@@ -266,7 +277,7 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account                             = new WC_Payments_Account( self::$api_client );
+		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache );
 		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
 		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
@@ -723,12 +734,39 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the Database_Cache instance.
+	 *
+	 * @return Database_Cache Database_Cache instance.
+	 */
+	public static function get_database_cache(): Database_Cache {
+		return self::$database_cache;
+	}
+
+	/**
+	 * Sets the Database_Cache instance.
+	 *
+	 * @param Database_Cache $database_cache The cache instance.
+	 */
+	public static function set_database_cache( Database_Cache $database_cache ) {
+		self::$database_cache = $database_cache;
+	}
+
+	/**
 	 * Returns the WC_Payments_Account instance
 	 *
 	 * @return WC_Payments_Account account service instance
 	 */
 	public static function get_account_service() {
 		return self::$account;
+	}
+
+	/**
+	 * Sets the account service instance.
+	 *
+	 * @param WC_Payments_Account $account The account instance.
+	 */
+	public static function set_account_service( WC_Payments_Account $account ) {
+		self::$account = $account;
 	}
 
 	/**
