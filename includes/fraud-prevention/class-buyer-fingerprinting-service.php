@@ -66,7 +66,7 @@ class Buyer_Fingerprinting_Service {
 	 * @return string Hashed data.
 	 */
 	public function hash_data_for_fraud_prevention( string $data ): string {
-		return hash( 'sha512', $data );
+		return hash( 'sha512', $data, false );
 	}
 
 	/**
