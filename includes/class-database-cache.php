@@ -16,7 +16,7 @@ class Database_Cache {
 	const ACCOUNT_KEY = 'wcpay_account_data';
 
 	/**
-	 * Refresh disabled flag, controlling the bahavior of the get_or_add function.
+	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
 	 *
 	 * @var bool
 	 */
