@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\StoreApi\RoutesController;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -952,7 +954,8 @@ class WC_Payments {
 
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://woo.app';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
-		$body                   = [
+
+		$body = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
 			'session_cookie_name'  => $session_cookie_name,
@@ -964,10 +967,11 @@ class WC_Payments {
 				'blog_id'           => Jetpack_Options::get_option( 'id' ),
 				'blog_url'          => get_site_url(),
 				'blog_checkout_url' => wc_get_checkout_url(),
+				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
 			],
 		];
-		$args                   = [
+		$args = [
 			'url'     => $url,
 			'method'  => 'POST',
 			'timeout' => 30,
@@ -982,6 +986,24 @@ class WC_Payments {
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Retrieves the Store API URL.
+	 *
+	 * @return string
+	 */
+	public static function get_store_api_url() {
+		if ( class_exists( Package::class ) && class_exists( RoutesController::class ) ) {
+			try {
+				$cart          = Package::container()->get( RoutesController::class )->get( 'cart' );
+				$store_api_url = method_exists( $cart, 'get_namespace' ) ? $cart->get_namespace() : 'wc/store';
+			} catch ( Exception $e ) {
+				$store_api_url = 'wc/store';
+			}
+		}
+
+		return $store_api_url ?? 'wc/store';
 	}
 
 	/**
