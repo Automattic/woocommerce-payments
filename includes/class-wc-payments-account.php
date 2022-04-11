@@ -931,6 +931,10 @@ class WC_Payments_Account {
 					}
 				}
 
+				if ( ! $this->is_valid_cached_account( $account ) ) {
+					return false;
+				}
+
 				return $account;
 			},
 			[ $this, 'is_valid_cached_account' ],
@@ -972,8 +976,13 @@ class WC_Payments_Account {
 			return false;
 		}
 
+		// Non-array values are not expected.
+		if ( ! is_array( $account ) ) {
+			return false;
+		}
+
 		// empty array - special value to indicate that there's no account connected.
-		if ( is_array( $account ) && empty( $account ) ) {
+		if ( empty( $account ) ) {
 			return true;
 		}
 
