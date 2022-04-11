@@ -208,9 +208,3 @@ export function updatePlatformCheckoutCustomMessage( message ) {
 export function updateIsFraudPreventionEnabled( isEnabled ) {
 	return updateSettingsValues( { is_fraud_prevention_enabled: isEnabled } );
 }
-
-export function updateIsStripeLinkCheckoutEnabled( isEnabled ) {
-	return updateSettingsValues( {
-		is_stripe_link_checkout_enabled: isEnabled,
-	} );
-}

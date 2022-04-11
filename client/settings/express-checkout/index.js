@@ -16,7 +16,6 @@ import {
 	useEnabledPaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	usePlatformCheckoutEnabledSettings,
-	useStripeLinkCheckoutEnabledSettings,
 } from 'wcpay/data';
 import CardBody from '../card-body';
 import PaymentRequestIcon from '../../gateway-icons/payment-request';
@@ -37,11 +36,6 @@ const ExpressCheckout = () => {
 	] = usePlatformCheckoutEnabledSettings();
 
 	const [
-		isStripeLinkCheckoutEnabled,
-		updateIsStripeLinkCheckoutEnabled,
-	] = useStripeLinkCheckoutEnabledSettings();
-
-	const [
 		enabledMethodIds,
 		updateEnabledMethodIds,
 	] = useEnabledPaymentMethodIds();
@@ -56,9 +50,9 @@ const ExpressCheckout = () => {
 				...enabledMethodIds.filter( ( id ) => 'link' !== id ),
 			] );
 		}
-		updateIsStripeLinkCheckoutEnabled( isEnabled );
 	};
 	const displayLinkPaymentMethod = enabledMethodIds.includes( 'card' );
+	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
 
 	const {
 		featureFlags: {
@@ -167,10 +161,10 @@ const ExpressCheckout = () => {
 					</li>
 					{ displayLinkPaymentMethod && (
 						<li className="express-checkout has-icon-border">
-							<div className="express-checkout__checkbox">
+							<div className="express-checkout__checkbox loadable-checkbox label-hidden">
 								<CheckboxControl
-									checked={ isStripeLinkCheckoutEnabled }
-									// onChange={ updateIsStripeLinkCheckoutEnabled }
+									label={ 'Stripe Link' }
+									checked={ isStripeLinkEnabled }
 									onChange={ updateStripeLinkCheckout }
 								/>
 								<div className="express-checkout__icon">
