@@ -19,30 +19,13 @@ class Buyer_Fingerprinting_Service {
 	private static $instance;
 
 	/**
-	 * Fraud prevention service instance.
-	 *
-	 * @var Fraud_Prevention_Service
-	 */
-	private $fraud_prevention_service;
-
-	/**
-	 * Buyer_Fingerprinting_Service constructor.
-	 *
-	 * @param Fraud_Prevention_Service $fraud_prevention_service Fraud Prevention instance.
-	 */
-	public function __construct( Fraud_Prevention_Service $fraud_prevention_service ) {
-		$this->fraud_prevention_service = $fraud_prevention_service;
-	}
-
-	/**
 	 * Returns singleton instance.
 	 *
-	 * @param null $fraud_prevention_service Fraud Prevention Service instance.
 	 * @return Buyer_Fingerprinting_Service
 	 */
-	public static function get_instance( $fraud_prevention_service = null ): self {
+	public static function get_instance(): self {
 		if ( null === self::$instance ) {
-			self::$instance = new self( $fraud_prevention_service ?? Fraud_Prevention_Service::get_instance() );
+			self::$instance = new self();
 		}
 
 		return self::$instance;
