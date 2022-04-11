@@ -200,7 +200,7 @@ class Database_Cache {
 		$cache_contents['fetched'] = time();
 		$cache_contents['errored'] = $errored;
 
-		// Create or update the account option cache.
+		// Create or update the option cache.
 		if ( false === get_option( $key ) ) {
 			add_option( $key, $cache_contents, '', 'no' );
 		} else {
