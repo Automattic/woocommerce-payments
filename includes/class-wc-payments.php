@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\StoreApi\RoutesController;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -25,8 +27,7 @@ use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
-use Automattic\WooCommerce\Blocks\Package;
-use Automattic\WooCommerce\Blocks\StoreApi\RoutesController;
+use WCPay\Database_Cache;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -152,6 +153,13 @@ class WC_Payments {
 	private static $failed_transaction_rate_limiter;
 
 	/**
+	 * Instance of Database_Cache utils
+	 *
+	 * @var Database_Cache
+	 */
+	private static $database_cache;
+
+	/**
 	 * Cache for plugin headers to avoid multiple calls to get_file_data
 	 *
 	 * @var array
@@ -179,6 +187,9 @@ class WC_Payments {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
+
+		include_once __DIR__ . '/class-database-cache.php';
+		self::$database_cache = new Database_Cache();
 
 		include_once __DIR__ . '/class-wc-payments-dependency-service.php';
 
@@ -268,7 +279,7 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account                             = new WC_Payments_Account( self::$api_client );
+		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache );
 		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
 		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
@@ -725,12 +736,39 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the Database_Cache instance.
+	 *
+	 * @return Database_Cache Database_Cache instance.
+	 */
+	public static function get_database_cache(): Database_Cache {
+		return self::$database_cache;
+	}
+
+	/**
+	 * Sets the Database_Cache instance.
+	 *
+	 * @param Database_Cache $database_cache The cache instance.
+	 */
+	public static function set_database_cache( Database_Cache $database_cache ) {
+		self::$database_cache = $database_cache;
+	}
+
+	/**
 	 * Returns the WC_Payments_Account instance
 	 *
 	 * @return WC_Payments_Account account service instance
 	 */
 	public static function get_account_service() {
 		return self::$account;
+	}
+
+	/**
+	 * Sets the account service instance.
+	 *
+	 * @param WC_Payments_Account $account The account instance.
+	 */
+	public static function set_account_service( WC_Payments_Account $account ) {
+		self::$account = $account;
 	}
 
 	/**
@@ -884,7 +922,15 @@ class WC_Payments {
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
-			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+			// Make sure this is called after the dev tools have been initialized so the dev mode filter works.
+			add_filter(
+				'rest_request_before_callbacks',
+				function () {
+					if ( self::get_gateway()->is_in_dev_mode() ) {
+						add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+					}
+				}
+			);
 		}
 	}
 
@@ -906,7 +952,7 @@ class WC_Payments {
 
 		$account_id = self::get_account_service()->get_stripe_account_id();
 
-		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
+		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://woo.app';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 
 		$body = [

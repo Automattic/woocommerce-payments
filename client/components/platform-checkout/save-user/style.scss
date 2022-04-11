@@ -54,6 +54,7 @@
 
 		.additional-information {
 			display: flex;
+			font-size: 14px;
 			flex-direction: row;
 			align-items: flex-start;
 			gap: $gap-smaller;
@@ -71,8 +72,10 @@
 			}
 		}
 
-		.tos,
-		.additional-information,
+		.tos {
+			font-size: 14px;
+		}
+
 		.error-text {
 			// Using rems to base this on the theme styles.
 			font-size: 0.875rem;
@@ -89,6 +92,12 @@
 		}
 
 		.components-base-control {
+			font-size: 16px;
+
+			.components-text-control__input {
+				font-size: 16px;
+			}
+
 			&.has-error {
 				.iti::before {
 					content: ' ';
