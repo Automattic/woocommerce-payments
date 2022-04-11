@@ -3,9 +3,11 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import { downloadCSVFile } from '@woocommerce/csv-export';
+import apiFetch from '@wordpress/api-fetch';
+
 import os from 'os';
 
 /**
@@ -35,6 +37,8 @@ jest.mock( '@woocommerce/csv-export', () => {
 	};
 } );
 
+jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
 const mockDeposits = [
 	{
 		id: 'po_mock1',
@@ -59,12 +63,27 @@ const mockDeposits = [
 declare const global: {
 	wcpaySettings: {
 		zeroDecimalCurrencies: string[];
+		currentUserEmail: string;
 		currencyData: Record< string, any >;
 		connect: {
 			country: string;
 		};
 	};
 };
+
+// Workaround for mocking @wordpress/data.
+// See https://github.com/WordPress/gutenberg/issues/15031
+jest.mock( '@wordpress/data', () => ( {
+	createRegistryControl: jest.fn(),
+	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
+	registerStore: jest.fn(),
+	select: jest.fn(),
+	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
+	withDispatch: jest.fn( () => jest.fn() ),
+	withSelect: jest.fn( () => jest.fn() ),
+} ) );
+
+const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 
 const mockUseDeposits = useDeposits as jest.MockedFunction<
 	typeof useDeposits
@@ -90,6 +109,7 @@ describe( 'Deposits list', () => {
 			connect: {
 				country: 'US',
 			},
+			currentUserEmail: 'mock@example.com',
 			currencyData: {
 				US: {
 					code: 'USD',
@@ -211,6 +231,7 @@ describe( 'Deposits list', () => {
 
 	describe( 'CSV download', () => {
 		beforeEach( () => {
+			jest.restoreAllMocks();
 			mockUseDeposits.mockReturnValue( {
 				deposits: mockDeposits,
 				depositsCount: 2,
@@ -223,14 +244,6 @@ describe( 'Deposits list', () => {
 				} as DepositsSummary,
 				isLoading: false,
 			} );
-		} );
-
-		afterEach( () => {
-			jest.resetAllMocks();
-		} );
-
-		afterAll( () => {
-			jest.restoreAllMocks();
 		} );
 
 		test( 'should render expected columns in CSV when the download button is clicked', () => {
@@ -287,6 +300,59 @@ describe( 'Deposits list', () => {
 			expect( csvFirstDeposit[ 5 ] ).toBe(
 				`"${ displayFirstDeposit[ 4 ] }"`
 			); // bank account
+		} );
+
+		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 1000.', async () => {
+			window.confirm = jest.fn( () => true );
+			mockUseDepositsSummary.mockReturnValue( {
+				depositsSummary: {
+					count: 1100,
+					total: 50000,
+				} as DepositsSummary,
+				isLoading: false,
+			} );
+
+			const { getByRole } = render( <DepositsList /> );
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
+			expect( window.confirm ).toHaveBeenCalledWith(
+				"You are about to export 1100 deposits. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+
+			await waitFor( () => {
+				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
+				expect( mockApiFetch ).toHaveBeenCalledWith( {
+					method: 'POST',
+					path:
+						'/wc/v3/payments/deposits/download?user_email=mock%40example.com',
+				} );
+			} );
+		} );
+
+		test( 'should not fetch export after cancel when download button is selected for unfiltered exports larger than 1000.', async () => {
+			window.confirm = jest.fn( () => false );
+			mockUseDepositsSummary.mockReturnValue( {
+				depositsSummary: {
+					count: 1100,
+					total: 50000,
+				} as DepositsSummary,
+				isLoading: false,
+			} );
+
+			const { getByRole } = render( <DepositsList /> );
+
+			getByRole( 'button', { name: 'Download' } ).click();
+
+			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
+			expect( window.confirm ).toHaveBeenCalledWith(
+				"You are about to export 1100 deposits. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?"
+			);
+
+			await waitFor( () =>
+				expect( mockApiFetch ).not.toHaveBeenCalled()
+			);
 		} );
 	} );
 } );
