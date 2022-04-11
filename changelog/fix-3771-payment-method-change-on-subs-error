@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed issue when payment method is changed on subscription
