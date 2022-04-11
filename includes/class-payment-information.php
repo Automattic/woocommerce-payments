@@ -283,16 +283,20 @@ class Payment_Information {
 	 * @return string|NULL
 	 */
 	public static function get_cvc_confirmation_from_request( array $request ) {
-		$payment_method    = $request['payment_method'] ?? null;
-		$token_request_key = 'wc-' . $payment_method . '-payment-cvc-confirmation';
+		$payment_method = $request['payment_method'] ?? null;
+		if ( null === $payment_method ) {
+			return null;
+		}
+
+		$cvc_request_key = 'wc-' . $payment_method . '-payment-cvc-confirmation';
 		if (
-			! isset( $request[ $token_request_key ] ) ||
-			'new' === $request[ $token_request_key ]
+			! isset( $request[ $cvc_request_key ] ) ||
+			'new' === $request[ $cvc_request_key ]
 		) {
 			return null;
 		}
 
-		return $request[ $token_request_key ];
+		return $request[ $cvc_request_key ];
 	}
 
 	/**
