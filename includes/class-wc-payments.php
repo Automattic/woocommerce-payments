@@ -948,14 +948,16 @@ class WC_Payments {
 	 * @return string
 	 */
 	public static function get_store_api_url() {
-		try {
-			$cart          = Package::container()->get( RoutesController::class )->get( 'cart' );
-			$store_api_url = method_exists( $cart, 'get_namespace' ) ? $cart->get_namespace() : 'wc/store';
-		} catch ( Exception $e ) {
-			$store_api_url = 'wc/store';
+		if ( class_exists( Package::class ) && class_exists( RoutesController::class ) ) {
+			try {
+				$cart          = Package::container()->get( RoutesController::class )->get( 'cart' );
+				$store_api_url = method_exists( $cart, 'get_namespace' ) ? $cart->get_namespace() : 'wc/store';
+			} catch ( Exception $e ) {
+				$store_api_url = 'wc/store';
+			}
 		}
 
-		return $store_api_url;
+		return $store_api_url ?? 'wc/store';
 	}
 
 	/**
