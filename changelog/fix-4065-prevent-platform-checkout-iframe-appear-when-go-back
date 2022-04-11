@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent platform checkout iframe appear when go back

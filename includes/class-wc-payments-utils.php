@@ -644,4 +644,23 @@ class WC_Payments_Utils {
 
 		return null;
 	}
+
+	/**
+	 * Check to see if the current user is in onboarding experiment treatment mode.
+	 *
+	 * @return bool
+	 */
+	public static function is_in_onboarding_treatment_mode() {
+		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+			return false;
+		}
+
+		$abtest = new \WCPay\Experimental_Abtest(
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			'woocommerce',
+			'yes' === get_option( 'woocommerce_allow_tracking' )
+		);
+
+		return 'treatment' === $abtest->get_variation( 'woo_wcpayments_tasklist_click_introducing_select_business_type_202203_v1' );
+	}
 }
