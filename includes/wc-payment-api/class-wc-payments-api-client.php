@@ -268,7 +268,7 @@ class WC_Payments_API_Client {
 
 		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
 			$request['metadata']['fraud_prevention_data_available'] = true;
-			$request['metadata']['fraud_prevention_data']           = Buyer_Fingerprinting_Service::get_instance()->hash_data_for_fraud_prevention( $order_id );
+			$request['metadata']['fraud_prevention_data']           = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_order( $order_id );
 		}
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
