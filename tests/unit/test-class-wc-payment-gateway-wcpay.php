@@ -105,7 +105,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'get_payment_method',
 					'refund_charge',
 					'get_charge',
-					'update_intention_metadata',
+					'prepare_intention_for_capture',
 				]
 			)
 			->getMock();
@@ -1003,7 +1003,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
-		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->will(
+		$this->mock_api_client->expects( $this->once() )->method( 'prepare_intention_for_capture' )->will(
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -1079,7 +1079,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
-		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->will(
+		$this->mock_api_client->expects( $this->once() )->method( 'prepare_intention_for_capture' )->will(
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -1156,7 +1156,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
-		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->will(
+		$this->mock_api_client->expects( $this->once() )->method( 'prepare_intention_for_capture' )->will(
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -1231,7 +1231,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
-		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->will(
+		$this->mock_api_client->expects( $this->once() )->method( 'prepare_intention_for_capture' )->will(
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -1308,7 +1308,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->atLeastOnce() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
-		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->will(
+		$this->mock_api_client->expects( $this->once() )->method( 'prepare_intention_for_capture' )->will(
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -1373,7 +1373,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->atLeastOnce() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
-		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->will(
+		$this->mock_api_client->expects( $this->once() )->method( 'prepare_intention_for_capture' )->will(
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -1439,7 +1439,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->atLeastOnce() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
-		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->will(
+		$this->mock_api_client->expects( $this->once() )->method( 'prepare_intention_for_capture' )->will(
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -1515,7 +1515,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
-		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->with( $intent_id, $merged_metadata )->will(
+		$this->mock_api_client->expects( $this->once() )->method( 'prepare_intention_for_capture' )->with( $intent_id, $merged_metadata )->will(
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
@@ -1590,7 +1590,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
-		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->will(
+		$this->mock_api_client->expects( $this->once() )->method( 'prepare_intention_for_capture' )->will(
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(

@@ -332,8 +332,8 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Updates an intention's metadata.
-	 * Unlike `update_intention`, this method allows to update metadata without
+	 * Update an intention with fields that should be set before it is captured.
+	 * Unlike `update_intention`, this method allows to update the fields without
 	 * requiring amount, currency, and other mandatory params to be present.
 	 *
 	 * @param string $intention_id - The ID of the intention to update.
@@ -343,13 +343,13 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
 	 */
-	public function update_intention_metadata( $intention_id, $metadata, $remove_receipt_email = false ) {
+	public function prepare_intention_for_capture( $intention_id, $metadata, $remove_receipt_email = false ) {
 		$request = [
 			'metadata' => $metadata,
 		];
 
 		if ( $remove_receipt_email ) {
-			// I tried to set this to null but then Stripe did not remove the email.
+			// Setting this to null does not make Stripe remove the email.
 			$request['receipt_email'] = '';
 		}
 
