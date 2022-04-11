@@ -52,6 +52,7 @@ export default async function confirmUPEPayment(
 			const { error } = await api.getStripe().confirmSetup( {
 				elements,
 				confirmParams,
+				redirect: 'if_required',
 			} );
 			if ( error ) {
 				throw error;
