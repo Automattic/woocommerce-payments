@@ -378,8 +378,10 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
 	public function list_refunds( $charge_id ) {
-		$request           = [];
-		$request['charge'] = $charge_id;
+		$request = [
+			'limit'  => 100,
+			'charge' => $charge_id,
+		];
 
 		return $this->request( $request, self::REFUNDS_API, self::GET );
 	}
