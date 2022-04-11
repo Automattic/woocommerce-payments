@@ -22,13 +22,6 @@ class WC_Payments_Admin {
 	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1"><span class="plugin-count">1</span></span>';
 
 	/**
-	 * Option name used to hide Card Readers page behind a feature flag.
-	 *
-	 * @var string
-	 */
-	const CARD_READERS_FLAG_NAME = '_wcpay_feature_card_readers';
-
-	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -120,15 +113,19 @@ class WC_Payments_Admin {
 				],
 			],
 		];
-	}
 
-	/**
-	 * Checks whether the Card Readers page is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_card_readers_page_enabled() {
-		return '1' === get_option( self::CARD_READERS_FLAG_NAME, '0' );
+		if ( WC_Payments_Features::is_documents_section_enabled() ) {
+			$this->admin_child_pages['wc-payments-documents'] = [
+				'id'       => 'wc-payments-documents',
+				'title'    => __( 'Documents', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/documents',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 50,
+				],
+			];
+		}
 	}
 
 	/**
@@ -223,8 +220,25 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() && ! $should_render_full_menu ) {
+				wc_admin_register_page(
+					[
+						'id'         => 'wc-payments-onboarding',
+						'title'      => __( 'Onboarding', 'woocommerce-payments' ),
+						'parent'     => 'wc-payments',
+						'path'       => '/payments/onboarding',
+						'capability' => 'manage_woocommerce',
+						'nav_args'   => [
+							'parent' => 'wc-payments',
+						],
+					]
+				);
+				global $submenu;
+				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
+		}
+
 		if ( $should_render_full_menu ) {
-			if ( self::is_card_readers_page_enabled() && $this->account->is_card_present_eligible() ) {
+			if ( $this->account->is_card_present_eligible() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [
 					'id'       => 'wc-payments-card-readers',
 					'title'    => __( 'Card Readers', 'woocommerce-payments' ),

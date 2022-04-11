@@ -9,7 +9,10 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Constants\Payment_Type;
+use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Information;
+use WCPay\Session_Rate_Limiter;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -101,6 +104,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'get_setup_intent',
 					'get_payment_method',
 					'refund_charge',
+					'list_refunds',
 					'get_charge',
 					'update_intention_metadata',
 				]
@@ -110,6 +114,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->mock_api_client->expects( $this->any() )->method( 'get_blog_id' )->willReturn( 1234567 );
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
 
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 
@@ -139,7 +148,9 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		parent::tear_down();
 
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
-		delete_option( WC_Payments_Account::ACCOUNT_OPTION );
+
+		// Restore the cache service in the main class.
+		WC_Payments::set_database_cache( $this->_cache );
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
@@ -284,6 +295,57 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 	}
 
+	/**
+	 * Test saving WCPay refund id to WC Refund meta and WC Order Note.
+	 */
+	public function test_process_refund_save_wcpay_refund_id_to_refund_meta_and_order_note() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$refund = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
+			$this->returnValue(
+				[
+					'id'                       => 're_123456789',
+					'object'                   => 'refund',
+					'amount'                   => 19.99,
+					'balance_transaction'      => 'txn_987654321',
+					'charge'                   => 'ch_121212121212',
+					'created'                  => 1610123467,
+					'payment_intent'           => 'pi_1234567890',
+					'reason'                   => null,
+					'reciept_number'           => null,
+					'source_transfer_reversal' => null,
+					'status'                   => 'succeeded',
+					'transfer_reversal'        => null,
+					'currency'                 => 'usd',
+				]
+			)
+		);
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 1,
+			]
+		);
+		$latest_wcpay_note = $notes[0];
+
+		$this->assertTrue( $result );
+		$this->assertEquals( 're_123456789', $refund->get_meta( '_wcpay_refund_id', true ) );
+		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'USD' ] ), $latest_wcpay_note->content );
+		$this->assertStringContainsString( 're_123456789', $latest_wcpay_note->content );
+	}
+
 	public function test_process_refund_non_usd() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
@@ -371,6 +433,238 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'some reason', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 		$this->assertTrue( $result );
+	}
+
+	public function test_process_refund_interac_present() {
+		$intent_id         = 'pi_xxxxxxxxxxxxx';
+		$charge_id         = 'ch_yyyyyyyyyyyyy';
+		$payment_method_id = 'pm_zzzzzzzzzzzzz';
+
+		$order = WC_Helper_Order::create_order( null, 30 );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
+		$order->save();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->with( $payment_method_id )
+			->willReturn(
+				[
+					'id'     => $payment_method_id,
+					'object' => 'payment_method',
+					'type'   => 'interac_present',
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'list_refunds' )
+			->with( $charge_id )
+			->willReturn(
+				[
+					'data' => [
+						[
+							'id'                       => 're_123456789',
+							'object'                   => 'refund',
+							'amount'                   => 1999,
+							'balance_transaction'      => 'txn_987654321',
+							'charge'                   => 'ch_121212121212',
+							'created'                  => 1610123467,
+							'payment_intent'           => 'pi_1234567890',
+							'reason'                   => null,
+							'reciept_number'           => null,
+							'source_transfer_reversal' => null,
+							'status'                   => 'succeeded',
+							'transfer_reversal'        => null,
+							'currency'                 => 'eur',
+						],
+					],
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'refund_charge' );
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 1,
+			]
+		);
+		$latest_wcpay_note = $notes[0];
+
+		$this->assertTrue( $result );
+		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+	}
+
+	public function test_process_refund_interac_present_without_app_refund() {
+		$intent_id         = 'pi_xxxxxxxxxxxxx';
+		$charge_id         = 'ch_yyyyyyyyyyyyy';
+		$payment_method_id = 'pm_zzzzzzzzzzzzz';
+
+		$order = WC_Helper_Order::create_order( null, 30 );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
+		$order->save();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->with( $payment_method_id )
+			->willReturn(
+				[
+					'id'     => $payment_method_id,
+					'object' => 'payment_method',
+					'type'   => 'interac_present',
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'list_refunds' )
+			->with( $charge_id )
+			->willReturn(
+				[
+					'data' => [],
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'refund_charge' );
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'wcpay_edit_order_refund_not_possible', $result->get_error_code() );
+	}
+
+	public function test_process_refund_interac_present_with_unsuccessful_app_refund() {
+		$intent_id         = 'pi_xxxxxxxxxxxxx';
+		$charge_id         = 'ch_yyyyyyyyyyyyy';
+		$payment_method_id = 'pm_zzzzzzzzzzzzz';
+
+		$order = WC_Helper_Order::create_order( null, 30 );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
+		$order->save();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->with( $payment_method_id )
+			->willReturn(
+				[
+					'id'     => $payment_method_id,
+					'object' => 'payment_method',
+					'type'   => 'interac_present',
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'list_refunds' )
+			->with( $charge_id )
+			->willReturn(
+				[
+					'data' => [
+						[
+							'id'                       => 're_123456789',
+							'object'                   => 'refund',
+							'amount'                   => 1999,
+							'balance_transaction'      => 'txn_987654321',
+							'charge'                   => 'ch_121212121212',
+							'created'                  => 1610123467,
+							'payment_intent'           => 'pi_1234567890',
+							'reason'                   => null,
+							'reciept_number'           => null,
+							'source_transfer_reversal' => null,
+							'status'                   => 'failed',
+							'transfer_reversal'        => null,
+							'currency'                 => 'eur',
+						],
+					],
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'refund_charge' );
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'wcpay_edit_order_refund_not_possible', $result->get_error_code() );
+	}
+
+	public function test_process_refund_card_present() {
+		$intent_id         = 'pi_xxxxxxxxxxxxx';
+		$charge_id         = 'ch_yyyyyyyyyyyyy';
+		$payment_method_id = 'pm_zzzzzzzzzzzzz';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->save();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_payment_method' )
+			->with( $payment_method_id )
+			->willReturn(
+				[
+					'id'     => $payment_method_id,
+					'object' => 'payment_method',
+					'type'   => 'card_present',
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'refund_charge' )
+			->willReturn(
+				[
+					'id'                       => 're_123456789',
+					'object'                   => 'refund',
+					'amount'                   => 19.99,
+					'balance_transaction'      => 'txn_987654321',
+					'charge'                   => 'ch_121212121212',
+					'created'                  => 1610123467,
+					'payment_intent'           => 'pi_1234567890',
+					'reason'                   => null,
+					'reciept_number'           => null,
+					'source_transfer_reversal' => null,
+					'status'                   => 'succeeded',
+					'transfer_reversal'        => null,
+					'currency'                 => 'eur',
+				]
+			);
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), 19.99 );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 1,
+			]
+		);
+		$latest_wcpay_note = $notes[0];
+
+		$this->assertTrue( $result );
+		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_process_refund_on_uncaptured_payment() {
@@ -553,7 +847,31 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			function ( $output ) {
 				$result = preg_match_all( '/.*<input.*id="wc-woocommerce_payments-new-payment-method".*\/>.*/', $output );
 
-				$this->assertEquals( 0, $result );
+				$this->assertSame( 0, $result );
+			}
+		);
+
+		$this->wcpay_gateway->payment_fields();
+	}
+
+	public function test_fraud_prevention_token_added_when_enabled() {
+		$token_value                   = 'test-token';
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'get_token' )
+			->willReturn( $token_value );
+
+		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
+		$this->setOutputCallback(
+			function ( $output ) use ( $token_value ) {
+				$result = preg_match_all( '/.*<input.*type="hidden".*name="wcpay-fraud-prevention-token".*value="' . $token_value . '".*\/>.*/', $output );
+
+				$this->assertSame( 0, $result );
 			}
 		);
 
@@ -1486,6 +1804,81 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertSame( $order->get_status(), 'processing' );
 	}
 
+	public function test_capture_charge_without_level3() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_transaction_id( $intent_id );
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', 'requires_capture' );
+		$order->update_status( 'on-hold' );
+
+		$mock_intent = new WC_Payments_API_Intention(
+			$intent_id,
+			1500,
+			$order->get_currency(),
+			'cus_12345',
+			'pm_12345',
+			new DateTime(),
+			'requires_capture',
+			$charge_id,
+			'...'
+		);
+
+		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
+			$this->returnValue( $mock_intent )
+		);
+		$this->mock_api_client->expects( $this->once() )->method( 'update_intention_metadata' )->will(
+			$this->returnValue( $mock_intent )
+		);
+		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
+			$this->returnValue(
+				new WC_Payments_API_Intention(
+					$intent_id,
+					1500,
+					$order->get_currency(),
+					'cus_12345',
+					'pm_12345',
+					new DateTime(),
+					'succeeded',
+					$charge_id,
+					'...'
+				)
+			)
+		);
+
+		$this->mock_wcpay_account
+			->expects( $this->never() )
+			->method( 'get_account_country' ); // stand-in for get_level3_data_from_order.
+
+		$result = $this->wcpay_gateway->capture_charge( $order, false );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 1,
+			]
+		);
+		$latest_wcpay_note = $notes[0];
+
+		// Assert the returned data contains fields required by the REST endpoint.
+		$this->assertEquals(
+			[
+				'status'    => 'succeeded',
+				'id'        => $intent_id,
+				'message'   => null,
+				'http_code' => 200,
+			],
+			$result
+		);
+		$this->assertStringContainsString( 'successfully captured', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( $order->get_total() ), $latest_wcpay_note->content );
+		$this->assertEquals( 'succeeded', $order->get_meta( '_intention_status', true ) );
+		$this->assertEquals( 'processing', $order->get_status() );
+	}
+
 	public function test_cancel_authorization_handles_api_exception_when_canceling() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
@@ -1956,6 +2349,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
 
+		$this->get_fraud_prevention_service_mock()
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
@@ -1972,6 +2370,78 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
 			throw $e;
 		}
+	}
+
+	public function test_process_payment_rejects_if_missing_fraud_prevention_token() {
+		$order = WC_Helper_Order::create_order();
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Your payment was not processed.' );
+		$this->wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_process_payment_rejects_if_invalid_fraud_prevention_token() {
+		$order = WC_Helper_Order::create_order();
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'incorrect-token' )
+			->willReturn( false );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'incorrect-token';
+
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'Your payment was not processed.' );
+		$this->wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_process_payment_continues_if_valid_fraud_prevention_token() {
+		$order = WC_Helper_Order::create_order();
+
+		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'verify_token' )
+			->with( 'correct-token' )
+			->willReturn( true );
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+
+		$this->mock_rate_limiter
+			->expects( $this->once() )
+			->method( 'is_limited' )
+			->willReturn( false );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'prepare_payment_information' );
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' );
+
+		$mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_get_upe_enabled_payment_method_statuses_with_empty_cache() {
@@ -2147,27 +2617,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertSame( 'Intent creation failed with the following message: test exception', $result->get_error_message() );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_true() {
-		update_option( '_wcpay_feature_platform_checkout', '1' );
+	public function test_is_platform_checkout_enabled_returns_true() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
 	public function test_force_network_saved_cards_is_returned_as_true_if_should_use_stripe_platform() {
-		$mock_wcpay_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
-			->setConstructorArgs(
-				[
-					$this->mock_api_client,
-					$this->mock_wcpay_account,
-					$this->mock_customer_service,
-					$this->mock_token_service,
-					$this->mock_action_scheduler_service,
-					$this->mock_rate_limiter,
-					$this->order_service,
-				]
-			)
-			->setMethods( [ 'should_use_stripe_platform_on_checkout_page' ] )
-			->getMock();
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'should_use_stripe_platform_on_checkout_page' ] );
 
 		$mock_wcpay_gateway
 			->expects( $this->once() )
@@ -2177,21 +2634,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertTrue( $mock_wcpay_gateway->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 	}
 
-	/**
-	 * @dataProvider is_platform_checkout_falsy_value_provider
-	 */
-	public function test_is_platform_checkout_is_returned_as_false_if_feature_flag_is_not_equal_1() {
-		update_option( '_wcpay_feature_platform_checkout', '0' );
+	public function test_is_platform_checkout_enabled_returns_false_if_ineligible() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_option_is_not_equal_1() {
+	public function test_is_platform_checkout_enabled_returns_false_if_ineligible_and_enabled() {
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
-	}
-
-	public function test_is_platform_checkout_is_returned_as_false_if_missing() {
-		delete_option( '_wcpay_feature_platform_checkout' );
 		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
@@ -2205,5 +2654,43 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			[ 'foo' ],
 			[ [] ],
 		];
+	}
+
+	/**
+	 * Create a partial mock for WC_Payment_Gateway_WCPay class.
+	 *
+	 * @param array $methods Method names that need to be mocked.
+	 * @return MockObject|WC_Payment_Gateway_WCPay
+	 */
+	private function get_partial_mock_for_gateway( array $methods = [] ) {
+		return $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethods( $methods )
+			->getMock();
+	}
+
+	/**
+	 * Mocks Fraud_Prevention_Service.
+	 *
+	 * @return MockObject|Fraud_Prevention_Service
+	 */
+	private function get_fraud_prevention_service_mock() {
+		$fraud_prevention_service_mock = $this->getMockBuilder( Fraud_Prevention_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
+
+		return $fraud_prevention_service_mock;
 	}
 }

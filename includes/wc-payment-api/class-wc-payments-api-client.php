@@ -9,6 +9,8 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
@@ -29,6 +31,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
+	const PLATFORM_CHECKOUT_API        = 'accounts/platform_checkout';
 	const APPLE_PAY_API                = 'apple_pay';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
@@ -56,6 +59,7 @@ class WC_Payments_API_Client {
 	const MINIMUM_RECURRING_AMOUNT_API = 'subscriptions/minimum_amount';
 	const CAPITAL_API                  = 'capital';
 	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
+	const DOCUMENTS_API                = 'documents';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -268,6 +272,11 @@ class WC_Payments_API_Client {
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
 
+		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
+			$request['metadata']['fraud_prevention_data_available'] = true;
+			$request['metadata']['fraud_prevention_data']           = Buyer_Fingerprinting_Service::get_instance()->hash_data_for_fraud_prevention( $order_id );
+		}
+
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
@@ -364,6 +373,23 @@ class WC_Payments_API_Client {
 		$request['amount'] = $amount;
 
 		return $this->request( $request, self::REFUNDS_API, self::POST );
+	}
+
+	/**
+	 * List refunds
+	 *
+	 * @param string $charge_id - The charge to retrieve the list of refunds for.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function list_refunds( $charge_id ) {
+		$request = [
+			'limit'  => 100,
+			'charge' => $charge_id,
+		];
+
+		return $this->request( $request, self::REFUNDS_API, self::GET );
 	}
 
 	/**
@@ -843,6 +869,42 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Initiates disputes export via API.
+	 *
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to search for.
+	 *
+	 * @return array Export summary
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes_export( $filters = [], $user_email = '' ) {
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+
+		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
+	}
+
+	/**
+	 * Initiates deposits export via API.
+	 *
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to send export to.
+	 *
+	 * @return array Export summary
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_deposits_export( $filters = [], $user_email = '' ) {
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+
+		return $this->request( $filters, self::DEPOSITS_API . '/download', self::POST );
+	}
+
+	/**
 	 * Upload file and return file object.
 	 *
 	 * @param WP_REST_Request $request request object received.
@@ -986,6 +1048,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get current platform checkout eligibility
+	 *
+	 * @return array An array describing platform checkout eligibility.
+	 *
+	 * @throws API_Exception - Error contacting the API.
+	 */
+	public function get_platform_checkout_eligibility() {
+		return $this->request(
+			[
+				'test_mode' => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+			],
+			self::PLATFORM_CHECKOUT_API,
+			self::GET
+		);
+	}
+
+	/**
 	 * Update Stripe account data
 	 *
 	 * @param array $stripe_account_settings Settings to update.
@@ -1048,6 +1127,49 @@ class WC_Payments_API_Client {
 		);
 
 		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
+	}
+
+	/**
+	 * Get the business types, needed for our KYC onboarding flow.
+	 *
+	 * @return array An array containing the business types.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_onboarding_business_types() {
+		return $this->request(
+			[],
+			self::ONBOARDING_API . '/business_types',
+			self::GET
+		);
+	}
+
+	/**
+	 * Get the required verification information, needed for our KYC onboarding flow.
+	 *
+	 * @param string      $country_code The country code.
+	 * @param string      $type         The business type.
+	 * @param string|null $structure    The business structure (optional).
+	 *
+	 * @return array An array containing the required verification information.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_onboarding_required_verification_information( string $country_code, string $type, $structure = null ) {
+		$params = [
+			'country' => $country_code,
+			'type'    => $type,
+		];
+
+		if ( ! is_null( $structure ) ) {
+			$params = array_merge( $params, [ 'structure' => $structure ] );
+		}
+
+		return $this->request(
+			$params,
+			self::ONBOARDING_API . '/required_verification_information',
+			self::GET
+		);
 	}
 
 	/**
@@ -1644,6 +1766,57 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * List documents.
+	 *
+	 * @param int    $page      The requested page.
+	 * @param int    $page_size The size of the requested page.
+	 * @param string $sort      The column to be used for sorting.
+	 * @param string $direction The sorting direction.
+	 * @param array  $filters   The filters to be used in the query.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function list_documents( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', array $filters = [] ) {
+		$query = array_merge(
+			$filters,
+			[
+				'page'      => $page,
+				'pagesize'  => $page_size,
+				'sort'      => $sort,
+				'direction' => $direction,
+			]
+		);
+
+		return $this->request( $query, self::DOCUMENTS_API, self::GET );
+	}
+
+	/**
+	 * Get summary of documents.
+	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_documents_summary( array $filters = [] ) {
+		return $this->request( $filters, self::DOCUMENTS_API . '/summary', self::GET );
+	}
+
+	/**
+	 * Request a document from the server and returns the full response.
+	 *
+	 * @param string $document_id The document's ID.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function get_document( $document_id ) {
+		return $this->request( [], self::DOCUMENTS_API . '/' . $document_id, self::GET, true, false, true );
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -1651,11 +1824,12 @@ class WC_Payments_API_Client {
 	 * @param string $method           - The HTTP method to make the request with.
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
 	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
+	 * @param bool   $raw_response     - If true, the raw response will be returned. Defaults to false.
 	 *
 	 * @return array
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
-	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false ) {
+	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false ) {
 		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
@@ -1663,6 +1837,8 @@ class WC_Payments_API_Client {
 				'test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
 			]
 		);
+
+		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
 
 		// Build the URL we want to send the URL to.
 		$url = self::ENDPOINT_BASE;
@@ -1720,7 +1896,14 @@ class WC_Payments_API_Client {
 			$use_user_token
 		);
 
-		$response_body = $this->extract_response_body( $response );
+		$this->check_response_for_errors( $response );
+
+		if ( ! $raw_response ) {
+			$response_body = $this->extract_response_body( $response );
+		} else {
+			$response_body = $response;
+		}
+
 		Logger::log(
 			'RESPONSE: '
 			. var_export( WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
@@ -1786,15 +1969,36 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * From a given response extract the body. Invalid HTTP codes will result in an error.
+	 * From a given response extract the body.
 	 *
 	 * @param array $response That was given to us by http_client remote_request.
 	 *
-	 * @return array $response_body
-	 *
-	 * @throws API_Exception Standard exception in case we can't extract the body.
+	 * @return mixed $response_body
 	 */
 	protected function extract_response_body( $response ) {
+		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( null === $response_body ) {
+			return wp_remote_retrieve_body( $response );
+		}
+
+		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
+		if ( isset( $response_body['metadata'] ) && empty( $response_body['metadata'] ) ) {
+			$response_body['metadata'] = new stdClass();
+		}
+
+		return $response_body;
+	}
+
+	/**
+	 * Checks if a response has any errors and throws the appropriate API_Exception.
+	 *
+	 * @param array $response That was given to us by http_client remote_request.
+	 *
+	 * @return void
+	 *
+	 * @throws API_Exception If there's something wrong with the response.
+	 */
+	protected function check_response_for_errors( $response ) {
 		$response_code = wp_remote_retrieve_response_code( $response );
 		if ( ! $response_code ) {
 			$response_code = 0;
@@ -1802,7 +2006,7 @@ class WC_Payments_API_Client {
 
 		$response_body_json = wp_remote_retrieve_body( $response );
 		$response_body      = json_decode( $response_body_json, true );
-		if ( null === $response_body ) {
+		if ( null === $response_body && $this->is_json_response( $response ) ) {
 			$message = __( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' );
 			Logger::error( $message );
 			throw new API_Exception(
@@ -1810,6 +2014,8 @@ class WC_Payments_API_Client {
 				'wcpay_unparseable_or_null_body',
 				$response_code
 			);
+		} elseif ( null === $response_body && ! $this->is_json_response( $response ) ) {
+			$response_body = wp_remote_retrieve_body( $response );
 		}
 
 		// Check error codes for 4xx and 5xx responses.
@@ -1823,6 +2029,13 @@ class WC_Payments_API_Client {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
+				if ( isset( $response_body['error']['decline_code'] ) && 'fraudulent' === $response_body['error']['decline_code'] ) {
+					$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+					if ( $fraud_prevention_service->is_enabled() ) {
+						$fraud_prevention_service->regenerate_token();
+						WC()->session->set( 'reload_checkout', true );
+					}
+				}
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
@@ -1843,13 +2056,17 @@ class WC_Payments_API_Client {
 			Logger::error( "$error_message ($error_code)" );
 			throw new API_Exception( $message, $error_code, $response_code, $error_type );
 		}
+	}
 
-		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
-		if ( isset( $response_body['metadata'] ) && empty( $response_body['metadata'] ) ) {
-			$response_body['metadata'] = new stdClass();
-		}
-
-		return $response_body;
+	/**
+	 * Returns true if the response is JSON, based on the content-type header.
+	 *
+	 * @param array $response That was given to us by http_client remote_request.
+	 *
+	 * @return bool True if content-type is application/json, false otherwise.
+	 */
+	protected function is_json_response( $response ) {
+		return 'application/json' === substr( wp_remote_retrieve_header( $response, 'content-type' ), 0, strlen( 'application/json' ) );
 	}
 
 	/**

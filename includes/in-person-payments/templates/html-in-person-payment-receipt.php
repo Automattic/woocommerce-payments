@@ -163,13 +163,29 @@ function format_price_helper( array $product, string $currency ): string {
 					<td class="align-right align-top"><?php echo wp_kses( wc_price( abs( $order_coupon['discount'] ) * -1, [ 'currency' => $order['currency'] ] ), 'post' ); ?></td>
 				</tr>
 				<?php } ?>
+				<?php if ( 0 < $order['total_fees'] ) : ?>
+					<tr>
+						<td class="align-left"><?php esc_html_e( 'Fees:', 'woocommerce-payments' ); ?></td>
+						<td class="align-right align-top">
+							<?php echo wp_kses( wc_price( $order['total_fees'], [ 'currency' => $order['currency'] ] ), 'post' ); ?>
+						</td>
+					</tr>
+				<?php endif; ?>
+				<?php if ( 0 < $order['shipping_tax'] ) : ?>
+					<tr>
+						<td class="align-left"><?php esc_html_e( 'Shipping:', 'woocommerce-payments' ); ?></td>
+						<td class="align-right align-top">
+							<?php echo wp_kses( wc_price( $order['shipping_tax'], [ 'currency' => $order['currency'] ] ), 'post' ); ?>
+						</td>
+					</tr>
+				<?php endif; ?>
 				<?php foreach ( $tax_lines as $tax_line ) { ?>
 				<tr>
 					<td class="align-left">
 						<div><?php echo esc_html__( 'Tax', 'woocommerce-payments' ); ?></div>
 						<div><?php echo esc_html( wc_round_tax_total( $tax_line['rate_percent'] ) ); ?>%</div>
 					</td>
-					<td class="align-right align-top"><?php echo wp_kses( wc_price( $tax_line['tax_total'], [ 'currency' => $order['currency'] ] ), 'post' ); ?></td>
+					<td class="align-right align-top"><?php echo wp_kses( wc_price( $tax_line['tax_total'] + $tax_line['shipping_tax_total'], [ 'currency' => $order['currency'] ] ), 'post' ); ?></td>
 				</tr>
 				<?php } ?>
 				<tr>

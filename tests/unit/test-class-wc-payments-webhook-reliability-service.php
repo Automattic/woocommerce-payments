@@ -201,7 +201,7 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WP_UnitTestCase {
 				...array_map(
 					function ( $event_id ) {
 						return [
-							$this->lessThanOrEqual( time() ),
+							$this->greaterThanOrEqual( time() ),
 							WC_Payments_Webhook_Reliability_Service::WEBHOOK_PROCESS_EVENT_ACTION,
 							$this->callback(
 								function( $args ) use ( $event_id ) {

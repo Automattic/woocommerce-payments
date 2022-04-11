@@ -7,6 +7,10 @@ import {
 	useElements,
 	PaymentElement,
 } from '@stripe/react-stripe-js';
+import {
+	getPaymentMethods,
+	// eslint-disable-next-line import/no-unresolved
+} from '@woocommerce/blocks-registry';
 import { useEffect, useState } from '@wordpress/element';
 
 /**
@@ -49,6 +53,8 @@ const WCPayUPEFields = ( {
 		</p>
 	);
 
+	const gatewayConfig = getPaymentMethods()[ PAYMENT_METHOD_NAME_CARD ];
+
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
 		() =>
@@ -72,6 +78,7 @@ const WCPayUPEFields = ( {
 				}
 
 				if (
+					gatewayConfig.supports.showSaveOption &&
 					shouldSavePayment &&
 					! paymentMethodsConfig[ selectedUPEPaymentType ].isReusable
 				) {
@@ -88,6 +95,7 @@ const WCPayUPEFields = ( {
 						paymentMethodData: {
 							paymentMethod: PAYMENT_METHOD_NAME_CARD,
 							wc_payment_intent_id: paymentIntentId,
+							wcpay_selected_upe_payment_type: selectedUPEPaymentType,
 						},
 					},
 				};
@@ -144,6 +152,15 @@ const WCPayUPEFields = ( {
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const upeOnChange = ( event ) => {
+		// Update WC Blocks gateway config based on selected UPE payment method.
+		if (
+			getConfig( 'isSavedCardsEnabled' ) &&
+			! getConfig( 'cartContainsSubscription' )
+		) {
+			gatewayConfig.supports.showSaveOption =
+				paymentMethodsConfig[ event.value.type ].isReusable;
+		}
+
 		setIsUPEComplete( event.complete );
 		setSelectedUPEPaymentType( event.value.type );
 		setPaymentCountry( event.value.country );

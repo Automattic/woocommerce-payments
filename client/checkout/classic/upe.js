@@ -12,7 +12,7 @@ import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import { getTerms, getCookieValue } from '../utils/upe';
+import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -732,7 +732,7 @@ jQuery( function ( $ ) {
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
-		if ( ! isUsingSavedPaymentMethod() ) {
+		if ( ! isUsingSavedPaymentMethod() && isWCPayChosen() ) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
 				return false;

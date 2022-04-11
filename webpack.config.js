@@ -31,6 +31,7 @@ const webpackConfig = {
 		'multi-currency-analytics':
 			'./client/multi-currency-analytics/index.js',
 		order: './client/order/index.js',
+		onboarding: './client/onboarding/index.tsx',
 		'subscriptions-empty-state':
 			'./client/subscriptions-empty-state/index.js',
 		'subscription-product-onboarding-modal':
@@ -87,8 +88,16 @@ const webpackConfig = {
 			},
 			{
 				test: /\.(svg|png)$/,
-				exclude: /node_modules/,
+				exclude: [
+					/node_modules/,
+					/client\/components\/platform-checkout\/icons/,
+				],
 				type: 'asset/inline',
+			},
+			{
+				test: /\.svg$/,
+				use: [ '@svgr/webpack' ],
+				include: [ /client\/components\/platform-checkout/ ],
 			},
 		],
 	},

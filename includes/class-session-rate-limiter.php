@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+namespace WCPay;
+
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**

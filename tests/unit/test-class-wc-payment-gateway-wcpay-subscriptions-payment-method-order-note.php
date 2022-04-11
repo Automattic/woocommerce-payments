@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -68,11 +69,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	private $mock_order_service;
 
 	/**
-	 * WC_Payments_Account instance.
+	 * Mock WC_Payments_Account.
 	 *
-	 * @var WC_Payments_Account
+	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
 	 */
-	private $wcpay_account;
+	private $mock_wcpay_account;
 
 	public function set_up() {
 		parent::set_up();
@@ -83,7 +84,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
 			->disableOriginalConstructor()
@@ -97,7 +98,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->mock_session_rate_limiter = $this->getMockBuilder( 'Session_Rate_Limiter' )
+		$this->mock_session_rate_limiter = $this->getMockBuilder( Session_Rate_Limiter::class )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -107,7 +108,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
-			$this->wcpay_account,
+			$this->mock_wcpay_account,
 			$this->mock_customer_service,
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,

@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { sumBy } from 'lodash';
+import { sumBy, get } from 'lodash';
 
 /**
  * Internal dependencies
@@ -40,6 +40,9 @@ export const isChargeDisputed = ( charge: Charge = <Charge>{} ): boolean =>
 export const isChargeRefunded = ( charge: Charge = <Charge>{} ): boolean =>
 	0 < charge.amount_refunded;
 
+export const isChargeRefundFailed = ( charge: Charge = <Charge>{} ): boolean =>
+	false === charge.refunded && get( charge, 'refunds.data', [] ).length > 0;
+
 export const isChargeFullyRefunded = ( charge: Charge = <Charge>{} ): boolean =>
 	true === charge.refunded;
 
@@ -63,6 +66,9 @@ export const getChargeStatus = ( charge: Charge = <Charge>{} ): string => {
 	}
 	if ( isChargeFullyRefunded( charge ) ) {
 		return 'refunded_full';
+	}
+	if ( isChargeRefundFailed( charge ) ) {
+		return 'refund_failed';
 	}
 	if ( isChargeSuccessful( charge ) ) {
 		return isChargeCaptured( charge ) ? 'paid' : 'authorized';

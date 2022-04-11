@@ -115,9 +115,7 @@ describe( 'ExpressCheckoutSettings', () => {
 		} );
 		const breadcrumbs = linkToPayments.closest( 'h2' );
 
-		const methodName = within( breadcrumbs ).getByText(
-			'Platform Checkout'
-		);
+		const methodName = within( breadcrumbs ).getByText( 'WooPay' );
 		expect( breadcrumbs ).toContainElement( methodName );
 	} );
 
@@ -125,7 +123,7 @@ describe( 'ExpressCheckoutSettings', () => {
 		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
 
 		const label = screen.getByRole( 'checkbox', {
-			name: 'Enable Platform Checkout',
+			name: 'Enable WooPay',
 		} );
 		expect( label ).toBeInTheDocument();
 	} );
