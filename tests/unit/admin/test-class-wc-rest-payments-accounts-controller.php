@@ -70,6 +70,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 			->willReturn(
 				// We are providing only some of fields, needed for the assertions we are relying to.
 				[
+					'is_live'          => true,
 					'country'          => 'DE',
 					'status'           => 'complete',
 					'store_currencies' => [ 'default' => 'EUR' ],
@@ -143,6 +144,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_account_data' )
 			->willReturn(
 				[
+					'is_live'               => true,
 					'card_present_eligible' => true,
 				]
 			);
