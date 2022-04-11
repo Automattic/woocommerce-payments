@@ -183,6 +183,7 @@ class WC_Payments_API_Client {
 	 * @param bool   $off_session                     - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 * @param array  $additional_parameters           - An array of any additional request parameters, particularly for additional payment methods.
 	 * @param array  $payment_methods                 - An array of payment methods that might be used for the payment.
+	 * @param string $cvc_confirmation The CVC confirmation for this payment method.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -199,7 +200,8 @@ class WC_Payments_API_Client {
 		$level3 = [],
 		$off_session = false,
 		$additional_parameters = [],
-		$payment_methods = null
+		$payment_methods = null,
+		$cvc_confirmation = null
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -229,6 +231,10 @@ class WC_Payments_API_Client {
 
 		if ( $save_payment_method_to_platform ) {
 			$request['save_payment_method_to_platform'] = 'true';
+		}
+
+		if ( ! empty( $cvc_confirmation ) ) {
+			$request['cvc_confirmation'] = $cvc_confirmation;
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
