@@ -29,7 +29,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
-    remove_all_filters( 'wcpay_dev_mode' );
+		remove_all_filters( 'wcpay_dev_mode' );
 		parent::tear_down();
 	}
 
