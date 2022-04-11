@@ -41,6 +41,7 @@ class Buyer_Fingerprinting_Service_Test extends WP_UnitTestCase {
 		$expected_hashed_string = hash( 'sha512', 'test_string' );
 
 		$this->assertSame( $result, $expected_hashed_string );
+		$this->assertTrue( is_string( $result ) );
 	}
 
 	public function test_it_hashes_order_info() {
