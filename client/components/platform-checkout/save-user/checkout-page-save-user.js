@@ -65,6 +65,9 @@ const CheckoutPageSaveUser = () => {
 					className="save-details-form form-row place-order"
 					data-testid="save-user-form"
 				>
+					<span>
+						{ __( 'Mobile phone number', 'woocommerce-payments' ) }
+					</span>
 					<PhoneNumberInput
 						handlePhoneNumberChange={ setPhoneNumber }
 					/>
