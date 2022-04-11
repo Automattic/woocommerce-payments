@@ -7,15 +7,17 @@
 
 namespace WCPay;
 
-use Automattic\Jetpack\Tracking;
+use Jetpack_Tracks_Client;
+use Jetpack_Tracks_Event;
 use WC_Payments_Features;
+use WP_Error;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
 /**
  * Track Platform Checkout related events
  */
-class Platform_Checkout_Tracker extends Tracking {
+class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 
 	/**
 	 * Platform checkout event prefix
@@ -25,18 +27,22 @@ class Platform_Checkout_Tracker extends Tracking {
 	private static $prefix = 'woocommerceanalytics';
 
 	/**
+	 * WCPay http interface.
+	 *
+	 * @var Object
+	 */
+	private $http;
+
+
+	/**
 	 * Constructor.
 	 *
 	 * @param \WC_Payments_Http_Interface $http    A class implementing WC_Payments_Http_Interface.
 	 */
 	public function __construct( $http ) {
-		/**
-		 * Tracking class expects a Jetpack\Connection\Manager instance.
-		 * We pass in WC_Payments_Http_Interface which is a wrapper around the Connection Manager.
-		 *
-		 * @psalm-suppress InvalidArgument
-		 */
-		parent::__construct( self::$prefix, $http );
+
+		$this->http = $http;
+
 		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
 
@@ -91,10 +97,6 @@ class Platform_Checkout_Tracker extends Tracking {
 	 */
 	public function maybe_record_event( $event, $data = [] ) {
 
-		if ( ! $this->should_track() ) {
-			return;
-		}
-
 		$user     = wp_get_current_user();
 		$site_url = get_option( 'siteurl' );
 
@@ -108,15 +110,19 @@ class Platform_Checkout_Tracker extends Tracking {
 			$event = self::$prefix . '_' . $event;
 		}
 
+		// Add event property for test mode vs. live mode events.
+		$gateway           = \WC_Payments::get_gateway();
+		$data['test_mode'] = $gateway->is_in_test_mode() ? 1 : 0;
+
 		return $this->tracks_record_event( $user, $event, $data );
 	}
 
 	/**
-	 * Check whether tracking should be enabled.
+	 * Override parent method to omit the jetpack TOS check.
 	 *
 	 * @return bool
 	 */
-	public function should_track() {
+	public function should_enable_tracking() {
 		// Track only site pages.
 		if ( is_admin() && ! wp_doing_ajax() ) {
 			return false;
@@ -124,6 +130,11 @@ class Platform_Checkout_Tracker extends Tracking {
 
 		// Don't track site admins.
 		if ( is_user_logged_in() && in_array( 'administrator', wp_get_current_user()->roles, true ) ) {
+			return false;
+		}
+
+		// Don't track if the opt-out cookie is set.
+		if ( ! empty( $_COOKIE['tk_opt-out'] ) ) {
 			return false;
 		}
 
@@ -135,10 +146,129 @@ class Platform_Checkout_Tracker extends Tracking {
 			return false;
 		}
 
-		// TODO: Don't track if jetpack_tos_agreed flag is not present.
-
 		return true;
 	}
+
+	/**
+	 * Record an event in Tracks - this is the preferred way to record events from PHP.
+	 *
+	 * @param mixed  $user                   username, user_id, or WP_user object.
+	 * @param string $event_name             The name of the event.
+	 * @param array  $properties             Custom properties to send with the event.
+	 *
+	 * @return bool|array|\WP_Error|\Jetpack_Tracks_Event
+	 */
+	public function tracks_record_event( $user, $event_name, $properties = [] ) {
+
+		// We don't want to track user events during unit tests/CI runs.
+		if ( $user instanceof \WP_User && 'wptests_capabilities' === $user->cap_key ) {
+			return false;
+		}
+
+		if ( ! $this->should_enable_tracking() ) {
+			return false;
+		}
+
+		$event_obj = $this->tracks_build_event_obj( $user, $event_name, $properties );
+
+		if ( is_wp_error( $event_obj ) ) {
+			return $event_obj;
+		}
+
+		$pixel = $event_obj->build_pixel_url( $event_obj );
+
+		if ( ! $pixel ) {
+			return new WP_Error( 'invalid_pixel', 'cannot generate tracks pixel for given input', 400 );
+		}
+
+		return self::record_pixel( $pixel );
+	}
+
+	/**
+	 * Procedurally build a Tracks Event Object.
+	 *
+	 * @param \WP_User $user                  WP_user object.
+	 * @param string   $event_name            The name of the event.
+	 * @param array    $properties            Custom properties to send with the event.
+	 *
+	 * @return \Jetpack_Tracks_Event|\WP_Error
+	 */
+	private function tracks_build_event_obj( $user, $event_name, $properties = [] ) {
+		$identity = $this->tracks_get_identity( $user->ID );
+
+		$properties['user_lang'] = $user->get( 'WPLANG' );
+
+		$blog_details = [
+			'blog_lang' => isset( $properties['blog_lang'] ) ? $properties['blog_lang'] : get_bloginfo( 'language' ),
+		];
+
+		$timestamp        = round( microtime( true ) * 1000 );
+		$timestamp_string = is_string( $timestamp ) ? $timestamp : number_format( $timestamp, 0, '', '' );
+
+		/**
+		 * Ignore incorrect argument definition in Jetpack_Tracks_Event.
+		 *
+		 * @psalm-suppress InvalidArgument
+		 */
+		return new \Jetpack_Tracks_Event(
+			array_merge(
+				$blog_details,
+				(array) $properties,
+				$identity,
+				[
+					'_en' => $event_name,
+					'_ts' => $timestamp_string,
+				]
+			)
+		);
+	}
+
+	/**
+	 * Get the identity to send to tracks.
+	 *
+	 * @param int $user_id The user id of the local user.
+	 *
+	 * @return array $identity
+	 */
+	public function tracks_get_identity( $user_id ) {
+
+		// Meta is set, and user is still connected.  Use WPCOM ID.
+		$wpcom_id = get_user_meta( $user_id, 'jetpack_tracks_wpcom_id', true );
+		if ( $wpcom_id && $this->http->is_user_connected( $user_id ) ) {
+			return [
+				'_ut' => 'wpcom:user_id',
+				'_ui' => $wpcom_id,
+			];
+		}
+
+		// User is connected, but no meta is set yet.  Use WPCOM ID and set meta.
+		if ( $this->http->is_user_connected( $user_id ) ) {
+			$wpcom_user_data = $this->http->get_connected_user_data( $user_id );
+			update_user_meta( $user_id, 'jetpack_tracks_wpcom_id', $wpcom_user_data['ID'] );
+
+			return [
+				'_ut' => 'wpcom:user_id',
+				'_ui' => $wpcom_user_data['ID'],
+			];
+		}
+
+		// User isn't linked at all.  Fall back to anonymous ID.
+		$anon_id = get_user_meta( $user_id, 'jetpack_tracks_anon_id', true );
+		if ( ! $anon_id ) {
+			$anon_id = \Jetpack_Tracks_Client::get_anon_id();
+			add_user_meta( $user_id, 'jetpack_tracks_anon_id', $anon_id, false );
+		}
+
+		if ( ! isset( $_COOKIE['tk_ai'] ) && ! headers_sent() ) {
+			setcookie( 'tk_ai', $anon_id );
+		}
+
+		return [
+			'_ut' => 'anon',
+			'_ui' => $anon_id,
+		];
+	}
+
 
 	/**
 	 * Record a Tracks event that the checkout has started.

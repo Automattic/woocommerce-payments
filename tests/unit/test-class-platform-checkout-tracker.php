@@ -46,16 +46,16 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function test_should_track_obeys_platform_checkout_flag() {
+	public function test_tracks_obeys_platform_checkout_flag() {
 		$this->set_is_platform_checkout_eligible( false );
-		$this->assertFalse( $this->tracker->should_track() );
+		$this->assertFalse( $this->tracker->should_enable_tracking( null, null ) );
 	}
 
 	public function test_does_not_track_admin_pages() {
 		wp_set_current_user( 1 );
 		$this->set_is_platform_checkout_eligible( true );
 		$this->set_is_admin( true );
-		$this->assertFalse( $this->tracker->should_track() );
+		$this->assertFalse( $this->tracker->should_enable_tracking( null, null ) );
 	}
 
 	public function test_does_track_non_admins() {
@@ -70,7 +70,7 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 
 		foreach ( $all_roles as $role ) {
 			wp_get_current_user()->set_role( $role );
-			$this->assertTrue( $this->tracker->should_track() );
+			$this->assertTrue( $this->tracker->should_enable_tracking( null, null ) );
 		}
 	}
 
