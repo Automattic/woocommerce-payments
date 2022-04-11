@@ -909,11 +909,6 @@ class WC_Payments {
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 
-		if ( class_exists( 'RoutesController' ) ) {
-			$cart          = Package::container()->get( RoutesController::class )->get( 'cart' );
-			$store_api_url = method_exists( $cart, 'get_namespace' ) ? $cart->get_namespace() : 'wc/store';
-		}
-
 		$body = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
@@ -926,7 +921,7 @@ class WC_Payments {
 				'blog_id'           => Jetpack_Options::get_option( 'id' ),
 				'blog_url'          => get_site_url(),
 				'blog_checkout_url' => wc_get_checkout_url(),
-				'store_api_url'     => $store_api_url ?? 'wc/store',
+				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
 			],
 		];
@@ -945,6 +940,22 @@ class WC_Payments {
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Retrieves the Store API URL.
+	 *
+	 * @return string
+	 */
+	public static function get_store_api_url() {
+		try {
+			$cart          = Package::container()->get( RoutesController::class )->get( 'cart' );
+			$store_api_url = method_exists( $cart, 'get_namespace' ) ? $cart->get_namespace() : 'wc/store';
+		} catch ( Exception $e ) {
+			$store_api_url = 'wc/store';
+		}
+
+		return $store_api_url;
 	}
 
 	/**
