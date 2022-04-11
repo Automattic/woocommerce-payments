@@ -920,7 +920,15 @@ class WC_Payments {
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 			// Disable nonce checks for API calls. TODO This should be changed.
-			add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+			// Make sure this is called after the dev tools have been initialized so the dev mode filter works.
+			add_filter(
+				'rest_request_before_callbacks',
+				function () {
+					if ( self::get_gateway()->is_in_dev_mode() ) {
+						add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+					}
+				}
+			);
 		}
 	}
 
