@@ -641,7 +641,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'            => $this->is_saved_cards_enabled(),
 			'isPlatformCheckoutEnabled'      => $platform_checkout_util->should_enable_platform_checkout( $this ),
-			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
+			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://woo.app',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 		];
@@ -1674,7 +1674,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_is_platform_checkout_enabled( $is_platform_checkout_enabled ) {
 		$current_is_platform_checkout_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
 		if ( $is_platform_checkout_enabled !== $current_is_platform_checkout_enabled ) {
-			wc_admin_record_tracks_event( $is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled' );
+			wc_admin_record_tracks_event(
+				$is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled',
+				[ 'test_mode' => $this->is_in_test_mode() ? 1 : 0 ]
+			);
 			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
 		}
 	}
