@@ -98,7 +98,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 									)
 									->getMock();
 		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
-		$this->mock_wcpay_account = new WC_Payments_Account( $this->mock_api_client );
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 

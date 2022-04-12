@@ -13,9 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC Payments Features class
  */
 class WC_Payments_Features {
-	const PLATFORM_CHECKOUT_ELIGIBLE_FLAG_NAME = 'platform_checkout_eligible';
-	const UPE_FLAG_NAME                        = '_wcpay_feature_upe';
-	const WCPAY_SUBSCRIPTIONS_FLAG_NAME        = '_wcpay_feature_subscriptions';
+	const UPE_FLAG_NAME                 = '_wcpay_feature_upe';
+	const WCPAY_SUBSCRIPTIONS_FLAG_NAME = '_wcpay_feature_subscriptions';
 
 	/**
 	 * Checks whether the UPE gateway is enabled
@@ -95,8 +94,8 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_platform_checkout_eligible() {
-		$account = get_option( WC_Payments_Account::ACCOUNT_OPTION, [] );
-		return is_array( $account ) && ( $account['account'][ self::PLATFORM_CHECKOUT_ELIGIBLE_FLAG_NAME ] ?? false );
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
+		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
 	}
 
 	/**
