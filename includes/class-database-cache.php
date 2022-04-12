@@ -15,6 +15,7 @@ defined( 'ABSPATH' ) || exit; // block direct access.
 class Database_Cache {
 	const ACCOUNT_KEY        = 'wcpay_account_data';
 	const BUSINESS_TYPES_KEY = 'wcpay_business_types_data';
+	const CURRENCIES_KEY     = 'wcpay_multi_currency_cached_currencies';
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
@@ -250,6 +251,10 @@ class Database_Cache {
 					// Non-admin requests should always refresh only after 24h since the last fetch.
 					$ttl = DAY_IN_SECONDS;
 				}
+				break;
+			case self::CURRENCIES_KEY:
+				// Refresh the errored currencies quickly, otherwise cache for 6h.
+				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : 6 * HOUR_IN_SECONDS;
 				break;
 			case self::BUSINESS_TYPES_KEY:
 				// Cache business types for a week.
