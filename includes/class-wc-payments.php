@@ -970,7 +970,7 @@ class WC_Payments {
 				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
 			],
-			// Maybe we should be checking the nonce here?
+			// Maybe we should be checking the nonce in this request?
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null, // //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		];
 		$args = [
