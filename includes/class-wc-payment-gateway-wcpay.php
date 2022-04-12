@@ -16,6 +16,7 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
+use WCPay\Constants\Payment_Method;
 use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
@@ -641,7 +642,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'            => $this->is_saved_cards_enabled(),
 			'isPlatformCheckoutEnabled'      => $platform_checkout_util->should_enable_platform_checkout( $this ),
-			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
+			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://woo.app',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 		];
@@ -1154,7 +1155,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$this->get_level3_data_from_order( $order ),
 					$payment_information->is_merchant_initiated(),
 					$additional_api_parameters,
-					$payment_methods
+					$payment_methods,
+					$payment_information->get_cvc_confirmation()
 				);
 			}
 
@@ -1482,11 +1484,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$charge_id = $order->get_meta( '_charge_id', true );
 
 		try {
-			if ( is_null( $amount ) ) {
-				// If amount is null, the default is the entire charge.
-				$refund = $this->payments_api_client->refund_charge( $charge_id );
+			// If the payment method is Interac, the refund already exists (refunded via Mobile app).
+			$is_refunded_off_session = Payment_Method::INTERAC_PRESENT === $this->get_payment_method_type_for_order( $order );
+			if ( $is_refunded_off_session ) {
+				$refund_amount = WC_Payments_Utils::prepare_amount( $amount ?? $order->get_total(), $order->get_currency() );
+				$refunds       = array_filter(
+					$this->payments_api_client->list_refunds( $charge_id )['data'],
+					static function ( $refund ) use ( $refund_amount ) {
+							return 'succeeded' === $refund['status'] && $refund_amount === $refund['amount'];
+					}
+				);
+
+				if ( [] === $refunds ) {
+					return new WP_Error(
+						'wcpay_edit_order_refund_not_possible',
+						__( 'You shall refund this payment in the same application where the payment was made.', 'woocommerce-payments' )
+					);
+				}
+
+				$refund = array_pop( $refunds );
 			} else {
-				$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+				if ( null === $amount ) {
+					// If amount is null, the default is the entire charge.
+					$refund = $this->payments_api_client->refund_charge( $charge_id );
+				} else {
+					$refund = $this->payments_api_client->refund_charge( $charge_id, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+				}
 			}
 			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
@@ -1557,6 +1580,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function has_refund_failed( $order ) {
 		return 'failed' === $order->get_meta( '_wcpay_refund_status', true );
+	}
+
+	/**
+	 * Gets the payment method type used for an order, if any
+	 *
+	 * @param WC_Order $order The order to get the payment method type for.
+	 * @return string
+	 */
+	private function get_payment_method_type_for_order( $order ): string {
+		$payment_method_id      = $order->get_meta( '_payment_method_id', true );
+		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+
+		return $payment_method_details['type'] ?? 'unknown';
 	}
 
 	/**
@@ -1674,7 +1710,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_is_platform_checkout_enabled( $is_platform_checkout_enabled ) {
 		$current_is_platform_checkout_enabled = 'yes' === $this->get_option( 'platform_checkout', 'no' );
 		if ( $is_platform_checkout_enabled !== $current_is_platform_checkout_enabled ) {
-			wc_admin_record_tracks_event( $is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled' );
+			wc_admin_record_tracks_event(
+				$is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled',
+				[ 'test_mode' => $this->is_in_test_mode() ? 1 : 0 ]
+			);
 			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
 		}
 	}

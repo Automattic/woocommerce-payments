@@ -1,0 +1,3 @@
+Significance: patch
+Type: add
+Comment: Adds current version of the Store API URL to platform checkout request data.

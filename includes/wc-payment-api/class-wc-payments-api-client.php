@@ -187,6 +187,7 @@ class WC_Payments_API_Client {
 	 * @param bool   $off_session                     - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 * @param array  $additional_parameters           - An array of any additional request parameters, particularly for additional payment methods.
 	 * @param array  $payment_methods                 - An array of payment methods that might be used for the payment.
+	 * @param string $cvc_confirmation                - The CVC confirmation for this payment method.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -203,7 +204,8 @@ class WC_Payments_API_Client {
 		$level3 = [],
 		$off_session = false,
 		$additional_parameters = [],
-		$payment_methods = null
+		$payment_methods = null,
+		$cvc_confirmation = null
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -233,6 +235,10 @@ class WC_Payments_API_Client {
 
 		if ( $save_payment_method_to_platform ) {
 			$request['save_payment_method_to_platform'] = 'true';
+		}
+
+		if ( ! empty( $cvc_confirmation ) ) {
+			$request['cvc_confirmation'] = $cvc_confirmation;
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
@@ -371,6 +377,23 @@ class WC_Payments_API_Client {
 		$request['amount'] = $amount;
 
 		return $this->request( $request, self::REFUNDS_API, self::POST );
+	}
+
+	/**
+	 * List refunds
+	 *
+	 * @param string $charge_id - The charge to retrieve the list of refunds for.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function list_refunds( $charge_id ) {
+		$request = [
+			'limit'  => 100,
+			'charge' => $charge_id,
+		];
+
+		return $this->request( $request, self::REFUNDS_API, self::GET );
 	}
 
 	/**
@@ -866,6 +889,24 @@ class WC_Payments_API_Client {
 		}
 
 		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
+	}
+
+	/**
+	 * Initiates deposits export via API.
+	 *
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to send export to.
+	 *
+	 * @return array Export summary
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_deposits_export( $filters = [], $user_email = '' ) {
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+
+		return $this->request( $filters, self::DEPOSITS_API . '/download', self::POST );
 	}
 
 	/**

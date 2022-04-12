@@ -54,11 +54,49 @@ const ExpressCheckout = () => {
 							<div className="express-checkout__icon">
 								<WooIcon />
 							</div>
-							<div className="express-checkout__label">
-								{ __(
-									'Platform Checkout',
-									'woocommerce-payments'
-								) }
+							<div className="express-checkout__label-container">
+								<div className="express-checkout__label">
+									{ __( 'WooPay', 'woocommerce-payments' ) }
+								</div>
+								<div className="express-checkout__description">
+									{
+										/* eslint-disable jsx-a11y/anchor-has-content */
+										interpolateComponents( {
+											mixedString: __(
+												'By using WooPay, you agree to the {{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
+													'and acknowledge you have read our {{privacyLink}}Privacy Policy{{/privacyLink}} and ' +
+													'understand you will be sharing data with us. ' +
+													'{{trackingLink}}Click here{{/trackingLink}} to learn more about data sharing. ' +
+													'You can opt out of data sharing by disabling WooPay.',
+												'woocommerce-payments'
+											),
+											components: {
+												tosLink: (
+													<a
+														target="_blank"
+														rel="noreferrer"
+														href="https://wordpress.com/tos/"
+													/>
+												),
+												privacyLink: (
+													<a
+														target="_blank"
+														rel="noreferrer"
+														href="https://automattic.com/privacy/"
+													/>
+												),
+												trackingLink: (
+													<a
+														target="_blank"
+														rel="noreferrer"
+														href="https://woocommerce.com/usage-tracking/"
+													/>
+												),
+											},
+										} )
+										/* eslint-enable jsx-a11y/anchor-has-content */
+									}
+								</div>
 							</div>
 							<div className="express-checkout__link">
 								<a
