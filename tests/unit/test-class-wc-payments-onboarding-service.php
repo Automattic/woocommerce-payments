@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -25,6 +26,13 @@ class WC_Payments_Onboarding_Service_Test extends WP_UnitTestCase {
 	 * @var WC_Payments_API_Client|MockObject
 	 */
 	private $mock_api_client;
+
+	/**
+	 * Mock Database_Cache
+	 *
+	 * @var MockObject
+	 */
+	private $mock_database_cache;
 
 	/**
 	 * Example business types array.
@@ -121,9 +129,10 @@ class WC_Payments_Onboarding_Service_Test extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_api_client     = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 
-		$this->onboarding_service = new WC_Payments_Onboarding_Service( $this->mock_api_client );
+		$this->onboarding_service = new WC_Payments_Onboarding_Service( $this->mock_api_client, $this->mock_database_cache );
 	}
 
 	/**
@@ -131,8 +140,7 @@ class WC_Payments_Onboarding_Service_Test extends WP_UnitTestCase {
 	 */
 	public function tear_down() {
 		parent::tear_down();
-
-		delete_option( WC_Payments_Onboarding_Service::BUSINESS_TYPES_OPTION );
+		delete_option( Database_Cache::BUSINESS_TYPES_KEY );
 	}
 
 	public function test_get_required_verification_information() {
@@ -165,7 +173,10 @@ class WC_Payments_Onboarding_Service_Test extends WP_UnitTestCase {
 			->method( 'is_server_connected' )
 			->willReturn( true );
 
-		$this->cache_business_types( $this->mock_business_types );
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->willReturn( $this->mock_business_types );
 
 		$this->assertEquals(
 			$this->mock_business_types,
@@ -179,97 +190,11 @@ class WC_Payments_Onboarding_Service_Test extends WP_UnitTestCase {
 			->method( 'is_server_connected' )
 			->willReturn( true );
 
-		$this->cache_business_types( WC_Payments_Onboarding_Service::BUSINESS_TYPES_RETRIEVAL_ERROR );
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->willReturn( null );
 
 		$this->assertFalse( $this->onboarding_service->get_cached_business_types() );
-	}
-
-	public function test_get_cached_business_types_no_cache() {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'is_server_connected' )
-			->willReturn( true );
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_onboarding_business_types' )
-			->willReturn( $this->mock_business_types );
-
-		$result = $this->onboarding_service->get_cached_business_types();
-
-		$this->assertEquals(
-			$this->mock_business_types,
-			$result
-		);
-
-		$this->assertEquals(
-			$this->mock_business_types,
-			get_option( WC_Payments_Onboarding_Service::BUSINESS_TYPES_OPTION )['business_types']
-		);
-	}
-
-	public function test_get_cached_business_types_api_error() {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'is_server_connected' )
-			->willReturn( true );
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_onboarding_business_types' )
-			->willThrowException( new API_Exception( 'error contacting server', 500, 500 ) );
-
-		$result = $this->onboarding_service->get_cached_business_types();
-
-		$this->assertEquals(
-			false,
-			$result
-		);
-
-		$this->assertEquals(
-			WC_Payments_Onboarding_Service::BUSINESS_TYPES_RETRIEVAL_ERROR,
-			get_option( WC_Payments_Onboarding_Service::BUSINESS_TYPES_OPTION )['business_types']
-		);
-	}
-
-	public function test_get_cached_business_types_force_refresh() {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'is_server_connected' )
-			->willReturn( true );
-
-		$this->cache_business_types( [ 'foo' => 'bar' ] );
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_onboarding_business_types' )
-			->willReturn( $this->mock_business_types );
-
-		$result = $this->onboarding_service->get_cached_business_types( true );
-
-		$this->assertEquals(
-			$this->mock_business_types,
-			$result
-		);
-
-		$this->assertEquals(
-			$this->mock_business_types,
-			get_option( WC_Payments_Onboarding_Service::BUSINESS_TYPES_OPTION )['business_types']
-		);
-	}
-
-	/**
-	 * Cache account details.
-	 *
-	 * @param $account
-	 */
-	private function cache_business_types( $business_types ) {
-		add_option(
-			WC_Payments_Onboarding_Service::BUSINESS_TYPES_OPTION,
-			[
-				'business_types' => $business_types,
-				'expires'        => time() + 2 * HOUR_IN_SECONDS,
-			]
-		);
 	}
 }
