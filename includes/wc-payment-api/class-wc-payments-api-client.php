@@ -310,11 +310,11 @@ class WC_Payments_API_Client {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
 
-			if (
-				CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type &&
-				in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, \WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true )
-			) {
-				$request['payment_method_types'] = [ $selected_upe_payment_type, Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID ];
+			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
+				$is_link_enabled = in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, \WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true );
+				if ( $is_link_enabled ) {
+					$request['payment_method_types'][] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+				}
 			}
 		}
 		if ( $payment_country && ! WC_Payments::get_gateway()->is_in_dev_mode() ) {

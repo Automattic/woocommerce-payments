@@ -269,8 +269,7 @@ jQuery( function ( $ ) {
 		document
 			.getElementById( 'billing_email' )
 			.addEventListener( 'keyup', ( event ) => {
-				const email = event.target.value;
-				linkAutofill.launch( { email } );
+				linkAutofill.launch( { email: event.target.value } );
 			} );
 
 		linkAutofill.on( 'autofill', ( event ) => {
@@ -361,8 +360,7 @@ jQuery( function ( $ ) {
 			api.saveUPEAppearance( appearance );
 		}
 
-		const strp = api.getStripe();
-		elements = strp.elements( {
+		elements = api.getStripe().elements( {
 			clientSecret,
 			appearance,
 			fonts: getFontRulesFromPage(),

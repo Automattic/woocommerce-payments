@@ -25,6 +25,7 @@ export default class WCPayAPI {
 		this.stripe = null;
 		this.stripePlatform = null;
 		this.request = request;
+		this.apiVersion = '2020-08-27';
 	}
 
 	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
@@ -35,8 +36,8 @@ export default class WCPayAPI {
 		}
 		if ( betas ) {
 			options.betas = betas;
-			options.apiVersion = '2020-08-27;link_beta=v1';
 		}
+		options.apiVersion = this.apiVersion + ';link_beta=v1';
 
 		return new Stripe( publishableKey, options );
 	}

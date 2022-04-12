@@ -41,6 +41,9 @@ const ExpressCheckout = () => {
 	] = useEnabledPaymentMethodIds();
 
 	const updateStripeLinkCheckout = ( isEnabled ) => {
+		//this handles the link payment method checkbox. If it's enable we should add link to the rest of the
+		//enabled payment method.
+		// If false - we should remove link payment method from the enabled payment methods
 		if ( isEnabled ) {
 			updateEnabledMethodIds( [
 				...new Set( [ ...enabledMethodIds, 'link' ] ),
