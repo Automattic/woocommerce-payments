@@ -44,8 +44,8 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$account                  = new WC_Payments_Account( $mock_api_client );
-		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $account );
+		$mock_wcpay_account       = $this->createMock( WC_Payments_Account::class );
+		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account );
 		$token_service            = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client );
 		$rate_limiter             = new Session_Rate_Limiter( 'wcpay_card_declined_registry', 5, 60 );
@@ -53,7 +53,7 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$mock_api_client,
-			$account,
+			$mock_wcpay_account,
 			$customer_service,
 			$token_service,
 			$action_scheduler_service,
