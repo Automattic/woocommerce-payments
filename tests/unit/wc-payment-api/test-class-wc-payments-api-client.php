@@ -128,8 +128,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$mock_fingerprinting
 			->expects( $this->exactly( 1 ) )
-			->method( 'get_hashed_data_for_order' )
-			->with( 1 );
+			->method( 'get_hashed_data_for_customer' );
 
 		$this->set_http_mock_response(
 			200,
