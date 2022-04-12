@@ -214,11 +214,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_stripe_link_checkout_enabled'   => [
-						'description'       => __( 'If WooCommerce Payments stripe link checkout should be enabled.', 'woocommerce-payments' ),
-						'type'              => 'boolean',
-						'validate_callback' => 'rest_validate_request_arg',
-					],
 				],
 			]
 		);
@@ -368,7 +363,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_platform_checkout_enabled'      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'platform_checkout_custom_message'  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'is_fraud_prevention_enabled'       => 'yes' === $this->wcpay_gateway->get_option( 'is_fraud_prevention_enabled' ),
-				'is_stripe_link_checkout_enabled'   => 'yes' === $this->wcpay_gateway->get_option( 'stripe_link_checkout' ),
 			]
 		);
 	}
@@ -394,7 +388,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_platform_checkout_enabled( $request );
 		$this->update_platform_checkout_custom_message( $request );
 		$this->update_is_fraud_protection_enabled( $request );
-		$this->update_is_stripe_link_checkout_enabled( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -681,19 +674,5 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$platform_checkout_custom_message = $request->get_param( 'platform_checkout_custom_message' );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_custom_message', $platform_checkout_custom_message );
-	}
-
-	/**
-	 * Updates the "stripe link checkout" enable/disable settings.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	private function update_is_stripe_link_checkout_enabled( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'is_stripe_link_checkout_enabled' ) ) {
-			return;
-		}
-
-		$is_stripe_link_checkout_enabled = $request->get_param( 'is_stripe_link_checkout_enabled' );
-		$this->wcpay_gateway->update_option( 'stripe_link_checkout', $is_stripe_link_checkout_enabled ? 'yes' : 'no' );
 	}
 }

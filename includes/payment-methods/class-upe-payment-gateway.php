@@ -926,11 +926,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 		}
 
-		if ( in_array( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) &&
-			'yes' === $this->get_option( 'stripe_link_checkout' ) ) {
-			$enabled_payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		}
-
 		return $enabled_payment_methods;
 	}
 

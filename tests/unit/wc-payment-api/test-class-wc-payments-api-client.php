@@ -1054,6 +1054,119 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected_status, $result->get_status() );
 	}
 
+
+	/**
+	 * Test a successful call to update_intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_update_intention_with_link_payment_method_success() {
+		$intention_id            = 'test_intention_id';
+		$currency_code           = 'eur';
+		$customer_id             = 'cus_123abc';
+		$expected_amount         = 123;
+		$expected_status         = 'succeeded';
+		$selected_payment_method = 'card';
+		$payment_country         = 'US';
+		$save_payment_method     = true;
+		$metadata                = [
+			'customer_name'  => 'Testy Testerson',
+			'customer_email' => 'test@test.com',
+			'site_url'       => 'http://example.org',
+			'order_id'       => 1,
+			'order_key'      => 'test_key',
+			'payment_type'   => 'single',
+		];
+		$level3_data             = [
+			'merchant_reference' => 'abc123',
+			'line_items'         => [
+				[
+					'discount_amount'     => 0,
+					'product_code'        => 'free-hug',
+					'product_description' => 'Free hug',
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'unit_cost'           => 0,
+				],
+			],
+		];
+
+		\WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ 'card', 'link' ] );
+
+		// Mock the HTTP client manually to assert we are sending the correct args.
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $data ) use ( $intention_id ) : bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id, 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
+				wp_json_encode(
+					[
+						'test_mode'            => false,
+						'amount'               => $expected_amount,
+						'currency'             => $currency_code,
+						'metadata'             => $metadata,
+						'level3'               => $level3_data,
+						'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace(
+							[
+								'https://',
+								'http://',
+							],
+							'',
+							$metadata['site_url']
+						),
+						'payment_method_types' => [ 'card', 'link' ],
+						'payment_country'      => 'US',
+						'customer'             => $customer_id,
+						'setup_future_usage'   => 'off_session',
+					]
+				),
+				true,
+				false
+			)
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode(
+							[
+								'id'            => $intention_id,
+								'amount'        => $expected_amount,
+								'created'       => 1557224304,
+								'status'        => $expected_status,
+								'client_secret' => 'test_client_secret',
+								'currency'      => $currency_code,
+								'charges'       => [
+									'total_count' => 0,
+									'data'        => [],
+								],
+							]
+						),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
+
+		$this->payments_api_client->update_intention(
+			$intention_id,
+			$expected_amount,
+			$currency_code,
+			$save_payment_method,
+			$customer_id,
+			$metadata,
+			$level3_data,
+			$selected_payment_method,
+			$payment_country
+		);
+	}
+
 	/**
 	 * @dataProvider data_request_with_level3_data
 	 */

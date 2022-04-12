@@ -17,6 +17,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
+use WCPay\Payment_Methods\Link_Payment_Method;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
@@ -175,7 +176,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24' ],
+			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24', 'link' ],
 			$enabled_method_ids
 		);
 	}
