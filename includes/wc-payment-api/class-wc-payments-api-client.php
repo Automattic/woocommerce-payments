@@ -336,9 +336,9 @@ class WC_Payments_API_Client {
 	 * Unlike `update_intention`, this method allows to update the fields without
 	 * requiring amount, currency, and other mandatory params to be present.
 	 *
-	 * @param string $intention_id - The ID of the intention to update.
-	 * @param array  $metadata     - Meta data values to be sent along with payment intent creation.
-	 * @param bolean $remove_receipt_email - Whether to remove the receipt_email.
+	 * @param string  $intention_id - The ID of the intention to update.
+	 * @param array   $metadata     - Meta data values to be sent along with payment intent creation.
+	 * @param boolean $remove_receipt_email - Whether to remove the receipt_email.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
