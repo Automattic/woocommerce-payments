@@ -7,6 +7,8 @@
 
 namespace WCPay\Fraud_Prevention;
 
+use WC_Geolocation;
+
 /**
  * Class Buyer_Fingerprinting_Service
  */
@@ -55,16 +57,12 @@ class Buyer_Fingerprinting_Service {
 	/**
 	 * Returns fraud prevention data for an order.
 	 *
-	 * @param int $order_id The WC order id.
-	 *
 	 * @return string[] An array of hashed data for an order.
 	 */
-	public function get_hashed_data_for_order( int $order_id ): array {
-		$order = wc_get_order( $order_id );
-
+	public function get_hashed_data_for_customer(): array {
 		return [
-			'shopper_ip_hash'        => $this->hash_data_for_fraud_prevention( $order->get_customer_ip_address() ),
-			'shopper_useragent_hash' => $this->hash_data_for_fraud_prevention( strtolower( $order->get_customer_user_agent() ) ),
+			'fraud_prevention_data_shopper_ip_hash' => $this->hash_data_for_fraud_prevention( WC_Geolocation::get_ip_address() ),
+			'fraud_prevention_data_shopper_ua_hash' => $this->hash_data_for_fraud_prevention( strtolower( wc_get_user_agent() ) ),
 		];
 	}
 }
