@@ -2010,7 +2010,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$merged_metadata      = array_merge( (array) $metadata_from_order, (array) $metadata_from_intent ); // prioritize metadata from mobile app.
 			$remove_receipt_email = true;
 
-			$this->payments_api_client->prepare_intention_for_capture(
+			$this->payments_api_client->update_intention_metadata(
 				$intent_id,
 				$merged_metadata,
 				$remove_receipt_email
