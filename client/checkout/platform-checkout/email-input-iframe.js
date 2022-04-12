@@ -285,7 +285,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
 				);
-				api.initPlatformCheckout().then( ( response ) => {
+				api.initPlatformCheckout(
+					e.data.platformCheckoutUserSession
+				).then( ( response ) => {
 					if ( 'success' === response.result ) {
 						window.location = response.url;
 					} else {
