@@ -7,7 +7,6 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Database_Cache;
-use WCPay\Exceptions\API_Exception;
 
 /**
  * WC_Payments_Onboarding_Service unit tests.
@@ -133,14 +132,6 @@ class WC_Payments_Onboarding_Service_Test extends WP_UnitTestCase {
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 
 		$this->onboarding_service = new WC_Payments_Onboarding_Service( $this->mock_api_client, $this->mock_database_cache );
-	}
-
-	/**
-	 * Post-test teardown
-	 */
-	public function tear_down() {
-		parent::tear_down();
-		delete_option( Database_Cache::BUSINESS_TYPES_KEY );
 	}
 
 	public function test_get_required_verification_information() {
