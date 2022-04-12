@@ -20,10 +20,11 @@ describe( 'WCPayAPI', () => {
 		getConfig.mockReturnValue( 'foo' );
 
 		const api = new WCPayAPI( {}, request );
-		api.initPlatformCheckout();
+		api.initPlatformCheckout( 'qwerty123' );
 
 		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
 			_wpnonce: 'foo',
+			user_session: 'qwerty123',
 		} );
 	} );
 } );
