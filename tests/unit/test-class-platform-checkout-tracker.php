@@ -32,18 +32,30 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 
 		$this->http_client_stub = $this->getMockBuilder( WC_Payments_Http::class )->disableOriginalConstructor()->setMethods( [ 'wpcom_json_api_request_as_user' ] )->getMock();
 		$this->tracker          = new WCPay\Platform_Checkout_Tracker( $this->http_client_stub );
+
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
 	}
 
-	public function test_should_track_obeys_platform_checkout_flag() {
+	public function tear_down() {
+		// Restore the cache service in the main class.
+		WC_Payments::set_database_cache( $this->_cache );
+
+		parent::tear_down();
+	}
+
+	public function test_tracks_obeys_platform_checkout_flag() {
 		$this->set_is_platform_checkout_eligible( false );
-		$this->assertFalse( $this->tracker->should_track() );
+		$this->assertFalse( $this->tracker->should_enable_tracking( null, null ) );
 	}
 
 	public function test_does_not_track_admin_pages() {
 		wp_set_current_user( 1 );
 		$this->set_is_platform_checkout_eligible( true );
 		$this->set_is_admin( true );
-		$this->assertFalse( $this->tracker->should_track() );
+		$this->assertFalse( $this->tracker->should_enable_tracking( null, null ) );
 	}
 
 	public function test_does_track_non_admins() {
@@ -58,7 +70,7 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 
 		foreach ( $all_roles as $role ) {
 			wp_get_current_user()->set_role( $role );
-			$this->assertTrue( $this->tracker->should_track() );
+			$this->assertTrue( $this->tracker->should_enable_tracking( null, null ) );
 		}
 	}
 
@@ -86,11 +98,6 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 	 * @param $account
 	 */
 	private function set_is_platform_checkout_eligible( $is_platform_checkout_eligible ) {
-		add_option(
-			WC_Payments_Account::ACCOUNT_OPTION,
-			[
-				'account' => [ 'platform_checkout_eligible' => $is_platform_checkout_eligible ],
-			]
-		);
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_platform_checkout_eligible ] );
 	}
 }
