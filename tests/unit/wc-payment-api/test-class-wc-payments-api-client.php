@@ -958,12 +958,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				),
 				wp_json_encode(
 					[
-						'test_mode'   => false,
-						'amount'      => $expected_amount,
-						'currency'    => $currency_code,
-						'metadata'    => [],
-						'level3'      => [],
-						'description' => 'Online Payment for example.org',
+						'test_mode'     => false,
+						'amount'        => $expected_amount,
+						'currency'      => $currency_code,
+						'receipt_email' => '',
+						'metadata'      => [],
+						'level3'        => [],
+						'description'   => 'Online Payment for example.org',
 					]
 				),
 				true,
@@ -1057,6 +1058,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						'test_mode'            => false,
 						'amount'               => $expected_amount,
 						'currency'             => $currency_code,
+						'receipt_email'        => '',
 						'metadata'             => $metadata,
 						'level3'               => $level3_data,
 						'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace(

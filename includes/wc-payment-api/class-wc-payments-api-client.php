@@ -309,12 +309,14 @@ class WC_Payments_API_Client {
 		$selected_upe_payment_type = '',
 		$payment_country = null
 	) {
+		// 'receipt_email' is set to prevent Stripe from sending receipts (when intent is created outside WCPay).
 		$request = [
-			'amount'      => $amount,
-			'currency'    => $currency_code,
-			'metadata'    => $metadata,
-			'level3'      => $level3,
-			'description' => $this->get_intent_description( $metadata['order_id'] ?? 0 ),
+			'amount'        => $amount,
+			'currency'      => $currency_code,
+			'receipt_email' => '',
+			'metadata'      => $metadata,
+			'level3'        => $level3,
+			'description'   => $this->get_intent_description( $metadata['order_id'] ?? 0 ),
 		];
 
 		if ( '' !== $selected_upe_payment_type ) {
@@ -338,19 +340,21 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Updates an intention's metadata.
-	 * Unlike `update_intention`, this method allows to update metadata without
+	 * Updates an intention's metadata and sets receipt email to empty.
+	 * Unlike `update_intention`, this method allows updating metadata without
 	 * requiring amount, currency, and other mandatory params to be present.
 	 *
 	 * @param string $intention_id - The ID of the intention to update.
-	 * @param array  $metadata     - Meta data values to be sent along with payment intent creation.
+	 * @param array  $metadata     - Metadata values to be sent along with payment intent creation.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
 	 */
-	public function update_intention_metadata( $intention_id, $metadata ) {
+	public function prepare_intention_for_capture( $intention_id, $metadata ) {
+		// 'receipt_email' is set to prevent Stripe from sending receipts (when intent is created outside WCPay).
 		$request = [
-			'metadata' => $metadata,
+			'receipt_email' => '',
+			'metadata'      => $metadata,
 		];
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
@@ -403,9 +407,10 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown on intention capture failure.
 	 */
 	public function capture_intention( $intention_id, $amount, $level3 = [] ) {
-		$request                      = [];
-		$request['amount_to_capture'] = $amount;
-		$request['level3']            = $level3;
+		$request = [
+			'amount_to_capture' => $amount,
+			'level3'            => $level3,
+		];
 
 		$response_array = $this->request_with_level3_data(
 			$request,
