@@ -11,12 +11,11 @@
 class WC_Payments_Test extends WP_UnitTestCase {
 
 	const EXPECTED_PLATFORM_CHECKOUT_HOOKS = [
-		'wc_ajax_wcpay_init_platform_checkout'      => [ WC_Payments::class, 'ajax_init_platform_checkout' ],
-		'determine_current_user'                    => [
+		'wc_ajax_wcpay_init_platform_checkout' => [ WC_Payments::class, 'ajax_init_platform_checkout' ],
+		'determine_current_user'               => [
 			WC_Payments::class,
 			'determine_current_user_for_platform_checkout',
 		],
-		'woocommerce_store_api_disable_nonce_check' => '__return_true',
 	];
 
 	public function set_up() {
@@ -66,15 +65,11 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		}
 	}
 
-	public function test_it_registers_platform_checkout_hooks_except_nonce_check_if_feature_flag_is_enabled_but_not_in_dev_mode() {
+	public function test_it_registers_platform_checkout_hooks_if_feature_flag_is_enabled_but_not_in_dev_mode() {
 		$this->set_platform_checkout_enabled( true );
 
 		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
-			if ( 'woocommerce_store_api_disable_nonce_check' === $hook ) {
-				$this->assertFalse( has_filter( $hook, $callback ) );
-			} else {
-				$this->assertEquals( 10, has_filter( $hook, $callback ) );
-			}
+			$this->assertEquals( 10, has_filter( $hook, $callback ) );
 		}
 	}
 
