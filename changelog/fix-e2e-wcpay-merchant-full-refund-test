@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Updates refund order note with reason format to fix failing E2E tests.

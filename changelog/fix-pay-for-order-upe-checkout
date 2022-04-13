@@ -1,5 +1,0 @@
-Significance: minor
-Type: fix
-
-Fix - Using any other payment methods apart from WooCommerce Payments in "Pay for order" 
-form triggers validation errors when UPE checkout is enabled.

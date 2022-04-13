@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Record the event wcpay_kyc_reminder_merchant_returned in Tracks when visiting the URL for redirecting to Stripe.
