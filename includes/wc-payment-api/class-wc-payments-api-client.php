@@ -334,9 +334,9 @@ class WC_Payments_API_Client {
 			$request['setup_future_usage'] = 'off_session';
 		}
 
-		$response = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
 
-		return $this->deserialize_intention_object_from_array( $response );
+		return $this->deserialize_intention_object_from_array( $response_array );
 	}
 
 	/**
@@ -357,9 +357,9 @@ class WC_Payments_API_Client {
 			'metadata'      => $metadata,
 		];
 
-		$response = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
 
-		return $this->deserialize_intention_object_from_array( $response );
+		return $this->deserialize_intention_object_from_array( $response_array );
 	}
 
 	/**
