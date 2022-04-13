@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix placeholders not being injected into the New Receipt email

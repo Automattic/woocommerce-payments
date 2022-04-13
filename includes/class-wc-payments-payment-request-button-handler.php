@@ -150,7 +150,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return void
 	 */
 	public function set_session() {
-		if ( ! $this->is_product() || ( isset( WC()->session ) && WC()->session->has_session() ) ) {
+		// Don't set session cookies on product pages to allow for caching when payment request
+		// buttons are disabled. But keep cookies if there is already an active WC session in place.
+		if (
+			! ( $this->is_product() && $this->should_show_payment_request_button() )
+			|| ( isset( WC()->session ) && WC()->session->has_session() )
+		) {
 			return;
 		}
 
@@ -224,7 +229,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$product  = $this->get_product();
 		$currency = get_woocommerce_currency();
 
-		if ( 'variable' === $product->get_type() ) {
+		if ( 'variable' === $product->get_type() || 'variable-subscription' === $product->get_type() ) {
 			$variation_attributes = $product->get_variation_attributes();
 			$attributes           = [];
 
@@ -662,6 +667,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display the payment request button.
 	 */
 	public function display_payment_request_button_html() {
+		if ( ! $this->should_show_payment_request_button() ) {
+			return;
+		}
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 			<div id="wcpay-payment-request-button">
@@ -675,6 +683,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display payment request button separator.
 	 */
 	public function display_payment_request_button_separator_html() {
+		if ( ! $this->should_show_payment_request_button() ) {
+			return;
+		}
 		?>
 		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php
@@ -912,7 +923,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				throw new Exception( sprintf( __( 'Product with the ID (%d) cannot be found.', 'woocommerce-payments' ), $product_id ) );
 			}
 
-			if ( 'variable' === $product->get_type() && isset( $_POST['attributes'] ) ) {
+			if ( ( 'variable' === $product->get_type() || 'variable-subscription' === $product->get_type() ) && isset( $_POST['attributes'] ) ) {
 				$attributes = wc_clean( wp_unslash( $_POST['attributes'] ) );
 
 				$data_store   = WC_Data_Store::load( 'product' );

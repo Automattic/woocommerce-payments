@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Database_Cache;
+
 /**
  * Validates dependencies (core, plugins, versions) for WCPAY
  * Used in the plugin main class for validation.
@@ -319,7 +321,7 @@ class WC_Payments_Dependency_Service {
 	 * @return bool True if the cache data exists in wp_options.
 	 */
 	private static function has_cached_account_connection(): bool {
-		$account_data = get_option( 'wcpay_account_data' );
-		return isset( $account_data['account'] ) && is_array( $account_data['account'] );
+		$account_data = get_option( Database_Cache::ACCOUNT_KEY );
+		return isset( $account_data['data'] ) && is_array( $account_data['data'] ) && ! empty( $account_data['data'] );
 	}
 }

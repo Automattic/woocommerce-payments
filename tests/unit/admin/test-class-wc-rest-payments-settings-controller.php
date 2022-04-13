@@ -17,6 +17,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
@@ -62,6 +63,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_wcpay_account;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -77,8 +85,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$account                  = new WC_Payments_Account( $this->mock_api_client );
-		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $account );
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account );
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
@@ -86,7 +94,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
-			$account,
+			$this->mock_wcpay_account,
 			$customer_service,
 			$token_service,
 			$action_scheduler_service,
@@ -121,7 +129,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 
 		$this->upe_gateway    = new UPE_Payment_Gateway(
 			$this->mock_api_client,
-			$account,
+			$this->mock_wcpay_account,
 			$customer_service,
 			$token_service,
 			$action_scheduler_service,
@@ -134,16 +142,21 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->method( 'is_server_connected' )
 			->willReturn( true );
-		$this->mock_api_client
+
+		$this->mock_wcpay_account
 			->expects( $this->any() )
-			->method( 'get_account_data' )
-			->willReturn(
-				[
-					'card_present_eligible' => true,
-					'is_live'               => true,
-					'fees'                  => $mock_payment_methods,
-				]
-			);
+			->method( 'get_fees' )
+			->willReturn( $mock_payment_methods );
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'is_card_present_eligible' )
+			->willReturn( true );
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_is_live' )
+			->willReturn( true );
 	}
 
 	public function tear_down() {
@@ -406,8 +419,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_update_settings_saves_account() {
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'update_account' )
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'update_stripe_account' )
 			->with(
 				$this->equalTo(
 					[
@@ -476,8 +489,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function test_update_settings_does_not_save_account_if_not_supplied() {
 		$request = new WP_REST_Request();
 
-		$this->mock_api_client->expects( $this->never() )
-			->method( 'update_account' )
+		$this->mock_wcpay_account->expects( $this->never() )
+			->method( 'update_stripe_account' )
 			->with( $this->anything() );
 
 		$this->controller->update_settings( $request );
