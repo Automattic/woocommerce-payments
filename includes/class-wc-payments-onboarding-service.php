@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,9 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Onboarding_Service {
 
-	const BUSINESS_TYPES_OPTION          = 'wcpay_business_types_data';
-	const BUSINESS_TYPES_RETRIEVAL_ERROR = 'error';
-
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -27,12 +25,21 @@ class WC_Payments_Onboarding_Service {
 	private $payments_api_client;
 
 	/**
+	 * Cache util for managing onboarding data.
+	 *
+	 * @var Database_Cache
+	 */
+	private $database_cache;
+
+	/**
 	 * Class constructor
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
+	 * @param Database_Cache         $database_cache      Database cache util.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache ) {
 		$this->payments_api_client = $payments_api_client;
+		$this->database_cache      = $database_cache;
 	}
 
 	/**
@@ -47,33 +54,32 @@ class WC_Payments_Onboarding_Service {
 			return [];
 		}
 
-		// If we want to force a refresh, we can skip this logic and go straight to the server request.
-		if ( ! $force_refresh ) {
-			$business_types = $this->read_business_types_from_cache();
+		$refreshed = false;
 
-			if ( false !== $business_types && is_array( $business_types ) && ! empty( $business_types ) ) {
+		$business_types = $this->database_cache->get_or_add(
+			Database_Cache::BUSINESS_TYPES_KEY,
+			function () {
+				try {
+					$business_types = $this->payments_api_client->get_onboarding_business_types();
+				} catch ( API_Exception $e ) {
+					// Return false to signal retrieval error.
+					return false;
+				}
+
+				if ( ! $this->is_valid_cached_business_types( $business_types ) ) {
+					return false;
+				}
+
 				return $business_types;
-			}
+			},
+			[ $this, 'is_valid_cached_business_types' ],
+			$force_refresh,
+			$refreshed
+		);
 
-			// If the option contains the error value, return false early and do not attempt another API call.
-			if ( self::BUSINESS_TYPES_RETRIEVAL_ERROR === $business_types ) {
-				return false;
-			}
-		}
-
-		try {
-			$business_types = $this->payments_api_client->get_onboarding_business_types();
-		} catch ( API_Exception $e ) {
-			// Failed to retrieve the data. Exception logged in HTTP client.
-			// Rate limit the failures by setting a transient for a short time.
-			$this->cache_business_types( self::BUSINESS_TYPES_RETRIEVAL_ERROR, 2 * MINUTE_IN_SECONDS );
-
-			// Return false to signal retrieval error.
+		if ( null === $business_types ) {
 			return false;
 		}
-
-		// Cache the details so we don't call the server every time.
-		$this->cache_business_types( $business_types );
 
 		return $business_types;
 	}
@@ -92,46 +98,22 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Caches the business types for a period of time.
+	 * Check whether the business types fetched from the cache are valid.
 	 *
-	 * @param string|array $business_types - The business types to cache, or the business types retrieval error.
-	 * @param int          $expiration     - The length of time to cache the data, expressed in seconds.
-	 */
-	private function cache_business_types( $business_types, int $expiration = null ) {
-		if ( null === $expiration ) {
-			$expiration = WEEK_IN_SECONDS;
-		}
-
-		// Add the business types and the expiry time to the array we're caching.
-		$business_types_cache = [
-			'business_types' => $business_types,
-			'expires'        => time() * $expiration,
-		];
-
-		$result = update_option( self::BUSINESS_TYPES_OPTION, $business_types_cache, 'no' );
-
-		return $result;
-	}
-
-	/**
-	 * Read the business types from the WP option we cache it in.
+	 * @param array|bool|string $business_types The business types returned from the cache.
 	 *
-	 * @return array|bool
+	 * @return bool
 	 */
-	private function read_business_types_from_cache() {
-		$business_types_cache = get_option( self::BUSINESS_TYPES_OPTION );
-
-		if ( false === $business_types_cache || ! isset( $business_types_cache['business_types'] ) || ! isset( $business_types_cache['expires'] ) ) {
-			// No option found or the data isn't in the shape we expect.
+	public function is_valid_cached_business_types( $business_types ): bool {
+		if ( null === $business_types || false === $business_types ) {
 			return false;
 		}
 
-		// Set $account to false if the cache has expired, triggering another fetch.
-		if ( $business_types_cache['expires'] < time() ) {
+		// Non-array values are not expected, and we expect a non-empty array.
+		if ( ! is_array( $business_types ) || empty( $business_types ) ) {
 			return false;
 		}
 
-		// We have fresh business types data in the cache, so return it.
-		return $business_types_cache['business_types'];
+		return true;
 	}
 }
