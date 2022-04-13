@@ -1,0 +1,5 @@
+Significance: patch
+Type: add
+Comment: Pass along user session from the platform checkout when initializing it.
+
+
