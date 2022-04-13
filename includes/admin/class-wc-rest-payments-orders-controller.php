@@ -159,7 +159,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				'id'     => $intent->get_id(),
 			];
 
-			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order );
+			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false );
 
 			if ( 'succeeded' !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
@@ -176,7 +176,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
 			// Actualize order status.
-			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $intent_status, $charge_id );
+			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'], $charge_id );
 
 			return rest_ensure_response(
 				[
@@ -193,10 +193,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Returns customer id from order. Create or update customer if needed.
 	 *
+	 * @deprecated 3.9.0
+	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function create_customer( $request ) {
+		wc_deprecated_function( __FUNCTION__, '3.9.0' );
 		try {
 			$order_id = $request['order_id'];
 

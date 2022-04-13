@@ -13,8 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC Payments Features class
  */
 class WC_Payments_Features {
-	const UPE_FLAG_NAME = '_wcpay_feature_upe';
-
+	const UPE_FLAG_NAME                 = '_wcpay_feature_upe';
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME = '_wcpay_feature_subscriptions';
 
 	/**
@@ -94,8 +93,18 @@ class WC_Payments_Features {
 	 *
 	 * @return bool
 	 */
-	public static function is_platform_checkout_enabled() {
-		return '1' === get_option( '_wcpay_feature_platform_checkout', '0' );
+	public static function is_platform_checkout_eligible() {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
+		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
+	}
+
+	/**
+	 * Checks whether documents section is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_documents_section_enabled() {
+		return '1' === get_option( '_wcpay_feature_documents', '0' );
 	}
 
 	/**
@@ -110,7 +119,8 @@ class WC_Payments_Features {
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
-				'platformCheckout'        => self::is_platform_checkout_enabled(),
+				'platformCheckout'        => self::is_platform_checkout_eligible(),
+				'documents'               => self::is_documents_section_enabled(),
 			]
 		);
 	}

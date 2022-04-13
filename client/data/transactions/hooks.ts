@@ -14,12 +14,7 @@ import { STORE_NAME } from '../constants';
 // TODO: refine this type with more detailed information.
 export interface Transaction {
 	amount: number;
-	order: {
-		subscriptions?: { number: number; url: string }[];
-		url?: string;
-		customer_url?: string;
-		number?: number;
-	};
+	order: OrderDetails;
 	charge_id: string;
 	fees: number;
 	net: number;
@@ -53,7 +48,7 @@ export interface Transaction {
 
 interface Transactions {
 	transactions: Transaction[];
-	transactionsError: unknown;
+	transactionsError?: string;
 	isLoading: boolean;
 }
 interface TransactionsSummary {

@@ -619,4 +619,48 @@ class WC_Payments_Utils {
 			admin_url( 'admin.php' )
 		);
 	}
+
+	/**
+	 * Retrieve last WC refund from order ID.
+	 *
+	 * @param int $order_id WC Order ID.
+	 *
+	 * @return null|WC_Order_Refund
+	 */
+	public static function get_last_refund_from_order_id( $order_id ) {
+		$wc_refunds = wc_get_orders(
+			[
+				'type'    => 'shop_order_refund',
+				'parent'  => $order_id,
+				'limit'   => 1,
+				'orderby' => 'ID',
+				'order'   => 'DESC',
+			]
+		);
+
+		if ( is_array( $wc_refunds ) && ! empty( $wc_refunds ) && is_a( $wc_refunds[0], WC_Order_Refund::class ) ) {
+			return $wc_refunds[0];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Check to see if the current user is in onboarding experiment treatment mode.
+	 *
+	 * @return bool
+	 */
+	public static function is_in_onboarding_treatment_mode() {
+		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+			return false;
+		}
+
+		$abtest = new \WCPay\Experimental_Abtest(
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			'woocommerce',
+			'yes' === get_option( 'woocommerce_allow_tracking' )
+		);
+
+		return 'treatment' === $abtest->get_variation( 'woo_wcpayments_tasklist_click_introducing_select_business_type_202203_v1' );
+	}
 }

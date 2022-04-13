@@ -14,13 +14,26 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 		'_wcpay_feature_upe'                     => 'upe',
 		'_wcpay_feature_upe_settings_preview'    => 'upeSettingsPreview',
 		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
+		'_wcpay_feature_documents'               => 'documents',
 	];
+
+	public function set_up() {
+		// Mock the main class's cache service.
+		$this->_cache     = WC_Payments::get_database_cache();
+		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		WC_Payments::set_database_cache( $this->mock_cache );
+	}
 
 	public function tear_down() {
 		// Remove pre_option filters.
 		foreach ( array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) as $flag ) {
 			remove_all_filters( 'pre_option_' . $flag );
 		}
+
+		// Restore the cache service in the main class.
+		WC_Payments::set_database_cache( $this->_cache );
+
+		parent::tear_down();
 	}
 
 	/**
@@ -71,34 +84,14 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_customer_multi_currency_enabled() );
 	}
 
-	public function test_is_platform_checkout_is_returned_as_true() {
-		update_option( '_wcpay_feature_platform_checkout', '1' );
-		$this->assertTrue( WC_Payments_Features::is_platform_checkout_enabled() );
+	public function test_is_platform_checkout_eligible_returns_true() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+		$this->assertTrue( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
-	/**
-	 * @dataProvider is_platform_checkout_falsy_value_provider
-	 */
-	public function test_is_platform_checkout_is_returned_as_false_if_not_equal_1() {
-		update_option( '_wcpay_feature_platform_checkout', '0' );
-		$this->assertFalse( WC_Payments_Features::is_platform_checkout_enabled() );
-	}
-
-	public function test_is_platform_checkout_is_returned_as_false_if_missing() {
-		delete_option( '_wcpay_feature_platform_checkout' );
-		$this->assertFalse( WC_Payments_Features::is_platform_checkout_enabled() );
-	}
-
-	public function is_platform_checkout_falsy_value_provider() {
-		return [
-			[ '0' ],
-			[ 0 ],
-			[ null ],
-			[ false ],
-			'(bool) true is not strictly equal to (int) 1' => [ true ],
-			[ 'foo' ],
-			[ [] ],
-		];
+	public function test_is_platform_checkout_eligible_returns_false() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
+		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
 	private function setup_enabled_flags( array $enabled_flags ) {
