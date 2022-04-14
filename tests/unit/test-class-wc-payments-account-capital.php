@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Database_Cache;
 
 /**
  * WC_Payments_Account unit tests for Capital-related methods.
@@ -24,6 +25,13 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 	 * @var WC_Payments_API_Client|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_api_client;
+
+	/**
+	 * Mock Database_Cache
+	 *
+	 * @var Database_Cache|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_database_cache;
 
 	/**
 	 * Previous user ID.
@@ -47,10 +55,12 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client = $this->createMock( 'WC_Payments_API_Client' );
 
+		$this->mock_database_cache = $this->createMock( Database_Cache::class );
+
 		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
 		$this->wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache ] )
 			->getMock();
 	}
 
@@ -67,7 +77,7 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 
 	public function test_maybe_redirect_to_capital_offer_will_run() {
 		$wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setConstructorArgs( [ $this->mock_api_client ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache ] )
 			->getMock();
 
 		$this->assertNotFalse(

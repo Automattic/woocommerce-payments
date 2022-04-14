@@ -6,6 +6,8 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 
 /**
  * WC_Payments_API_Client unit tests.
@@ -100,6 +102,109 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $expected_amount, $result->get_amount() );
 		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+
+	/**
+	 * Test a successful call to create_intention with fraud prevention enabled.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_intention_with_fingerprinting_data() {
+		$expected_amount = 123;
+		$expected_status = 'succeeded';
+
+		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
+		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
+
+		Buyer_Fingerprinting_Service::set_instance( $mock_fingerprinting );
+		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
+
+		$mock_fraud_prevention
+			->expects( $this->exactly( 1 ) )
+			->method( 'is_enabled' )
+			->with()
+			->willReturn( true );
+
+		$mock_fingerprinting
+			->expects( $this->exactly( 1 ) )
+			->method( 'hash_data_for_fraud_prevention' )
+			->with( 1 );
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'            => 'test_intention_id',
+				'amount'        => $expected_amount,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
+						],
+					],
+				],
+				'client_secret' => 'test_client_secret',
+				'currency'      => 'usd',
+			]
+		);
+
+		$result = $this->payments_api_client->create_intention(
+			$expected_amount,
+			'usd',
+			'pm_123456789',
+			1
+		);
+
+		$this->assertSame( $expected_amount, $result->get_amount() );
+		$this->assertSame( $expected_status, $result->get_status() );
+	}
+
+	/**
+	 * Test a successful call to create_intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_and_confirm_intention_failed_fraudulent_payment() {
+		$this->set_http_mock_response(
+			402,
+			[
+				'error' => [
+					'code'         => 'card_declined',
+					'decline_code' => 'fraudulent',
+					'message'      => 'Your card was declined.',
+				],
+			]
+		);
+
+		$fraud_prevention_service_mock = $this->getMockBuilder( Fraud_Prevention_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
+
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		// Assertion.
+		$fraud_prevention_service_mock
+			->expects( $this->once() )
+			->method( 'regenerate_token' );
+
+		$this->expectException( API_Exception::class );
+		$this->payments_api_client->create_and_confirm_intention(
+			123,
+			'usd',
+			'pm_123456789',
+			1
+		);
 	}
 
 	/**
@@ -853,12 +958,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				),
 				wp_json_encode(
 					[
-						'test_mode'   => false,
-						'amount'      => $expected_amount,
-						'currency'    => $currency_code,
-						'metadata'    => [],
-						'level3'      => [],
-						'description' => 'Online Payment for example.org',
+						'test_mode'     => false,
+						'amount'        => $expected_amount,
+						'currency'      => $currency_code,
+						'receipt_email' => '',
+						'metadata'      => [],
+						'level3'        => [],
+						'description'   => 'Online Payment for example.org',
 					]
 				),
 				true,
@@ -952,6 +1058,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						'test_mode'            => false,
 						'amount'               => $expected_amount,
 						'currency'             => $currency_code,
+						'receipt_email'        => '',
 						'metadata'             => $metadata,
 						'level3'               => $level3_data,
 						'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace(
@@ -1476,6 +1583,18 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$disputes_summary = $this->payments_api_client->get_disputes_summary();
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
+	}
+
+	public function test_get_platform_checkout_eligibility_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'platform_checkout_eligible' => true,
+			]
+		);
+
+		$response = $this->payments_api_client->get_platform_checkout_eligibility();
+		$this->assertTrue( $response['platform_checkout_eligible'] );
 	}
 
 	/** Test a successful fetch of a list of documents
