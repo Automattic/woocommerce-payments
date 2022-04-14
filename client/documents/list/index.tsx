@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { MouseEvent, useState } from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
@@ -19,6 +19,7 @@ import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';
 import { getDocumentUrl } from 'wcpay/utils';
+import VatFormModal from 'wcpay/vat/form-modal';
 
 interface Column extends TableCardColumn {
 	key: 'date' | 'type' | 'description' | 'download';
@@ -118,6 +119,20 @@ export const DocumentsList = (): JSX.Element => {
 		isLoading: isSummaryLoading,
 	} = useDocumentsSummary( getQuery() );
 
+	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
+
+	const handleDocumentDownloadClick = (
+		event: MouseEvent,
+		document: Document
+	) => {
+		if ( 'vat_invoice' === document.type ) {
+			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
+				setVatFormModalOpen( true );
+				event.preventDefault();
+			}
+		}
+	};
+
 	const columnsToDisplay = getColumns();
 
 	const totalRows = documentsSummary.count || 0;
@@ -150,6 +165,9 @@ export const DocumentsList = (): JSX.Element => {
 						rel="noopener noreferrer"
 						target="_blank"
 						style={ { display: 'inline' } }
+						onClick={ ( event ) =>
+							handleDocumentDownloadClick( event, document )
+						}
 					>
 						{ __( 'Download', 'woocommerce-payments' ) }
 					</a>
@@ -201,6 +219,10 @@ export const DocumentsList = (): JSX.Element => {
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
 				actions={ [] }
+			/>
+			<VatFormModal
+				isModalOpen={ isVatFormModalOpen }
+				setModalOpen={ setVatFormModalOpen }
 			/>
 		</Page>
 	);

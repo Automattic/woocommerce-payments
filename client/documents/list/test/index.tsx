@@ -4,7 +4,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { render, screen } from '@testing-library/react';
+import { createEvent, fireEvent, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery } from '@woocommerce/navigation';
 
@@ -27,6 +27,14 @@ const mockUseDocuments = useDocuments as jest.MockedFunction<
 const mockUseDocumentsSummary = useDocumentsSummary as jest.MockedFunction<
 	typeof useDocumentsSummary
 >;
+
+declare const global: {
+	wcpaySettings: {
+		accountStatus: {
+			hasSubmittedVatData: boolean;
+		};
+	};
+};
 
 const getMockDocuments: () => Document[] = () => [
 	{
@@ -146,5 +154,82 @@ describe( 'Documents list', () => {
 
 		expect( tableSummary ).toHaveLength( 1 );
 		expect( container ).toMatchSnapshot();
+	} );
+} );
+
+describe( 'Document download button', () => {
+	let downloadButton: HTMLElement;
+
+	describe( 'for VAT invoices', () => {
+		beforeEach( () => {
+			mockUseDocuments.mockReturnValue( {
+				documents: [
+					{
+						document_id: 'vat_invoice_123456',
+						date: '2020-01-02 17:46:02',
+						type: 'vat_invoice',
+						period_from: '2020-01-01',
+						period_to: '2020-01-31 23:59:59',
+					},
+				],
+				isLoading: false,
+				documentsError: undefined,
+			} );
+		} );
+
+		describe( 'if VAT data has been submitted', () => {
+			beforeEach( () => {
+				global.wcpaySettings = {
+					accountStatus: { hasSubmittedVatData: true },
+				};
+
+				render( <DocumentsList /> );
+
+				downloadButton = screen.getByRole( 'link', {
+					name: 'Download',
+				} );
+			} );
+
+			it( 'should download the document ', () => {
+				const clickEvent = createEvent.click( downloadButton );
+				fireEvent( downloadButton, clickEvent );
+
+				expect( clickEvent.defaultPrevented ).toBe( false );
+			} );
+		} );
+
+		describe( "if VAT data hasn't been submitted", () => {
+			beforeEach( () => {
+				global.wcpaySettings = {
+					accountStatus: { hasSubmittedVatData: false },
+				};
+
+				render( <DocumentsList /> );
+
+				downloadButton = screen.getByRole( 'link', {
+					name: 'Download',
+				} );
+			} );
+
+			it( 'should not download the document', () => {
+				const clickEvent = createEvent.click( downloadButton );
+				fireEvent( downloadButton, clickEvent );
+
+				expect( clickEvent.defaultPrevented ).toBe( true );
+			} );
+
+			it( 'open the VAT form modal', () => {
+				// Make sure the modal is not opened before clicking on the button.
+				expect(
+					screen.queryByRole( 'dialog', { name: 'VAT details' } )
+				).toBeNull();
+
+				user.click( downloadButton );
+
+				expect(
+					screen.getByRole( 'dialog', { name: 'VAT details' } )
+				).toBeVisible();
+			} );
+		} );
 	} );
 } );
