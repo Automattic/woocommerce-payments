@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Adds option to delete WC Refunds when WCPay refund fails.

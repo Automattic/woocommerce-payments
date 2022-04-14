@@ -1,5 +1,0 @@
-Significance: patch
-Type: update
-Comment: Add test_mode property to platform checkout events, behind feature flag
-
-

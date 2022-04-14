@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Switch to global functions to remove deprecation warnings originating from WooCommerce Blocks.
