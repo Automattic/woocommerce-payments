@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add error notices when transactions cannot be retrieved.
