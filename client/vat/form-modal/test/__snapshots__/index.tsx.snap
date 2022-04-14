@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`VAT form modal should render the VAT Form 1`] = `
+<div
+  aria-labelledby="components-modal-header-1"
+  class="components-modal__frame"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="components-modal__content"
+    role="document"
+  >
+    <div
+      class="components-modal__header"
+    >
+      <div
+        class="components-modal__header-heading-container"
+      >
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-1"
+        >
+          VAT details
+        </h1>
+      </div>
+    </div>
+    <p>
+      VAT Form
+    </p>
+  </div>
+</div>
+`;
