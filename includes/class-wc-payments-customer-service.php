@@ -61,17 +61,26 @@ class WC_Payments_Customer_Service {
 	private $account;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account
+	 *
+	 * @var WC_Payments_DB
+	 */
+	private $wcpay_db;
+
+	/**
 	 * Class constructor
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 * @param WC_Payments_Account    $account             WC_Payments_Account instance.
+	 * @param WC_Payments_DB         $wcpay_db            WC_Payments_DB instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_DB $wcpay_db ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
+		$this->wcpay_db            = $wcpay_db;
 
 		/*
-		 * Adds the WooComerce Payments customer ID found in the user session
+		 * Adds the WooCommerce Payments customer ID found in the user session
 		 * to the WordPress user as metadata.
 		 *
 		 * This is helpful in scenarios where the shopper begins the checkout flow
@@ -334,17 +343,16 @@ class WC_Payments_Customer_Service {
 	 * @return void
 	 */
 	public function handle_delete_all_cached_payment_methods() {
-		global $wpdb;
-
 		// Get last active users where payment methods cache key might be added. The payment method cache key expires after.
 		// 24 hours, so we will fetch active users from last 24 hours.
-		$users = $wpdb->get_results( $wpdb->prepare( "SELECT `user_id` FROM $wpdb->usermeta WHERE `meta_key` = %s AND `meta_value` >= %d", 'wc_last_active', strtotime( '-1 day' ) ), ARRAY_A );
+		$users = $this->wcpay_db->get_last_active_users();
 
-		if ( is_wp_error( $users ) ) {
-			$users = [];
-		}
-		foreach ( $users as $user ) {
-			$this->clear_cached_payment_methods_for_user( $user['user_id'] );
+		if ( is_array( $users ) ) {
+			foreach ( $users as $user ) {
+				if ( isset( $user['user_id'] ) ) {
+					$this->clear_cached_payment_methods_for_user( $user['user_id'] );
+				}
+			}
 		}
 	}
 

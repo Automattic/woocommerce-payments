@@ -52,7 +52,8 @@ class WC_REST_Payments_Tos_Controller_Test extends WP_UnitTestCase {
 			->getMock();
 
 		$mock_wcpay_account       = $this->createMock( WC_Payments_Account::class );
-		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account );
+		$mock_db_wrapper          = $this->createMock( WC_Payments_DB::class );
+		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account, $mock_db_wrapper );
 		$token_service            = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client );
 		$order_service            = new WC_Payments_Order_Service();

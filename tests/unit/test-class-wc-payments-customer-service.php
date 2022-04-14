@@ -43,10 +43,10 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_account    = $this->createMock( WC_Payments_Account::class );
-
-		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account );
+		$this->mock_api_client  = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_account     = $this->createMock( WC_Payments_Account::class );
+		$this->mock_db_wrapper  = $this->createMock( WC_Payments_DB::class );
+		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_db_wrapper );
 	}
 
 	/**

@@ -280,7 +280,7 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
 		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache );
-		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
+		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$db_helper );
 		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client );
