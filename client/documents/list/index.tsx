@@ -83,7 +83,6 @@ const getDocumentDescription = ( document: Document ) => {
 				);
 			}
 			return __( 'This is a test document', 'woocommerce-payments' );
-			break;
 		case 'vat_invoice':
 			if ( document.period_from && document.period_to ) {
 				return sprintf(
@@ -104,11 +103,9 @@ const getDocumentDescription = ( document: Document ) => {
 				'VAT invoice without proper period dates',
 				'woocommerce-payments'
 			);
-			break;
 
 		default:
 			return __( 'Unknown document type', 'woocommerce-payments' );
-			break;
 	}
 };
 
