@@ -82,6 +82,7 @@ class WC_Payments_Customer_Service {
 		 * purchases a subscription product.
 		 */
 		add_action( 'woocommerce_created_customer', [ $this, 'add_customer_id_to_user' ] );
+		add_action( 'wcpay_delete_all_cached_payment_methods', [ $this, 'handle_delete_all_cached_payment_methods' ] );
 	}
 
 	/**
@@ -325,6 +326,26 @@ class WC_Payments_Customer_Service {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Delete all cached payment methods. Used when account data is updated from WooCommerce Payments server.
+	 *
+	 * @return void
+	 */
+	public function handle_delete_all_cached_payment_methods() {
+		global $wpdb;
+
+		// Get last active users where payment methods cache key might be added. The payment method cache key expires after.
+		// 24 hours, so we will fetch active users from last 24 hours.
+		$users = $wpdb->get_results( $wpdb->prepare( "SELECT `user_id` FROM $wpdb->usermeta WHERE `meta_key` = %s AND `meta_value` >= %d", 'wc_last_active', strtotime( '-1 day' ) ), ARRAY_A );
+
+		if ( is_wp_error( $users ) ) {
+			$users = [];
+		}
+		foreach ( $users as $user ) {
+			$this->clear_cached_payment_methods_for_user( $user['user_id'] );
+		}
 	}
 
 	/**
