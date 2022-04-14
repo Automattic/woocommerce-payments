@@ -218,7 +218,7 @@ describe( 'Document download button', () => {
 				expect( clickEvent.defaultPrevented ).toBe( true );
 			} );
 
-			it( 'open the VAT form modal', () => {
+			it( 'should open the VAT form modal', () => {
 				// Make sure the modal is not opened before clicking on the button.
 				expect(
 					screen.queryByRole( 'dialog', { name: 'VAT details' } )
