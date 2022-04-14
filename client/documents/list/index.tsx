@@ -118,9 +118,9 @@ export const DocumentsList = (): JSX.Element => {
 
 	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
 
-	const handleDocumentDownloadClick = (
-		event: MouseEvent,
-		document: Document
+	const handleDocumentDownload = (
+		document: Document,
+		event: MouseEvent
 	) => {
 		if ( 'vat_invoice' === document.type ) {
 			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
@@ -163,7 +163,7 @@ export const DocumentsList = (): JSX.Element => {
 						target="_blank"
 						style={ { display: 'inline' } }
 						onClick={ ( event ) =>
-							handleDocumentDownloadClick( event, document )
+							handleDocumentDownload( document, event )
 						}
 					>
 						{ __( 'Download', 'woocommerce-payments' ) }
