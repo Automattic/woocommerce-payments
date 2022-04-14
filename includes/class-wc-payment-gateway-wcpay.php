@@ -2780,6 +2780,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Configure step button will show `Set up` instead of `Connect`.
 			return '';
 		}
+		$account_data = $this->account->get_cached_account_data();
+
+		// The onboarding is finished if account_id is set. `Set up` will be shown instead of `Connect`.
+		if ( isset( $account_data['account_id'] ) ) {
+			return '';
+		}
 		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
 	}
 
