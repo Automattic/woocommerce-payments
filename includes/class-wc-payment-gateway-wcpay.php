@@ -2048,7 +2048,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$metadata_from_order  = $this->get_metadata_from_order( $order, $payment_type );
 			$merged_metadata      = array_merge( (array) $metadata_from_order, (array) $metadata_from_intent ); // prioritize metadata from mobile app.
 
-			$this->payments_api_client->update_intention_metadata(
+			$this->payments_api_client->prepare_intention_for_capture(
 				$intent_id,
 				$merged_metadata
 			);
