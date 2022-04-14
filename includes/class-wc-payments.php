@@ -348,8 +348,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
 
-		add_action( 'updated_option', [ __CLASS__, 'possibly_update_wcpay_account_locale' ], 10, 3 );
-
 		// Add admin screens.
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
@@ -908,26 +906,6 @@ class WC_Payments {
 	 */
 	public static function is_network_saved_cards_enabled() {
 		return apply_filters( 'wcpay_force_network_saved_cards', false );
-	}
-
-	/**
-	 * Updates the WCPay Account locale with the current site language (WPLANG option).
-	 *
-	 * @param string $option_name Option name.
-	 * @param mixed  $old_value   The old option value.
-	 * @param mixed  $new_value   The new option value.
-	 */
-	public static function possibly_update_wcpay_account_locale( $option_name, $old_value, $new_value ) {
-		if ( 'WPLANG' === $option_name && self::get_account_service()->is_stripe_connected() ) {
-			try {
-				$account_settings = [
-					'locale' => $new_value ? $new_value : 'en_US',
-				];
-				self::get_payments_api_client()->update_account( $account_settings );
-			} catch ( Exception $e ) {
-				Logger::error( __( 'Failed to update Account locale. ', 'woocommerce-payments' ) . $e );
-			}
-		}
 	}
 
 	/**
