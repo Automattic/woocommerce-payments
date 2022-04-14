@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 
@@ -30,6 +31,7 @@ class WC_Payments_API_Client {
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
+	const PLATFORM_CHECKOUT_API        = 'accounts/platform_checkout';
 	const APPLE_PAY_API                = 'apple_pay';
 	const CHARGES_API                  = 'charges';
 	const CONN_TOKENS_API              = 'terminal/connection_tokens';
@@ -185,6 +187,7 @@ class WC_Payments_API_Client {
 	 * @param bool   $off_session                     - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 * @param array  $additional_parameters           - An array of any additional request parameters, particularly for additional payment methods.
 	 * @param array  $payment_methods                 - An array of payment methods that might be used for the payment.
+	 * @param string $cvc_confirmation                - The CVC confirmation for this payment method.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -201,7 +204,8 @@ class WC_Payments_API_Client {
 		$level3 = [],
 		$off_session = false,
 		$additional_parameters = [],
-		$payment_methods = null
+		$payment_methods = null,
+		$cvc_confirmation = null
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -231,6 +235,10 @@ class WC_Payments_API_Client {
 
 		if ( $save_payment_method_to_platform ) {
 			$request['save_payment_method_to_platform'] = 'true';
+		}
+
+		if ( ! empty( $cvc_confirmation ) ) {
+			$request['cvc_confirmation'] = $cvc_confirmation;
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
@@ -264,6 +272,11 @@ class WC_Payments_API_Client {
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
 
+		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
+			$request['metadata']['fraud_prevention_data_available'] = true;
+			$request['metadata']['fraud_prevention_data']           = Buyer_Fingerprinting_Service::get_instance()->hash_data_for_fraud_prevention( $order_id );
+		}
+
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
@@ -296,12 +309,14 @@ class WC_Payments_API_Client {
 		$selected_upe_payment_type = '',
 		$payment_country = null
 	) {
+		// 'receipt_email' is set to prevent Stripe from sending receipts (when intent is created outside WCPay).
 		$request = [
-			'amount'      => $amount,
-			'currency'    => $currency_code,
-			'metadata'    => $metadata,
-			'level3'      => $level3,
-			'description' => $this->get_intent_description( $metadata['order_id'] ?? 0 ),
+			'amount'        => $amount,
+			'currency'      => $currency_code,
+			'receipt_email' => '',
+			'metadata'      => $metadata,
+			'level3'        => $level3,
+			'description'   => $this->get_intent_description( $metadata['order_id'] ?? 0 ),
 		];
 
 		if ( '' !== $selected_upe_payment_type ) {
@@ -325,19 +340,21 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Updates an intention's metadata.
-	 * Unlike `update_intention`, this method allows to update metadata without
+	 * Updates an intention's metadata and sets receipt email to empty.
+	 * Unlike `update_intention`, this method allows updating metadata without
 	 * requiring amount, currency, and other mandatory params to be present.
 	 *
 	 * @param string $intention_id - The ID of the intention to update.
-	 * @param array  $metadata     - Meta data values to be sent along with payment intent creation.
+	 * @param array  $metadata     - Metadata values to be sent along with payment intent creation.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
 	 */
-	public function update_intention_metadata( $intention_id, $metadata ) {
+	public function prepare_intention_for_capture( $intention_id, $metadata ) {
+		// 'receipt_email' is set to prevent Stripe from sending receipts (when intent is created outside WCPay).
 		$request = [
-			'metadata' => $metadata,
+			'receipt_email' => '',
+			'metadata'      => $metadata,
 		];
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
@@ -363,6 +380,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * List refunds
+	 *
+	 * @param string $charge_id - The charge to retrieve the list of refunds for.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function list_refunds( $charge_id ) {
+		$request = [
+			'limit'  => 100,
+			'charge' => $charge_id,
+		];
+
+		return $this->request( $request, self::REFUNDS_API, self::GET );
+	}
+
+	/**
 	 * Capture an intention
 	 *
 	 * @param string $intention_id - The ID of the intention to capture.
@@ -373,9 +407,10 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Exception thrown on intention capture failure.
 	 */
 	public function capture_intention( $intention_id, $amount, $level3 = [] ) {
-		$request                      = [];
-		$request['amount_to_capture'] = $amount;
-		$request['level3']            = $level3;
+		$request = [
+			'amount_to_capture' => $amount,
+			'level3'            => $level3,
+		];
 
 		$response_array = $this->request_with_level3_data(
 			$request,
@@ -839,6 +874,42 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Initiates disputes export via API.
+	 *
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to search for.
+	 *
+	 * @return array Export summary
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes_export( $filters = [], $user_email = '' ) {
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+
+		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
+	}
+
+	/**
+	 * Initiates deposits export via API.
+	 *
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to send export to.
+	 *
+	 * @return array Export summary
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_deposits_export( $filters = [], $user_email = '' ) {
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+
+		return $this->request( $filters, self::DEPOSITS_API . '/download', self::POST );
+	}
+
+	/**
 	 * Upload file and return file object.
 	 *
 	 * @param WP_REST_Request $request request object received.
@@ -982,7 +1053,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Update account data
+	 * Get current platform checkout eligibility
+	 *
+	 * @return array An array describing platform checkout eligibility.
+	 *
+	 * @throws API_Exception - Error contacting the API.
+	 */
+	public function get_platform_checkout_eligibility() {
+		return $this->request(
+			[
+				'test_mode' => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+			],
+			self::PLATFORM_CHECKOUT_API,
+			self::GET
+		);
+	}
+
+	/**
+	 * Update Stripe account data
 	 *
 	 * @param array $account_settings Settings to update.
 	 *
@@ -1044,6 +1132,49 @@ class WC_Payments_API_Client {
 		);
 
 		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
+	}
+
+	/**
+	 * Get the business types, needed for our KYC onboarding flow.
+	 *
+	 * @return array An array containing the business types.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_onboarding_business_types() {
+		return $this->request(
+			[],
+			self::ONBOARDING_API . '/business_types',
+			self::GET
+		);
+	}
+
+	/**
+	 * Get the required verification information, needed for our KYC onboarding flow.
+	 *
+	 * @param string      $country_code The country code.
+	 * @param string      $type         The business type.
+	 * @param string|null $structure    The business structure (optional).
+	 *
+	 * @return array An array containing the required verification information.
+	 *
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_onboarding_required_verification_information( string $country_code, string $type, $structure = null ) {
+		$params = [
+			'country' => $country_code,
+			'type'    => $type,
+		];
+
+		if ( ! is_null( $structure ) ) {
+			$params = array_merge( $params, [ 'structure' => $structure ] );
+		}
+
+		return $this->request(
+			$params,
+			self::ONBOARDING_API . '/required_verification_information',
+			self::GET
+		);
 	}
 
 	/**

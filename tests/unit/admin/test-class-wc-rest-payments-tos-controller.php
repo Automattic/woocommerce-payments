@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * WC_REST_Payments_Tos_Controller unit tests.
@@ -50,22 +51,22 @@ class WC_REST_Payments_Tos_Controller_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$account                  = new WC_Payments_Account( $mock_api_client );
-		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $account );
+		$mock_wcpay_account       = $this->createMock( WC_Payments_Account::class );
+		$customer_service         = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account );
 		$token_service            = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client );
 		$order_service            = new WC_Payments_Order_Service();
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$mock_api_client,
-			$account,
+			$mock_wcpay_account,
 			$customer_service,
 			$token_service,
 			$action_scheduler_service,
 			$mock_rate_limiter,
 			$order_service
 		);
-		$this->controller = new WC_REST_Payments_Tos_Controller( $mock_api_client, $this->gateway, $account );
+		$this->controller = new WC_REST_Payments_Tos_Controller( $mock_api_client, $this->gateway, $mock_wcpay_account );
 
 		// Setup a test request.
 		$this->request = new WP_REST_Request(

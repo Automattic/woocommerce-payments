@@ -83,6 +83,27 @@ const getDocumentDescription = ( document: Document ) => {
 			}
 			return __( 'This is a test document', 'woocommerce-payments' );
 			break;
+		case 'vat_invoice':
+			if ( document.period_from && document.period_to ) {
+				return sprintf(
+					__( 'VAT invoice for %s to %s', 'woocommerce-payments' ),
+					dateI18n(
+						'M j, Y',
+						moment.utc( document.period_from ).toISOString(),
+						'utc'
+					),
+					dateI18n(
+						'M j, Y',
+						moment.utc( document.period_to ).toISOString(),
+						'utc'
+					)
+				);
+			}
+			return __(
+				'VAT invoice without proper period dates',
+				'woocommerce-payments'
+			);
+			break;
 
 		default:
 			return __( 'Unknown document type', 'woocommerce-payments' );
