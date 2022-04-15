@@ -242,7 +242,7 @@ class WC_Payments_API_Client {
 		}
 
 		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
-			$request['metadata'] = array_merge( isset( $request['metadata'] ) ? $request['metadata'] : [], $this->get_fingerprint_metadata() );
+			$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
@@ -277,7 +277,7 @@ class WC_Payments_API_Client {
 		$request['capture_method']       = $capture_method;
 
 		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
-			$request['metadata'] = array_merge( isset( $request['metadata'] ) ? $request['metadata'] : [], $this->get_fingerprint_metadata() );
+			$request['metadata'] = $this->get_fingerprint_metadata();
 		}
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
