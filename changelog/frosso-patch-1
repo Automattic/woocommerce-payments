@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: The icon was missing due to a refactor done in https://github.com/Automattic/woocommerce-payments/pull/4035 - seems minor
-
-
