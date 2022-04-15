@@ -2049,7 +2049,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$metadata_from_order  = $this->get_metadata_from_order( $order, $payment_type );
 			$merged_metadata      = array_merge( (array) $metadata_from_order, (array) $metadata_from_intent ); // prioritize metadata from mobile app.
 
-			$this->payments_api_client->update_intention_metadata(
+			$this->payments_api_client->prepare_intention_for_capture(
 				$intent_id,
 				$merged_metadata
 			);
@@ -2779,6 +2779,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_connection_url() {
 		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
 			// Configure step button will show `Set up` instead of `Connect`.
+			return '';
+		}
+		$account_data = $this->account->get_cached_account_data();
+
+		// The onboarding is finished if account_id is set. `Set up` will be shown instead of `Connect`.
+		if ( isset( $account_data['account_id'] ) ) {
 			return '';
 		}
 		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
