@@ -2296,11 +2296,9 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If an error occurs.
 	 */
 	private function get_fingerprint_metadata() {
-		$customer_fingerprint_metadata = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();
-		$fixed_fingerprint_metadata    = [
-			'fraud_prevention_data_available' => true,
-		];
+		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();
+		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
 
-		return array_merge( $fixed_fingerprint_metadata, $customer_fingerprint_metadata );
+		return $customer_fingerprint_metadata;
 	}
 }
