@@ -1129,7 +1129,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		$customer_id             = 'cus_123abc';
 		$expected_amount         = 123;
 		$expected_status         = 'succeeded';
-		$selected_payment_method = 'card';
+		$selected_payment_method = 'giropay';
 		$payment_country         = 'US';
 		$save_payment_method     = true;
 		$metadata                = [
@@ -1153,8 +1153,6 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				],
 			],
 		];
-
-		\WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ 'card', 'link' ] );
 
 		// Mock the HTTP client manually to assert we are sending the correct args.
 		$this->mock_http_client
@@ -1183,7 +1181,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 							'',
 							$metadata['site_url']
 						),
-						'payment_method_types' => [ 'card', 'link' ],
+						'payment_method_types' => [ 'giropay' ],
 						'payment_country'      => 'US',
 						'customer'             => $customer_id,
 						'setup_future_usage'   => 'off_session',
@@ -1217,7 +1215,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				)
 			);
 
-		$this->payments_api_client->update_intention(
+		$result = $this->payments_api_client->update_intention(
 			$intention_id,
 			$expected_amount,
 			$currency_code,
@@ -1228,6 +1226,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			$selected_payment_method,
 			$payment_country
 		);
+
+		$this->assertEquals( $expected_amount, $result->get_amount() );
+		$this->assertEquals( $expected_status, $result->get_status() );
 	}
 
 	/**
