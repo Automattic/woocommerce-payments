@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Enable WooCommerce Blocks checkout to hide option to save payment methods for a non-reusable payment method.

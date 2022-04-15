@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Refactor the KYC Optimisation to use the new Database_Cache class.

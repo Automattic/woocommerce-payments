@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Empty file input to allow the user to select the same file again if there's an error.
