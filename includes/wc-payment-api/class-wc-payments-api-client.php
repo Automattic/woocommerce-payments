@@ -242,11 +242,7 @@ class WC_Payments_API_Client {
 		}
 
 		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
-			$request['metadata']['fraud_prevention_data_available'] = true;
-			$hashed_fingerprints                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();
-			foreach ( $hashed_fingerprints as $key => $value ) {
-				$request['metadata'][ $key ] = $value;
-			}
+			$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
@@ -281,11 +277,7 @@ class WC_Payments_API_Client {
 		$request['capture_method']       = $capture_method;
 
 		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
-			$request['metadata']['fraud_prevention_data_available'] = true;
-			$hashed_fingerprints                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();
-			foreach ( $hashed_fingerprints as $key => $value ) {
-				$request['metadata'][ $key ] = $value;
-			}
+			$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
 		}
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
@@ -2294,5 +2286,21 @@ class WC_Payments_API_Client {
 	 */
 	public function get_loans() : array {
 		return $this->request( [], self::CAPITAL_API . '/loans', self::GET );
+	}
+
+	/**
+	 * Returns a list of fingerprinting metadata to attach to order.
+	 *
+	 * @return array List of fingerprinting metadata.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	private function get_fingerprint_metadata() {
+		$customer_fingerprint_metadata = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();
+		$fixed_fingerprint_metadata    = [
+			'fraud_prevention_data_available' => true,
+		];
+
+		return array_merge( $fixed_fingerprint_metadata, $customer_fingerprint_metadata );
 	}
 }
