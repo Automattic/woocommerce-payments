@@ -102,7 +102,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
 	}
 
-	public function test_rest_endpoints_do_not_validate_nonce_if_platform_checkout_feature_flag_is_enabled() {
+	public function test_rest_endpoints_do_validate_nonce_if_platform_checkout_feature_flag_is_enabled() {
 		// Enable dev mode so nonce check is disabled.
 		add_filter(
 			'wcpay_dev_mode',
@@ -117,8 +117,8 @@ class WC_Payments_Test extends WP_UnitTestCase {
 
 		$response = rest_do_request( $request );
 
-		$this->assertNotEquals( 401, $response->get_status() );
-		$this->assertNotEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
+		$this->assertEquals( 401, $response->get_status() );
+		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
 	}
 
 	public function test_rest_endpoints_validate_nonce_if_platform_checkout_is_disabled() {
@@ -143,7 +143,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
 	}
 
-	public function test_rest_endpoints_do_not_validate_nonce_if_platform_checkout_is_enabled() {
+	public function test_rest_endpoints_do_validate_nonce_if_platform_checkout_is_enabled() {
 		// Enable dev mode so nonce check is disabled.
 		add_filter(
 			'wcpay_dev_mode',
@@ -158,8 +158,8 @@ class WC_Payments_Test extends WP_UnitTestCase {
 
 		$response = rest_do_request( $request );
 
-		$this->assertNotEquals( 401, $response->get_status() );
-		$this->assertNotEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
+		$this->assertEquals( 401, $response->get_status() );
+		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
 	}
 
 	/**
