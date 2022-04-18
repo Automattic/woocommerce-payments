@@ -128,8 +128,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$mock_fingerprinting
 			->expects( $this->exactly( 1 ) )
-			->method( 'hash_data_for_fraud_prevention' )
-			->with( 1 );
+			->method( 'get_hashed_data_for_customer' );
 
 		$this->set_http_mock_response(
 			200,
@@ -155,15 +154,69 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$result = $this->payments_api_client->create_intention(
+		$this->payments_api_client->create_intention(
 			$expected_amount,
 			'usd',
 			'pm_123456789',
 			1
 		);
+	}
 
-		$this->assertSame( $expected_amount, $result->get_amount() );
-		$this->assertSame( $expected_status, $result->get_status() );
+	/**
+	 * Test a successful call to create_and_confirm_intention with fraud prevention enabled.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_and_confirm_intention_with_fingerprinting_data() {
+		$expected_amount = 123;
+		$expected_status = 'succeeded';
+
+		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
+		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
+
+		Buyer_Fingerprinting_Service::set_instance( $mock_fingerprinting );
+		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
+
+		$mock_fraud_prevention
+			->expects( $this->exactly( 1 ) )
+			->method( 'is_enabled' )
+			->with()
+			->willReturn( true );
+
+		$mock_fingerprinting
+			->expects( $this->exactly( 1 ) )
+			->method( 'get_hashed_data_for_customer' );
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'            => 'test_intention_id',
+				'amount'        => $expected_amount,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
+						],
+					],
+				],
+				'client_secret' => 'test_client_secret',
+				'currency'      => 'usd',
+			]
+		);
+
+		$this->payments_api_client->create_and_confirm_intention(
+			$expected_amount,
+			'usd',
+			'pm_123456789',
+			1
+		);
 	}
 
 	/**
@@ -189,7 +242,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
 
 		$fraud_prevention_service_mock
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) ) // One during create_and_confirm, and one during server responses checks.
 			->method( 'is_enabled' )
 			->willReturn( true );
 
