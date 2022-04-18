@@ -1515,6 +1515,8 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	}
 
 	public function test_link_payment_method_if_card_enabled() {
+		self::$mock_site_currency = 'USD';
+
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
 			->setConstructorArgs(
 				[
