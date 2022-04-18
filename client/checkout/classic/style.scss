@@ -3,7 +3,7 @@
 	li
 	.payment_box.payment_method_woocommerce_payments
 	fieldset {
-	padding: 0;
+	padding: 7px 7px;
 }
 
 #payment .payment_method_woocommerce_payments > fieldset > legend {
@@ -26,7 +26,6 @@
 }
 
 #wcpay-upe-element {
-	padding: 7px 7px;
 	margin-bottom: 0.5em;
 
 	&.processing {

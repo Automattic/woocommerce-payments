@@ -13,7 +13,9 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * A class for caching data as an option in the database.
  */
 class Database_Cache {
-	const ACCOUNT_KEY = 'wcpay_account_data';
+	const ACCOUNT_KEY        = 'wcpay_account_data';
+	const BUSINESS_TYPES_KEY = 'wcpay_business_types_data';
+	const CURRENCIES_KEY     = 'wcpay_multi_currency_cached_currencies';
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
@@ -234,23 +236,34 @@ class Database_Cache {
 	 * @return integer The cache TTL.
 	 */
 	private function get_ttl( string $key, array $cache_contents ): int {
-		// Default to 24h.
-		$ttl = DAY_IN_SECONDS;
-
-		if ( self::ACCOUNT_KEY === $key ) {
-			if ( is_admin() ) {
-				// Fetches triggered from the admin panel should be more frequent.
-				if ( $cache_contents['errored'] ) {
-					// Attempt to refresh the data quickly if the last fetch was an error.
-					$ttl = 2 * MINUTE_IN_SECONDS;
+		switch ( $key ) {
+			case self::ACCOUNT_KEY:
+				if ( is_admin() ) {
+					// Fetches triggered from the admin panel should be more frequent.
+					if ( $cache_contents['errored'] ) {
+						// Attempt to refresh the data quickly if the last fetch was an error.
+						$ttl = 2 * MINUTE_IN_SECONDS;
+					} else {
+						// If the data was fetched successfully, fetch it every 2h.
+						$ttl = 2 * HOUR_IN_SECONDS;
+					}
 				} else {
-					// If the data was fetched successfully, fetch it every 2h.
-					$ttl = 2 * HOUR_IN_SECONDS;
+					// Non-admin requests should always refresh only after 24h since the last fetch.
+					$ttl = DAY_IN_SECONDS;
 				}
-			} else {
-				// Non-admin requests should always refresh only after 24h since the last fetch.
+				break;
+			case self::CURRENCIES_KEY:
+				// Refresh the errored currencies quickly, otherwise cache for 6h.
+				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : 6 * HOUR_IN_SECONDS;
+				break;
+			case self::BUSINESS_TYPES_KEY:
+				// Cache business types for a week.
+				$ttl = WEEK_IN_SECONDS;
+				break;
+			default:
+				// Default to 24h.
 				$ttl = DAY_IN_SECONDS;
-			}
+				break;
 		}
 
 		return apply_filters( 'wcpay_database_cache_ttl', $ttl, $key, $cache_contents );

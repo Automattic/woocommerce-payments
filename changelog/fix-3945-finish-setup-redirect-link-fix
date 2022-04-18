@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed redirect URL when user is already onboarded
