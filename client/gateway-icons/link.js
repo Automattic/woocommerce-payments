@@ -13,7 +13,7 @@ export default ( props ) => (
 		{ ...props }
 	>
 		<g
-			transform="translate(50.000000,227.000000) scale(0.100000,-0.100000)"
+			transform="translate(100.000000,220.000000) scale(0.080000,-0.080000)"
 			fill="#000000"
 			stroke="none"
 		>

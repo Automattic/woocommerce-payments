@@ -26,6 +26,6 @@ class Link_Payment_Method extends UPE_Payment_Method {
 		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title       = __( 'Link', 'woocommerce-payments' );
 		$this->is_reusable = true;
-		$this->currencies  = [];// All currencies are supported.
+		$this->currencies  = [ 'USD' ];
 	}
 }

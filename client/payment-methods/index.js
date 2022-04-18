@@ -122,7 +122,7 @@ const PaymentMethods = () => {
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
-	//we filter link payment method since this will be displayed in other section ( express checkout )
+	// We filter link payment method since this will be displayed in other section (express checkout).
 	const availableMethods = availablePaymentMethodIds
 		.filter( ( id ) => 'link' !== id )
 		.map( ( methodId ) => methodsConfiguration[ methodId ] );
