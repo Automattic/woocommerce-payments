@@ -1,0 +1,3 @@
+Significance: patch
+Type: add
+Comment: Adds user's email to platform checkout request data.
