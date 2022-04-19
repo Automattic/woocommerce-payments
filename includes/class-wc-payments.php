@@ -940,6 +940,15 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function ajax_init_platform_checkout() {
+		$is_nonce_valid = check_ajax_referer( 'wcpay_init_platform_checkout_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
 		$user        = wp_get_current_user();
@@ -970,8 +979,7 @@ class WC_Payments {
 				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
 			],
-			// Maybe we should be checking the nonce in this request?
-			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null, // //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 		$args = [
 			'url'     => $url,
