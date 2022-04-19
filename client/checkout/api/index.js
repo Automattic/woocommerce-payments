@@ -586,11 +586,12 @@ export default class WCPayAPI {
 		} );
 	}
 
-	initPlatformCheckout() {
+	initPlatformCheckout( userEmail ) {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_platform_checkout' ),
 			{
 				_wpnonce: getConfig( 'initPlatformCheckoutNonce' ),
+				email: userEmail,
 			}
 		);
 	}

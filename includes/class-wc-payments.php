@@ -942,6 +942,7 @@ class WC_Payments {
 	public static function ajax_init_platform_checkout() {
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
+		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 		$user        = wp_get_current_user();
 		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
@@ -958,6 +959,7 @@ class WC_Payments {
 		$body = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
+			'email'                => $email,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
