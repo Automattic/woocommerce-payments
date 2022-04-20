@@ -10,6 +10,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import VatForm from '../form';
 
 const VatFormModal = ( {
 	isModalOpen,
@@ -25,7 +26,7 @@ const VatFormModal = ( {
 			shouldCloseOnClickOutside={ true }
 			onRequestClose={ () => setModalOpen( false ) }
 		>
-			<p>VAT Form</p>
+			<VatForm />
 		</Modal>
 	) : null;
 };
