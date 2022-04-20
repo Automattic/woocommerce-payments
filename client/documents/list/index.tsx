@@ -118,15 +118,32 @@ export const DocumentsList = (): JSX.Element => {
 
 	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
 
-	const handleDocumentDownload = (
+	const [
+		clickedDownloadLink,
+		setClickedDownloadLink,
+	] = useState< HTMLElement | null >( null );
+
+	const handleDocumentDownload = async (
 		document: Document,
 		event: MouseEvent
 	) => {
+		setClickedDownloadLink( event.currentTarget as HTMLElement );
+
 		if ( 'vat_invoice' === document.type ) {
 			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
 				setVatFormModalOpen( true );
 				event.preventDefault();
 			}
+		}
+	};
+
+	const onVatFormCompleted = () => {
+		setVatFormModalOpen( false );
+		// Set the flag to true so that the user can download the document without refreshing the page.
+		wcpaySettings.accountStatus.hasSubmittedVatData = true;
+		// Fire the click event again, once the VAT details have been submitted.
+		if ( clickedDownloadLink ) {
+			clickedDownloadLink.click();
 		}
 	};
 
@@ -220,7 +237,7 @@ export const DocumentsList = (): JSX.Element => {
 			<VatFormModal
 				isModalOpen={ isVatFormModalOpen }
 				setModalOpen={ setVatFormModalOpen }
-				onCompleted={ () => ( {} ) }
+				onCompleted={ onVatFormCompleted }
 			/>
 		</Page>
 	);
