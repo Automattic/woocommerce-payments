@@ -81,79 +81,8 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		}
 	}
 
-	public function test_rest_endpoints_validate_nonce_if_platform_checkout_feature_flag_is_disabled() {
-		$this->set_platform_checkout_feature_flag_enabled( false );
-
-		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
-
-		$response = rest_do_request( $request );
-
-		$this->assertEquals( 401, $response->get_status() );
-		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
-	}
-
-	public function test_rest_endpoints_validate_nonce_if_platform_checkout_feature_flag_is_enabled_but_not_in_dev_mode() {
+	public function test_rest_endpoints_validate_nonce() {
 		$this->set_platform_checkout_feature_flag_enabled( true );
-		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
-
-		$response = rest_do_request( $request );
-
-		$this->assertEquals( 401, $response->get_status() );
-		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
-	}
-
-	public function test_rest_endpoints_do_validate_nonce_if_platform_checkout_feature_flag_is_enabled() {
-		// Enable dev mode so nonce check is disabled.
-		add_filter(
-			'wcpay_dev_mode',
-			function () {
-				return true;
-			}
-		);
-
-		$this->set_platform_checkout_feature_flag_enabled( true );
-
-		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
-
-		$response = rest_do_request( $request );
-
-		$this->assertEquals( 401, $response->get_status() );
-		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
-	}
-
-	public function test_rest_endpoints_validate_nonce_if_platform_checkout_is_disabled() {
-		$this->set_platform_checkout_enabled( false );
-
-		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
-
-		$response = rest_do_request( $request );
-
-		$this->assertEquals( 401, $response->get_status() );
-		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
-	}
-
-	public function test_rest_endpoints_validate_nonce_if_platform_checkout_is_enabled_but_not_in_dev_mode() {
-		$this->set_platform_checkout_enabled( true );
-
-		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
-
-		$response = rest_do_request( $request );
-
-		$this->assertEquals( 401, $response->get_status() );
-		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
-	}
-
-	public function test_rest_endpoints_do_validate_nonce_if_platform_checkout_is_enabled() {
-		// Enable dev mode so nonce check is disabled.
-		add_filter(
-			'wcpay_dev_mode',
-			function () {
-				return true;
-			}
-		);
-
-		$this->set_platform_checkout_enabled( true );
-
 		$request = new WP_REST_Request( 'GET', '/wc/store/checkout' );
 
 		$response = rest_do_request( $request );
