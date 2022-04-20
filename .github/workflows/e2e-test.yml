@@ -44,12 +44,6 @@ jobs:
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
-          - woocommerce: '5.2.0'
-            test_groups: 'blocks'
-            test_branches: 'shopper'
-          - woocommerce: '6.1.0'
-            test_groups: 'blocks'
-            test_branches: 'shopper'
 
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
