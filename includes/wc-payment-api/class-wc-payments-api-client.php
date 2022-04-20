@@ -1850,7 +1850,7 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - If not connected or request failed.
 	 */
 	public function save_vat_details( $vat_number, $name, $address ) {
-		return $this->request(
+		$response = $this->request(
 			[
 				'vat_number' => $vat_number,
 				'name'       => $name,
@@ -1859,6 +1859,10 @@ class WC_Payments_API_Client {
 			self::VAT_API,
 			self::POST
 		);
+
+		WC_Payments::get_account_service()->refresh_account_data();
+
+		return $response;
 	}
 
 	/**
