@@ -22,7 +22,11 @@ describe( 'VAT form modal', () => {
 
 	it( 'should render when isModalOpen is true', () => {
 		render(
-			<VatFormModal isModalOpen={ true } setModalOpen={ () => ( {} ) } />
+			<VatFormModal
+				isModalOpen={ true }
+				setModalOpen={ () => ( {} ) }
+				onCompleted={ () => ( {} ) }
+			/>
 		);
 		expect(
 			screen.getByRole( 'dialog', { name: 'VAT details' } )
@@ -31,7 +35,11 @@ describe( 'VAT form modal', () => {
 
 	it( 'should not render when isModalOpen is false', () => {
 		render(
-			<VatFormModal isModalOpen={ false } setModalOpen={ () => ( {} ) } />
+			<VatFormModal
+				isModalOpen={ false }
+				setModalOpen={ () => ( {} ) }
+				onCompleted={ () => ( {} ) }
+			/>
 		);
 		expect(
 			screen.queryByRole( 'dialog', { name: 'VAT details' } )
@@ -40,7 +48,11 @@ describe( 'VAT form modal', () => {
 
 	it( 'should render the VAT Form', () => {
 		render(
-			<VatFormModal isModalOpen={ true } setModalOpen={ () => ( {} ) } />
+			<VatFormModal
+				isModalOpen={ true }
+				setModalOpen={ () => ( {} ) }
+				onCompleted={ () => ( {} ) }
+			/>
 		);
 		expect(
 			screen.getByRole( 'dialog', { name: 'VAT details' } )

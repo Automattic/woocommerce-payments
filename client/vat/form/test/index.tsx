@@ -16,11 +16,26 @@ import VatForm from '..';
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
+const mockOnCompleted = jest.fn();
 
 const waitForVatValidationRequest = async ( vatNumber: string ) => {
 	return waitFor( () => {
 		expect( mockApiFetch ).toHaveBeenCalledWith( {
 			path: `/wc/v3/payments/vat/${ vatNumber }`,
+		} );
+	} );
+};
+
+const waitForVatSaveDetailsRequest = async ( data: {
+	vat_number?: string;
+	name: string;
+	address: string;
+} ) => {
+	return waitFor( () => {
+		expect( mockApiFetch ).toHaveBeenCalledWith( {
+			data: data,
+			method: 'POST',
+			path: `/wc/v3/payments/vat`,
 		} );
 	} );
 };
@@ -48,7 +63,7 @@ describe( 'VAT form', () => {
 				accountStatus: { country: country },
 			};
 
-			render( <VatForm /> );
+			render( <VatForm onCompleted={ mockOnCompleted } /> );
 
 			user.click(
 				screen.getByLabelText( 'I’m registered for a VAT number' )
@@ -67,11 +82,11 @@ describe( 'VAT form', () => {
 			accountStatus: { country: 'GB' },
 		};
 
-		render( <VatForm /> );
+		render( <VatForm onCompleted={ mockOnCompleted } /> );
 	} );
 
-	it( 'should display a check box to select if registered for VAT', () => {
-		screen.getByLabelText( 'I’m registered for a VAT number' );
+	afterEach( () => {
+		mockOnCompleted.mockClear();
 	} );
 
 	it( 'should start with the first task active', () => {
@@ -83,17 +98,107 @@ describe( 'VAT form', () => {
 		);
 	} );
 
+	it( 'should start with the second task inactive', () => {
+		expect( screen.getByRole( 'list' ).lastChild ).not.toHaveClass(
+			'is-active'
+		);
+		expect( screen.getByRole( 'list' ).lastChild ).not.toHaveClass(
+			'is-completed'
+		);
+	} );
+
 	describe( 'when not registered for VAT', () => {
 		it( 'should enable the Continue button', () => {
 			expect( screen.getByText( 'Continue' ) ).toBeEnabled();
 		} );
 
-		it( 'should proceed to the company-data step when submitted', () => {
-			user.click( screen.getByText( 'Continue' ) );
+		describe( 'after submitting the vat number step', () => {
+			beforeEach( () => {
+				user.click( screen.getByText( 'Continue' ) );
+			} );
 
-			expect( screen.getByRole( 'list' ).firstChild ).toHaveClass(
-				'is-completed'
-			);
+			it( 'should proceed to the company-data step', () => {
+				expect( screen.getByRole( 'list' ).firstChild ).toHaveClass(
+					'is-completed'
+				);
+
+				expect( screen.getByRole( 'list' ).lastChild ).toHaveClass(
+					'is-active'
+				);
+			} );
+
+			it( 'should disable the Confirm button', () => {
+				expect( screen.getByText( 'Confirm' ) ).toBeDisabled();
+			} );
+
+			describe( 'after filling the company details', () => {
+				beforeEach( () => {
+					user.type(
+						screen.getByLabelText( 'Business name' ),
+						'Test company'
+					);
+					user.type(
+						screen.getByLabelText( 'Address' ),
+						'Test address'
+					);
+				} );
+
+				it( 'should enable the Confirm button', () => {
+					expect( screen.getByText( 'Confirm' ) ).toBeEnabled();
+				} );
+
+				it( 'should display an error message when VAT details fail to be submitted', async () => {
+					mockApiFetch.mockRejectedValue(
+						new Error(
+							'An error occurred when saving the VAT details'
+						)
+					);
+
+					user.click( screen.getByText( 'Confirm' ) );
+
+					await waitForVatSaveDetailsRequest( {
+						name: 'Test company',
+						address: 'Test address',
+					} );
+
+					expect(
+						screen.getByRole( 'list' ).lastChild
+					).not.toHaveClass( 'is-completed' );
+
+					// This will fail if no notices are in the document, and will pass if one or more are found.
+					// The "more" part is needed because notices are added twice to the document due to a11y.
+					screen.getAllByText(
+						'An error occurred when saving the VAT details'
+					);
+
+					expect( mockOnCompleted ).not.toHaveBeenCalled();
+				} );
+
+				it( 'should complete the form when the VAT details are submitted successfully', async () => {
+					mockApiFetch.mockResolvedValueOnce( {
+						address: 'Test address',
+						name: 'Test company',
+						vat_number: null,
+					} );
+
+					user.click( screen.getByText( 'Confirm' ) );
+
+					await waitForVatSaveDetailsRequest( {
+						name: 'Test company',
+						address: 'Test address',
+					} );
+
+					expect( screen.getByRole( 'list' ).lastChild ).toHaveClass(
+						'is-completed'
+					);
+
+					expect( mockOnCompleted ).toHaveBeenCalledWith(
+						null,
+						'Test company',
+						'Test address'
+					);
+				} );
+			} );
 		} );
 	} );
 
@@ -152,7 +257,7 @@ describe( 'VAT form', () => {
 			} );
 
 			it( 'should proceed to the company-data step when a valid VAT number is submitted', async () => {
-				mockApiFetch.mockResolvedValue( {
+				mockApiFetch.mockResolvedValueOnce( {
 					address: 'Test address',
 					country_code: 'GB',
 					name: 'Test company',
@@ -167,6 +272,92 @@ describe( 'VAT form', () => {
 				expect( screen.getByRole( 'list' ).firstChild ).toHaveClass(
 					'is-completed'
 				);
+
+				expect( screen.getByRole( 'list' ).lastChild ).toHaveClass(
+					'is-active'
+				);
+			} );
+
+			describe( 'after submitting the vat number step', () => {
+				beforeEach( async () => {
+					mockApiFetch.mockResolvedValueOnce( {
+						address: 'Test address',
+						country_code: 'GB',
+						name: 'Test company',
+						valid: true,
+						vat_number: '123456789',
+					} );
+
+					user.click( screen.getByText( 'Continue' ) );
+
+					await waitForVatValidationRequest( '123456789' );
+				} );
+
+				it( 'should pre-fill the business name with the value from the VAT check', () => {
+					expect(
+						screen.getByLabelText( 'Business name' )
+					).toHaveValue( 'Test company' );
+				} );
+
+				it( 'should pre-fill the business address with the value from the VAT check', () => {
+					expect( screen.getByLabelText( 'Address' ) ).toHaveValue(
+						'Test address'
+					);
+				} );
+
+				it( 'should display an error message when VAT details fail to be submitted', async () => {
+					mockApiFetch.mockRejectedValue(
+						new Error(
+							'An error occurred when saving the VAT details'
+						)
+					);
+
+					user.click( screen.getByText( 'Confirm' ) );
+
+					await waitForVatSaveDetailsRequest( {
+						vat_number: '123456789',
+						name: 'Test company',
+						address: 'Test address',
+					} );
+
+					expect(
+						screen.getByRole( 'list' ).lastChild
+					).not.toHaveClass( 'is-completed' );
+
+					// This will fail if no notices are in the document, and will pass if one or more are found.
+					// The "more" part is needed because notices are added twice to the document due to a11y.
+					screen.getAllByText(
+						'An error occurred when saving the VAT details'
+					);
+
+					expect( mockOnCompleted ).not.toHaveBeenCalled();
+				} );
+
+				it( 'should complete the form when the VAT details are submitted successfully', async () => {
+					mockApiFetch.mockResolvedValueOnce( {
+						address: 'Test address',
+						name: 'Test company',
+						vat_number: '123456789',
+					} );
+
+					user.click( screen.getByText( 'Confirm' ) );
+
+					await waitForVatSaveDetailsRequest( {
+						vat_number: '123456789',
+						name: 'Test company',
+						address: 'Test address',
+					} );
+
+					expect( screen.getByRole( 'list' ).lastChild ).toHaveClass(
+						'is-completed'
+					);
+
+					expect( mockOnCompleted ).toHaveBeenCalledWith(
+						'123456789',
+						'Test company',
+						'Test address'
+					);
+				} );
 			} );
 		} );
 	} );

@@ -11,13 +11,16 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import VatForm from '../form';
+import { VatFormOnCompleted } from '../types';
 
 const VatFormModal = ( {
 	isModalOpen,
 	setModalOpen,
+	onCompleted,
 }: {
 	isModalOpen: boolean;
 	setModalOpen: ( value: boolean ) => void;
+	onCompleted: VatFormOnCompleted;
 } ): JSX.Element | null => {
 	return isModalOpen ? (
 		<Modal
@@ -26,7 +29,7 @@ const VatFormModal = ( {
 			shouldCloseOnClickOutside={ true }
 			onRequestClose={ () => setModalOpen( false ) }
 		>
-			<VatForm />
+			<VatForm onCompleted={ onCompleted } />
 		</Modal>
 	) : null;
 };

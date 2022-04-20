@@ -220,6 +220,7 @@ export const DocumentsList = (): JSX.Element => {
 			<VatFormModal
 				isModalOpen={ isVatFormModalOpen }
 				setModalOpen={ setVatFormModalOpen }
+				onCompleted={ () => ( {} ) }
 			/>
 		</Page>
 	);

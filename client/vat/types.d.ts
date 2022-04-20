@@ -6,6 +6,18 @@ export interface VatValidationResult {
 	vat_number: string;
 }
 
+export interface VatSaveDetails {
+	vat_number?: string;
+	name: string;
+	address: string;
+}
+
+export interface VatSaveDetailsResult {
+	vat_number: string | null;
+	name: string;
+	address: string;
+}
+
 export type VatFormOnCompleted = (
 	vatNumber: string | null,
 	companyName: string,

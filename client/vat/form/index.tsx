@@ -4,21 +4,25 @@
  * External dependencies
  */
 import React, { useState } from 'react';
+import Wizard from 'wcpay/additional-methods-setup/wizard/wrapper';
 import WizardTask from 'wcpay/additional-methods-setup/wizard/task';
 import WizardTaskList from 'wcpay/additional-methods-setup/wizard/task-list';
-import Wizard from 'wcpay/additional-methods-setup/wizard/wrapper';
 
 /**
  * Internal dependencies
  */
+import { VatFormOnCompleted } from '../types';
+import { CompanyDataTask } from './tasks/company-data-task';
 import { VatNumberTask } from './tasks/vat-number-task';
 
-const VatForm = (): JSX.Element => {
-	/* eslint-disable @typescript-eslint/no-unused-vars */
+const VatForm = ( {
+	onCompleted,
+}: {
+	onCompleted: VatFormOnCompleted;
+} ): JSX.Element => {
 	const [ vatNumber, setVatNumber ] = useState< string | null >( null );
 	const [ name, setName ] = useState< string >( '' );
 	const [ address, setAddress ] = useState< string >( '' );
-	/* eslint-enable @typescript-eslint/no-unused-vars */
 
 	const onVatNumberCompleted = (
 		newVatNumber: string | null,
@@ -30,11 +34,27 @@ const VatForm = (): JSX.Element => {
 		setAddress( companyAddress );
 	};
 
+	const onCompanyDataCompleted = (
+		companyVatNumber: string | null,
+		companyName: string,
+		companyAddress: string
+	): void => {
+		onCompleted( companyVatNumber, companyName, companyAddress );
+	};
+
 	return (
 		<Wizard defaultActiveTask="vat-number">
 			<WizardTaskList>
 				<WizardTask id="vat-number">
 					<VatNumberTask onCompleted={ onVatNumberCompleted } />
+				</WizardTask>
+				<WizardTask id="company-data">
+					<CompanyDataTask
+						onCompleted={ onCompanyDataCompleted }
+						vatNumber={ vatNumber }
+						placeholderCompanyName={ name }
+						placeholderCompanyAddress={ address }
+					/>
 				</WizardTask>
 			</WizardTaskList>
 		</Wizard>
