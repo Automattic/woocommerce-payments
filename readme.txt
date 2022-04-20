@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 4.0.1 - 2022-xx-xx =
+* Fix - Fix templates folder missing in release package
+
 = 4.0.0 - 2022-04-13 =
 * Add - Add card readers business URL field browser validation.
 * Add - Add data fingerprinting for card testing prevention part of intent.
