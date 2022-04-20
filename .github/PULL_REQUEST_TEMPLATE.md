@@ -47,4 +47,4 @@ We often create a blank page ahead of time for the next release.
 If this PR need not be QA tested, edit to 'QA Testing Not Applicable'
 -->
 
-- [ ] Link to testing instructions from [release testing doc](https://github.com/Automattic/woocommerce-payments/wiki/Release-testing-instructions) : _Add link here / 'QA Testing Not Applicable'_
+- [ ] Link to testing instructions from [release testing doc](https://github.com/Automattic/woocommerce-payments/wiki/Release-testing-instructions) following [these instructions](https://github.com/Automattic/woocommerce-payments/wiki/How-to-write-good-manual-testing-scenarios) : _Add link here / 'QA Testing Not Applicable'_
