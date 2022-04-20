@@ -63,7 +63,7 @@ jobs:
       # Conditionally skip workflow. Remove/update based on min supported WC version by the blocks checkout plugin.
       - name: Conditionally skip workflow
         run: |
-          SKIP_VERSIONS = ('5.2.0' '6.1.0')
+          SKIP_VERSIONS=('5.2.0' '6.1.0')
           if [[ " ${SKIP_VERSIONS[@]} " =~ " ${E2E_WC_VERSION} " ]]; then
             echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
             if [[
