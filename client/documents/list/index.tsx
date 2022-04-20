@@ -63,26 +63,6 @@ const getColumns = (): Column[] =>
 
 const getDocumentDescription = ( document: Document ) => {
 	switch ( document.type ) {
-		case 'test_document':
-			if ( document.period_from && document.period_to ) {
-				return sprintf(
-					__(
-						'This is a test document for %s to %s',
-						'woocommerce-payments'
-					),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_from ).toISOString(),
-						'utc'
-					),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_to ).toISOString(),
-						'utc'
-					)
-				);
-			}
-			return __( 'This is a test document', 'woocommerce-payments' );
 		case 'vat_invoice':
 			if ( document.period_from && document.period_to ) {
 				return sprintf(
