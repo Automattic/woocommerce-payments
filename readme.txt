@@ -122,8 +122,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Empty file input to allow the user to select the same file again if there's an error.
 * Fix - Enable card readers branding section.
 * Fix - Enable WooCommerce Blocks checkout to hide option to save payment methods for a non-reusable payment method.
-* Fix - Fix - Using any other payment methods apart from WooCommerce Payments in "Pay for order".
-form triggers validation errors when UPE checkout is enabled.
+* Fix - Using any other payment methods apart from WooCommerce Payments in "Pay for order" form triggers validation errors when UPE checkout is enabled.
 * Fix - Fix an error in refunding In-Person Payments.
 * Fix - Fixed the pricing displayed on Google Pay/ Apple Pay preview for variable subscription products.
 * Fix - Fix placeholders not being injected into the New Receipt email.
@@ -201,9 +200,9 @@ form triggers validation errors when UPE checkout is enabled.
 * Dev - Refactor the processing part of Webhook Controller to a separate service.
 * Dev - Remove type "Tweak" from the list of changelog types.
 * Dev - REST API documentation
+* Dev - Skip e2e tests if WC version is 5.0.0 because of WooCommerce Checkout Blocks minimum WC Required version
 * Dev - Unit test support for PHP 8 and upgrade PHPUnit version to 9.5.14
 * Dev - Updated contribution notes (how to add a changelog)
-* Dev - Skip e2e tests if WC version is 5.0.0 because of WooCommerce Checkout Blocks minimum WC Required version
 
 = 3.8.2 - 2022-03-03 =
 * Fix - Fix fatal error when a subscription renews automatically.
