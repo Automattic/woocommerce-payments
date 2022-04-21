@@ -1536,7 +1536,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		return [
 			'delete' => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
-				3,
+				4,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
@@ -1548,7 +1548,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			],
 			'get'    => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'GET' ],
-				3,
+				4,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
@@ -1560,7 +1560,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			],
 			'post'   => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
-				4,
+				5,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
