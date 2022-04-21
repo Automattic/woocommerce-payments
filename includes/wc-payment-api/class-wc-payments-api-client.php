@@ -60,6 +60,7 @@ class WC_Payments_API_Client {
 	const CAPITAL_API                  = 'capital';
 	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
 	const DOCUMENTS_API                = 'documents';
+	const VAT_API                      = 'vat';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1822,6 +1823,46 @@ class WC_Payments_API_Client {
 	 */
 	public function get_document( $document_id ) {
 		return $this->request( [], self::DOCUMENTS_API . '/' . $document_id, self::GET, true, false, true );
+	}
+
+	/**
+	 * Validates a VAT number on the server and returns the full response.
+	 *
+	 * @param string $vat_number The VAT number.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function validate_vat( $vat_number ) {
+		return $this->request( [], self::VAT_API . '/' . $vat_number, self::GET );
+	}
+
+	/**
+	 * Saves the VAT details on the server and returns the full response.
+	 *
+	 * @param string $vat_number The VAT number.
+	 * @param string $name       The company's name.
+	 * @param string $address    The company's address.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function save_vat_details( $vat_number, $name, $address ) {
+		$response = $this->request(
+			[
+				'vat_number' => $vat_number,
+				'name'       => $name,
+				'address'    => $address,
+			],
+			self::VAT_API,
+			self::POST
+		);
+
+		WC_Payments::get_account_service()->refresh_account_data();
+
+		return $response;
 	}
 
 	/**

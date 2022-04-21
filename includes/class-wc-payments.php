@@ -710,6 +710,10 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
 			$documents_controller = new WC_REST_Payments_Documents_Controller( self::$api_client );
 			$documents_controller->register_routes();
+
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-vat-controller.php';
+			$vat_controller = new WC_REST_Payments_VAT_Controller( self::$api_client );
+			$vat_controller->register_routes();
 		}
 	}
 
