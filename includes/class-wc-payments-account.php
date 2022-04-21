@@ -486,6 +486,12 @@ class WC_Payments_Account {
 			return false;
 		}
 
+		// Redirect directly to onboarding page if come from WC Admin task and are in treatment mode.
+		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
+		if ( 0 < strpos( $http_referer, 'task=payments' ) && WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+			$this->redirect_to( admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' ) );
+		}
+
 		// Redirect if not connected.
 		$this->redirect_to_onboarding_page();
 		return true;
