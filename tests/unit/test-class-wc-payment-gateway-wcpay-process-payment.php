@@ -496,7 +496,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			$this->assertEquals( 'failed', $result_order->get_status() );
 
 			// Assert: Order transaction ID was not set.
-			$this->assertEquals( '', $result_order->get_meta( '_transaction_id' ) );
+			$this->assertEquals( '', $result_order->get_transaction_id() );
 
 			// Assert: Order meta was not updated with charge ID, intention status, or intent ID.
 			$this->assertEquals( '', $result_order->get_meta( '_intent_id' ) );

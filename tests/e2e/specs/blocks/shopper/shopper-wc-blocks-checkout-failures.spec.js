@@ -44,6 +44,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 
 		afterEach( async () => {
 			// Clear card details for the next test
+			await shopperWCP.openCheckoutWCB();
 			await clearWCBCardDetails();
 		} );
 
