@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { render, screen } from '@testing-library/react';
+import user from '@testing-library/user-event';
 import React from 'react';
 import { mocked } from 'ts-jest/utils';
 
@@ -57,5 +58,32 @@ describe( 'VAT form modal', () => {
 		expect(
 			screen.getByRole( 'dialog', { name: 'VAT details' } )
 		).toMatchSnapshot();
+	} );
+
+	it( 'should close when clicking on the dismiss button', () => {
+		let isModalOpen = true;
+		const setModalOpen = ( value: boolean ) => ( isModalOpen = value );
+		const { rerender } = render(
+			<VatFormModal
+				isModalOpen={ isModalOpen }
+				setModalOpen={ setModalOpen }
+				onCompleted={ () => ( {} ) }
+			/>
+		);
+
+		user.click( screen.getByRole( 'button', { name: 'Close dialog' } ) );
+
+		// The isModalOpen prop should have changed, so we need to force a rerender.
+		rerender(
+			<VatFormModal
+				isModalOpen={ isModalOpen }
+				setModalOpen={ setModalOpen }
+				onCompleted={ () => ( {} ) }
+			/>
+		);
+
+		expect(
+			screen.queryByRole( 'dialog', { name: 'VAT details' } )
+		).toBeNull();
 	} );
 } );

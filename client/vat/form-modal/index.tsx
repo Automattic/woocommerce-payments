@@ -25,8 +25,6 @@ const VatFormModal = ( {
 	return isModalOpen ? (
 		<Modal
 			title={ __( 'VAT details', 'woocommerce-payments' ) }
-			isDismissible={ false }
-			shouldCloseOnClickOutside={ true }
 			onRequestClose={ () => setModalOpen( false ) }
 		>
 			<VatForm onCompleted={ onCompleted } />
