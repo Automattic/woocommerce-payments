@@ -241,14 +241,12 @@ exports[`Documents list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item is-numeric"
                 >
-                  <a
-                    href="https://site.com/wp-json/wc/v3/payments/documents/test_document_123456?_wpnonce=random_wp_rest_nonce"
-                    rel="noopener noreferrer"
-                    style="display: inline;"
-                    target="_blank"
+                  <button
+                    class="components-button is-link"
+                    type="button"
                   >
                     Download
-                  </a>
+                  </button>
                 </td>
               </tr>
               <tr>
@@ -271,14 +269,12 @@ exports[`Documents list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item is-numeric"
                 >
-                  <a
-                    href="https://site.com/wp-json/wc/v3/payments/documents/test_document_654321?_wpnonce=random_wp_rest_nonce"
-                    rel="noopener noreferrer"
-                    style="display: inline;"
-                    target="_blank"
+                  <button
+                    class="components-button is-link"
+                    type="button"
                   >
                     Download
-                  </a>
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -549,14 +545,12 @@ exports[`Documents list renders table summary only when the documents summary da
                 <td
                   class="woocommerce-table__item is-numeric"
                 >
-                  <a
-                    href="https://site.com/wp-json/wc/v3/payments/documents/test_document_123456?_wpnonce=random_wp_rest_nonce"
-                    rel="noopener noreferrer"
-                    style="display: inline;"
-                    target="_blank"
+                  <button
+                    class="components-button is-link"
+                    type="button"
                   >
                     Download
-                  </a>
+                  </button>
                 </td>
               </tr>
               <tr>
@@ -579,14 +573,12 @@ exports[`Documents list renders table summary only when the documents summary da
                 <td
                   class="woocommerce-table__item is-numeric"
                 >
-                  <a
-                    href="https://site.com/wp-json/wc/v3/payments/documents/test_document_654321?_wpnonce=random_wp_rest_nonce"
-                    rel="noopener noreferrer"
-                    style="display: inline;"
-                    target="_blank"
+                  <button
+                    class="components-button is-link"
+                    type="button"
                   >
                     Download
-                  </a>
+                  </button>
                 </td>
               </tr>
             </tbody>
