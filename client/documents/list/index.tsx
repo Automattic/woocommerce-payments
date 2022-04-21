@@ -125,13 +125,15 @@ export const DocumentsList = (): JSX.Element => {
 	] = useState< {
 		documentId: Document[ 'document_id' ];
 		type: Document[ 'type' ];
+		newTab: boolean;
 	} | null >( null );
 
 	const handleDocumentDownload = (
 		documentId: Document[ 'document_id' ],
-		type: Document[ 'type' ]
+		type: Document[ 'type' ],
+		newTab: boolean
 	): boolean => {
-		setInterruptedDownloadDocument( { documentId, type } );
+		setInterruptedDownloadDocument( { documentId, type, newTab } );
 
 		if ( 'vat_invoice' === type ) {
 			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
@@ -144,10 +146,14 @@ export const DocumentsList = (): JSX.Element => {
 	};
 
 	const downloadDocument = useCallback(
-		( documentId: Document[ 'document_id' ], type: Document[ 'type' ] ) => {
+		(
+			documentId: Document[ 'document_id' ],
+			type: Document[ 'type' ],
+			newTab = true
+		) => {
 			const url = getDocumentUrl( documentId );
-			if ( handleDocumentDownload( documentId, type ) ) {
-				window.open( url, '_blank' );
+			if ( handleDocumentDownload( documentId, type, newTab ) ) {
+				window.open( url, newTab ? '_blank' : '_self' );
 			}
 		},
 		[]
@@ -161,7 +167,8 @@ export const DocumentsList = (): JSX.Element => {
 		if ( interruptedDownloadDocument ) {
 			downloadDocument(
 				interruptedDownloadDocument.documentId,
-				interruptedDownloadDocument.type
+				interruptedDownloadDocument.type,
+				interruptedDownloadDocument.newTab
 			);
 		}
 	};
@@ -176,7 +183,8 @@ export const DocumentsList = (): JSX.Element => {
 		if ( requestedDocumentID && requestedDocumentType ) {
 			downloadDocument(
 				requestedDocumentID,
-				requestedDocumentType as Document[ 'type' ]
+				requestedDocumentType as Document[ 'type' ],
+				false
 			);
 		}
 	}, [ requestedDocumentID, requestedDocumentType, downloadDocument ] );

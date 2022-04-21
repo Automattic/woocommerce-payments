@@ -307,7 +307,7 @@ describe( 'Direct document download', () => {
 		expect( window.open ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should download the document if document type and ID are in the query', () => {
+	it( 'should download the document in the same tab if document type and ID are in the query', () => {
 		updateQueryString(
 			{ document_id: 'vat_invoice_123456', document_type: 'vat_invoice' },
 			'/',
@@ -318,7 +318,7 @@ describe( 'Direct document download', () => {
 
 		expect( window.open ).toHaveBeenCalledWith(
 			'https://site.com/wp-json/wc/v3/payments/documents/vat_invoice_123456?_wpnonce=random_wp_rest_nonce',
-			'_blank'
+			'_self'
 		);
 	} );
 } );
