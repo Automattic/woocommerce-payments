@@ -1887,6 +1887,19 @@ class WC_Payments_API_Client {
 			}
 		}
 
+		$env                    = [];
+		$env['WP_User']         = is_user_logged_in() ? wp_get_current_user()->user_login : 'Guest (non logged-in user)';
+		$env['HTTP_REFERER']    = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '--' ) );
+		$env['HTTP_USER_AGENT'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '--' ) );
+		$env['REQUEST_URI']     = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '--' ) );
+		$env['DOING_AJAX']      = defined( 'DOING_AJAX' ) && DOING_AJAX;
+		$env['DOING_CRON']      = defined( 'DOING_CRON' ) && DOING_CRON;
+		$env['WP_CLI']          = defined( 'WP_CLI' ) && WP_CLI;
+		Logger::log(
+			'ENVIRONMENT: '
+			. var_export( $env, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		);
+
 		Logger::log( "REQUEST $method $redacted_url" );
 		Logger::log(
 			'HEADERS: '
