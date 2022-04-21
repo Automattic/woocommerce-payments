@@ -259,6 +259,27 @@ class Database_Cache_Test extends WP_UnitTestCase {
 		$this->assert_cache_contains( $old );
 	}
 
+	public function test_delete_cache_by_prefix_will_not_delete_values_that_are_not_cache_keys() {
+		$cache_value = 'foo';
+		$this->write_mock_cache( $cache_value, time() + YEAR_IN_SECONDS );
+
+		$this->database_cache->delete_by_prefix( self::MOCK_KEY );
+
+		$this->assert_cache_contains( $cache_value );
+	}
+
+	public function test_delete_cache_by_prefix_will_delete_cached_data_that_starts_with_prefix() {
+		$payment_method_cache_key_one = Database_Cache::PAYMENT_METHODS_KEY . '1';
+		$payment_method_cache_key_two = Database_Cache::PAYMENT_METHODS_KEY . '2';
+		$this->database_cache->add( $payment_method_cache_key_one, 'foo' );
+		$this->database_cache->add( $payment_method_cache_key_two, 'bar' );
+
+		$this->database_cache->delete_by_prefix( Database_Cache::PAYMENT_METHODS_KEY );
+
+		$this->assertNull( $this->database_cache->get( $payment_method_cache_key_one ) );
+		$this->assertNull( $this->database_cache->get( $payment_method_cache_key_two ) );
+	}
+
 	private function write_mock_cache( $data, ?int $fetch_time = null, bool $errored = false ) {
 		update_option(
 			self::MOCK_KEY,

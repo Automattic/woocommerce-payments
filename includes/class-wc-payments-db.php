@@ -79,23 +79,6 @@ class WC_Payments_DB {
 	}
 
 	/**
-	 * Get last active users from passed timestamp.
-	 *
-	 * @param int $timestamp Timestamp to query.
-	 *
-	 * @return array|object|stdClass[]|null
-	 */
-	public function get_last_active_users( $timestamp = null ) {
-		global $wpdb;
-
-		if ( null === $timestamp ) {
-			$timestamp = strtotime( '-1 day' );
-		}
-
-		return $wpdb->get_results( $wpdb->prepare( "SELECT `user_id` FROM $wpdb->usermeta WHERE `meta_key` = %s AND `meta_value` >= %d", 'wc_last_active', $timestamp ), ARRAY_A );
-	}
-
-	/**
 	 * Retrieve an order ID from the DB using a meta key value pair.
 	 *
 	 * @param string $meta_key   Either '_intent_id' or '_charge_id'.

@@ -943,6 +943,9 @@ class WC_Payments_Account {
 					// below re-create it if the server tells us on-boarding is still disabled.
 					delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
 
+					// Delete all saved payment methods cache.
+					$this->database_cache->delete_by_prefix( Database_Cache::BUSINESS_TYPES_KEY );
+
 					$account = $this->payments_api_client->get_account_data();
 				} catch ( API_Exception $e ) {
 					if ( 'wcpay_account_not_found' === $e->get_error_code() ) {
@@ -989,7 +992,6 @@ class WC_Payments_Account {
 	 * @return array|bool|string Either the new account data or false if unavailable.
 	 */
 	public function refresh_account_data() {
-		$this->maybe_clear_payment_methods_cache();
 		return $this->get_cached_account_data( true );
 	}
 
@@ -1257,21 +1259,6 @@ class WC_Payments_Account {
 
 		$reminder_time = time() + ( 90 * DAY_IN_SECONDS );
 		$this->action_scheduler_service->schedule_job( $reminder_time, $action_hook );
-	}
-
-	/**
-	 * Handles adding scheduled action for the clearing saved payments method cache.
-	 *
-	 * @return void
-	 */
-	public function maybe_clear_payment_methods_cache() {
-		$action_hook = 'wcpay_delete_all_cached_payment_methods';
-
-		if ( $this->action_scheduler_service->pending_action_exists( $action_hook ) ) {
-			return;
-		}
-
-		$this->action_scheduler_service->schedule_job( time(), $action_hook );
 	}
 
 	/**

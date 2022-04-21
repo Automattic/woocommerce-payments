@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 
@@ -37,11 +38,6 @@ class WC_Payments_Customer_Service {
 	const WCPAY_TEST_CUSTOMER_ID_OPTION = '_wcpay_customer_id_test';
 
 	/**
-	 * Payment methods transient. Used in conjunction with the customer_id to cache a customer's payment methods.
-	 */
-	const PAYMENT_METHODS_TRANSIENT = 'wcpay_pm_';
-
-	/**
 	 * Key used to store customer id for non logged in users in WooCommerce Session.
 	 */
 	const CUSTOMER_ID_SESSION_KEY = 'wcpay_customer_id';
@@ -61,23 +57,23 @@ class WC_Payments_Customer_Service {
 	private $account;
 
 	/**
-	 * WC_Payments_Account instance to get information about the account
+	 * Database_Cache instance to get information about the account
 	 *
-	 * @var WC_Payments_DB
+	 * @var Database_Cache
 	 */
-	private $wcpay_db;
+	private $database_cache;
 
 	/**
 	 * Class constructor
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 * @param WC_Payments_Account    $account             WC_Payments_Account instance.
-	 * @param WC_Payments_DB         $wcpay_db            WC_Payments_DB instance.
+	 * @param Database_Cache         $database_cache       Database_Cache instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payments_DB $wcpay_db ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, Database_Cache $database_cache ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
-		$this->wcpay_db            = $wcpay_db;
+		$this->database_cache      = $database_cache;
 
 		/*
 		 * Adds the WooCommerce Payments customer ID found in the user session
@@ -91,7 +87,6 @@ class WC_Payments_Customer_Service {
 		 * purchases a subscription product.
 		 */
 		add_action( 'woocommerce_created_customer', [ $this, 'add_customer_id_to_user' ] );
-		add_action( 'wcpay_delete_all_cached_payment_methods', [ $this, 'handle_delete_all_cached_payment_methods' ] );
 	}
 
 	/**
@@ -215,10 +210,10 @@ class WC_Payments_Customer_Service {
 		}
 
 		$cache_payment_methods = ! WC_Payments::is_network_saved_cards_enabled();
-		$transient_key         = self::PAYMENT_METHODS_TRANSIENT . $customer_id . '_' . $type;
+		$cache_key             = Database_Cache::PAYMENT_METHODS_KEY . $customer_id . '_' . $type;
 
 		if ( $cache_payment_methods ) {
-			$payment_methods = get_transient( $transient_key );
+			$payment_methods = $this->database_cache->get( $cache_key );
 			if ( is_array( $payment_methods ) ) {
 				return $payment_methods;
 			}
@@ -227,7 +222,7 @@ class WC_Payments_Customer_Service {
 		try {
 			$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
 			if ( $cache_payment_methods ) {
-				set_transient( $transient_key, $payment_methods, DAY_IN_SECONDS );
+				$this->database_cache->add( $cache_key, $payment_methods );
 			}
 			return $payment_methods;
 
@@ -273,7 +268,7 @@ class WC_Payments_Customer_Service {
 		}
 		$customer_id = $this->get_customer_id_by_user_id( $user_id );
 		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
-			delete_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id . '_' . $type );
+			$this->database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY . $customer_id . '_' . $type );
 		}
 	}
 
@@ -335,25 +330,6 @@ class WC_Payments_Customer_Service {
 		}
 
 		return $data;
-	}
-
-	/**
-	 * Delete all cached payment methods. Used when account data is updated from WooCommerce Payments server.
-	 *
-	 * @return void
-	 */
-	public function handle_delete_all_cached_payment_methods() {
-		// Get last active users where payment methods cache key might be added. The payment method cache key expires after.
-		// 24 hours, so we will fetch active users from last 24 hours.
-		$users = $this->wcpay_db->get_last_active_users();
-
-		if ( is_array( $users ) ) {
-			foreach ( $users as $user ) {
-				if ( isset( $user['user_id'] ) ) {
-					$this->clear_cached_payment_methods_for_user( $user['user_id'] );
-				}
-			}
-		}
 	}
 
 	/**
