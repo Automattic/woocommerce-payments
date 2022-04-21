@@ -37,7 +37,15 @@ class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase 
 		$this->assertSame( 'wc-payments-notes-additional-payment-methods', $enable_upe_action->name );
 		$this->assertSame( 'Enable on your store', $enable_upe_action->label );
 		$this->assertStringStartsWith( 'http://example.org/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&action=enable-upe', $enable_upe_action->query );
-		$this->assertSame( true, $enable_upe_action->primary );
+
+		/**
+		 * The $primary property was deprecated from WooCommerce core. Keeping this to maintain the compatibility with old WooCommerce versions.
+		 * @see https://github.com/woocommerce/woocommerce/blob/ff2d7d704a8f72aeb4990811b6972097aa167bea/plugins/woocommerce/src/Admin/Notes/Note.php#L623-L623.
+		 * @see https://github.com/woocommerce/woocommerce-admin/pull/8474
+		 */
+		if ( isset( $enable_upe_action->primary ) ) {
+			$this->assertSame( true, $enable_upe_action->primary );
+		}
 	}
 
 	public function test_get_note_does_not_return_note_when_account_is_not_connected() {
