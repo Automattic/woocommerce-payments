@@ -74,15 +74,13 @@ E2E_BLOG_ID='<blog_id>'
 <summary>Installing Plugins</summary>
 <p>
 
-If you wish to run E2E test for WC Subscriptions, Action Scheduler & WC Gutenberg Products Blocks, the following env variables needs to be added to your `local.env` (replace values as required).
+If you wish to run E2E test for WC Subscriptions the following env variables needs to be added to your `local.env` (replace values as required).
 
 For the `E2E_GH_TOKEN`, follow [these instructions to generate a GitHub Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) and assign the `repo` scope to it.
 
 ```
 E2E_GH_TOKEN='githubPersonalAccessToken'
 WC_SUBSCRIPTIONS_REPO='{owner}/{repo}'
-WC_ACTION_SCHEDULER_REPO='{owner}/{repo}'
-WC_BLOCKS_REPO='{owner}/{repo}'
 ```
 
 </p>
