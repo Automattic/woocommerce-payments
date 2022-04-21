@@ -57,8 +57,8 @@ jobs:
       # Conditionally skip WC Blocks tests. Remove/update based on min supported WC version by the blocks checkout plugin.
       - name: Conditionally skip WC Blocks tests
         run: |
-          SKIP_VERSIONS=('5.2.0' '6.1.0')
-          if [[ " ${SKIP_VERSIONS[@]} " =~ " ${E2E_WC_VERSION} " ]]; then
+          SKIP_WC_VERSIONS=('5.2.0' '6.1.0')
+          if [[ " ${SKIP_WC_VERSIONS[@]} " =~ " ${E2E_WC_VERSION} " ]]; then
             echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
           fi
 
