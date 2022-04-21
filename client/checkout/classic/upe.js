@@ -271,11 +271,9 @@ jQuery( function ( $ ) {
 	const enableStripeLinkPaymentMethod = () => {
 		const linkAutofill = api.getStripe().linkAutofillModal( elements );
 
-		document
-			.getElementById( 'billing_email' )
-			.addEventListener( 'keyup', ( event ) => {
-				linkAutofill.launch( { email: event.target.value } );
-			} );
+		$( '#billing_email' ).on( 'keyup', ( event ) => {
+			linkAutofill.launch( { email: event.target.value } );
+		} );
 
 		linkAutofill.on( 'autofill', ( event ) => {
 			const { billingAddress } = event.value;

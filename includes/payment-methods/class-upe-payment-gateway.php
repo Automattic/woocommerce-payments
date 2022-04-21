@@ -952,14 +952,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$methods = parent::get_upe_available_payment_methods();
 		$fees    = $this->account->get_fees();
 
-		$methods[] = 'au_becs_debit';
-		$methods[] = 'bancontact';
-		$methods[] = 'eps';
-		$methods[] = 'giropay';
-		$methods[] = 'ideal';
-		$methods[] = 'sofort';
-		$methods[] = 'sepa_debit';
-		$methods[] = 'p24';
+		$methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$methods = array_values(
