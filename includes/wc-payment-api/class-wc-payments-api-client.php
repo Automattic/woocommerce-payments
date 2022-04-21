@@ -1143,7 +1143,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[],
 			self::ONBOARDING_API . '/business_types',
-			self::GET
+			self::GET,
+			true,
+			true
 		);
 	}
 
@@ -1171,7 +1173,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$params,
 			self::ONBOARDING_API . '/required_verification_information',
-			self::GET
+			self::GET,
+			true,
+			true
 		);
 	}
 
