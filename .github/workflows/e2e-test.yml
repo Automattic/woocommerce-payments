@@ -60,12 +60,6 @@ jobs:
           SKIP_VERSIONS=('5.2.0' '6.1.0')
           if [[ " ${SKIP_VERSIONS[@]} " =~ " ${E2E_WC_VERSION} " ]]; then
             echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
-            if [[
-                $E2E_GROUP == 'wcpay' && $E2E_BRANCH == 'merchant' ||
-                $E2E_GROUP == 'blocks'
-            ]]; then
-                echo "SKIP_E2E_WORKFLOW=1" >> $GITHUB_ENV
-            fi
           fi
 
       # Log workflow configuration
