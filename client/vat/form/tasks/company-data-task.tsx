@@ -3,7 +3,12 @@
 /**
  * External dependencies
  */
-import { Button, Notice, TextControl } from '@wordpress/components';
+import {
+	Button,
+	Notice,
+	TextareaControl,
+	TextControl,
+} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import React, { useContext, useEffect, useState } from 'react';
 import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
@@ -100,7 +105,7 @@ export const CompanyDataTask = ( {
 					onChange={ setCompanyName }
 				/>
 
-				<TextControl
+				<TextareaControl
 					label={ __( 'Address', 'woocommerce-payments' ) }
 					value={ companyAddress }
 					onChange={ setCompanyAddress }
