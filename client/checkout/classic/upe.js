@@ -38,6 +38,11 @@ jQuery( function ( $ ) {
 			forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 			locale: getConfig( 'locale' ),
 			isUPEEnabled,
+			apiVersion:
+				paymentMethodsConfig.link !== undefined &&
+				paymentMethodsConfig.card !== undefined
+					? '2020-08-27;link_beta=v1'
+					: '',
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
