@@ -266,48 +266,14 @@ fi
 
 if [[ ! ${SKIP_WC_ACTION_SCHEDULER_TESTS} ]]; then
 	echo "Install and activate the latest release of Action Scheduler"
-	cd "$E2E_ROOT"/deps
-
-	LATEST_RELEASE_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_ACTION_SCHEDULER_REPO"/releases/latest | jq -r '.assets[0].id')
-
-	curl -LJ \
-		-H "Authorization: token $E2E_GH_TOKEN" \
-		-H "Accept: application/octet-stream" \
-		--output action-scheduler.zip \
-		https://api.github.com/repos/"$WC_ACTION_SCHEDULER_REPO"/releases/assets/"$LATEST_RELEASE_ASSET_ID"
-
-	unzip -qq action-scheduler.zip -d action-scheduler-source
-
-	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv action-scheduler-source/action-scheduler/* action-scheduler
-
-	cli wp plugin activate action-scheduler
-
-	rm -rf action-scheduler-source
+	cli wp plugin install action-scheduler --activate
 else
 	echo "Skipping install of Action Scheduler"
 fi
 
 if [[ ! ${SKIP_WC_BLOCKS_TESTS} ]]; then
 	echo "Install and activate the latest release of WooCommerce Blocks"
-	cd "$E2E_ROOT"/deps
-
-	LATEST_RELEASE_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_BLOCKS_REPO"/releases/latest | jq -r '.assets[0].id')
-
-	curl -LJ \
-		-H "Authorization: token $E2E_GH_TOKEN" \
-		-H "Accept: application/octet-stream" \
-		--output woo-gutenberg-products-block.zip \
-		https://api.github.com/repos/"$WC_BLOCKS_REPO"/releases/assets/"$LATEST_RELEASE_ASSET_ID"
-
-	unzip -qq woo-gutenberg-products-block.zip -d woo-gutenberg-products-block-source
-
-	echo "Moving the unzipped plugin files. This may require your admin password"
-	sudo mv woo-gutenberg-products-block-source/* woo-gutenberg-products-block
-
-	cli wp plugin activate woo-gutenberg-products-block
-
-	rm -rf woo-gutenberg-products-block-source
+	cli wp plugin install woo-gutenberg-products-block --activate
 else
 	echo "Skipping install of WooCommerce Blocks"
 fi
