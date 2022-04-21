@@ -166,6 +166,21 @@ export const DocumentsList = (): JSX.Element => {
 		}
 	};
 
+	// Check if the page view is requesting a specific document and trigger its download.
+	const {
+		document_id: requestedDocumentID,
+		document_type: requestedDocumentType,
+	} = getQuery();
+
+	useEffect( () => {
+		if ( requestedDocumentID && requestedDocumentType ) {
+			downloadDocument(
+				requestedDocumentID,
+				requestedDocumentType as Document[ 'type' ]
+			);
+		}
+	}, [ requestedDocumentID, requestedDocumentType, downloadDocument ] );
+
 	const columnsToDisplay = getColumns();
 
 	const totalRows = documentsSummary.count || 0;

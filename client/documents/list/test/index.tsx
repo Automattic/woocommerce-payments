@@ -6,7 +6,7 @@
 import * as React from 'react';
 import { createEvent, fireEvent, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
-import { getQuery } from '@woocommerce/navigation';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -279,5 +279,46 @@ describe( 'Document download button', () => {
 				} );
 			} );
 		} );
+	} );
+} );
+
+describe( 'Direct document download', () => {
+	beforeEach( () => {
+		window.open = jest.fn();
+
+		global.wcpaySettings = {
+			accountStatus: { hasSubmittedVatData: true },
+		};
+	} );
+
+	it( 'should not download the document if document type is missing', () => {
+		updateQueryString( { document_id: 'vat_invoice_123456' }, '/', {} );
+
+		render( <DocumentsList /> );
+
+		expect( window.open ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should not download the document if document ID is missing', () => {
+		updateQueryString( { document_type: 'vat_invoice' }, '/', {} );
+
+		render( <DocumentsList /> );
+
+		expect( window.open ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should download the document if document type and ID are in the query', () => {
+		updateQueryString(
+			{ document_id: 'vat_invoice_123456', document_type: 'vat_invoice' },
+			'/',
+			{}
+		);
+
+		render( <DocumentsList /> );
+
+		expect( window.open ).toHaveBeenCalledWith(
+			'https://site.com/wp-json/wc/v3/payments/documents/vat_invoice_123456?_wpnonce=random_wp_rest_nonce',
+			'_blank'
+		);
 	} );
 } );
