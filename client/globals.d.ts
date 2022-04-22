@@ -10,6 +10,7 @@ declare const wcpaySettings: {
 	accountStatus: {
 		error?: boolean;
 		status?: string;
+		country?: string;
 		hasSubmittedVatData?: boolean;
 	};
 	accountLoans: {
