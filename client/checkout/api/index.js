@@ -27,13 +27,7 @@ export default class WCPayAPI {
 		this.request = request;
 	}
 
-	createStripe(
-		publishableKey,
-		locale,
-		accountId = '',
-		betas = [],
-		apiVersion = ''
-	) {
+	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
 		const options = { locale };
 
 		if ( accountId ) {
@@ -43,8 +37,8 @@ export default class WCPayAPI {
 			options.betas = betas;
 		}
 
-		if ( '' !== this.apiVersion ) {
-			options.apiVersion = apiVersion;
+		if ( betas.includes( 'link_beta_2' ) ) {
+			options.apiVersion = '2020-08-27;link_beta=v1';
 		}
 
 		return new Stripe( publishableKey, options );
@@ -63,7 +57,7 @@ export default class WCPayAPI {
 			forceNetworkSavedCards,
 			locale,
 			isUPEEnabled,
-			apiVersion,
+			isStripeLinkEnabled,
 		} = this.options;
 
 		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
@@ -79,7 +73,7 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			if ( isUPEEnabled ) {
 				let betas = [ 'card_country_event_beta_1' ];
-				if ( '' !== apiVersion ) {
+				if ( '' !== isStripeLinkEnabled ) {
 					betas = betas.concat( [
 						'link_autofill_modal_beta_1',
 						'link_beta_2',
@@ -90,8 +84,7 @@ export default class WCPayAPI {
 					publishableKey,
 					locale,
 					accountId,
-					betas,
-					apiVersion
+					betas
 				);
 			} else {
 				this.stripe = this.createStripe(
