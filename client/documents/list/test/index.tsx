@@ -4,7 +4,7 @@
  * External dependencies
  */
 import * as React from 'react';
-import { createEvent, fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
