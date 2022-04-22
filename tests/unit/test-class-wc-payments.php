@@ -91,7 +91,7 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
 	}
 
-	public function test_ajax_init_platform_checkout_sends_correct_data() {
+	public function test_ajax_init_platform_checkout_sends_correct_customer_id() {
 		// Necessary in order to prevent die from being called.
 		define( 'DOING_AJAX', true );
 
