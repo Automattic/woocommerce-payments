@@ -231,12 +231,12 @@ exports[`Documents list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  Test Document
+                  VAT Invoice
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
-                  This is a test document
+                  VAT invoice without proper period dates
                 </td>
                 <td
                   class="woocommerce-table__item is-numeric"
@@ -259,12 +259,12 @@ exports[`Documents list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  Test Document
+                  VAT Invoice
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
-                  This is a test document
+                  VAT invoice without proper period dates
                 </td>
                 <td
                   class="woocommerce-table__item is-numeric"
@@ -535,12 +535,12 @@ exports[`Documents list renders table summary only when the documents summary da
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  Test Document
+                  VAT Invoice
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
-                  This is a test document
+                  VAT invoice without proper period dates
                 </td>
                 <td
                   class="woocommerce-table__item is-numeric"
@@ -563,12 +563,12 @@ exports[`Documents list renders table summary only when the documents summary da
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  Test Document
+                  VAT Invoice
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
-                  This is a test document
+                  VAT invoice without proper period dates
                 </td>
                 <td
                   class="woocommerce-table__item is-numeric"

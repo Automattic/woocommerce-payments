@@ -42,16 +42,16 @@ declare const global: {
 
 const getMockDocuments: () => Document[] = () => [
 	{
-		document_id: 'test_document_123456',
+		document_id: 'vat_invoice_123456',
 		date: '2020-01-02 17:46:02',
-		type: 'test_document',
+		type: 'vat_invoice',
 		period_from: '',
 		period_to: '',
 	},
 	{
-		document_id: 'test_document_654321',
+		document_id: 'vat_invoice_654321',
 		date: '2020-01-05 04:22:59',
-		type: 'test_document',
+		type: 'vat_invoice',
 		period_from: '',
 		period_to: '',
 	},
