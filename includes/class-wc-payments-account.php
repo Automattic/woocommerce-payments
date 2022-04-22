@@ -50,13 +50,14 @@ class WC_Payments_Account {
 	/**
 	 * Class constructor
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
-	 * @param Database_Cache         $database_cache      Database cache util.
+	 * @param WC_Payments_API_Client               $payments_api_client Payments API client.
+	 * @param Database_Cache                       $database_cache      Database cache util.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service    Action scheduler service.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache, WC_Payments_Action_Scheduler_Service $action_scheduler_service ) {
 		$this->payments_api_client      = $payments_api_client;
 		$this->database_cache           = $database_cache;
-		$this->action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
+		$this->action_scheduler_service = $action_scheduler_service;
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
@@ -943,9 +944,6 @@ class WC_Payments_Account {
 					// below re-create it if the server tells us on-boarding is still disabled.
 					delete_transient( self::ON_BOARDING_DISABLED_TRANSIENT );
 
-					// Delete all saved payment methods cache.
-					$this->database_cache->delete_by_prefix( Database_Cache::BUSINESS_TYPES_KEY );
-
 					$account = $this->payments_api_client->get_account_data();
 				} catch ( API_Exception $e ) {
 					if ( 'wcpay_account_not_found' === $e->get_error_code() ) {
@@ -984,6 +982,15 @@ class WC_Payments_Account {
 		}
 
 		return $account;
+	}
+
+	/**
+	 * Delete all saved paymenent methods that are stored inside database cache driver.
+	 *
+	 * @return void
+	 */
+	public function delete_cached_payment_methods() {
+		$this->database_cache->delete_by_prefix( Database_Cache::PAYMENT_METHODS_KEY_PREFIX );
 	}
 
 	/**

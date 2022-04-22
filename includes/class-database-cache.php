@@ -17,9 +17,9 @@ class Database_Cache {
 	const BUSINESS_TYPES_KEY = 'wcpay_business_types_data';
 	const CURRENCIES_KEY     = 'wcpay_multi_currency_cached_currencies';
 	/**
-	 * Payment methods transient. Used in conjunction with the customer_id to cache a customer's payment methods.
+	 * Payment methods cache key prefix. Used in conjunction with the customer_id to cache a customer's payment methods.
 	 */
-	const PAYMENT_METHODS_KEY = 'wcpay_pm_';
+	const PAYMENT_METHODS_KEY_PREFIX = 'wcpay_pm_';
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
@@ -146,8 +146,10 @@ class Database_Cache {
 	public function delete_by_prefix( string $key ) {
 		/**
 		 * Protection against accidentally deleting all options or options that are not related to WcPay caching.
+		 * Since only one cache key prefix is supported, we will check only this one by checking does key starts with payment method key prefix.
+		 * Feel free to update this statement if more prefix cache keys you are planning to add.
 		 */
-		if ( ! in_array( $key, [ self::ACCOUNT_KEY, self::BUSINESS_TYPES_KEY, self::CURRENCIES_KEY, self::PAYMENT_METHODS_KEY ], true ) ) {
+		if ( strncmp( $key, self::PAYMENT_METHODS_KEY_PREFIX, strlen( self::PAYMENT_METHODS_KEY_PREFIX ) ) !== 0 ) {
 			return; // Maybe throw exception here...
 		}
 		global $wpdb;

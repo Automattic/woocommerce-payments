@@ -210,7 +210,7 @@ class WC_Payments_Customer_Service {
 		}
 
 		$cache_payment_methods = ! WC_Payments::is_network_saved_cards_enabled();
-		$cache_key             = Database_Cache::PAYMENT_METHODS_KEY . $customer_id . '_' . $type;
+		$cache_key             = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type;
 
 		if ( $cache_payment_methods ) {
 			$payment_methods = $this->database_cache->get( $cache_key );
@@ -268,7 +268,7 @@ class WC_Payments_Customer_Service {
 		}
 		$customer_id = $this->get_customer_id_by_user_id( $user_id );
 		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
-			$this->database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY . $customer_id . '_' . $type );
+			$this->database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
 		}
 	}
 

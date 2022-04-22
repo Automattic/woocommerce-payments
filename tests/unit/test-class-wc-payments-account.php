@@ -38,6 +38,13 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 	private $mock_database_cache;
 
 	/**
+	 * Mock WC_Payments_Action_Scheduler_Service
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_action_scheduler_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -54,9 +61,10 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			->getMock();
 		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
 
-		$this->mock_database_cache = $this->createMock( Database_Cache::class );
+		$this->mock_database_cache           = $this->createMock( Database_Cache::class );
+		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache );
+		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service );
 	}
 
 	public function tear_down() {
@@ -228,7 +236,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
 		$mock_wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service ] )
 			->getMock();
 
 		$mock_wcpay_account->expects( $this->once() )->method( 'redirect_to' );
@@ -670,6 +678,20 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
 			return;
 		}
+		$action_hook = 'wcpay_instant_deposit_reminder';
+		$this->mock_action_scheduler_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'pending_action_exists' )
+			->withConsecutive( [ $action_hook ], [ $action_hook ] )
+			->willReturnOnConsecutiveCalls( false, true );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->once() )
+			->method( 'schedule_job' )
+			->with(
+				$this->greaterThan( time() ),
+				$action_hook
+			);
 
 		$account = [
 			'is_live'                   => true,
@@ -682,9 +704,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertNotSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
 
 		// Test to see if scheduled action was created.
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
-		$action_hook              = 'wcpay_instant_deposit_reminder';
-		$this->assertTrue( $action_scheduler_service->pending_action_exists( $action_hook ) );
+		$this->assertTrue( $this->mock_action_scheduler_service->pending_action_exists( $action_hook ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_note_not_eligible() {
@@ -704,6 +724,31 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
 	}
 
+	public function test_handle_instant_deposits_inbox_reminder_will_not_schedule_job_if_pending_action_exist() {
+		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			$this->markTestSkipped( 'The used WC components are not backward compatible' );
+			return;
+		}
+
+		$account = [
+			'is_live'                   => true,
+			'instant_deposits_eligible' => true,
+		];
+
+		$this->cache_account_details( $account );
+		$this->mock_action_scheduler_service
+			->expects( $this->once() )
+			->method( 'pending_action_exists' )
+			->with( WC_Payments_Account::INSTANT_DEPOSITS_REMINDER_ACTION )
+			->willReturn( true );
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->wcpay_account->handle_instant_deposits_inbox_reminder();
+	}
+
 	public function test_handle_instant_deposits_inbox_reminder() {
 		if ( ! version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			$this->markTestSkipped( 'The used WC components are not backward compatible' );
@@ -714,20 +759,23 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 			'is_live'                   => true,
 			'instant_deposits_eligible' => true,
 		];
-		// Handle_instant_deposits_inbox_reminder will retrieve the account from cache, so set it there.
+
 		$this->cache_account_details( $account );
+		$this->mock_action_scheduler_service
+			->expects( $this->once() )
+			->method( 'pending_action_exists' )
+			->with( WC_Payments_Account::INSTANT_DEPOSITS_REMINDER_ACTION )
+			->willReturn( false );
 
-		// This will create and log the first note, like what we would see in the wild.
-		$this->test_handle_instant_deposits_inbox_note( $account );
-		$note_id    = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
-		$first_note = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id );
+		$this->mock_action_scheduler_service
+			->expects( $this->once() )
+			->method( 'schedule_job' )
+			->willReturn(
+				$this->greaterThan( time() ),
+				WC_Payments_Account::INSTANT_DEPOSITS_REMINDER_ACTION
+			);
 
-		// This will delete the first note and create a new note since it calls test_handle_instant_deposits_inbox_note again.
 		$this->wcpay_account->handle_instant_deposits_inbox_reminder();
-		$second_note = ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id );
-
-		// So we make sure the two are different.
-		$this->assertNotSame( $first_note, $second_note );
 	}
 
 	public function loan_approved_no_action_account_states() {

@@ -431,7 +431,7 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		];
 		$customer_id          = 'cus_12345';
 		$payment_method_name  = 'card';
-		$cache_key            = Database_Cache::PAYMENT_METHODS_KEY . $customer_id . '_' . $payment_method_name;
+		$cache_key            = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $payment_method_name;
 
 		$this->mock_api_client
 			->expects( $this->once() )
