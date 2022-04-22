@@ -10,22 +10,24 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import VatForm from '../form';
+import { VatFormOnCompleted } from '../types';
 
 const VatFormModal = ( {
 	isModalOpen,
 	setModalOpen,
+	onCompleted,
 }: {
 	isModalOpen: boolean;
 	setModalOpen: ( value: boolean ) => void;
+	onCompleted: VatFormOnCompleted;
 } ): JSX.Element | null => {
 	return isModalOpen ? (
 		<Modal
 			title={ __( 'VAT details', 'woocommerce-payments' ) }
-			isDismissible={ false }
-			shouldCloseOnClickOutside={ true }
 			onRequestClose={ () => setModalOpen( false ) }
 		>
-			<p>VAT Form</p>
+			<VatForm onCompleted={ onCompleted } />
 		</Modal>
 	) : null;
 };
