@@ -98,7 +98,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Given an intent ID and an order ID, add the intent ID to the order and capture it.
-	 * Use-cases: Mobile apps uses it for `card_present` and `interac_present` payment types.
+	 * Use-cases: Mobile apps using it for `card_present` and `interac_present` payment types.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
@@ -247,7 +247,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Create a new in-person payment intent for the given order ID without confirming it.
-	 * Use-cases: Mobile apps uses it for `card_present` payment types. (`interac_present` is handled on appsa side via Stripe SDK).
+	 * Use-cases: Mobile apps using it for `card_present` payment types. (`interac_present` is handled on appsa side via Stripe SDK).
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
