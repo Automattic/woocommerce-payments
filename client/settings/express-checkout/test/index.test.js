@@ -12,6 +12,7 @@ import userEvent from '@testing-library/user-event';
 import ExpressCheckout from '..';
 import {
 	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
@@ -21,6 +22,7 @@ jest.mock( 'wcpay/data', () => ( {
 	usePaymentRequestEnabledSettings: jest.fn(),
 	usePlatformCheckoutEnabledSettings: jest.fn(),
 	useEnabledPaymentMethodIds: jest.fn(),
+	useGetAvailablePaymentMethodIds: jest.fn(),
 } ) );
 
 const getMockPaymentRequestEnabledSettings = (
@@ -47,6 +49,7 @@ describe( 'ExpressCheckout', () => {
 		const updateIsPlatformCheckoutEnabledHandler = jest.fn();
 		const updateIsPaymentRequestEnabledHandler = jest.fn();
 
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
 
 		usePlatformCheckoutEnabledSettings.mockReturnValue(
@@ -89,6 +92,7 @@ describe( 'ExpressCheckout', () => {
 	it( 'has the correct href links to the express checkout settings pages', async () => {
 		const context = { featureFlags: { platformCheckout: true } };
 
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
 
 		render(
@@ -115,7 +119,7 @@ describe( 'ExpressCheckout', () => {
 
 	it( 'hide link payment if card payment method is inactive', async () => {
 		const context = { featureFlags: { platformCheckout: true } };
-
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'link' ] ] );
 
 		render(
@@ -129,7 +133,7 @@ describe( 'ExpressCheckout', () => {
 
 	it( 'show link payment if card payment method is active', async () => {
 		const context = { featureFlags: { platformCheckout: true } };
-
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
 
 		render(
@@ -143,6 +147,7 @@ describe( 'ExpressCheckout', () => {
 
 	it( 'test stripe link checkbox checked', async () => {
 		const context = { featureFlags: { platformCheckout: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
 
 		const container = render(
@@ -156,6 +161,7 @@ describe( 'ExpressCheckout', () => {
 
 	it( 'test stripe link checkbox not checked', async () => {
 		const context = { featureFlags: { platformCheckout: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
 		const container = render(

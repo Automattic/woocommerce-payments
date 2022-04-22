@@ -14,6 +14,7 @@ import { useContext } from '@wordpress/element';
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import {
 	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
@@ -35,6 +36,8 @@ const ExpressCheckout = () => {
 		updateIsPlatformCheckoutEnabled,
 	] = usePlatformCheckoutEnabledSettings();
 
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
+
 	const [
 		enabledMethodIds,
 		updateEnabledMethodIds,
@@ -54,7 +57,10 @@ const ExpressCheckout = () => {
 			] );
 		}
 	};
-	const displayLinkPaymentMethod = enabledMethodIds.includes( 'card' );
+
+	const displayLinkPaymentMethod =
+		enabledMethodIds.includes( 'card' ) &&
+		availablePaymentMethodIds.includes( 'link' );
 	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
 
 	const {

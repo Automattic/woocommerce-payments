@@ -932,7 +932,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) ) {
 			$enabled_payment_methods = array_filter(
 				$enabled_payment_methods,
-				function( $method ) {
+				static function( $method ) {
 					return Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $method;
 				}
 			);

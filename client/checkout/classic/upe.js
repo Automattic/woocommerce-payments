@@ -24,6 +24,9 @@ jQuery( function ( $ ) {
 	const enabledBillingFields = getConfig( 'enabledBillingFields' );
 	const upePaymentIntentData = getConfig( 'upePaymentIntentData' );
 	const upeSetupIntentData = getConfig( 'upeSetupIntentData' );
+	const isStripeLinkEnabled =
+		paymentMethodsConfig.link !== undefined &&
+		paymentMethodsConfig.card !== undefined;
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -38,11 +41,7 @@ jQuery( function ( $ ) {
 			forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 			locale: getConfig( 'locale' ),
 			isUPEEnabled,
-			apiVersion:
-				paymentMethodsConfig.link !== undefined &&
-				paymentMethodsConfig.card !== undefined
-					? '2020-08-27;link_beta=v1'
-					: '',
+			apiVersion: isStripeLinkEnabled ? '2020-08-27;link_beta=v1' : '',
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -369,10 +368,7 @@ jQuery( function ( $ ) {
 			fonts: getFontRulesFromPage(),
 		} );
 
-		if (
-			paymentMethodsConfig.link !== undefined &&
-			paymentMethodsConfig.card !== undefined
-		) {
+		if ( isStripeLinkEnabled ) {
 			enableStripeLinkPaymentMethod();
 		}
 
