@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
+import { getCookieValue } from '../utils/upe';
 
 export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
@@ -197,6 +198,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const platformCheckoutLocateUser = ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
+		const platformCheckoutSavedEmail = decodeURIComponent(
+			getCookieValue( 'wcpay_platform_checkout_email' )
+		);
 		const emailParam = new URLSearchParams();
 		emailParam.append( 'email', email );
 
@@ -218,7 +222,17 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				);
 				window.dispatchEvent( PlatformCheckoutUserCheckEvent );
 
-				if ( data[ 'user-exists' ] ) {
+				if (
+					data[ 'user-exists' ] &&
+					platformCheckoutSavedEmail === email
+				) {
+					// User has used the platform checkout within the last days, redirect them straight.
+					api.initPlatformCheckout( email ).then( ( response ) => {
+						if ( 'success' === response.result ) {
+							window.location = response.url;
+						}
+					} );
+				} else if ( data[ 'user-exists' ] ) {
 					openIframe( email );
 				} else if ( 'rest_invalid_param' !== data.code ) {
 					wcpayTracks.recordUserEvent(
