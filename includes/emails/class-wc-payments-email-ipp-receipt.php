@@ -61,6 +61,8 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			// Triggers for this email.
 			add_action( 'woocommerce_payments_email_ipp_receipt_notification', [ $this, 'trigger' ], 10, 3 );
 
+			add_action( 'phpmailer_init', [ $this, 'handle_multipart' ] );
+
 			/**
 			 * Please don't move. The call to the parent constructor here is intentional. It allows this class to merge
 			 * its placeholders with the parent's and prefix the settings with its own identifier.
@@ -70,6 +72,20 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			 * @see: WC_Email::_construct()
 			*/
 			parent::__construct();
+		}
+
+		/**
+		 * Handle multipart mail.
+		 *
+		 * @param  PHPMailer $mailer PHPMailer object.
+		 * @return PHPMailer
+		 */
+		public function handle_multipart( $mailer ) {
+			if ( $this->sending && 'multipart' === $this->get_email_type() ) {
+				$mailer->msgHTML( $this->style_inline( $this->get_content_html() ) );
+				$this->sending = false;
+			}
+			return $mailer;
 		}
 
 		/**
@@ -200,6 +216,7 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 						'support_address' => $settings['support_info']['address'],
 						'support_phone'   => $settings['support_info']['phone'],
 						'support_email'   => $settings['support_info']['email'],
+						'branding_logo'   => $settings['branding_logo'],
 					],
 					'',
 					WCPAY_ABSPATH . 'templates/'

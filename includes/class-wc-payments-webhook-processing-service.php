@@ -359,6 +359,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Send the customer a card reader receipt if it's an in person payment type.
 		if ( Payment_Method::CARD_PRESENT === ( $charges_data[0]['payment_method_details']['type'] ?? null ) ) {
+			$branding_logo     = $this->wcpay_gateway->get_option( 'account_branding_logo' );
 			$merchant_settings = [
 				'business_name' => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'support_info'  => [
@@ -366,6 +367,7 @@ class WC_Payments_Webhook_Processing_Service {
 					'phone'   => $this->wcpay_gateway->get_option( 'account_business_support_phone' ),
 					'email'   => $this->wcpay_gateway->get_option( 'account_business_support_email' ),
 				],
+				'branding_logo' => ( ! empty( $branding_logo ) ) ? $this->api_client->get_file_contents( $branding_logo, false ) : [],
 			];
 			$this->receipt_service->send_customer_ipp_receipt_email( $order, $merchant_settings, $charges_data[0] );
 		}

@@ -22,6 +22,9 @@ defined( 'ABSPATH' ) || exit;
 		<tbody>
 			<tr>
 				<td>
+				<?php if ( ! empty( $branding_logo['content_type'] ) ) { ?>
+					<img class="branding-logo" src="data:<?php echo esc_html( $branding_logo['content_type'] ); ?>;base64,<?php echo esc_html( $branding_logo['file_content'] ); ?>" alt="<?php echo esc_html( $business_name ); ?>"/>
+				<?php } ?>
 					<h1><?php echo esc_html( $business_name ); ?></h1>
 					<?php if ( ! empty( $support_address ) ) { ?>
 						<div><?php echo esc_html( $support_address['line1'] ); ?></div>
