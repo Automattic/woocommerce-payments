@@ -60,6 +60,7 @@ class WC_Payments_API_Client {
 	const CAPITAL_API                  = 'capital';
 	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
 	const DOCUMENTS_API                = 'documents';
+	const VAT_API                      = 'vat';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -241,6 +242,10 @@ class WC_Payments_API_Client {
 			$request['cvc_confirmation'] = $cvc_confirmation;
 		}
 
+		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
+			$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
+		}
+
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
@@ -273,8 +278,7 @@ class WC_Payments_API_Client {
 		$request['capture_method']       = $capture_method;
 
 		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
-			$request['metadata']['fraud_prevention_data_available'] = true;
-			$request['metadata']['fraud_prevention_data']           = Buyer_Fingerprinting_Service::get_instance()->hash_data_for_fraud_prevention( $order_id );
+			$request['metadata'] = $this->get_fingerprint_metadata();
 		}
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
@@ -1822,6 +1826,46 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Validates a VAT number on the server and returns the full response.
+	 *
+	 * @param string $vat_number The VAT number.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function validate_vat( $vat_number ) {
+		return $this->request( [], self::VAT_API . '/' . $vat_number, self::GET );
+	}
+
+	/**
+	 * Saves the VAT details on the server and returns the full response.
+	 *
+	 * @param string $vat_number The VAT number.
+	 * @param string $name       The company's name.
+	 * @param string $address    The company's address.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function save_vat_details( $vat_number, $name, $address ) {
+		$response = $this->request(
+			[
+				'vat_number' => $vat_number,
+				'name'       => $name,
+				'address'    => $address,
+			],
+			self::VAT_API,
+			self::POST
+		);
+
+		WC_Payments::get_account_service()->refresh_account_data();
+
+		return $response;
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -1874,6 +1918,19 @@ class WC_Payments_API_Client {
 				);
 			}
 		}
+
+		$env                    = [];
+		$env['WP_User']         = is_user_logged_in() ? wp_get_current_user()->user_login : 'Guest (non logged-in user)';
+		$env['HTTP_REFERER']    = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '--' ) );
+		$env['HTTP_USER_AGENT'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '--' ) );
+		$env['REQUEST_URI']     = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '--' ) );
+		$env['DOING_AJAX']      = defined( 'DOING_AJAX' ) && DOING_AJAX;
+		$env['DOING_CRON']      = defined( 'DOING_CRON' ) && DOING_CRON;
+		$env['WP_CLI']          = defined( 'WP_CLI' ) && WP_CLI;
+		Logger::log(
+			'ENVIRONMENT: '
+			. var_export( $env, true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+		);
 
 		Logger::log( "REQUEST $method $redacted_url" );
 		Logger::log(
@@ -2288,5 +2345,19 @@ class WC_Payments_API_Client {
 	 */
 	public function get_loans() : array {
 		return $this->request( [], self::CAPITAL_API . '/loans', self::GET );
+	}
+
+	/**
+	 * Returns a list of fingerprinting metadata to attach to order.
+	 *
+	 * @return array List of fingerprinting metadata.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	private function get_fingerprint_metadata() {
+		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();
+		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
+
+		return $customer_fingerprint_metadata;
 	}
 }

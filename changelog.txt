@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.0.1 - 2022-04-20 =
+* Fix - Fix templates folder missing in release package
+
 = 4.0.0 - 2022-04-13 =
 * Add - Add card readers business URL field browser validation.
 * Add - Add data fingerprinting for card testing prevention part of intent.
@@ -24,8 +27,7 @@
 * Fix - Empty file input to allow the user to select the same file again if there's an error.
 * Fix - Enable card readers branding section.
 * Fix - Enable WooCommerce Blocks checkout to hide option to save payment methods for a non-reusable payment method.
-* Fix - Fix - Using any other payment methods apart from WooCommerce Payments in "Pay for order".
-form triggers validation errors when UPE checkout is enabled.
+* Fix - Using any other payment methods apart from WooCommerce Payments in "Pay for order" form triggers validation errors when UPE checkout is enabled.
 * Fix - Fix an error in refunding In-Person Payments.
 * Fix - Fixed the pricing displayed on Google Pay/ Apple Pay preview for variable subscription products.
 * Fix - Fix placeholders not being injected into the New Receipt email.

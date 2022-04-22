@@ -187,13 +187,15 @@ class WC_Payments_Account {
 		}
 
 		return [
-			'email'           => $account['email'] ?? '',
-			'status'          => $account['status'],
-			'paymentsEnabled' => $account['payments_enabled'],
-			'depositsStatus'  => $account['deposits_status'],
-			'currentDeadline' => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
-			'pastDue'         => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
-			'accountLink'     => $this->get_login_url(),
+			'email'               => $account['email'] ?? '',
+			'country'             => $account['country'] ?? 'US',
+			'status'              => $account['status'],
+			'paymentsEnabled'     => $account['payments_enabled'],
+			'depositsStatus'      => $account['deposits_status'],
+			'currentDeadline'     => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
+			'pastDue'             => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
+			'accountLink'         => $this->get_login_url(),
+			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
 		];
 	}
 
