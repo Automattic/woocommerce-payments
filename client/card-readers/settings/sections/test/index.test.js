@@ -137,12 +137,6 @@ describe( 'Card Reader Branding Details section', () => {
 		render( <BrandingDetailsSection /> );
 
 		const logo = screen.queryAllByText( 'File Upload' );
-		expect( logo.length ).toEqual( 2 );
-
-		const primary = screen.getByText( 'Primary color' );
-		expect( primary ).toBeInTheDocument();
-
-		const secondary = screen.getByText( 'Secondary color' );
-		expect( secondary ).toBeInTheDocument();
+		expect( logo.length ).toEqual( 1 );
 	} );
 } );
