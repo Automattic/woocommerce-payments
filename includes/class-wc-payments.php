@@ -812,6 +812,17 @@ class WC_Payments {
 	}
 
 	/**
+	 * Sets the customer service instance. This is needed only for tests.
+	 *
+	 * @param WC_Payments_Customer_Service $customer_service_class Instance of WC_Payments_Customer_Service.
+	 *
+	 * @return void
+	 */
+	public static function set_customer_service( WC_Payments_Customer_Service $customer_service_class ) {
+		self::$customer_service = $customer_service_class;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -925,16 +936,6 @@ class WC_Payments {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
-			// Disable nonce checks for API calls. TODO This should be changed.
-			// Make sure this is called after the dev tools have been initialized so the dev mode filter works.
-			add_filter(
-				'rest_request_before_callbacks',
-				function () {
-					if ( self::get_gateway()->is_in_dev_mode() ) {
-						add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-					}
-				}
-			);
 		}
 	}
 
@@ -961,7 +962,7 @@ class WC_Payments {
 		if ( null === $customer_id ) {
 			// create customer.
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
-			self::$customer_service->create_customer_for_user( $user, $customer_data );
+			$customer_id   = self::$customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
 		$account_id = self::get_account_service()->get_stripe_account_id();
@@ -972,6 +973,7 @@ class WC_Payments {
 		$body = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
+			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
 			'email'                => $email,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
