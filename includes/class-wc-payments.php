@@ -925,16 +925,6 @@ class WC_Payments {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
-			// Disable nonce checks for API calls. TODO This should be changed.
-			// Make sure this is called after the dev tools have been initialized so the dev mode filter works.
-			add_filter(
-				'rest_request_before_callbacks',
-				function () {
-					if ( self::get_gateway()->is_in_dev_mode() ) {
-						add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
-					}
-				}
-			);
 
 			// This injects the payments API into core, so the WooCommerce Blocks plugin is not necessary.
 			// The payments API is currently only available in feature builds (with flag `WC_BLOCKS_IS_FEATURE_PLUGIN`).
@@ -979,6 +969,7 @@ class WC_Payments {
 		$body = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
+			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
 			'email'                => $email,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput

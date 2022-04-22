@@ -107,11 +107,11 @@ describe( 'Documents filters', () => {
 			// need to include $ in name, otherwise "Select a document type filter" is also matched.
 			user.selectOptions(
 				screen.getByRole( 'combobox', { name: /document type$/i } ),
-				'test_document'
+				'vat_invoice'
 			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
-			expect( getQuery().type_is ).toEqual( 'test_document' );
+			expect( getQuery().type_is ).toEqual( 'vat_invoice' );
 		} );
 
 		test( 'should filter by is_not', () => {
@@ -120,11 +120,11 @@ describe( 'Documents filters', () => {
 			// need to include $ in name, otherwise "Select a document type filter" is also matched.
 			user.selectOptions(
 				screen.getByRole( 'combobox', { name: /document type$/i } ),
-				'test_document'
+				'vat_invoice'
 			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
-			expect( getQuery().type_is_not ).toEqual( 'test_document' );
+			expect( getQuery().type_is_not ).toEqual( 'vat_invoice' );
 		} );
 	} );
 } );
