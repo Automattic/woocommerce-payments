@@ -14,11 +14,15 @@ import { getQuery } from '@woocommerce/navigation';
 import { DocumentsList } from '../';
 import { useDocuments, useDocumentsSummary } from 'data/index';
 import type { Document } from 'data/documents/hooks';
+import { mocked } from 'ts-jest/utils';
+import VatForm from 'wcpay/vat/form';
 
 jest.mock( 'data/index', () => ( {
 	useDocuments: jest.fn(),
 	useDocumentsSummary: jest.fn(),
 } ) );
+
+jest.mock( 'wcpay/vat/form', () => jest.fn() );
 
 const mockUseDocuments = useDocuments as jest.MockedFunction<
 	typeof useDocuments
@@ -38,16 +42,16 @@ declare const global: {
 
 const getMockDocuments: () => Document[] = () => [
 	{
-		document_id: 'test_document_123456',
+		document_id: 'vat_invoice_123456',
 		date: '2020-01-02 17:46:02',
-		type: 'test_document',
+		type: 'vat_invoice',
 		period_from: '',
 		period_to: '',
 	},
 	{
-		document_id: 'test_document_654321',
+		document_id: 'vat_invoice_654321',
 		date: '2020-01-05 04:22:59',
-		type: 'test_document',
+		type: 'vat_invoice',
 		period_from: '',
 		period_to: '',
 	},
@@ -175,6 +179,20 @@ describe( 'Document download button', () => {
 				isLoading: false,
 				documentsError: undefined,
 			} );
+
+			mocked( VatForm ).mockImplementation( ( { onCompleted } ) => (
+				<button
+					onClick={ () =>
+						onCompleted(
+							'123456789',
+							'Test company',
+							'Test address'
+						)
+					}
+				>
+					Complete
+				</button>
+			) );
 		} );
 
 		describe( 'if VAT data has been submitted', () => {
@@ -229,6 +247,38 @@ describe( 'Document download button', () => {
 				expect(
 					screen.getByRole( 'dialog', { name: 'VAT details' } )
 				).toBeVisible();
+			} );
+
+			describe( 'after the VAT details are submitted', () => {
+				const mockButtonOnClick = jest.fn();
+
+				beforeEach( () => {
+					user.click( downloadButton );
+
+					// Add a mock button onclick handler to assert that it's been called a second time.
+					downloadButton.addEventListener(
+						'click',
+						mockButtonOnClick
+					);
+
+					user.click( screen.getByText( 'Complete' ) );
+				} );
+
+				it( 'should close the modal', () => {
+					expect(
+						screen.queryByRole( 'dialog', { name: 'VAT details' } )
+					).toBeNull();
+				} );
+
+				it( 'should set the hasSubmittedVatData flag to true', () => {
+					expect(
+						wcpaySettings.accountStatus.hasSubmittedVatData
+					).toBe( true );
+				} );
+
+				it( 'should automatically click on the download button', () => {
+					expect( mockButtonOnClick ).toHaveBeenCalled();
+				} );
 			} );
 		} );
 	} );

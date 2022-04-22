@@ -1536,7 +1536,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		return [
 			'delete' => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
-				3,
+				4,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
@@ -1548,7 +1548,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			],
 			'get'    => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'GET' ],
-				3,
+				4,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
@@ -1560,7 +1560,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			],
 			'post'   => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
-				4,
+				5,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
@@ -1662,9 +1662,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			[
 				'data' => [
 					[
-						'document_id' => 'test_document_1',
+						'document_id' => 'vat_invoice_1',
 						'date'        => '2020-01-02 17:46:02',
-						'type'        => 'test_document',
+						'type'        => 'vat_invoice',
 						'period_from' => '2020-01-01 00:00:00',
 						'period_to'   => '2020-01-31 23:59:59',
 					],
@@ -1674,9 +1674,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$documents = $this->payments_api_client->list_documents();
 
-		$this->assertSame( 'test_document_1', $documents['data'][0]['document_id'] );
+		$this->assertSame( 'vat_invoice_1', $documents['data'][0]['document_id'] );
 		$this->assertSame( '2020-01-02 17:46:02', $documents['data'][0]['date'] );
-		$this->assertSame( 'test_document', $documents['data'][0]['type'] );
+		$this->assertSame( 'vat_invoice', $documents['data'][0]['type'] );
 		$this->assertSame( '2020-01-01 00:00:00', $documents['data'][0]['period_from'] );
 		$this->assertSame( '2020-01-31 23:59:59', $documents['data'][0]['period_to'] );
 	}

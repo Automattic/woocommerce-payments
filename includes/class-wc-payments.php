@@ -710,6 +710,10 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
 			$documents_controller = new WC_REST_Payments_Documents_Controller( self::$api_client );
 			$documents_controller->register_routes();
+
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-vat-controller.php';
+			$vat_controller = new WC_REST_Payments_VAT_Controller( self::$api_client );
+			$vat_controller->register_routes();
 		}
 	}
 
@@ -932,6 +936,7 @@ class WC_Payments {
 	public static function ajax_init_platform_checkout() {
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
+		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 		$user        = wp_get_current_user();
 		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
@@ -949,6 +954,7 @@ class WC_Payments {
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
 			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
+			'email'                => $email,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
