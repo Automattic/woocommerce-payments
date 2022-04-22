@@ -91,6 +91,40 @@ class WC_Payments_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
 	}
 
+	public function test_ajax_init_platform_checkout_sends_correct_data() {
+		// Necessary in order to prevent die from being called.
+		define( 'DOING_AJAX', true );
+
+		$customer_id = 'cus_123456789';
+
+		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) use ( $customer_id ) {
+			$body = json_decode( $parsed_args['body'] );
+			$this->assertEquals( $customer_id, $body->customer_id );
+			return [ 'body' => wp_json_encode( [] ) ];
+		};
+
+		$wp_die_ajax_handler_cb = function () {
+			return function ( $message, $title, $args ) {};
+		};
+
+		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
+		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
+
+		$mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
+									->disableOriginalConstructor()
+									->getMock();
+		$mock_customer_service
+			->expects( $this->once() )
+			->method( 'create_customer_for_user' )
+			->with( $this->anything(), $this->anything() )
+			->will( $this->returnValue( $customer_id ) );
+
+		WC_Payments::set_customer_service( $mock_customer_service );
+		$this->set_platform_checkout_feature_flag_enabled( true );
+
+		WC_Payments::ajax_init_platform_checkout();
+	}
+
 	/**
 	 * @param bool $is_enabled
 	 */
