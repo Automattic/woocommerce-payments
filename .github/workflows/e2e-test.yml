@@ -44,6 +44,12 @@ jobs:
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
+          - woocommerce: '5.2.0'
+            test_groups: 'blocks'
+            test_branches: 'shopper'
+          - woocommerce: '6.1.0'
+            test_groups: 'blocks'
+            test_branches: 'shopper'
 
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
@@ -54,22 +60,16 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
-      # Conditionally skip workflow. Remove/update based on min supported WC version by the blocks checkout plugin.
-      - name: Conditionally skip workflow
+      # Conditionally skip WC Blocks tests. Remove/update based on min supported WC version by the blocks checkout plugin.
+      - name: Conditionally skip WC Blocks tests
         run: |
-          if [[ $E2E_WC_VERSION == '5.2.0' ]]; then
+          SKIP_WC_VERSIONS=('5.2.0' '6.1.0')
+          if [[ " ${SKIP_WC_VERSIONS[@]} " =~ " ${E2E_WC_VERSION} " ]]; then
             echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
-            if [[
-                $E2E_GROUP == 'wcpay' && $E2E_BRANCH == 'merchant' ||
-                $E2E_GROUP == 'blocks'
-            ]]; then
-                echo "SKIP_E2E_WORKFLOW=1" >> $GITHUB_ENV
-            fi
           fi
 
       # Log workflow configuration
       - name: Workflow Configuration
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         run: |
           echo "WordPress version: ${{ matrix.wordpress }}"
           echo "WooCommerce version: ${{ matrix.woocommerce }}"
@@ -79,40 +79,34 @@ jobs:
 
       # Clone Repo
       - name: Clone WCPay Repository
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         uses: actions/checkout@v2
 
       # Use node version from .nvmrc
       - name: Setup NodeJS
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         uses: actions/setup-node@v2
         with:
           node-version-file: '.nvmrc'
 
       # Dependency caching
       - name: Add composer to cache
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         uses: actions/cache@v2
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
 
       - name: Add vendor directory to cache
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         uses: actions/cache@v2
         with:
           path: vendor/
           key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
 
       - name: Add NPM directory to cache
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         uses: actions/cache@v2
         with:
           path: ~/.npm/
           key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
 
       - name: Add node_modules to cache
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         uses: actions/cache@v2
         with:
           path: node_modules/
@@ -120,7 +114,6 @@ jobs:
 
       # PHP setup
       - name: PHP Setup
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -130,7 +123,6 @@ jobs:
 
       # Prepare testing dependencies
       - name: Prepare testing dependencies
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         run: |
           echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
           sudo systemctl start mysql.service
@@ -138,18 +130,15 @@ jobs:
 
       # Build WCPay client
       - name: Build WCPay Client
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         run: npm ci && npm run build:client
 
       # Prepare test environment
       - name: Prepare test environment
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         run: |
           npm run test:e2e-setup
 
       # Run Tests
       - name: Run E2E Tests
-        if: ${{ ! env.SKIP_E2E_WORKFLOW }}
         run: npm run test:e2e
 
       # Archive screenshots if any

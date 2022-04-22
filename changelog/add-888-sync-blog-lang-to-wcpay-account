@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Send the blog locale to the server to enable server-side translations.

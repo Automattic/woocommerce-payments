@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Remove merchant onboarding E2E tests along with dependency.

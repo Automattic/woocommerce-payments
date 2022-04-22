@@ -58,6 +58,7 @@ class WC_Payments_Account {
 		add_action( self::INSTANT_DEPOSITS_REMINDER_ACTION, [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
+		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
 
 		// Add capital offer redirection.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
@@ -177,13 +178,15 @@ class WC_Payments_Account {
 		}
 
 		return [
-			'email'           => $account['email'] ?? '',
-			'status'          => $account['status'],
-			'paymentsEnabled' => $account['payments_enabled'],
-			'depositsStatus'  => $account['deposits_status'],
-			'currentDeadline' => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
-			'pastDue'         => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
-			'accountLink'     => $this->get_login_url(),
+			'email'               => $account['email'] ?? '',
+			'country'             => $account['country'] ?? 'US',
+			'status'              => $account['status'],
+			'paymentsEnabled'     => $account['payments_enabled'],
+			'depositsStatus'      => $account['deposits_status'],
+			'currentDeadline'     => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
+			'pastDue'             => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
+			'accountLink'         => $this->get_login_url(),
+			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
 		];
 	}
 
@@ -847,6 +850,7 @@ class WC_Payments_Account {
 			),
 			[
 				'site_username' => $current_user->user_login,
+				'site_locale'   => get_locale(),
 			],
 			$this->get_actioned_notes()
 		);
@@ -1057,6 +1061,28 @@ class WC_Payments_Account {
 		$diff = array_diff_assoc( $changes, $account );
 		return ! empty( $diff );
 	}
+
+	/**
+	 * Updates the WCPay Account locale with the current site language (WPLANG option).
+	 *
+	 * @param string $option_name Option name.
+	 * @param mixed  $old_value   The old option value.
+	 * @param mixed  $new_value   The new option value.
+	 */
+	public function possibly_update_wcpay_account_locale( $option_name, $old_value, $new_value ) {
+		if ( 'WPLANG' === $option_name && $this->is_stripe_connected() ) {
+			try {
+				$account_settings = [
+					'locale' => $new_value ? $new_value : 'en_US',
+				];
+				$updated_account  = $this->payments_api_client->update_account( $account_settings );
+				$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
+			} catch ( Exception $e ) {
+				Logger::error( __( 'Failed to update Account locale. ', 'woocommerce-payments' ) . $e );
+			}
+		}
+	}
+
 
 	/**
 	 * Retrieves the latest ToS agreement for the account.

@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { MouseEvent, useState } from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
@@ -19,6 +19,7 @@ import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';
 import { getDocumentUrl } from 'wcpay/utils';
+import VatFormModal from 'wcpay/vat/form-modal';
 
 interface Column extends TableCardColumn {
 	key: 'date' | 'type' | 'description' | 'download';
@@ -62,27 +63,6 @@ const getColumns = (): Column[] =>
 
 const getDocumentDescription = ( document: Document ) => {
 	switch ( document.type ) {
-		case 'test_document':
-			if ( document.period_from && document.period_to ) {
-				return sprintf(
-					__(
-						'This is a test document for %s to %s',
-						'woocommerce-payments'
-					),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_from ).toISOString(),
-						'utc'
-					),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_to ).toISOString(),
-						'utc'
-					)
-				);
-			}
-			return __( 'This is a test document', 'woocommerce-payments' );
-			break;
 		case 'vat_invoice':
 			if ( document.period_from && document.period_to ) {
 				return sprintf(
@@ -103,11 +83,9 @@ const getDocumentDescription = ( document: Document ) => {
 				'VAT invoice without proper period dates',
 				'woocommerce-payments'
 			);
-			break;
 
 		default:
 			return __( 'Unknown document type', 'woocommerce-payments' );
-			break;
 	}
 };
 
@@ -117,6 +95,37 @@ export const DocumentsList = (): JSX.Element => {
 		documentsSummary,
 		isLoading: isSummaryLoading,
 	} = useDocumentsSummary( getQuery() );
+
+	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
+
+	const [
+		clickedDownloadLink,
+		setClickedDownloadLink,
+	] = useState< HTMLElement | null >( null );
+
+	const handleDocumentDownload = async (
+		document: Document,
+		event: MouseEvent
+	) => {
+		setClickedDownloadLink( event.currentTarget as HTMLElement );
+
+		if ( 'vat_invoice' === document.type ) {
+			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
+				setVatFormModalOpen( true );
+				event.preventDefault();
+			}
+		}
+	};
+
+	const onVatFormCompleted = () => {
+		setVatFormModalOpen( false );
+		// Set the flag to true so that the user can download the document without refreshing the page.
+		wcpaySettings.accountStatus.hasSubmittedVatData = true;
+		// Fire the click event again, once the VAT details have been submitted.
+		if ( clickedDownloadLink ) {
+			clickedDownloadLink.click();
+		}
+	};
 
 	const columnsToDisplay = getColumns();
 
@@ -150,6 +159,9 @@ export const DocumentsList = (): JSX.Element => {
 						rel="noopener noreferrer"
 						target="_blank"
 						style={ { display: 'inline' } }
+						onClick={ ( event ) =>
+							handleDocumentDownload( document, event )
+						}
 					>
 						{ __( 'Download', 'woocommerce-payments' ) }
 					</a>
@@ -201,6 +213,11 @@ export const DocumentsList = (): JSX.Element => {
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
 				actions={ [] }
+			/>
+			<VatFormModal
+				isModalOpen={ isVatFormModalOpen }
+				setModalOpen={ setVatFormModalOpen }
+				onCompleted={ onVatFormCompleted }
 			/>
 		</Page>
 	);

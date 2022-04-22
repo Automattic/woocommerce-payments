@@ -13,6 +13,7 @@ use WC_Payments_Utils;
 use WC_Payments_API_Client;
 use WC_Payments_Localization_Service;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Database_Cache;
 use WCPay\Logger;
 use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 
@@ -23,11 +24,9 @@ defined( 'ABSPATH' ) || exit;
  */
 class MultiCurrency {
 
-	const CURRENCY_SESSION_KEY            = 'wcpay_currency';
-	const CURRENCY_META_KEY               = 'wcpay_currency';
-	const CURRENCY_CACHE_OPTION           = 'wcpay_multi_currency_cached_currencies';
-	const CURRENCY_RETRIEVAL_ERROR_OPTION = 'wcpay_multi_currency_retrieval_error';
-	const FILTER_PREFIX                   = 'wcpay_multi_currency_';
+	const CURRENCY_SESSION_KEY = 'wcpay_currency';
+	const CURRENCY_META_KEY    = 'wcpay_currency';
+	const FILTER_PREFIX        = 'wcpay_multi_currency_';
 
 	/**
 	 * The plugin's ID.
@@ -156,6 +155,13 @@ class MultiCurrency {
 	private $localization_service;
 
 	/**
+	 * Instance of Database_Cache.
+	 *
+	 * @var Database_Cache
+	 */
+	private $database_cache;
+
+	/**
 	 * Tracking instance.
 	 *
 	 * @var Tracking
@@ -179,7 +185,7 @@ class MultiCurrency {
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
-			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service(), WC_Payments::get_localization_service() );
+			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service(), WC_Payments::get_localization_service(), WC_Payments::get_database_cache() );
 		}
 		return self::$instance;
 	}
@@ -190,11 +196,13 @@ class MultiCurrency {
 	 * @param WC_Payments_API_Client           $payments_api_client  Payments API client.
 	 * @param WC_Payments_Account              $payments_account     Payments Account instance.
 	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
+	 * @param Database_Cache                   $database_cache       Database Cache instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache ) {
 		$this->payments_api_client     = $payments_api_client;
 		$this->payments_account        = $payments_account;
 		$this->localization_service    = $localization_service;
+		$this->database_cache          = $database_cache;
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->utils                   = new Utils();
 		$this->compatibility           = new Compatibility( $this, $this->utils );
@@ -338,7 +346,7 @@ class MultiCurrency {
 	 */
 	public function clear_cache() {
 		Logger::debug( 'Clearing the cache to force new rates to be fetched from the server.' );
-		delete_option( self::CURRENCY_CACHE_OPTION );
+		$this->database_cache->delete( Database_Cache::CURRENCIES_KEY );
 	}
 
 	/**
@@ -349,46 +357,29 @@ class MultiCurrency {
 	 * @return ?array
 	 */
 	public function get_cached_currencies() {
-
-		$error_expires = get_option( self::CURRENCY_RETRIEVAL_ERROR_OPTION, 0 );
-		$cache_data    = $this->read_currencies_from_cache();
-
-		// If the error has not expired, return cached data or null and do not attempt another API call.
-		if ( $error_expires > time() ) {
-			return $cache_data ?? null;
-		}
-
-		// If an array of currencies was returned from the cache and has not expired, return it here.
-		if ( null !== $cache_data && $cache_data['expires'] > time() ) {
-			return $cache_data;
-		}
-
+		$cached_data = $this->database_cache->get( Database_Cache::CURRENCIES_KEY );
 		// If connection to server cannot be established, or if Stripe is not connected, or if the account is rejected, return expired data or null.
 		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_stripe_connected() || $this->payments_account->is_account_rejected() ) {
-			return $cache_data ?? null;
+			return $cached_data ?? null;
 		}
 
-		// If the cache was expired or something went wrong, make a call to the server to get the currency data.
-		try {
-			$currency_data = $this->payments_api_client->get_currency_rates( get_woocommerce_currency() );
-		} catch ( API_Exception $e ) {
-			// Failed to retrieve currencies from the server. Exception is logged in http client.
-			// Rate limit for a short amount of time by persisting the failure.
-			update_option( self::CURRENCY_RETRIEVAL_ERROR_OPTION, time() + 1 * MINUTE_IN_SECONDS, 'no' );
-
-			// Return expired data or null to signal currency retrieval error.
-			return $cache_data ?? null;
-		}
-
-		$updated = time();
-
-		// Cache the currency data so we don't call the server every time.
-		$this->cache_currencies( $currency_data, $updated, 6 * HOUR_IN_SECONDS );
-
-		return [
-			'currencies' => $currency_data,
-			'updated'    => $updated,
-		];
+		return $this->database_cache->get_or_add(
+			Database_Cache::CURRENCIES_KEY,
+			function() {
+				try {
+					$currency_data = $this->payments_api_client->get_currency_rates( get_woocommerce_currency() );
+					return [
+						'currencies' => $currency_data,
+						'updated'    => time(),
+					];
+				} catch ( API_Exception $e ) {
+					return null;
+				}
+			},
+			function ( $data ) {
+				return is_array( $data ) && isset( $data['currencies'], $data['updated'] );
+			}
+		);
 	}
 
 	/**
@@ -926,37 +917,6 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Caches currency data for a period of time.
-	 *
-	 * @param array    $currencies - Currency data to cache.
-	 * @param int|null $updated    - The time the data was fetched from the server.
-	 * @param int|null $expiration - The length of time to cache the currency data, in seconds.
-	 *
-	 * @return bool
-	 */
-	private function cache_currencies( $currencies, int $updated = null, int $expiration = null ): bool {
-		// Default $expiration to 6 hours if not set.
-		if ( null === $expiration ) {
-			$expiration = 6 * HOUR_IN_SECONDS;
-		}
-
-		// Default $updated to the current time.
-		if ( null === $updated ) {
-			$updated = time();
-		}
-
-		// Add the currency data, expiry time, and time updated to the array we're caching.
-		$currency_cache = [
-			'currencies' => $currencies,
-			'expires'    => time() + $expiration,
-			'updated'    => $updated,
-		];
-
-		Logger::debug( 'Saved currencies fetched from the server to the cache. Expiry: ' . gmdate( 'Y-m-d H:i:s', time() + $expiration ) );
-		return update_option( self::CURRENCY_CACHE_OPTION, $currency_cache, 'no' );
-	}
-
-	/**
 	 * Checks to see if the store currency has changed. If it has, this will
 	 * also update the option containing the store currency.
 	 *
@@ -1000,26 +960,6 @@ class MultiCurrency {
 		if ( 0 < count( $manual_currencies ) ) {
 			update_option( $this->id . '_show_store_currency_changed_notice', $manual_currencies );
 		}
-	}
-
-	/**
-	 * Read the currency data from the WP option we cache it in.
-	 *
-	 * @return ?array
-	 */
-	private function read_currencies_from_cache() {
-		$currency_cache = get_option( self::CURRENCY_CACHE_OPTION, [] );
-
-		if ( ! is_array( $currency_cache )
-			|| ! isset( $currency_cache['currencies'] )
-			|| ! isset( $currency_cache['expires'] )
-			|| ! isset( $currency_cache['updated'] ) ) {
-			// No option found or the data isn't in the format we expect.
-			return null;
-		}
-
-		// We have fresh currency data in the cache, so return it.
-		return $currency_cache;
 	}
 
 	/**
