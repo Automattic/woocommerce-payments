@@ -26,9 +26,7 @@ jQuery( function ( $ ) {
 	const upeSetupIntentData = getConfig( 'upeSetupIntentData' );
 	const isStripeLinkEnabled =
 		paymentMethodsConfig.link !== undefined &&
-		paymentMethodsConfig.card !== undefined
-			? '2020-08-27;link_beta=v1'
-			: '';
+		paymentMethodsConfig.card !== undefined;
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -370,7 +368,7 @@ jQuery( function ( $ ) {
 			fonts: getFontRulesFromPage(),
 		} );
 
-		if ( '' !== isStripeLinkEnabled ) {
+		if ( isStripeLinkEnabled ) {
 			enableStripeLinkPaymentMethod();
 		}
 

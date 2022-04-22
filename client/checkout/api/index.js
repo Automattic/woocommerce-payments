@@ -73,7 +73,7 @@ export default class WCPayAPI {
 		if ( ! this.stripe ) {
 			if ( isUPEEnabled ) {
 				let betas = [ 'card_country_event_beta_1' ];
-				if ( '' !== isStripeLinkEnabled ) {
+				if ( isStripeLinkEnabled ) {
 					betas = betas.concat( [
 						'link_autofill_modal_beta_1',
 						'link_beta_2',
