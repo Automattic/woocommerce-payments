@@ -947,7 +947,11 @@ class WC_Payments {
 	public static function ajax_init_platform_checkout() {
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
-		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$email = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! empty( $email ) ) {
+			wc_setcookie( 'wcpay_platform_checkout_email', $email, time() + DAY_IN_SECONDS * 10 );
+		}
+
 		$user        = wp_get_current_user();
 		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
