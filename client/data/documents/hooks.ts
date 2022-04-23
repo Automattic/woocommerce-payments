@@ -14,7 +14,7 @@ import { STORE_NAME } from '../constants';
 export interface Document {
 	document_id: string;
 	date: string;
-	type: 'test_document' | 'vat_invoice';
+	type: 'vat_invoice';
 	period_from: string;
 	period_to: string;
 }

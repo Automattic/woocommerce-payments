@@ -24,6 +24,24 @@ exports[`VAT form modal should render the VAT Form 1`] = `
           VAT details
         </h1>
       </div>
+      <button
+        aria-label="Close dialog"
+        class="components-button has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          role="img"
+          size="24"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
     </div>
     <p>
       VAT Form
