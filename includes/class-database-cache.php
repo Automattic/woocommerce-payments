@@ -144,11 +144,11 @@ class Database_Cache {
 	 * @return void
 	 */
 	public function delete_by_prefix( string $key ) {
-		/**
-		 * Protection against accidentally deleting all options or options that are not related to WcPay caching.
-		 * Since only one cache key prefix is supported, we will check only this one by checking does key starts with payment method key prefix.
-		 * Feel free to update this statement if more prefix cache keys you are planning to add.
-		 */
+
+		// Protection against accidentally deleting all options or options that are not related to WcPay caching.
+		// Since only one cache key prefix is supported, we will check only this one by checking does key starts with payment method key prefix.
+		// Feel free to update this statement if more prefix cache keys you are planning to add.
+
 		if ( strncmp( $key, self::PAYMENT_METHODS_KEY_PREFIX, strlen( self::PAYMENT_METHODS_KEY_PREFIX ) ) !== 0 ) {
 			return; // Maybe throw exception here...
 		}

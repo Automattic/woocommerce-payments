@@ -69,6 +69,13 @@ class WC_Payments_Webhook_Processing_Service {
 	private $wcpay_gateway;
 
 	/**
+	 * WC_Payment_Gateway_WCPay
+	 *
+	 * @var WC_Payments_Customer_Service
+	 */
+	private $customer_service;
+
+	/**
 	 * WC_Payments_Webhook_Processing_Service constructor.
 	 *
 	 * @param WC_Payments_API_Client                          $api_client          WooCommerce Payments API client.
@@ -78,6 +85,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @param WC_Payments_Order_Service                       $order_service       WC_Payments_Order_Service instance.
 	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
 	 * @param WC_Payment_Gateway_WCPay                        $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
+	 * @param WC_Payments_Customer_Service                    $customer_service    WC_Payments_Customer_Service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
@@ -86,7 +94,8 @@ class WC_Payments_Webhook_Processing_Service {
 		WC_Payments_Remote_Note_Service $remote_note_service,
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service,
-		WC_Payment_Gateway_WCPay $wcpay_gateway
+		WC_Payment_Gateway_WCPay $wcpay_gateway,
+		WC_Payments_Customer_Service $customer_service
 	) {
 		$this->wcpay_db            = $wcpay_db;
 		$this->account             = $account;
@@ -95,6 +104,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->api_client          = $api_client;
 		$this->receipt_service     = $receipt_service;
 		$this->wcpay_gateway       = $wcpay_gateway;
+		$this->customer_service    = $customer_service;
 	}
 
 	/**
@@ -142,7 +152,7 @@ class WC_Payments_Webhook_Processing_Service {
 				break;
 			case 'account.updated':
 				$this->account->refresh_account_data();
-				$this->account->delete_cached_payment_methods();
+				$this->customer_service->delete_cached_payment_methods();
 				break;
 			case 'wcpay.notification':
 				$this->process_wcpay_notification( $event_body );

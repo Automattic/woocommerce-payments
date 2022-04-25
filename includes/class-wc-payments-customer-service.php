@@ -333,6 +333,15 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
+	 * Delete all saved payment methods that are stored inside database cache driver.
+	 *
+	 * @return void
+	 */
+	public function delete_cached_payment_methods() {
+		$this->database_cache->delete_by_prefix( Database_Cache::PAYMENT_METHODS_KEY_PREFIX );
+	}
+
+	/**
 	 * Recreates the customer for this user.
 	 *
 	 * @param WP_User $user          User to recreate a customer for.

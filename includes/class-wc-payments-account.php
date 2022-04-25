@@ -987,15 +987,6 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Delete all saved paymenent methods that are stored inside database cache driver.
-	 *
-	 * @return void
-	 */
-	public function delete_cached_payment_methods() {
-		$this->database_cache->delete_by_prefix( Database_Cache::PAYMENT_METHODS_KEY_PREFIX );
-	}
-
-	/**
 	 * Refetches account data and returns the fresh data.
 	 *
 	 * @return array|bool|string Either the new account data or false if unavailable.
