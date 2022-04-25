@@ -236,7 +236,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ '_order_env', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
 				[ '_intention_status', $status ],
@@ -420,7 +420,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ '_order_env', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
 				[ '_intention_status', $status ],
@@ -797,7 +797,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ '_order_env', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
 				[ '_intention_status', $status ],
@@ -915,7 +915,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WP_UnitTestCase {
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ '_order_env', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', '' ],
 				[ '_intention_status', $status ],
