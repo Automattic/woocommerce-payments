@@ -4,6 +4,7 @@ var NODE_ENV = process.env.NODE_ENV || 'development';
 const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
+const webpack = require( 'webpack' );
 
 const webpackConfig = {
 	mode: NODE_ENV,
@@ -156,6 +157,9 @@ const webpackConfig = {
 						return 'wp-mediaelement';
 				}
 			},
+		} ),
+		new webpack.DefinePlugin( {
+			__SENTRY_DEBUG__: false,
 		} ),
 	],
 };

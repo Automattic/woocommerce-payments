@@ -5,6 +5,8 @@
  */
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
+import * as Sentry from '@sentry/react';
+import { BrowserTracing } from '@sentry/tracing';
 // Create a dependency on wp-mediaelement. Necessary to prevent a type of JS error.
 // See discussion in WCPay PR #1263 in GitHub.
 // eslint-disable-next-line import/no-unresolved
@@ -31,6 +33,17 @@ import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
 import OnboardingPage from 'onboarding';
 import { getTasks } from 'overview/task-list/tasks';
+import packageJson from '../package.json';
+
+// Initialise Sentry early on for error tracking.
+Sentry.init( {
+	dsn:
+		'https://3ff93a21f6a548ceb8ae22f2c9b8b9bd@o248881.ingest.sentry.io/6350586',
+	integrations: [ new BrowserTracing() ],
+	release: packageJson.version,
+	// Send 20% transactions to Sentry for performance monitoring.
+	tracesSampleRate: 0.2,
+} );
 
 addFilter(
 	'woocommerce_admin_pages_list',

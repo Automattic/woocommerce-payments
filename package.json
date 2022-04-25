@@ -62,6 +62,8 @@
     "changelog": "./vendor/bin/changelogger add"
   },
   "dependencies": {
+    "@sentry/react": "^6.19.6",
+    "@sentry/tracing": "^6.19.6",
     "@stripe/react-stripe-js": "1.4.1",
     "@stripe/stripe-js": "1.15.1",
     "@woocommerce/explat": "^1.0.1",
