@@ -193,7 +193,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Returns customer id from order. Create or update customer if needed.
-	 * Use-cases: older versions of Mobile apps got to use this in their workflows.
+	 * Use-cases: It was used by older versions of our Mobile apps in their workflows.
 	 *
 	 * @deprecated 3.9.0
 	 *
@@ -247,7 +247,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Create a new in-person payment intent for the given order ID without confirming it.
-	 * Use-cases: Mobile apps using it for `card_present` payment types. (`interac_present` is handled on appsa side via Stripe SDK).
+	 * Use-cases: Mobile apps using it for `card_present` payment types. (`interac_present` is handled by the apps via Stripe SDK).
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
