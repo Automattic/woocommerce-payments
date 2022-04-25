@@ -936,6 +936,22 @@ class WC_Payments {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
+
+			// This injects the payments API into core, so the WooCommerce Blocks plugin is not necessary.
+			// The payments API is currently only available in feature builds (with flag `WC_BLOCKS_IS_FEATURE_PLUGIN`).
+			// We should remove this once it's available in core by default.
+			if ( ! defined( 'WC_BLOCKS_IS_FEATURE_PLUGIN' ) && class_exists( 'Automattic\WooCommerce\Blocks\Payments\Api' ) ) {
+				$blocks_package_container = Automattic\WooCommerce\Blocks\Package::container();
+				$blocks_package_container->register(
+					Automattic\WooCommerce\Blocks\Payments\Api::class,
+					function ( $container ) {
+						$payment_method_registry = $container->get( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry::class );
+						$asset_data_registry     = $container->get( Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry::class );
+						return new Automattic\WooCommerce\Blocks\Payments\Api( $payment_method_registry, $asset_data_registry );
+					}
+				);
+				$blocks_package_container->get( Automattic\WooCommerce\Blocks\Payments\Api::class );
+			}
 		}
 	}
 
