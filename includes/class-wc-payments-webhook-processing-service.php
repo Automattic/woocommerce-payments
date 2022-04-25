@@ -369,7 +369,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 
 		// Send the customer a card reader receipt if it's an in person payment type.
-		if ( Payment_Method::CARD_PRESENT === ( $charges_data[0]['payment_method_details']['type'] ?? null ) ) {
+		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
+		if ( Payment_Method::CARD_PRESENT === $payment_method || Payment_Method::INTERAC_PRESENT === $payment_method ) {
 			$merchant_settings = [
 				'business_name' => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'support_info'  => [
