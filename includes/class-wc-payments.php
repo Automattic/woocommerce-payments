@@ -957,6 +957,15 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function ajax_init_platform_checkout() {
+		$is_nonce_valid = check_ajax_referer( 'wcpay_init_platform_checkout_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
 		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
@@ -990,6 +999,7 @@ class WC_Payments {
 				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
 			],
+			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 		$args = [
 			'url'     => $url,
