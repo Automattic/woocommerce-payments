@@ -89,6 +89,16 @@ class WC_Payments_Action_Scheduler_Service {
 		if ( empty( $payment_method ) ) {
 			return false;
 		}
+		$order_env = $order->get_meta( '_order_env' );
+
+		if ( $order_env ) {
+			$current_env = $this->payments_api_client->is_in_test_mode() ? 'test' : 'prod';
+			if ( $current_env !== $order_env ) {
+				// If env. doesn't match make sure to stop order tracking to prevent order tracking issues.
+				// False will be returned so maybe next crons will have correct envs.
+				return false;
+			}
+		}
 
 		// Send the order data to the Payments API to track it.
 		$response = $this->payments_api_client->track_order(
@@ -97,6 +107,7 @@ class WC_Payments_Action_Scheduler_Service {
 				[
 					'_payment_method_id'  => $payment_method,
 					'_stripe_customer_id' => $order->get_meta( '_stripe_customer_id' ),
+					'_order_env'          => $order_env,
 				]
 			),
 			$is_update
