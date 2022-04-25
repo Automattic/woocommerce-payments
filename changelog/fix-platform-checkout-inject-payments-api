@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Inject Payments API into Blocks Package to remove dependency on the Blocks plugin for the platform checkout.
