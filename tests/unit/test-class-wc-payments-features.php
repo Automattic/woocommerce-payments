@@ -94,6 +94,26 @@ class WC_Payments_Features_Test extends WP_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_platform_checkout_eligible() );
 	}
 
+	public function test_is_documents_section_enabled_returns_true_when_flag_is_true() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_documents_enabled' => true ] );
+		$this->assertTrue( WC_Payments_Features::is_documents_section_enabled() );
+	}
+
+	public function test_is_documents_section_enabled_returns_false_when_flag_is_false() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'is_documents_enabled' => false ] );
+		$this->assertFalse( WC_Payments_Features::is_documents_section_enabled() );
+	}
+
+	public function test_is_documents_section_enabled_returns_false_when_flag_is_not_set() {
+		$this->mock_cache->method( 'get' )->willReturn( [] );
+		$this->assertFalse( WC_Payments_Features::is_documents_section_enabled() );
+	}
+
+	public function test_is_documents_section_enabled_returns_false_when_cache_is_not_set() {
+		$this->mock_cache->method( 'get' )->willReturn( null );
+		$this->assertFalse( WC_Payments_Features::is_documents_section_enabled() );
+	}
+
 	private function setup_enabled_flags( array $enabled_flags ) {
 		foreach ( array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) as $flag ) {
 			add_filter(
