@@ -43,6 +43,7 @@ Sentry.init( {
 	release: packageJson.version,
 	// Send 20% transactions to Sentry for performance monitoring.
 	tracesSampleRate: 0.2,
+	enabled: 'production' === process.env.NODE_ENV,
 } );
 
 addFilter(
