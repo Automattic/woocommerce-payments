@@ -978,11 +978,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			}
 
-			$appearance = isset( $_POST['appearance'] ) ? wc_clean( wp_unslash( $_POST['appearance'] ) ) : null;
-			if ( null !== $appearance ) {
-				set_transient( self::UPE_APPEARANCE_TRANSIENT, $appearance, DAY_IN_SECONDS );
+			$appearance_data    = isset( $_POST['appearanceData'] ) ? wc_clean( wp_unslash( $_POST['appearanceData'] ) ) : null;
+			$is_blocks_checkout = rest_sanitize_boolean( $appearance_data['is_blocks_checkout'] );
+			$appearance_rules   = $appearance_data['appearance'];
+
+			$appearance_transient = $is_blocks_checkout ? self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT : self::UPE_APPEARANCE_TRANSIENT;
+
+			if ( null !== $appearance_rules ) {
+				set_transient( $appearance_transient, $appearance_rules, DAY_IN_SECONDS );
 			}
-			wp_send_json_success( $appearance, 200 );
+
+			wp_send_json_success( $appearance_rules, 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
