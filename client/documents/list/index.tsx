@@ -3,12 +3,13 @@
 /**
  * External dependencies
  */
-import React, { MouseEvent, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -63,26 +64,6 @@ const getColumns = (): Column[] =>
 
 const getDocumentDescription = ( document: Document ) => {
 	switch ( document.type ) {
-		case 'test_document':
-			if ( document.period_from && document.period_to ) {
-				return sprintf(
-					__(
-						'This is a test document for %s to %s',
-						'woocommerce-payments'
-					),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_from ).toISOString(),
-						'utc'
-					),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_to ).toISOString(),
-						'utc'
-					)
-				);
-			}
-			return __( 'This is a test document', 'woocommerce-payments' );
 		case 'vat_invoice':
 			if ( document.period_from && document.period_to ) {
 				return sprintf(
@@ -118,17 +99,75 @@ export const DocumentsList = (): JSX.Element => {
 
 	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
 
+	const [
+		interruptedDownloadDocument,
+		setInterruptedDownloadDocument,
+	] = useState< {
+		documentId: Document[ 'document_id' ];
+		type: Document[ 'type' ];
+		newTab: boolean;
+	} | null >( null );
+
 	const handleDocumentDownload = (
-		document: Document,
-		event: MouseEvent
-	) => {
-		if ( 'vat_invoice' === document.type ) {
+		documentId: Document[ 'document_id' ],
+		type: Document[ 'type' ],
+		newTab: boolean
+	): boolean => {
+		setInterruptedDownloadDocument( { documentId, type, newTab } );
+
+		if ( 'vat_invoice' === type ) {
 			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
 				setVatFormModalOpen( true );
-				event.preventDefault();
+				return false;
 			}
 		}
+
+		return true;
 	};
+
+	const downloadDocument = useCallback(
+		(
+			documentId: Document[ 'document_id' ],
+			type: Document[ 'type' ],
+			newTab = true
+		) => {
+			const url = getDocumentUrl( documentId );
+			if ( handleDocumentDownload( documentId, type, newTab ) ) {
+				window.open( url, newTab ? '_blank' : '_self' );
+			}
+		},
+		[]
+	);
+
+	const onVatFormCompleted = () => {
+		setVatFormModalOpen( false );
+		// Set the flag to true so that the user can download the document without refreshing the page.
+		wcpaySettings.accountStatus.hasSubmittedVatData = true;
+		// Attempt to download the previous document, once the VAT details have been submitted.
+		if ( interruptedDownloadDocument ) {
+			downloadDocument(
+				interruptedDownloadDocument.documentId,
+				interruptedDownloadDocument.type,
+				interruptedDownloadDocument.newTab
+			);
+		}
+	};
+
+	// Check if the page view is requesting a specific document and trigger its download.
+	const {
+		document_id: requestedDocumentID,
+		document_type: requestedDocumentType,
+	} = getQuery();
+
+	useEffect( () => {
+		if ( requestedDocumentID && requestedDocumentType ) {
+			downloadDocument(
+				requestedDocumentID,
+				requestedDocumentType as Document[ 'type' ],
+				false
+			);
+		}
+	}, [ requestedDocumentID, requestedDocumentType, downloadDocument ] );
 
 	const columnsToDisplay = getColumns();
 
@@ -157,17 +196,17 @@ export const DocumentsList = (): JSX.Element => {
 			download: {
 				value: getDocumentUrl( document.document_id ),
 				display: (
-					<a
-						href={ getDocumentUrl( document.document_id ) }
-						rel="noopener noreferrer"
-						target="_blank"
-						style={ { display: 'inline' } }
-						onClick={ ( event ) =>
-							handleDocumentDownload( document, event )
+					<Button
+						isLink
+						onClick={ () =>
+							downloadDocument(
+								document.document_id,
+								document.type
+							)
 						}
 					>
 						{ __( 'Download', 'woocommerce-payments' ) }
-					</a>
+					</Button>
 				),
 			},
 		};
@@ -220,6 +259,7 @@ export const DocumentsList = (): JSX.Element => {
 			<VatFormModal
 				isModalOpen={ isVatFormModalOpen }
 				setModalOpen={ setVatFormModalOpen }
+				onCompleted={ onVatFormCompleted }
 			/>
 		</Page>
 	);

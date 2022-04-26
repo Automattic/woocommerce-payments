@@ -3,11 +3,6 @@
 exports[`Documents filters when filtering by type should render all types 1`] = `
 HTMLOptionsCollection [
   <option
-    value="test_document"
-  >
-    Test Document
-  </option>,
-  <option
     value="vat_invoice"
   >
     VAT Invoice
