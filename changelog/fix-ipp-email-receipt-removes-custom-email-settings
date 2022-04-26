@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix IPP new receipt emails removes non WC core settings in Emails admin page
