@@ -1006,6 +1006,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function clear_upe_appearance_transient() {
 		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
+		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 	}
 
 	/**
