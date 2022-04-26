@@ -1,10 +1,9 @@
 /* eslint-disable */
 const path = require( 'path' );
 var NODE_ENV = process.env.NODE_ENV || 'development';
-const { ProvidePlugin } = require( 'webpack' );
+const { ProvidePlugin, DefinePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
-const webpack = require( 'webpack' );
 
 const webpackConfig = {
 	mode: NODE_ENV,
@@ -158,7 +157,7 @@ const webpackConfig = {
 				}
 			},
 		} ),
-		new webpack.DefinePlugin( {
+		new DefinePlugin( {
 			__SENTRY_DEBUG__: false,
 		} ),
 	],
