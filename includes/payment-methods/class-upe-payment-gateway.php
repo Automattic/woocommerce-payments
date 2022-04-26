@@ -47,6 +47,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 	const UPE_APPEARANCE_TRANSIENT = 'wcpay_upe_appearance';
 
+	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT = 'wcpay_wc_blocks_upe_appearance';
+
 	const KEY_UPE_PAYMENT_INTENT = 'wcpay_upe_payment_intent';
 
 	const KEY_UPE_SETUP_INTENT = 'wcpay_upe_setup_intent';
