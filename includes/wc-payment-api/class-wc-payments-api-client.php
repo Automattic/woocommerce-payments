@@ -327,7 +327,7 @@ class WC_Payments_API_Client {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
 		}
-		if ( $payment_country && ! WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( $payment_country && ! $this->is_in_dev_mode() ) {
 			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.
 			$request['payment_country'] = $payment_country;
 		}
@@ -1049,7 +1049,7 @@ class WC_Payments_API_Client {
 	public function get_account_data() {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+				'test_mode' => $this->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API,
 			self::GET
@@ -1066,7 +1066,7 @@ class WC_Payments_API_Client {
 	public function get_platform_checkout_eligibility() {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+				'test_mode' => $this->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::PLATFORM_CHECKOUT_API,
 			self::GET
@@ -1130,7 +1130,7 @@ class WC_Payments_API_Client {
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
 				'site_data'           => $site_data,
-				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
+				'create_live_account' => ! $this->is_in_dev_mode(),
 				'actioned_notes'      => $actioned_notes,
 			]
 		);
@@ -1192,7 +1192,7 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[
 				'redirect_url' => $redirect_url,
-				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+				'test_mode'    => $this->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API . '/login_links',
 			self::POST,
@@ -1866,6 +1866,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Return is client in dev mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_dev_mode() {
+		return WC_Payments::get_gateway()->is_in_dev_mode();
+	}
+
+	/**
+	 * Return is client in test mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_test_mode() {
+		return WC_Payments::get_gateway()->is_in_test_mode();
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -1883,7 +1901,7 @@ class WC_Payments_API_Client {
 		$params = wp_parse_args(
 			$params,
 			[
-				'test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
+				'test_mode' => $this->is_in_test_mode(),
 			]
 		);
 
