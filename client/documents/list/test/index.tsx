@@ -4,9 +4,9 @@
  * External dependencies
  */
 import * as React from 'react';
-import { createEvent, fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
-import { getQuery } from '@woocommerce/navigation';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -14,11 +14,15 @@ import { getQuery } from '@woocommerce/navigation';
 import { DocumentsList } from '../';
 import { useDocuments, useDocumentsSummary } from 'data/index';
 import type { Document } from 'data/documents/hooks';
+import { mocked } from 'ts-jest/utils';
+import VatForm from 'wcpay/vat/form';
 
 jest.mock( 'data/index', () => ( {
 	useDocuments: jest.fn(),
 	useDocumentsSummary: jest.fn(),
 } ) );
+
+jest.mock( 'wcpay/vat/form', () => jest.fn() );
 
 const mockUseDocuments = useDocuments as jest.MockedFunction<
 	typeof useDocuments
@@ -38,16 +42,16 @@ declare const global: {
 
 const getMockDocuments: () => Document[] = () => [
 	{
-		document_id: 'test_document_123456',
+		document_id: 'vat_invoice_123456',
 		date: '2020-01-02 17:46:02',
-		type: 'test_document',
+		type: 'vat_invoice',
 		period_from: '',
 		period_to: '',
 	},
 	{
-		document_id: 'test_document_654321',
+		document_id: 'vat_invoice_654321',
 		date: '2020-01-05 04:22:59',
-		type: 'test_document',
+		type: 'vat_invoice',
 		period_from: '',
 		period_to: '',
 	},
@@ -162,6 +166,8 @@ describe( 'Document download button', () => {
 
 	describe( 'for VAT invoices', () => {
 		beforeEach( () => {
+			window.open = jest.fn();
+
 			mockUseDocuments.mockReturnValue( {
 				documents: [
 					{
@@ -175,6 +181,20 @@ describe( 'Document download button', () => {
 				isLoading: false,
 				documentsError: undefined,
 			} );
+
+			mocked( VatForm ).mockImplementation( ( { onCompleted } ) => (
+				<button
+					onClick={ () =>
+						onCompleted(
+							'123456789',
+							'Test company',
+							'Test address'
+						)
+					}
+				>
+					Complete
+				</button>
+			) );
 		} );
 
 		describe( 'if VAT data has been submitted', () => {
@@ -185,16 +205,18 @@ describe( 'Document download button', () => {
 
 				render( <DocumentsList /> );
 
-				downloadButton = screen.getByRole( 'link', {
+				downloadButton = screen.getByRole( 'button', {
 					name: 'Download',
 				} );
 			} );
 
 			it( 'should download the document ', () => {
-				const clickEvent = createEvent.click( downloadButton );
-				fireEvent( downloadButton, clickEvent );
+				user.click( downloadButton );
 
-				expect( clickEvent.defaultPrevented ).toBe( false );
+				expect( window.open ).toHaveBeenCalledWith(
+					'https://site.com/wp-json/wc/v3/payments/documents/vat_invoice_123456?_wpnonce=random_wp_rest_nonce',
+					'_blank'
+				);
 			} );
 		} );
 
@@ -206,16 +228,15 @@ describe( 'Document download button', () => {
 
 				render( <DocumentsList /> );
 
-				downloadButton = screen.getByRole( 'link', {
+				downloadButton = screen.getByRole( 'button', {
 					name: 'Download',
 				} );
 			} );
 
 			it( 'should not download the document', () => {
-				const clickEvent = createEvent.click( downloadButton );
-				fireEvent( downloadButton, clickEvent );
+				user.click( downloadButton );
 
-				expect( clickEvent.defaultPrevented ).toBe( true );
+				expect( window.open ).not.toHaveBeenCalled();
 			} );
 
 			it( 'should open the VAT form modal', () => {
@@ -230,6 +251,74 @@ describe( 'Document download button', () => {
 					screen.getByRole( 'dialog', { name: 'VAT details' } )
 				).toBeVisible();
 			} );
+
+			describe( 'after the VAT details are submitted', () => {
+				beforeEach( () => {
+					user.click( downloadButton );
+
+					user.click( screen.getByText( 'Complete' ) );
+				} );
+
+				it( 'should close the modal', () => {
+					expect(
+						screen.queryByRole( 'dialog', { name: 'VAT details' } )
+					).toBeNull();
+				} );
+
+				it( 'should set the hasSubmittedVatData flag to true', () => {
+					expect(
+						wcpaySettings.accountStatus.hasSubmittedVatData
+					).toBe( true );
+				} );
+
+				it( 'should automatically download the document', () => {
+					expect( window.open ).toHaveBeenCalledWith(
+						'https://site.com/wp-json/wc/v3/payments/documents/vat_invoice_123456?_wpnonce=random_wp_rest_nonce',
+						'_blank'
+					);
+				} );
+			} );
 		} );
+	} );
+} );
+
+describe( 'Direct document download', () => {
+	beforeEach( () => {
+		window.open = jest.fn();
+
+		global.wcpaySettings = {
+			accountStatus: { hasSubmittedVatData: true },
+		};
+	} );
+
+	it( 'should not download the document if document type is missing', () => {
+		updateQueryString( { document_id: 'vat_invoice_123456' }, '/', {} );
+
+		render( <DocumentsList /> );
+
+		expect( window.open ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should not download the document if document ID is missing', () => {
+		updateQueryString( { document_type: 'vat_invoice' }, '/', {} );
+
+		render( <DocumentsList /> );
+
+		expect( window.open ).not.toHaveBeenCalled();
+	} );
+
+	it( 'should download the document in the same tab if document type and ID are in the query', () => {
+		updateQueryString(
+			{ document_id: 'vat_invoice_123456', document_type: 'vat_invoice' },
+			'/',
+			{}
+		);
+
+		render( <DocumentsList /> );
+
+		expect( window.open ).toHaveBeenCalledWith(
+			'https://site.com/wp-json/wc/v3/payments/documents/vat_invoice_123456?_wpnonce=random_wp_rest_nonce',
+			'_self'
+		);
 	} );
 } );

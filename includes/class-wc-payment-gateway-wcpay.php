@@ -1071,6 +1071,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_method = $payment_information->get_payment_method();
 		$order->update_meta_data( '_payment_method_id', $payment_method );
 		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+		$order->update_meta_data( '_wcpay_mode', $this->is_in_test_mode() ? 'test' : 'prod' );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( ! $payment_needed && ! $save_payment_method_to_store ) {
