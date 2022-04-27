@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed non-working emails customization setting page caused by WCPay.
