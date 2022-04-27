@@ -192,7 +192,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
 		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
 		$mock_fraud_prevention
-			->expects( $this->exactly( 1 ) )
+			->expects( $this->once() )
 			->method( 'is_enabled' )
 			->willReturn( false );
 
