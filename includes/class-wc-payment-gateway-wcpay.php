@@ -522,7 +522,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			return $this->account->is_card_present_eligible();
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account card present eligible .' . $e );
+			Logger::error( 'Failed to get account card present eligible. ' . $e );
 			return $empty_value;
 		}
 	}
@@ -538,7 +538,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			return $this->account->is_card_testing_protection_eligible();
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account card testing protection eligible .' . $e );
+			Logger::error( 'Failed to get account card testing protection eligible. ' . $e );
 			return $empty_value;
 		}
 	}
