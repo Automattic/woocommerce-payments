@@ -304,9 +304,9 @@ class WC_Payments_Account {
 	 *
 	 * @return bool
 	 */
-	public function is_card_present_eligible() {
+	public function is_card_present_eligible(): bool {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['card_present_eligible'] ) ? $account['card_present_eligible'] : false;
+		return $account['card_present_eligible'] ?? false;
 	}
 
 	/**
@@ -1274,5 +1274,15 @@ class WC_Payments_Account {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get card testing protection eligible flag account
+	 *
+	 * @return bool
+	 */
+	public function is_card_testing_protection_eligible(): bool {
+		$account = $this->get_cached_account_data();
+		return $account['card_testing_protection_eligible'] ?? false;
 	}
 }
