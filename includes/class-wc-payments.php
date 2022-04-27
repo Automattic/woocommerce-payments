@@ -285,7 +285,7 @@ class WC_Payments {
 		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service                       = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
-		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service( WC()->mailer() );
+		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_service                       = new WC_Payments_Order_Service();
@@ -808,6 +808,17 @@ class WC_Payments {
 	}
 
 	/**
+	 * Sets the customer service instance. This is needed only for tests.
+	 *
+	 * @param WC_Payments_Customer_Service $customer_service_class Instance of WC_Payments_Customer_Service.
+	 *
+	 * @return void
+	 */
+	public static function set_customer_service( WC_Payments_Customer_Service $customer_service_class ) {
+		self::$customer_service = $customer_service_class;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -921,16 +932,22 @@ class WC_Payments {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
-			// Disable nonce checks for API calls. TODO This should be changed.
-			// Make sure this is called after the dev tools have been initialized so the dev mode filter works.
-			add_filter(
-				'rest_request_before_callbacks',
-				function () {
-					if ( self::get_gateway()->is_in_dev_mode() ) {
-						add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+
+			// This injects the payments API into core, so the WooCommerce Blocks plugin is not necessary.
+			// The payments API is currently only available in feature builds (with flag `WC_BLOCKS_IS_FEATURE_PLUGIN`).
+			// We should remove this once it's available in core by default.
+			if ( ! defined( 'WC_BLOCKS_IS_FEATURE_PLUGIN' ) && class_exists( 'Automattic\WooCommerce\Blocks\Payments\Api' ) ) {
+				$blocks_package_container = Automattic\WooCommerce\Blocks\Package::container();
+				$blocks_package_container->register(
+					Automattic\WooCommerce\Blocks\Payments\Api::class,
+					function ( $container ) {
+						$payment_method_registry = $container->get( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry::class );
+						$asset_data_registry     = $container->get( Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry::class );
+						return new Automattic\WooCommerce\Blocks\Payments\Api( $payment_method_registry, $asset_data_registry );
 					}
-				}
-			);
+				);
+				$blocks_package_container->get( Automattic\WooCommerce\Blocks\Payments\Api::class );
+			}
 		}
 	}
 
@@ -940,14 +957,24 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function ajax_init_platform_checkout() {
+		$is_nonce_valid = check_ajax_referer( 'wcpay_init_platform_checkout_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
+		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
 		$user        = wp_get_current_user();
 		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			// create customer.
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
-			self::$customer_service->create_customer_for_user( $user, $customer_data );
+			$customer_id   = self::$customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
 		$account_id = self::get_account_service()->get_stripe_account_id();
@@ -958,6 +985,8 @@ class WC_Payments {
 		$body = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
+			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
+			'email'                => $email,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
@@ -970,6 +999,7 @@ class WC_Payments {
 				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
 			],
+			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 		$args = [
 			'url'     => $url,
