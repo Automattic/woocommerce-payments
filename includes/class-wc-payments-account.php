@@ -1273,8 +1273,8 @@ class WC_Payments_Account {
 	 *
 	 * @return bool
 	 */
-	public function is_card_testing_protection_eligible() : bool {
+	public function is_card_testing_protection_eligible(): bool {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['card_testing_protection_eligible'] ) ? $account['card_testing_protection_eligible'] : false;
+		return $account['card_testing_protection_eligible'] ?? false;
 	}
 }
