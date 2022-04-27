@@ -49,4 +49,5 @@ class WC_Payments_DB_Test extends WP_UnitTestCase {
 		$this->assertIsArray( $orders_with_charge_ids[1] );
 		$this->assertSame( 'ch_2', $orders_with_charge_ids[1]['charge_id'] );
 	}
+
 }
