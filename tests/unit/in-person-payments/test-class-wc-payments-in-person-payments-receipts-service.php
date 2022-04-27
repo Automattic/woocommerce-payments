@@ -40,9 +40,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_emails = $this->createMock( WC_Emails::class );
-
-		$this->receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service( $this->mock_emails );
+		$this->receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 	}
 
 	public function test_get_receipt_markup_is_EMV_compliant() {
@@ -94,35 +92,6 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 		$this->expectException( \RuntimeException::class );
 		$this->expectExceptionMessage( $expected_message );
 		$this->receipts_service->get_receipt_markup( $input_settings, $mock_order, [] );
-	}
-
-	public function test_send_customer_receipt_email_success() {
-		require WCPAY_ABSPATH . 'includes/emails/class-wc-payments-email-ipp-receipt.php';
-		$mock_receipt_email = $this->createMock( WC_Payments_Email_IPP_Receipt::class );
-		$mock_order         = WC_Helper_Order::create_order();
-		$mock_charge        = [
-			'amount_captured'        => 10,
-			'order'                  => [
-				'number' => $mock_order->get_id(),
-			],
-			'payment_method_details' => [
-				'card_present' => [
-					'brand'   => 'test',
-					'last4'   => 'Test',
-					'receipt' => [
-						'application_preferred_name' => 'Test',
-						'dedicated_file_name'        => 'Test 42',
-						'account_type'               => 'Test',
-					],
-				],
-			],
-		];
-
-		$this->mock_emails->expects( $this->once() )->method( 'get_emails' )->willReturn( [ 'WC_Payments_Email_IPP_Receipt' => $mock_receipt_email ] );
-
-		$mock_receipt_email->expects( $this->once() )->method( 'trigger' )->with( $mock_order, $this->mock_settings, $mock_charge );
-
-		$this->receipts_service->send_customer_ipp_receipt_email( $mock_order, $this->mock_settings, $mock_charge );
 	}
 
 	public function provide_settings_validation_data() {
