@@ -528,6 +528,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Check if account is eligible for card testing protection.
+	 *
+	 * @param false $empty_value - Default return value.
+	 *
+	 * @return bool
+	 */
+	public function is_card_testing_protection_eligible( $empty_value = false ) {
+		try {
+			return $this->account->is_card_testing_protection_eligible();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account card testing protection eligible .' . $e );
+			return $empty_value;
+		}
+	}
+
+	/**
 	 * Checks if the account country is compatible with the current currency.
 	 *
 	 * @return bool Whether the currency is supported in the country set in the account.

@@ -80,7 +80,7 @@ class Fraud_Prevention_Service {
 	 * @return bool
 	 */
 	public function is_enabled(): bool {
-		return $this->wcpay_gateway->get_option( 'is_fraud_prevention_enabled' ) === 'yes';
+		return $this->wcpay_gateway->is_card_testing_protection_eligible();
 	}
 
 	/**
