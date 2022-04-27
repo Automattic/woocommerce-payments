@@ -105,7 +105,7 @@ class Fraud_Prevention_Service {
 	 * @return string
 	 */
 	public function regenerate_token(): string {
-		$token = wp_generate_password( 16 );
+		$token = wp_generate_password( 16, false );
 		$this->session->set( self::TOKEN_NAME, $token );
 		return $token;
 	}
@@ -117,6 +117,6 @@ class Fraud_Prevention_Service {
 	 * @return bool
 	 */
 	public function verify_token( string $token = null ): bool {
-		return ! is_null( $token ) && hash_equals( $this->session->get( self::TOKEN_NAME ), $token );
+		return null !== $token && hash_equals( $this->session->get( self::TOKEN_NAME ), $token );
 	}
 }
