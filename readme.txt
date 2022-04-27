@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 5.9.2
 Requires PHP: 7.0
-Stable tag: 4.0.1
+Stable tag: 4.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.0.2 - 2022-xx-xx =
+= 4.0.2 - 2022-04-27 =
 * Add - Adds user's email to platform checkout request data.
 * Fix - Fixed non-working emails customization setting page caused by WCPay.
 * Fix - Fix missing customer_id on platform checkout
