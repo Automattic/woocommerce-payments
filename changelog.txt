@@ -1,5 +1,11 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.0.2 - 2022-xx-xx =
+* Add - Adds user's email to platform checkout request data.
+* Fix - Fixed non-working emails customization setting page caused by WCPay.
+* Fix - Fix missing customer_id on platform checkout
+* Fix - Inject Payments API into Blocks Package to remove dependency on the Blocks plugin for the platform checkout.
+
 = 4.0.1 - 2022-04-20 =
 * Fix - Fix templates folder missing in release package
 
