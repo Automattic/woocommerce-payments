@@ -295,9 +295,9 @@ class WC_Payments_Account {
 	 *
 	 * @return bool
 	 */
-	public function is_card_present_eligible() {
+	public function is_card_present_eligible(): bool {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['card_present_eligible'] ) ? $account['card_present_eligible'] : false;
+		return $account['card_present_eligible'] ?? false;
 	}
 
 	/**
