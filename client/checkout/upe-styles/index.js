@@ -192,6 +192,7 @@ const hiddenElementsForUPE = {
 	},
 };
 
+export const getFieldStyles = ( selector, upeElement, focus = false ) => {
 	if ( ! document.querySelector( selector ) ) {
 		return {};
 	}
@@ -199,6 +200,9 @@ const hiddenElementsForUPE = {
 	const validProperties = upeRestrictedProperties[ upeElement ];
 
 	const elem = document.querySelector( selector );
+	if ( focus ) {
+		elem.focus();
+	}
 
 	const styles = window.getComputedStyle( elem );
 
