@@ -447,10 +447,10 @@ export default class WCPayAPI {
 	 * @return {Promise} The final promise for the request to the server.
 	 */
 	saveUPEAppearance( appearance, isBlocksCheckout = false ) {
-		const appearanceData = {
+		const appearanceData = JSON.stringify( {
 			is_blocks_checkout: isBlocksCheckout,
 			appearance,
-		};
+		} );
 
 		return this.request( getConfig( 'ajaxUrl' ), {
 			appearanceData,
