@@ -45,7 +45,153 @@ const dashedToCamelCase = ( string ) => {
 	} );
 };
 
-export const getFieldStyles = ( selector, upeElement ) => {
+const hiddenElementsForUPE = {
+	/**
+	 * Create hidden container for generating UPE styles.
+	 *
+	 * @param {string} elementID ID of element to create.
+	 *
+	 * @return {Object} Object of the created hidden container element.
+	 */
+	getHiddenContainer: function ( elementID ) {
+		const hiddenDiv = document.createElement( 'div' );
+		hiddenDiv.setAttribute( 'id', this.getIDFromSelector( elementID ) );
+		hiddenDiv.style.border = 0;
+		hiddenDiv.style.clip = 'rect(0 0 0 0)';
+		hiddenDiv.style.height = '1px';
+		hiddenDiv.style.margin = '-1px';
+		hiddenDiv.style.overflow = 'hidden';
+		hiddenDiv.style.padding = '0';
+		hiddenDiv.style.position = 'absolute';
+		hiddenDiv.style.width = '1px';
+		return hiddenDiv;
+	},
+
+	/**
+	 * Create invalid element row for generating UPE styles.
+	 *
+	 * @param {string} element Type of element to create.
+	 * @param {Array} classes Array of classes to be added to the element. Default: empty array.
+	 *
+	 * @return {Object} Object of the created invalid row element.
+	 */
+	createRow: function ( elementType, classes = [] ) {
+		const newRow = document.createElement( elementType );
+		if ( classes.length ) {
+			newRow.classList.add( ...classes );
+		}
+		return newRow;
+	},
+
+	/**
+	 * Append elements to target container.
+	 *
+	 * @param {Object} appendTarget Element object where clone should be appended.
+	 * @param {string} elementToClone Selector of the element to be cloned.
+	 * @param {string} newElementID Selector for the cloned element.
+	 */
+	appendClone: function ( appendTarget, elementToClone, newElementID ) {
+		const cloneTarget = document.querySelector( elementToClone );
+		if ( cloneTarget ) {
+			const clone = cloneTarget.cloneNode( true );
+			clone.id = this.getIDFromSelector( newElementID );
+			clone.value = '';
+			appendTarget.appendChild( clone );
+		}
+	},
+
+	/**
+	 * Retrieve ID/Class from selector.
+	 *
+	 * @param {string} selector Element selector.
+	 *
+	 * @return {string} Extracted ID/Class from selector.
+	 */
+	getIDFromSelector: function ( selector ) {
+		if ( selector.startsWith( '#' ) || selector.startsWith( '.' ) ) {
+			return selector.slice( 1 );
+		}
+
+		return selector;
+	},
+
+	/**
+	 * Initialize hidden fields to generate UPE styles.
+	 *
+	 * @param {boolean} isBlocksCheckout True if Blocks Checkout. Default false.
+	 */
+	init: function ( isBlocksCheckout = false ) {
+		const selectors = appearanceSelectors.getSelectors( isBlocksCheckout ),
+			appendTarget = document.querySelector( selectors.appendTarget ),
+			elementToClone = document.querySelector(
+				selectors.upeThemeInputSelector
+			);
+
+		// Exit early if elements are not present.
+		if ( ! appendTarget || ! elementToClone ) {
+			return;
+		}
+
+		// Remove hidden container is already present on DOM.
+		if ( document.querySelector( selectors.hiddenContainer ) ) {
+			this.cleanup();
+		}
+
+		// Create hidden container & append to target.
+		const hiddenContainer = this.getHiddenContainer(
+			selectors.hiddenContainer
+		);
+		appendTarget.appendChild( hiddenContainer );
+
+		// Create hidden valid row & append to hidden container.
+		const hiddenValidRow = this.createRow(
+			selectors.rowElement,
+			selectors.validClasses
+		);
+		hiddenContainer.appendChild( hiddenValidRow );
+
+		// Create hidden invalid row & append to hidden container.
+		const hiddenInvalidRow = this.createRow(
+			selectors.rowElement,
+			selectors.invalidClasses
+		);
+		hiddenContainer.appendChild( hiddenInvalidRow );
+
+		// Clone & append target element to hidden valid row.
+		this.appendClone(
+			hiddenValidRow,
+			selectors.upeThemeInputSelector,
+			selectors.hiddenInput
+		);
+
+		// Clone & append target element to hidden invalid row.
+		this.appendClone(
+			hiddenInvalidRow,
+			selectors.upeThemeInputSelector,
+			selectors.hiddenInvalidInput
+		);
+
+		// Remove transitions & focus on hidden element.
+		const wcpayHiddenInput = document.querySelector(
+			selectors.hiddenInput
+		);
+		wcpayHiddenInput.style.transition = 'none';
+		//wcpayHiddenInput.focus();
+	},
+
+	/**
+	 * Remove hidden container from DROM.
+	 */
+	cleanup: function () {
+		const element = document.querySelector(
+			appearanceSelectors.default.hiddenContainer
+		);
+		if ( element ) {
+			element.remove();
+		}
+	},
+};
+
 	if ( ! document.querySelector( selector ) ) {
 		return {};
 	}
