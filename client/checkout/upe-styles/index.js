@@ -70,7 +70,7 @@ const hiddenElementsForUPE = {
 	/**
 	 * Create invalid element row for generating UPE styles.
 	 *
-	 * @param {string} element Type of element to create.
+	 * @param {string} elementType Type of element to create.
 	 * @param {Array} classes Array of classes to be added to the element. Default: empty array.
 	 *
 	 * @return {Object} Object of the created invalid row element.
