@@ -358,8 +358,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
-		add_filter( 'woocommerce_checkout_fields', [ $this, 'checkout_remove_default_email_field' ], 50 );
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'checkout_email_field_before_billing_details' ], 20 );
+		// Update the email field position.
+		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
 	}
 
 	/**
@@ -2848,54 +2848,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Remove default email field from Billing section on Checkout page.
+	 * Move the email field to the top of the Checkout page.
 	 *
 	 * @param array $fields WooCommerce checkout fields.
 	 *
 	 * @return array WooCommerce checkout fields.
 	 */
-	public function checkout_remove_default_email_field( $fields ) {
+	public function checkout_update_email_field_priority( $fields ) {
 		$is_link_enabled = in_array(
 			Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
 			true
 		);
 
-		// Remove the email field if StripeLink is enabled.
-		if ( isset( $fields['billing']['billing_email'] ) && $is_link_enabled ) {
-			unset( $fields['billing']['billing_email'] );
-		} else {
-			remove_action( 'woocommerce_checkout_before_customer_details', [ $this, 'checkout_email_field_before_billing_details' ], 20 );
+		if ( $is_link_enabled ) {
+			// Update the field priority.
+			$fields['billing_email']['priority'] = 1;
+
+			// Add extra `wcpay-checkout-email-field` class.
+			$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
+
+			// Append StripeLink modal trigger button for logged in users.
+			$fields['billing_email']['label'] = $fields['billing_email']['label']
+				. ' <span class="wcpay-stripelink-trigger-modal">&nbsp;</span>';
 		}
 
 		return $fields;
-	}
-
-	/**
-	 * Adds a custom email field to the top of the Checkout page.
-	 */
-	public static function checkout_email_field_before_billing_details() {
-		$checkout = WC()->checkout;
-
-		echo '<div id="contact_details" class="col2-set">';
-		echo '<div class="col-1">';
-
-		echo '<h3>' . esc_html( __( 'Contact information', 'woocommerce-payments' ) ) . '</h3>';
-
-		woocommerce_form_field(
-			'billing_email',
-			[
-				'type'        => 'email',
-				'label'       => __( 'Email address', 'woocommerce-payments' ),
-				'class'       => [ 'form-row-wide checkout-billing-email' ],
-				'input_class' => [ 'checkout-billing-email-input' ],
-				'validate'    => [ 'email' ],
-				'required'    => true,
-			],
-			$checkout->get_value( 'billing_email' )
-		);
-
-		echo '</div>';
-		echo '</div>';
 	}
 }

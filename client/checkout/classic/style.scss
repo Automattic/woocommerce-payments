@@ -39,4 +39,20 @@
 	background-color: #fff;
 }
 
+.wcpay-checkout-email-field {
+	position: relative;
+}
+
+.wcpay-checkout-email-field .wcpay-stripelink-trigger-modal {
+	display: none;
+	position: absolute;
+	right: 5px;
+	top: 26px;
+	width: 64px;
+	height: 40px;
+	background: no-repeat
+		url( '../../../assets/images/payment-methods/link.svg' );
+	cursor: pointer;
+}
+
 @import '../platform-checkout/style';
