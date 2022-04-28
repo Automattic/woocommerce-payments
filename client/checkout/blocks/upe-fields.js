@@ -220,8 +220,24 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	const [ clientSecret, setClientSecret ] = useState( null );
 	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
 	const [ errorMessage, setErrorMessage ] = useState( null );
+	const [ appearance, setAppearance ] = useState(
+		getConfig( 'wcBlocksUPEAppearance' )
+	);
+	const [ fontRules ] = useState( getFontRulesFromPage() );
 
 	useEffect( () => {
+		async function generateUPEAppearance() {
+			// Generate UPE input styles.
+			const upeAppearance = getAppearance( true );
+			api.saveUPEAppearance( upeAppearance, true );
+
+			// Update appearance state
+			setAppearance( upeAppearance );
+		}
+		if ( ! appearance ) {
+			generateUPEAppearance();
+		}
+
 		if ( paymentIntentId || hasRequestedIntent ) {
 			return;
 		}
@@ -241,7 +257,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		}
 		setHasRequestedIntent( true );
 		createIntent();
-	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage ] );
+	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage, appearance ] );
 
 	if ( ! clientSecret ) {
 		if ( errorMessage ) {
@@ -259,6 +275,8 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 
 	const options = {
 		clientSecret,
+		appearance,
+		fonts: fontRules,
 	};
 
 	return (
