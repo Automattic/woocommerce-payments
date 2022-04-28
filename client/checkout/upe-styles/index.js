@@ -4,6 +4,41 @@
 import { upeRestrictedProperties } from './upe-styles';
 import { generateHoverRules, generateOutlineStyle } from './utils.js';
 
+const appearanceSelectors = {
+	default: {
+		hiddenContainer: '#wcpay-hidden-div',
+		hiddenInput: '#wcpay-hidden-input',
+		hiddenInvalidInput: '#wcpay-hidden-invalid-input',
+	},
+	classicCheckout: {
+		appendTarget: '.woocommerce-billing-fields__field-wrapper',
+		upeThemeInputSelector: '#billing_first_name',
+		upeThemeLabelSelector: '.woocommerce-checkout .form-row label',
+		rowElement: 'p',
+		validClasses: [ 'form-row' ],
+		invalidClasses: [
+			'form-row',
+			'woocommerce-invalid',
+			'woocommerce-invalid-required-field',
+		],
+	},
+	blocksCheckout: {
+		appendTarget: '#shipping.wc-block-components-address-form',
+		upeThemeInputSelector: '#shipping-first_name',
+		upeThemeLabelSelector: '.wc-block-components-text-input label',
+		rowElement: 'div',
+		validClasses: [ 'wc-block-components-text-input' ],
+		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
+	},
+	getSelectors: function ( isBlocksCheckout = false ) {
+		if ( isBlocksCheckout ) {
+			return { ...this.default, ...this.blocksCheckout };
+		}
+
+		return { ...this.default, ...this.classicCheckout };
+	},
+};
+
 const dashedToCamelCase = ( string ) => {
 	return string.replace( /-([a-z])/g, function ( g ) {
 		return g[ 1 ].toUpperCase();
