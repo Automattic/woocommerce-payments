@@ -16,6 +16,10 @@ class Database_Cache {
 	const ACCOUNT_KEY        = 'wcpay_account_data';
 	const BUSINESS_TYPES_KEY = 'wcpay_business_types_data';
 	const CURRENCIES_KEY     = 'wcpay_multi_currency_cached_currencies';
+	/**
+	 * Payment methods cache key prefix. Used in conjunction with the customer_id to cache a customer's payment methods.
+	 */
+	const PAYMENT_METHODS_KEY_PREFIX = 'wcpay_pm_';
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
@@ -130,6 +134,31 @@ class Database_Cache {
 	 */
 	public function disable_refresh() {
 		$this->refresh_disabled = true;
+	}
+
+	/**
+	 * Deletes all saved by looking for cache key prefix. This is useful when you want to cache user related data by
+	 *
+	 * @param string $key Cache key prefix to delete.
+	 *
+	 * @return void
+	 */
+	public function delete_by_prefix( string $key ) {
+
+		// Protection against accidentally deleting all options or options that are not related to WcPay caching.
+		// Since only one cache key prefix is supported, we will check only this one by checking does key starts with payment method key prefix.
+		// Feel free to update this statement if more prefix cache keys you are planning to add.
+
+		if ( strncmp( $key, self::PAYMENT_METHODS_KEY_PREFIX, strlen( self::PAYMENT_METHODS_KEY_PREFIX ) ) !== 0 ) {
+			return; // Maybe throw exception here...
+		}
+		global $wpdb;
+
+		$plugin_options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s", $key . '%' ) );
+
+		foreach ( $plugin_options as $option ) {
+			$this->delete( $option->option_name );
+		}
 	}
 
 	/**

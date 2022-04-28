@@ -209,11 +209,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_fraud_prevention_enabled'       => [
-						'description'       => __( 'If fraud prevention should be enabled.', 'woocommerce-payments' ),
-						'type'              => 'boolean',
-						'validate_callback' => 'rest_validate_request_arg',
-					],
 				],
 			]
 		);
@@ -362,7 +357,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_card_present_eligible'          => $this->wcpay_gateway->is_card_present_eligible(),
 				'is_platform_checkout_enabled'      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'platform_checkout_custom_message'  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
-				'is_fraud_prevention_enabled'       => 'yes' === $this->wcpay_gateway->get_option( 'is_fraud_prevention_enabled' ),
 			]
 		);
 	}
@@ -387,7 +381,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_account( $request );
 		$this->update_is_platform_checkout_enabled( $request );
 		$this->update_platform_checkout_custom_message( $request );
-		$this->update_is_fraud_protection_enabled( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -644,21 +637,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_platform_checkout_enabled = $request->get_param( 'is_platform_checkout_enabled' );
 
 		$this->wcpay_gateway->update_is_platform_checkout_enabled( $is_platform_checkout_enabled );
-	}
-
-	/**
-	 * Updates the "fraud prevention" enable/disable settings.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	private function update_is_fraud_protection_enabled( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'is_fraud_prevention_enabled' ) ) {
-			return;
-		}
-
-		$is_fraud_prevention_enabled = $request->get_param( 'is_fraud_prevention_enabled' );
-
-		$this->wcpay_gateway->update_option( 'is_fraud_prevention_enabled', $is_fraud_prevention_enabled ? 'yes' : 'no' );
 	}
 
 	/**

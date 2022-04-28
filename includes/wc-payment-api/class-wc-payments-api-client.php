@@ -226,7 +226,8 @@ class WC_Payments_API_Client {
 			$request['payment_method_types'] = $payment_methods;
 		}
 
-		$request = array_merge( $request, $additional_parameters );
+		$request             = array_merge( $request, $additional_parameters );
+		$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
 
 		if ( $off_session ) {
 			$request['off_session'] = 'true';
@@ -242,10 +243,6 @@ class WC_Payments_API_Client {
 
 		if ( ! empty( $cvc_confirmation ) ) {
 			$request['cvc_confirmation'] = $cvc_confirmation;
-		}
-
-		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
-			$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
@@ -278,10 +275,7 @@ class WC_Payments_API_Client {
 		$request['description']          = $this->get_intent_description( $order_id );
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
-
-		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
-			$request['metadata'] = $this->get_fingerprint_metadata();
-		}
+		$request['metadata']             = $this->get_fingerprint_metadata();
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -2385,7 +2379,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	private function get_fingerprint_metadata() {
+	private function get_fingerprint_metadata(): array {
 		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();
 		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
 

@@ -41,14 +41,23 @@ class WC_Payments_Account {
 	private $database_cache;
 
 	/**
+	 * Action scheduler service
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service
+	 */
+	private $action_scheduler_service;
+
+	/**
 	 * Class constructor
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
-	 * @param Database_Cache         $database_cache      Database cache util.
+	 * @param WC_Payments_API_Client               $payments_api_client Payments API client.
+	 * @param Database_Cache                       $database_cache      Database cache util.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service    Action scheduler service.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache ) {
-		$this->payments_api_client = $payments_api_client;
-		$this->database_cache      = $database_cache;
+	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache, WC_Payments_Action_Scheduler_Service $action_scheduler_service ) {
+		$this->payments_api_client      = $payments_api_client;
+		$this->database_cache           = $database_cache;
+		$this->action_scheduler_service = $action_scheduler_service;
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
@@ -295,9 +304,9 @@ class WC_Payments_Account {
 	 *
 	 * @return bool
 	 */
-	public function is_card_present_eligible() {
+	public function is_card_present_eligible(): bool {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['card_present_eligible'] ) ? $account['card_present_eligible'] : false;
+		return $account['card_present_eligible'] ?? false;
 	}
 
 	/**
@@ -1242,15 +1251,14 @@ class WC_Payments_Account {
 	 * @return void
 	 */
 	public function maybe_add_instant_deposit_note_reminder() {
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
-		$action_hook              = self::INSTANT_DEPOSITS_REMINDER_ACTION;
+		$action_hook = self::INSTANT_DEPOSITS_REMINDER_ACTION;
 
-		if ( $action_scheduler_service->pending_action_exists( $action_hook ) ) {
+		if ( $this->action_scheduler_service->pending_action_exists( $action_hook ) ) {
 			return;
 		}
 
 		$reminder_time = time() + ( 90 * DAY_IN_SECONDS );
-		$action_scheduler_service->schedule_job( $reminder_time, $action_hook );
+		$this->action_scheduler_service->schedule_job( $reminder_time, $action_hook );
 	}
 
 	/**
@@ -1266,5 +1274,15 @@ class WC_Payments_Account {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get card testing protection eligible flag account
+	 *
+	 * @return bool
+	 */
+	public function is_card_testing_protection_eligible(): bool {
+		$account = $this->get_cached_account_data();
+		return $account['card_testing_protection_eligible'] ?? false;
 	}
 }

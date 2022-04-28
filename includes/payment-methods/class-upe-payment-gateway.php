@@ -10,6 +10,7 @@ namespace WCPay\Payment_Methods;
 use WC_Order;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Explicit_Price_Formatter;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
@@ -417,6 +418,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			if ( $payment_needed ) {
+				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
+					throw new Process_Payment_Exception(
+						__( 'Your payment was not processed.', 'woocommerce-payments' ),
+						'fraud_prevention_enabled'
+					);
+				}
+
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
 					// Throwing an exception instead of adding an error notice
 					// makes the error notice show up both in the regular and block checkout.
@@ -873,6 +883,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			?>
 
 			</fieldset>
+
+			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
+				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
+			<?php endif; ?>
+
 			<?php
 
 			do_action( 'wcpay_payment_fields_upe', $this->id );

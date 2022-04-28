@@ -47,8 +47,8 @@ class Fraud_Prevention_Service_Test extends WP_UnitTestCase {
 
 	public function provide_enabled_options() {
 		return [
-			[ 'yes', true ],
-			[ 'no', false ],
+			[ true, true ],
+			[ false, false ],
 		];
 	}
 
@@ -58,8 +58,7 @@ class Fraud_Prevention_Service_Test extends WP_UnitTestCase {
 	public function test_it_checks_if_enabled( $option_value, $return_value ) {
 		$this->wcpay_gateway_mock
 			->expects( $this->once() )
-			->method( 'get_option' )
-			->with( 'is_fraud_prevention_enabled' )
+			->method( 'is_card_testing_protection_eligible' )
 			->willReturn( $option_value );
 
 		$is_enabled = $this->fraud_prevention_service->is_enabled();

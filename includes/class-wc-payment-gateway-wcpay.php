@@ -516,15 +516,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Check if account is eligible for card present.
 	 *
-	 * @param false $empty_value - Default return value.
 	 * @return bool
 	 */
-	public function is_card_present_eligible( $empty_value = false ) {
+	public function is_card_present_eligible(): bool {
 		try {
 			return $this->account->is_card_present_eligible();
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account card present eligible .' . $e );
-			return $empty_value;
+			Logger::error( 'Failed to get account card present eligible. ' . $e );
+			return false;
+		}
+	}
+
+	/**
+	 * Check if account is eligible for card testing protection.
+	 *
+	 * @return bool
+	 */
+	public function is_card_testing_protection_eligible(): bool {
+		try {
+			return $this->account->is_card_testing_protection_eligible();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account card testing protection eligible. ' . $e );
+			return false;
 		}
 	}
 
@@ -840,7 +853,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			?>
 
 			</fieldset>
-
 
 			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
 				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
