@@ -978,7 +978,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			}
 
-			$appearance_data    = isset( $_POST['appearanceData'] ) ? wc_clean( wp_unslash( $_POST['appearanceData'] ) ) : null;
+			$appearance_data    = isset( $_POST['appearanceData'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearanceData'] ) ), true ) : null;
 			$is_blocks_checkout = rest_sanitize_boolean( $appearance_data['is_blocks_checkout'] );
 			$appearance_rules   = $appearance_data['appearance'];
 
