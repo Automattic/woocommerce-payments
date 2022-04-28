@@ -21,6 +21,7 @@ import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
 import { getTerms } from '../utils/upe';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
+import { getAppearance, getFontRulesFromPage } from '../upe-styles';
 
 const WCPayUPEFields = ( {
 	api,
