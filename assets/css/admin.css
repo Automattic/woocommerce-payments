@@ -130,6 +130,16 @@
 	background-size: contain;
 }
 
+.payment-method__brand--card_present {
+	background: no-repeat url( '../images/cards/card-present.svg' );
+	background-size: contain;
+}
+
+.payment-method__brand--interac_present {
+	background: no-repeat url( '../images/cards/interac-present.svg' );
+	background-size: contain;
+}
+
 .wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {
 	border: 1px solid #ddd;
 	border-radius: 2px;
