@@ -2384,7 +2384,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->willReturn( true );
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Your payment was not processed.' );
+		$this->expectExceptionMessage( "We're not able to process this payment. Please refresh the page and try again." );
 		$this->wcpay_gateway->process_payment( $order->get_id() );
 	}
 
@@ -2407,7 +2407,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$_POST['wcpay-fraud-prevention-token'] = 'incorrect-token';
 
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Your payment was not processed.' );
+		$this->expectExceptionMessage( "We're not able to process this payment. Please refresh the page and try again." );
 		$this->wcpay_gateway->process_payment( $order->get_id() );
 	}
 
