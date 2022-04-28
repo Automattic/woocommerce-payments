@@ -1180,7 +1180,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 	 *
 	 * @throws Exception - In the event of test failure.
 	 */
-	public function test_update_intention_with_link_payment_method_success() {
+	public function test_update_intention_with_cc_when_link_enabled() {
 		$intention_id            = 'test_intention_id';
 		$currency_code           = 'eur';
 		$customer_id             = 'cus_123abc';
@@ -1241,7 +1241,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 							'',
 							$metadata['site_url']
 						),
-						'payment_method_types' => [ 'card', 'link' ],
+						'payment_method_types' => [ 'card' ],
 						'payment_country'      => 'US',
 						'customer'             => $customer_id,
 						'setup_future_usage'   => 'off_session',

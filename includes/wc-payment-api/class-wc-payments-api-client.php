@@ -330,7 +330,11 @@ class WC_Payments_API_Client {
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
 
 			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
-				$is_link_enabled = in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, \WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true );
+				$is_link_enabled = in_array(
+					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+					\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $metadata['order_id'] ?? 0, true ),
+					true
+				);
 				if ( $is_link_enabled ) {
 					$request['payment_method_types'][] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 				}
