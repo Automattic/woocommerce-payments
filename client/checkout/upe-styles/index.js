@@ -258,27 +258,31 @@ export const getFontRulesFromPage = () => {
 	return fontRules;
 };
 
-export const getAppearance = () => {
-	const upeThemeInputSelector = '#billing_first_name';
-	const upeThemeLabelSelector = '.woocommerce-checkout .form-row label';
-	const upeThemeInvalidInputSelector = '#wcpay-hidden-invalid-input';
-	const upeThemeFocusInputSelector = '#wcpay-hidden-input';
+export const getAppearance = ( isBlocksCheckout = false ) => {
+	const selectors = appearanceSelectors.getSelectors( isBlocksCheckout );
 
-	const inputRules = getFieldStyles( upeThemeInputSelector, '.Input' );
+	// Add hidden fields to DOM for generating styles.
+	hiddenElementsForUPE.init( isBlocksCheckout );
+
+	const inputRules = getFieldStyles( selectors.hiddenInput, '.Input' );
 	const inputFocusRules = getFieldStyles(
-		upeThemeFocusInputSelector,
-		'.Input'
+		selectors.hiddenInput,
+		'.Input',
+		true
 	);
 	const inputInvalidRules = getFieldStyles(
-		upeThemeInvalidInputSelector,
+		selectors.hiddenInvalidInput,
 		'.Input'
 	);
 
-	const labelRules = getFieldStyles( upeThemeLabelSelector, '.Label' );
+	const labelRules = getFieldStyles(
+		selectors.upeThemeLabelSelector,
+		'.Label'
+	);
 
-	const tabRules = getFieldStyles( upeThemeInputSelector, '.Tab' );
+	const tabRules = getFieldStyles( selectors.upeThemeInputSelector, '.Tab' );
 	const selectedTabRules = getFieldStyles(
-		upeThemeFocusInputSelector,
+		selectors.hiddenInput,
 		'.Tab--selected'
 	);
 	const tabHoverRules = generateHoverRules( tabRules );
@@ -306,5 +310,7 @@ export const getAppearance = () => {
 		},
 	};
 
+	// Remove hidden fields from DOM.
+	hiddenElementsForUPE.cleanup();
 	return appearance;
 };
