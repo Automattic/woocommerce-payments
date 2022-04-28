@@ -224,7 +224,36 @@ const ExpressCheckout = () => {
 											'woocommerce-payments'
 										) }
 									</div>
-									<div className="express-checkout__description"></div>
+									<div className="express-checkout__description">
+										{
+											/* eslint-disable jsx-a11y/anchor-has-content */
+											interpolateComponents( {
+												mixedString: __(
+													'By enabling this feature, you agree to the ' +
+														'{{stripeLinkTerms}}Link Terms{{/stripeLinkTerms}}, ' +
+														'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}',
+													'woocommerce-payments'
+												),
+												components: {
+													stripeLinkTerms: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://link.co/terms"
+														/>
+													),
+													privacyPolicy: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://link.co/privacy"
+														/>
+													),
+												},
+											} )
+											/* eslint-enable jsx-a11y/anchor-has-content */
+										}
+									</div>
 								</div>
 							</div>
 						</li>
