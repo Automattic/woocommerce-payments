@@ -21,6 +21,7 @@ use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Payment_Methods\Link_Payment_Method;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -357,6 +358,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
+		add_filter( 'woocommerce_checkout_fields', [ $this, 'checkout_remove_default_email_field' ], 50 );
+		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'checkout_email_field_before_billing_details' ], 20 );
 	}
 
 	/**
@@ -2842,5 +2845,57 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'tax_amount'          => array_sum( array_column( $items, 'tax_amount' ) ),
 			'discount_amount'     => array_sum( array_column( $items, 'discount_amount' ) ),
 		];
+	}
+
+	/**
+	 * Remove default email field from Billing section on Checkout page.
+	 *
+	 * @param array $fields WooCommerce checkout fields.
+	 *
+	 * @return array WooCommerce checkout fields.
+	 */
+	public function checkout_remove_default_email_field( $fields ) {
+		$is_link_enabled = in_array(
+			Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+			true
+		);
+
+		// Remove the email field if StripeLink is enabled.
+		if ( isset( $fields['billing']['billing_email'] ) && $is_link_enabled ) {
+			unset( $fields['billing']['billing_email'] );
+		} else {
+			remove_action( 'woocommerce_checkout_before_customer_details', [ $this, 'checkout_email_field_before_billing_details' ], 20 );
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Adds a custom email field to the top of the Checkout page.
+	 */
+	public static function checkout_email_field_before_billing_details() {
+		$checkout = WC()->checkout;
+
+		echo '<div id="contact_details" class="col2-set">';
+		echo '<div class="col-1">';
+
+		echo '<h3>' . esc_html( __( 'Contact information', 'woocommerce-payments' ) ) . '</h3>';
+
+		woocommerce_form_field(
+			'billing_email',
+			[
+				'type'        => 'email',
+				'label'       => __( 'Email address', 'woocommerce-payments' ),
+				'class'       => [ 'form-row-wide checkout-billing-email' ],
+				'input_class' => [ 'checkout-billing-email-input' ],
+				'validate'    => [ 'email' ],
+				'required'    => true,
+			],
+			$checkout->get_value( 'billing_email' )
+		);
+
+		echo '</div>';
+		echo '</div>';
 	}
 }
