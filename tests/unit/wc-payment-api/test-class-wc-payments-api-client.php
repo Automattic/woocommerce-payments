@@ -121,13 +121,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
 
 		$mock_fraud_prevention
-			->expects( $this->exactly( 1 ) )
-			->method( 'is_enabled' )
-			->with()
-			->willReturn( true );
+			->expects( $this->never() )
+			->method( 'is_enabled' );
 
 		$mock_fingerprinting
-			->expects( $this->exactly( 1 ) )
+			->expects( $this->once() )
 			->method( 'get_hashed_data_for_customer' );
 
 		$this->set_http_mock_response(
@@ -178,13 +176,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
 
 		$mock_fraud_prevention
-			->expects( $this->exactly( 1 ) )
-			->method( 'is_enabled' )
-			->with()
-			->willReturn( true );
+			->expects( $this->never() )
+			->method( 'is_enabled' );
 
 		$mock_fingerprinting
-			->expects( $this->exactly( 1 ) )
+			->expects( $this->once() )
 			->method( 'get_hashed_data_for_customer' );
 
 		$this->set_http_mock_response(
@@ -242,7 +238,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
 
 		$fraud_prevention_service_mock
-			->expects( $this->exactly( 2 ) ) // One during create_and_confirm, and one during server responses checks.
+			->expects( $this->once() )
 			->method( 'is_enabled' )
 			->willReturn( true );
 

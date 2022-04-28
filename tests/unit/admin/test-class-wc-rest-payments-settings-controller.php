@@ -7,6 +7,7 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
+use WCPay\Database_Cache;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -86,7 +87,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			->getMock();
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account );
+		$this->mock_db_cache      = $this->createMock( Database_Cache::class );
+		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache );
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
