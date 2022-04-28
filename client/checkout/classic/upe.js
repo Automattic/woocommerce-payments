@@ -267,9 +267,7 @@ jQuery( function ( $ ) {
 		let appearance = getConfig( 'upeAppearance' );
 
 		if ( ! appearance ) {
-			hiddenElementsForUPE.init();
 			appearance = getAppearance();
-			hiddenElementsForUPE.cleanup();
 			api.saveUPEAppearance( appearance );
 		}
 
