@@ -195,11 +195,6 @@ const WCPayUPEFields = ( {
 			: 'never';
 	elementOptions.terms = getTerms( paymentMethodsConfig, showTerms );
 
-	const appearance = getConfig( 'upeAppearance' );
-	if ( appearance ) {
-		elementOptions.appearance = appearance;
-	}
-
 	return (
 		<>
 			{ testMode ? testCopy : '' }
