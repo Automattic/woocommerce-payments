@@ -422,7 +422,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
 					throw new Process_Payment_Exception(
-						__( 'Your payment was not processed.', 'woocommerce-payments' ),
+						__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
 						'fraud_prevention_enabled'
 					);
 				}
