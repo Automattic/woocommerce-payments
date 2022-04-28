@@ -182,7 +182,3 @@ export function updatePlatformCheckoutCustomMessage( message ) {
 		platform_checkout_custom_message: message,
 	} );
 }
-
-export function updateIsFraudPreventionEnabled( isEnabled ) {
-	return updateSettingsValues( { is_fraud_prevention_enabled: isEnabled } );
-}

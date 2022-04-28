@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 
@@ -37,11 +38,6 @@ class WC_Payments_Customer_Service {
 	const WCPAY_TEST_CUSTOMER_ID_OPTION = '_wcpay_customer_id_test';
 
 	/**
-	 * Payment methods transient. Used in conjunction with the customer_id to cache a customer's payment methods.
-	 */
-	const PAYMENT_METHODS_TRANSIENT = 'wcpay_pm_';
-
-	/**
 	 * Key used to store customer id for non logged in users in WooCommerce Session.
 	 */
 	const CUSTOMER_ID_SESSION_KEY = 'wcpay_customer_id';
@@ -61,17 +57,26 @@ class WC_Payments_Customer_Service {
 	private $account;
 
 	/**
+	 * Database_Cache instance to get information about the account
+	 *
+	 * @var Database_Cache
+	 */
+	private $database_cache;
+
+	/**
 	 * Class constructor
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
 	 * @param WC_Payments_Account    $account             WC_Payments_Account instance.
+	 * @param Database_Cache         $database_cache       Database_Cache instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, Database_Cache $database_cache ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
+		$this->database_cache      = $database_cache;
 
 		/*
-		 * Adds the WooComerce Payments customer ID found in the user session
+		 * Adds the WooCommerce Payments customer ID found in the user session
 		 * to the WordPress user as metadata.
 		 *
 		 * This is helpful in scenarios where the shopper begins the checkout flow
@@ -205,10 +210,10 @@ class WC_Payments_Customer_Service {
 		}
 
 		$cache_payment_methods = ! WC_Payments::is_network_saved_cards_enabled();
-		$transient_key         = self::PAYMENT_METHODS_TRANSIENT . $customer_id . '_' . $type;
+		$cache_key             = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type;
 
 		if ( $cache_payment_methods ) {
-			$payment_methods = get_transient( $transient_key );
+			$payment_methods = $this->database_cache->get( $cache_key );
 			if ( is_array( $payment_methods ) ) {
 				return $payment_methods;
 			}
@@ -217,7 +222,7 @@ class WC_Payments_Customer_Service {
 		try {
 			$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
 			if ( $cache_payment_methods ) {
-				set_transient( $transient_key, $payment_methods, DAY_IN_SECONDS );
+				$this->database_cache->add( $cache_key, $payment_methods );
 			}
 			return $payment_methods;
 
@@ -263,7 +268,7 @@ class WC_Payments_Customer_Service {
 		}
 		$customer_id = $this->get_customer_id_by_user_id( $user_id );
 		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
-			delete_transient( self::PAYMENT_METHODS_TRANSIENT . $customer_id . '_' . $type );
+			$this->database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
 		}
 	}
 
@@ -325,6 +330,15 @@ class WC_Payments_Customer_Service {
 		}
 
 		return $data;
+	}
+
+	/**
+	 * Delete all saved payment methods that are stored inside database cache driver.
+	 *
+	 * @return void
+	 */
+	public function delete_cached_payment_methods() {
+		$this->database_cache->delete_by_prefix( Database_Cache::PAYMENT_METHODS_KEY_PREFIX );
 	}
 
 	/**

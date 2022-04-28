@@ -121,13 +121,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
 
 		$mock_fraud_prevention
-			->expects( $this->exactly( 1 ) )
-			->method( 'is_enabled' )
-			->with()
-			->willReturn( true );
+			->expects( $this->never() )
+			->method( 'is_enabled' );
 
 		$mock_fingerprinting
-			->expects( $this->exactly( 1 ) )
+			->expects( $this->once() )
 			->method( 'get_hashed_data_for_customer' );
 
 		$this->set_http_mock_response(
@@ -178,13 +176,11 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
 
 		$mock_fraud_prevention
-			->expects( $this->exactly( 1 ) )
-			->method( 'is_enabled' )
-			->with()
-			->willReturn( true );
+			->expects( $this->never() )
+			->method( 'is_enabled' );
 
 		$mock_fingerprinting
-			->expects( $this->exactly( 1 ) )
+			->expects( $this->once() )
 			->method( 'get_hashed_data_for_customer' );
 
 		$this->set_http_mock_response(
@@ -242,7 +238,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
 
 		$fraud_prevention_service_mock
-			->expects( $this->exactly( 2 ) ) // One during create_and_confirm, and one during server responses checks.
+			->expects( $this->once() )
 			->method( 'is_enabled' )
 			->willReturn( true );
 
@@ -791,6 +787,62 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		// Assert the response is correct.
 		$this->assertEquals( [ 'url' => false ], $result );
+	}
+
+	/**
+	 * Test getting onboarding business types.
+	 *
+	 * @throws API_Exception
+	 */
+	public function test_get_onboarding_business_types() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/business_types?test_mode=0',
+					'method'          => 'GET',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				null,
+				true,
+				true // get_onboarding_business_types should use user token auth.
+			);
+
+		$this->payments_api_client->get_onboarding_business_types();
+	}
+
+	/**
+	 * Test getting onboarding required verification information.
+	 *
+	 * @throws API_Exception
+	 */
+	public function test_get_onboarding_required_verification_information() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/required_verification_information?test_mode=0&country=country&type=type',
+					'method'          => 'GET',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				null,
+				true,
+				true // get_onboarding_required_verification_information should use user token auth.
+			);
+
+		$this->payments_api_client->get_onboarding_required_verification_information( 'country', 'type' );
 	}
 
 	public function test_update_account() {
