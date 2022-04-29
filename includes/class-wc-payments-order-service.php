@@ -23,6 +23,22 @@ class WC_Payments_Order_Service {
 	const STATUS_PENDING   = 'pending';
 
 	/**
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	protected $api_client;
+
+	/**
+	 * WC_Payments_REST_Controller constructor.
+	 *
+	 * @param WC_Payments_API_Client $api_client - WooCommerce Payments API client.
+	 */
+	public function __construct( WC_Payments_API_Client $api_client ) {
+		$this->api_client = $api_client;
+	}
+
+	/**
 	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -317,18 +333,32 @@ class WC_Payments_Order_Service {
 	 * @return string Note content.
 	 */
 	private function generate_payment_success_note( $intent_id, $charge_id, $formatted_amount ) {
+		$events = $this->api_client->get_timeline( $intent_id );
+
+		$capture_event = current(
+			array_filter(
+				$events['data'],
+				function ( array $event ) {
+					return 'captured' === $event['type'];
+				}
+			)
+		);
+
+		$capture_note = '__placeholder_capture_note'; // TODO - implement WC_Payments_Captured_Event_Note.
+
 		$transaction_url = $this->compose_transaction_url( $charge_id );
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>). %3$s', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
 			$formatted_amount,
-			$charge_id
+			$charge_id,
+			$capture_note
 		);
 
 	}
