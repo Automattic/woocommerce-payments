@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Bancontact_Payment_Method
+ * Class CC_Payment_Method
  *
  * @package WCPay\Payment_Methods
  */
@@ -10,22 +10,22 @@ namespace WCPay\Payment_Methods;
 use WC_Payments_Token_Service;
 
 /**
- * Bancontact Payment Method class extending UPE base class
+ * Link Payment Method class extending UPE base class
  */
-class Bancontact_Payment_Method extends UPE_Payment_Method {
+class Link_Payment_Method extends UPE_Payment_Method {
 
-	const PAYMENT_METHOD_STRIPE_ID = 'bancontact';
+	const PAYMENT_METHOD_STRIPE_ID = 'link';
 
 	/**
-	 * Constructor for Bancontact payment method
+	 * Constructor for link payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Token class instance.
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->title       = 'Bancontact';
-		$this->is_reusable = false;
-		$this->currencies  = [ 'EUR' ];
+		$this->title       = __( 'Link', 'woocommerce-payments' );
+		$this->is_reusable = true;
+		$this->currencies  = [ 'USD' ];
 	}
 }

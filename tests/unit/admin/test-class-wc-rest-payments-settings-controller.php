@@ -190,7 +190,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24' ],
+			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24', 'link' ],
 			$enabled_method_ids
 		);
 	}

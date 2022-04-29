@@ -13,6 +13,8 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
+use WCPay\Payment_Methods\Link_Payment_Method;
+use WCPay\Payment_Methods\CC_Payment_Method;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -320,6 +322,17 @@ class WC_Payments_API_Client {
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
+
+			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
+				$is_link_enabled = in_array(
+					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+					\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+					true
+				);
+				if ( $is_link_enabled ) {
+					$request['payment_method_types'][] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+				}
+			}
 		}
 		if ( $payment_country && ! $this->is_in_dev_mode() ) {
 			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.
@@ -1143,7 +1156,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[],
 			self::ONBOARDING_API . '/business_types',
-			self::GET
+			self::GET,
+			true,
+			true
 		);
 	}
 
@@ -1171,7 +1186,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$params,
 			self::ONBOARDING_API . '/required_verification_information',
-			self::GET
+			self::GET,
+			true,
+			true
 		);
 	}
 
@@ -2103,17 +2120,14 @@ class WC_Payments_API_Client {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
-				if ( isset( $response_body['error']['decline_code'] ) && 'fraudulent' === $response_body['error']['decline_code'] ) {
-					$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-					if ( $fraud_prevention_service->is_enabled() ) {
-						$fraud_prevention_service->regenerate_token();
-						WC()->session->set( 'reload_checkout', true );
-					}
-				}
+				$this->maybe_act_on_fraud_prevention( $response_body['error']['decline_code'] ?? '' );
+
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
+				$this->maybe_act_on_fraud_prevention( $response_body['code'] );
+
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
 			} else {
@@ -2129,6 +2143,25 @@ class WC_Payments_API_Client {
 
 			Logger::error( "$error_message ($error_code)" );
 			throw new API_Exception( $message, $error_code, $response_code, $error_type );
+		}
+	}
+
+	/**
+	 * If error code indicates fraudulent activity, trigger fraud prevention measures.
+	 *
+	 * @param string $error_code Error code.
+	 *
+	 * @return void
+	 */
+	private function maybe_act_on_fraud_prevention( string $error_code ) {
+		// Might be flagged by Stripe Radar or WCPay card testing prevention services.
+		$is_fraudulent = 'fraudulent' === $error_code || 'wcpay_card_testing_prevention' === $error_code;
+		if ( $is_fraudulent ) {
+			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+			if ( $fraud_prevention_service->is_enabled() ) {
+				$fraud_prevention_service->regenerate_token();
+				// Here we tried triggering checkout refresh, but it clashes with AJAX handling.
+			}
 		}
 	}
 

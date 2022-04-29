@@ -323,6 +323,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'card'          => 'card_payments',
 			'sepa_debit'    => 'sepa_debit_payments',
 			'au_becs_debit' => 'au_becs_debit_payments',
+			'link'          => 'link_payments',
 		];
 
 		// Load the settings.
@@ -449,9 +450,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
-		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
-			return admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
-		}
 		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
 	}
 
@@ -898,7 +896,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
 				throw new Process_Payment_Exception(
-					__( 'Your payment was not processed.', 'woocommerce-payments' ),
+					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
 					'fraud_prevention_enabled'
 				);
 			}
