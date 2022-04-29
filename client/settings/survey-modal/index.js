@@ -59,10 +59,6 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 			/>
 			<TextareaControl
 				className="comments-text-field"
-				help={ __(
-					'Feedback will be sent anonymously to the WooCommerce Payments development team.',
-					'woocommerce-payments'
-				) }
 				label={ __( 'Comments (optional)', 'woocommerce-payments' ) }
 				onChange={ ( text ) => {
 					setSurveyAnswers( ( prev ) => ( {
@@ -71,6 +67,24 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 					} ) );
 				} }
 				value={ surveyAnswers.comments }
+			/>
+			<TextareaControl
+				className="ssr-text-field"
+				help={ __(
+					'Feedback will be sent anonymously to the WooCommerce Payments development team.',
+					'woocommerce-payments'
+				) }
+				label={ __(
+					'The following system status information will also be submitted.',
+					'woocommerce-payments'
+				) }
+				onChange={ ( value ) => {
+					setSurveyAnswers( ( prev ) => ( {
+						...prev,
+						ssr: value,
+					} ) );
+				} }
+				value={ surveyAnswers.ssr }
 			/>
 		</>
 	);

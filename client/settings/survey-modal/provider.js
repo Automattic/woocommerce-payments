@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -18,6 +18,21 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 	const [ surveyAnswers, setSurveyAnswers ] = useState(
 		wcPaySurveys[ 0 ].defaultAnswer
 	);
+
+	useEffect( () => {
+		const fetchSystemReport = async () => {
+			await apiFetch( { path: '/wc/v3/system_status' } ).then(
+				( data ) => {
+					setSurveyAnswers( ( prev ) => ( {
+						...prev,
+						ssr: JSON.stringify( data ),
+					} ) );
+				}
+			);
+		};
+
+		fetchSystemReport();
+	}, [] );
 
 	const submitSurvey = useCallback( () => {
 		setStatus( 'pending' );
