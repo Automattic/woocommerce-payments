@@ -33,18 +33,21 @@ import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
 import OnboardingPage from 'onboarding';
 import { getTasks } from 'overview/task-list/tasks';
+import wcpayTracks from 'tracks';
 import packageJson from '../package.json';
 
-// Initialise Sentry early on for error tracking.
-Sentry.init( {
-	dsn:
-		'https://3ff93a21f6a548ceb8ae22f2c9b8b9bd@o248881.ingest.sentry.io/6350586',
-	integrations: [ new BrowserTracing() ],
-	release: packageJson.version,
-	// Send 20% transactions to Sentry for performance monitoring.
-	tracesSampleRate: 0.2,
-	enabled: 'production' === process.env.NODE_ENV,
-} );
+// Initialise Sentry early on for error tracking if usage tracking is enabled.
+if ( wcpayTracks.isEnabled() ) {
+	Sentry.init( {
+		dsn:
+			'https://3ff93a21f6a548ceb8ae22f2c9b8b9bd@o248881.ingest.sentry.io/6350586',
+		integrations: [ new BrowserTracing() ],
+		release: packageJson.version,
+		// Send 20% transactions to Sentry for performance monitoring.
+		tracesSampleRate: 0.2,
+		enabled: 'production' === process.env.NODE_ENV,
+	} );
+}
 
 addFilter(
 	'woocommerce_admin_pages_list',
