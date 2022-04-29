@@ -64,7 +64,11 @@ class WC_Payments_Captured_Event_Note {
 		$customer_currency = $this->captured_event['transaction_details']['customer_currency'] ?? null;
 		$store_currency    = $this->captured_event['transaction_details']['store_currency'] ?? null;
 
-		return ! is_null( $customer_currency ) && ! is_null( $store_currency ) && $customer_currency === $store_currency;
+		return ! (
+			is_null( $customer_currency )
+			|| is_null( $store_currency )
+			|| $customer_currency === $store_currency
+		);
 	}
 
 	/**
