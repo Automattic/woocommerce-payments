@@ -299,7 +299,14 @@ jQuery( function ( $ ) {
 
 		// Display StripeLink button if email field is prefilled.
 		if ( '' !== $( '#billing_email' ).val() ) {
+			const linkButtonTop =
+				$( '#billing_email' ).position().top +
+				( $( '#billing_email' ).outerHeight() - 40 ) / 2;
 			$( '.wcpay-stripelink-modal-trigger' ).show();
+			$( '.wcpay-stripelink-modal-trigger' ).css(
+				'top',
+				linkButtonTop + 'px'
+			);
 		}
 	};
 
