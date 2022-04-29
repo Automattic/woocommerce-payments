@@ -275,7 +275,7 @@ jQuery( function ( $ ) {
 		} );
 
 		// Handle StripeLink button click.
-		$( '.wcpay-stripelink-trigger-modal' ).on( 'click', ( event ) => {
+		$( '.wcpay-stripelink-modal-trigger' ).on( 'click', ( event ) => {
 			event.preventDefault();
 
 			// Trigger modal.
@@ -299,7 +299,7 @@ jQuery( function ( $ ) {
 
 		// Display StripeLink button if email field is prefilled.
 		if ( '' !== $( '#billing_email' ).val() ) {
-			$( '.wcpay-stripelink-trigger-modal' ).show();
+			$( '.wcpay-stripelink-modal-trigger' ).show();
 		}
 	};
 

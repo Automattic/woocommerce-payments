@@ -43,11 +43,11 @@
 	position: relative;
 }
 
-.wcpay-checkout-email-field .wcpay-stripelink-trigger-modal {
+.wcpay-checkout-email-field .wcpay-stripelink-modal-trigger {
 	display: none;
 	position: absolute;
 	right: 5px;
-	top: 26px;
+	bottom: 4px;
 	width: 64px;
 	height: 40px;
 	background: no-repeat

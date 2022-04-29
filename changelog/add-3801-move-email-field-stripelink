@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Moving email field on checkout page when StripeLink enabled.

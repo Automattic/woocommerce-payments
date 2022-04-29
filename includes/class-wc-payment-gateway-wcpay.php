@@ -2867,7 +2867,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Append StripeLink modal trigger button for logged in users.
 			$fields['billing_email']['label'] = $fields['billing_email']['label']
-				. ' <span class="wcpay-stripelink-trigger-modal">&nbsp;</span>';
+				. ' <button class="wcpay-stripelink-modal-trigger"></button>';
 		}
 
 		return $fields;
