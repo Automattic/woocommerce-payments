@@ -94,10 +94,7 @@ class Database_Cache {
 	public function get( string $key, bool $force = false ) {
 		$cache_contents = get_option( $key );
 		if ( is_array( $cache_contents ) && array_key_exists( 'data', $cache_contents ) ) {
-			if ( true === $force ) {
-				return $cache_contents['data'];
-			}
-			if ( $this->is_expired( $key, $cache_contents ) ) {
+			if ( ! $force && $this->is_expired( $key, $cache_contents ) ) {
 				return null;
 			}
 
