@@ -93,8 +93,8 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			0 >= iframe.getBoundingClientRect().top ||
 			0 >=
 				window.innerHeight -
-					iframe.getBoundingClientRect().height +
-					iframe.getBoundingClientRect().top
+					( iframe.getBoundingClientRect().height +
+						iframe.getBoundingClientRect().top )
 		) {
 			const topOffset = 50;
 			const scrollTop =
