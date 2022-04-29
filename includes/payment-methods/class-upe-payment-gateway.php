@@ -10,6 +10,7 @@ namespace WCPay\Payment_Methods;
 use WC_Order;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Explicit_Price_Formatter;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
@@ -419,6 +420,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			if ( $payment_needed ) {
+				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
+					throw new Process_Payment_Exception(
+						__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+						'fraud_prevention_enabled'
+					);
+				}
+
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
 					// Throwing an exception instead of adding an error notice
 					// makes the error notice show up both in the regular and block checkout.
@@ -876,6 +886,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			?>
 
 			</fieldset>
+
+			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
+				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
+			<?php endif; ?>
+
 			<?php
 
 			do_action( 'wcpay_payment_fields_upe', $this->id );
@@ -929,6 +944,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 		}
 
+		// if credit card payment method is not enabled, we don't use stripe link.
+		if (
+			! in_array( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) &&
+			in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) ) {
+			$enabled_payment_methods = array_filter(
+				$enabled_payment_methods,
+				static function( $method ) {
+					return Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $method;
+				}
+			);
+		}
+
 		return $enabled_payment_methods;
 	}
 
@@ -943,14 +970,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$methods = parent::get_upe_available_payment_methods();
 		$fees    = $this->account->get_fees();
 
-		$methods[] = 'au_becs_debit';
-		$methods[] = 'bancontact';
-		$methods[] = 'eps';
-		$methods[] = 'giropay';
-		$methods[] = 'ideal';
-		$methods[] = 'sofort';
-		$methods[] = 'sepa_debit';
-		$methods[] = 'p24';
+		$methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$methods = array_values(
 			apply_filters(
@@ -960,6 +988,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		);
 
 		$methods_with_fees = array_values( array_intersect( $methods, array_keys( $fees ) ) );
+
+		$methods_with_fees[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		return $methods_with_fees;
 	}

@@ -13,23 +13,6 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_In_Person_Payments_Receipts_Service {
 
 	/**
-	 * WC_Emails instance.
-	 *
-	 * @var WC_Emails
-	 */
-	private $mailer;
-
-	/**
-	 * __construct
-	 *
-	 * @param  WC_Emails $mailer instance.
-	 * @return void
-	 */
-	public function __construct( WC_Emails $mailer ) {
-		$this->mailer = $mailer;
-	}
-
-	/**
 	 * Renders the receipt template.
 	 *
 	 * @param  array    $settings Merchant settings.
@@ -95,7 +78,7 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 	 * @return void
 	 */
 	public function send_customer_ipp_receipt_email( WC_Order $order, array $merchant_settings, array $charge ) {
-		$email_receipt = $this->mailer->get_emails()['WC_Payments_Email_IPP_Receipt'];
+		$email_receipt = WC()->mailer()->get_emails()['WC_Payments_Email_IPP_Receipt'];
 		if ( $email_receipt instanceof WC_Payments_Email_IPP_Receipt ) {
 			$email_receipt->trigger( $order, $merchant_settings, $charge );
 		}

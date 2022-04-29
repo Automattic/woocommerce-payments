@@ -174,7 +174,3 @@ export const getIsPlatformCheckoutEnabled = ( state ) => {
 export const getPlatformCheckoutCustomMessage = ( state ) => {
 	return getSettings( state ).platform_checkout_custom_message || '';
 };
-
-export const getIsFraudProtectionEnabled = ( state ) => {
-	return getSettings( state ).is_fraud_prevention_enabled || false;
-};

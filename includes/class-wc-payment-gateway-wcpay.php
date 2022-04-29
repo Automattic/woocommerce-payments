@@ -323,6 +323,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'card'          => 'card_payments',
 			'sepa_debit'    => 'sepa_debit_payments',
 			'au_becs_debit' => 'au_becs_debit_payments',
+			'link'          => 'link_payments',
 		];
 
 		// Load the settings.
@@ -449,9 +450,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
-		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
-			return admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
-		}
 		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
 	}
 
@@ -515,15 +513,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Check if account is eligible for card present.
 	 *
-	 * @param false $empty_value - Default return value.
 	 * @return bool
 	 */
-	public function is_card_present_eligible( $empty_value = false ) {
+	public function is_card_present_eligible(): bool {
 		try {
 			return $this->account->is_card_present_eligible();
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account card present eligible .' . $e );
-			return $empty_value;
+			Logger::error( 'Failed to get account card present eligible. ' . $e );
+			return false;
+		}
+	}
+
+	/**
+	 * Check if account is eligible for card testing protection.
+	 *
+	 * @return bool
+	 */
+	public function is_card_testing_protection_eligible(): bool {
+		try {
+			return $this->account->is_card_testing_protection_eligible();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account card testing protection eligible. ' . $e );
+			return false;
 		}
 	}
 
@@ -840,7 +851,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			</fieldset>
 
-
 			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
 				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
 			<?php endif; ?>
@@ -886,7 +896,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
 				throw new Process_Payment_Exception(
-					__( 'Your payment was not processed.', 'woocommerce-payments' ),
+					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
 					'fraud_prevention_enabled'
 				);
 			}
@@ -1071,6 +1081,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_method = $payment_information->get_payment_method();
 		$order->update_meta_data( '_payment_method_id', $payment_method );
 		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+		$order->update_meta_data( '_wcpay_mode', $this->is_in_test_mode() ? 'test' : 'prod' );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( ! $payment_needed && ! $save_payment_method_to_store ) {

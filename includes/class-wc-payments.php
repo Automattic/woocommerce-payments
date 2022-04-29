@@ -26,6 +26,7 @@ use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 
@@ -233,6 +234,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-becs-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-eps-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-link-payment-method.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
@@ -279,13 +281,13 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache );
-		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account );
+		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client );
+		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
+		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache );
 		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
-		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client );
 		self::$fraud_service                       = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
-		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service( WC()->mailer() );
+		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_service                       = new WC_Payments_Order_Service();
@@ -306,6 +308,7 @@ class WC_Payments {
 				Ideal_Payment_Method::class,
 				Becs_Payment_Method::class,
 				Eps_Payment_Method::class,
+				Link_Payment_Method::class,
 			];
 			foreach ( $payment_method_classes as $payment_method_class ) {
 				$payment_method                               = new $payment_method_class( self::$token_service );
@@ -316,7 +319,7 @@ class WC_Payments {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
 
-		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::$card_gateway );
+		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::$card_gateway, self::$customer_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		self::maybe_register_platform_checkout_hooks();
@@ -812,6 +815,17 @@ class WC_Payments {
 	}
 
 	/**
+	 * Sets the customer service instance. This is needed only for tests.
+	 *
+	 * @param WC_Payments_Customer_Service $customer_service_class Instance of WC_Payments_Customer_Service.
+	 *
+	 * @return void
+	 */
+	public static function set_customer_service( WC_Payments_Customer_Service $customer_service_class ) {
+		self::$customer_service = $customer_service_class;
+	}
+
+	/**
 	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
@@ -925,16 +939,22 @@ class WC_Payments {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
-			// Disable nonce checks for API calls. TODO This should be changed.
-			// Make sure this is called after the dev tools have been initialized so the dev mode filter works.
-			add_filter(
-				'rest_request_before_callbacks',
-				function () {
-					if ( self::get_gateway()->is_in_dev_mode() ) {
-						add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
+
+			// This injects the payments API into core, so the WooCommerce Blocks plugin is not necessary.
+			// The payments API is currently only available in feature builds (with flag `WC_BLOCKS_IS_FEATURE_PLUGIN`).
+			// We should remove this once it's available in core by default.
+			if ( ! defined( 'WC_BLOCKS_IS_FEATURE_PLUGIN' ) && class_exists( 'Automattic\WooCommerce\Blocks\Payments\Api' ) ) {
+				$blocks_package_container = Automattic\WooCommerce\Blocks\Package::container();
+				$blocks_package_container->register(
+					Automattic\WooCommerce\Blocks\Payments\Api::class,
+					function ( $container ) {
+						$payment_method_registry = $container->get( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry::class );
+						$asset_data_registry     = $container->get( Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry::class );
+						return new Automattic\WooCommerce\Blocks\Payments\Api( $payment_method_registry, $asset_data_registry );
 					}
-				}
-			);
+				);
+				$blocks_package_container->get( Automattic\WooCommerce\Blocks\Payments\Api::class );
+			}
 		}
 	}
 
@@ -944,6 +964,15 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function ajax_init_platform_checkout() {
+		$is_nonce_valid = check_ajax_referer( 'wcpay_init_platform_checkout_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
 		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
@@ -952,7 +981,7 @@ class WC_Payments {
 		if ( null === $customer_id ) {
 			// create customer.
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
-			self::$customer_service->create_customer_for_user( $user, $customer_data );
+			$customer_id   = self::$customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
 		$account_id = self::get_account_service()->get_stripe_account_id();
@@ -963,6 +992,7 @@ class WC_Payments {
 		$body = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
+			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
 			'email'                => $email,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
@@ -976,6 +1006,7 @@ class WC_Payments {
 				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
 			],
+			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 		$args = [
 			'url'     => $url,
