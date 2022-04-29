@@ -24,6 +24,9 @@ jQuery( function ( $ ) {
 	const enabledBillingFields = getConfig( 'enabledBillingFields' );
 	const upePaymentIntentData = getConfig( 'upePaymentIntentData' );
 	const upeSetupIntentData = getConfig( 'upeSetupIntentData' );
+	const isStripeLinkEnabled =
+		paymentMethodsConfig.link !== undefined &&
+		paymentMethodsConfig.card !== undefined;
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -38,6 +41,7 @@ jQuery( function ( $ ) {
 			forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 			locale: getConfig( 'locale' ),
 			isUPEEnabled,
+			isStripeLinkEnabled,
 		},
 		// A promise-based interface to jQuery.post.
 		( url, args ) => {
@@ -263,6 +267,29 @@ jQuery( function ( $ ) {
 		};
 	};
 
+	const enableStripeLinkPaymentMethod = () => {
+		const linkAutofill = api.getStripe().linkAutofillModal( elements );
+
+		$( '#billing_email' ).on( 'keyup', ( event ) => {
+			linkAutofill.launch( { email: event.target.value } );
+		} );
+
+		linkAutofill.on( 'autofill', ( event ) => {
+			const { billingAddress } = event.value;
+			const fillWith = ( nodeId, key ) => {
+				document.getElementById( nodeId ).value =
+					billingAddress.address[ key ];
+			};
+
+			fillWith( 'billing_address_1', 'line1' );
+			fillWith( 'billing_address_2', 'line2' );
+			fillWith( 'billing_city', 'city' );
+			fillWith( 'billing_state', 'state' );
+			fillWith( 'billing_postcode', 'postal_code' );
+			fillWith( 'billing_country', 'country' );
+		} );
+	};
+
 	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
@@ -340,6 +367,10 @@ jQuery( function ( $ ) {
 			appearance,
 			fonts: getFontRulesFromPage(),
 		} );
+
+		if ( isStripeLinkEnabled ) {
+			enableStripeLinkPaymentMethod();
+		}
 
 		const upeSettings = {};
 		if ( getConfig( 'cartContainsSubscription' ) ) {

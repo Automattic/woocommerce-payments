@@ -14,6 +14,8 @@ use WC_Payments_Token_Service;
  */
 class Becs_Payment_Method extends UPE_Payment_Method {
 
+	const PAYMENT_METHOD_STRIPE_ID = 'au_becs_debit';
+
 	/**
 	 * Constructor for Becs payment method
 	 *
@@ -21,7 +23,7 @@ class Becs_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id   = 'au_becs_debit';
+		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title       = 'BECS Direct Debit';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'AUD' ];
