@@ -176,7 +176,6 @@ const hiddenElementsForUPE = {
 			selectors.hiddenInput
 		);
 		wcpayHiddenInput.style.transition = 'none';
-		//wcpayHiddenInput.focus();
 	},
 
 	/**
