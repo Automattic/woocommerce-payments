@@ -212,6 +212,14 @@ jQuery( function ( $ ) {
 			linkAutofill.launch( { email: event.target.value } );
 		} );
 
+		// Handle StripeLink button click.
+		$( '.wcpay-stripelink-modal-trigger' ).on( 'click', ( event ) => {
+			event.preventDefault();
+
+			// Trigger modal.
+			linkAutofill.launch( { email: $( '#billing_email' ).val() } );
+		} );
+
 		linkAutofill.on( 'autofill', ( event ) => {
 			const { billingAddress } = event.value;
 			const fillWith = ( nodeId, key ) => {
@@ -226,6 +234,18 @@ jQuery( function ( $ ) {
 			fillWith( 'billing_postcode', 'postal_code' );
 			fillWith( 'billing_country', 'country' );
 		} );
+
+		// Display StripeLink button if email field is prefilled.
+		if ( '' !== $( '#billing_email' ).val() ) {
+			const linkButtonTop =
+				$( '#billing_email' ).position().top +
+				( $( '#billing_email' ).outerHeight() - 40 ) / 2;
+			$( '.wcpay-stripelink-modal-trigger' ).show();
+			$( '.wcpay-stripelink-modal-trigger' ).css(
+				'top',
+				linkButtonTop + 'px'
+			);
+		}
 	};
 
 	/**
