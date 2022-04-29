@@ -230,6 +230,18 @@ export const getFieldStyles = ( selector, upeElement, focus = false ) => {
 		delete filteredStyles.outlineStyle;
 	}
 
+	// Workaround for rewriting text-indents to padding-left & padding-right
+	//since Stripe doesn't support text-indents.
+	const textIndent = styles.getPropertyValue( 'text-indent' );
+	if (
+		'0px' !== textIndent &&
+		'0px' === filteredStyles.paddingLeft &&
+		'0px' === filteredStyles.paddingRight
+	) {
+		filteredStyles.paddingLeft = textIndent;
+		filteredStyles.paddingRight = textIndent;
+	}
+
 	return filteredStyles;
 };
 
