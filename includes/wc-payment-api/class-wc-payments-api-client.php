@@ -1156,7 +1156,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[],
 			self::ONBOARDING_API . '/business_types',
-			self::GET
+			self::GET,
+			true,
+			true
 		);
 	}
 
@@ -1184,7 +1186,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$params,
 			self::ONBOARDING_API . '/required_verification_information',
-			self::GET
+			self::GET,
+			true,
+			true
 		);
 	}
 
@@ -2116,17 +2120,14 @@ class WC_Payments_API_Client {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
-				if ( isset( $response_body['error']['decline_code'] ) && 'fraudulent' === $response_body['error']['decline_code'] ) {
-					$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-					if ( $fraud_prevention_service->is_enabled() ) {
-						$fraud_prevention_service->regenerate_token();
-						WC()->session->set( 'reload_checkout', true );
-					}
-				}
+				$this->maybe_act_on_fraud_prevention( $response_body['error']['decline_code'] ?? '' );
+
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
+				$this->maybe_act_on_fraud_prevention( $response_body['code'] );
+
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
 			} else {
@@ -2142,6 +2143,25 @@ class WC_Payments_API_Client {
 
 			Logger::error( "$error_message ($error_code)" );
 			throw new API_Exception( $message, $error_code, $response_code, $error_type );
+		}
+	}
+
+	/**
+	 * If error code indicates fraudulent activity, trigger fraud prevention measures.
+	 *
+	 * @param string $error_code Error code.
+	 *
+	 * @return void
+	 */
+	private function maybe_act_on_fraud_prevention( string $error_code ) {
+		// Might be flagged by Stripe Radar or WCPay card testing prevention services.
+		$is_fraudulent = 'fraudulent' === $error_code || 'wcpay_card_testing_prevention' === $error_code;
+		if ( $is_fraudulent ) {
+			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+			if ( $fraud_prevention_service->is_enabled() ) {
+				$fraud_prevention_service->regenerate_token();
+				// Here we tried triggering checkout refresh, but it clashes with AJAX handling.
+			}
 		}
 	}
 
