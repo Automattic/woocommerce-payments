@@ -87,7 +87,7 @@ class Database_Cache {
 	 * Gets a value from the cache.
 	 *
 	 * @param string $key The key to look for.
-	 * @param bool   $force if set return from the cache without checking for expiry.
+	 * @param bool   $force If set, return from the cache without checking for expiry.
 	 *
 	 * @return mixed The cache contents.
 	 */
