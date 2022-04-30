@@ -10,6 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
 import WcPaySurveyContext from './context';
 import { wcPaySurveys } from './questions';
 import { NAMESPACE } from '../../data/constants';
+import { formatSsr } from '../../utils/format-ssr';
 
 const WcPaySurveyContextProvider = ( { children } ) => {
 	const [ isSurveySubmitted, setSurveySubmitted ] = useState( false );
@@ -25,7 +26,7 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 				( data ) => {
 					setSurveyAnswers( ( prev ) => ( {
 						...prev,
-						ssr: JSON.stringify( data ),
+						ssr: formatSsr( data ),
 					} ) );
 				}
 			);
