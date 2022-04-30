@@ -23,19 +23,62 @@ const appearanceSelectors = {
 		],
 	},
 	blocksCheckout: {
-		appendTarget: '#shipping.wc-block-components-address-form',
-		upeThemeInputSelector: '#shipping-first_name',
+		appendTarget: '#billing.wc-block-components-address-form',
+		upeThemeInputSelector: '#billing-first_name',
 		upeThemeLabelSelector: '.wc-block-components-text-input label',
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input' ],
 		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
+		alternateSelectors: {
+			appendTarget: '#shipping.wc-block-components-address-form',
+			upeThemeInputSelector: '#shipping-first_name',
+		},
 	},
-	getSelectors: function ( isBlocksCheckout = false ) {
-		if ( isBlocksCheckout ) {
-			return { ...this.default, ...this.blocksCheckout };
+
+	/**
+	 * Update selectors to use alternate if not present on DOM.
+	 *
+	 * @param {Object} selectors Object of selectors for updation.
+	 *
+	 * @return {Object} Updated selectors.
+	 */
+	updateSelectors: function ( selectors ) {
+		if ( selectors.hasOwnProperty( 'alternateSelectors' ) ) {
+			Object.entries( selectors.alternateSelectors ).forEach(
+				( altSelector ) => {
+					const [ key, value ] = altSelector;
+
+					if ( ! document.querySelector( selectors[ key ] ) ) {
+						selectors[ key ] = value;
+					}
+				}
+			);
+
+			delete selectors.alternateSelectors;
 		}
 
-		return { ...this.default, ...this.classicCheckout };
+		return selectors;
+	},
+
+	/**
+	 * Returns selectors based on checkout type.
+	 *
+	 * @param {boolean} isBlocksCheckout True ff block checkout. Default false.
+	 *
+	 * @return {Object} Selectors for checkout type specified.
+	 */
+	getSelectors: function ( isBlocksCheckout = false ) {
+		if ( isBlocksCheckout ) {
+			return {
+				...this.default,
+				...this.updateSelectors( this.blocksCheckout ),
+			};
+		}
+
+		return {
+			...this.default,
+			...this.updateSelectors( this.classicCheckout ),
+		};
 	},
 };
 
