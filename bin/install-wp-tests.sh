@@ -71,7 +71,7 @@ wait_db() {
 			exit 1
 		fi;
 		echo "Waiting until the database is available..."
-		sleep 5s
+		sleep 5
 		mysqladmin status $MYSQLADMIN_FLAGS > /dev/null
 	done
 	set -e
