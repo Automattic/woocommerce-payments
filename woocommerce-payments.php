@@ -287,3 +287,38 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 
 	return $custom_content;
 }
+
+add_filter( 'jetpack_offline_mode', '__return_false' );
+
+add_filter(
+	'woocommerce_thankyou_order_received_text',
+	function ( $text ) {
+		return __( 'Thank you! We’ve received your order.', 'woocommerce-payments' );
+	}
+);
+
+add_filter( 'woocommerce_order_get_payment_method_title', 'payment_method_name_func', 10, 2 );
+
+/**
+ * Add a WooPay logo and card last 4 to the payment method name.
+ *
+ * @param string   $default payment method name.
+ * @param WC_Order $order the order.
+ *
+ * @return string the WooPay logo and card last 4 html.
+ */
+function payment_method_name_func( $default, $order ) {
+	return '<div class="wc-payment-gateway-method-name-woopay-wrapper"><img src="' . plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) . '">' . __( 'Card ending in ', 'woocommerce-payments' ) . '</div>';
+}
+
+add_action(
+	'wp_enqueue_scripts',
+	function () {
+		wp_enqueue_style(
+			'wcpay-success-css',
+			plugins_url( 'assets/css/success.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'assets/css/success.css' )
+		);
+	}
+);
