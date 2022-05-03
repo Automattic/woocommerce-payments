@@ -25,3 +25,12 @@
 	margin-top: 6px;
 	margin-right: 9px;
 }
+
+.woocommerce-order-overview.woocommerce-thankyou-order-details.order_details.woopay {
+	margin-top: -4.324325903em;
+}
+.woocommerce-order-overview.woocommerce-thankyou-order-details.order_details.woopay
+	.woocommerce-order-overview__payment-method.method {
+	border-top: 1px dotted #e3e3e3;
+	padding-top: 1em;
+}

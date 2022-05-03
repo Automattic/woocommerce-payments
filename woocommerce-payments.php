@@ -300,15 +300,26 @@ add_filter(
 add_action( 'woocommerce_thankyou_woocommerce_payments', 'payment_method_name_func' );
 
 /**
- * Add a WooPay logo and card last 4 to the payment method name.
+ * Add a WooPay logo and card last 4 to the payment method name in the success page.
  *
- * @param string   $default payment method name.
- * @param WC_Order $order the order.
- *
- * @return string the WooPay logo and card last 4 html.
+ * @param int $order_id the order id.
  */
-function payment_method_name_func( $default, $order ) {
-	return '<div class="wc-payment-gateway-method-name-woopay-wrapper"><img src="' . plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) . '">' . __( 'Card ending in ', 'woocommerce-payments' ) . '</div>';
+function payment_method_name_func( $order_id ) {
+	?>
+	<ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details woopay">
+		<li class="woocommerce-order-overview__payment-method method">
+			<?php esc_html_e( 'Payment method:', 'woocommerce-payments' ); ?>
+			<strong>
+				<div class="wc-payment-gateway-method-name-woopay-wrapper">
+					<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
+					<?php echo esc_html_e( 'Card ending in ', 'woocommerce-payments' ); ?>
+					4242
+				</div>
+			</strong>
+		</li>
+	</ul>
+
+	<?php
 }
 
 add_action(
