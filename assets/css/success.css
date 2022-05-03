@@ -1,3 +1,21 @@
+.woocommerce-notice.woocommerce-notice--success.woocommerce-thankyou-order-received {
+	background: #239328;
+	color: #fff;
+	padding: 12px;
+	padding-left: 66px;
+	border-radius: 2px;
+	border-left: 10px solid #156b14;
+	position: relative;
+}
+
+.woocommerce-notice.woocommerce-notice--success.woocommerce-thankyou-order-received::before {
+	content: url( '../images/check-circle.svg' );
+	position: absolute;
+	left: 32px;
+	width: 24px;
+	top: 13px;
+}
+
 .wc-payment-gateway-method-name-woopay-wrapper {
 	display: flex;
 	align-items: center;

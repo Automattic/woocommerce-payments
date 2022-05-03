@@ -297,7 +297,7 @@ add_filter(
 	}
 );
 
-add_filter( 'woocommerce_order_get_payment_method_title', 'payment_method_name_func', 10, 2 );
+add_action( 'woocommerce_thankyou_woocommerce_payments', 'payment_method_name_func' );
 
 /**
  * Add a WooPay logo and card last 4 to the payment method name.
