@@ -460,13 +460,9 @@ export default class WCPayAPI {
 	 * @return {Promise} The final promise for the request to the server.
 	 */
 	saveUPEAppearance( appearance, isBlocksCheckout = false ) {
-		const appearanceData = JSON.stringify( {
-			is_blocks_checkout: isBlocksCheckout,
-			appearance,
-		} );
-
 		return this.request( getConfig( 'ajaxUrl' ), {
-			appearanceData,
+			is_blocks_checkout: isBlocksCheckout,
+			appearance: JSON.stringify( appearance ),
 			action: 'save_upe_appearance',
 			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
