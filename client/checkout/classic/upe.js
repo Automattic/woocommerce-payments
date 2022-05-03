@@ -13,6 +13,7 @@ import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import apiRequest from '../utils/request';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -43,12 +44,7 @@ jQuery( function ( $ ) {
 			isUPEEnabled,
 			isStripeLinkEnabled,
 		},
-		// A promise-based interface to jQuery.post.
-		( url, args ) => {
-			return new Promise( ( resolve, reject ) => {
-				jQuery.post( url, args ).then( resolve ).fail( reject );
-			} );
-		}
+		apiRequest
 	);
 
 	let elements = null;
