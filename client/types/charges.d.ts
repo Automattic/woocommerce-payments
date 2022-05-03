@@ -61,7 +61,9 @@ export interface Charge {
 	payment_intent: null | string;
 	payment_method_details: {
 		card?: any;
-		type: 'card';
+		card_present?: any;
+		interac_present?: any;
+		type: 'card' | 'card_present' | 'interac_present';
 	};
 	refunded: boolean;
 	refunds: ChargeRefunds;

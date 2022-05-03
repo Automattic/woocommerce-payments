@@ -15,6 +15,8 @@ const formatDetails = ( payment ) => {
 	const paymentMethod = payment[ payment.type ];
 	switch ( payment.type ) {
 		case 'card':
+		case 'card_present':
+		case 'interac_present':
 		case 'au_becs_debit':
 		case 'sepa_debit':
 			return (

@@ -315,7 +315,8 @@ export const getTransactionsPaymentMethodName = (
 		case 'card':
 			return __( 'Card transactions', 'woocommerce-payments' );
 		case 'card_present':
-			return __( 'In-person transactions', 'woocommerce-payments' );
+		case 'interac_present':
+			return __( 'In-Person Payment', 'woocommerce-payments' );
 		case 'eps':
 			return __( 'EPS transactions', 'woocommerce-payments' );
 		case 'giropay':

@@ -11,7 +11,6 @@ import { Card, CardBody, CardHeader } from '@wordpress/components';
  */
 import Loadable from 'components/loadable';
 import CardDetails from './card';
-import CardPresentDetails from './card-present';
 import BancontactDetails from './bancontact';
 import BecsDetails from './becs';
 import EpsDetails from './eps';
@@ -23,7 +22,8 @@ import SofortDetails from './sofort';
 
 const detailsComponentMap = {
 	card: CardDetails,
-	card_present: CardPresentDetails,
+	card_present: CardDetails,
+	interac_present: CardDetails,
 	au_becs_debit: BecsDetails,
 	bancontact: BancontactDetails,
 	eps: EpsDetails,

@@ -11,6 +11,7 @@ export type PaymentMethod =
 	| 'bancontact'
 	| 'card'
 	| 'card_present'
+	| 'interac_present'
 	| 'eps'
 	| 'giropay'
 	| 'ideal'
