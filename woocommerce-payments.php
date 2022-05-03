@@ -322,3 +322,22 @@ add_action(
 		);
 	}
 );
+
+add_action( 'woocommerce_admin_order_totals_after_total', 'payment_method_name_admin_func' );
+
+/**
+ * Add woopay as a payment method to the edit order on admin.
+ *
+ * @param int $order_id order_id.
+ */
+function payment_method_name_admin_func( $order_id ) {
+	?>
+	<div class="wc-payment-gateway-method-name-woopay-wrapper">
+		<?php echo esc_html_e( 'Paid with ', 'woocommerce-payments' ); ?>
+		<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
+		<?php echo esc_html_e( 'Card ending in ', 'woocommerce-payments' ); ?>
+		4242
+	</div>
+
+	<?php
+}
