@@ -516,6 +516,39 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
 	}
 
+	public function test_update_settings_no_business_email_phone() {
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'update_stripe_account' )
+			->with(
+				$this->equalTo(
+					[
+						'statement_descriptor'     => 'test statement descriptor',
+						'business_name'            => 'test business_name',
+						'business_url'             => 'test business_url',
+						'business_support_address' => 'test business_support_address',
+						'branding_logo'            => 'test branding_logo',
+						'branding_icon'            => 'test branding_icon',
+						'branding_primary_color'   => 'test branding_primary_color',
+						'branding_secondary_color' => 'test branding_secondary_color',
+					]
+				)
+			);
+		$request = new WP_REST_Request();
+		$request->set_param( 'account_statement_descriptor', 'test statement descriptor' );
+		$request->set_param( 'account_business_name', 'test business_name' );
+		$request->set_param( 'account_business_url', 'test business_url' );
+		$request->set_param( 'account_business_support_address', 'test business_support_address' );
+		$request->set_param( 'account_business_support_email', '' );
+		$request->set_param( 'account_business_support_phone', '' );
+		$request->set_param( 'account_branding_logo', 'test branding_logo' );
+		$request->set_param( 'account_branding_icon', 'test branding_icon' );
+		$request->set_param( 'account_branding_primary_color', 'test branding_primary_color' );
+		$request->set_param( 'account_branding_secondary_color', 'test branding_secondary_color' );
+
+		$this->controller->update_settings( $request );
+	}
+
 	/**
 	 * @param bool $can_manage_woocommerce
 	 *
