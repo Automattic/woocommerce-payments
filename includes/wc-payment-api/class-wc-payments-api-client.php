@@ -13,6 +13,8 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
+use WCPay\Payment_Methods\Link_Payment_Method;
+use WCPay\Payment_Methods\CC_Payment_Method;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -224,7 +226,8 @@ class WC_Payments_API_Client {
 			$request['payment_method_types'] = $payment_methods;
 		}
 
-		$request = array_merge( $request, $additional_parameters );
+		$request             = array_merge( $request, $additional_parameters );
+		$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
 
 		if ( $off_session ) {
 			$request['off_session'] = 'true';
@@ -240,10 +243,6 @@ class WC_Payments_API_Client {
 
 		if ( ! empty( $cvc_confirmation ) ) {
 			$request['cvc_confirmation'] = $cvc_confirmation;
-		}
-
-		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
-			$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
 		}
 
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
@@ -276,10 +275,7 @@ class WC_Payments_API_Client {
 		$request['description']          = $this->get_intent_description( $order_id );
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
-
-		if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) {
-			$request['metadata'] = $this->get_fingerprint_metadata();
-		}
+		$request['metadata']             = $this->get_fingerprint_metadata();
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -326,8 +322,19 @@ class WC_Payments_API_Client {
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
+
+			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
+				$is_link_enabled = in_array(
+					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+					\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+					true
+				);
+				if ( $is_link_enabled ) {
+					$request['payment_method_types'][] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+				}
+			}
 		}
-		if ( $payment_country && ! WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( $payment_country && ! $this->is_in_dev_mode() ) {
 			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.
 			$request['payment_country'] = $payment_country;
 		}
@@ -1049,7 +1056,7 @@ class WC_Payments_API_Client {
 	public function get_account_data() {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+				'test_mode' => $this->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API,
 			self::GET
@@ -1066,7 +1073,7 @@ class WC_Payments_API_Client {
 	public function get_platform_checkout_eligibility() {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+				'test_mode' => $this->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::PLATFORM_CHECKOUT_API,
 			self::GET
@@ -1130,7 +1137,7 @@ class WC_Payments_API_Client {
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
 				'site_data'           => $site_data,
-				'create_live_account' => ! WC_Payments::get_gateway()->is_in_dev_mode(),
+				'create_live_account' => ! $this->is_in_dev_mode(),
 				'actioned_notes'      => $actioned_notes,
 			]
 		);
@@ -1149,7 +1156,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[],
 			self::ONBOARDING_API . '/business_types',
-			self::GET
+			self::GET,
+			true,
+			true
 		);
 	}
 
@@ -1177,7 +1186,9 @@ class WC_Payments_API_Client {
 		return $this->request(
 			$params,
 			self::ONBOARDING_API . '/required_verification_information',
-			self::GET
+			self::GET,
+			true,
+			true
 		);
 	}
 
@@ -1192,7 +1203,7 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[
 				'redirect_url' => $redirect_url,
-				'test_mode'    => WC_Payments::get_gateway()->is_in_dev_mode(), // only send a test mode request if in dev mode.
+				'test_mode'    => $this->is_in_dev_mode(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API . '/login_links',
 			self::POST,
@@ -1866,6 +1877,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Return is client in dev mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_dev_mode() {
+		return WC_Payments::get_gateway()->is_in_dev_mode();
+	}
+
+	/**
+	 * Return is client in test mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_test_mode() {
+		return WC_Payments::get_gateway()->is_in_test_mode();
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -1883,7 +1912,7 @@ class WC_Payments_API_Client {
 		$params = wp_parse_args(
 			$params,
 			[
-				'test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
+				'test_mode' => $this->is_in_test_mode(),
 			]
 		);
 
@@ -2091,17 +2120,14 @@ class WC_Payments_API_Client {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
-				if ( isset( $response_body['error']['decline_code'] ) && 'fraudulent' === $response_body['error']['decline_code'] ) {
-					$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-					if ( $fraud_prevention_service->is_enabled() ) {
-						$fraud_prevention_service->regenerate_token();
-						WC()->session->set( 'reload_checkout', true );
-					}
-				}
+				$this->maybe_act_on_fraud_prevention( $response_body['error']['decline_code'] ?? '' );
+
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
 			} elseif ( isset( $response_body['code'] ) ) {
+				$this->maybe_act_on_fraud_prevention( $response_body['code'] );
+
 				$error_code    = $response_body['code'];
 				$error_message = $response_body['message'];
 			} else {
@@ -2117,6 +2143,25 @@ class WC_Payments_API_Client {
 
 			Logger::error( "$error_message ($error_code)" );
 			throw new API_Exception( $message, $error_code, $response_code, $error_type );
+		}
+	}
+
+	/**
+	 * If error code indicates fraudulent activity, trigger fraud prevention measures.
+	 *
+	 * @param string $error_code Error code.
+	 *
+	 * @return void
+	 */
+	private function maybe_act_on_fraud_prevention( string $error_code ) {
+		// Might be flagged by Stripe Radar or WCPay card testing prevention services.
+		$is_fraudulent = 'fraudulent' === $error_code || 'wcpay_card_testing_prevention' === $error_code;
+		if ( $is_fraudulent ) {
+			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+			if ( $fraud_prevention_service->is_enabled() ) {
+				$fraud_prevention_service->regenerate_token();
+				// Here we tried triggering checkout refresh, but it clashes with AJAX handling.
+			}
 		}
 	}
 
@@ -2354,7 +2399,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	private function get_fingerprint_metadata() {
+	private function get_fingerprint_metadata(): array {
 		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();
 		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
 

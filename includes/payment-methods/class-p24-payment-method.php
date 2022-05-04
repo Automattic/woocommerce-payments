@@ -14,6 +14,8 @@ use WC_Payments_Token_Service;
  */
 class P24_Payment_Method extends UPE_Payment_Method {
 
+	const PAYMENT_METHOD_STRIPE_ID = 'p24';
+
 	/**
 	 * Constructor for P24 payment method
 	 *
@@ -21,7 +23,7 @@ class P24_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id   = 'p24';
+		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title       = 'Przelewy24 (P24)';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR', 'PLN' ];

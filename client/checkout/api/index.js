@@ -37,6 +37,10 @@ export default class WCPayAPI {
 			options.betas = betas;
 		}
 
+		if ( betas.includes( 'link_beta_2' ) ) {
+			options.apiVersion = '2020-08-27;link_beta=v1';
+		}
+
 		return new Stripe( publishableKey, options );
 	}
 
@@ -53,6 +57,7 @@ export default class WCPayAPI {
 			forceNetworkSavedCards,
 			locale,
 			isUPEEnabled,
+			isStripeLinkEnabled,
 		} = this.options;
 
 		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
@@ -67,11 +72,19 @@ export default class WCPayAPI {
 
 		if ( ! this.stripe ) {
 			if ( isUPEEnabled ) {
+				let betas = [ 'card_country_event_beta_1' ];
+				if ( isStripeLinkEnabled ) {
+					betas = betas.concat( [
+						'link_autofill_modal_beta_1',
+						'link_beta_2',
+					] );
+				}
+
 				this.stripe = this.createStripe(
 					publishableKey,
 					locale,
 					accountId,
-					[ 'card_country_event_beta_1' ]
+					betas
 				);
 			} else {
 				this.stripe = this.createStripe(
@@ -442,12 +455,14 @@ export default class WCPayAPI {
 	 * Saves the calculated UPE appearance values in a transient.
 	 *
 	 * @param {Object} appearance The UPE appearance object with style values
+	 * @param {boolean} isBlocksCheckout True if save request is for Blocks Checkout. Default false.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	saveUPEAppearance( appearance ) {
+	saveUPEAppearance( appearance, isBlocksCheckout = false ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
-			appearance,
+			is_blocks_checkout: isBlocksCheckout,
+			appearance: JSON.stringify( appearance ),
 			action: 'save_upe_appearance',
 			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
@@ -586,12 +601,13 @@ export default class WCPayAPI {
 		} );
 	}
 
-	initPlatformCheckout( userEmail ) {
+	initPlatformCheckout( userEmail, platformCheckoutUserSession ) {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_platform_checkout' ),
 			{
 				_wpnonce: getConfig( 'initPlatformCheckoutNonce' ),
 				email: userEmail,
+				user_session: platformCheckoutUserSession,
 			}
 		);
 	}

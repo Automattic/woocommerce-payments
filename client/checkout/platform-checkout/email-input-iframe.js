@@ -84,8 +84,18 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			return;
 		}
 
-		// Check if the iframe is off the top of the screen and scroll back into view.
-		if ( 0 >= iframe.getBoundingClientRect().top ) {
+		/**
+		 * If the iframe is off the top of the screen
+		 * OR the iframe is off the bottom of the screen
+		 * scroll the window so the iframe is in view.
+		 */
+		if (
+			0 >= iframe.getBoundingClientRect().top ||
+			0 >=
+				window.innerHeight -
+					( iframe.getBoundingClientRect().height +
+						iframe.getBoundingClientRect().top )
+		) {
 			const topOffset = 50;
 			const scrollTop =
 				document.documentElement.scrollTop +
@@ -286,7 +296,8 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
 				);
 				api.initPlatformCheckout(
-					platformCheckoutEmailInput.value
+					platformCheckoutEmailInput.value,
+					e.data.platformCheckoutUserSession
 				).then( ( response ) => {
 					if ( 'success' === response.result ) {
 						window.location = response.url;
