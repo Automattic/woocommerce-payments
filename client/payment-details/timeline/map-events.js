@@ -230,7 +230,7 @@ const isBaseFeeOnly = ( event ) => {
 	return 1 === history?.length && 'base' === history[ 0 ].type;
 };
 
-const composeNetString = ( event ) => {
+const formatNetString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
 		return formatExplicitCurrency(
 			event.amount - event.fee,
@@ -245,7 +245,15 @@ const composeNetString = ( event ) => {
 	);
 };
 
-const composeFeeString = ( event ) => {
+export const composeNetString = ( event ) => {
+	return sprintf(
+		/* translators: %s is a monetary amount */
+		__( 'Net deposit: %s', 'woocommerce-payments' ),
+		formatNetString( event )
+	);
+};
+
+export const composeFeeString = ( event ) => {
 	if ( ! event.fee_rates ) {
 		return sprintf(
 			/* translators: %s is a monetary amount */
@@ -290,7 +298,7 @@ const composeFeeString = ( event ) => {
 	);
 };
 
-const composeFXString = ( event ) => {
+export const composeFXString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
 		return;
 	}
@@ -422,22 +430,29 @@ const feeBreakdown = ( event ) => {
 		discount: __( 'Discount', 'woocommerce-payments' ),
 	} );
 
-	const renderDiscountSplit = (
+	const discountSplitMapping = (
 		percentageRateFormatted,
 		fixedRateFormatted
 	) => {
-		return (
-			<ul className="discount-split-list">
-				<li>
-					{ __( 'Variable fee: ', 'woocommerce-payments' ) }
-					{ percentageRateFormatted }%
-				</li>
-				<li>
-					{ __( 'Fixed fee: ', 'woocommerce-payments' ) }
-					{ fixedRateFormatted }
-				</li>
-			</ul>
-		);
+		return [
+			{
+				labelKey: 'variable',
+				label:
+					sprintf(
+						/* translators: %s is a percentage number */
+						__( 'Variable fee: %s', 'woocommerce-payments' ),
+						percentageRateFormatted
+					) + '%',
+			},
+			{
+				labelKey: 'fixed',
+				label: sprintf(
+					/* translators: %s is a monetary amount */
+					__( 'Fixed fee: %s', 'woocommerce-payments' ),
+					fixedRateFormatted
+				),
+			},
+		];
 	};
 
 	const feeHistoryList = history.map( ( fee ) => {
@@ -456,24 +471,54 @@ const feeBreakdown = ( event ) => {
 		const percentageRateFormatted = formatFee( percentageRate );
 		const fixedRateFormatted = formatCurrency( fixedRate, currency );
 
-		return (
-			<li key={ labelKey }>
-				{ sprintf(
-					feeLabelMapping( fixedRate, isCapped )[ labelKey ],
-					percentageRateFormatted,
-					fixedRateFormatted
-				) }
+		return {
+			labelKey,
+			label: sprintf(
+				feeLabelMapping( fixedRate, isCapped )[ labelKey ],
+				percentageRateFormatted,
+				fixedRateFormatted
+			),
+			discount:
+				'discount' !== fee.type
+					? null
+					: discountSplitMapping(
+							percentageRateFormatted,
+							fixedRateFormatted
+					  ),
+		};
+	} );
 
-				{ 'discount' === fee.type &&
-					renderDiscountSplit(
-						percentageRateFormatted,
-						fixedRateFormatted
-					) }
+	return feeHistoryList;
+};
+
+export const composeFeeBreakdown = ( event ) => {
+	const feeHistoryList = feeBreakdown( event );
+
+	if ( ! Array.isArray( feeHistoryList ) ) {
+		return;
+	}
+
+	const renderDiscountSplit = ( discount ) => {
+		return (
+			<ul className="discount-split-list">
+				{ discount.map( ( fee ) => {
+					return <li key={ fee.labelKey }>{ fee.label }</li>;
+				} ) }
+			</ul>
+		);
+	};
+
+	const list = feeHistoryList.map( ( fee ) => {
+		return (
+			<li key={ fee.labelKey }>
+				{ fee.label }
+
+				{ fee.discount && renderDiscountSplit( fee.discount ) }
 			</li>
 		);
 	} );
 
-	return <ul className="fee-breakdown-list"> { feeHistoryList } </ul>;
+	return <ul className="fee-breakdown-list"> { list } </ul>;
 };
 
 /**
@@ -559,8 +604,7 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 			];
 		case 'captured':
-			const formattedNet = composeNetString( event );
-			const feeString = composeFeeString( event );
+			const formattedNet = formatNetString( event );
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -582,13 +626,9 @@ const mapEventToTimelineItems = ( event ) => {
 					'is-success',
 					[
 						composeFXString( event ),
-						feeString,
-						feeBreakdown( event ),
-						sprintf(
-							/* translators: %s is a monetary amount */
-							__( 'Net deposit: %s', 'woocommerce-payments' ),
-							formattedNet
-						),
+						composeFeeString( event ),
+						composeFeeBreakdown( event ),
+						composeNetString( event ),
 					]
 				),
 			];
