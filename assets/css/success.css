@@ -1,4 +1,4 @@
-.woocommerce-notice.woocommerce-notice--success.woocommerce-thankyou-order-received {
+.woocommerce-order .thankyou-notice-woopay {
 	background: #239328;
 	color: #fff;
 	padding: 12px;
@@ -8,7 +8,7 @@
 	position: relative;
 }
 
-.woocommerce-notice.woocommerce-notice--success.woocommerce-thankyou-order-received::before {
+.woocommerce-order .thankyou-notice-woopay::before {
 	content: url( '../images/check-circle.svg' );
 	position: absolute;
 	left: 32px;
