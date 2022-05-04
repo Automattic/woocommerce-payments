@@ -25,6 +25,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		'account_branding_secondary_color',
 	];
 
+
+	const ACCOUNT_FIELDS_CANNOT_BE_EMPTY = [
+		'account_business_support_email',
+		'account_business_support_phone',
+	];
+
 	/**
 	 * Endpoint path.
 	 *
@@ -550,8 +556,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function update_account( WP_REST_Request $request ) {
 		$updated_fields_callback = function ( $value, string $key ) {
-			return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
-					$this->wcpay_gateway->get_option( $key ) !== $value;
+			if ( ! ( in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
+				$this->wcpay_gateway->get_option( $key ) !== $value ) ) {
+				return false;
+			}
+			return ! in_array( $key, static::ACCOUNT_FIELDS_CANNOT_BE_EMPTY, true ) || ! empty( $value );
 		};
 		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
 

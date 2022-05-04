@@ -15,7 +15,7 @@ import {
 	useAccountBusinessSupportPhone,
 } from '../../../data';
 
-const ContactDetailsSection = () => {
+const ContactDetailsSection = ( { setSaveDisabled } ) => {
 	const [
 		accountBusinessSupportEmail,
 		setAccountBusinessSupportEmail,
@@ -26,11 +26,34 @@ const ContactDetailsSection = () => {
 		setAccountBusinessSupportPhone,
 	] = useAccountBusinessSupportPhone();
 
-	const businessSuppotEmailErrorMessage = useGetSavingError()?.data?.details
+	let businessSuppotEmailErrorMessage = useGetSavingError()?.data?.details
 		?.account_business_support_email?.message;
 
-	const businessSuppotPhoneErrorMessage = useGetSavingError()?.data?.details
+	let businessSuppotPhoneErrorMessage = useGetSavingError()?.data?.details
 		?.account_business_support_phone?.message;
+
+	if ( '' === accountBusinessSupportEmail ) {
+		businessSuppotEmailErrorMessage = __(
+			'Support email cannot be empty!',
+			'woocommerce-payments'
+		);
+	}
+
+	if ( '' === accountBusinessSupportPhone ) {
+		businessSuppotPhoneErrorMessage = __(
+			'Support phone number cannot be empty!',
+			'woocommerce-payments'
+		);
+	}
+
+	const updateSaveButtonAvailability = () => {
+		if (
+			'' === accountBusinessSupportEmail ||
+			'' === accountBusinessSupportPhone
+		) {
+			setSaveDisabled( true );
+		}
+	};
 
 	return (
 		<>
@@ -48,6 +71,7 @@ const ContactDetailsSection = () => {
 				value={ accountBusinessSupportEmail }
 				onChange={ setAccountBusinessSupportEmail }
 				type="email"
+				onBlur={ updateSaveButtonAvailability }
 			/>
 			{ businessSuppotPhoneErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
@@ -60,6 +84,7 @@ const ContactDetailsSection = () => {
 				value={ accountBusinessSupportPhone }
 				onChange={ setAccountBusinessSupportPhone }
 				type="tel"
+				onBlur={ updateSaveButtonAvailability }
 			/>
 		</>
 	);
