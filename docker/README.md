@@ -42,6 +42,6 @@ ngrok http 8082
 You will see it give a forwarding address like this one:
  http://e0747cffd8a3.ngrok.io
  
-You may need to set your `siteurl` and `home` `wp_option`s to the new url. You can do this with phpMyAdmin or WP-CLI.
+You may need to temporarily set your `siteurl` and `home` `wp_option`s to the new url. You can do this with phpMyAdmin or WP-CLI.
 
 Visit the `<url>` , login and setup WCPay.
