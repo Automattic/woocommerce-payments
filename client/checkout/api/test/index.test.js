@@ -2,11 +2,11 @@
  * Internal dependencies
  */
 import WCPayAPI from '..';
-import request from 'wcpay/checkout/blocks/request';
+import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 import { getConfig } from 'wcpay/utils/checkout';
 
-jest.mock( 'wcpay/checkout/blocks/request', () => jest.fn() );
+jest.mock( 'wcpay/checkout/utils/request', () => jest.fn() );
 jest.mock( 'wcpay/payment-request/utils', () => ( {
 	buildAjaxURL: jest.fn(),
 } ) );

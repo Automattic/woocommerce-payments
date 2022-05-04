@@ -36,7 +36,15 @@ class Note_Multi_Currency_Available_Test extends WP_UnitTestCase {
 		$this->assertSame( 'wc-payments-notes-multi-currency-available', $actions->name );
 		$this->assertSame( 'Set up now', $actions->label );
 		$this->assertStringStartsWith( 'admin.php?page=wc-admin&path=/payments/multi-currency-setup', $actions->query );
-		$this->assertSame( true, $actions->primary );
+
+		/**
+		 * The $primary property was deprecated from WooCommerce core. Keeping this to maintain the compatibility with old WooCommerce versions.
+		 * @see https://github.com/woocommerce/woocommerce/blob/ff2d7d704a8f72aeb4990811b6972097aa167bea/plugins/woocommerce/src/Admin/Notes/Note.php#L623-L623.
+		 * @see https://github.com/woocommerce/woocommerce-admin/pull/8474
+		 */
+		if ( isset( $actions->primary ) ) {
+			$this->assertSame( true, $actions->primary );
+		}
 	}
 
 
