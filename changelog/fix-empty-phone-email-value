@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Empty values for support email and phone should not be allowed
