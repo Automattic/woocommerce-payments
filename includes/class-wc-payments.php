@@ -126,6 +126,13 @@ class WC_Payments {
 	private static $order_service;
 
 	/**
+	 * Instance of WC_Payments_Order_Success_Page, created in init function
+	 *
+	 * @var WC_Payments_Order_Success_Page
+	 */
+	private static $order_success_page;
+
+	/**
 	 * Instance of WC_Payments_Onboarding_Service, created in init function
 	 *
 	 * @var WC_Payments_Onboarding_Service
@@ -260,6 +267,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
 		include_once __DIR__ . '/class-wc-payments-order-service.php';
+		include_once __DIR__ . '/class-wc-payments-order-success-page.php';
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
@@ -291,6 +299,7 @@ class WC_Payments {
 		self::$localization_service                = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
 		self::$order_service                       = new WC_Payments_Order_Service();
+		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 
 		$card_class = CC_Payment_Gateway::class;
