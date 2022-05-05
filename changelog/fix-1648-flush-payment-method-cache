@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixed clearing of stored payment methods when account is updated via webhook
