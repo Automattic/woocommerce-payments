@@ -2,7 +2,7 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
-Tested up to: 5.9.2
+Tested up to: 5.9.3
 Requires PHP: 7.0
 Stable tag: 4.0.2
 License: GPLv2 or later
@@ -97,6 +97,36 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 4.1.0 - 2022-xx-xx =
+* Add - Add documents and VAT invoices feature for supported countries.
+* Add - Adding StripeLink logo in the transactions list
+* Add - Add more logging info when sending requests to WooCommerce Payments server.
+* Add - Add StripeLink payment method in WCPay
+* Add - Moving email field on checkout page when StripeLink enabled.
+* Add - Send the blog locale to the server to enable server-side translations.
+* Fix - Ensure platform checkout SMS OTP iframe modal is always visible.
+* Fix - Fix an error in refunding In-Person Payments
+* Fix - Fix compatibility tests with Woo core 6.5.
+* Fix - Fixed clearing of stored payment methods when account is updated via webhook
+* Fix - Fixed issue with order tracking when mode is changed
+* Fix - Fixed redirect URL when user is already onboarded
+* Fix - Fix platform checkout eligibility check through ajax requests
+* Fix - Fix UPE alignment issues on classic checkout
+* Fix - Generate and add styles to UPE payment form on Blocks checkout
+* Fix - New KYC flow treatment mode issus with API calls and settings menu.
+* Fix - Prevent Stripe from sending email receipts for terminal payments
+* Fix - protect usage of account status to not break Payments > Overview page when account data is not defined
+* Fix - Replace enable toggle with account eligibility flag
+* Fix - Send receipt for Interac payments.
+* Fix - update _charge_id metadata to fix Refund button
+* Update - Card testing: rework card errors handling.
+* Update - Remove Stripe specific branding options from the card readers settings page.
+* Dev - Optimize E2E Setup to install Action Scheduler & WC Blocks from WordPress.org
+* Dev - Remove merchant onboarding E2E tests along with dependency.
+* Dev - Update currency rate cache mechanism
+* Dev - Updated documentation for REST-endpoints.
+* Dev - Update GitHub Actions E2E workflow to skip running WC Blocks tests against incompatible WooCommerce versions.
 
 = 4.0.2 - 2022-04-27 =
 * Add - Adds user's email to platform checkout request data.

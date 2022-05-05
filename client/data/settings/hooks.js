@@ -236,51 +236,6 @@ export const useAccountBrandingLogo = () => {
 	);
 };
 
-export const useAccountBrandingIcon = () => {
-	const { updateAccountBrandingIcon } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingIcon } = select( STORE_NAME );
-
-			return [ getAccountBrandingIcon(), updateAccountBrandingIcon ];
-		},
-		[ updateAccountBrandingIcon ]
-	);
-};
-
-export const useAccountBrandingPrimaryColor = () => {
-	const { updateAccountBrandingPrimaryColor } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingPrimaryColor } = select( STORE_NAME );
-
-			return [
-				getAccountBrandingPrimaryColor(),
-				updateAccountBrandingPrimaryColor,
-			];
-		},
-		[ updateAccountBrandingPrimaryColor ]
-	);
-};
-
-export const useAccountBrandingSecondaryColor = () => {
-	const { updateAccountBrandingSecondaryColor } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingSecondaryColor } = select( STORE_NAME );
-
-			return [
-				getAccountBrandingSecondaryColor(),
-				updateAccountBrandingSecondaryColor,
-			];
-		},
-		[ updateAccountBrandingSecondaryColor ]
-	);
-};
-
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 
@@ -445,14 +400,4 @@ export const usePlatformCheckoutCustomMessage = () => {
 		},
 		[ updatePlatformCheckoutCustomMessage ]
 	);
-};
-
-export const useFraudProtection = () => {
-	const { updateIsFraudPreventionEnabled } = useDispatch( STORE_NAME );
-
-	const isFraudProtectionEnabled = useSelect( ( select ) => {
-		return select( STORE_NAME ).getIsFraudProtectionEnabled();
-	}, [] );
-
-	return [ isFraudProtectionEnabled, updateIsFraudPreventionEnabled ];
 };

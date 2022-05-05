@@ -122,9 +122,10 @@ const PaymentMethods = () => {
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
-	const availableMethods = availablePaymentMethodIds.map(
-		( methodId ) => methodsConfiguration[ methodId ]
-	);
+	// We filter link payment method since this will be displayed in other section (express checkout).
+	const availableMethods = availablePaymentMethodIds
+		.filter( ( id ) => 'link' !== id )
+		.map( ( methodId ) => methodsConfiguration[ methodId ] );
 
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
 		null

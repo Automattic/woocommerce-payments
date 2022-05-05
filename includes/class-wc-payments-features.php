@@ -94,7 +94,8 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_platform_checkout_eligible() {
-		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
+		// read directly from cache, ignore cache expiration check.
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
 	}
 
@@ -104,7 +105,9 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_documents_section_enabled() {
-		return '1' === get_option( '_wcpay_feature_documents', '0' );
+		$account              = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
+		$is_documents_enabled = is_array( $account ) && ( $account['is_documents_enabled'] ?? false );
+		return '1' === get_option( '_wcpay_feature_documents', $is_documents_enabled ? '1' : '0' );
 	}
 
 	/**

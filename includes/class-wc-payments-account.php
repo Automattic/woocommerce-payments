@@ -41,14 +41,23 @@ class WC_Payments_Account {
 	private $database_cache;
 
 	/**
+	 * Action scheduler service
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service
+	 */
+	private $action_scheduler_service;
+
+	/**
 	 * Class constructor
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
-	 * @param Database_Cache         $database_cache      Database cache util.
+	 * @param WC_Payments_API_Client               $payments_api_client Payments API client.
+	 * @param Database_Cache                       $database_cache      Database cache util.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service    Action scheduler service.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache ) {
-		$this->payments_api_client = $payments_api_client;
-		$this->database_cache      = $database_cache;
+	public function __construct( WC_Payments_API_Client $payments_api_client, Database_Cache $database_cache, WC_Payments_Action_Scheduler_Service $action_scheduler_service ) {
+		$this->payments_api_client      = $payments_api_client;
+		$this->database_cache           = $database_cache;
+		$this->action_scheduler_service = $action_scheduler_service;
 
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
@@ -58,6 +67,7 @@ class WC_Payments_Account {
 		add_action( self::INSTANT_DEPOSITS_REMINDER_ACTION, [ $this, 'handle_instant_deposits_inbox_reminder' ] );
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
+		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
 
 		// Add capital offer redirection.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
@@ -177,13 +187,15 @@ class WC_Payments_Account {
 		}
 
 		return [
-			'email'           => $account['email'] ?? '',
-			'status'          => $account['status'],
-			'paymentsEnabled' => $account['payments_enabled'],
-			'depositsStatus'  => $account['deposits_status'],
-			'currentDeadline' => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
-			'pastDue'         => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
-			'accountLink'     => $this->get_login_url(),
+			'email'               => $account['email'] ?? '',
+			'country'             => $account['country'] ?? 'US',
+			'status'              => $account['status'],
+			'paymentsEnabled'     => $account['payments_enabled'],
+			'depositsStatus'      => $account['deposits_status'],
+			'currentDeadline'     => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
+			'pastDue'             => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
+			'accountLink'         => $this->get_login_url(),
+			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
 		];
 	}
 
@@ -292,9 +304,9 @@ class WC_Payments_Account {
 	 *
 	 * @return bool
 	 */
-	public function is_card_present_eligible() {
+	public function is_card_present_eligible(): bool {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['card_present_eligible'] ) ? $account['card_present_eligible'] : false;
+		return $account['card_present_eligible'] ?? false;
 	}
 
 	/**
@@ -474,6 +486,12 @@ class WC_Payments_Account {
 			return false;
 		}
 
+		// Redirect directly to onboarding page if come from WC Admin task and are in treatment mode.
+		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
+		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
+			$this->maybe_redirect_to_treatment_onboarding_page();
+		}
+
 		// Redirect if not connected.
 		$this->redirect_to_onboarding_page();
 		return true;
@@ -576,8 +594,8 @@ class WC_Payments_Account {
 
 			$from_wc_admin_task       = 'WCADMIN_PAYMENT_TASK' === $wcpay_connect_param;
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
-			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) && WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
-				$this->redirect_to( admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' ) );
+			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
+				$this->maybe_redirect_to_treatment_onboarding_page();
 			}
 
 			// Hide menu notification badge upon starting setup.
@@ -847,6 +865,7 @@ class WC_Payments_Account {
 			),
 			[
 				'site_username' => $current_user->user_login,
+				'site_locale'   => get_locale(),
 			],
 			$this->get_actioned_notes()
 		);
@@ -1059,6 +1078,28 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Updates the WCPay Account locale with the current site language (WPLANG option).
+	 *
+	 * @param string $option_name Option name.
+	 * @param mixed  $old_value   The old option value.
+	 * @param mixed  $new_value   The new option value.
+	 */
+	public function possibly_update_wcpay_account_locale( $option_name, $old_value, $new_value ) {
+		if ( 'WPLANG' === $option_name && $this->is_stripe_connected() ) {
+			try {
+				$account_settings = [
+					'locale' => $new_value ? $new_value : 'en_US',
+				];
+				$updated_account  = $this->payments_api_client->update_account( $account_settings );
+				$this->database_cache->add( Database_Cache::ACCOUNT_KEY, $updated_account );
+			} catch ( Exception $e ) {
+				Logger::error( __( 'Failed to update Account locale. ', 'woocommerce-payments' ) . $e );
+			}
+		}
+	}
+
+
+	/**
 	 * Retrieves the latest ToS agreement for the account.
 	 *
 	 * @return array|null Either the agreement or null if unavailable.
@@ -1216,15 +1257,14 @@ class WC_Payments_Account {
 	 * @return void
 	 */
 	public function maybe_add_instant_deposit_note_reminder() {
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->payments_api_client );
-		$action_hook              = self::INSTANT_DEPOSITS_REMINDER_ACTION;
+		$action_hook = self::INSTANT_DEPOSITS_REMINDER_ACTION;
 
-		if ( $action_scheduler_service->pending_action_exists( $action_hook ) ) {
+		if ( $this->action_scheduler_service->pending_action_exists( $action_hook ) ) {
 			return;
 		}
 
 		$reminder_time = time() + ( 90 * DAY_IN_SECONDS );
-		$action_scheduler_service->schedule_job( $reminder_time, $action_hook );
+		$this->action_scheduler_service->schedule_job( $reminder_time, $action_hook );
 	}
 
 	/**
@@ -1240,5 +1280,34 @@ class WC_Payments_Account {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get card testing protection eligible flag account
+	 *
+	 * @return bool
+	 */
+	public function is_card_testing_protection_eligible(): bool {
+		$account = $this->get_cached_account_data();
+		return $account['card_testing_protection_eligible'] ?? false;
+	}
+
+	/**
+	 * Checks if the user is in onboarding treatment before doing the redirection.
+	 * Also checks if the server is connect and try to connect it otherwise.
+	 *
+	 * @return void
+	 */
+	private function maybe_redirect_to_treatment_onboarding_page() {
+		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
+			$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
+
+			if ( ! $this->payments_api_client->is_server_connected() ) {
+					$this->payments_api_client->start_server_connection( $onboarding_url );
+			} else {
+				$this->redirect_to( $onboarding_url );
+
+			}
+		}
 	}
 }

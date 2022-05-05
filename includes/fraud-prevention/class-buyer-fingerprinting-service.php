@@ -7,6 +7,8 @@
 
 namespace WCPay\Fraud_Prevention;
 
+use WC_Geolocation;
+
 /**
  * Class Buyer_Fingerprinting_Service
  */
@@ -19,30 +21,13 @@ class Buyer_Fingerprinting_Service {
 	private static $instance;
 
 	/**
-	 * Fraud prevention service instance.
-	 *
-	 * @var Fraud_Prevention_Service
-	 */
-	private $fraud_prevention_service;
-
-	/**
-	 * Buyer_Fingerprinting_Service constructor.
-	 *
-	 * @param Fraud_Prevention_Service $fraud_prevention_service Fraud Prevention instance.
-	 */
-	public function __construct( Fraud_Prevention_Service $fraud_prevention_service ) {
-		$this->fraud_prevention_service = $fraud_prevention_service;
-	}
-
-	/**
 	 * Returns singleton instance.
 	 *
-	 * @param null $fraud_prevention_service Fraud Prevention Service instance.
 	 * @return Buyer_Fingerprinting_Service
 	 */
-	public static function get_instance( $fraud_prevention_service = null ): self {
+	public static function get_instance(): self {
 		if ( null === self::$instance ) {
-			self::$instance = new self( $fraud_prevention_service ?? Fraud_Prevention_Service::get_instance() );
+			self::$instance = new self();
 		}
 
 		return self::$instance;
@@ -66,22 +51,18 @@ class Buyer_Fingerprinting_Service {
 	 * @return string Hashed data.
 	 */
 	public function hash_data_for_fraud_prevention( string $data ): string {
-		return hash( 'sha512', $data );
+		return hash( 'sha512', $data, false );
 	}
 
 	/**
 	 * Returns fraud prevention data for an order.
 	 *
-	 * @param int $order_id The WC order id.
-	 *
 	 * @return string[] An array of hashed data for an order.
 	 */
-	public function get_hashed_data_for_order( int $order_id ): array {
-		$order = wc_get_order( $order_id );
-
+	public function get_hashed_data_for_customer(): array {
 		return [
-			'shopper_ip_hash'        => self::hash_data_for_fraud_prevention( $order->get_customer_ip_address() ),
-			'shopper_useragent_hash' => self::hash_data_for_fraud_prevention( strtolower( $order->get_customer_user_agent() ) ),
+			'fraud_prevention_data_shopper_ip_hash' => $this->hash_data_for_fraud_prevention( WC_Geolocation::get_ip_address() ),
+			'fraud_prevention_data_shopper_ua_hash' => $this->hash_data_for_fraud_prevention( strtolower( wc_get_user_agent() ) ),
 		];
 	}
 }
