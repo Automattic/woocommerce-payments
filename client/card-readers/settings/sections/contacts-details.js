@@ -52,6 +52,8 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 			'' === accountBusinessSupportPhone
 		) {
 			setSaveDisabled( true );
+		} else {
+			setSaveDisabled( false );
 		}
 	};
 
