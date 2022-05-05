@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add card last 4 digits to order meta to allow WooPay to send it to the merchant store
