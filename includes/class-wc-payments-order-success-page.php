@@ -14,9 +14,8 @@ class WC_Payments_Order_Success_Page {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'thankyou_notice_woopay' ], 10, 2 );
-		add_action( 'woocommerce_thankyou_woocommerce_payments', [ $this, 'payment_method_name_func' ] );
-		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'payment_method_name_admin_func' ] );
+		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'show_woopay_thankyou_notice' ], 10, 2 );
+		add_action( 'woocommerce_thankyou_woocommerce_payments', [ $this, 'show_woopay_payment_method_name' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 	}
 
@@ -29,7 +28,7 @@ class WC_Payments_Order_Success_Page {
 	 *
 	 * @return string
 	 */
-	public function thankyou_notice_woopay( $text, $order ) {
+	public function show_woopay_thankyou_notice( $text, $order ) {
 		if ( ! $order->get_meta( 'is_woopay' ) ) {
 			return $text;
 		}
@@ -43,7 +42,7 @@ class WC_Payments_Order_Success_Page {
 	 *
 	 * @param int $order_id the order id.
 	 */
-	public function payment_method_name_func( $order_id ) {
+	public function show_woopay_payment_method_name( $order_id ) {
 		$order = new WC_Order( $order_id );
 		if ( ! $order->get_meta( 'is_woopay' ) ) {
 			return;
@@ -61,27 +60,6 @@ class WC_Payments_Order_Success_Page {
 				</strong>
 			</li>
 		</ul>
-
-		<?php
-	}
-
-	/**
-	 * Add woopay as a payment method to the edit order on admin.
-	 *
-	 * @param int $order_id order_id.
-	 */
-	public function payment_method_name_admin_func( $order_id ) {
-		$order = new WC_Order( $order_id );
-		if ( ! $order->get_meta( 'is_woopay' ) ) {
-			return;
-		}
-		?>
-		<div class="wc-payment-gateway-method-name-woopay-wrapper">
-			<?php echo esc_html_e( 'Paid with ', 'woocommerce-payments' ); ?>
-			<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
-			<?php echo esc_html_e( 'Card ending in ', 'woocommerce-payments' ); ?>
-			<?php echo esc_html( $order->get_meta( 'last4' ) ); ?>
-		</div>
 
 		<?php
 	}
