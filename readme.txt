@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 5.9.3
 Requires PHP: 7.0
-Stable tag: 4.0.2
+Stable tag: 4.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.1.0 - 2022-xx-xx =
+= 4.1.0 - 2022-05-05 =
 * Add - Add documents and VAT invoices feature for supported countries.
 * Add - Adding StripeLink logo in the transactions list
 * Add - Add more logging info when sending requests to WooCommerce Payments server.
