@@ -21,6 +21,7 @@ import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
 import { getTerms } from '../utils/upe';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
+import { getAppearance, getFontRulesFromPage } from '../upe-styles';
 
 const WCPayUPEFields = ( {
 	api,
@@ -194,11 +195,6 @@ const WCPayUPEFields = ( {
 			: 'never';
 	elementOptions.terms = getTerms( paymentMethodsConfig, showTerms );
 
-	const appearance = getConfig( 'upeAppearance' );
-	if ( appearance ) {
-		elementOptions.appearance = appearance;
-	}
-
 	return (
 		<>
 			{ testMode ? testCopy : '' }
@@ -224,8 +220,24 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	const [ clientSecret, setClientSecret ] = useState( null );
 	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
 	const [ errorMessage, setErrorMessage ] = useState( null );
+	const [ appearance, setAppearance ] = useState(
+		getConfig( 'wcBlocksUPEAppearance' )
+	);
+	const [ fontRules ] = useState( getFontRulesFromPage() );
 
 	useEffect( () => {
+		async function generateUPEAppearance() {
+			// Generate UPE input styles.
+			const upeAppearance = getAppearance( true );
+			await api.saveUPEAppearance( upeAppearance, true );
+
+			// Update appearance state
+			setAppearance( upeAppearance );
+		}
+		if ( ! appearance ) {
+			generateUPEAppearance();
+		}
+
 		if ( paymentIntentId || hasRequestedIntent ) {
 			return;
 		}
@@ -245,7 +257,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		}
 		setHasRequestedIntent( true );
 		createIntent();
-	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage ] );
+	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage, appearance ] );
 
 	if ( ! clientSecret ) {
 		if ( errorMessage ) {
@@ -263,6 +275,8 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 
 	const options = {
 		clientSecret,
+		appearance,
+		fonts: fontRules,
 	};
 
 	return (

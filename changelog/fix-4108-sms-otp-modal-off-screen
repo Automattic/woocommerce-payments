@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Ensure platform checkout SMS OTP iframe modal is always visible.

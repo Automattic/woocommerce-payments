@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-protect usage of account status to not break Payments > Overview page when account data is not defined
