@@ -1005,6 +1005,7 @@ class WC_Payments {
 				'blog_checkout_url' => wc_get_checkout_url(),
 				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
+				'test_mode'         => self::get_gateway()->is_in_test_mode(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
