@@ -22,16 +22,19 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 
 	useEffect( () => {
 		const fetchSystemReport = async () => {
-			await apiFetch( { path: '/wc/v3/system_status' } ).then(
-				( data ) => {
-					setSurveyAnswers( ( prev ) => ( {
-						...prev,
-						ssr: formatSsr( data ),
-					} ) );
-				}
-			);
+			let formattedSsr = '';
+			try {
+				const data = await apiFetch( { path: '/wc/v3/system_status' } );
+				formattedSsr = formatSsr( data );
+			} catch ( error ) {
+				//do nothing
+			} finally {
+				setSurveyAnswers( ( prev ) => ( {
+					...prev,
+					ssr: formattedSsr,
+				} ) );
+			}
 		};
-
 		fetchSystemReport();
 	}, [] );
 
