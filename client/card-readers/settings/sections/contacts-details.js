@@ -26,35 +26,31 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 		setAccountBusinessSupportPhone,
 	] = useAccountBusinessSupportPhone();
 
-	let businessSuppotEmailErrorMessage = useGetSavingError()?.data?.details
+	let businessSupportEmailErrorMessage = useGetSavingError()?.data?.details
 		?.account_business_support_email?.message;
 
-	let businessSuppotPhoneErrorMessage = useGetSavingError()?.data?.details
+	let businessSupportPhoneErrorMessage = useGetSavingError()?.data?.details
 		?.account_business_support_phone?.message;
 
 	if ( '' === accountBusinessSupportEmail ) {
-		businessSuppotEmailErrorMessage = __(
+		businessSupportEmailErrorMessage = __(
 			'Support email cannot be empty!',
 			'woocommerce-payments'
 		);
 	}
 
 	if ( '' === accountBusinessSupportPhone ) {
-		businessSuppotPhoneErrorMessage = __(
+		businessSupportPhoneErrorMessage = __(
 			'Support phone number cannot be empty!',
 			'woocommerce-payments'
 		);
 	}
 
 	const updateSaveButtonAvailability = () => {
-		if (
+		setSaveDisabled(
 			'' === accountBusinessSupportEmail ||
-			'' === accountBusinessSupportPhone
-		) {
-			setSaveDisabled( true );
-		} else {
-			setSaveDisabled( false );
-		}
+				'' === accountBusinessSupportPhone
+		);
 	};
 
 	return (
@@ -62,9 +58,9 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 			<h4>
 				{ __( 'Customer support contacts', 'woocommerce-payments' ) }
 			</h4>
-			{ businessSuppotEmailErrorMessage && (
+			{ businessSupportEmailErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
-					<span>{ businessSuppotEmailErrorMessage }</span>
+					<span>{ businessSupportEmailErrorMessage }</span>
 				</Notice>
 			) }
 			<TextControl
@@ -75,9 +71,9 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 				type="email"
 				onBlur={ updateSaveButtonAvailability }
 			/>
-			{ businessSuppotPhoneErrorMessage && (
+			{ businessSupportPhoneErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
-					<span>{ businessSuppotPhoneErrorMessage }</span>
+					<span>{ businessSupportPhoneErrorMessage }</span>
 				</Notice>
 			) }
 			<TextControl
