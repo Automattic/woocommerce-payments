@@ -24,8 +24,13 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 		const fetchSystemReport = async () => {
 			let formattedSsr = '';
 			try {
-				const data = await apiFetch( { path: '/wc/v3/system_status' } );
-				formattedSsr = formatSsr( data );
+				const [ systemStatus, wcPayData ] = await Promise.all(
+					[
+						'/wc/v3/system_status',
+						'/wc/v3/payments/accounts',
+					].map( ( url ) => apiFetch( { path: url } ) )
+				);
+				formattedSsr = formatSsr( systemStatus, wcPayData );
 			} catch ( error ) {
 				//do nothing
 			} finally {

@@ -5,159 +5,173 @@
  */
 import { dateI18n } from '@wordpress/date';
 
-export const formatSsr = ( json ) => {
+export const formatSsr = ( systemStatus, wcPayData ) => {
 	const ssr = `### WordPress Environment ###
 
-WordPress address (URL): ${ json.environment.site_url }
-Site address (URL): ${ json.environment.home_url }
-WC Version: ${ json.environment.version }
+WordPress address (URL): ${ systemStatus.environment.site_url }
+Site address (URL): ${ systemStatus.environment.home_url }
+WC Version: ${ systemStatus.environment.version }
 Log Directory Writable: ${
-		json.environment.log_directory_writable
+		systemStatus.environment.log_directory_writable
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 )
 	}
-WP Version: ${ json.environment.wp_version }
+WP Version: ${ systemStatus.environment.wp_version }
 WP Multisite: ${
-		json.environment.wp_multisite ? String.fromCharCode( 10004 ) : '-'
+		systemStatus.environment.wp_multisite
+			? String.fromCharCode( 10004 )
+			: '-'
 	}
-WP Memory Limit: ${ json.environment.wp_memory_limit }
+WP Memory Limit: ${ systemStatus.environment.wp_memory_limit }
 WP Debug Mode: ${
-		json.environment.wp_debug_mode ? String.fromCharCode( 10004 ) : '-'
+		systemStatus.environment.wp_debug_mode
+			? String.fromCharCode( 10004 )
+			: '-'
 	}
-WP Cron: ${ json.environment.wp_cron ? String.fromCharCode( 10004 ) : '-' }
-Language: ${ json.environment.language }
+WP Cron: ${
+		systemStatus.environment.wp_cron ? String.fromCharCode( 10004 ) : '-'
+	}
+Language: ${ systemStatus.environment.language }
 External object cache: ${
-		json.environment.external_object_cache
+		systemStatus.environment.external_object_cache
 			? String.fromCharCode( 10004 )
 			: '-'
 	}
 
 ### Server Environment ###
 
-Server Info: ${ json.environment.server_info }
-PHP Version: ${ json.environment.php_version }
-PHP Post Max Size: ${ json.environment.php_post_max_size }
-PHP Time Limit: ${ json.environment.php_max_execution_time }
-PHP Max Input Vars: ${ json.environment.php_max_input_vars }
-cURL Version: ${ json.environment.curl_version }
+Server Info: ${ systemStatus.environment.server_info }
+PHP Version: ${ systemStatus.environment.php_version }
+PHP Post Max Size: ${ systemStatus.environment.php_post_max_size }
+PHP Time Limit: ${ systemStatus.environment.php_max_execution_time }
+PHP Max Input Vars: ${ systemStatus.environment.php_max_input_vars }
+cURL Version: ${ systemStatus.environment.curl_version }
 
 SUHOSIN Installed: ${
-		json.environment.suhosin_installed ? String.fromCharCode( 10004 ) : '-'
+		systemStatus.environment.suhosin_installed
+			? String.fromCharCode( 10004 )
+			: '-'
 	}
-MySQL Version: ${ json.environment.mysql_version_string }
-Max Upload Size: ${ json.environment.max_upload_size }
+MySQL Version: ${ systemStatus.environment.mysql_version_string }
+Max Upload Size: ${ systemStatus.environment.max_upload_size }
 Default Timezone is UTC: ${
-		'UTC' !== json.environment.default_timezone
+		'UTC' !== systemStatus.environment.default_timezone
 			? 'Show error'
 			: String.fromCharCode( 10004 )
 	}
 fsockopen/cURL: ${
-		json.environment.fsockopen_or_curl_enabled
+		systemStatus.environment.fsockopen_or_curl_enabled
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 )
 	}
 SoapClient: ${
-		json.environment.soapclient_enabled
+		systemStatus.environment.soapclient_enabled
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 )
 	}
 DOMDocument: ${
-		json.environment.domdocument_enabled
+		systemStatus.environment.domdocument_enabled
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 )
 	}
 GZip: ${
-		json.environment.gzip_enabled
+		systemStatus.environment.gzip_enabled
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 )
 	}
 Multibyte String: ${
-		json.environment.mbstring_enabled
+		systemStatus.environment.mbstring_enabled
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 )
 	}
 Remote Post: ${
-		json.environment.remote_post_successful
+		systemStatus.environment.remote_post_successful
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 )
 	}
 Remote Get: ${
-		json.environment.remote_get_successful
+		systemStatus.environment.remote_get_successful
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 )
 	}
 
 ### Database ###
 
-WC Database Version: ${ json.database.wc_database_version }
-WC Database Prefix: ${ json.database.database_prefix }
-${ printDatabaseDetails( json.database ) }
-${ printPostTypeCounts( json.post_type_counts ) }
+WC Database Version: ${ systemStatus.database.wc_database_version }
+WC Database Prefix: ${ systemStatus.database.database_prefix }
+${ printDatabaseDetails( systemStatus.database ) }
+${ printPostTypeCounts( systemStatus.post_type_counts ) }
 
 ### Security ###
 
 Secure connection (HTTPS): ${
-		json.security.secure_connection
+		systemStatus.security.secure_connection
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 ) + 'Your store is not using HTTPS.'
 	}
 Hide errors from visitors: ${
-		json.security.hide_errors
+		systemStatus.security.hide_errors
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 ) +
 			  'Error messages should not be shown to visitors.'
 	}
 
-### Active Plugins (${ json.active_plugins.length }) ###
+### Active Plugins (${ systemStatus.active_plugins.length }) ###
 
-${ printPlugins( json.active_plugins, null ) }
-### Inactive Plugins (${ json.inactive_plugins.length }) ###
+${ printPlugins( systemStatus.active_plugins, null ) }
+### Inactive Plugins (${ systemStatus.inactive_plugins.length }) ###
 
-${ printPlugins( json.inactive_plugins, null ) }${ printPlugins(
-		json.dropins_mu_plugins.dropins,
+${ printPlugins( systemStatus.inactive_plugins, null ) }${ printPlugins(
+		systemStatus.dropins_mu_plugins.dropins,
 		'Dropin Plugins'
 	) }${ printPlugins(
-		json.dropins_mu_plugins.mu_plugins,
+		systemStatus.dropins_mu_plugins.mu_plugins,
 		'Must Use Plugins'
 	) }
 ### Settings ###
 
-API Enabled: ${ json.settings.api_enabled ? String.fromCharCode( 10004 ) : '-' }
-Force SSL: ${ json.settings.force_ssl ? String.fromCharCode( 10004 ) : '-' }
-Currency: ${ json.settings.currency } (${ json.settings.currency_symbol })
-Currency Position: ${ json.settings.currency_position }
-Thousand Separator: ${ json.settings.thousand_separator }
-Decimal Separator:  ${ json.settings.decimal_separator }
-Number of Decimals: ${ json.settings.number_of_decimals }
-Taxonomies: Product Types: ${ printTerms( json.settings.taxonomies ) }
+API Enabled: ${
+		systemStatus.settings.api_enabled ? String.fromCharCode( 10004 ) : '-'
+	}
+Force SSL: ${
+		systemStatus.settings.force_ssl ? String.fromCharCode( 10004 ) : '-'
+	}
+Currency: ${ systemStatus.settings.currency } (${
+		systemStatus.settings.currency_symbol
+	})
+Currency Position: ${ systemStatus.settings.currency_position }
+Thousand Separator: ${ systemStatus.settings.thousand_separator }
+Decimal Separator:  ${ systemStatus.settings.decimal_separator }
+Number of Decimals: ${ systemStatus.settings.number_of_decimals }
+Taxonomies: Product Types: ${ printTerms( systemStatus.settings.taxonomies ) }
 Taxonomies: Product Visibility: ${ printTerms(
-		json.settings.product_visibility_terms
+		systemStatus.settings.product_visibility_terms
 	) }
 Connected to WooCommerce.com:  ${
-		json.settings.woocommerce_com_connected
+		systemStatus.settings.woocommerce_com_connected
 			? String.fromCharCode( 10004 )
 			: '-'
 	}
 
 ### WC Pages ###
 
-${ printPages( json.pages ) }
+${ printPages( systemStatus.pages ) }
 ### Theme ###
 
-Name: ${ json.theme.name }
-Version: ${ json.theme.version } ${
-		json.theme.version_latest ??
-		`(update to version ${ json.theme.version_latest } is available)`
+Name: ${ systemStatus.theme.name }
+Version: ${ systemStatus.theme.version } ${
+		systemStatus.theme.version_latest ??
+		`(update to version ${ systemStatus.theme.version_latest } is available)`
 	}
-Author URL: ${ json.theme.author_url }
+Author URL: ${ systemStatus.theme.author_url }
 Child Theme: ${
-		json.theme.is_child_theme
+		systemStatus.theme.is_child_theme
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 ) +
 			  'If you are modifying WooCommerce on a parent theme that you did not build personally we recommend using a child theme.'
 	} 
 WooCommerce Support: ${
-		! json.theme.has_woocommerce_support
+		! systemStatus.theme.has_woocommerce_support
 			? String.fromCharCode( 10060 )
 			: String.fromCharCode( 10004 )
 	}
@@ -165,14 +179,14 @@ WooCommerce Support: ${
 ### Templates ###
 
 ${
-	json.theme.has_woocommerce_file
+	systemStatus.theme.has_woocommerce_file
 		? 'Archive Template: ' +
 		  'Your theme has a woocommerce.php file, you will not be able to override the woocommerce/archive-product.php custom template.'
 		: ''
 }
 Overrides: ${
-		0 < json.theme.overrides.length
-			? json.theme.overrides
+		0 < systemStatus.theme.overrides.length
+			? systemStatus.theme.overrides
 					.map( ( override ) => {
 						return override.file;
 					} )
@@ -180,10 +194,20 @@ Overrides: ${
 			: '-'
 	}
 ${
-	json.theme.has_outdated_templates
+	systemStatus.theme.has_outdated_templates
 		? 'Outdated Templates: ' + String.fromCharCode( 10060 )
 		: ''
 }
+
+### WooCommerce Payments ###
+
+Connected to WPCOM: ${
+		'NOACCOUNT' === wcPayData.status ||
+		'ONBOARDING_DISABLED' === wcPayData.status
+			? 'No'
+			: 'Yes'
+	}
+Account ID: ${ wcPayData.account_id }
 
 ### Status report information ###
 
