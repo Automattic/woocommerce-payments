@@ -18,7 +18,7 @@ import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
 import WCPayFields from './fields.js';
 import { SavedTokenHandler } from './saved-token-handler';
-import request from './request.js';
+import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
 
