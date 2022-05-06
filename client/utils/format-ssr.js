@@ -44,7 +44,7 @@ cURL Version: ${ json.environment.curl_version }
 SUHOSIN Installed: ${
 		json.environment.suhosin_installed ? String.fromCharCode( 10004 ) : '-'
 	}
-MySQL Version: 8.0.28
+MySQL Version: ${ json.environment.mysql_version_string }
 Max Upload Size: ${ json.environment.max_upload_size }
 Default Timezone is UTC: ${
 		'UTC' !== json.environment.default_timezone
