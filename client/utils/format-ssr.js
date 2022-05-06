@@ -11,16 +11,12 @@ export const formatSsr = ( json ) => {
 WordPress address (URL): ${ json.environment.site_url }
 Site address (URL): ${ json.environment.home_url }
 WC Version: ${ json.environment.version }
-REST API Version: ✔ 6.3.1
-WC Blocks Version: ✔ 7.3.0
-Action Scheduler Version: ✔ 3.4.0
-WC Admin Version: ✔ 3.2.1
 Log Directory Writable: ${
 		json.environment.log_directory_writable
 			? String.fromCharCode( 10004 )
 			: String.fromCharCode( 10060 )
 	}
-WP Version: 5.9.3
+WP Version: ${ json.environment.wp_version }
 WP Multisite: ${
 		json.environment.wp_multisite ? String.fromCharCode( 10004 ) : '-'
 	}
@@ -39,7 +35,7 @@ External object cache: ${
 ### Server Environment ###
 
 Server Info: ${ json.environment.server_info }
-PHP Version: 7.4.28
+PHP Version: ${ json.environment.php_version }
 PHP Post Max Size: ${ json.environment.php_post_max_size }
 PHP Time Limit: ${ json.environment.php_max_execution_time }
 PHP Max Input Vars: ${ json.environment.php_max_input_vars }
