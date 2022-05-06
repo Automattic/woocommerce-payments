@@ -214,7 +214,7 @@ export const TransactionsList = (
 			getDetailsURL( txn.charge_id, 'transactions' ) +
 			'&transaction_id=' +
 			txn.transaction_id +
-			'&type=' +
+			'&transaction_type=' +
 			( txn.metadata && 'card_reader_fee' === txn.metadata.charge_type
 				? txn.metadata.charge_type
 				: txn.type );
