@@ -82,6 +82,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 		);
 
 		const handleCountryChange = () => {
+			setCountryCode( '+' + iti.getSelectedCountryData().dialCode );
 			handlePhoneNumberChange( iti.getNumber() );
 		};
 
