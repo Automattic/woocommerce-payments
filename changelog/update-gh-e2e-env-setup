@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Update GitHub Actions E2E workflow to skip running WC Blocks tests against incompatible WooCommerce versions.
