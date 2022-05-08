@@ -355,13 +355,14 @@ const getRefundFailureReason = ( event ) => {
 };
 
 /**
- * Returns an array containing fee breakdown.
+ * Returns an object containing fee breakdown.
+ * Keys are fee types such as base, additional-fx, etc, except for "discount" that is an object including more discount details.
  *
  * @param {Object} event Event object
  *
- * @return {Array} Array of formatted fee strings
+ * @return {{ labelType: label, discount: {label, variable, fixed} }} Object containing formatted fee strings.
  */
-const feeBreakdown = ( event ) => {
+export const feeBreakdown = ( event ) => {
 	if ( ! event?.fee_rates?.history ) {
 		return;
 	}
@@ -430,35 +431,11 @@ const feeBreakdown = ( event ) => {
 		discount: __( 'Discount', 'woocommerce-payments' ),
 	} );
 
-	const discountSplitMapping = (
-		percentageRateFormatted,
-		fixedRateFormatted
-	) => {
-		return [
-			{
-				labelKey: 'variable',
-				label:
-					sprintf(
-						/* translators: %s is a percentage number */
-						__( 'Variable fee: %s', 'woocommerce-payments' ),
-						percentageRateFormatted
-					) + '%',
-			},
-			{
-				labelKey: 'fixed',
-				label: sprintf(
-					/* translators: %s is a monetary amount */
-					__( 'Fixed fee: %s', 'woocommerce-payments' ),
-					fixedRateFormatted
-				),
-			},
-		];
-	};
-
-	const feeHistoryList = history.map( ( fee ) => {
-		let labelKey = fee.type;
+	const feeHistoryStrings = {};
+	history.forEach( ( fee ) => {
+		let labelType = fee.type;
 		if ( fee.additional_type ) {
-			labelKey += `-${ fee.additional_type }`;
+			labelType += `-${ fee.additional_type }`;
 		}
 
 		const {
@@ -471,49 +448,58 @@ const feeBreakdown = ( event ) => {
 		const percentageRateFormatted = formatFee( percentageRate );
 		const fixedRateFormatted = formatCurrency( fixedRate, currency );
 
-		return {
-			labelKey,
-			label: sprintf(
-				feeLabelMapping( fixedRate, isCapped )[ labelKey ],
-				percentageRateFormatted,
-				fixedRateFormatted
-			),
-			discount:
-				'discount' !== fee.type
-					? null
-					: discountSplitMapping(
-							percentageRateFormatted,
-							fixedRateFormatted
-					  ),
-		};
+		const label = sprintf(
+			feeLabelMapping( fixedRate, isCapped )[ labelType ],
+			percentageRateFormatted,
+			fixedRateFormatted
+		);
+
+		if ( 'discount' === labelType ) {
+			feeHistoryStrings[ labelType ] = {
+				label,
+				variable:
+					sprintf(
+						/* translators: %s is a percentage number */
+						__( 'Variable fee: %s', 'woocommerce-payments' ),
+						percentageRateFormatted
+					) + '%',
+				fixed: sprintf(
+					/* translators: %s is a monetary amount */
+					__( 'Fixed fee: %s', 'woocommerce-payments' ),
+					fixedRateFormatted
+				),
+			};
+		} else {
+			feeHistoryStrings[ labelType ] = label;
+		}
 	} );
 
-	return feeHistoryList;
+	return feeHistoryStrings;
 };
 
 export const composeFeeBreakdown = ( event ) => {
-	const feeHistoryList = feeBreakdown( event );
+	const feeHistoryStrings = feeBreakdown( event );
 
-	if ( ! Array.isArray( feeHistoryList ) ) {
+	if ( 'object' !== typeof feeHistoryStrings ) {
 		return;
 	}
 
 	const renderDiscountSplit = ( discount ) => {
 		return (
 			<ul className="discount-split-list">
-				{ discount.map( ( fee ) => {
-					return <li key={ fee.labelKey }>{ fee.label }</li>;
-				} ) }
+				<li key="variable">{ discount.variable }</li>
+				<li key="fixed">{ discount.fixed }</li>
 			</ul>
 		);
 	};
 
-	const list = feeHistoryList.map( ( fee ) => {
+	const list = Object.keys( feeHistoryStrings ).map( ( labelType ) => {
+		const fee = feeHistoryStrings[ labelType ];
 		return (
-			<li key={ fee.labelKey }>
-				{ fee.label }
+			<li key={ labelType }>
+				{ 'discount' === labelType ? fee.label : fee }
 
-				{ fee.discount && renderDiscountSplit( fee.discount ) }
+				{ 'discount' === labelType && renderDiscountSplit( fee ) }
 			</li>
 		);
 	} );
