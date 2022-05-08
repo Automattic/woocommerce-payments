@@ -1,0 +1,60 @@
+{
+  "title": "Payment with a foreign card",
+  "capturedEvent":         {
+    "type": "captured",
+    "amount": 13000,
+    "fee": 676,
+    "fee_rates": {
+      "percentage": 0.049,
+      "fixed": 30,
+      "fixed_currency": "USD",
+      "history": [
+        {
+          "type": "base",
+          "percentage_rate": 0.029,
+          "fixed_rate": 30,
+          "currency": "usd"
+        },
+        {
+          "type": "additional",
+          "additional_type": "international",
+          "percentage_rate": 0.01,
+          "fixed_rate": 0,
+          "currency": "usd"
+        },
+        {
+          "type": "additional",
+          "additional_type": "fx",
+          "percentage_rate": 0.01,
+          "fixed_rate": 0,
+          "currency": "usd"
+        }
+      ]
+    },
+    "currency": "CAD",
+    "datetime": 1651997332,
+    "deposit": {
+      "id": "wcpay_estimated_daily_usd_1652572800",
+      "arrival_date": "1652572800"
+    },
+    "transaction_id": "txn_3Kx5Ae2EFxam75ai0P2BCbp0",
+    "transaction_details": {
+      "customer_currency": "CAD",
+      "customer_amount": 13000,
+      "customer_fee": 676,
+      "store_currency": "USD",
+      "store_amount": 10071,
+      "store_fee": 524
+    }
+  },
+  "expectation": {
+    "fxString": "1.00 CAD → 0.774692 USD: $100.71 USD",
+    "feeString": "Fee (4.9% + $0.30): $-5.24",
+    "feeBreakdown": {
+      "base": "Base fee: 2.9% + $0.30",
+      "additional-international": "International card fee: 1%",
+      "additional-fx": "Foreign exchange fee: 1%"
+    },
+    "netString": "Net deposit: $95.47 USD"
+  }
+}
