@@ -17,28 +17,26 @@ class WC_Payments_Captured_Event_Note_Test extends WP_UnitTestCase {
 	private $captured_event_note;
 
 	/**
-	 * Pre-test setup
+	 * @dataProvider provider
 	 */
-	public function set_up() {
-		parent::set_up();
-
-		$input_fx_payment = wp_json_file_decode( dirname( __FILE__ ) . '/stubs/timeline-decimal-fx-payments.json', [ 'associative' => true ] );
-
-		$capture_event = current(
-			array_filter(
-				$input_fx_payment['data'],
-				function ( array $event ) {
-					return 'captured' === $event['type'];
-				}
-			)
-		);
-
-		$this->captured_event_note = new WC_Payments_Captured_Event_Note( $capture_event );
-
+	public function test_strings_for_captured_event( array $captured_event, array $expecation ) {
+		$this->captured_event_note = new WC_Payments_Captured_Event_Note( $captured_event );
+		$this->assertSame( $expecation['fxString'] ?? null, $this->captured_event_note->compose_fx_string() );
 	}
 
-	public function test_decimal_fx_payments() {
-		$this->assertTrue( $this->captured_event_note->is_fx_event() );
-		$this->assertSame( '1 VND → 0.000044 USD: $100.04 USD', $this->captured_event_note->compose_fx_string() );
+	public function provider() {
+
+		$res   = [];
+		$files = glob( dirname( __FILE__, 2 ) . '/fixtures/captured-payments/*.json' );
+		foreach ( $files as $file ) {
+			$array_from_file = wp_json_file_decode( $file, [ 'associative' => true ] );
+			$title           = $array_from_file['title'];
+			$captured_event  = $array_from_file['capturedEvent'];
+			$expectation     = $array_from_file['expectation'];
+
+			$res[ $title ] = [ $captured_event, $expectation ];
+		}
+
+		return $res;
 	}
 }
