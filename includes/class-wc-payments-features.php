@@ -94,7 +94,8 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_platform_checkout_eligible() {
-		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
+		// read directly from cache, ignore cache expiration check.
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
 	}
 

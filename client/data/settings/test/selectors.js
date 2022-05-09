@@ -16,9 +16,6 @@ import {
 	getAccountBusinessSupportEmail,
 	getAccountBusinessSupportPhone,
 	getAccountBrandingLogo,
-	getAccountBrandingIcon,
-	getAccountBrandingPrimaryColor,
-	getAccountBrandingSecondaryColor,
 	getIsPlatformCheckoutEnabled,
 	getPlatformCheckoutCustomMessage,
 } from '../selectors';
@@ -277,15 +274,6 @@ describe( 'Settings selectors tests', () => {
 			setting: 'account_business_support_phone',
 		},
 		{ getFunc: getAccountBrandingLogo, setting: 'account_branding_logo' },
-		{ getFunc: getAccountBrandingIcon, setting: 'account_branding_icon' },
-		{
-			getFunc: getAccountBrandingPrimaryColor,
-			setting: 'account_branding_primary_color',
-		},
-		{
-			getFunc: getAccountBrandingSecondaryColor,
-			setting: 'account_branding_secondary_color',
-		},
 	] )( 'Test get method: %j', ( setting ) => {
 		test( 'returns the value of state.settings.data.${setting.setting}', () => {
 			const state = {

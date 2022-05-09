@@ -15,6 +15,8 @@ use WC_Payments_Token_Service;
  */
 class Sofort_Payment_Method extends UPE_Payment_Method {
 
+	const PAYMENT_METHOD_STRIPE_ID = 'sofort';
+
 	/**
 	 * Constructor for Sofort payment method
 	 *
@@ -22,7 +24,7 @@ class Sofort_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id   = 'sofort';
+		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title       = 'Sofort';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];

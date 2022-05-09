@@ -54,7 +54,8 @@ const OverviewPage = () => {
 
 	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
 	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
-	const accountRejected = accountStatus.status.startsWith( 'rejected' );
+	const accountRejected =
+		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {

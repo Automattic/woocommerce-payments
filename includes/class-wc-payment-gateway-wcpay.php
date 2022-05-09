@@ -21,6 +21,7 @@ use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Payment_Methods\Link_Payment_Method;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -323,6 +324,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'card'          => 'card_payments',
 			'sepa_debit'    => 'sepa_debit_payments',
 			'au_becs_debit' => 'au_becs_debit_payments',
+			'link'          => 'link_payments',
 		];
 
 		// Load the settings.
@@ -356,6 +358,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
+		// Update the email field position.
+		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
 	}
 
 	/**
@@ -449,9 +453,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
-		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
-			return admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding' );
-		}
 		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
 	}
 
@@ -898,7 +899,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
 				throw new Process_Payment_Exception(
-					__( 'Your payment was not processed.', 'woocommerce-payments' ),
+					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
 					'fraud_prevention_enabled'
 				);
 			}
@@ -2841,5 +2842,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'tax_amount'          => array_sum( array_column( $items, 'tax_amount' ) ),
 			'discount_amount'     => array_sum( array_column( $items, 'discount_amount' ) ),
 		];
+	}
+
+	/**
+	 * Move the email field to the top of the Checkout page.
+	 *
+	 * @param array $fields WooCommerce checkout fields.
+	 *
+	 * @return array WooCommerce checkout fields.
+	 */
+	public function checkout_update_email_field_priority( $fields ) {
+		$is_link_enabled = in_array(
+			Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+			true
+		);
+
+		if ( $is_link_enabled ) {
+			// Update the field priority.
+			$fields['billing_email']['priority'] = 1;
+
+			// Add extra `wcpay-checkout-email-field` class.
+			$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
+
+			// Append StripeLink modal trigger button for logged in users.
+			$fields['billing_email']['label'] = $fields['billing_email']['label']
+				. ' <button class="wcpay-stripelink-modal-trigger"></button>';
+		}
+
+		return $fields;
 	}
 }
