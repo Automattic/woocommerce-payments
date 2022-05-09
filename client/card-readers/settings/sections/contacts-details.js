@@ -34,14 +34,14 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 
 	if ( '' === accountBusinessSupportEmail ) {
 		businessSupportEmailErrorMessage = __(
-			'Support email cannot be empty!',
+			'Support email cannot be empty, please specify.',
 			'woocommerce-payments'
 		);
 	}
 
 	if ( '' === accountBusinessSupportPhone ) {
 		businessSupportPhoneErrorMessage = __(
-			'Support phone number cannot be empty!',
+			'Support phone number cannot be empty, please specify.',
 			'woocommerce-payments'
 		);
 	}
