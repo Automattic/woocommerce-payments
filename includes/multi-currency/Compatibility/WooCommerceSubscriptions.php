@@ -148,7 +148,8 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 		$subscription_renewal = $this->cart_contains_renewal();
 		if ( $subscription_renewal ) {
-			return $subscription_renewal['subscription_renewal']['renewal_order_id']->get_currency();
+			$order = wc_get_order( $subscription_renewal['subscription_renewal']['renewal_order_id'] );
+			return $order ? $order->get_currency() : $return;
 		}
 
 		$switch_id = $this->get_subscription_switch_id_from_superglobal();
@@ -159,12 +160,14 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		$switch_cart_items = $this->get_subscription_switch_cart_items();
 		if ( 0 < count( $switch_cart_items ) ) {
 			$switch_cart_item = array_shift( $switch_cart_items );
-			return $switch_cart_item['subscription_switch']['subscription_id']->get_currency();
+			$switch_subscription = wcs_get_subscription( $switch_cart_item['subscription_switch']['subscription_id'] );
+			return $switch_subscription ? $switch_subscription->get_currency() : $return;
 		}
 
 		$subscription_resubscribe = $this->cart_contains_resubscribe();
 		if ( $subscription_resubscribe ) {
-			return $subscription_resubscribe['subscription_resubscribe']['subscription_id']->get_currency();
+			$switch_subscription = $subscription_resubscribe['subscription_resubscribe']['subscription_id'];
+			return $switch_subscription ? $switch_subscription->get_currency() : $return;
 		}
 
 		return $return;
