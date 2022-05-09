@@ -13,6 +13,7 @@ import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import apiRequest from '../utils/request';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -24,6 +25,9 @@ jQuery( function ( $ ) {
 	const enabledBillingFields = getConfig( 'enabledBillingFields' );
 	const upePaymentIntentData = getConfig( 'upePaymentIntentData' );
 	const upeSetupIntentData = getConfig( 'upeSetupIntentData' );
+	const isStripeLinkEnabled =
+		paymentMethodsConfig.link !== undefined &&
+		paymentMethodsConfig.card !== undefined;
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -38,77 +42,11 @@ jQuery( function ( $ ) {
 			forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 			locale: getConfig( 'locale' ),
 			isUPEEnabled,
+			isStripeLinkEnabled,
 		},
-		// A promise-based interface to jQuery.post.
-		( url, args ) => {
-			return new Promise( ( resolve, reject ) => {
-				jQuery.post( url, args ).then( resolve ).fail( reject );
-			} );
-		}
+		apiRequest
 	);
 
-	// Object to add hidden elements to compute focus and invalid states for UPE.
-	const hiddenElementsForUPE = {
-		getHiddenContainer: function () {
-			const hiddenDiv = document.createElement( 'div' );
-			hiddenDiv.setAttribute( 'id', 'wcpay-hidden-div' );
-			hiddenDiv.style.border = 0;
-			hiddenDiv.style.clip = 'rect(0 0 0 0)';
-			hiddenDiv.style.height = '1px';
-			hiddenDiv.style.margin = '-1px';
-			hiddenDiv.style.overflow = 'hidden';
-			hiddenDiv.style.padding = '0';
-			hiddenDiv.style.position = 'absolute';
-			hiddenDiv.style.width = '1px';
-			return hiddenDiv;
-		},
-		getHiddenInvalidRow: function () {
-			const hiddenInvalidRow = document.createElement( 'p' );
-			hiddenInvalidRow.classList.add(
-				'form-row',
-				'woocommerce-invalid',
-				'woocommerce-invalid-required-field'
-			);
-			return hiddenInvalidRow;
-		},
-		appendHiddenClone: function ( container, idToClone, hiddenCloneId ) {
-			const hiddenInput = jQuery( idToClone )
-				.clone()
-				.prop( 'id', hiddenCloneId );
-			container.appendChild( hiddenInput.get( 0 ) );
-			return hiddenInput;
-		},
-		init: function () {
-			if ( ! $( ' #billing_first_name' ).length ) {
-				return;
-			}
-			const hiddenDiv = this.getHiddenContainer();
-
-			// // Hidden focusable element.
-			$( hiddenDiv ).insertAfter( '#billing_first_name' );
-			this.appendHiddenClone(
-				hiddenDiv,
-				'#billing_first_name',
-				'wcpay-hidden-input'
-			);
-
-			// Hidden invalid element.
-			const hiddenInvalidRow = this.getHiddenInvalidRow();
-			this.appendHiddenClone(
-				hiddenInvalidRow,
-				'#billing_first_name',
-				'wcpay-hidden-invalid-input'
-			);
-			hiddenDiv.appendChild( hiddenInvalidRow );
-
-			// Remove transitions.
-			$( '#wcpay-hidden-input' ).css( 'transition', 'none' );
-			$( '#wcpay-hidden-input' ).trigger( 'focus' );
-		},
-		cleanup: function () {
-			$( '#wcpay-hidden-div' ).remove();
-		},
-	};
 	let elements = null;
 	let upeElement = null;
 	let paymentIntentId = null;
@@ -263,6 +201,49 @@ jQuery( function ( $ ) {
 		};
 	};
 
+	const enableStripeLinkPaymentMethod = () => {
+		const linkAutofill = api.getStripe().linkAutofillModal( elements );
+
+		$( '#billing_email' ).on( 'keyup', ( event ) => {
+			linkAutofill.launch( { email: event.target.value } );
+		} );
+
+		// Handle StripeLink button click.
+		$( '.wcpay-stripelink-modal-trigger' ).on( 'click', ( event ) => {
+			event.preventDefault();
+
+			// Trigger modal.
+			linkAutofill.launch( { email: $( '#billing_email' ).val() } );
+		} );
+
+		linkAutofill.on( 'autofill', ( event ) => {
+			const { billingAddress } = event.value;
+			const fillWith = ( nodeId, key ) => {
+				document.getElementById( nodeId ).value =
+					billingAddress.address[ key ];
+			};
+
+			fillWith( 'billing_address_1', 'line1' );
+			fillWith( 'billing_address_2', 'line2' );
+			fillWith( 'billing_city', 'city' );
+			fillWith( 'billing_state', 'state' );
+			fillWith( 'billing_postcode', 'postal_code' );
+			fillWith( 'billing_country', 'country' );
+		} );
+
+		// Display StripeLink button if email field is prefilled.
+		if ( '' !== $( '#billing_email' ).val() ) {
+			const linkButtonTop =
+				$( '#billing_email' ).position().top +
+				( $( '#billing_email' ).outerHeight() - 40 ) / 2;
+			$( '.wcpay-stripelink-modal-trigger' ).show();
+			$( '.wcpay-stripelink-modal-trigger' ).css(
+				'top',
+				linkButtonTop + 'px'
+			);
+		}
+	};
+
 	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
@@ -329,9 +310,7 @@ jQuery( function ( $ ) {
 		let appearance = getConfig( 'upeAppearance' );
 
 		if ( ! appearance ) {
-			hiddenElementsForUPE.init();
 			appearance = getAppearance();
-			hiddenElementsForUPE.cleanup();
 			api.saveUPEAppearance( appearance );
 		}
 
@@ -340,6 +319,10 @@ jQuery( function ( $ ) {
 			appearance,
 			fonts: getFontRulesFromPage(),
 		} );
+
+		if ( isStripeLinkEnabled ) {
+			enableStripeLinkPaymentMethod();
+		}
 
 		const upeSettings = {};
 		if ( getConfig( 'cartContainsSubscription' ) ) {

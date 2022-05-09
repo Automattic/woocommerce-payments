@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent Stripe from sending email receipts for terminal payments
