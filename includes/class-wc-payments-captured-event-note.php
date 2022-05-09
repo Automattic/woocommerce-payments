@@ -56,6 +56,47 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
+	 * Generate fee string line.
+	 *
+	 * @return string
+	 */
+	public function compose_fee_string(): string {
+		$data = $this->captured_event;
+
+		$fee_rates      = $data['fee_rates'];
+		$percentage     = $fee_rates['percentage'];
+		$fixed          = WC_Payments_Utils::interpret_stripe_amount( (int) $fee_rates['fixed'] );
+		$fixed_currency = WC_Payments_Utils::interpret_stripe_amount( (int) $fee_rates['fixed_currency'] );
+		$history        = $fee_rates['history'];
+
+		$fee_amount   = WC_Payments_Utils::interpret_stripe_amount( (int) $data['transaction_details']['store_fee'] );
+		$fee_currency = $data['transaction_details']['store_currency'];
+
+		$base_fee_label = $this->is_base_fee_only()
+			? __( 'Base fee', 'woocommerce-payments' )
+			: __( 'Fee', 'woocommerce-payments' );
+
+		$is_capped = isset( $history[0]['capped'] ) && true === $history[0]['capped'];
+
+		if ( $this->is_base_fee_only() && $is_capped ) {
+			return sprintf(
+				'%1$s (capped at %2$s): %3$s',
+				$base_fee_label,
+				self::format_currency( $fixed, $fixed_currency ),
+				self::format_currency( -$fee_amount, $fee_currency )
+			);
+		}
+
+		return sprintf(
+			'%1$s (%2$s%% + %3$s): %4$s',
+			$base_fee_label,
+			self::format_fee( $percentage ),
+			self::format_currency( $fixed, $fixed_currency ),
+			self::format_currency( -$fee_amount, $fee_currency )
+		);
+	}
+
+	/**
 	 * Check if it's a FX event.
 	 *
 	 * @return bool
@@ -71,6 +112,31 @@ class WC_Payments_Captured_Event_Note {
 		);
 	}
 
+	/**
+	 * Return a given decimal fee as a percentage with a maximum of 3 decimal places.
+	 *
+	 * @param  float $percentage Percentage as float.
+	 *
+	 * @return string
+	 */
+	public function format_fee( float $percentage ): string {
+		return (string) round( $percentage * 100, 3 );
+	}
+
+	/**
+	 * Return a boolean indicating whether only fee applied is the base fee.
+	 *
+	 * @return bool True if the only applied fee is the base fee
+	 */
+	public function is_base_fee_only(): bool {
+		if ( ! isset( $this->captured_event['fee_rates']['history'] ) ) {
+			return false;
+		}
+
+		$history = $this->captured_event['fee_rates']['history'];
+
+		return 1 === count( $history ) && 'base' === $history[0]['type'];
+	}
 	/**
 	 * Format FX string based on the two provided currencies.
 	 *
@@ -188,7 +254,35 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
-	 * Transforms the currency format returned from localization service into
+	 * Format an amount according to the given currency format.
+	 *
+	 * @param  float  $amount   Amount to format.
+	 * @param  string $currency 3-letter currency code.
+	 *
+	 * @return string
+	 */
+	public static function format_currency( float $amount, string $currency ): string {
+		$formatted = html_entity_decode(
+			wp_strip_all_tags(
+				wc_price(
+					$amount,
+					self::get_currency_format_for_wc_price( $currency )
+				)
+			)
+		);
+
+		if ( $amount >= 0 ) {
+			return $formatted;
+		}
+
+		// Handle the subtle display difference for the negative amount between PHP wc_price `-$0.74` vs JavaSript formatCurrency `$-0.74` for the same input.
+		// Remove the minus sign, and then move it right before the number.
+		$formatted = str_replace( '-', '', $formatted );
+		return preg_replace( '/([0-9,\.]+)/', '-$1', $formatted );
+	}
+
+	/**
+	 * Transform the currency format returned from localization service into
 	 * the format that can be used by wc_price
 	 *
 	 * @param string $currency the currency code.

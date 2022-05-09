@@ -22,6 +22,8 @@ class WC_Payments_Captured_Event_Note_Test extends WP_UnitTestCase {
 	public function test_strings_for_captured_event( array $captured_event, array $expecation ) {
 		$this->captured_event_note = new WC_Payments_Captured_Event_Note( $captured_event );
 		$this->assertSame( $expecation['fxString'] ?? null, $this->captured_event_note->compose_fx_string() );
+		$this->assertSame( $expecation['feeString'], $this->captured_event_note->compose_fee_string() );
+
 	}
 
 	public function provider() {
