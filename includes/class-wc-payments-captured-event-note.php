@@ -104,7 +104,7 @@ class WC_Payments_Captured_Event_Note {
 
 		return sprintf(
 			'%1$s → %2$s: %3$s',
-			self::format_explicit_currency( 1, $from_currency, true ),
+			self::format_explicit_currency_with_base( 1, $from_currency, $to_currency, true ),
 			self::format_exchange_rate( $exchange_rate, $to_currency ),
 			self::format_explicit_currency( $to_display_amount, $to_currency, false )
 		);
@@ -117,7 +117,7 @@ class WC_Payments_Captured_Event_Note {
 	 * @param  float  $amount          Amount.
 	 * @param  string $currency       3-letter currency code.
 	 * @param  bool   $skip_symbol      Optional. If true, trims off the short currency symbol. Default false.
-	 * @param  array  $currency_format Optional. Addtional currency format for wc_price.
+	 * @param  array  $currency_format Optional. Additional currency format for wc_price.
 	 *
 	 * @return string Formatted currency representation
 	 */
@@ -150,7 +150,41 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	public static function format_exchange_rate( float $rate, string $currency ): string {
 		$num_decimals = $rate > 1 ? 5 : 6;
-		return self::format_explicit_currency( $rate, $currency, true, [ 'decimals' => $num_decimals ] );
+		$formatted    = self::format_explicit_currency( $rate, $currency, true, [ 'decimals' => $num_decimals ] );
+
+		$func_remove_ending_zeros = function( $str ) {
+			return rtrim( $str, '0' );
+		};
+
+		// Remove ending zeroes after the decimal separator if they exist.
+		return implode(
+			' ',
+			array_map(
+				$func_remove_ending_zeros,
+				explode( ' ', $formatted )
+			)
+		);
+	}
+
+	/**
+	 * Format amount for a given currency but according to the base currency's format.
+	 *
+	 * @param  float  $amount Amount.
+	 * @param  string $currency 3-letter currency code.
+	 * @param  string $base_currency 3-letter base currency code.
+	 * @param  bool   $skip_symbol Optional. If true, trims off the short currency symbol. Default false.
+	 *
+	 * @return string
+	 */
+	public static function format_explicit_currency_with_base( float $amount, string $currency, string $base_currency, bool $skip_symbol = false ) {
+		$custom_format = self::get_currency_format_for_wc_price( $base_currency );
+		unset( $custom_format['currency'] );
+
+		if ( 0 === self::get_currency_format_for_wc_price( $currency )['decimals'] ) {
+			unset( $custom_format['decimals'] );
+		}
+
+		return self::format_explicit_currency( $amount, $currency, $skip_symbol, $custom_format );
 	}
 
 	/**
