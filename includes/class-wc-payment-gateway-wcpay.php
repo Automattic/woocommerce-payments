@@ -2220,6 +2220,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
 			$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
 
+			// This is a special case, to prevent Stripe error when $unit_cost is negative. The unit cost can be
+			// negative if the item has a negative price.
+			if ( 0 > $subtotal ) {
+				// To prevent the Stripe API error, set the absolute value of the unit cost as discount.
+				$discount_amount = abs( $unit_cost );
+				$unit_cost       = 0;
+			}
+
 			return (object) [
 				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.
 				'product_description' => $description, // Up to 26 characters long describing the product.
