@@ -44,7 +44,7 @@ class WC_Payments_Order_Success_Page {
 	 */
 	public function show_woopay_payment_method_name( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( $order || ! $order->get_meta( 'is_woopay' ) ) {
+		if ( ! $order || ! $order->get_meta( 'is_woopay' ) ) {
 			return;
 		}
 		?>
