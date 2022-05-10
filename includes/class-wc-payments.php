@@ -351,8 +351,6 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
 
-		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
-
 		// Add admin screens.
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
