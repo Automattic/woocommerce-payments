@@ -287,5 +287,3 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 
 	return $custom_content;
 }
-
-add_filter( 'jetpack_offline_mode', '__return_false' );
