@@ -844,8 +844,8 @@ class WC_Payments_Admin {
 	 * @param int $order_id order_id.
 	 */
 	public function show_woopay_payment_method_name_admin( $order_id ) {
-		$order = new WC_Order( $order_id );
-		if ( ! $order->get_meta( 'is_woopay' ) ) {
+		$order = wc_get_order( $order_id );
+		if ( $order || ! $order->get_meta( 'is_woopay' ) ) {
 			return;
 		}
 		?>
