@@ -359,7 +359,6 @@ class WC_Payments_Order_Service {
 				)
 			);
 
-			include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
 			$details = ( new WC_Payments_Captured_Event_Note( $captured_event ) )->generate_html_note();
 
 			return $note . $details;

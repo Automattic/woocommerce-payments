@@ -159,6 +159,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'get_payment_method',
 					'is_server_connected',
 					'get_charge',
+					'get_timeline',
 				]
 			)
 			->getMock();
@@ -205,7 +206,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 		}
 
-		$this->order_service = new WC_Payments_Order_Service();
+		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		// Arrange: Mock UPE_Payment_Gateway so that some of its methods can be
 		// mocked, and their return values can be used for testing.
