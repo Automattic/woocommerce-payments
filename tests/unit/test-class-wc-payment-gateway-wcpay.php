@@ -1073,7 +1073,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertEquals( $expected_data, $level_3_data );
 	}
 
-	public function test_full_level3_data_with_fee_and_negative_price_product() {
+	public function test_full_level3_data_with_negative_price_product() {
 		$expected_data = [
 			'merchant_reference'   => '210',
 			'customer_reference'   => '210',
@@ -1085,14 +1085,6 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'unit_cost'           => 1800,
 					'quantity'            => 1,
 					'tax_amount'          => 270,
-					'discount_amount'     => 0,
-				],
-				(object) [
-					'product_code'        => 'fee',
-					'product_description' => 'fee',
-					'unit_cost'           => 1000,
-					'quantity'            => 1,
-					'tax_amount'          => 150,
 					'discount_amount'     => 0,
 				],
 				(object) [
@@ -1111,7 +1103,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		update_option( 'woocommerce_store_postcode', '94110' );
 
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
-		$mock_order   = $this->mock_level_3_order( '98012', true, true, 1, 1 );
+		$mock_order   = $this->mock_level_3_order( '98012', false, true, 1, 1 );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
@@ -1259,14 +1251,14 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 	public function test_level3_data_bundle_for_orders_with_more_than_200_items() {
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
-		$mock_order   = $this->mock_level_3_order( '98012', true, true, 1, 500 );
+		$mock_order   = $this->mock_level_3_order( '98012', true, false, 1, 500 );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
 		$this->assertSame( count( $level_3_data['line_items'] ), 200 );
 
 		$bundled_data = end( $level_3_data['line_items'] );
 
-		$this->assertSame( $bundled_data->product_description, '302 more items' );
+		$this->assertSame( $bundled_data->product_description, '301 more items' );
 	}
 
 	public function test_capture_charge_success() {
