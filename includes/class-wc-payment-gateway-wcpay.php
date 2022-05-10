@@ -2214,17 +2214,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$product_id = substr( sanitize_title( $item->get_name() ), 0, 12 );
 			}
 
-			$description     = substr( $item->get_name(), 0, 26 );
-			$quantity        = ceil( $item->get_quantity() );
-			$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
-			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
-			$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
-
-			// This is a special case, to prevent Stripe error when $unit_cost is negative. The unit cost can be
-			// negative if the item has a negative price.
-			if ( 0 > $subtotal ) {
-				// To prevent the Stripe API error, set the absolute value of the unit cost as discount.
-				$discount_amount = abs( $unit_cost );
+			$description = substr( $item->get_name(), 0, 26 );
+			$quantity    = ceil( $item->get_quantity() );
+			$tax_amount  = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
+			if ( $subtotal >= 0 ) {
+				$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
+				$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
+			} else {
+				// It's possible to create products with negative price - represent it as free one with discount.
+				$discount_amount = abs( WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency ) );
 				$unit_cost       = 0;
 			}
 
