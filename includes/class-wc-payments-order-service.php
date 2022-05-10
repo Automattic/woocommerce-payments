@@ -30,7 +30,7 @@ class WC_Payments_Order_Service {
 	protected $api_client;
 
 	/**
-	 * WC_Payments_REST_Controller constructor.
+	 * WC_Payments_Order_Service constructor.
 	 *
 	 * @param WC_Payments_API_Client $api_client - WooCommerce Payments API client.
 	 */
