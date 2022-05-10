@@ -96,6 +96,24 @@ class WC_Payments_Captured_Event_Note {
 		);
 	}
 
+
+	/**
+	 * Generate net string line.
+	 *
+	 * @return string
+	 */
+	public function compose_net_string(): string {
+		$data = $this->captured_event['transaction_details'];
+
+		$net = WC_Payments_Utils::interpret_stripe_amount( (int) $data['store_amount'] - $data['store_fee'] );
+
+		return sprintf(
+			/* translators: %s is a monetary amount */
+			__( 'Net deposit: %s', 'woocommerce-payments' ),
+			self::format_explicit_currency( $net, $data['store_currency'] )
+		);
+	}
+
 	/**
 	 * Check if it's a FX event.
 	 *
