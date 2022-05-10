@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Change type parameter with transaction_type for transactions url
