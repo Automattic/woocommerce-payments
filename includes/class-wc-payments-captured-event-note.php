@@ -206,6 +206,8 @@ class WC_Payments_Captured_Event_Note {
 	 * @return string Formatted currency representation
 	 */
 	public static function format_explicit_currency( float $amount, string $currency, bool $skip_symbol = false, array $currency_format = [] ): string {
+		$currency = strtoupper( $currency );
+
 		$formatted_amount = wc_price(
 			$amount,
 			wp_parse_args( $currency_format, self::get_currency_format_for_wc_price( $currency ) )
@@ -217,8 +219,8 @@ class WC_Payments_Captured_Event_Note {
 			$formatted_amount = preg_replace( '/[^0-9,\.]+/', '', $formatted_amount );
 		}
 
-		if ( false === strpos( $formatted_amount, strtoupper( $currency ) ) ) {
-			return $formatted_amount . ' ' . strtoupper( $currency );
+		if ( false === strpos( $formatted_amount, $currency ) ) {
+			return $formatted_amount . ' ' . $currency;
 		}
 
 		return $formatted_amount;
@@ -280,6 +282,8 @@ class WC_Payments_Captured_Event_Note {
 	 * @return string
 	 */
 	public static function format_currency( float $amount, string $currency ): string {
+		$currency = strtoupper( $currency );
+
 		$formatted = html_entity_decode(
 			wp_strip_all_tags(
 				wc_price(
@@ -307,6 +311,8 @@ class WC_Payments_Captured_Event_Note {
 	 * @return array The currency format.
 	 */
 	private static function get_currency_format_for_wc_price( string $currency ) : array {
+		$currency = strtoupper( $currency );
+
 		$currency_data                = WC_Payments::get_localization_service()->get_currency_format( $currency );
 		$currency_format_for_wc_price = [];
 		foreach ( $currency_data as $key => $format ) {
@@ -348,5 +354,117 @@ class WC_Payments_Captured_Event_Note {
 			default:
 				return '%1$s%2$s';
 		}
+	}
+
+	/**
+	 * Returns an associative array containing fee breakdown.
+	 * Keys are fee types such as base, additional-fx, etc, except for "discount" that is an associative array including more discount details.
+	 *
+	 * @return array|null
+	 */
+	public function get_fee_breakdown() {
+		$data = $this->captured_event;
+
+		if ( ! isset( $data['fee_rates']['history'] ) ) {
+			return null;
+		}
+
+		$history = $data['fee_rates']['history'];
+
+		// Hide breakdown when there's only a base fee.
+		if ( $this->is_base_fee_only() ) {
+			return null;
+		}
+
+		$fee_history_strings = [];
+
+		foreach ( $history as $fee ) {
+			$label_type = $fee['type'];
+			if ( isset( $fee['additional_type'] ) ) {
+				$label_type .= '-' . $fee['additional_type'];
+			}
+
+			$percentage_rate = (float) $fee['percentage_rate'];
+			$fixed_rate      = (int) $fee['fixed_rate'];
+			$currency        = strtoupper( $fee['currency'] );
+			$is_capped       = isset( $fee['capped'] ) && true === $fee['capped'];
+
+			$percentage_rate_formatted = self::format_fee( $percentage_rate );
+			$fix_rate_formatted        = self::format_currency(
+				WC_Payments_Utils::interpret_stripe_amount( $fixed_rate ),
+				$currency
+			);
+
+			$label = sprintf(
+				$this->fee_label_mapping( $fixed_rate, $is_capped )[ $label_type ],
+				$percentage_rate_formatted,
+				$fix_rate_formatted
+			);
+
+			if ( 'discount' === $label_type ) {
+				$fee_history_strings[ $label_type ] = [
+					'label'    => $label,
+					'variable' => sprintf(
+						/* translators: %s is a percentage number */
+						__( 'Variable fee: %s', 'woocommerce-payments' ),
+						$percentage_rate_formatted
+					) . '%',
+					'fixed'    => sprintf(
+						/* translators: %s is a monetary amount */
+						__( 'Fixed fee: %s', 'woocommerce-payments' ),
+						$fix_rate_formatted
+					),
+				];
+			} else {
+				$fee_history_strings[ $label_type ] = $label;
+			}
+		}
+
+		return $fee_history_strings;
+	}
+
+	/**
+	 * Get the mapping format for all types of fees.
+	 *
+	 * @param  int  $fixed_rate Fixed rate amount in Stripe format.
+	 * @param  bool $is_capped True if the fee is capped.
+	 *
+	 * @return array An associative array with keys are fee types, values are string formats.
+	 */
+	public function fee_label_mapping( int $fixed_rate, bool $is_capped ) {
+		$res = [];
+
+		$res['base'] = $is_capped
+			/* translators: %2$s is the capped fee */
+			? __( 'Base fee: capped at %2$s', 'woocommerce-payments' )
+			:
+			( 0 !== $fixed_rate
+				/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
+				? __( 'Base fee: %1$s%% + %2$s', 'woocommerce-payments' )
+				/* translators: %1$s% is the fee percentage */
+				: __( 'Base fee: %1$s%%', 'woocommerce-payments' )
+			);
+
+		$res['additional-international'] = 0 !== $fixed_rate
+			/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
+			? __( 'International card fee: %1$s%% + %2$s', 'woocommerce-payments' )
+			/* translators: %1$s% is the fee percentage */
+			: __( 'International card fee: %1$s%%', 'woocommerce-payments' );
+
+		$res['additional-fx'] = 0 !== $fixed_rate
+			/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
+			? __( 'Foreign exchange fee: %1$s%% + %2$s', 'woocommerce-payments' )
+			/* translators: %1$s% is the fee percentage */
+			: __( 'Foreign exchange fee: %1$s%%', 'woocommerce-payments' );
+
+		$res['additional-wcpay-subscription'] = 0 !== $fixed_rate
+			/* translators: %1$s% is the fee percentage and %2$s is the fixed rate */
+			? __( 'Subscription transaction fee: %1$s%% + %2$s', 'woocommerce-payments' )
+			/* translators: %1$s% is the fee percentage */
+			: __( 'Subscription transaction fee: %1$s%%', 'woocommerce-payments' );
+
+		$res['discount'] = __( 'Discount', 'woocommerce-payments' );
+
+		return $res;
 	}
 }
