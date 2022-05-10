@@ -1005,6 +1005,7 @@ class WC_Payments {
 				'blog_id'           => Jetpack_Options::get_option( 'id' ),
 				'blog_url'          => get_site_url(),
 				'blog_checkout_url' => wc_get_checkout_url(),
+				'blog_shop_url'     => get_permalink( wc_get_page_id( 'shop' ) ),
 				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
 			],
