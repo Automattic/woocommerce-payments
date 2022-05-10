@@ -92,6 +92,7 @@ const ManualCaptureControl = () => {
 							</Button>
 						</>
 					}
+					onRequestClose={ handleModalCancel }
 				>
 					<strong>
 						{ __(

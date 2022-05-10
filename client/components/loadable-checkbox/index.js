@@ -3,10 +3,14 @@
 /**
  * External Dependencies
  */
+import { __, sprintf } from '@wordpress/i18n';
 import React, { useEffect, useState } from 'react';
-import { CheckboxControl } from '@wordpress/components';
+import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import './style.scss';
 import classNames from 'classnames';
+import { useManualCapture } from 'wcpay/data';
+import { Icon, warning } from '@wordpress/icons';
+import Tooltip from '../tooltip';
 
 const LoadableCheckboxControl = ( {
 	label,
@@ -14,11 +18,13 @@ const LoadableCheckboxControl = ( {
 	disabled = false,
 	onChange,
 	hideLabel = false,
+	isAllowingManualCapture = false,
 	delayMsOnCheck = 0,
 	delayMsOnUncheck = 0,
 } ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const [ checkedState, setCheckedState ] = useState( checked );
+	const [ isManualCaptureEnabled ] = useManualCapture();
 
 	const handleOnChange = ( status ) => {
 		const timeout = status ? delayMsOnCheck : delayMsOnUncheck;
@@ -74,12 +80,41 @@ const LoadableCheckboxControl = ( {
 					</svg>
 				</div>
 			) }
-			<CheckboxControl
-				label={ label }
-				checked={ checkedState }
-				disabled={ disabled }
-				onChange={ ( status ) => handleOnChange( status ) }
-			/>
+			{ isManualCaptureEnabled && ! isAllowingManualCapture ? (
+				<Tooltip
+					content={ sprintf(
+						/* translators: %s: a payment method name. */
+						__(
+							'%s is not available to your customers when the "manual capture" setting is enabled.',
+							'woocommerce-payments'
+						),
+						label
+					) }
+				>
+					<div className="loadable-checkbox__icon">
+						<Icon icon={ warning } fill={ '#ffc83f' } />
+						<div className="loadable-checkbox__icon-info">
+							<VisuallyHidden>
+								{ sprintf(
+									/* translators: %s: a payment method name. */
+									__(
+										'%s cannot be enabled at checkout. Click to expand.',
+										'woocommerce-payments'
+									),
+									label
+								) }
+							</VisuallyHidden>
+						</div>
+					</div>
+				</Tooltip>
+			) : (
+				<CheckboxControl
+					label={ label }
+					checked={ checkedState }
+					disabled={ disabled }
+					onChange={ ( status ) => handleOnChange( status ) }
+				/>
+			) }
 		</div>
 	);
 };
