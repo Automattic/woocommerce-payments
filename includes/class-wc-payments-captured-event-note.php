@@ -13,6 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Utility class generating detailed captured note for successful payments.
  */
 class WC_Payments_Captured_Event_Note {
+	const HTML_BLACK_BULLET = '&#9679;';
+	const HTML_WHITE_BULLET = '&#9675;';
+	const HTML_SPACE        = '&nbsp;';
+	const HTML_BR           = '<br>';
+
 	/**
 	 * Captured event data.
 	 *
@@ -466,5 +471,70 @@ class WC_Payments_Captured_Event_Note {
 		$res['discount'] = __( 'Discount', 'woocommerce-payments' );
 
 		return $res;
+	}
+
+	/**
+	 * Generate an array including HTML formatted breakdown lines.
+	 *
+	 * @return array<string>|null
+	 */
+	public function compose_fee_break_down() {
+		$fee_history_strings = $this->get_fee_breakdown();
+
+		if ( null === $fee_history_strings ) {
+			return null;
+		}
+
+		if ( 0 === count( $fee_history_strings ) ) {
+			return null;
+		}
+
+		$res = [];
+		foreach ( $fee_history_strings as $type => $fee ) {
+			$res[] = self::HTML_BLACK_BULLET . ' ' . ( 'discount' === $type
+					? $fee['label']
+					: $fee
+				);
+
+			if ( 'discount' === $type ) {
+				$res[] = str_repeat( self::HTML_SPACE . ' ', 2 ) . self::HTML_WHITE_BULLET . ' ' . $fee['variable'];
+				$res[] = str_repeat( self::HTML_SPACE . ' ', 2 ) . self::HTML_WHITE_BULLET . ' ' . $fee['fixed'];
+			}
+		}
+
+		return $res;
+	}
+
+	/**
+	 * Generate the HTML note.
+	 *
+	 * @return string
+	 */
+	public function generate_html_note(): string {
+
+		$lines = [];
+
+		$fx_string = $this->compose_fx_string();
+		if ( null !== $fx_string ) {
+			$lines[] = $fx_string;
+		}
+
+		$lines[] = $this->compose_fee_string();
+
+		$fee_breakdown_lines = $this->compose_fee_break_down();
+		if ( null !== $fee_breakdown_lines ) {
+			$lines = array_merge( $lines, $fee_breakdown_lines );
+		}
+
+		$lines[] = $this->compose_net_string();
+
+		$html = '';
+		foreach ( $lines as $line ) {
+			$html .= self::HTML_BR . $line . PHP_EOL;
+		}
+
+		return '<div class="captured-event-details">' . PHP_EOL
+				. $html
+				. '</div>';
 	}
 }
