@@ -43,8 +43,8 @@ class WC_Payments_Order_Success_Page {
 	 * @param int $order_id the order id.
 	 */
 	public function show_woopay_payment_method_name( $order_id ) {
-		$order = new WC_Order( $order_id );
-		if ( ! $order->get_meta( 'is_woopay' ) ) {
+		$order = wc_get_order( $order_id );
+		if ( $order || ! $order->get_meta( 'is_woopay' ) ) {
 			return;
 		}
 		?>
