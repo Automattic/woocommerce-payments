@@ -71,7 +71,7 @@ class WC_Payments_Captured_Event_Note {
 		$fee_rates      = $data['fee_rates'];
 		$percentage     = $fee_rates['percentage'];
 		$fixed          = WC_Payments_Utils::interpret_stripe_amount( (int) $fee_rates['fixed'] );
-		$fixed_currency = WC_Payments_Utils::interpret_stripe_amount( (int) $fee_rates['fixed_currency'] );
+		$fixed_currency = $fee_rates['fixed_currency'];
 		$history        = $fee_rates['history'];
 
 		$fee_amount   = WC_Payments_Utils::interpret_stripe_amount( (int) $data['transaction_details']['store_fee'] );
