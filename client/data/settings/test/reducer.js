@@ -15,9 +15,6 @@ import {
 	updateAccountBusinessSupportEmail,
 	updateAccountBusinessSupportPhone,
 	updateAccountBrandingLogo,
-	updateAccountBrandingIcon,
-	updateAccountBrandingPrimaryColor,
-	updateAccountBrandingSecondaryColor,
 	updateIsPlatformCheckoutEnabled,
 	updatePlatformCheckoutCustomMessage,
 } from '../actions';
@@ -328,21 +325,6 @@ describe( 'Settings reducer tests', () => {
 				updateFunc: updateAccountBrandingLogo,
 				stateKey: 'account_branding_logo',
 				settingValue: 'Branding logo',
-			},
-			{
-				updateFunc: updateAccountBrandingIcon,
-				stateKey: 'account_branding_icon',
-				settingValue: 'Branding icon',
-			},
-			{
-				updateFunc: updateAccountBrandingPrimaryColor,
-				stateKey: 'account_branding_primary_color',
-				settingValue: 'Branding primary color',
-			},
-			{
-				updateFunc: updateAccountBrandingSecondaryColor,
-				stateKey: 'account_branding_secondary_color',
-				settingValue: 'Branding secondary color',
 			},
 		];
 

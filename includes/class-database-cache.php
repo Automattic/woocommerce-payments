@@ -87,13 +87,14 @@ class Database_Cache {
 	 * Gets a value from the cache.
 	 *
 	 * @param string $key The key to look for.
+	 * @param bool   $force If set, return from the cache without checking for expiry.
 	 *
 	 * @return mixed The cache contents.
 	 */
-	public function get( string $key ) {
+	public function get( string $key, bool $force = false ) {
 		$cache_contents = get_option( $key );
 		if ( is_array( $cache_contents ) && array_key_exists( 'data', $cache_contents ) ) {
-			if ( $this->is_expired( $key, $cache_contents ) ) {
+			if ( ! $force && $this->is_expired( $key, $cache_contents ) ) {
 				return null;
 			}
 

@@ -14,6 +14,8 @@ use WC_Payments_Token_Service;
  */
 class Ideal_Payment_Method extends UPE_Payment_Method {
 
+	const PAYMENT_METHOD_STRIPE_ID = 'ideal';
+
 	/**
 	 * Constructor for iDEAL payment method
 	 *
@@ -21,7 +23,7 @@ class Ideal_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
-		$this->stripe_id   = 'ideal';
+		$this->stripe_id   = self::PAYMENT_METHOD_STRIPE_ID;
 		$this->title       = 'iDEAL';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];

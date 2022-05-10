@@ -136,13 +136,7 @@ describe( 'Card Reader Branding Details section', () => {
 	test( 'Renders Contacts settings', () => {
 		render( <BrandingDetailsSection /> );
 
-		const logo = screen.queryAllByText( 'File Upload' );
-		expect( logo.length ).toEqual( 2 );
-
-		const primary = screen.getByText( 'Primary color' );
-		expect( primary ).toBeInTheDocument();
-
-		const secondary = screen.getByText( 'Secondary color' );
-		expect( secondary ).toBeInTheDocument();
+		const fileUploadFields = screen.queryAllByText( 'File Upload' );
+		expect( fileUploadFields.length ).toEqual( 1 );
 	} );
 } );
