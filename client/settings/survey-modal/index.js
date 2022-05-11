@@ -59,7 +59,7 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 			/>
 			<TextareaControl
 				className="comments-text-field"
-				label={ __( 'Comments (optional)', 'woocommerce-payments' ) }
+				label={ __( 'Please provide additional details to help us improve the experience', 'woocommerce-payments' ) }
 				onChange={ ( text ) => {
 					setSurveyAnswers( ( prev ) => ( {
 						...prev,
