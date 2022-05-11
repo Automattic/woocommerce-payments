@@ -224,8 +224,7 @@ class Payment_Information {
 		$cvc_confirmation = self::get_cvc_confirmation_from_request( $request );
 
 		if ( isset( $request['is_woopay'] ) && $request['is_woopay'] ) {
-			$order->add_meta_data( 'is_woopay', true );
-			$order->add_meta_data( 'last4', $request['last4'] );
+			$order->add_meta_data( 'is_woopay', true, true );
 			$order->save_meta_data();
 		}
 
