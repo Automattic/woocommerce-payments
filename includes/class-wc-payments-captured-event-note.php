@@ -38,14 +38,46 @@ class WC_Payments_Captured_Event_Note {
 			throw new Exception( 'Not a captured event' );
 		}
 
-		// TODO maybe do more check to ensure having to-be-used keys.
 		$this->captured_event = $captured_event;
+	}
+
+	/**
+	 * Generate the HTML note.
+	 *
+	 * @return string
+	 */
+	public function generate_html_note(): string {
+
+		$lines = [];
+
+		$fx_string = $this->compose_fx_string();
+		if ( null !== $fx_string ) {
+			$lines[] = $fx_string;
+		}
+
+		$lines[] = $this->compose_fee_string();
+
+		$fee_breakdown_lines = $this->compose_fee_break_down();
+		if ( null !== $fee_breakdown_lines ) {
+			$lines = array_merge( $lines, $fee_breakdown_lines );
+		}
+
+		$lines[] = $this->compose_net_string();
+
+		$html = '';
+		foreach ( $lines as $line ) {
+			$html .= self::HTML_BR . $line . PHP_EOL;
+		}
+
+		return '<div class="captured-event-details" style="line-height: 0.8;padding-top: 15px;">' . PHP_EOL
+				. $html
+				. '</div>';
 	}
 
 	/**
 	 * Generate FX string.
 	 *
-	 * @return ?string
+	 * @return string|null
 	 */
 	public function compose_fx_string() {
 		if ( ! $this->is_fx_event() ) {
@@ -61,7 +93,7 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
-	 * Generate fee string line.
+	 * Generate fee string.
 	 *
 	 * @return string
 	 */
@@ -101,9 +133,40 @@ class WC_Payments_Captured_Event_Note {
 		);
 	}
 
+	/**
+	 * Generate an array including HTML formatted breakdown lines.
+	 *
+	 * @return array<string>|null
+	 */
+	public function compose_fee_break_down() {
+		$fee_history_strings = $this->get_fee_breakdown();
+
+		if ( null === $fee_history_strings ) {
+			return null;
+		}
+
+		if ( 0 === count( $fee_history_strings ) ) {
+			return null;
+		}
+
+		$res = [];
+		foreach ( $fee_history_strings as $type => $fee ) {
+			$res[] = self::HTML_BLACK_BULLET . ' ' . ( 'discount' === $type
+					? $fee['label']
+					: $fee
+				);
+
+			if ( 'discount' === $type ) {
+				$res[] = str_repeat( self::HTML_SPACE . ' ', 2 ) . self::HTML_WHITE_BULLET . ' ' . $fee['variable'];
+				$res[] = str_repeat( self::HTML_SPACE . ' ', 2 ) . self::HTML_WHITE_BULLET . ' ' . $fee['fixed'];
+			}
+		}
+
+		return $res;
+	}
 
 	/**
-	 * Generate net string line.
+	 * Generate net string.
 	 *
 	 * @return string
 	 */
@@ -117,248 +180,6 @@ class WC_Payments_Captured_Event_Note {
 			__( 'Net deposit: %s', 'woocommerce-payments' ),
 			self::format_explicit_currency( $net, $data['store_currency'] )
 		);
-	}
-
-	/**
-	 * Check if it's a FX event.
-	 *
-	 * @return bool
-	 */
-	public function is_fx_event(): bool {
-		$customer_currency = $this->captured_event['transaction_details']['customer_currency'] ?? null;
-		$store_currency    = $this->captured_event['transaction_details']['store_currency'] ?? null;
-
-		return ! (
-			is_null( $customer_currency )
-			|| is_null( $store_currency )
-			|| $customer_currency === $store_currency
-		);
-	}
-
-	/**
-	 * Return a given decimal fee as a percentage with a maximum of 3 decimal places.
-	 *
-	 * @param  float $percentage Percentage as float.
-	 *
-	 * @return string
-	 */
-	public function format_fee( float $percentage ): string {
-		return (string) round( $percentage * 100, 3 );
-	}
-
-	/**
-	 * Return a boolean indicating whether only fee applied is the base fee.
-	 *
-	 * @return bool True if the only applied fee is the base fee
-	 */
-	public function is_base_fee_only(): bool {
-		if ( ! isset( $this->captured_event['fee_rates']['history'] ) ) {
-			return false;
-		}
-
-		$history = $this->captured_event['fee_rates']['history'];
-
-		return 1 === count( $history ) && 'base' === $history[0]['type'];
-	}
-	/**
-	 * Format FX string based on the two provided currencies.
-	 *
-	 * @param  string $from_currency 3-letter code for original currency.
-	 * @param  int    $from_amount Amount (Stripe-type) for original currency.
-	 * @param  string $to_currency 3-letter code for converted currency.
-	 * @param  int    $to_amount Amount (Stripe-type) for converted currency.
-	 *
-	 * @return string Formatted FX string.
-	 */
-	public function format_fx(
-		string $from_currency,
-		int $from_amount,
-		string $to_currency,
-		int $to_amount
-	): string {
-
-		$exchange_rate = (float) ( 0 !== $from_amount
-			? $to_amount / $from_amount
-			: 0 );
-
-		if ( WC_Payments_Utils::is_zero_decimal_currency( strtolower( $to_currency ) ) ) {
-			$exchange_rate *= 100;
-		}
-
-		if ( WC_Payments_Utils::is_zero_decimal_currency( strtolower( $from_currency ) ) ) {
-			$exchange_rate /= 100;
-		}
-
-		$to_display_amount = WC_Payments_Utils::interpret_stripe_amount( $to_amount, $to_currency );
-
-		return sprintf(
-			'%1$s → %2$s: %3$s',
-			self::format_explicit_currency_with_base( 1, $from_currency, $to_currency, true ),
-			self::format_exchange_rate( $exchange_rate, $to_currency ),
-			self::format_explicit_currency( $to_display_amount, $to_currency, false )
-		);
-
-	}
-
-	/**
-	 * Format amount according to the given currency with the currency code in the right.
-	 *
-	 * @param  float  $amount          Amount.
-	 * @param  string $currency       3-letter currency code.
-	 * @param  bool   $skip_symbol      Optional. If true, trims off the short currency symbol. Default false.
-	 * @param  array  $currency_format Optional. Additional currency format for wc_price.
-	 *
-	 * @return string Formatted currency representation
-	 */
-	public static function format_explicit_currency( float $amount, string $currency, bool $skip_symbol = false, array $currency_format = [] ): string {
-		$currency = strtoupper( $currency );
-
-		$formatted_amount = wc_price(
-			$amount,
-			wp_parse_args( $currency_format, self::get_currency_format_for_wc_price( $currency ) )
-		);
-
-		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ) );
-
-		if ( $skip_symbol ) {
-			$formatted_amount = preg_replace( '/[^0-9,\.]+/', '', $formatted_amount );
-		}
-
-		if ( false === strpos( $formatted_amount, $currency ) ) {
-			return $formatted_amount . ' ' . $currency;
-		}
-
-		return $formatted_amount;
-	}
-
-	/**
-	 * Format exchange rate.
-	 *
-	 * @param  float  $rate Exchange rate.
-	 * @param  string $currency 3-letter currency code.
-	 *
-	 * @return string
-	 */
-	public static function format_exchange_rate( float $rate, string $currency ): string {
-		$num_decimals = $rate > 1 ? 5 : 6;
-		$formatted    = self::format_explicit_currency( $rate, $currency, true, [ 'decimals' => $num_decimals ] );
-
-		$func_remove_ending_zeros = function( $str ) {
-			return rtrim( $str, '0' );
-		};
-
-		// Remove ending zeroes after the decimal separator if they exist.
-		return implode(
-			' ',
-			array_map(
-				$func_remove_ending_zeros,
-				explode( ' ', $formatted )
-			)
-		);
-	}
-
-	/**
-	 * Format amount for a given currency but according to the base currency's format.
-	 *
-	 * @param  float  $amount Amount.
-	 * @param  string $currency 3-letter currency code.
-	 * @param  string $base_currency 3-letter base currency code.
-	 * @param  bool   $skip_symbol Optional. If true, trims off the short currency symbol. Default false.
-	 *
-	 * @return string
-	 */
-	public static function format_explicit_currency_with_base( float $amount, string $currency, string $base_currency, bool $skip_symbol = false ) {
-		$custom_format = self::get_currency_format_for_wc_price( $base_currency );
-		unset( $custom_format['currency'] );
-
-		if ( 0 === self::get_currency_format_for_wc_price( $currency )['decimals'] ) {
-			unset( $custom_format['decimals'] );
-		}
-
-		return self::format_explicit_currency( $amount, $currency, $skip_symbol, $custom_format );
-	}
-
-	/**
-	 * Format an amount according to the given currency format.
-	 *
-	 * @param  float  $amount   Amount to format.
-	 * @param  string $currency 3-letter currency code.
-	 *
-	 * @return string
-	 */
-	public static function format_currency( float $amount, string $currency ): string {
-		$currency = strtoupper( $currency );
-
-		$formatted = html_entity_decode(
-			wp_strip_all_tags(
-				wc_price(
-					$amount,
-					self::get_currency_format_for_wc_price( $currency )
-				)
-			)
-		);
-
-		if ( $amount >= 0 ) {
-			return $formatted;
-		}
-
-		// Handle the subtle display difference for the negative amount between PHP wc_price `-$0.74` vs JavaSript formatCurrency `$-0.74` for the same input.
-		// Remove the minus sign, and then move it right before the number.
-		$formatted = str_replace( '-', '', $formatted );
-		return preg_replace( '/([0-9,\.]+)/', '-$1', $formatted );
-	}
-
-	/**
-	 * Transform the currency format returned from localization service into
-	 * the format that can be used by wc_price
-	 *
-	 * @param string $currency the currency code.
-	 * @return array The currency format.
-	 */
-	private static function get_currency_format_for_wc_price( string $currency ) : array {
-		$currency = strtoupper( $currency );
-
-		$currency_data                = WC_Payments::get_localization_service()->get_currency_format( $currency );
-		$currency_format_for_wc_price = [];
-		foreach ( $currency_data as $key => $format ) {
-			switch ( $key ) {
-				case 'thousand_sep':
-					$currency_format_for_wc_price['thousand_separator'] = $format;
-					break;
-				case 'decimal_sep':
-					$currency_format_for_wc_price['decimal_separator'] = $format;
-					break;
-				case 'num_decimals':
-					$currency_format_for_wc_price['decimals'] = $format;
-					break;
-				case 'currency_pos':
-					$currency_format_for_wc_price['price_format'] = self::get_woocommerce_price_format( $format );
-					break;
-			}
-		}
-		$currency_format_for_wc_price['currency'] = $currency;
-		return $currency_format_for_wc_price;
-	}
-
-	/**
-	 * Returns the currency format
-	 *
-	 * @param string $currency_pos currency symbol position.
-	 * @return string The currency format.
-	 */
-	private static function get_woocommerce_price_format( string $currency_pos ): string {
-		switch ( $currency_pos ) {
-			case 'left':
-				return '%1$s%2$s';
-			case 'right':
-				return '%2$s%1$s';
-			case 'left_space':
-				return '%1$s&nbsp;%2$s';
-			case 'right_space':
-				return '%2$s&nbsp;%1$s';
-			default:
-				return '%1$s%2$s';
-		}
 	}
 
 	/**
@@ -429,6 +250,37 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
+	 * Check if this is a FX event.
+	 *
+	 * @return bool
+	 */
+	private function is_fx_event(): bool {
+		$customer_currency = $this->captured_event['transaction_details']['customer_currency'] ?? null;
+		$store_currency    = $this->captured_event['transaction_details']['store_currency'] ?? null;
+
+		return ! (
+			is_null( $customer_currency )
+			|| is_null( $store_currency )
+			|| $customer_currency === $store_currency
+		);
+	}
+
+	/**
+	 * Return a boolean indicating whether only fee applied is the base fee.
+	 *
+	 * @return bool True if the only applied fee is the base fee
+	 */
+	private function is_base_fee_only(): bool {
+		if ( ! isset( $this->captured_event['fee_rates']['history'] ) ) {
+			return false;
+		}
+
+		$history = $this->captured_event['fee_rates']['history'];
+
+		return 1 === count( $history ) && 'base' === $history[0]['type'];
+	}
+
+	/**
 	 * Get the mapping format for all types of fees.
 	 *
 	 * @param  int  $fixed_rate Fixed rate amount in Stripe format.
@@ -436,7 +288,7 @@ class WC_Payments_Captured_Event_Note {
 	 *
 	 * @return array An associative array with keys are fee types, values are string formats.
 	 */
-	public function fee_label_mapping( int $fixed_rate, bool $is_capped ) {
+	private function fee_label_mapping( int $fixed_rate, bool $is_capped ) {
 		$res = [];
 
 		$res['base'] = $is_capped
@@ -474,67 +326,220 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
-	 * Generate an array including HTML formatted breakdown lines.
+	 * Return a given decimal fee as a percentage with a maximum of 3 decimal places.
 	 *
-	 * @return array<string>|null
-	 */
-	public function compose_fee_break_down() {
-		$fee_history_strings = $this->get_fee_breakdown();
-
-		if ( null === $fee_history_strings ) {
-			return null;
-		}
-
-		if ( 0 === count( $fee_history_strings ) ) {
-			return null;
-		}
-
-		$res = [];
-		foreach ( $fee_history_strings as $type => $fee ) {
-			$res[] = self::HTML_BLACK_BULLET . ' ' . ( 'discount' === $type
-					? $fee['label']
-					: $fee
-				);
-
-			if ( 'discount' === $type ) {
-				$res[] = str_repeat( self::HTML_SPACE . ' ', 2 ) . self::HTML_WHITE_BULLET . ' ' . $fee['variable'];
-				$res[] = str_repeat( self::HTML_SPACE . ' ', 2 ) . self::HTML_WHITE_BULLET . ' ' . $fee['fixed'];
-			}
-		}
-
-		return $res;
-	}
-
-	/**
-	 * Generate the HTML note.
+	 * @param  float $percentage Percentage as float.
 	 *
 	 * @return string
 	 */
-	public function generate_html_note(): string {
+	private function format_fee( float $percentage ): string {
+		return (string) round( $percentage * 100, 3 );
+	}
 
-		$lines = [];
+	/**
+	 * Format FX string based on the two provided currencies.
+	 *
+	 * @param  string $from_currency 3-letter code for original currency.
+	 * @param  int    $from_amount Amount (Stripe-type) for original currency.
+	 * @param  string $to_currency 3-letter code for converted currency.
+	 * @param  int    $to_amount Amount (Stripe-type) for converted currency.
+	 *
+	 * @return string Formatted FX string.
+	 */
+	private function format_fx(
+		string $from_currency,
+		int $from_amount,
+		string $to_currency,
+		int $to_amount
+	): string {
 
-		$fx_string = $this->compose_fx_string();
-		if ( null !== $fx_string ) {
-			$lines[] = $fx_string;
+		$exchange_rate = (float) ( 0 !== $from_amount
+			? $to_amount / $from_amount
+			: 0 );
+
+		if ( WC_Payments_Utils::is_zero_decimal_currency( strtolower( $to_currency ) ) ) {
+			$exchange_rate *= 100;
 		}
 
-		$lines[] = $this->compose_fee_string();
-
-		$fee_breakdown_lines = $this->compose_fee_break_down();
-		if ( null !== $fee_breakdown_lines ) {
-			$lines = array_merge( $lines, $fee_breakdown_lines );
+		if ( WC_Payments_Utils::is_zero_decimal_currency( strtolower( $from_currency ) ) ) {
+			$exchange_rate /= 100;
 		}
 
-		$lines[] = $this->compose_net_string();
+		$to_display_amount = WC_Payments_Utils::interpret_stripe_amount( $to_amount, $to_currency );
 
-		$html = '';
-		foreach ( $lines as $line ) {
-			$html .= self::HTML_BR . $line . PHP_EOL;
+		return sprintf(
+			'%1$s → %2$s: %3$s',
+			self::format_explicit_currency_with_base( 1, $from_currency, $to_currency, true ),
+			self::format_exchange_rate( $exchange_rate, $to_currency ),
+			self::format_explicit_currency( $to_display_amount, $to_currency, false )
+		);
+
+	}
+
+	/**
+	 * Format exchange rate.
+	 *
+	 * @param  float  $rate Exchange rate.
+	 * @param  string $currency 3-letter currency code.
+	 *
+	 * @return string
+	 */
+	private function format_exchange_rate( float $rate, string $currency ): string {
+		$num_decimals = $rate > 1 ? 5 : 6;
+		$formatted    = self::format_explicit_currency( $rate, $currency, true, [ 'decimals' => $num_decimals ] );
+
+		$func_remove_ending_zeros = function( $str ) {
+			return rtrim( $str, '0' );
+		};
+
+		// Remove ending zeroes after the decimal separator if they exist.
+		return implode(
+			' ',
+			array_map(
+				$func_remove_ending_zeros,
+				explode( ' ', $formatted )
+			)
+		);
+	}
+
+	/**
+	 * Format amount for a given currency but according to the base currency's format.
+	 *
+	 * @param  float  $amount Amount.
+	 * @param  string $currency 3-letter currency code.
+	 * @param  string $base_currency 3-letter base currency code.
+	 * @param  bool   $skip_symbol Optional. If true, trims off the short currency symbol. Default false.
+	 *
+	 * @return string
+	 */
+	private function format_explicit_currency_with_base( float $amount, string $currency, string $base_currency, bool $skip_symbol = false ) {
+		$custom_format = self::get_currency_format_for_wc_price( $base_currency );
+		unset( $custom_format['currency'] );
+
+		if ( 0 === self::get_currency_format_for_wc_price( $currency )['decimals'] ) {
+			unset( $custom_format['decimals'] );
 		}
 
-		return '<div class="captured-event-details" style="line-height: 0.8;padding-top: 15px;">' . PHP_EOL
-				. $html
-				. '</div>';
+		return self::format_explicit_currency( $amount, $currency, $skip_symbol, $custom_format );
+	}
+
+	/**
+	 * TODO: may move to Utils?
+	 *
+	 * Format amount according to the given currency with the currency code in the right.
+	 *
+	 * @param  float  $amount          Amount.
+	 * @param  string $currency       3-letter currency code.
+	 * @param  bool   $skip_symbol      Optional. If true, trims off the short currency symbol. Default false.
+	 * @param  array  $currency_format Optional. Additional currency format for wc_price.
+	 *
+	 * @return string Formatted currency representation
+	 */
+	public static function format_explicit_currency( float $amount, string $currency, bool $skip_symbol = false, array $currency_format = [] ): string {
+		$currency = strtoupper( $currency );
+
+		$formatted_amount = wc_price(
+			$amount,
+			wp_parse_args( $currency_format, self::get_currency_format_for_wc_price( $currency ) )
+		);
+
+		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ) );
+
+		if ( $skip_symbol ) {
+			$formatted_amount = preg_replace( '/[^0-9,\.]+/', '', $formatted_amount );
+		}
+
+		if ( false === strpos( $formatted_amount, $currency ) ) {
+			return $formatted_amount . ' ' . $currency;
+		}
+
+		return $formatted_amount;
+	}
+
+	/**
+	 * TODO: may move to Utils?
+	 * Format an amount according to the given currency format.
+	 *
+	 * @param  float  $amount   Amount to format.
+	 * @param  string $currency 3-letter currency code.
+	 *
+	 * @return string
+	 */
+	public static function format_currency( float $amount, string $currency ): string {
+		$currency = strtoupper( $currency );
+
+		$formatted = html_entity_decode(
+			wp_strip_all_tags(
+				wc_price(
+					$amount,
+					self::get_currency_format_for_wc_price( $currency )
+				)
+			)
+		);
+
+		if ( $amount >= 0 ) {
+			return $formatted;
+		}
+
+		// Handle the subtle display difference for the negative amount between PHP wc_price `-$0.74` vs JavaScript formatCurrency `$-0.74` for the same input.
+		// Remove the minus sign, and then move it right before the number.
+		$formatted = str_replace( '-', '', $formatted );
+		return preg_replace( '/([0-9,\.]+)/', '-$1', $formatted );
+	}
+
+	/**
+	 * TODO: may move to Utils?
+	 * Transform the currency format returned from localization service into
+	 * the format that can be used by wc_price
+	 *
+	 * @param string $currency the currency code.
+	 * @return array The currency format.
+	 */
+	public static function get_currency_format_for_wc_price( string $currency ) : array {
+		$currency = strtoupper( $currency );
+
+		$currency_data                = WC_Payments::get_localization_service()->get_currency_format( $currency );
+		$currency_format_for_wc_price = [];
+		foreach ( $currency_data as $key => $format ) {
+			switch ( $key ) {
+				case 'thousand_sep':
+					$currency_format_for_wc_price['thousand_separator'] = $format;
+					break;
+				case 'decimal_sep':
+					$currency_format_for_wc_price['decimal_separator'] = $format;
+					break;
+				case 'num_decimals':
+					$currency_format_for_wc_price['decimals'] = $format;
+					break;
+				case 'currency_pos':
+					$currency_format_for_wc_price['price_format'] = self::get_woocommerce_price_format( $format );
+					break;
+			}
+		}
+		$currency_format_for_wc_price['currency'] = $currency;
+		return $currency_format_for_wc_price;
+	}
+
+	/**
+	 * TODO: may move to Utils?
+	 * Return the currency format based on the symbol position.
+	 * Similar to get_woocommerce_price_format but with an input.
+	 *
+	 * @param string $currency_pos currency symbol position.
+	 * @return string The currency format.
+	 */
+	public static function get_woocommerce_price_format( string $currency_pos ): string {
+		switch ( $currency_pos ) {
+			case 'left':
+				return '%1$s%2$s';
+			case 'right':
+				return '%2$s%1$s';
+			case 'left_space':
+				return '%1$s&nbsp;%2$s';
+			case 'right_space':
+				return '%2$s&nbsp;%1$s';
+			default:
+				return '%1$s%2$s';
+		}
 	}
 }
