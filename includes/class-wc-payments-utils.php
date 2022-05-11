@@ -742,6 +742,10 @@ class WC_Payments_Utils {
 			)
 		);
 
+		// Replace the nbsp Unicode character from html_entity_decode with the normal space character.
+		// See https://stackoverflow.com/questions/40724543/how-to-replace-decoded-non-breakable-space-nbsp.
+		$formatted = str_replace( "\xc2\xa0", ' ', $formatted );
+
 		if ( $amount >= 0 ) {
 			return $formatted;
 		}
@@ -777,6 +781,10 @@ class WC_Payments_Utils {
 		);
 
 		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ) );
+
+		// Replace the nbsp Unicode character from html_entity_decode with the normal space character.
+		// See https://stackoverflow.com/questions/40724543/how-to-replace-decoded-non-breakable-space-nbsp.
+		$formatted_amount = str_replace( "\xc2\xa0", ' ', $formatted_amount );
 
 		if ( $skip_symbol ) {
 			$formatted_amount = preg_replace( '/[^0-9,\.]+/', '', $formatted_amount );
