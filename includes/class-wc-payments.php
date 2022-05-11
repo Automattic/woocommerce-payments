@@ -1019,7 +1019,7 @@ class WC_Payments {
 			],
 		];
 
-		$response_array     = wp_remote_request( $url, $args );
+		$response_array     = Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
 		$response_body_json = wp_remote_retrieve_body( $response_array );
 
 		Logger::log( $response_body_json );
