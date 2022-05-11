@@ -852,8 +852,12 @@ class WC_Payments_Admin {
 		<div class="wc-payment-gateway-method-name-woopay-wrapper">
 			<?php echo esc_html_e( 'Paid with', 'woocommerce-payments' ) . ' '; ?>
 			<img src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
-			<?php echo esc_html_e( 'Card ending in', 'woocommerce-payments' ) . ' '; ?>
-			<?php echo esc_html( $order->get_meta( 'last4' ) ); ?>
+			<?php
+			if ( $order->get_meta( 'last4' ) ) {
+				echo esc_html_e( 'Card ending in', 'woocommerce-payments' ) . ' ';
+				echo esc_html( $order->get_meta( 'last4' ) );
+			}
+			?>
 		</div>
 
 		<?php
