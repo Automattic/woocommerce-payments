@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Order_Service
+ * Class WC_Payments_Order_Success_Page
  *
  * @package WooCommerce\Payments
  */
