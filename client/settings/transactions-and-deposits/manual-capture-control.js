@@ -94,7 +94,7 @@ const ManualCaptureControl = () => {
 					}
 					onRequestClose={ handleModalCancel }
 				>
-					<strong>
+					<strong data-testid="manual-capture-confirmation-text">
 						{ __(
 							'Are you sure you want to enable manual capture of payments?',
 							'woocommerce-payments'

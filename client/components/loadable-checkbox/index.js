@@ -93,7 +93,10 @@ const LoadableCheckboxControl = ( {
 				>
 					<div className="loadable-checkbox__icon">
 						<Icon icon={ warning } fill={ '#ffc83f' } />
-						<div className="loadable-checkbox__icon-info">
+						<div
+							className="loadable-checkbox__icon-warning"
+							data-testid="loadable-checkbox-icon-warning"
+						>
 							<VisuallyHidden>
 								{ sprintf(
 									/* translators: %s: a payment method name. */
