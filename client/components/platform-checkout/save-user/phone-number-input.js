@@ -16,7 +16,6 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 		document.getElementById( 'billing_phone' )?.value ?? ''
 	);
 	const [ inputInstance, setInputInstance ] = useState( null );
-	const [ countryCode, setCountryCode ] = useState( null );
 	const [ isValid, setIsValid ] = useState( true );
 
 	const handlePhoneNumberInputChange = ( e ) => {
@@ -82,7 +81,6 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 		);
 
 		const handleCountryChange = () => {
-			setCountryCode( '+' + iti.getSelectedCountryData().dialCode );
 			handlePhoneNumberChange( iti.getNumber() );
 		};
 
@@ -95,7 +93,12 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 				utilsScript: utils,
 			} );
 			setInputInstance( iti );
-			setCountryCode( '+' + iti.getSelectedCountryData().dialCode );
+			setInputValue( ( currentInputValue ) =>
+				currentInputValue.replace(
+					'+' + iti.getSelectedCountryData().dialCode,
+					''
+				)
+			);
 
 			// Focus the phone number input when the component loads.
 			input.focus();
@@ -112,7 +115,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 				);
 			}
 		};
-	}, [ handlePhoneNumberChange, setCountryCode ] );
+	}, [ handlePhoneNumberChange ] );
 
 	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
 	// alters the DOM and we'll get warnings about "removing content without using React."
@@ -126,7 +129,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 				) }
 				label={ __( 'Mobile phone number', 'woocommerce-payments' ) }
 				name="platform_checkout_user_phone_field[no-country-code]"
-				value={ inputValue.replace( countryCode, '' ) }
+				value={ inputValue }
 				onChange={ handlePhoneNumberInputChange }
 				onBlur={ handlePhoneNumberValidation }
 				className={
