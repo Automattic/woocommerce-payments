@@ -25,9 +25,14 @@ jest.mock( '../../../data', () => ( {
 	usePlatformCheckoutCustomMessage: jest
 		.fn()
 		.mockReturnValue( [ 'test', jest.fn() ] ),
+	useAccountBrandingLogo: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+} ) );
+
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );

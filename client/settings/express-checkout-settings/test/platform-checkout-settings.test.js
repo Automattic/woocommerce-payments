@@ -13,11 +13,17 @@ import PlatformCheckoutSettings from '../platform-checkout-settings';
 import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
+	useAccountBrandingLogo,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
 	usePlatformCheckoutEnabledSettings: jest.fn(),
 	usePlatformCheckoutCustomMessage: jest.fn(),
+	useAccountBrandingLogo: jest.fn(),
+} ) );
+
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
 } ) );
 
 const getMockPlatformCheckoutEnabledSettings = (
@@ -38,6 +44,10 @@ describe( 'PlatformCheckoutSettings', () => {
 
 		usePlatformCheckoutCustomMessage.mockReturnValue(
 			getMockPlatformCheckoutCustomMessage( '', jest.fn() )
+		);
+
+		useAccountBrandingLogo.mockReturnValue(
+			getMockPlatformCheckoutCustomMessage( null, jest.fn() )
 		);
 	} );
 
