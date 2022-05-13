@@ -79,7 +79,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 
 		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
 			$platform_checkout_config = [
-				'platformCheckoutHost' => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://woo.app',
+				'platformCheckoutHost' => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
 			];
 		}
 

@@ -986,7 +986,7 @@ class WC_Payments {
 
 		$account_id = self::get_account_service()->get_stripe_account_id();
 
-		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://woo.app';
+		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 
 		$body = [
