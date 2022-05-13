@@ -1267,6 +1267,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $payment_needed ) {
 			$payment_method_details = $intent->get_payment_method_details();
 			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+
+			if ( $order->get_meta( 'is_woopay' ) && 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
+				$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
+				$order->save_meta_data();
+			}
 		} else {
 			$payment_method_details = false;
 			$payment_method_options = isset( $intent['payment_method_options'] ) ? array_keys( $intent['payment_method_options'] ) : null;
