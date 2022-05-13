@@ -61,6 +61,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Secrets created"
 
 	step "Starting SERVER containers"
+	redirect_output docker builder prune -f
 	redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
@@ -78,6 +79,11 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	step "Configuring server with stripe account"
 	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
+
+	step "Starting webhook listener in background"
+	cd "$SERVER_PATH"
+	./local/bin/listen-to-webhooks.sh &
+	step "Webhook listener started"
 fi
 
 cd "$cwd"

@@ -9,6 +9,7 @@ export SERVER_PATH="$E2E_ROOT/deps/wcp-server"
 export DEV_TOOLS_DIR="wcp-dev-tools"
 export DEV_TOOLS_PATH="$E2E_ROOT/deps/$DEV_TOOLS_DIR"
 export WP_CONTAINER="wcp_e2e_wordpress"
+export DEBUG=${DEBUG-true}
 
 step() {
 	echo
