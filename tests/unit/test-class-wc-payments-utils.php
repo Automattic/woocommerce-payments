@@ -478,7 +478,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		];
 
 		$eur_format = [
-			'price_format'       => '%2$s&nbsp;%1$s',
+			'price_format'       => '%2$s %1$s',
 			'thousand_separator' => '.',
 			'decimal_separator'  => ',',
 			'decimals'           => 2,
@@ -487,7 +487,7 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 
 		// Decimal currency.
 		$vnd_format = [
-			'price_format'       => '%2$s&nbsp;%1$s',
+			'price_format'       => '%2$s %1$s',
 			'thousand_separator' => '.',
 			'decimal_separator'  => ',',
 			'decimals'           => 0,
