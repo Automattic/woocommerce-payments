@@ -234,6 +234,8 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	if [[ -n $CI ]]; then
 		DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 	fi
+
+	echo "Redirecting API requests to http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
 	cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
 
 	echo "Setting Jetpack blog_id"
