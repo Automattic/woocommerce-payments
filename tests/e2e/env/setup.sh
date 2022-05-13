@@ -82,7 +82,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	step "Starting webhook listener in background"
 	cd "$SERVER_PATH"
-	./local/bin/listen-to-webhooks.sh &
+	nohup ./local/bin/listen-to-webhooks.sh &
 	step "Webhook listener started"
 fi
 
@@ -245,6 +245,9 @@ else
 	echo "Setting Jetpack blog_id"
 	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_BLOG_TOKEN" --user_token="$E2E_USER_TOKEN"
 fi
+
+echo "Refresh WCPay Account Cache"
+cli wp wcpay_dev clear_cache
 
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	echo "Install and activate the latest release of WooCommerce Subscriptions"
