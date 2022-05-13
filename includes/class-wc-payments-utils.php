@@ -673,17 +673,19 @@ class WC_Payments_Utils {
 	 * @return string The currency format.
 	 */
 	public static function get_woocommerce_price_format( string $currency_pos ): string {
+		$default_left = '%1$s%2$s';
+
 		switch ( $currency_pos ) {
 			case 'left':
-				return '%1$s%2$s';
+				return $default_left;
 			case 'right':
 				return '%2$s%1$s';
 			case 'left_space':
-				return '%1$s&nbsp;%2$s';
+				return '%1$s %2$s';
 			case 'right_space':
-				return '%2$s&nbsp;%1$s';
+				return '%2$s %1$s';
 			default:
-				return '%1$s%2$s';
+				return $default_left;
 		}
 	}
 
@@ -742,10 +744,6 @@ class WC_Payments_Utils {
 			)
 		);
 
-		// Replace the nbsp Unicode character from html_entity_decode with the normal space character.
-		// See https://stackoverflow.com/questions/40724543/how-to-replace-decoded-non-breakable-space-nbsp.
-		$formatted = str_replace( "\xc2\xa0", ' ', $formatted );
-
 		if ( $amount >= 0 ) {
 			return $formatted;
 		}
@@ -781,10 +779,6 @@ class WC_Payments_Utils {
 		);
 
 		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ) );
-
-		// Replace the nbsp Unicode character from html_entity_decode with the normal space character.
-		// See https://stackoverflow.com/questions/40724543/how-to-replace-decoded-non-breakable-space-nbsp.
-		$formatted_amount = str_replace( "\xc2\xa0", ' ', $formatted_amount );
 
 		if ( $skip_symbol ) {
 			$formatted_amount = preg_replace( '/[^0-9,\.]+/', '', $formatted_amount );
