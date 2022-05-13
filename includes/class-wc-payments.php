@@ -1019,8 +1019,29 @@ class WC_Payments {
 			],
 		];
 
-		$response_array     = Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
-		$response_body_json = wp_remote_retrieve_body( $response_array );
+		/**
+		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
+		 *
+		 * @psalm-suppress UndefinedDocblockClass
+		 */
+		$response = Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
+
+		if ( is_wp_error( $response ) || ! is_array( $response ) ) {
+			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			// phpcs:ignore
+			/**
+			 * @psalm-suppress UndefinedDocblockClass
+			 */
+			$message = sprintf(
+				// translators: %1: original error message.
+				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
+				$response->get_error_message()
+			);
+			// Respond with same message platform would respond with on failure.
+			$response_body_json = wp_json_encode( [ 'result' => 'failure' ] );
+		} else {
+			$response_body_json = wp_remote_retrieve_body( $response );
+		}
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
