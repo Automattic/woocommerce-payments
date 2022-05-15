@@ -81,9 +81,8 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
 
 	step "Starting webhook listener in background"
-	cd "$SERVER_PATH"
-	nohup ./local/bin/listen-to-webhooks.sh &
-	step "Webhook listener started"
+	docker-compose exec -d -u www-data wordpress \
+	stripe listen --api-key $E2E_WCPAY_STRIPE_TEST_SECRET_KEY --forward-to http://localhost/wp-json/wpcom/v2/wcpay/webhook/dev
 fi
 
 cd "$cwd"
