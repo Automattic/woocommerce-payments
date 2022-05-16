@@ -13,8 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Utility class generating detailed captured note for successful payments.
  */
 class WC_Payments_Captured_Event_Note {
-	const HTML_BLACK_BULLET = '&#9679;';
-	const HTML_WHITE_BULLET = '&#9675;';
+	const HTML_BLACK_BULLET = '<span style="font-size: 7px;vertical-align: middle;">&#9679;</span>';
+	const HTML_WHITE_BULLET = '<span style="font-size: 7px;vertical-align: middle;">&#9675;</span>';
 	const HTML_SPACE        = '&nbsp;';
 	const HTML_BR           = '<br>';
 
