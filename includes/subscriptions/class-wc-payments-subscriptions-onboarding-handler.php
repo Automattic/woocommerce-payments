@@ -195,7 +195,8 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			'wcpay-subscription-product-onboarding-modal',
 			'wcpaySubscriptionProductOnboardingModal',
 			[
-				'connectUrl' => WC_Payments_Account::get_connect_url( 'WC_SUBSCRIPTIONS_PUBLISH_PRODUCT_' . $post->ID ),
+				'connectUrl'  => WC_Payments_Account::get_connect_url( 'WC_SUBSCRIPTIONS_PUBLISH_PRODUCT_' . $post->ID ),
+				'pluginScope' => ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '6.5', '>=' ) ) ? 'woocommerce-admin' : 'woocommerce',
 			]
 		);
 
@@ -246,6 +247,14 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			$script_asset['dependencies'],
 			WC_Payments::get_file_version( 'dist/subscription-product-onboarding-toast.js' ),
 			true
+		);
+
+		wp_localize_script(
+			'wcpay-subscription-product-onboarding-toast',
+			'wcpaySubscriptionProductOnboardingToast',
+			[
+				'pluginScope' => ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '6.5', '>=' ) ) ? 'woocommerce-admin' : 'woocommerce',
+			]
 		);
 
 		wp_enqueue_script( 'wcpay-subscription-product-onboarding-toast' );
