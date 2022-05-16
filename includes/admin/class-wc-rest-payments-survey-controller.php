@@ -88,15 +88,9 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function submit_survey( WP_REST_Request $request ): WP_REST_Response {
-		$cancellation_comments = '';
-		$cancellation_reason   = '';
-		if ( $request->has_param( 'why-disable' ) ) {
-			$cancellation_reason = $request->get_param( 'why-disable' );
-		}
-
-		if ( $request->has_param( 'comments' ) ) {
-			$cancellation_comments = $request->get_param( 'comments' );
-		}
+		$cancellation_comments = $request->get_param( 'why-disable' ) ?? '';
+		$cancellation_reason   = $request->get_param( 'comments' ) ?? '';
+		$cancellation_ssr      = $request->get_param( 'comments' ) ?? '';
 
 		if ( empty( $cancellation_comments ) && empty( $cancellation_reason ) ) {
 			return new WP_REST_Response(
@@ -131,6 +125,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 				'survey_responses' => [
 					'why-disable' => $cancellation_reason,
 					'comments'    => [ 'text' => $cancellation_comments ],
+					'ssr'         => [ 'text' => $cancellation_ssr ],
 				],
 			]
 		);
