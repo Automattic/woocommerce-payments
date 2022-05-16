@@ -121,7 +121,7 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 			],
 			[
 				'site_id'          => $this->http_client->get_blog_id(),
-				'survey_id'        => 'wcpay-upe-disable-early-access',
+				'survey_id'        => 'wcpay-upe-disable-early-access-2022-may',
 				'survey_responses' => [
 					'why-disable' => $cancellation_reason,
 					'comments'    => [ 'text' => $cancellation_comments ],

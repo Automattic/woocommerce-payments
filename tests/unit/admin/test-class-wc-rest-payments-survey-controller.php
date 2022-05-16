@@ -63,7 +63,7 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 					$this->arrayHasKey( 'survey_responses' ),
 					$this->callback(
 						function ( $argument ) {
-							return 'wcpay-upe-disable-early-access' === $argument['survey_id'];
+							return 'wcpay-upe-disable-early-access-2022-may' === $argument['survey_id'];
 						}
 					),
 					$this->callback(

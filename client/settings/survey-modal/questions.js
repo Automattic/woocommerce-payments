@@ -4,7 +4,7 @@
  * */
 export const wcPaySurveys = [
 	{
-		key: 'wcpay-upe-disable-early-access',
+		key: 'wcpay-upe-disable-early-access-2022-may',
 		defaultAnswer: { 'why-disable': 'slow-buggy' },
 		questions: {
 			'why-disable': {
