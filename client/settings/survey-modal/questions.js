@@ -8,8 +8,8 @@ export const wcPaySurveys = [
 		defaultAnswer: { 'why-disable': 'slow-buggy' },
 		questions: {
 			'why-disable': {
-				'slow': 'It is slow',
-				'buggy': 'It is buggy',
+				slow: 'It is slow',
+				buggy: 'It is buggy',
 				'theme-compatibility': 'It does not work with my theme',
 				'missing-features':
 					'It is missing features I need(describe below)',
