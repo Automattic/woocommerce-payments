@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Do not show country code on Platform Checkout opt-in.

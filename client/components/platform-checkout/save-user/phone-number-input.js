@@ -93,6 +93,12 @@ const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
 				utilsScript: utils,
 			} );
 			setInputInstance( iti );
+			setInputValue( ( currentInputValue ) =>
+				currentInputValue.replace(
+					'+' + iti.getSelectedCountryData().dialCode,
+					''
+				)
+			);
 
 			// Focus the phone number input when the component loads.
 			input.focus();
