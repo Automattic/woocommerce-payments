@@ -64,7 +64,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
-	WP_LISTEN_PORT=$(docker ps | grep woocommerce_payments_server_wordpress_e2e | sed -En "s/.*0:([0-9]+).*/\1/p")
+	WP_LISTEN_PORT=$(docker ps | grep "$SERVER_CONTAINER" | sed -En "s/.*0:([0-9]+).*/\1/p")
 	echo "WordPress instance listening on port ${WP_LISTEN_PORT}"
 
 	if [[ -n $CI ]]; then
