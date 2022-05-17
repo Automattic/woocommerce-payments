@@ -87,7 +87,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 		step "Starting webhook listener in background"
 		docker exec -d -u www-data "$SERVER_CONTAINER" \
-		stripe listen --api-key "$E2E_WCPAY_STRIPE_TEST_SECRET_KEY" --forward-to http://localhost/wp-json/wpcom/v2/wcpay/webhook/platform/dev --forward-connect-to http://localhost/wp-json/wpcom/v2/wcpay/webhook/dev
+		stripe listen --api-key "$E2E_WCPAY_STRIPE_TEST_SECRET_KEY" --forward-to http://localhost/wp-json/wpcom/v2/wcpay/webhook/dev
 	fi
 fi
 
