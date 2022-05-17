@@ -209,7 +209,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 		const emailExistsQuery = new URLSearchParams();
 		emailExistsQuery.append( 'email', email );
-		emailExistsQuery.append( 'test', !! getConfig( 'testMode' ) );
+		emailExistsQuery.append( 'test_mode', !! getConfig( 'testMode' ) );
 
 		fetch(
 			`${ getConfig(
