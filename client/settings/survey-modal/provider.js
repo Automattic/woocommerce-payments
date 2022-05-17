@@ -3,6 +3,7 @@
  */
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -14,6 +15,7 @@ import { formatSsr } from '../../utils/format-ssr';
 
 const WcPaySurveyContextProvider = ( { children } ) => {
 	const [ isSurveySubmitted, setSurveySubmitted ] = useState( false );
+	const [ isLoadingSsr, setLoadingSsr ] = useState( false );
 	const [ status, setStatus ] = useState( 'resolved' );
 	// set a default answer since the survey form has a default value.
 	const [ surveyAnswers, setSurveyAnswers ] = useState(
@@ -22,6 +24,7 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 
 	useEffect( () => {
 		const fetchSystemReport = async () => {
+			setLoadingSsr( true );
 			let formattedSsr = '';
 			try {
 				const [ systemStatus, wcPayData ] = await Promise.all(
@@ -31,14 +34,20 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 					].map( ( url ) => apiFetch( { path: url } ) )
 				);
 				formattedSsr = formatSsr( systemStatus, wcPayData );
-			} catch ( error ) {
-				//do nothing
-			} finally {
 				setSurveyAnswers( ( prev ) => ( {
 					...prev,
 					ssr: formattedSsr,
 				} ) );
+			} catch ( error ) {
+				setSurveyAnswers( ( prev ) => ( {
+					...prev,
+					ssr: __(
+						'Can not load System Status Report',
+						'woocommerce-payments'
+					),
+				} ) );
 			}
+			setLoadingSsr( false );
 		};
 		fetchSystemReport();
 	}, [] );
@@ -67,6 +76,7 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 			submitSurvey,
 			status,
 			isSurveySubmitted,
+			isLoadingSsr,
 			surveyAnswers,
 			setSurveyAnswers,
 		} ),
@@ -74,6 +84,7 @@ const WcPaySurveyContextProvider = ( { children } ) => {
 			submitSurvey,
 			status,
 			isSurveySubmitted,
+			isLoadingSsr,
 			surveyAnswers,
 			setSurveyAnswers,
 		]
