@@ -107,6 +107,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 					'list_refunds',
 					'get_charge',
 					'prepare_intention_for_capture',
+					'get_timeline',
 				]
 			)
 			->getMock();
@@ -128,7 +129,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 
-		$this->order_service = new WC_Payments_Order_Service();
+		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

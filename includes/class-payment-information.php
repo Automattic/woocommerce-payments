@@ -223,6 +223,11 @@ class Payment_Information {
 		$token            = self::get_token_from_request( $request );
 		$cvc_confirmation = self::get_cvc_confirmation_from_request( $request );
 
+		if ( isset( $request['is_woopay'] ) && $request['is_woopay'] ) {
+			$order->add_meta_data( 'is_woopay', true, true );
+			$order->save_meta_data();
+		}
+
 		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation );
 	}
 
