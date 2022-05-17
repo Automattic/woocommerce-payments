@@ -5,6 +5,10 @@
  */
 import { dateI18n } from '@wordpress/date';
 
+const CHECK_MARK = String.fromCharCode( 10004 ); // ✔
+const CROSS_MARK = String.fromCharCode( 10060 ); // ❌
+const DASH_MARK = '–';
+
 export const formatSsr = ( systemStatus, wcPayData ) => {
 	const ssr = `### WordPress Environment ###
 
@@ -13,29 +17,21 @@ Site address (URL): ${ systemStatus.environment.home_url }
 WC Version: ${ systemStatus.environment.version }
 Log Directory Writable: ${
 		systemStatus.environment.log_directory_writable
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 )
+			? CHECK_MARK
+			: CROSS_MARK
 	}
 WP Version: ${ systemStatus.environment.wp_version }
 WP Multisite: ${
-		systemStatus.environment.wp_multisite
-			? String.fromCharCode( 10004 )
-			: '-'
+		systemStatus.environment.wp_multisite ? CHECK_MARK : DASH_MARK
 	}
 WP Memory Limit: ${ systemStatus.environment.wp_memory_limit }
 WP Debug Mode: ${
-		systemStatus.environment.wp_debug_mode
-			? String.fromCharCode( 10004 )
-			: '-'
+		systemStatus.environment.wp_debug_mode ? CHECK_MARK : DASH_MARK
 	}
-WP Cron: ${
-		systemStatus.environment.wp_cron ? String.fromCharCode( 10004 ) : '-'
-	}
+WP Cron: ${ systemStatus.environment.wp_cron ? CHECK_MARK : DASH_MARK }
 Language: ${ systemStatus.environment.language }
 External object cache: ${
-		systemStatus.environment.external_object_cache
-			? String.fromCharCode( 10004 )
-			: '-'
+		systemStatus.environment.external_object_cache ? CHECK_MARK : DASH_MARK
 	}
 
 ### Server Environment ###
@@ -48,51 +44,37 @@ PHP Max Input Vars: ${ systemStatus.environment.php_max_input_vars }
 cURL Version: ${ systemStatus.environment.curl_version }
 
 SUHOSIN Installed: ${
-		systemStatus.environment.suhosin_installed
-			? String.fromCharCode( 10004 )
-			: '-'
+		systemStatus.environment.suhosin_installed ? CHECK_MARK : DASH_MARK
 	}
 MySQL Version: ${ systemStatus.environment.mysql_version_string }
 Max Upload Size: ${ systemStatus.environment.max_upload_size }
 Default Timezone is UTC: ${
 		'UTC' !== systemStatus.environment.default_timezone
 			? 'Show error'
-			: String.fromCharCode( 10004 )
+			: CHECK_MARK
 	}
 fsockopen/cURL: ${
 		systemStatus.environment.fsockopen_or_curl_enabled
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 )
+			? CHECK_MARK
+			: CROSS_MARK
 	}
 SoapClient: ${
-		systemStatus.environment.soapclient_enabled
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 )
+		systemStatus.environment.soapclient_enabled ? CHECK_MARK : CROSS_MARK
 	}
 DOMDocument: ${
-		systemStatus.environment.domdocument_enabled
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 )
+		systemStatus.environment.domdocument_enabled ? CHECK_MARK : CROSS_MARK
 	}
-GZip: ${
-		systemStatus.environment.gzip_enabled
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 )
-	}
+GZip: ${ systemStatus.environment.gzip_enabled ? CHECK_MARK : CROSS_MARK }
 Multibyte String: ${
-		systemStatus.environment.mbstring_enabled
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 )
+		systemStatus.environment.mbstring_enabled ? CHECK_MARK : CROSS_MARK
 	}
 Remote Post: ${
 		systemStatus.environment.remote_post_successful
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 )
+			? CHECK_MARK
+			: CROSS_MARK
 	}
 Remote Get: ${
-		systemStatus.environment.remote_get_successful
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 )
+		systemStatus.environment.remote_get_successful ? CHECK_MARK : CROSS_MARK
 	}
 
 ### Database ###
@@ -106,14 +88,13 @@ ${ printPostTypeCounts( systemStatus.post_type_counts ) }
 
 Secure connection (HTTPS): ${
 		systemStatus.security.secure_connection
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 ) + 'Your store is not using HTTPS.'
+			? CHECK_MARK
+			: CROSS_MARK + 'Your store is not using HTTPS.'
 	}
 Hide errors from visitors: ${
 		systemStatus.security.hide_errors
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 ) +
-			  'Error messages should not be shown to visitors.'
+			? CHECK_MARK
+			: CROSS_MARK + 'Error messages should not be shown to visitors.'
 	}
 
 ### Active Plugins (${ systemStatus.active_plugins.length }) ###
@@ -130,12 +111,8 @@ ${ printPlugins( systemStatus.inactive_plugins, null ) }${ printPlugins(
 	) }
 ### Settings ###
 
-API Enabled: ${
-		systemStatus.settings.api_enabled ? String.fromCharCode( 10004 ) : '-'
-	}
-Force SSL: ${
-		systemStatus.settings.force_ssl ? String.fromCharCode( 10004 ) : '-'
-	}
+API Enabled: ${ systemStatus.settings.api_enabled ? CHECK_MARK : DASH_MARK }
+Force SSL: ${ systemStatus.settings.force_ssl ? CHECK_MARK : DASH_MARK }
 Currency: ${ systemStatus.settings.currency } (${
 		systemStatus.settings.currency_symbol
 	})
@@ -148,9 +125,7 @@ Taxonomies: Product Visibility: ${ printTerms(
 		systemStatus.settings.product_visibility_terms
 	) }
 Connected to WooCommerce.com:  ${
-		systemStatus.settings.woocommerce_com_connected
-			? String.fromCharCode( 10004 )
-			: '-'
+		systemStatus.settings.woocommerce_com_connected ? CHECK_MARK : DASH_MARK
 	}
 
 ### WC Pages ###
@@ -166,14 +141,12 @@ Version: ${ systemStatus.theme.version } ${
 Author URL: ${ systemStatus.theme.author_url }
 Child Theme: ${
 		systemStatus.theme.is_child_theme
-			? String.fromCharCode( 10004 )
-			: String.fromCharCode( 10060 ) +
+			? CHECK_MARK
+			: CROSS_MARK +
 			  'If you are modifying WooCommerce on a parent theme that you did not build personally we recommend using a child theme.'
-	} 
+	}
 WooCommerce Support: ${
-		! systemStatus.theme.has_woocommerce_support
-			? String.fromCharCode( 10060 )
-			: String.fromCharCode( 10004 )
+		! systemStatus.theme.has_woocommerce_support ? CROSS_MARK : CHECK_MARK
 	}
 
 ### Templates ###
@@ -191,11 +164,11 @@ Overrides: ${
 						return override.file;
 					} )
 					.join( ', ' )
-			: '-'
+			: DASH_MARK
 	}
 ${
 	systemStatus.theme.has_outdated_templates
-		? 'Outdated Templates: ' + String.fromCharCode( 10060 )
+		? 'Outdated Templates: ' + CROSS_MARK
 		: ''
 }
 
@@ -289,22 +262,19 @@ function printPages( pages ) {
 		result += page.page_name + ': ';
 		let foundError = false;
 		if ( ! page.page_set ) {
-			result += String.fromCharCode( 10060 ) + ' Page not set';
+			result += CROSS_MARK + ' Page not set';
 			foundError = true;
 		} else if ( ! page.page_exists ) {
 			result +=
-				String.fromCharCode( 10060 ) +
-				' Page ID is set, but the page does not exist';
+				CROSS_MARK + ' Page ID is set, but the page does not exist';
 			foundError = true;
 		} else if ( ! page.page_visible ) {
-			result +=
-				String.fromCharCode( 10060 ) +
-				' Page visibility should be public';
+			result += CROSS_MARK + ' Page visibility should be public';
 			foundError = true;
 		} else if ( page.shortcode_required || page.block_required ) {
 			if ( ! page.shortcode_present && ! page.block_present ) {
 				result +=
-					String.fromCharCode( 10060 ) +
+					CROSS_MARK +
 					` Page does not contain the ${ page.shortcode } shortcode or the ${ page.block } block`;
 				foundError = true;
 			}
