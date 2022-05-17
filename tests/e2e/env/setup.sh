@@ -65,7 +65,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
-	WP_LISTEN_PORT=$(docker ps | grep woocommerce_payments_server_wordpress_e2e | sed -En "s/.*0:([0-9]+).*/\1/p")
+	WP_LISTEN_PORT=$(docker ps | grep "$SERVER_CONTAINER" | sed -En "s/.*0:([0-9]+).*/\1/p")
 	echo "WordPress instance listening on port ${WP_LISTEN_PORT}"
 
 	if [[ -n $CI ]]; then
@@ -80,9 +80,15 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	step "Configuring server with stripe account"
 	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
 
-	step "Starting webhook listener in background"
-	docker-compose exec -d -u www-data wordpress \
-	stripe listen --api-key $E2E_WCPAY_STRIPE_TEST_SECRET_KEY --forward-to http://localhost/wp-json/wpcom/v2/wcpay/webhook/dev
+	if [[ -n $CI ]]; then
+		step "Disable Xdebug on server container"
+		redirect_output docker exec -u www-data "$SERVER_CONTAINER" \
+		mv "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini.disabled
+
+		step "Starting webhook listener in background"
+		docker exec -d -u www-data "$SERVER_CONTAINER" \
+		stripe listen --api-key "$E2E_WCPAY_STRIPE_TEST_SECRET_KEY" --forward-to http://localhost/wp-json/wpcom/v2/wcpay/webhook/platform/dev --forward-connect-to http://localhost/wp-json/wpcom/v2/wcpay/webhook/dev
+	fi
 fi
 
 cd "$cwd"
@@ -102,6 +108,12 @@ step "Starting CLIENT containers"
 redirect_output docker-compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
 	docker-compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d phpMyAdmin
+fi
+
+if [[ -n $CI ]]; then
+	step "Disabling Xdebug on client container"
+	redirect_output docker exec -u www-data "$CLIENT_CONTAINER" \
+	mv "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini.disabled
 fi
 
 echo
