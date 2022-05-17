@@ -537,13 +537,10 @@ Array [
             className="discount-split-list"
           >
             <li>
-              Variable fee: 
-              -4.9
-              %
+              Variable fee: -4.9%
             </li>
             <li>
-              Fixed fee: 
-              £-0.20
+              Fixed fee: £-0.20
             </li>
           </ul>
         </li>
