@@ -248,6 +248,9 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	echo "Setting Jetpack blog_id"
 	cli wp wcpay_dev set_blog_id "$BLOG_ID"
+
+	echo "Refresh WCPay Account Cache"
+	cli wp wcpay_dev refresh_account_cache
 else
 	echo "Disabling WPCOM requests proxy"
 	cli wp option update wcpaydev_proxy 0
