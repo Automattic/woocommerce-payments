@@ -82,8 +82,10 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	if [[ -n $CI ]]; then
 		step "Disable Xdebug on server container"
-		redirect_output docker exec "$SERVER_CONTAINER" \
-		mv "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini.disabled
+		redirect_output docker exec -u root "$SERVER_CONTAINER" \
+		[ -f "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini ]; mv "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini.disabled
+
+		docker exec -u root "$SERVER_CONTAINER" php -v
 
 		step "Starting webhook listener in background"
 		docker exec -d -u www-data "$SERVER_CONTAINER" \
@@ -112,8 +114,10 @@ fi
 
 if [[ -n $CI ]]; then
 	step "Disabling Xdebug on client container"
-	redirect_output docker exec "$CLIENT_CONTAINER" \
-	mv "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini.disabled
+	redirect_output docker exec -u root "$CLIENT_CONTAINER" \
+	[ -f "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini ]; mv "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini.disabled
+
+	docker exec -u root "$CLIENT_CONTAINER" php -v
 fi
 
 echo
