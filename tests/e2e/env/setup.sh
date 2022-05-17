@@ -86,7 +86,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 		sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
 
 		step "Starting webhook listener in background"
-		docker exec -d -u www-data "$SERVER_CONTAINER" \
+		docker-compose exec -d -u www-data wordpress \
 		stripe listen --api-key "$E2E_WCPAY_STRIPE_TEST_SECRET_KEY" --forward-to http://localhost/wp-json/wpcom/v2/wcpay/webhook/dev
 	fi
 fi
