@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { dateI18n } from '@wordpress/date';
+import { decodeEntities } from '@wordpress/html-entities';
 
 const CHECK_MARK = String.fromCharCode( 10004 ); // ✔
 const CROSS_MARK = String.fromCharCode( 10060 ); // ❌
@@ -89,7 +90,7 @@ ${ printPostTypeCounts( systemStatus.post_type_counts ) }
 Secure connection (HTTPS): ${
 		systemStatus.security.secure_connection
 			? CHECK_MARK
-			: CROSS_MARK + 'Your store is not using HTTPS.'
+			: CROSS_MARK + '\nYour store is not using HTTPS.'
 	}
 Hide errors from visitors: ${
 		systemStatus.security.hide_errors
@@ -113,12 +114,12 @@ ${ printPlugins( systemStatus.inactive_plugins, null ) }${ printPlugins(
 
 API Enabled: ${ systemStatus.settings.api_enabled ? CHECK_MARK : DASH_MARK }
 Force SSL: ${ systemStatus.settings.force_ssl ? CHECK_MARK : DASH_MARK }
-Currency: ${ systemStatus.settings.currency } (${
+Currency: ${ systemStatus.settings.currency } (${ decodeEntities(
 		systemStatus.settings.currency_symbol
-	})
+	) })
 Currency Position: ${ systemStatus.settings.currency_position }
 Thousand Separator: ${ systemStatus.settings.thousand_separator }
-Decimal Separator:  ${ systemStatus.settings.decimal_separator }
+Decimal Separator: ${ systemStatus.settings.decimal_separator }
 Number of Decimals: ${ systemStatus.settings.number_of_decimals }
 Taxonomies: Product Types: ${ printTerms( systemStatus.settings.taxonomies ) }
 Taxonomies: Product Visibility: ${ printTerms(
@@ -177,7 +178,6 @@ ${
 
 ### WooCommerce Payments ###
 
-Version:
 Connected to WPCOM: ${
 		'NOACCOUNT' === wcPayData.status ||
 		'ONBOARDING_DISABLED' === wcPayData.status
