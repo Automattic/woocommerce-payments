@@ -78,6 +78,12 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	step "Configuring server with stripe account"
 	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
+
+	if [[ -n $CI ]]; then
+		step "Disable Xdebug on server container"
+		docker exec "$SERVER_CONTAINER" \
+		sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
+	fi
 fi
 
 cd "$cwd"
