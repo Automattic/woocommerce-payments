@@ -60,7 +60,8 @@ class WC_REST_Payments_Survey_Controller extends WP_REST_Controller {
 						'items'             => [
 							'type' => 'string',
 							'enum' => [
-								'slow-buggy',
+								'slow',
+								'buggy',
 								'theme-compatibility',
 								'missing-features',
 								'store-sales',
