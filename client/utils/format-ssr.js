@@ -24,7 +24,7 @@ WP Version: ${ systemStatus.environment.wp_version }
 WP Multisite: ${
 		systemStatus.environment.wp_multisite ? CHECK_MARK : DASH_MARK
 	}
-WP Memory Limit: ${ systemStatus.environment.wp_memory_limit }
+WP Memory Limit: ${ formatSize( systemStatus.environment.wp_memory_limit ) }
 WP Debug Mode: ${
 		systemStatus.environment.wp_debug_mode ? CHECK_MARK : DASH_MARK
 	}
@@ -38,7 +38,7 @@ External object cache: ${
 
 Server Info: ${ systemStatus.environment.server_info }
 PHP Version: ${ systemStatus.environment.php_version }
-PHP Post Max Size: ${ systemStatus.environment.php_post_max_size }
+PHP Post Max Size: ${ formatSize( systemStatus.environment.php_post_max_size ) }
 PHP Time Limit: ${ systemStatus.environment.php_max_execution_time }
 PHP Max Input Vars: ${ systemStatus.environment.php_max_input_vars }
 cURL Version: ${ systemStatus.environment.curl_version }
@@ -47,7 +47,7 @@ SUHOSIN Installed: ${
 		systemStatus.environment.suhosin_installed ? CHECK_MARK : DASH_MARK
 	}
 MySQL Version: ${ systemStatus.environment.mysql_version_string }
-Max Upload Size: ${ systemStatus.environment.max_upload_size }
+Max Upload Size: ${ formatSize( systemStatus.environment.max_upload_size ) }
 Default Timezone is UTC: ${
 		'UTC' !== systemStatus.environment.default_timezone
 			? 'Show error'
@@ -134,16 +134,17 @@ ${ printPages( systemStatus.pages ) }
 ### Theme ###
 
 Name: ${ systemStatus.theme.name }
-Version: ${ systemStatus.theme.version } ${
-		systemStatus.theme.version_latest ??
-		`(update to version ${ systemStatus.theme.version_latest } is available)`
+Version: ${
+		systemStatus.theme.version_latest
+			? `${ systemStatus.theme.version } (update to version ${ systemStatus.theme.version_latest } is available)`
+			: systemStatus.theme.version
 	}
 Author URL: ${ systemStatus.theme.author_url }
 Child Theme: ${
 		systemStatus.theme.is_child_theme
 			? CHECK_MARK
 			: CROSS_MARK +
-			  'If you are modifying WooCommerce on a parent theme that you did not build personally we recommend using a child theme.'
+			  ' - If you are modifying WooCommerce on a parent theme that you did not build personally we recommend using a child theme.'
 	}
 WooCommerce Support: ${
 		! systemStatus.theme.has_woocommerce_support ? CROSS_MARK : CHECK_MARK
@@ -174,6 +175,7 @@ ${
 
 ### WooCommerce Payments ###
 
+Version:
 Connected to WPCOM: ${
 		'NOACCOUNT' === wcPayData.status ||
 		'ONBOARDING_DISABLED' === wcPayData.status
@@ -229,7 +231,7 @@ function printPostTypeCounts( postTypeCounts ) {
 	if ( postTypeCounts ) {
 		result = '### Post Type Counts ###\n';
 		postTypeCounts.forEach( ( postType ) => {
-			result += `\n${ postType.type } : ${ postType.count }`;
+			result += `\n${ postType.type }: ${ postType.count }`;
 		} );
 	}
 	return result;
@@ -293,4 +295,38 @@ function printTerms( arr ) {
 		result += value.toLowerCase() + ' (' + key + ')\n';
 	} );
 	return result;
+}
+
+/**
+ * Convert bytes into human-readable format. Resemble from PHP function size_format in WordPress core.
+ *
+ * @param {number} bytes Amount of bytes to be converted.
+ * @param {number} decimals Number of digits after the decimal. Default 0.
+ * @return {string} Human-readable string.
+ */
+function formatSize( bytes, decimals = 0 ) {
+	const KB_IN_BYTES = 1024;
+	const MB_IN_BYTES = KB_IN_BYTES * 1024;
+	const GB_IN_BYTES = MB_IN_BYTES * 1024;
+	const TB_IN_BYTES = GB_IN_BYTES * 1024;
+
+	const quant = [
+		[ 'TB', TB_IN_BYTES ],
+		[ 'GB', GB_IN_BYTES ],
+		[ 'MB', MB_IN_BYTES ],
+		[ 'KB', KB_IN_BYTES ],
+		[ 'B', 1 ],
+	];
+
+	if ( 0 === bytes ) {
+		return '0 B';
+	}
+
+	for ( const [ unit, mag ] of quant ) {
+		if ( bytes >= mag ) {
+			return ( bytes / mag ).toFixed( decimals ) + ' ' + unit;
+		}
+	}
+
+	return 'N/A';
 }
