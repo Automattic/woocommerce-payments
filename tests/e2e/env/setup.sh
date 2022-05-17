@@ -82,7 +82,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	if [[ -n $CI ]]; then
 		step "Disable Xdebug on server container"
-		redirect_output docker exec -u root "$SERVER_CONTAINER" \
+		docker exec -u root "$SERVER_CONTAINER" \
 		[ -f "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini ]; mv "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini.disabled
 
 		docker exec -u root "$SERVER_CONTAINER" php -v
@@ -114,7 +114,7 @@ fi
 
 if [[ -n $CI ]]; then
 	step "Disabling Xdebug on client container"
-	redirect_output docker exec -u root "$CLIENT_CONTAINER" \
+	docker exec -u root "$CLIENT_CONTAINER" \
 	[ -f "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini ]; mv "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini "$PHP_CONF_DIR"/docker-php-ext-xdebug.ini.disabled
 
 	docker exec -u root "$CLIENT_CONTAINER" php -v
