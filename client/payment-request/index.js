@@ -462,7 +462,17 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: () => {
-			if ( wcpayPaymentRequestParams.is_product_page ) {
+			if ( wcpayPaymentRequestParams.is_pay_for_order ) {
+				wcpayPaymentRequest.startPaymentRequest( {
+					stripe: api.getStripe(),
+					total: wcpayPaymentRequestPayForOrderParams.total.amount,
+					requestShipping:
+						// wcpayPaymentRequestPayForOrderParams.needs_shipping ? true : false,
+						false,
+					displayItems:
+						wcpayPaymentRequestPayForOrderParams.displayItems,
+				} );
+			} else if ( wcpayPaymentRequestParams.is_product_page ) {
 				wcpayPaymentRequest.startPaymentRequest( {
 					stripe: api.getStripe(),
 					total: wcpayPaymentRequestParams.product.total.amount,

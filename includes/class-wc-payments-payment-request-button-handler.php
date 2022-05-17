@@ -80,6 +80,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
+		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
+		add_action( 'before_woocommerce_pay_form', [ $this, 'display_payment_request_button_separator_html' ], 2 );
+
 		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
 		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
@@ -296,6 +299,70 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Displays the necessary HTML for the Pay for Order page.
+	 *
+	 * @param WC_Order $order The order that needs payment.
+	 */
+	public function display_pay_for_order_page_html( $order ) {
+		$currency = get_woocommerce_currency();
+
+		$data  = [];
+		$items = [];
+
+		foreach ( $order->get_items() as $item ) {
+			$items[] = [
+				'label'  => $item->get_name(),
+				'amount' => WC_Payments_Utils::prepare_amount( $item->get_total(), $currency ),
+			];
+		}
+
+		if ( $order->get_total_tax() ) {
+			$items[] = [
+				'label'  => __( 'Tax', 'woocommerce-payments' ),
+				'amount' => WC_Payments_Utils::prepare_amount( $order->get_total_tax(), $currency ),
+			];
+		}
+
+		if ( $order->get_total_tax() ) {
+			$items[] = [
+				'label'  => __( 'Tax', 'woocommerce-payments' ),
+				'amount' => WC_Payments_Utils::prepare_amount( $order->get_total_tax(), $currency ),
+			];
+		}
+
+		foreach ( $order->get_fees() as $fee ) {
+			$items[] = [
+				'label'  => $fee->get_name(),
+				'amount' => WC_Payments_Utils::prepare_amount( $fee->get_amount(), $currency ),
+			];
+		}
+
+		if ( $order->get_shipping_total() ) {
+			$data['shippingOptions'] = [
+				'id'     => $order->get_shipping_method(),
+				'label'  => __( 'Shipping', 'woocommerce-payments' ),
+				'detail' => '',
+				'amount' => WC_Payments_Utils::prepare_amount( $order->get_shipping_total(), $currency ),
+			];
+		}
+
+		$data['displayItems'] = $items;
+		$data['total']        = [
+			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ),
+			'pending' => true,
+		];
+
+		$data['currency']       = strtolower( $currency );
+		$data['needs_shipping'] = true; // ToDo: This should be dynamic.
+		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+
+		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestPayForOrderParams', $data );
+
+		$this->display_payment_request_button_html();
+	}
+
+	/**
 	 * Get cart data.
 	 *
 	 * @return mixed Returns false if on a product page, the product information otherwise.
@@ -411,7 +478,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Page not supported.
-		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
 		}
 
@@ -538,6 +605,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Checks if this is the Pay for Order page.
+	 *
+	 * @return boolean
+	 */
+	public function is_pay_for_order_page() {
+		return is_checkout() && isset( $_GET['pay_for_order'] ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
+
+	/**
 	 * Checks if this is the cart page or content contains a cart block.
 	 *
 	 * @return boolean
@@ -644,6 +720,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'button'             => $this->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
 			'is_product_page'    => $this->is_product(),
+			'is_pay_for_order'   => $this->is_pay_for_order_page(),
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->get_product_data(),
 			'total_label'        => $this->get_total_label(),
