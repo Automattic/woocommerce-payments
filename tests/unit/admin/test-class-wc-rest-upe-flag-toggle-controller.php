@@ -51,7 +51,7 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
 		$token_service            = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client );
 		$rate_limiter             = new Session_Rate_Limiter( 'wcpay_card_declined_registry', 5, 60 );
-		$order_service            = new WC_Payments_Order_Service();
+		$order_service            = new WC_Payments_Order_Service( $mock_api_client );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$mock_api_client,

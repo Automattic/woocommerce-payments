@@ -16,7 +16,10 @@ import wcpayTracks from '../tracks';
 
 import './style.scss';
 
-const { connectUrl } = window.wcpaySubscriptionProductOnboardingModal;
+const {
+	connectUrl,
+	pluginScope,
+} = window.wcpaySubscriptionProductOnboardingModal;
 
 const FinishSetupButton = () => {
 	const [ isFinishingSetup, setIsFinishingSetup ] = useState( false );
@@ -140,5 +143,5 @@ const SubscriptionProductOnboardingModal = () => {
 registerPlugin( 'wcpay-subscription-product-onboarding-modal', {
 	icon: null,
 	render: SubscriptionProductOnboardingModal,
-	scope: 'woocommerce',
+	scope: pluginScope,
 } );

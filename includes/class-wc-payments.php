@@ -126,6 +126,13 @@ class WC_Payments {
 	private static $order_service;
 
 	/**
+	 * Instance of WC_Payments_Order_Success_Page, created in init function
+	 *
+	 * @var WC_Payments_Order_Success_Page
+	 */
+	private static $order_success_page;
+
+	/**
 	 * Instance of WC_Payments_Onboarding_Service, created in init function
 	 *
 	 * @var WC_Payments_Onboarding_Service
@@ -260,6 +267,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
 		include_once __DIR__ . '/class-wc-payments-order-service.php';
+		include_once __DIR__ . '/class-wc-payments-order-success-page.php';
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
@@ -290,7 +298,8 @@ class WC_Payments {
 		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
-		self::$order_service                       = new WC_Payments_Order_Service();
+		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
+		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 
 		$card_class = CC_Payment_Gateway::class;
@@ -350,6 +359,8 @@ class WC_Payments {
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
+
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
 
 		// Add admin screens.
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
@@ -986,7 +997,7 @@ class WC_Payments {
 
 		$account_id = self::get_account_service()->get_stripe_account_id();
 
-		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://woo.app';
+		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 
 		$body = [
@@ -1020,8 +1031,29 @@ class WC_Payments {
 			],
 		];
 
-		$response_array     = wp_remote_request( $url, $args );
-		$response_body_json = wp_remote_retrieve_body( $response_array );
+		/**
+		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
+		 *
+		 * @psalm-suppress UndefinedDocblockClass
+		 */
+		$response = Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
+
+		if ( is_wp_error( $response ) || ! is_array( $response ) ) {
+			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			// phpcs:ignore
+			/**
+			 * @psalm-suppress UndefinedDocblockClass
+			 */
+			$message = sprintf(
+				// translators: %1: original error message.
+				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
+				$response->get_error_message()
+			);
+			// Respond with same message platform would respond with on failure.
+			$response_body_json = wp_json_encode( [ 'result' => 'failure' ] );
+		} else {
+			$response_body_json = wp_remote_retrieve_body( $response );
+		}
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );

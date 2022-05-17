@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Refactor functions regarding timeline captured events for testing.
