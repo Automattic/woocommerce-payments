@@ -268,6 +268,7 @@ jQuery( function ( $ ) {
 	};
 
 	const enableStripeLinkPaymentMethod = () => {
+console.log(elements);
 		const linkAutofill = api.getStripe().linkAutofillModal( elements );
 
 		$( '#billing_email' ).on( 'keyup', ( event ) => {

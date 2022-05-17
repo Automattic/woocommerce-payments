@@ -21,6 +21,8 @@ import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
 import { getTerms } from '../utils/upe';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
+import enableStripeLinkPaymentMethod from "wcpay/checkout/stripe-link";
+import {useAccountBusinessSupportAddress} from "../../data";
 
 const WCPayUPEFields = ( {
 	api,
@@ -219,11 +221,26 @@ const WCPayUPEFields = ( {
  */
 const ConsumableWCPayFields = ( { api, ...props } ) => {
 	const stripe = api.getStripe();
-
+console.log(stripe);
 	const [ paymentIntentId, setPaymentIntentId ] = useState( null );
 	const [ clientSecret, setClientSecret ] = useState( null );
 	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
 	const [ errorMessage, setErrorMessage ] = useState( null );
+	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
+	const isStripeLinkEnabled =
+		paymentMethodsConfig.link !== undefined &&
+		paymentMethodsConfig.card !== undefined;
+	const [
+		accountBusinessSupportAddress,
+		setAccountBusinessSupportAddress,
+	] = useAccountBusinessSupportAddress();
+	const handleAddressPropertyChange = ( property, value ) => {
+		setAccountBusinessSupportAddress( {
+			...accountBusinessSupportAddress,
+			[ property ]: value,
+		} );
+	};
+console.log(useAccountBusinessSupportAddress());
 
 	useEffect( () => {
 		if ( paymentIntentId || hasRequestedIntent ) {
@@ -245,6 +262,27 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		}
 		setHasRequestedIntent( true );
 		createIntent();
+
+		if (isStripeLinkEnabled) {
+			enableStripeLinkPaymentMethod( {
+				api: api,
+				clientSecret: clientSecret,
+				setAccountBusinessSupportAddress: setAccountBusinessSupportAddress,
+				accountBusinessSupportAddress: accountBusinessSupportAddress,
+				emailId: 'email',
+				complete_shipping: true,
+				shipping_fields: {
+					address_1: 'shipping-address_1',
+					address_2: 'shipping-address_2',
+					city: 'shipping-city',
+					state: 'components-form-token-input-1',
+					postal_code: 'shipping-postcode',
+					country: 'components-form-token-input-0'
+				},
+				complete_billing: false,
+			} );
+		}
+
 	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage ] );
 
 	if ( ! clientSecret ) {
@@ -264,6 +302,26 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	const options = {
 		clientSecret,
 	};
+
+
+
+	if ( isStripeLinkEnabled ) {
+		// enableStripeLinkPaymentMethod( {
+		// 	api: api,
+		// 	clientSecret: clientSecret,
+		// 	emailId: 'email',
+		// 	complete_shipping: true,
+		// 	shipping_fields: {
+		// 		address_1: 'shipping-address_1',
+		// 		address_2: 'shipping-address_2',
+		// 		city: 'shipping-city',
+		// 		state: 'components-form-token-input-1',
+		// 		postal_code: 'shipping-postcode',
+		// 		country: 'components-form-token-input-0'
+		// 	},
+		// 	complete_billing: false,
+		// } );
+	}
 
 	return (
 		<Elements stripe={ stripe } options={ options }>
