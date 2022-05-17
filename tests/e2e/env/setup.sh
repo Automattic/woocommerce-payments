@@ -109,6 +109,12 @@ if [[ -z $CI ]]; then
 	docker-compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d phpMyAdmin
 fi
 
+if [[ -n $CI ]]; then
+	step "Disabling Xdebug on client container"
+	docker exec "$CLIENT_CONTAINER" \
+	sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
+fi
+
 echo
 step "Setting up CLIENT site"
 
