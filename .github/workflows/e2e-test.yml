@@ -10,6 +10,7 @@ on:
     branches:
       - develop
       - trunk
+      - rg-renovate-batch
   workflow_dispatch:
 
 env:
