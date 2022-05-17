@@ -154,7 +154,7 @@
     "ts-loader": "9.2.6",
     "typescript": "4.3.5",
     "util": "0.12.4",
-    "webpack": "5.53.0",
+    "webpack": "5.72.1",
     "webpack-cli": "4.8.0",
     "yarnhook": "0.5.1"
   }
