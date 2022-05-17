@@ -71,7 +71,7 @@
     "lodash": "^4.17.14"
   },
   "devDependencies": {
-    "@automattic/color-studio": "2.3.1",
+    "@automattic/color-studio": "2.5.0",
     "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils",
     "@babel/plugin-proposal-object-rest-spread": "7.12.13",
     "@testing-library/jest-dom": "5.14.1",
