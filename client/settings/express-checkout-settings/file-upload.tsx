@@ -10,6 +10,7 @@ import { useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { BaseControl, Button } from '@wordpress/components';
 import Gridicon from 'gridicons';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -145,28 +146,31 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< CardReaderFileUploadP
 
 	return (
 		<div className="wcpay-branding-upload-field__wrapper">
-			<div className="platform-checkout-settings__update-store-logo">
-				<div className={ fileID && 'has-file' }>
-					<FileUploadControl
-						field={ {
-							key: fieldKey,
-							label: label,
-						} }
-						fileName={ fileID }
-						isLoading={ isLoading }
-						accept={ accept }
-						disabled={ disabled }
-						isDone={ false }
-						error={ error }
-						onFileChange={ handleFileChange }
-						onFileRemove={ handleFileRemove }
-						showPreview={ true }
-						uploadButtonLabel={ __(
-							'Upload custom logo',
-							'woocommerce-payments'
-						) }
-					/>
-				</div>
+			<div
+				className={ classNames(
+					'platform-checkout-settings__update-store-logo',
+					fileID && 'has-file'
+				) }
+			>
+				<FileUploadControl
+					field={ {
+						key: fieldKey,
+						label: label,
+					} }
+					fileName={ fileID }
+					isLoading={ isLoading }
+					accept={ accept }
+					disabled={ disabled }
+					isDone={ false }
+					error={ error }
+					onFileChange={ handleFileChange }
+					onFileRemove={ handleFileRemove }
+					showPreview={ true }
+					uploadButtonLabel={ __(
+						'Upload custom logo',
+						'woocommerce-payments'
+					) }
+				/>
 
 				<div
 					style={ {
@@ -197,7 +201,7 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< CardReaderFileUploadP
 			<BaseControl
 				id={ 'test' }
 				help={ __(
-					'Your business’s logo will be used on orders page.',
+					'Use a custom logo to WooPay if the one taken from your store doesn’t look right. For best results, upload a high-resolution horizontal image with white or transparent background.',
 					'woocommerce-payments'
 				) }
 			>

@@ -79,8 +79,6 @@
 	&__update-store-logo {
 		display: flex;
 		justify-content: space-between;
-		border: 1px solid #f0f0f0;
-		padding: 8px;
 
 		.components-base-control__field {
 			margin-bottom: 0;
@@ -95,8 +93,13 @@
 			color: #757575;
 		}
 
-		.has-file .components-form-file-upload {
-			display: none;
+		&.has-file {
+			border: 1px solid #f0f0f0;
+			padding: 8px;
+
+			.components-form-file-upload {
+				display: none;
+			}
 		}
 
 		img {
