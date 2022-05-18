@@ -126,20 +126,10 @@ jobs:
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer install --no-progress
 
-      # Update composer dependencies if using cache
-      - name: Update composer dependencies
-        if: steps.composer-cache.outputs.cache-hit == 'true'
-        run: composer update
-
       # Install node dependencies if not present on cache
       - name: Install node dependencies
         if: steps.node-cache.outputs.cache-hit != 'true'
         run: npm ci
-
-      # Update node dependencies if using cache
-      - name: Update node dependencies
-        if: steps.node-cache.outputs.cache-hit == 'true'
-        run: npm update
 
       # Build WCPay client
       - name: Build WCPay Client
