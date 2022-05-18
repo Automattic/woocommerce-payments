@@ -82,6 +82,10 @@ jobs:
       - name: Clone WCPay Repository
         uses: actions/checkout@v2
 
+      # Add GH token for authentication
+      - name: Add GH token for authentication
+        run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
+
       # PHP setup
       - name: PHP Setup
         uses: shivammathur/setup-php@v2
@@ -132,10 +136,6 @@ jobs:
       - name: Update node dependencies
         if: steps.node-cache.outputs.cache-hit == 'true'
         run: npm update
-
-      # Add GH token for cloning other repos
-      - name: Add GH token for authentication
-        run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
 
       # Build WCPay client
       - name: Build WCPay Client
