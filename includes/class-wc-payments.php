@@ -998,7 +998,7 @@ class WC_Payments {
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
 				'store_name'        => get_bloginfo( 'name' ),
-				'store_logo'        => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
+				'store_logo'        => self::get_gateway()->get_option( 'platform_checkout_store_logo' ),
 				'custom_message'    => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
 				'blog_id'           => Jetpack_Options::get_option( 'id' ),
 				'blog_url'          => get_site_url(),

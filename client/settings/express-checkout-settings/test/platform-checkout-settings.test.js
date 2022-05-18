@@ -13,13 +13,15 @@ import PlatformCheckoutSettings from '../platform-checkout-settings';
 import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
-	useAccountBrandingLogo,
+	usePlatformCheckoutStoreLogo,
+	useAccountBusinessName,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
 	usePlatformCheckoutEnabledSettings: jest.fn(),
 	usePlatformCheckoutCustomMessage: jest.fn(),
-	useAccountBrandingLogo: jest.fn(),
+	usePlatformCheckoutStoreLogo: jest.fn(),
+	useAccountBusinessName: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -35,6 +37,14 @@ const getMockPlatformCheckoutCustomMessage = (
 	message,
 	updatePlatformCheckoutCustomMessageHandler
 ) => [ message, updatePlatformCheckoutCustomMessageHandler ];
+const getMockPlatformCheckoutStoreLogo = (
+	message,
+	updatePlatformCheckoutStoreLogoHandler
+) => [ message, updatePlatformCheckoutStoreLogoHandler ];
+const getMockAccountBusinessName = (
+	message,
+	updateAccountBusinessNameHandler
+) => [ message, updateAccountBusinessNameHandler ];
 
 describe( 'PlatformCheckoutSettings', () => {
 	beforeEach( () => {
@@ -46,8 +56,12 @@ describe( 'PlatformCheckoutSettings', () => {
 			getMockPlatformCheckoutCustomMessage( '', jest.fn() )
 		);
 
-		useAccountBrandingLogo.mockReturnValue(
-			getMockPlatformCheckoutCustomMessage( null, jest.fn() )
+		usePlatformCheckoutStoreLogo.mockReturnValue(
+			getMockPlatformCheckoutStoreLogo( '', jest.fn() )
+		);
+
+		useAccountBusinessName.mockReturnValue(
+			getMockAccountBusinessName( '', jest.fn() )
 		);
 	} );
 
