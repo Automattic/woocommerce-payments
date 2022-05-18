@@ -95,6 +95,10 @@ jobs:
           extensions:  mysql
           coverage:    none
 
+      # Composer setup
+      - name: Composer Setup
+        run: composer self-update 2.0.6
+
       # Use node version from .nvmrc
       - name: Setup NodeJS
         uses: actions/setup-node@v2
@@ -120,7 +124,7 @@ jobs:
       # Install composer dependencies if not present on cache
       - name: Install composer dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
-        run: composer self-update 2.0.6 && composer install --no-progress
+        run: composer install --no-progress
 
       # Update composer dependencies if using cache
       - name: Update composer dependencies
