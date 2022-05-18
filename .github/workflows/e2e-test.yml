@@ -145,10 +145,10 @@ jobs:
 
       # Archive screenshots if any
       - name: Archive e2e test screenshots & logs
-        if: ${{ always() }}
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
-            name: e2e-screenshots
+            name: e2e-screenshots-logs
             path: |
               tests/e2e/screenshots
               tests/e2e/docker/wordpress/wp-content/debug.log
