@@ -132,11 +132,9 @@ jobs:
           extensions:  mysql
           coverage:    none
 
-      # Prepare testing dependencies
-      - name: Prepare testing dependencies
-        run: |
-          echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
-          sudo systemctl start mysql.service
+      # Add GH token for cloning other repos
+      - name: Add GH token for authentication
+        run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
 
       # Build WCPay client
       - name: Build WCPay Client
