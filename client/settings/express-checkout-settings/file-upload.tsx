@@ -17,7 +17,7 @@ import classNames from 'classnames';
  */
 import { FileUploadControl } from 'components/file-upload';
 
-interface CardReaderFileUploadProps {
+interface PlatformCheckoutFileUploadProps {
 	fieldKey: string;
 	label: string;
 	accept: string;
@@ -28,7 +28,7 @@ interface CardReaderFileUploadProps {
 	updateFileID: ( id: string ) => void;
 }
 
-const PlatformCheckoutFileUpload: React.FunctionComponent< CardReaderFileUploadProps > = (
+const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileUploadProps > = (
 	props
 ) => {
 	const {
