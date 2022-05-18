@@ -175,7 +175,6 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 				<div
 					style={ {
 						display: 'flex',
-						justifyContent: 'space-between',
 						alignItems: 'center',
 					} }
 				>
