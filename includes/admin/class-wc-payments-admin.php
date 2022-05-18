@@ -458,6 +458,7 @@ class WC_Payments_Admin {
 			],
 			'currentUserEmail'        => $current_user_email,
 			'currencyData'            => $currency_data,
+			'restUrl'                 => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 		];
 
 		wp_localize_script(

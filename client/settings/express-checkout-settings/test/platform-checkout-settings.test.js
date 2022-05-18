@@ -63,6 +63,10 @@ describe( 'PlatformCheckoutSettings', () => {
 		useAccountBusinessName.mockReturnValue(
 			getMockAccountBusinessName( '', jest.fn() )
 		);
+
+		global.wcpaySettings = {
+			restUrl: 'http://example.com/wp-json/',
+		};
 	} );
 
 	it( 'renders settings with defaults', () => {

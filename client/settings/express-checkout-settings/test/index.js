@@ -57,6 +57,12 @@ jest.mock( 'payment-request/utils', () => ( {
 } ) );
 
 describe( 'ExpressCheckoutSettings', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			restUrl: 'http://example.com/wp-json/',
+		};
+	} );
+
 	test( 'renders banner at the top', () => {
 		render( <ExpressCheckoutSettings methodId="payment_request" /> );
 
