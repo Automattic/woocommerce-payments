@@ -238,6 +238,9 @@ fi
 echo "Activating dev tools plugin"
 cli wp plugin activate "$DEV_TOOLS_DIR"
 
+echo "Disabling WPCOM requests proxy"
+cli wp option update wcpaydev_proxy 0
+
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Setting redirection to local server"
 	# host.docker.internal is not available in linux. Use ip address for docker0 interface to redirect requests from container.
@@ -252,9 +255,6 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Refresh WCPay Account Cache"
 	cli wp wcpay_dev refresh_account_cache
 else
-	echo "Disabling WPCOM requests proxy"
-	cli wp option update wcpaydev_proxy 0
-
 	echo "Setting Jetpack blog_id"
 	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_BLOG_TOKEN" --user_token="$E2E_USER_TOKEN"
 fi
