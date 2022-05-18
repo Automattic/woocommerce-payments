@@ -138,7 +138,7 @@ jobs:
 
       # Build WCPay client
       - name: Build WCPay Client
-        run: npm ci && npm run build:client
+        run: npm run build:client
 
       # Prepare test environment
       - name: Prepare test environment
