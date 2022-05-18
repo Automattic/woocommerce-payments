@@ -273,7 +273,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			return $pointer_params;
 		}
 
-		// translators: %1$s: <h3> tag, %2$s: </h3> tag, %3$s: <p> tag, %4$s: <em> tag, %5$s: </em> tag, %6$s: <em> tag, %7$s: </em> tag, %7$s: </p> tag.
+		// translators: %1$s: <h3> tag, %2$s: </h3> tag, %3$s: <p> tag, %4$s: <em> tag, %5$s: </em> tag, %6$s: <em> tag, %7$s: </em> tag, %8$s: </p> tag.
 		$pointer_params['typePointerContent'] = sprintf( _x( '%1$sChoose Subscription%2$s%3$sWooCommerce Payments adds two new subscription product types - %4$sSimple subscription%5$s and %6$sVariable subscription%7$s.%8$s', 'used in admin pointer script params in javascript as type pointer content', 'woocommerce-payments' ), '<h3>', '</h3>', '<p>', '<em>', '</em>', '<em>', '</em>', '</p>' );
 
 		return $pointer_params;
