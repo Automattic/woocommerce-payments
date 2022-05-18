@@ -81,6 +81,15 @@ jobs:
       - name: Clone WCPay Repository
         uses: actions/checkout@v2
 
+      # PHP setup
+      - name: PHP Setup
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools:       composer
+          extensions:  mysql
+          coverage:    none
+
       # Use node version from .nvmrc
       - name: Setup NodeJS
         uses: actions/setup-node@v2
@@ -122,15 +131,6 @@ jobs:
       - name: Update node dependencies
         if: steps.node-cache.outputs.cache-hit == 'true'
         run: npm update
-
-      # PHP setup
-      - name: PHP Setup
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          tools:       composer
-          extensions:  mysql
-          coverage:    none
 
       # Add GH token for cloning other repos
       - name: Add GH token for authentication
