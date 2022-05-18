@@ -156,6 +156,6 @@ jobs:
             name: e2e-screenshots
             path: |
               tests/e2e/screenshots
-              tests/e2e/docker/wp-content/debug.log
+              tests/e2e/docker/wordpress/wp-content/debug.log
             if-no-files-found: ignore
             retention-days: 5
