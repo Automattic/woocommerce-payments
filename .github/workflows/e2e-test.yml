@@ -142,8 +142,7 @@ jobs:
 
       # Prepare test environment
       - name: Prepare test environment
-        run: |
-          npm run test:e2e-setup
+        run: npm run test:e2e-setup
 
       # Run Tests
       - name: Run E2E Tests
