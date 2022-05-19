@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent fatal errors when fetching payment methods on the checkout block

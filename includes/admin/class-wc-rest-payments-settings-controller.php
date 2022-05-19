@@ -558,7 +558,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	private function update_account( WP_REST_Request $request ) {
 		$updated_fields_callback = function ( $value, string $key ) {
 			return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
-					$this->wcpay_gateway->get_option( $key ) !== $value;
+				$this->wcpay_gateway->get_option( $key ) !== $value;
 		};
 		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
 

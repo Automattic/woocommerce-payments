@@ -15,7 +15,7 @@ import {
 	useAccountBusinessSupportPhone,
 } from '../../../data';
 
-const ContactDetailsSection = () => {
+const ContactDetailsSection = ( { setSaveDisabled } ) => {
 	const [
 		accountBusinessSupportEmail,
 		setAccountBusinessSupportEmail,
@@ -26,20 +26,41 @@ const ContactDetailsSection = () => {
 		setAccountBusinessSupportPhone,
 	] = useAccountBusinessSupportPhone();
 
-	const businessSuppotEmailErrorMessage = useGetSavingError()?.data?.details
+	let businessSupportEmailErrorMessage = useGetSavingError()?.data?.details
 		?.account_business_support_email?.message;
 
-	const businessSuppotPhoneErrorMessage = useGetSavingError()?.data?.details
+	let businessSupportPhoneErrorMessage = useGetSavingError()?.data?.details
 		?.account_business_support_phone?.message;
+
+	if ( '' === accountBusinessSupportEmail ) {
+		businessSupportEmailErrorMessage = __(
+			'Support email cannot be empty, please specify.',
+			'woocommerce-payments'
+		);
+	}
+
+	if ( '' === accountBusinessSupportPhone ) {
+		businessSupportPhoneErrorMessage = __(
+			'Support phone number cannot be empty, please specify.',
+			'woocommerce-payments'
+		);
+	}
+
+	const updateSaveButtonAvailability = () => {
+		setSaveDisabled(
+			'' === accountBusinessSupportEmail ||
+				'' === accountBusinessSupportPhone
+		);
+	};
 
 	return (
 		<>
 			<h4>
 				{ __( 'Customer support contacts', 'woocommerce-payments' ) }
 			</h4>
-			{ businessSuppotEmailErrorMessage && (
+			{ businessSupportEmailErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
-					<span>{ businessSuppotEmailErrorMessage }</span>
+					<span>{ businessSupportEmailErrorMessage }</span>
 				</Notice>
 			) }
 			<TextControl
@@ -48,10 +69,11 @@ const ContactDetailsSection = () => {
 				value={ accountBusinessSupportEmail }
 				onChange={ setAccountBusinessSupportEmail }
 				type="email"
+				onBlur={ updateSaveButtonAvailability }
 			/>
-			{ businessSuppotPhoneErrorMessage && (
+			{ businessSupportPhoneErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
-					<span>{ businessSuppotPhoneErrorMessage }</span>
+					<span>{ businessSupportPhoneErrorMessage }</span>
 				</Notice>
 			) }
 			<TextControl
@@ -60,6 +82,7 @@ const ContactDetailsSection = () => {
 				value={ accountBusinessSupportPhone }
 				onChange={ setAccountBusinessSupportPhone }
 				type="tel"
+				onBlur={ updateSaveButtonAvailability }
 			/>
 		</>
 	);

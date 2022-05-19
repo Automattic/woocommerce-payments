@@ -7,6 +7,8 @@ import { registerPlugin } from '@wordpress/plugins';
 import { removeQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
+const { pluginScope } = window.wcpaySubscriptionProductOnboardingToast;
+
 const SubscriptionProductOnboardingToast = () => {
 	const { createInfoNotice } = useDispatch( 'core/notices' );
 
@@ -36,5 +38,5 @@ const SubscriptionProductOnboardingToast = () => {
 registerPlugin( 'wcpay-subscription-product-onboarding-toast', {
 	icon: null,
 	render: SubscriptionProductOnboardingToast,
-	scope: 'woocommerce',
+	scope: pluginScope,
 } );
