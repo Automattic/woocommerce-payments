@@ -13,6 +13,6 @@ For WooCommerce, we are still catching up to fully support this L-2 policy. The 
 
 As a contributor to WCPay, you should be mindful when adding new features and functions to your PRs as your code needs to work within proper ranges of WordPress and WooCommerce versions. Although we have [a CI workflow](https://github.com/Automattic/woocommerce-payments/blob/develop/.github/workflows/compatibility.yml) to check the compatibility between WCPay and these ranges, it's still good for contributors being aware about this policy.
 
-## When will WCPay fully support L-2 for WooCommerce core.
+## When will WCPay fully support L-2 for WooCommerce core?
 
 We have no ETA for this yet, and you're recommended to check the current minimum WooCommerce version in the code at the moment of writing your code. That said, we're working on a few approaches to reduce the gap between the real minimum supported version and the L-2 version. paJDYF-3fF-p2
