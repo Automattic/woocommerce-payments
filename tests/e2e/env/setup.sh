@@ -252,8 +252,8 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Setting Jetpack blog_id"
 	cli wp wcpay_dev set_blog_id "$BLOG_ID"
 
-	echo "Refresh WCPay Account Cache"
-	cli wp wcpay_dev refresh_account_cache
+	echo "Refresh WCPay Account Data"
+	cli wp wcpay_dev refresh_account_data
 else
 	echo "Setting Jetpack blog_id"
 	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_BLOG_TOKEN" --user_token="$E2E_USER_TOKEN"
