@@ -42,6 +42,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'account_data_refreshed' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_modal_scripts_and_styles' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_toast_script' ] );
+		add_filter( 'woocommerce_subscriptions_admin_pointer_script_parameters', [ $this, 'filter_admin_pointer_script_parameters' ] );
 
 		$this->account = $account;
 	}
@@ -258,5 +259,23 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 		);
 
 		wp_enqueue_script( 'wcpay-subscription-product-onboarding-toast' );
+	}
+
+	/**
+	 * Modifies the pointer content found on the "Add new product" page
+	 * when WooCommerce Subscriptions is not active.
+	 *
+	 * @param array $pointer_params Array of strings used on the "Add new product" page.
+	 * @return array Potentially modified array of strings used on the "Add new product" page.
+	 */
+	public function filter_admin_pointer_script_parameters( $pointer_params ) {
+		if ( $this->is_subscriptions_plugin_active() ) {
+			return $pointer_params;
+		}
+
+		// translators: %1$s: <h3> tag, %2$s: </h3> tag, %3$s: <p> tag, %4$s: <em> tag, %5$s: </em> tag, %6$s: <em> tag, %7$s: </em> tag, %8$s: </p> tag.
+		$pointer_params['typePointerContent'] = sprintf( _x( '%1$sChoose Subscription%2$s%3$sWooCommerce Payments adds two new subscription product types - %4$sSimple subscription%5$s and %6$sVariable subscription%7$s.%8$s', 'used in admin pointer script params in javascript as type pointer content', 'woocommerce-payments' ), '<h3>', '</h3>', '<p>', '<em>', '</em>', '<em>', '</em>', '</p>' );
+
+		return $pointer_params;
 	}
 }
