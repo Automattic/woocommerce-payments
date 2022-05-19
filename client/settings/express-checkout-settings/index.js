@@ -22,7 +22,7 @@ import WooIcon from 'wcpay/gateway-icons/woo';
 
 const methods = {
 	platform_checkout: {
-		title: 'Platform Checkout',
+		title: 'WooPay',
 		sections: [
 			{
 				section: 'general',
@@ -33,10 +33,13 @@ const methods = {
 						</div>
 						<p>
 							{ __(
-								'Allow your customers to collect payments via Platform Checkout.',
+								'Allow your customers to collect payments via WooPay.',
 								'woocommerce-payments'
 							) }
 						</p>
+						<div style={ { marginTop: 50 } }>
+							<h2>{ __( 'Checkout appearance' ) }</h2>
+						</div>
 					</>
 				),
 			},

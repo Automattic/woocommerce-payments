@@ -150,7 +150,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return void
 	 */
 	public function set_session() {
-		if ( ! $this->is_product() || ( isset( WC()->session ) && WC()->session->has_session() ) ) {
+		// Don't set session cookies on product pages to allow for caching when payment request
+		// buttons are disabled. But keep cookies if there is already an active WC session in place.
+		if (
+			! ( $this->is_product() && $this->should_show_payment_request_button() )
+			|| ( isset( WC()->session ) && WC()->session->has_session() )
+		) {
 			return;
 		}
 
@@ -662,6 +667,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display the payment request button.
 	 */
 	public function display_payment_request_button_html() {
+		if ( ! $this->should_show_payment_request_button() ) {
+			return;
+		}
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 			<div id="wcpay-payment-request-button">
@@ -675,6 +683,9 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Display payment request button separator.
 	 */
 	public function display_payment_request_button_separator_html() {
+		if ( ! $this->should_show_payment_request_button() ) {
+			return;
+		}
 		?>
 		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php

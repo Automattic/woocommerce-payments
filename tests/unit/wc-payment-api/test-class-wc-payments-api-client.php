@@ -7,6 +7,7 @@
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 
 /**
  * WC_Payments_API_Client unit tests.
@@ -101,6 +102,117 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $expected_amount, $result->get_amount() );
 		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+
+	/**
+	 * Test a successful call to create_intention with fraud prevention enabled.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_intention_with_fingerprinting_data() {
+		$expected_amount = 123;
+		$expected_status = 'succeeded';
+
+		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
+		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
+
+		Buyer_Fingerprinting_Service::set_instance( $mock_fingerprinting );
+		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
+
+		$mock_fraud_prevention
+			->expects( $this->never() )
+			->method( 'is_enabled' );
+
+		$mock_fingerprinting
+			->expects( $this->once() )
+			->method( 'get_hashed_data_for_customer' );
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'            => 'test_intention_id',
+				'amount'        => $expected_amount,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
+						],
+					],
+				],
+				'client_secret' => 'test_client_secret',
+				'currency'      => 'usd',
+			]
+		);
+
+		$this->payments_api_client->create_intention(
+			$expected_amount,
+			'usd',
+			'pm_123456789',
+			1
+		);
+	}
+
+	/**
+	 * Test a successful call to create_and_confirm_intention with fraud prevention enabled.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_and_confirm_intention_with_fingerprinting_data() {
+		$expected_amount = 123;
+		$expected_status = 'succeeded';
+
+		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
+		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
+
+		Buyer_Fingerprinting_Service::set_instance( $mock_fingerprinting );
+		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
+
+		$mock_fraud_prevention
+			->expects( $this->never() )
+			->method( 'is_enabled' );
+
+		$mock_fingerprinting
+			->expects( $this->once() )
+			->method( 'get_hashed_data_for_customer' );
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'            => 'test_intention_id',
+				'amount'        => $expected_amount,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
+						],
+					],
+				],
+				'client_secret' => 'test_client_secret',
+				'currency'      => 'usd',
+			]
+		);
+
+		$this->payments_api_client->create_and_confirm_intention(
+			$expected_amount,
+			'usd',
+			'pm_123456789',
+			1
+		);
 	}
 
 	/**
@@ -631,6 +743,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						],
 						'site_data'           => [
 							'site_username' => 'admin',
+							'site_locale'   => 'en_US',
 						],
 						'create_live_account' => true,
 						'actioned_notes'      => [
@@ -663,6 +776,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			],
 			[
 				'site_username' => 'admin',
+				'site_locale'   => 'en_US',
 			],
 			[
 				'd' => 4,
@@ -673,6 +787,62 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		// Assert the response is correct.
 		$this->assertEquals( [ 'url' => false ], $result );
+	}
+
+	/**
+	 * Test getting onboarding business types.
+	 *
+	 * @throws API_Exception
+	 */
+	public function test_get_onboarding_business_types() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/business_types?test_mode=0',
+					'method'          => 'GET',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				null,
+				true,
+				true // get_onboarding_business_types should use user token auth.
+			);
+
+		$this->payments_api_client->get_onboarding_business_types();
+	}
+
+	/**
+	 * Test getting onboarding required verification information.
+	 *
+	 * @throws API_Exception
+	 */
+	public function test_get_onboarding_required_verification_information() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				[
+					'url'             => 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/onboarding/required_verification_information?test_mode=0&country=country&type=type',
+					'method'          => 'GET',
+					'headers'         => [
+						'Content-Type' => 'application/json; charset=utf-8',
+						'User-Agent'   => 'Unit Test Agent/0.1.0',
+					],
+					'timeout'         => 70,
+					'connect_timeout' => 70,
+				],
+				null,
+				true,
+				true // get_onboarding_required_verification_information should use user token auth.
+			);
+
+		$this->payments_api_client->get_onboarding_required_verification_information( 'country', 'type' );
 	}
 
 	public function test_update_account() {
@@ -895,12 +1065,13 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 				),
 				wp_json_encode(
 					[
-						'test_mode'   => false,
-						'amount'      => $expected_amount,
-						'currency'    => $currency_code,
-						'metadata'    => [],
-						'level3'      => [],
-						'description' => 'Online Payment for example.org',
+						'test_mode'     => false,
+						'amount'        => $expected_amount,
+						'currency'      => $currency_code,
+						'receipt_email' => '',
+						'metadata'      => [],
+						'level3'        => [],
+						'description'   => 'Online Payment for example.org',
 					]
 				),
 				true,
@@ -994,6 +1165,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						'test_mode'            => false,
 						'amount'               => $expected_amount,
 						'currency'             => $currency_code,
+						'receipt_email'        => '',
 						'metadata'             => $metadata,
 						'level3'               => $level3_data,
 						'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace(
@@ -1052,6 +1224,120 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( $expected_amount, $result->get_amount() );
 		$this->assertEquals( $expected_status, $result->get_status() );
+	}
+
+
+	/**
+	 * Test a successful call to update_intention.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_update_intention_with_cc_when_link_enabled() {
+		$intention_id            = 'test_intention_id';
+		$currency_code           = 'eur';
+		$customer_id             = 'cus_123abc';
+		$expected_amount         = 123;
+		$expected_status         = 'succeeded';
+		$selected_payment_method = 'card';
+		$payment_country         = 'US';
+		$save_payment_method     = true;
+		$metadata                = [
+			'customer_name'  => 'Testy Testerson',
+			'customer_email' => 'test@test.com',
+			'site_url'       => 'http://example.org',
+			'order_id'       => 1,
+			'order_key'      => 'test_key',
+			'payment_type'   => 'single',
+		];
+		$level3_data             = [
+			'merchant_reference' => 'abc123',
+			'line_items'         => [
+				[
+					'discount_amount'     => 0,
+					'product_code'        => 'free-hug',
+					'product_description' => 'Free hug',
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'unit_cost'           => 0,
+				],
+			],
+		];
+
+		\WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ 'card', 'link' ] );
+
+		// Mock the HTTP client manually to assert we are sending the correct args.
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $data ) use ( $intention_id ) : bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id, 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
+				wp_json_encode(
+					[
+						'test_mode'            => false,
+						'amount'               => $expected_amount,
+						'currency'             => $currency_code,
+						'receipt_email'        => '',
+						'metadata'             => $metadata,
+						'level3'               => $level3_data,
+						'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace(
+							[
+								'https://',
+								'http://',
+							],
+							'',
+							$metadata['site_url']
+						),
+						'payment_method_types' => [ 'card' ],
+						'payment_country'      => 'US',
+						'customer'             => $customer_id,
+						'setup_future_usage'   => 'off_session',
+					]
+				),
+				true,
+				false
+			)
+			->will(
+				$this->returnValue(
+					[
+						'body'     => wp_json_encode(
+							[
+								'id'            => $intention_id,
+								'amount'        => $expected_amount,
+								'created'       => 1557224304,
+								'status'        => $expected_status,
+								'client_secret' => 'test_client_secret',
+								'currency'      => $currency_code,
+								'charges'       => [
+									'total_count' => 0,
+									'data'        => [],
+								],
+							]
+						),
+						'response' => [
+							'code'    => 200,
+							'message' => 'OK',
+						],
+					]
+				)
+			);
+
+		$this->payments_api_client->update_intention(
+			$intention_id,
+			$expected_amount,
+			$currency_code,
+			$save_payment_method,
+			$customer_id,
+			$metadata,
+			$level3_data,
+			$selected_payment_method,
+			$payment_country
+		);
 	}
 
 	/**
@@ -1416,7 +1702,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 		return [
 			'delete' => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
-				3,
+				4,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
@@ -1428,7 +1714,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			],
 			'get'    => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'GET' ],
-				3,
+				4,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
@@ -1440,7 +1726,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			],
 			'post'   => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
-				4,
+				5,
 				[
 					$this->anything(),
 					$this->callback( $string_should_not_include_secret ),
@@ -1542,9 +1828,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			[
 				'data' => [
 					[
-						'document_id' => 'test_document_1',
+						'document_id' => 'vat_invoice_1',
 						'date'        => '2020-01-02 17:46:02',
-						'type'        => 'test_document',
+						'type'        => 'vat_invoice',
 						'period_from' => '2020-01-01 00:00:00',
 						'period_to'   => '2020-01-31 23:59:59',
 					],
@@ -1554,9 +1840,9 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 
 		$documents = $this->payments_api_client->list_documents();
 
-		$this->assertSame( 'test_document_1', $documents['data'][0]['document_id'] );
+		$this->assertSame( 'vat_invoice_1', $documents['data'][0]['document_id'] );
 		$this->assertSame( '2020-01-02 17:46:02', $documents['data'][0]['date'] );
-		$this->assertSame( 'test_document', $documents['data'][0]['type'] );
+		$this->assertSame( 'vat_invoice', $documents['data'][0]['type'] );
 		$this->assertSame( '2020-01-01 00:00:00', $documents['data'][0]['period_from'] );
 		$this->assertSame( '2020-01-31 23:59:59', $documents['data'][0]['period_to'] );
 	}

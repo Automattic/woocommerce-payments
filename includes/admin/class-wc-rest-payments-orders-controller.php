@@ -98,6 +98,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Given an intent ID and an order ID, add the intent ID to the order and capture it.
+	 * Use-cases: Mobile apps using it for `card_present` and `interac_present` payment types.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
@@ -176,7 +177,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
 			// Actualize order status.
-			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $intent_status, $charge_id );
+			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'], $charge_id );
 
 			return rest_ensure_response(
 				[
@@ -192,6 +193,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Returns customer id from order. Create or update customer if needed.
+	 * Use-cases: It was used by older versions of our Mobile apps in their workflows.
 	 *
 	 * @deprecated 3.9.0
 	 *
@@ -245,6 +247,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Create a new in-person payment intent for the given order ID without confirming it.
+	 * Use-cases: Mobile apps using it for `card_present` payment types. (`interac_present` is handled by the apps via Stripe SDK).
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.

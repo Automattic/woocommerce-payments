@@ -70,6 +70,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ] );
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
+		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
 
 		$this->admin_child_pages = [
 			'wc-payments-overview'     => [
@@ -113,19 +114,6 @@ class WC_Payments_Admin {
 				],
 			],
 		];
-
-		if ( WC_Payments_Features::is_documents_section_enabled() ) {
-			$this->admin_child_pages['wc-payments-documents'] = [
-				'id'       => 'wc-payments-documents',
-				'title'    => __( 'Documents', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/documents',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 50,
-				],
-			];
-		}
 	}
 
 	/**
@@ -220,6 +208,23 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() && ! $should_render_full_menu ) {
+				wc_admin_register_page(
+					[
+						'id'         => 'wc-payments-onboarding',
+						'title'      => __( 'Onboarding', 'woocommerce-payments' ),
+						'parent'     => 'wc-payments',
+						'path'       => '/payments/onboarding',
+						'capability' => 'manage_woocommerce',
+						'nav_args'   => [
+							'parent' => 'wc-payments',
+						],
+					]
+				);
+				global $submenu;
+				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
+		}
+
 		if ( $should_render_full_menu ) {
 			if ( $this->account->is_card_present_eligible() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [
@@ -243,6 +248,19 @@ class WC_Payments_Admin {
 					'nav_args' => [
 						'parent' => 'wc-payments',
 						'order'  => 60,
+					],
+				];
+			}
+
+			if ( WC_Payments_Features::is_documents_section_enabled() ) {
+				$this->admin_child_pages['wc-payments-documents'] = [
+					'id'       => 'wc-payments-documents',
+					'title'    => __( 'Documents', 'woocommerce-payments' ),
+					'parent'   => 'wc-payments',
+					'path'     => '/payments/documents',
+					'nav_args' => [
+						'parent' => 'wc-payments',
+						'order'  => 50,
 					],
 				];
 			}
@@ -441,6 +459,7 @@ class WC_Payments_Admin {
 			],
 			'currentUserEmail'        => $current_user_email,
 			'currencyData'            => $currency_data,
+			'restUrl'                 => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 		];
 
 		wp_localize_script(
@@ -818,5 +837,30 @@ class WC_Payments_Admin {
 		}
 
 		$this->account->redirect_to_onboarding_page();
+	}
+
+	/**
+	 * Add woopay as a payment method to the edit order on admin.
+	 *
+	 * @param int $order_id order_id.
+	 */
+	public function show_woopay_payment_method_name_admin( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order || ! $order->get_meta( 'is_woopay' ) ) {
+			return;
+		}
+		?>
+		<div class="wc-payment-gateway-method-name-woopay-wrapper">
+			<?php echo esc_html_e( 'Paid with', 'woocommerce-payments' ) . ' '; ?>
+			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
+			<?php
+			if ( $order->get_meta( 'last4' ) ) {
+				echo esc_html_e( 'Card ending in', 'woocommerce-payments' ) . ' ';
+				echo esc_html( $order->get_meta( 'last4' ) );
+			}
+			?>
+		</div>
+
+		<?php
 	}
 }

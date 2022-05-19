@@ -55,6 +55,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	private $mock_wcpay_gateway;
 
 	/**
+	 * Mock customer service
+	 *
+	 * @var WC_Payments_Customer_Service|MockObject
+	 */
+	private $mock_customer_service;
+
+	/**
 	 * @var array
 	 */
 	private $event_body;
@@ -70,9 +77,11 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 								->disableOriginalConstructor()
 								->getMock();
 
-		$account = new WC_Payments_Account( $mock_api_client );
+		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
-		$this->order_service = new WC_Payments_Order_Service();
+		$this->order_service = new WC_Payments_Order_Service(
+			$this->createMock( WC_Payments_API_Client::class )
+		);
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 									->disableOriginalConstructor()
@@ -85,7 +94,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_wcpay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 
-		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service, $this->mock_wcpay_gateway );
+		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
+
+		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $mock_wcpay_account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service, $this->mock_wcpay_gateway, $this->mock_customer_service );
 
 		// Build the event body data.
 		$event_object = [];

@@ -139,28 +139,6 @@ export function updateAccountBrandingLogo( accountBrandingLogo ) {
 	} );
 }
 
-export function updateAccountBrandingIcon( accountBrandingIcon ) {
-	return updateSettingsValues( {
-		account_branding_icon: accountBrandingIcon,
-	} );
-}
-
-export function updateAccountBrandingPrimaryColor(
-	accountBrandingPrimaryColor
-) {
-	return updateSettingsValues( {
-		account_branding_primary_color: accountBrandingPrimaryColor,
-	} );
-}
-
-export function updateAccountBrandingSecondaryColor(
-	accountBrandingSecondaryColor
-) {
-	return updateSettingsValues( {
-		account_branding_secondary_color: accountBrandingSecondaryColor,
-	} );
-}
-
 export function* saveSettings() {
 	let error = null;
 	try {
@@ -205,6 +183,8 @@ export function updatePlatformCheckoutCustomMessage( message ) {
 	} );
 }
 
-export function updateIsFraudPreventionEnabled( isEnabled ) {
-	return updateSettingsValues( { is_fraud_prevention_enabled: isEnabled } );
+export function updatePlatformCheckoutStoreLogo( storeLogo ) {
+	return updateSettingsValues( {
+		platform_checkout_store_logo: storeLogo,
+	} );
 }

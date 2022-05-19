@@ -27,10 +27,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	// Make the iframe.
 	const iframe = document.createElement( 'iframe' );
-	iframe.title = __(
-		'Platform checkout SMS code verification',
-		'woocommerce-payments'
-	);
+	iframe.title = __( 'WooPay SMS code verification', 'woocommerce-payments' );
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
 
 	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
@@ -87,8 +84,18 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			return;
 		}
 
-		// Check if the iframe is off the top of the screen and scroll back into view.
-		if ( 0 >= iframe.getBoundingClientRect().top ) {
+		/**
+		 * If the iframe is off the top of the screen
+		 * OR the iframe is off the bottom of the screen
+		 * scroll the window so the iframe is in view.
+		 */
+		if (
+			0 >= iframe.getBoundingClientRect().top ||
+			0 >=
+				window.innerHeight -
+					( iframe.getBoundingClientRect().height +
+						iframe.getBoundingClientRect().top )
+		) {
 			const topOffset = 50;
 			const scrollTop =
 				document.documentElement.scrollTop +
@@ -200,13 +207,14 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const platformCheckoutLocateUser = ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
-		const emailParam = new URLSearchParams();
-		emailParam.append( 'email', email );
+		const emailExistsQuery = new URLSearchParams();
+		emailExistsQuery.append( 'email', email );
+		emailExistsQuery.append( 'test_mode', !! getConfig( 'testMode' ) );
 
 		fetch(
 			`${ getConfig(
 				'platformCheckoutHost'
-			) }/wp-json/platform-checkout/v1/user/exists?${ emailParam.toString() }`
+			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`
 		)
 			.then( ( response ) => response.json() )
 			.then( ( data ) => {
@@ -244,9 +252,25 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		return pattern.test( value );
 	};
 
-	// Check the initial value of the email input and trigger input validation.
-	if ( validateEmail( platformCheckoutEmailInput.value ) ) {
-		platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+	// Prevent show platform checkout iframe if the page comes from
+	// the back button on platform checkout itself.
+	const searchParams = new URLSearchParams( window.location.search );
+
+	if ( 'true' !== searchParams.get( 'skip_platform_checkout' ) ) {
+		// Check the initial value of the email input and trigger input validation.
+		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
+			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+		}
+	} else {
+		searchParams.delete( 'skip_platform_checkout' );
+
+		let { pathname } = window.location;
+
+		if ( '' !== searchParams.toString() ) {
+			pathname += '?' + searchParams.toString();
+		}
+
+		history.replaceState( null, null, pathname );
 	}
 
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
@@ -272,7 +296,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
 				);
-				api.initPlatformCheckout().then( ( response ) => {
+				api.initPlatformCheckout(
+					platformCheckoutEmailInput.value,
+					e.data.platformCheckoutUserSession
+				).then( ( response ) => {
 					if ( 'success' === response.result ) {
 						window.location = response.url;
 					} else {

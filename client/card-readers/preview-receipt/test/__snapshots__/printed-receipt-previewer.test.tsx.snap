@@ -4,6 +4,7 @@ exports[`PrintedReceiptPreviewer should render correctly 1`] = `
 <div>
   <iframe
     class="card-readers-preview-receipt__preview"
+    srcdoc="<!DOCTYPE html>"
     title="Preview Receipt"
   />
 </div>

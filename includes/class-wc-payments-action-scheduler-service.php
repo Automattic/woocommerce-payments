@@ -89,6 +89,16 @@ class WC_Payments_Action_Scheduler_Service {
 		if ( empty( $payment_method ) ) {
 			return false;
 		}
+		$order_mode = $order->get_meta( '_wcpay_mode' );
+
+		if ( $order_mode ) {
+			$current_mode = $this->payments_api_client->is_in_test_mode() ? 'test' : 'prod';
+			if ( $current_mode !== $order_mode ) {
+				// If mode doesn't match make sure to stop order tracking to prevent order tracking issues.
+				// False will be returned so maybe future crons will have correct mode.
+				return false;
+			}
+		}
 
 		// Send the order data to the Payments API to track it.
 		$response = $this->payments_api_client->track_order(
@@ -97,6 +107,7 @@ class WC_Payments_Action_Scheduler_Service {
 				[
 					'_payment_method_id'  => $payment_method,
 					'_stripe_customer_id' => $order->get_meta( '_stripe_customer_id' ),
+					'_wcpay_mode'         => $order_mode,
 				]
 			),
 			$is_update

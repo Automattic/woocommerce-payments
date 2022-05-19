@@ -41,6 +41,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( '_payment_method_id', 'pm_131535132531', true );
 		$order->add_meta_data( '_stripe_customer_id', 'cu_123', true );
+		$order->add_meta_data( '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod', true );
 		$order->save_meta_data();
 
 		$this->mock_api_client->expects( $this->once() )
@@ -73,6 +74,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( '_payment_method_id', 'pm_131535132531', true );
 		$order->add_meta_data( '_stripe_customer_id', 'cu_123', true );
+		$order->add_meta_data( '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod', true );
 		$order->save_meta_data();
 
 		$this->mock_api_client->expects( $this->once() )
@@ -81,6 +83,19 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 			->willReturn( [ 'result' => 'success' ] );
 
 		$this->assertTrue( $this->action_scheduler_service->track_update_order_action( $order->get_id() ) );
+	}
+
+	public function test_track_update_order_action_will_not_track_order_if_env_is_changed() {
+		$order = WC_Helper_Order::create_order();
+		$order->add_meta_data( '_payment_method_id', 'pm_13153513253', true );
+		$order->add_meta_data( '_stripe_customer_id', 'cu_123', true );
+		$order->add_meta_data( '_wcpay_mode', 'foo', true ); // Random value so we are sure that env will be changed.
+		$order->save_meta_data();
+
+		$this->mock_api_client->expects( $this->never() )
+			->method( 'track_order' );
+
+		$this->action_scheduler_service->track_update_order_action( $order->get_id() );
 	}
 
 	public function test_track_update_order_action_with_no_payment_method() {
@@ -114,6 +129,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
 			[
 				'_payment_method_id'  => $order->get_meta( '_payment_method_id' ),
 				'_stripe_customer_id' => $order->get_meta( '_stripe_customer_id' ),
+				'_wcpay_mode'         => WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod',
 			]
 		);
 	}

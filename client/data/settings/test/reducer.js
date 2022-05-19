@@ -15,11 +15,9 @@ import {
 	updateAccountBusinessSupportEmail,
 	updateAccountBusinessSupportPhone,
 	updateAccountBrandingLogo,
-	updateAccountBrandingIcon,
-	updateAccountBrandingPrimaryColor,
-	updateAccountBrandingSecondaryColor,
 	updateIsPlatformCheckoutEnabled,
 	updatePlatformCheckoutCustomMessage,
+	updatePlatformCheckoutStoreLogo,
 } from '../actions';
 
 describe( 'Settings reducer tests', () => {
@@ -329,21 +327,6 @@ describe( 'Settings reducer tests', () => {
 				stateKey: 'account_branding_logo',
 				settingValue: 'Branding logo',
 			},
-			{
-				updateFunc: updateAccountBrandingIcon,
-				stateKey: 'account_branding_icon',
-				settingValue: 'Branding icon',
-			},
-			{
-				updateFunc: updateAccountBrandingPrimaryColor,
-				stateKey: 'account_branding_primary_color',
-				settingValue: 'Branding primary color',
-			},
-			{
-				updateFunc: updateAccountBrandingSecondaryColor,
-				stateKey: 'account_branding_secondary_color',
-				settingValue: 'Branding secondary color',
-			},
 		];
 
 		test.each( merchantSettings )( 'toggles `%j`', ( setting ) => {
@@ -472,6 +455,48 @@ describe( 'Settings reducer tests', () => {
 				foo: 'bar',
 				data: {
 					platform_checkout_custom_message: 'test',
+					baz: 'quux',
+				},
+				savingError: null,
+			} );
+		} );
+	} );
+
+	describe( 'SET_PLATFORM_CHECKOUT_STORE_LOGO', () => {
+		test( 'toggle `data.platform_checkout_store_logo`', () => {
+			const oldState = {
+				data: {
+					platform_checkout_store_logo: '',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updatePlatformCheckoutStoreLogo( 'test' )
+			);
+
+			expect( state.data.platform_checkout_store_logo ).toEqual( 'test' );
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					platform_checkout_store_logo: '',
+					baz: 'quux',
+				},
+				savingError: {},
+			};
+
+			const state = reducer(
+				oldState,
+				updatePlatformCheckoutStoreLogo( 'test' )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					platform_checkout_store_logo: 'test',
 					baz: 'quux',
 				},
 				savingError: null,

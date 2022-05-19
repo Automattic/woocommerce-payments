@@ -15,6 +15,7 @@ use WCPay\Exceptions\Connection_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Logger;
 use WCPay\MultiCurrency\Currency;
+use WCPay\Session_Rate_Limiter;
 
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
@@ -34,7 +35,6 @@ use WC_Subscriptions_Cart;
 use WP_UnitTestCase;
 use WP_User;
 use Exception;
-use Session_Rate_Limiter;
 
 /**
  * Overriding global function within namespace for testing
@@ -116,7 +116,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	 *
 	 * @var WC_Payments_Account
 	 */
-	private $wcpay_account;
+	private $mock_wcpay_account;
 
 	/**
 	 * Mocked value of return_url.
@@ -159,12 +159,13 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'get_payment_method',
 					'is_server_connected',
 					'get_charge',
+					'get_timeline',
 				]
 			)
 			->getMock();
 
-		// Arrange: Create new WC_Payments_Account instance to use later.
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
@@ -193,6 +194,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			Ideal_Payment_Method::class,
 			Sepa_Payment_Method::class,
 			Becs_Payment_Method::class,
+			Link_Payment_Method::class,
 		];
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
@@ -204,7 +206,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 		}
 
-		$this->order_service = new WC_Payments_Order_Service();
+		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		// Arrange: Mock UPE_Payment_Gateway so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -212,7 +214,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
-					$this->wcpay_account,
+					$this->mock_wcpay_account,
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
@@ -1472,6 +1474,101 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
 		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
 		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
+	}
+
+	public function test_remove_link_payment_method_if_card_disabled() {
+
+		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_payment_methods,
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethods(
+				[
+					'get_upe_enabled_payment_method_statuses',
+					'get_upe_enabled_payment_method_ids',
+				]
+			)
+			->getMock();
+
+		$mock_upe_gateway
+			->expects( $this->once() )
+			->method( 'get_upe_enabled_payment_method_ids' )
+			->will(
+				$this->returnValue( [ 'link' ] )
+			);
+		$mock_upe_gateway
+			->expects( $this->once() )
+			->method( 'get_upe_enabled_payment_method_statuses' )
+			->will(
+				$this->returnValue( [ 'link_payments' => [ 'status' => 'active' ] ] )
+			);
+
+		$this->assertSame( $mock_upe_gateway->get_payment_fields_js_config()['paymentMethodsConfig'], [] );
+	}
+
+	public function test_link_payment_method_if_card_enabled() {
+		self::$mock_site_currency = 'USD';
+
+		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_payment_methods,
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethods(
+				[
+					'get_upe_enabled_payment_method_statuses',
+					'get_upe_enabled_payment_method_ids',
+				]
+			)
+			->getMock();
+		$mock_upe_gateway
+			->expects( $this->once() )
+			->method( 'get_upe_enabled_payment_method_ids' )
+			->will(
+				$this->returnValue( [ 'card', 'link' ] )
+			);
+		$mock_upe_gateway
+			->expects( $this->once() )
+			->method( 'get_upe_enabled_payment_method_statuses' )
+			->will(
+				$this->returnValue(
+					[
+						'link_payments' => [ 'status' => 'active' ],
+						'card_payments' => [ 'status' => 'active' ],
+					]
+				)
+			);
+
+		$this->assertSame(
+			$mock_upe_gateway->get_payment_fields_js_config()['paymentMethodsConfig'],
+			[
+				'card' => [
+					'isReusable' => true,
+					'title'      => 'Credit card / debit card',
+				],
+				'link' => [
+					'isReusable' => true,
+					'title'      => 'Link',
+				],
+			]
+		);
 	}
 
 	public function maybe_filter_gateway_title_data_provider() {

@@ -6,26 +6,32 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import LockIcon from '../icons/lock-icon';
-import PhoneIcon from '../icons/phone-icon';
+import LockIcon from '../icons/lock';
+import PhoneIcon from '../icons/phone';
 
 const AdditionalInformation = () => {
 	return (
 		<div>
 			<div className="additional-information">
-				<PhoneIcon />
+				<div>
+					<PhoneIcon />
+				</div>
 				<span>
 					{ __(
-						"Next time time you checkout, we'll send you a text message to access your saved information.",
+						'Enter your mobile phone number to save your checkout information for faster checkouts here, ' +
+							'and at other stores powered by WooPay.',
 						'woocommerce-payments'
 					) }
 				</span>
 			</div>
 			<div className="additional-information">
-				<LockIcon />
+				<div>
+					<LockIcon />
+				</div>
 				<span>
 					{ __(
-						'Your personal details will be encrypted from end to end and payments go through 100% secure servers.',
+						'Next time you checkout on a WooPay powered store, you’ll receive ' +
+							'a code by text message to quickly and securely complete your purchase with your saved information.',
 						'woocommerce-payments'
 					) }
 				</span>
