@@ -28,7 +28,6 @@ jest.mock( '../../../data', () => ( {
 	usePlatformCheckoutStoreLogo: jest
 		.fn()
 		.mockReturnValue( [ 'test', jest.fn() ] ),
-	useAccountBusinessName: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),

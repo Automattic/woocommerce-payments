@@ -16,14 +16,11 @@ import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
 	usePlatformCheckoutStoreLogo,
-	useAccountBusinessName,
 } from 'wcpay/data';
 
 const CUSTOM_MESSAGE_MAX_LENGTH = 100;
 
 const PlatformCheckoutSettings = () => {
-	const [ accountBusinessName ] = useAccountBusinessName();
-
 	const [
 		isPlatformCheckoutEnabled,
 		updateIsPlatformCheckoutEnabled,
@@ -57,7 +54,7 @@ const PlatformCheckoutSettings = () => {
 			<Card style={ { marginTop: 12 } }>
 				<div className="platform-checkout-settings__preview">
 					<PlatformCheckoutPreview
-						storeName={ accountBusinessName }
+						storeName={ wcSettings.siteTitle }
 						storeLogo={ platformCheckoutStoreLogo }
 					></PlatformCheckoutPreview>
 					<div className="platform-checkout-settings__preview-fade"></div>
