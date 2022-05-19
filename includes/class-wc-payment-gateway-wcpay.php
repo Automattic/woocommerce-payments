@@ -159,6 +159,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = WC_Payments_Utils::esc_interpolated_html(
+			/* translators: tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
 			__(
 				'Payments made simple, with no monthly fees – designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.<br/><br/>
 			By using WooCommerce Payments you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
@@ -170,9 +171,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'privacyLink' => '<a href="https://automattic.com/privacy/" target="_blank" rel="noopener noreferrer">',
 			]
 		);
-		$this->title              = __( 'Credit card / debit card', 'woocommerce-payments' );
-		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
-		$this->supports           = [
+		$this->title       = __( 'Credit card / debit card', 'woocommerce-payments' );
+		$this->description = __( 'Enter your card details', 'woocommerce-payments' );
+		$this->supports    = [
 			'products',
 			'refunds',
 		];
