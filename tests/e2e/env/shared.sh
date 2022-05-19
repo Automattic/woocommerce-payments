@@ -10,8 +10,6 @@ export SERVER_CONTAINER="woocommerce_payments_server_wordpress_e2e"
 export DEV_TOOLS_DIR="wcp-dev-tools"
 export DEV_TOOLS_PATH="$E2E_ROOT/deps/$DEV_TOOLS_DIR"
 export CLIENT_CONTAINER="wcp_e2e_wordpress"
-export PHP_CONF_DIR='/usr/local/etc/php/conf.d'
-export DEBUG=${DEBUG-true}
 
 step() {
 	echo

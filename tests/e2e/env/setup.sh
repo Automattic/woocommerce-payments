@@ -61,7 +61,6 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Secrets created"
 
 	step "Starting SERVER containers"
-	redirect_output docker builder prune -f
 	redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
@@ -248,14 +247,12 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	if [[ -n $CI ]]; then
 		DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 	fi
-
-	echo "Redirecting API requests to http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
 	cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
 
 	echo "Setting Jetpack blog_id"
 	cli wp wcpay_dev set_blog_id "$BLOG_ID"
 
-	echo "Refresh WCPay Account Cache"
+	echo "Refresh WCPay Account Data"
 	cli wp wcpay_dev refresh_account_data
 else
 	echo "Setting Jetpack blog_id"
