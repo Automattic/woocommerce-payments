@@ -158,10 +158,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->icon               = ''; // TODO: icon.
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
-		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
-		$this->title              = __( 'Credit card / debit card', 'woocommerce-payments' );
-		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
-		$this->supports           = [
+		$this->method_description = WC_Payments_Utils::esc_interpolated_html(
+			/* translators: tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
+			__(
+				'Payments made simple, with no monthly fees – designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.<br/><br/>
+			By using WooCommerce Payments you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
+				'woocommerce-payments'
+			),
+			[
+				'br'          => '<br/>',
+				'tosLink'     => '<a href="https://wordpress.com/tos/" target="_blank" rel="noopener noreferrer">',
+				'privacyLink' => '<a href="https://automattic.com/privacy/" target="_blank" rel="noopener noreferrer">',
+			]
+		);
+		$this->title       = __( 'Credit card / debit card', 'woocommerce-payments' );
+		$this->description = __( 'Enter your card details', 'woocommerce-payments' );
+		$this->supports    = [
 			'products',
 			'refunds',
 		];
@@ -1180,6 +1192,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$client_secret = $intent->get_client_secret();
 			$currency      = $intent->get_currency();
 			$next_action   = $intent->get_next_action();
+			// We update the payment method ID server side when it's necessary to clone payment methods,
+			// for example when saving a payment method to a platform customer account. When this happens
+			// we need to make sure the payment method on the order matches the one on the merchant account
+			// not the one on the platform account. The payment method ID is updated on the order further
+			// down.
+			$payment_method = $intent->get_payment_method_id() ?? $payment_method;
 
 			if ( 'requires_action' === $status && $payment_information->is_merchant_initiated() ) {
 				// Allow 3rd-party to trigger some action if needed.
