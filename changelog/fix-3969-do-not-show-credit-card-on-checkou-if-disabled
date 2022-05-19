@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Do not show the "card" payment method if it is disabled in the settings

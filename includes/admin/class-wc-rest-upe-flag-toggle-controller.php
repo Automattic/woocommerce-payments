@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Payment_Method;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -125,13 +127,19 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 		update_option( WC_Payments_Features::UPE_FLAG_NAME, 'disabled' );
 
 		// resetting a few other things:
-		// removing the UPE payment methods and _only_ leaving "card",
+		// removing the UPE payment methods and _only_ leaving the rest,
 		// just in case the user added additional payment method types.
+
+		$current_enabled_payment_method_ids = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
+		$new_enabled_payment_method_ids     = array_filter(
+			$current_enabled_payment_method_ids,
+			function ( $method_id ) {
+				return Payment_Method::CARD === $method_id;
+			}
+		);
 		$this->wcpay_gateway->update_option(
 			'upe_enabled_payment_method_ids',
-			[
-				'card',
-			]
+			$new_enabled_payment_method_ids
 		);
 
 		// removing the note from the database.

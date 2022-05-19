@@ -17,7 +17,10 @@ const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
 		Boolean( defaultIsUpeEnabled )
 	);
 	const [ status, setStatus ] = useState( 'resolved' );
-	const [ , setEnabledPaymentMethods ] = useEnabledPaymentMethodIds();
+	const [
+		enabledPaymentMethodIds,
+		setEnabledPaymentMethods,
+	] = useEnabledPaymentMethodIds();
 
 	const updateFlag = useCallback(
 		( value ) => {
@@ -42,7 +45,10 @@ const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
 					// we're just duplicating the effort
 					// to ensure that the non-UPE payment methods are removed when the flag is disabled
 					if ( ! value ) {
-						setEnabledPaymentMethods( [ 'card' ] );
+						const newEnabledPaymentMethodsIds = enabledPaymentMethodIds.filter(
+							( methodId ) => 'card' === methodId
+						);
+						setEnabledPaymentMethods( newEnabledPaymentMethodsIds );
 					}
 					setStatus( 'resolved' );
 				} )
@@ -50,7 +56,12 @@ const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
 					setStatus( 'error' );
 				} );
 		},
-		[ setStatus, setIsUpeEnabled, setEnabledPaymentMethods ]
+		[
+			setStatus,
+			setIsUpeEnabled,
+			enabledPaymentMethodIds,
+			setEnabledPaymentMethods,
+		]
 	);
 
 	const contextValue = useMemo(

@@ -17,6 +17,7 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Constants\Payment_Method;
+use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
@@ -508,8 +509,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function is_available() {
 		// Disable the gateway if using live mode without HTTPS set up or the currency is not
-		// available in the country of the account.
-		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() ) {
+		// available in the country of the account or there are no payment methods enabled at checkout.
+		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() || empty( $this->get_payment_method_ids_enabled_at_checkout() ) ) {
 			return false;
 		}
 
@@ -2721,9 +2722,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_upe_enabled_payment_method_ids() {
 		return $this->get_option(
 			'upe_enabled_payment_method_ids',
-			[
-				'card',
-			]
+			[]
 		);
 	}
 
@@ -2781,9 +2780,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_payment_method_ids_enabled_at_checkout( $order_id = null, $force_currency_check = false ) {
-		return [
-			'card',
-		];
+		return array_filter(
+			$this->get_upe_enabled_payment_method_ids(),
+			function ( $method_id ) {
+				return Payment_Method::CARD === $method_id;
+			}
+		);
 	}
 
 	/**
