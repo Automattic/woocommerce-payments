@@ -989,6 +989,8 @@ class WC_Payments {
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://woo.app';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 
+		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
+
 		$body = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
@@ -998,7 +1000,7 @@ class WC_Payments {
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
 				'store_name'        => get_bloginfo( 'name' ),
-				'store_logo'        => add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . self::get_gateway()->get_option( 'platform_checkout_store_logo' ) ) ),
+				'store_logo'        => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
 				'custom_message'    => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
 				'blog_id'           => Jetpack_Options::get_option( 'id' ),
 				'blog_url'          => get_site_url(),
