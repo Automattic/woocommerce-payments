@@ -1749,6 +1749,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			'customer_email' => $order->get_billing_email(),
 			'site_url'       => esc_url( get_site_url() ),
 			'order_id'       => $order->get_id(),
+			'order_number'   => $order->get_order_number(),
 			'order_key'      => $order->get_order_key(),
 			'payment_type'   => Payment_Type::SINGLE(),
 		];
