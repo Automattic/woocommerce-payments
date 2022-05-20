@@ -951,10 +951,16 @@ class WC_Payments {
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 
-			// This injects the payments API into core, so the WooCommerce Blocks plugin is not necessary.
-			// The payments API is currently only available in feature builds (with flag `WC_BLOCKS_IS_FEATURE_PLUGIN`).
-			// We should remove this once it's available in core by default.
-			if ( ! defined( 'WC_BLOCKS_IS_FEATURE_PLUGIN' ) && class_exists( 'Automattic\WooCommerce\Blocks\Payments\Api' ) ) {
+			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
+			// We should remove this once both features are available by default in the WC minimum supported version.
+			// - The payments API is currently only available in feature builds (with flag `WC_BLOCKS_IS_FEATURE_PLUGIN`).
+			// - The Draft order status is available after WC blocks 7.5.0.
+			if (
+				! defined( 'WC_BLOCKS_IS_FEATURE_PLUGIN' ) &&
+				class_exists( 'Automattic\WooCommerce\Blocks\Package' ) &&
+				class_exists( 'Automattic\WooCommerce\Blocks\Payments\Api' )
+			) {
+				// Register payments API.
 				$blocks_package_container = Automattic\WooCommerce\Blocks\Package::container();
 				$blocks_package_container->register(
 					Automattic\WooCommerce\Blocks\Payments\Api::class,
@@ -965,6 +971,19 @@ class WC_Payments {
 					}
 				);
 				$blocks_package_container->get( Automattic\WooCommerce\Blocks\Payments\Api::class );
+
+				// Register draft orders.
+				$draft_orders = $blocks_package_container->get( Automattic\WooCommerce\Blocks\Domain\Services\DraftOrders::class );
+
+				add_filter( 'wc_order_statuses', [ $draft_orders, 'register_draft_order_status' ] );
+				add_filter( 'woocommerce_register_shop_order_post_statuses', [ $draft_orders, 'register_draft_order_post_status' ] );
+				add_filter( 'woocommerce_analytics_excluded_order_statuses', [ $draft_orders, 'append_draft_order_post_status' ] );
+				add_filter( 'woocommerce_valid_order_statuses_for_payment', [ $draft_orders, 'append_draft_order_post_status' ] );
+				add_filter( 'woocommerce_valid_order_statuses_for_payment_complete', [ $draft_orders, 'append_draft_order_post_status' ] );
+				// Hook into the query to retrieve My Account orders so draft status is excluded.
+				add_action( 'woocommerce_my_account_my_orders_query', [ $draft_orders, 'delete_draft_order_post_status_from_args' ] );
+				add_action( 'woocommerce_cleanup_draft_orders', [ $draft_orders, 'delete_expired_draft_orders' ] );
+				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
 		}
 	}
@@ -1000,6 +1019,8 @@ class WC_Payments {
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 
+		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
+
 		$body = [
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
@@ -1009,7 +1030,7 @@ class WC_Payments {
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
 				'store_name'        => get_bloginfo( 'name' ),
-				'store_logo'        => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
+				'store_logo'        => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
 				'custom_message'    => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
 				'blog_id'           => Jetpack_Options::get_option( 'id' ),
 				'blog_url'          => get_site_url(),
@@ -1017,6 +1038,7 @@ class WC_Payments {
 				'blog_shop_url'     => get_permalink( wc_get_page_id( 'shop' ) ),
 				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
+				'test_mode'         => self::get_gateway()->is_in_test_mode(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];

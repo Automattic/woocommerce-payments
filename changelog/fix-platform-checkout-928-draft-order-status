@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Register draft order status hooks to stores with platform checkout enabled.
