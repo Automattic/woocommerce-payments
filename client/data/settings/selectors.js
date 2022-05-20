@@ -162,3 +162,7 @@ export const getIsPlatformCheckoutEnabled = ( state ) => {
 export const getPlatformCheckoutCustomMessage = ( state ) => {
 	return getSettings( state ).platform_checkout_custom_message || '';
 };
+
+export const getPlatformCheckoutStoreLogo = ( state ) => {
+	return getSettings( state ).platform_checkout_store_logo || '';
+};

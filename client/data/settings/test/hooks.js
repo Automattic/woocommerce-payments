@@ -17,6 +17,7 @@ import {
 	usePaymentRequestLocations,
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
+	usePlatformCheckoutStoreLogo,
 } from '../hooks';
 import { STORE_NAME } from '../../constants';
 
@@ -318,6 +319,35 @@ describe( 'Settings hooks tests', () => {
 			);
 			expect(
 				actions.updatePlatformCheckoutCustomMessage
+			).toHaveBeenCalledWith( messageAfterUpdate );
+		} );
+	} );
+
+	describe( 'usePlatformCheckoutStoreLogo()', () => {
+		test( 'returns and updates platform checkout custom message', () => {
+			const messageBeforeUpdate = '';
+			const messageAfterUpdate = 'test';
+
+			actions = {
+				updatePlatformCheckoutStoreLogo: jest.fn(),
+			};
+
+			selectors = {
+				getPlatformCheckoutStoreLogo: jest.fn(
+					() => messageBeforeUpdate
+				),
+			};
+
+			const [
+				platformCheckoutStoreLogo,
+				updatePlatformCheckoutStoreLogo,
+			] = usePlatformCheckoutStoreLogo();
+
+			updatePlatformCheckoutStoreLogo( messageAfterUpdate );
+
+			expect( platformCheckoutStoreLogo ).toEqual( messageBeforeUpdate );
+			expect(
+				actions.updatePlatformCheckoutStoreLogo
 			).toHaveBeenCalledWith( messageAfterUpdate );
 		} );
 	} );
