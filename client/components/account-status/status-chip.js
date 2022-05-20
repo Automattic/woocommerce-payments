@@ -31,9 +31,6 @@ const StatusChip = ( props ) => {
 	} else if ( accountStatus.startsWith( 'rejected' ) ) {
 		description = __( 'Rejected', 'woocommerce-payments' );
 		type = 'light';
-	} else if ( accountStatus.startsWith( 'rejected' ) ) {
-		description = __( 'Rejected', 'woocommerce-payments' );
-		type = 'light';
 	}
 
 	return <Chip message={ description } type={ type } isCompact />;
