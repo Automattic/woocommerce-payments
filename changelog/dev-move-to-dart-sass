@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Start using dart-sass for sass compilation by upgrading @wordpress/scripts package to 12.6.0

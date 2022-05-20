@@ -18,6 +18,7 @@ import {
 	getAccountBrandingLogo,
 	getIsPlatformCheckoutEnabled,
 	getPlatformCheckoutCustomMessage,
+	getPlatformCheckoutStoreLogo,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -255,6 +256,29 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: { data: {} } } ],
 		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
 			expect( getPlatformCheckoutCustomMessage( state ) ).toEqual( '' );
+		} );
+	} );
+
+	describe( 'getPlatformCheckoutStoreLogo()', () => {
+		test( 'returns the value of state.settings.data.platform_checkout_store_logo', () => {
+			const state = {
+				settings: {
+					data: {
+						platform_checkout_store_logo: 'test',
+					},
+				},
+			};
+
+			expect( getPlatformCheckoutStoreLogo( state ) ).toEqual( 'test' );
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
+			expect( getPlatformCheckoutStoreLogo( state ) ).toEqual( '' );
 		} );
 	} );
 

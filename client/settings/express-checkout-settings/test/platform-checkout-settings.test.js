@@ -13,11 +13,17 @@ import PlatformCheckoutSettings from '../platform-checkout-settings';
 import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
+	usePlatformCheckoutStoreLogo,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
 	usePlatformCheckoutEnabledSettings: jest.fn(),
 	usePlatformCheckoutCustomMessage: jest.fn(),
+	usePlatformCheckoutStoreLogo: jest.fn(),
+} ) );
+
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
 } ) );
 
 const getMockPlatformCheckoutEnabledSettings = (
@@ -29,6 +35,10 @@ const getMockPlatformCheckoutCustomMessage = (
 	message,
 	updatePlatformCheckoutCustomMessageHandler
 ) => [ message, updatePlatformCheckoutCustomMessageHandler ];
+const getMockPlatformCheckoutStoreLogo = (
+	message,
+	updatePlatformCheckoutStoreLogoHandler
+) => [ message, updatePlatformCheckoutStoreLogoHandler ];
 
 describe( 'PlatformCheckoutSettings', () => {
 	beforeEach( () => {
@@ -39,6 +49,14 @@ describe( 'PlatformCheckoutSettings', () => {
 		usePlatformCheckoutCustomMessage.mockReturnValue(
 			getMockPlatformCheckoutCustomMessage( '', jest.fn() )
 		);
+
+		usePlatformCheckoutStoreLogo.mockReturnValue(
+			getMockPlatformCheckoutStoreLogo( '', jest.fn() )
+		);
+
+		global.wcpaySettings = {
+			restUrl: 'http://example.com/wp-json/',
+		};
 	} );
 
 	it( 'renders settings with defaults', () => {
