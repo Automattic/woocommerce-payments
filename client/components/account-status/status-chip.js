@@ -22,9 +22,15 @@ const StatusChip = ( props ) => {
 	} else if ( 'restricted_soon' === accountStatus ) {
 		description = __( 'Restricted soon', 'woocommerce-payments' );
 		type = 'warning';
+	} else if ( 'restricted_partially' === accountStatus ) {
+		description = __( 'Restricted partially', 'woocommerce-payments' );
+		type = 'warning';
 	} else if ( 'restricted' === accountStatus ) {
 		description = __( 'Restricted', 'woocommerce-payments' );
 		type = 'alert';
+	} else if ( accountStatus.startsWith( 'rejected' ) ) {
+		description = __( 'Rejected', 'woocommerce-payments' );
+		type = 'light';
 	} else if ( accountStatus.startsWith( 'rejected' ) ) {
 		description = __( 'Rejected', 'woocommerce-payments' );
 		type = 'light';
