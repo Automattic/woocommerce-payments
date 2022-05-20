@@ -182,3 +182,9 @@ export function updatePlatformCheckoutCustomMessage( message ) {
 		platform_checkout_custom_message: message,
 	} );
 }
+
+export function updatePlatformCheckoutStoreLogo( storeLogo ) {
+	return updateSettingsValues( {
+		platform_checkout_store_logo: storeLogo,
+	} );
+}
