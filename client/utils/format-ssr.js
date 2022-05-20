@@ -50,9 +50,9 @@ SUHOSIN Installed: ${
 MySQL Version: ${ systemStatus.environment.mysql_version_string }
 Max Upload Size: ${ formatSize( systemStatus.environment.max_upload_size ) }
 Default Timezone is UTC: ${
-		'UTC' !== systemStatus.environment.default_timezone
-			? 'Show error'
-			: CHECK_MARK
+		'UTC' === systemStatus.environment.default_timezone
+			? CHECK_MARK
+			: CROSS_MARK
 	}
 fsockopen/cURL: ${
 		systemStatus.environment.fsockopen_or_curl_enabled
@@ -150,7 +150,7 @@ Child Theme: ${
 			  ' - If you are modifying WooCommerce on a parent theme that you did not build personally we recommend using a child theme.'
 	}
 WooCommerce Support: ${
-		! systemStatus.theme.has_woocommerce_support ? CROSS_MARK : CHECK_MARK
+		systemStatus.theme.has_woocommerce_support ? CHECK_MARK : CROSS_MARK
 	}
 
 ### Templates ###
@@ -307,12 +307,16 @@ function printTerms( arr ) {
  * @return {string} Human-readable string.
  */
 function formatSize( bytes, decimals = 0 ) {
+	if ( 0 === bytes ) {
+		return '0 B';
+	}
+
 	const KB_IN_BYTES = 1024;
 	const MB_IN_BYTES = KB_IN_BYTES * 1024;
 	const GB_IN_BYTES = MB_IN_BYTES * 1024;
 	const TB_IN_BYTES = GB_IN_BYTES * 1024;
 
-	const quant = [
+	const unitPerBytesMapping = [
 		[ 'TB', TB_IN_BYTES ],
 		[ 'GB', GB_IN_BYTES ],
 		[ 'MB', MB_IN_BYTES ],
@@ -320,13 +324,9 @@ function formatSize( bytes, decimals = 0 ) {
 		[ 'B', 1 ],
 	];
 
-	if ( 0 === bytes ) {
-		return '0 B';
-	}
-
-	for ( const [ unit, mag ] of quant ) {
-		if ( bytes >= mag ) {
-			return ( bytes / mag ).toFixed( decimals ) + ' ' + unit;
+	for ( const [ unit, bytesPerUnit ] of unitPerBytesMapping ) {
+		if ( bytes >= bytesPerUnit ) {
+			return ( bytes / bytesPerUnit ).toFixed( decimals ) + ' ' + unit;
 		}
 	}
 
