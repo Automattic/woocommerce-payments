@@ -25,9 +25,16 @@ jest.mock( '../../../data', () => ( {
 	usePlatformCheckoutCustomMessage: jest
 		.fn()
 		.mockReturnValue( [ 'test', jest.fn() ] ),
+	usePlatformCheckoutStoreLogo: jest
+		.fn()
+		.mockReturnValue( [ 'test', jest.fn() ] ),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+} ) );
+
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );
@@ -49,6 +56,12 @@ jest.mock( 'payment-request/utils', () => ( {
 } ) );
 
 describe( 'ExpressCheckoutSettings', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			restUrl: 'http://example.com/wp-json/',
+		};
+	} );
+
 	test( 'renders banner at the top', () => {
 		render( <ExpressCheckoutSettings methodId="payment_request" /> );
 
