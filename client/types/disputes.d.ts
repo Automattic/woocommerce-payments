@@ -94,6 +94,7 @@ export interface DisputeFileUpload {
 	onFileRemove( key: string ): void;
 	help?: string;
 	showPreview?: boolean;
+	uploadButtonLabel?: string;
 }
 
 export interface DisputesSummary {

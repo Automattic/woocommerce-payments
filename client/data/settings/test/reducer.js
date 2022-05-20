@@ -17,6 +17,7 @@ import {
 	updateAccountBrandingLogo,
 	updateIsPlatformCheckoutEnabled,
 	updatePlatformCheckoutCustomMessage,
+	updatePlatformCheckoutStoreLogo,
 } from '../actions';
 
 describe( 'Settings reducer tests', () => {
@@ -454,6 +455,48 @@ describe( 'Settings reducer tests', () => {
 				foo: 'bar',
 				data: {
 					platform_checkout_custom_message: 'test',
+					baz: 'quux',
+				},
+				savingError: null,
+			} );
+		} );
+	} );
+
+	describe( 'SET_PLATFORM_CHECKOUT_STORE_LOGO', () => {
+		test( 'toggle `data.platform_checkout_store_logo`', () => {
+			const oldState = {
+				data: {
+					platform_checkout_store_logo: '',
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updatePlatformCheckoutStoreLogo( 'test' )
+			);
+
+			expect( state.data.platform_checkout_store_logo ).toEqual( 'test' );
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					platform_checkout_store_logo: '',
+					baz: 'quux',
+				},
+				savingError: {},
+			};
+
+			const state = reducer(
+				oldState,
+				updatePlatformCheckoutStoreLogo( 'test' )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					platform_checkout_store_logo: 'test',
 					baz: 'quux',
 				},
 				savingError: null,
