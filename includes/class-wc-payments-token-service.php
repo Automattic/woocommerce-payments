@@ -110,25 +110,30 @@ class WC_Payments_Token_Service {
 			return $tokens;
 		}
 
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
+		try {
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
-		if ( null === $customer_id ) {
+			if ( null === $customer_id ) {
+				return $tokens;
+			}
+
+			$stored_tokens = [];
+
+			foreach ( $tokens as $token ) {
+				if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+					$stored_tokens[ $token->get_token() ] = $token;
+				}
+			}
+
+			$payment_methods = [ [] ];
+			foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
+				$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
+			}
+			$payment_methods = array_merge( ...$payment_methods );
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to fetch payment methods for customer.' . $e );
 			return $tokens;
 		}
-
-		$stored_tokens = [];
-
-		foreach ( $tokens as $token ) {
-			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
-				$stored_tokens[ $token->get_token() ] = $token;
-			}
-		}
-
-		$payment_methods = [ [] ];
-		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
-			$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
-		}
-		$payment_methods = array_merge( ...$payment_methods );
 
 		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
 		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
