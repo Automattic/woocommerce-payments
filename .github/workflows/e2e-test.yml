@@ -123,12 +123,12 @@ jobs:
 
       # Install composer dependencies if not present on cache
       - name: Install composer dependencies
-        if: steps.composer-cache.outputs.cache-hit != 'true'
+        if: ${{ steps.composer-cache.outputs.cache-hit == false }}
         run: composer install --no-progress
 
       # Install node dependencies if not present on cache
       - name: Install node dependencies
-        if: steps.node-cache.outputs.cache-hit != 'true'
+        if: ${{ steps.node-cache.outputs.cache-hit == false }}
         run: npm ci
 
       # Build WCPay client
