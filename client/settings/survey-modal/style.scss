@@ -15,7 +15,21 @@
 		}
 	}
 
+	.ssr-label {
+		font-weight: 600;
+	}
+
+	.ssr-text-field {
+		margin-top: 1em;
+
+		textarea {
+			height: 4rem;
+		}
+	}
+
 	.survey-bottom-disclaimer {
-		font-style: italic;
+		font-size: 12px;
+		font-style: normal;
+		color: #757575;
 	}
 }
