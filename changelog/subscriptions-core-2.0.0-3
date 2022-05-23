@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Remove the get_post_meta() call from WCS_Post_Meta_Cache_Manager::maybe_update_for_post_change().
