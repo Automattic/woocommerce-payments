@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Retrieving user subscription orders has been updated to use the WooCommerce specific APIs in WC_Subscriptions_Order.
