@@ -13,20 +13,20 @@ on:
   workflow_dispatch:
 
 env:
-  E2E_GH_TOKEN:             ${{ secrets.E2E_GH_TOKEN }}
-  CI_USER_TOKEN:            ${{ secrets.CI_USER_TOKEN }}
-  WCP_DEV_TOOLS_REPO:       ${{ secrets.WCP_DEV_TOOLS_REPO }}
-  WCP_DEV_TOOLS_BRANCH:     'trunk'
-  WCP_SERVER_REPO:          ${{ secrets.WCP_SERVER_REPO }}
-  WC_SUBSCRIPTIONS_REPO:    ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
-  E2E_BLOG_ID:              ${{ secrets.E2E_BLOG_ID }}
-  E2E_BLOG_TOKEN:           ${{ secrets.E2E_BLOG_TOKEN }}
-  E2E_USER_TOKEN:           ${{ secrets.E2E_USER_TOKEN }}
-  E2E_RETEST:               1
-  WC_E2E_SCREENSHOTS:       1
-  E2E_SLACK_CHANNEL:        ${{ secrets.E2E_SLACK_CHANNEL }}
-  E2E_SLACK_TOKEN:          ${{ secrets.E2E_SLACK_TOKEN }}
-  E2E_USE_LOCAL_SERVER:     false
+  E2E_GH_TOKEN:          ${{ secrets.E2E_GH_TOKEN }}
+  CI_USER_TOKEN:         ${{ secrets.CI_USER_TOKEN }}
+  WCP_DEV_TOOLS_REPO:    ${{ secrets.WCP_DEV_TOOLS_REPO }}
+  WCP_DEV_TOOLS_BRANCH:  'trunk'
+  WCP_SERVER_REPO:       ${{ secrets.WCP_SERVER_REPO }}
+  WC_SUBSCRIPTIONS_REPO: ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
+  E2E_BLOG_ID:           ${{ secrets.E2E_BLOG_ID }}
+  E2E_BLOG_TOKEN:        ${{ secrets.E2E_BLOG_TOKEN }}
+  E2E_USER_TOKEN:        ${{ secrets.E2E_USER_TOKEN }}
+  E2E_RETEST:            1
+  WC_E2E_SCREENSHOTS:    1
+  E2E_SLACK_CHANNEL:     ${{ secrets.E2E_SLACK_CHANNEL }}
+  E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
+  E2E_USE_LOCAL_SERVER:  false
 
 jobs:
   wcpay-e2e-tests:
