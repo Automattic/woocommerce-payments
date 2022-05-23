@@ -537,7 +537,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 			->with(
 				5000,
 				'usd',
-				[ 'card' ],
+				[],
 				$order_id,
 				'manual'
 			)
