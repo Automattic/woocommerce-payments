@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+In subscriptions-core source files, replace code using get_post_type( $order_id ) with WC Data Store get_order_type().
