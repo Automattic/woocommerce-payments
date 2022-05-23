@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+In subscriptions-core source files, replace the get_post_meta() calls in WCS_Post_Meta_Cache_Manager with WC_Order::get_meta().
