@@ -721,8 +721,6 @@ class WC_Payments_Order_Service {
 	 * @return boolean True if it has a paid status, false if not.
 	 */
 	private function is_order_paid( $order ) {
-		wp_cache_delete( $order->get_id(), 'posts' );
-
 		// Read the latest order properties from the database to avoid race conditions if webhook was handled during this request.
 		$clone_order = clone $order;
 		$clone_order->get_data_store()->read( $clone_order );
