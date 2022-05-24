@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix invalid_request_error when creating a payment with a negative unit_cost in level3 data

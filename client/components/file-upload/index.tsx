@@ -31,6 +31,7 @@ export const FileUploadControl = ( {
 	onFileRemove,
 	help,
 	showPreview,
+	uploadButtonLabel,
 }: DisputeFileUpload ): JSX.Element => {
 	const hasError = ( error && 0 < error.length ) || false;
 
@@ -103,7 +104,8 @@ export const FileUploadControl = ( {
 								event: React.MouseEvent< HTMLButtonElement >
 							) => handleButtonClick( event, openFileDialog ) }
 						>
-							{ __( 'Upload file', 'woocommerce-payments' ) }
+							{ uploadButtonLabel ||
+								__( 'Upload file', 'woocommerce-payments' ) }
 						</Button>
 					) }
 				></FormFileUpload>
