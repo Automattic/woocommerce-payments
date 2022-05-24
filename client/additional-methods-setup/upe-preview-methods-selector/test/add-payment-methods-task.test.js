@@ -18,6 +18,7 @@ import {
 	useSettings,
 	useCurrencies,
 	useEnabledCurrencies,
+	useManualCapture,
 } from '../../../data';
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
@@ -29,6 +30,7 @@ jest.mock( '../../../data', () => ( {
 	useCurrencies: jest.fn(),
 	useEnabledCurrencies: jest.fn(),
 	useGetPaymentMethodStatuses: jest.fn(),
+	useManualCapture: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {
@@ -113,6 +115,7 @@ describe( 'AddPaymentMethodsTask', () => {
 				USD: { id: 'usd', code: 'USD' },
 			},
 		} );
+		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		global.wcpaySettings = {
 			accountEmail: 'admin@example.com',
 		};
