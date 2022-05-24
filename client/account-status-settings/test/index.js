@@ -62,6 +62,18 @@ describe( 'AccountStatus', () => {
 		expect( accountStatus ).toMatchSnapshot();
 	} );
 
+	test( 'renders partially restricted account', () => {
+		const accountStatus = renderAccountStatus( {
+			status: 'partially_restricted',
+			paymentsEnabled: false,
+			depositsStatus: 'disabled',
+			currentDeadline: 1583844589,
+			pastDue: false,
+			accountLink: '',
+		} );
+		expect( accountStatus ).toMatchSnapshot();
+	} );
+
 	test( 'renders rejected.other account', () => {
 		const { container: accountStatus } = renderAccountStatus( {
 			status: 'rejected.other',

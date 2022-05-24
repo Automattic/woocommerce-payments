@@ -1095,7 +1095,7 @@ class WC_Payments {
 			}
 		}
 
-		return $store_api_url ?? 'wc/store';
+		return get_rest_url( null, $store_api_url ?? 'wc/store' );
 	}
 
 	/**
