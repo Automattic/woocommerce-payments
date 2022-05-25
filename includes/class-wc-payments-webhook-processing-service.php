@@ -362,13 +362,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
 
 		if ( ! $order ) {
-			throw new Invalid_Webhook_Data_Exception(
-				sprintf(
-				/* translators: %1: charge ID */
-					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
-					$charge_id
-				)
-			);
+			return;
 		}
 		// update _charge_id meta if it doesn't exist - happens when maybe_process_upe_redirect fails sometimes.
 		if ( $charge_id && ! $order->get_meta( '_charge_id' ) ) {
