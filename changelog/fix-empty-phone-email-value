@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Prevent sending empty values for required support email and phone fields.
