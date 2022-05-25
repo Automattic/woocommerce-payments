@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.2.0 - 2022-05-25 =
+= 4.2.0 - 2022-xx-xx =
 * Add - Add a confirmation modal when enabling manual capture, and update UPE methods appearance if manual capture is enabled
 * Add - Fee details to order notes for successful payments.
 * Add - Introduced wcpay_test_mode filter to manipulate gateway test mode status
