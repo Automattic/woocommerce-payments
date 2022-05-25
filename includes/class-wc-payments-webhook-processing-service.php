@@ -361,6 +361,9 @@ class WC_Payments_Webhook_Processing_Service {
 		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
 
+		if ( ! $order ) {
+			return;
+		}
 		// update _charge_id meta if it doesn't exist - happens when maybe_process_upe_redirect fails sometimes.
 		if ( $charge_id && ! $order->get_meta( '_charge_id' ) ) {
 			$order->update_meta_data( '_charge_id', $charge_id );
