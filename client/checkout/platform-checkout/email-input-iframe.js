@@ -275,6 +275,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		platformCheckoutCheckSession().then( ( hasValidUserSession ) => {
 			// Check the initial value of the email input and trigger input validation.
 			if ( hasValidUserSession ) {
+				wcpayTracks.recordUserEvent(
+					wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
+				);
 				api.initPlatformCheckout( '', hasValidUserSession ).then(
 					( response ) => {
 						if ( 'success' === response.result ) {
