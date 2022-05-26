@@ -328,6 +328,21 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( [ new WC_Payment_Token_CC() ], $result );
 	}
 
+	public function test_woocommerce_get_customer_payment_tokens_failed_to_load_payment_methods_for_customer() {
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->willThrowException( new Exception( 'Failed to get payment methods.' ) );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ new WC_Payment_Token_CC() ], 1, 'woocommerce_payments' );
+		$this->assertEquals( [ new WC_Payment_Token_CC() ], $result );
+	}
+
 	private function generate_card_pm_response( $stripe_id ) {
 		return [
 			'type' => Payment_Method::CARD,

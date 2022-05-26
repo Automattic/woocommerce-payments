@@ -54,7 +54,9 @@ const ReceiptSettings = (): JSX.Element => {
 							<BusinessDetailsSection
 								setSaveDisabled={ setSaveDisabled }
 							/>
-							<ContactsDetailsSection />
+							<ContactsDetailsSection
+								setSaveDisabled={ setSaveDisabled }
+							/>
 							<AddressDetailsSection />
 							<BrandingDetailsSection />
 						</CardBody>

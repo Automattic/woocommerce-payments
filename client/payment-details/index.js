@@ -17,7 +17,7 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import PaymentCardReaderChargeDetails from './readers';
 
 const PaymentDetails = ( props ) => {
-	if ( 'card_reader_fee' === props.query.type ) {
+	if ( 'card_reader_fee' === props.query.transaction_type ) {
 		return (
 			<PaymentCardReaderChargeDetails
 				chargeId={ props.query.id }

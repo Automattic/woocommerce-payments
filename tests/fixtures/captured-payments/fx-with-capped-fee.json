@@ -1,0 +1,62 @@
+{
+  "title": "FX Payment with a capped base fee",
+  "capturedEvent":
+  {
+    "type": "captured",
+    "amount": 95000,
+    "fee": 2944,
+    "fee_rates": {
+      "percentage": 0.025,
+      "fixed": 600,
+      "fixed_currency": "USD",
+      "history": [
+        {
+          "type": "base",
+          "capped": true,
+          "percentage_rate": 0,
+          "fixed_rate": 600,
+          "currency": "usd"
+        },
+        {
+          "type": "additional",
+          "additional_type": "international",
+          "percentage_rate": 0.015,
+          "fixed_rate": 0,
+          "currency": "usd"
+        },
+        {
+          "type": "additional",
+          "additional_type": "fx",
+          "percentage_rate": 0.01,
+          "fixed_rate": 0,
+          "currency": "usd"
+        }
+      ]
+    },
+    "currency": "EUR",
+    "datetime": 1651998676,
+    "deposit": {
+      "id": "wcpay_estimated_weekly_usd_1652659200",
+      "arrival_date": "1652659200"
+    },
+    "transaction_id": "txn_3Kx5WG2HDHuit9Eg0ZrUH90z",
+    "transaction_details": {
+      "customer_currency": "EUR",
+      "customer_amount": 95000,
+      "customer_fee": 2944,
+      "store_currency": "USD",
+      "store_amount": 100209,
+      "store_fee": 3105
+    }
+  },
+  "expectation": {
+    "fxString": "1.00 EUR → 1.05483 USD: $1,002.09 USD",
+    "feeString": "Fee (2.5% + $6.00): $-31.05",
+    "feeBreakdown": {
+      "base": "Base fee: capped at $6.00",
+      "additional-international": "International card fee: 1.5%",
+      "additional-fx": "Foreign exchange fee: 1%"
+    },
+    "netString": "Net deposit: $971.04 USD"
+  }
+}

@@ -158,10 +158,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->icon               = ''; // TODO: icon.
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
-		$this->method_description = __( 'Accept payments via credit card.', 'woocommerce-payments' );
-		$this->title              = __( 'Credit card / debit card', 'woocommerce-payments' );
-		$this->description        = __( 'Enter your card details', 'woocommerce-payments' );
-		$this->supports           = [
+		$this->method_description = WC_Payments_Utils::esc_interpolated_html(
+			/* translators: tosLink: Link to terms of service page, privacyLink: Link to privacy policy page */
+			__(
+				'Payments made simple, with no monthly fees – designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.<br/><br/>
+			By using WooCommerce Payments you agree to be bound by our <tosLink>Terms of Service</tosLink>  and acknowledge that you have read our <privacyLink>Privacy Policy</privacyLink>',
+				'woocommerce-payments'
+			),
+			[
+				'br'          => '<br/>',
+				'tosLink'     => '<a href="https://wordpress.com/tos/" target="_blank" rel="noopener noreferrer">',
+				'privacyLink' => '<a href="https://automattic.com/privacy/" target="_blank" rel="noopener noreferrer">',
+			]
+		);
+		$this->title       = __( 'Credit card / debit card', 'woocommerce-payments' );
+		$this->description = __( 'Enter your card details', 'woocommerce-payments' );
+		$this->supports    = [
 			'products',
 			'refunds',
 		];
@@ -473,7 +485,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean Test mode enabled if true, disabled if false
 	 */
 	public function is_in_test_mode() {
-		return $this->is_in_dev_mode() || 'yes' === $this->get_option( 'test_mode' );
+		return apply_filters( 'wcpay_test_mode', $this->is_in_dev_mode() || 'yes' === $this->get_option( 'test_mode' ) );
 	}
 
 
@@ -641,6 +653,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		return [
 			'publishableKey'                 => $this->account->get_publishable_key( $this->is_in_test_mode() ),
+			'testMode'                       => $this->is_in_test_mode(),
 			'accountId'                      => $this->account->get_stripe_account_id(),
 			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
@@ -656,7 +669,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'            => $this->is_saved_cards_enabled(),
 			'isPlatformCheckoutEnabled'      => $platform_checkout_util->should_enable_platform_checkout( $this ),
-			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://woo.app',
+			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 		];
@@ -1180,6 +1193,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$client_secret = $intent->get_client_secret();
 			$currency      = $intent->get_currency();
 			$next_action   = $intent->get_next_action();
+			// We update the payment method ID server side when it's necessary to clone payment methods,
+			// for example when saving a payment method to a platform customer account. When this happens
+			// we need to make sure the payment method on the order matches the one on the merchant account
+			// not the one on the platform account. The payment method ID is updated on the order further
+			// down.
+			$payment_method = $intent->get_payment_method_id() ?? $payment_method;
 
 			if ( 'requires_action' === $status && $payment_information->is_merchant_initiated() ) {
 				// Allow 3rd-party to trigger some action if needed.
@@ -1267,6 +1286,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $payment_needed ) {
 			$payment_method_details = $intent->get_payment_method_details();
 			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
+
+			if ( $order->get_meta( 'is_woopay' ) && 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
+				$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
+				$order->save_meta_data();
+			}
 		} else {
 			$payment_method_details = false;
 			$payment_method_options = isset( $intent['payment_method_options'] ) ? array_keys( $intent['payment_method_options'] ) : null;
@@ -2214,11 +2238,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$product_id = substr( sanitize_title( $item->get_name() ), 0, 12 );
 			}
 
-			$description     = substr( $item->get_name(), 0, 26 );
-			$quantity        = ceil( $item->get_quantity() );
-			$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
-			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
-			$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
+			$description = substr( $item->get_name(), 0, 26 );
+			$quantity    = ceil( $item->get_quantity() );
+			$tax_amount  = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
+			if ( $subtotal >= 0 ) {
+				$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
+				$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
+			} else {
+				// It's possible to create products with negative price - represent it as free one with discount.
+				$discount_amount = abs( WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency ) );
+				$unit_cost       = 0;
+			}
 
 			return (object) [
 				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.

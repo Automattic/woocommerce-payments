@@ -158,6 +158,16 @@ exports[`StatusChip renders complete status 1`] = `
 </div>
 `;
 
+exports[`StatusChip renders partially restricted status 1`] = `
+<div>
+  <span
+    class="chip chip-warning is-compact"
+  >
+    Restricted partially
+  </span>
+</div>
+`;
+
 exports[`StatusChip renders rejected status 1`] = `
 <div>
   <span

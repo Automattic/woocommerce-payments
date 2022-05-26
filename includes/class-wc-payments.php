@@ -126,6 +126,13 @@ class WC_Payments {
 	private static $order_service;
 
 	/**
+	 * Instance of WC_Payments_Order_Success_Page, created in init function
+	 *
+	 * @var WC_Payments_Order_Success_Page
+	 */
+	private static $order_success_page;
+
+	/**
 	 * Instance of WC_Payments_Onboarding_Service, created in init function
 	 *
 	 * @var WC_Payments_Onboarding_Service
@@ -260,6 +267,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
 		include_once __DIR__ . '/class-wc-payments-order-service.php';
+		include_once __DIR__ . '/class-wc-payments-order-success-page.php';
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
@@ -290,7 +298,8 @@ class WC_Payments {
 		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
-		self::$order_service                       = new WC_Payments_Order_Service();
+		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
+		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 
 		$card_class = CC_Payment_Gateway::class;
@@ -350,6 +359,8 @@ class WC_Payments {
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
+
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
 
 		// Add admin screens.
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
@@ -940,10 +951,16 @@ class WC_Payments {
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 
-			// This injects the payments API into core, so the WooCommerce Blocks plugin is not necessary.
-			// The payments API is currently only available in feature builds (with flag `WC_BLOCKS_IS_FEATURE_PLUGIN`).
-			// We should remove this once it's available in core by default.
-			if ( ! defined( 'WC_BLOCKS_IS_FEATURE_PLUGIN' ) && class_exists( 'Automattic\WooCommerce\Blocks\Payments\Api' ) ) {
+			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
+			// We should remove this once both features are available by default in the WC minimum supported version.
+			// - The payments API is currently only available in feature builds (with flag `WC_BLOCKS_IS_FEATURE_PLUGIN`).
+			// - The Draft order status is available after WC blocks 7.5.0.
+			if (
+				! defined( 'WC_BLOCKS_IS_FEATURE_PLUGIN' ) &&
+				class_exists( 'Automattic\WooCommerce\Blocks\Package' ) &&
+				class_exists( 'Automattic\WooCommerce\Blocks\Payments\Api' )
+			) {
+				// Register payments API.
 				$blocks_package_container = Automattic\WooCommerce\Blocks\Package::container();
 				$blocks_package_container->register(
 					Automattic\WooCommerce\Blocks\Payments\Api::class,
@@ -954,6 +971,19 @@ class WC_Payments {
 					}
 				);
 				$blocks_package_container->get( Automattic\WooCommerce\Blocks\Payments\Api::class );
+
+				// Register draft orders.
+				$draft_orders = $blocks_package_container->get( Automattic\WooCommerce\Blocks\Domain\Services\DraftOrders::class );
+
+				add_filter( 'wc_order_statuses', [ $draft_orders, 'register_draft_order_status' ] );
+				add_filter( 'woocommerce_register_shop_order_post_statuses', [ $draft_orders, 'register_draft_order_post_status' ] );
+				add_filter( 'woocommerce_analytics_excluded_order_statuses', [ $draft_orders, 'append_draft_order_post_status' ] );
+				add_filter( 'woocommerce_valid_order_statuses_for_payment', [ $draft_orders, 'append_draft_order_post_status' ] );
+				add_filter( 'woocommerce_valid_order_statuses_for_payment_complete', [ $draft_orders, 'append_draft_order_post_status' ] );
+				// Hook into the query to retrieve My Account orders so draft status is excluded.
+				add_action( 'woocommerce_my_account_my_orders_query', [ $draft_orders, 'delete_draft_order_post_status_from_args' ] );
+				add_action( 'woocommerce_cleanup_draft_orders', [ $draft_orders, 'delete_expired_draft_orders' ] );
+				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
 		}
 	}
@@ -986,8 +1016,10 @@ class WC_Payments {
 
 		$account_id = self::get_account_service()->get_stripe_account_id();
 
-		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://woo.app';
+		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
+
+		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
 		$body = [
 			'user_id'              => $user->ID,
@@ -998,13 +1030,15 @@ class WC_Payments {
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
 				'store_name'        => get_bloginfo( 'name' ),
-				'store_logo'        => wp_get_attachment_image_src( get_theme_mod( 'custom_logo' ), 'full' )[0] ?? '',
+				'store_logo'        => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
 				'custom_message'    => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
 				'blog_id'           => Jetpack_Options::get_option( 'id' ),
 				'blog_url'          => get_site_url(),
 				'blog_checkout_url' => wc_get_checkout_url(),
+				'blog_shop_url'     => get_permalink( wc_get_page_id( 'shop' ) ),
 				'store_api_url'     => self::get_store_api_url(),
 				'account_id'        => $account_id,
+				'test_mode'         => self::get_gateway()->is_in_test_mode(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
@@ -1018,8 +1052,29 @@ class WC_Payments {
 			],
 		];
 
-		$response_array     = wp_remote_request( $url, $args );
-		$response_body_json = wp_remote_retrieve_body( $response_array );
+		/**
+		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
+		 *
+		 * @psalm-suppress UndefinedDocblockClass
+		 */
+		$response = Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
+
+		if ( is_wp_error( $response ) || ! is_array( $response ) ) {
+			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			// phpcs:ignore
+			/**
+			 * @psalm-suppress UndefinedDocblockClass
+			 */
+			$message = sprintf(
+				// translators: %1: original error message.
+				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
+				$response->get_error_message()
+			);
+			// Respond with same message platform would respond with on failure.
+			$response_body_json = wp_json_encode( [ 'result' => 'failure' ] );
+		} else {
+			$response_body_json = wp_remote_retrieve_body( $response );
+		}
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
@@ -1040,7 +1095,7 @@ class WC_Payments {
 			}
 		}
 
-		return $store_api_url ?? 'wc/store';
+		return get_rest_url( null, $store_api_url ?? 'wc/store' );
 	}
 
 	/**

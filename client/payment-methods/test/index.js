@@ -16,6 +16,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
+	useManualCapture,
 } from 'wcpay/data';
 import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
 import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
@@ -27,6 +28,7 @@ jest.mock( '../../data', () => ( {
 	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
+	useManualCapture: jest.fn(),
 } ) );
 
 describe( 'PaymentMethods', () => {
@@ -54,6 +56,7 @@ describe( 'PaymentMethods', () => {
 			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
 			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
+		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		global.wcpaySettings = {
 			accountEmail: 'admin@example.com',
 		};
