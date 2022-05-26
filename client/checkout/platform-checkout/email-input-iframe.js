@@ -214,7 +214,6 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			}
 		)
 			.then( ( response ) => response.json() )
-			.then( ( data ) => data.platform_checkout_user_session )
 			.catch( () => false );
 	};
 
@@ -272,21 +271,23 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	if ( 'true' !== searchParams.get( 'skip_platform_checkout' ) ) {
 		// Check for session initially.
-		platformCheckoutCheckSession().then( ( hasValidUserSession ) => {
+		platformCheckoutCheckSession().then( ( data ) => {
 			// Check the initial value of the email input and trigger input validation.
-			if ( hasValidUserSession ) {
+			if ( data.platform_checkout_user_session ) {
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
 				);
-				api.initPlatformCheckout( '', hasValidUserSession ).then(
-					( response ) => {
-						if ( 'success' === response.result ) {
-							window.location = response.url;
-						} else {
-							closeIframe();
-						}
+				api.initPlatformCheckout(
+					'',
+					data.platform_checkout_user_session,
+					data.checkout_for
+				).then( ( response ) => {
+					if ( 'success' === response.result ) {
+						window.location = response.url;
+					} else {
+						closeIframe();
 					}
-				);
+				} );
 			} else if ( validateEmail( platformCheckoutEmailInput.value ) ) {
 				platformCheckoutLocateUser( platformCheckoutEmailInput.value );
 			}

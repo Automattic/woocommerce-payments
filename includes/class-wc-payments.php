@@ -1005,9 +1005,10 @@ class WC_Payments {
 
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
-		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-		$user        = wp_get_current_user();
-		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
+		$platform_user_id = ! empty( $_POST['checkout_for'] ) ? wc_clean( wp_unslash( $_POST['checkout_for'] ) ) : '';
+		$email            = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$user             = wp_get_current_user();
+		$customer_id      = self::$customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			// create customer.
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );
@@ -1026,6 +1027,7 @@ class WC_Payments {
 			'customer_id'          => $customer_id,
 			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
 			'email'                => $email,
+			'platform_user_id'     => $platform_user_id,
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
