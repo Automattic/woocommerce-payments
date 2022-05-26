@@ -23,6 +23,7 @@ export interface PaymentMethodMapEntry {
 	icon: () => JSX.Element;
 	currencies: string[];
 	stripe_key: string;
+	allows_manual_capture: boolean;
 }
 
 const PaymentMethodInformationObject: Record<
@@ -39,6 +40,7 @@ const PaymentMethodInformationObject: Record<
 		icon: CreditCardIcon,
 		currencies: [],
 		stripe_key: 'card_payments',
+		allows_manual_capture: true,
 	},
 	au_becs_debit: {
 		id: 'au_becs_debit',
@@ -50,6 +52,7 @@ const PaymentMethodInformationObject: Record<
 		icon: BankDebitIcon,
 		currencies: [ 'AUD' ],
 		stripe_key: 'au_becs_debit_payments',
+		allows_manual_capture: false,
 	},
 	bancontact: {
 		id: 'bancontact',
@@ -61,6 +64,7 @@ const PaymentMethodInformationObject: Record<
 		icon: BancontactIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'bancontact_payments',
+		allows_manual_capture: false,
 	},
 	eps: {
 		id: 'eps',
@@ -72,6 +76,7 @@ const PaymentMethodInformationObject: Record<
 		icon: EpsIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'eps_payments',
+		allows_manual_capture: false,
 	},
 	giropay: {
 		id: 'giropay',
@@ -83,6 +88,7 @@ const PaymentMethodInformationObject: Record<
 		icon: GiropayIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'giropay_payments',
+		allows_manual_capture: false,
 	},
 	ideal: {
 		id: 'ideal',
@@ -94,6 +100,7 @@ const PaymentMethodInformationObject: Record<
 		icon: IdealIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'ideal_payments',
+		allows_manual_capture: false,
 	},
 	p24: {
 		id: 'p24',
@@ -105,6 +112,7 @@ const PaymentMethodInformationObject: Record<
 		icon: P24Icon,
 		currencies: [ 'EUR', 'PLN' ],
 		stripe_key: 'p24_payments',
+		allows_manual_capture: false,
 	},
 	sepa_debit: {
 		id: 'sepa_debit',
@@ -116,6 +124,7 @@ const PaymentMethodInformationObject: Record<
 		icon: SepaIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'sepa_debit_payments',
+		allows_manual_capture: false,
 	},
 	sofort: {
 		id: 'sofort',
@@ -127,6 +136,7 @@ const PaymentMethodInformationObject: Record<
 		icon: SofortIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'sofort_payments',
+		allows_manual_capture: false,
 	},
 };
 
