@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.2.0
+Stable tag: 4.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.2.0 - 2022-05-26 =
+= 4.2.0 - 2022-xx-xx =
 * Add - Add a confirmation modal when enabling manual capture, and update UPE methods appearance if manual capture is enabled
 * Add - Fee details to order notes for successful payments.
 * Add - Introduced wcpay_test_mode filter to manipulate gateway test mode status
