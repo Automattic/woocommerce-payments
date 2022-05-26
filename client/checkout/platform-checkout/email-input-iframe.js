@@ -15,6 +15,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		return;
 	}
 
+	// Make a overlay for the page to behave disabled
+	const overlay = document.createElement( 'div' );
+	overlay.classList.add( 'disabled-page' );
+
 	const spinner = document.createElement( 'div' );
 	const parentDiv = platformCheckoutEmailInput.parentNode;
 	spinner.classList.add( 'wc-block-components-spinner' );
@@ -270,28 +274,38 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const searchParams = new URLSearchParams( window.location.search );
 
 	if ( 'true' !== searchParams.get( 'skip_platform_checkout' ) ) {
-		// Check for session initially.
-		platformCheckoutCheckSession().then( ( data ) => {
-			// Check the initial value of the email input and trigger input validation.
-			if ( data.platform_checkout_user_session ) {
-				wcpayTracks.recordUserEvent(
-					wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
-				);
-				api.initPlatformCheckout(
-					'',
-					data.platform_checkout_user_session,
-					data.checkout_for
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						window.location = response.url;
-					} else {
-						closeIframe();
-					}
-				} );
-			} else if ( validateEmail( platformCheckoutEmailInput.value ) ) {
-				platformCheckoutLocateUser( platformCheckoutEmailInput.value );
-			}
-		} );
+		// Check for platform checkout session initially, make the page disabled meanwhile.
+		const pageBody = document.getElementsByTagName( 'body' )[ 0 ];
+		pageBody.append( overlay );
+
+		platformCheckoutCheckSession()
+			.then( ( data ) => {
+				// Check the initial value of the email input and trigger input validation.
+				if ( data.platform_checkout_user_session ) {
+					wcpayTracks.recordUserEvent(
+						wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
+					);
+					api.initPlatformCheckout(
+						'',
+						data.platform_checkout_user_session,
+						data.checkout_for
+					).then( ( response ) => {
+						if ( 'success' === response.result ) {
+							window.location = response.url;
+						} else {
+							closeIframe();
+						}
+					} );
+				} else if (
+					validateEmail( platformCheckoutEmailInput.value )
+				) {
+					platformCheckoutLocateUser(
+						platformCheckoutEmailInput.value
+					);
+				}
+			} )
+			// remove the overlay
+			.finally( () => overlay.remove() );
 	} else {
 		searchParams.delete( 'skip_platform_checkout' );
 
