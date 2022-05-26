@@ -204,6 +204,20 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}
 	} );
 
+	const platformCheckoutCheckSession = () => {
+		return fetch(
+			`${ getConfig(
+				'platformCheckoutHost'
+			) }/wp-json/platform-checkout/v1/user/session`,
+			{
+				credentials: 'include',
+			}
+		)
+			.then( ( response ) => response.json() )
+			.then( ( data ) => data.has_valid_session )
+			.catch( () => false );
+	};
+
 	const platformCheckoutLocateUser = ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
@@ -257,10 +271,16 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const searchParams = new URLSearchParams( window.location.search );
 
 	if ( 'true' !== searchParams.get( 'skip_platform_checkout' ) ) {
-		// Check the initial value of the email input and trigger input validation.
-		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
-			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
-		}
+		// Check for session initially.
+		platformCheckoutCheckSession().then( ( hasValidSession ) => {
+			// Check the initial value of the email input and trigger input validation.
+			if (
+				! hasValidSession &&
+				validateEmail( platformCheckoutEmailInput.value )
+			) {
+				platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+			}
+		} );
 	} else {
 		searchParams.delete( 'skip_platform_checkout' );
 
