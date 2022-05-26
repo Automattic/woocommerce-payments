@@ -26,7 +26,7 @@ export default async function confirmUPEPayment(
 			payment_method_data: {
 				billing_details: {
 					name,
-					email: billingData.email || '-',
+					email: billingData.email.trim() || '-',
 					phone: billingData.phone || '-',
 					address: {
 						country: billingData.country || '-',
