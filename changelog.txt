@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 4.2.0 - 2022-xx-xx =
+= 4.2.0 - 2022-05-26 =
 * Add - Add a confirmation modal when enabling manual capture, and update UPE methods appearance if manual capture is enabled
 * Add - Fee details to order notes for successful payments.
 * Add - Introduced wcpay_test_mode filter to manipulate gateway test mode status
