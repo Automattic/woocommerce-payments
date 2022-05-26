@@ -214,7 +214,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			}
 		)
 			.then( ( response ) => response.json() )
-			.then( ( data ) => data.has_valid_session )
+			.then( ( data ) => data.platform_checkout_user_session )
 			.catch( () => false );
 	};
 
@@ -272,12 +272,19 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	if ( 'true' !== searchParams.get( 'skip_platform_checkout' ) ) {
 		// Check for session initially.
-		platformCheckoutCheckSession().then( ( hasValidSession ) => {
+		platformCheckoutCheckSession().then( ( hasValidUserSession ) => {
 			// Check the initial value of the email input and trigger input validation.
-			if (
-				! hasValidSession &&
-				validateEmail( platformCheckoutEmailInput.value )
-			) {
+			if ( hasValidUserSession ) {
+				api.initPlatformCheckout( '', hasValidUserSession ).then(
+					( response ) => {
+						if ( 'success' === response.result ) {
+							window.location = response.url;
+						} else {
+							closeIframe();
+						}
+					}
+				);
+			} else if ( validateEmail( platformCheckoutEmailInput.value ) ) {
 				platformCheckoutLocateUser( platformCheckoutEmailInput.value );
 			}
 		} );
