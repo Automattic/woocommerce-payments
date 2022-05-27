@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-In subscriptions-core source files, replace all cases of update_post_meta() where an Order ID is passed to use WC_Order::update_meta_data() instead.
