@@ -2722,6 +2722,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns the default list of enabled payment method types for UPE.
+	 *
+	 * @return string[]
+	 */
+	public function get_default_upe_enabled_payment_method_ids(): array {
+		return in_array( 'card', $this->get_upe_enabled_payment_method_ids(), true ) ? [ 'card' ] : [];
+	}
+
+	/**
 	 * Returns the list of enabled payment method types for UPE.
 	 *
 	 * @return string[]
@@ -2787,12 +2796,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_payment_method_ids_enabled_at_checkout( $order_id = null, $force_currency_check = false ) {
-		return array_filter(
-			$this->get_upe_enabled_payment_method_ids(),
-			function ( $method_id ) {
-				return Payment_Method::CARD === $method_id;
-			}
-		);
+		return $this->get_default_upe_enabled_payment_method_ids();
 	}
 
 	/**

@@ -526,11 +526,34 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 		$this->mock_upe_gateway->create_payment_intent( $order_id );
 	}
 
-	public function test_create_payment_intent_with_manual_capture() {
+	public function test_create_payment_intent_with_manual_capture_when_card_method_is_enabled() {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 		$intent   = new WC_Payments_API_Intention( 'pi_mock', 5000, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
-		$this->mock_upe_gateway->settings['manual_capture'] = 'yes';
+		$this->mock_upe_gateway->settings['manual_capture']                 = 'yes';
+		$this->mock_upe_gateway->settings['upe_enabled_payment_method_ids'] = [ 'bancontact', 'card' ];
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_intention' )
+			->with(
+				5000,
+				'usd',
+				[ 'card' ],
+				$order_id,
+				'manual'
+			)
+			->willReturn( $intent );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
+		$this->mock_upe_gateway->create_payment_intent( $order_id );
+	}
+
+	public function test_create_payment_intent_with_manual_capture_when_card_method_is_disabled() {
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = new WC_Payments_API_Intention( 'pi_mock', 5000, 'usd', null, null, new \DateTime(), 'requires_payment_method', null, 'client_secret_123' );
+		$this->mock_upe_gateway->settings['manual_capture']                 = 'yes';
+		$this->mock_upe_gateway->settings['upe_enabled_payment_method_ids'] = [ 'bancontact' ];
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_intention' )
