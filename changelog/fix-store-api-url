@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix store api url used by platform checkout to work on different permalink preferences

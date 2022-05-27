@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Update the wcs_get_objects_property() function to prevent calls to get_post_meta() on objects that support calling the get_meta() function.
