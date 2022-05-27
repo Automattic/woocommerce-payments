@@ -67,7 +67,7 @@ class Analytics {
 		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'update_order_stats_data' ], self::PRIORITY_LATEST, 2 );
 
 		// If we aren't making a REST request, return before adding these filters.
-		if ( ! WC()->is_rest_api_request() ) {
+		if ( ! WC()->is_rest_api_request() || ! $this->has_multi_currency_orders() ) {
 			return;
 
 		}
@@ -76,6 +76,22 @@ class Analytics {
 
 		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ], self::PRIORITY_LATE, 2 );
 		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ], self::PRIORITY_LATE, 2 );
+	}
+
+	public function has_multi_currency_orders() {
+		global $wpdb;
+		$query = <<<EOD
+			SELECT COUNT(DISTINCT `meta_value`) as `count`
+			FROM `{$wpdb->postmeta}`
+			INNER JOIN `{$wpdb->posts}` ON (`{$wpdb->postmeta}`.`post_id` = `{$wpdb->posts}`.`id`)
+			WHERE `{$wpdb->posts}`.`post_type` = 'order'
+				AND `meta_key` = '_order_currency'
+				AND `meta_value` <> ''
+				AND `meta_value` <> NULL;
+			EOD;
+
+		$currencies = intval( $wpdb->get_var( $query ) );
+		return $currencies > 1;
 	}
 
 	/**
