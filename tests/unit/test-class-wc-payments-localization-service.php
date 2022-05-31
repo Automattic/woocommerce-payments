@@ -106,7 +106,8 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_user_locale_returns_default_locale() {
-		$this->assertSame( 'en_US', $this->localization_service->get_user_locale() );
+		$en_locale = defined( 'IS_WPCOM' ) && IS_WPCOM ? 'en' : 'en_US';
+		$this->assertSame( $en_locale, $this->localization_service->get_user_locale() );
 	}
 
 	public function test_get_user_locale_returns_filtered_locale() {
