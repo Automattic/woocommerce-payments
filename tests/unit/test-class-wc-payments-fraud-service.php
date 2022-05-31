@@ -61,6 +61,7 @@ class WC_Payments_Fraud_Service_Test extends WCPAY_UnitTestCase {
 	private function set_is_admin() {
 		global $current_screen;
 
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$current_screen = $this->getMockBuilder( \stdClass::class )
 			->setMethods( [ 'in_admin' ] )
 			->getMock();

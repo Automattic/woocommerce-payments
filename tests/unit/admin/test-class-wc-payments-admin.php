@@ -30,8 +30,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		global $menu, $submenu;
 
-		$menu    = null;
-		$submenu = null;
+		$menu    = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+		$submenu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
