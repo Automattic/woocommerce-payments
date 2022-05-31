@@ -10,7 +10,7 @@ use WCPay\Platform_Checkout_Tracker;
 /**
  * Platform_Checkout_Tracker unit tests.
  */
-class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
+class Platform_Checkout_Tracker_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * @var Platform_Checkout_Tracker

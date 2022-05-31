@@ -11,7 +11,7 @@ use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 /**
  * WC_REST_Payments_Webhook_Controller unit tests.
  */
-class WC_REST_Payments_Webhook_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Webhook_Controller_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * The system under test.

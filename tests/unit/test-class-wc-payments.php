@@ -8,7 +8,7 @@
 /**
  * WC_Payments unit tests.
  */
-class WC_Payments_Test extends WP_UnitTestCase {
+class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	const EXPECTED_PLATFORM_CHECKOUT_HOOKS = [
 		'wc_ajax_wcpay_init_platform_checkout' => [ WC_Payments::class, 'ajax_init_platform_checkout' ],

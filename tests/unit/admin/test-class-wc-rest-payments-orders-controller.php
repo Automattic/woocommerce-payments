@@ -12,7 +12,7 @@ use WCPay\Constants\Payment_Method;
 /**
  * WC_REST_Payments_Orders_Controller unit tests.
  */
-class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Controller under test.
 	 *

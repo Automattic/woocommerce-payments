@@ -11,7 +11,7 @@ use WCPay\Database_Cache;
 /**
  * WC_Payments_Account unit tests.
  */
-class WC_Payments_Account_Test extends WP_UnitTestCase {
+class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 	const NO_REQUIREMENTS      = false;
 	const PENDING_REQUIREMENTS = true;

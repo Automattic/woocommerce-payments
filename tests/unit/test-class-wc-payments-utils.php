@@ -11,7 +11,7 @@ use WCPay\Exceptions\Amount_Too_Small_Exception;
 /**
  * WC_Payments_Utils unit tests.
  */
-class WC_Payments_Utils_Test extends WP_UnitTestCase {
+class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	public function test_esc_interpolated_html_returns_raw_string() {
 		$result = WC_Payments_Utils::esc_interpolated_html(
 			'hello world',

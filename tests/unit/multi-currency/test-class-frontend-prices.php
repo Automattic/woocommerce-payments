@@ -8,7 +8,7 @@
 /**
  * WCPay\MultiCurrency\FrontendPrices unit tests.
  */
-class WCPay_Multi_Currency_Frontend_Prices_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WCPay\MultiCurrency\Compatibility.
 	 *

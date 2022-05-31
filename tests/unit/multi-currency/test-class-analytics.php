@@ -13,7 +13,7 @@ use WCPay\MultiCurrency\MultiCurrency;
 /**
  * Analytics unit tests.
  */
-class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Analytics instance.
 	 *

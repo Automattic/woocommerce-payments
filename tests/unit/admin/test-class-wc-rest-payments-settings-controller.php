@@ -23,7 +23,7 @@ use WCPay\Session_Rate_Limiter;
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
  */
-class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Tested REST route.

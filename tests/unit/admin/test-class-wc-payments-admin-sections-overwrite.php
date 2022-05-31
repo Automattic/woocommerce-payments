@@ -10,7 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * WC_Payments_Admin_Sections_Overwrite unit tests.
  */
-class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
+class WC_Payments_Admin_Sections_Overwrite_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * @var string

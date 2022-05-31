@@ -10,7 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * WC_Payments_Admin unit tests.
  */
-class WC_Payments_Admin_Test extends WP_UnitTestCase {
+class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * @var WC_Payments_Account|MockObject

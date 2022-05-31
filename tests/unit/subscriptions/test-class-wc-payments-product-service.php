@@ -11,7 +11,7 @@ use WCPay\Exceptions\API_Exception;
 /**
  * WC_Payments_Product_Service unit tests.
  */
-class WC_Payments_Product_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 
 	const LIVE_PRODUCT_ID_KEY = '_wcpay_product_id_live';
 	const TEST_PRODUCT_ID_KEY = '_wcpay_product_id_test';
