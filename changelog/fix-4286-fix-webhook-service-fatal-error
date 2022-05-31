@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixes fatal error on payment intent succeeded webhook.

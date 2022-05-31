@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Introduced wcpay_test_mode filter to manipulate gateway test mode status

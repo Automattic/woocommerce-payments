@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Add a confirmation modal when enabling manual capture, and update UPE methods appearance if manual capture is enabled

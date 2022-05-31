@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Pass store API mode to platform checkout session and endpoints.
