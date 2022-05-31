@@ -346,12 +346,11 @@ class Analytics {
 			$wpdb->get_var(
 				"
 				SELECT
-					COUNT(DISTINCT orders.ID)
+					COUNT(post_id)
 				FROM
-					{$wpdb->posts} AS orders
-				INNER JOIN
-					{$wpdb->postmeta} order_meta ON order_meta.post_id = orders.ID
-					AND order_meta.meta_key = '_wcpay_multi_currency_order_exchange_rate';
+					{$wpdb->postmeta}
+				WHERE
+					meta_key = '_wcpay_multi_currency_order_exchange_rate';
 				"
 			)
 		);
