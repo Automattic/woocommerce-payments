@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix terminal location creation if site title is missing

@@ -145,6 +145,9 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		try {
 			// Check the existing locations to see if one of them matches the store.
 			$name = get_bloginfo();
+			if ( empty( $name ) ) {
+				$name = get_home_url();
+			}
 			foreach ( $this->fetch_locations() as $location ) {
 				if (
 					$location['display_name'] === $name
