@@ -66,10 +66,11 @@ class Analytics {
 
 		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'update_order_stats_data' ], self::PRIORITY_LATEST, 2 );
 
-		// If we aren't making a REST request, return before adding these filters.
-		if ( ! WC()->is_rest_api_request() ) {
-			return;
+		// If we aren't making a REST request, or no multi currency orders exist in the merchant's store,
+		// return before adding these filters.
 
+		if ( ! WC()->is_rest_api_request() || ! $this->has_multi_currency_orders() ) {
+			return;
 		}
 
 		$this->set_sql_replacements();
@@ -330,6 +331,31 @@ class Analytics {
 	 */
 	private function generate_case_when( string $variable, string $then, string $else ): string {
 		return "CASE WHEN {$variable} IS NOT NULL THEN {$then} ELSE {$else} END";
+	}
+
+	/**
+	 * Perform an SQL query to determine whether Multi Currency has ever been used on this store,
+	 * by checking how many orders are in the database where an exchange currency rate has been stored.
+	 *
+	 * @return bool
+	 */
+	private function has_multi_currency_orders() {
+		global $wpdb;
+
+		$orders = intval(
+			$wpdb->get_var(
+				"
+				SELECT
+					COUNT(post_id)
+				FROM
+					{$wpdb->postmeta}
+				WHERE
+					meta_key = '_wcpay_multi_currency_order_exchange_rate';
+				"
+			)
+		);
+
+		return $orders > 0;
 	}
 
 	/**
