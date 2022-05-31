@@ -66,7 +66,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @param WC_Payment_Gateway_WCPay $gateway WooCommerce Payments gateway.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
-		$this->domain_name             = str_replace( [ 'https://', 'http://' ], '', get_bloginfo('url') ); // @codingStandardsIgnoreLine
+		$this->domain_name             = wp_parse_url( get_site_url(), PHP_URL_HOST );
 		$this->apple_pay_verify_notice = '';
 		$this->payments_api_client     = $payments_api_client;
 		$this->account                 = $account;
