@@ -901,6 +901,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		);
 		$this->multi_currency->init_widgets();
 		$this->multi_currency->init();
+
+		// Fix an issue in WPCOM tests.
+		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->multi_currency );
 	}
 
 	private function mock_theme( $theme ) {
