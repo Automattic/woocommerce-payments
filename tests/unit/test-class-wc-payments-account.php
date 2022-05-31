@@ -175,7 +175,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// call the method twice but use the mock_api_client to make sure the account has been retrieved only once.
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		// The option should be updated.
-		$this->assertFalse( (bool) et_option( 'wcpay_should_redirect_to_onboarding', false ) );
+		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
 	public function test_maybe_redirect_to_onboarding_returns_true_and_on_boarding_re_enabled() {

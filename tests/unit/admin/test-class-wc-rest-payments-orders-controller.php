@@ -192,7 +192,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertSame( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
 		$this->assertSame( 'completed', $result_order->get_status() );
-		$url = '/wc/v3/' ( defined( 'IS_WPCOM' ) && IS_WPCOM ? 'sites/3/' : '' ) . 'payments/readers/receipts/';
+		$url = '/wc/v3/' . ( defined( 'IS_WPCOM' ) && IS_WPCOM ? 'sites/3/' : '' ) . 'payments/readers/receipts/';
 		$this->assertStringEndsWith( $url . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
 	}
 
