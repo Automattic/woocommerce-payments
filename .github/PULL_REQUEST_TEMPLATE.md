@@ -48,3 +48,5 @@ If this PR need not be QA tested, edit to 'QA Testing Not Applicable'
 -->
 
 - [ ] Link to testing instructions from [release testing doc](https://github.com/Automattic/woocommerce-payments/wiki/Release-testing-instructions) following [these instructions](https://github.com/Automattic/woocommerce-payments/wiki/How-to-write-good-manual-testing-scenarios) : _Add link here / 'QA Testing Not Applicable'_
+- [ ] Add or update [critical flows](https://github.com/Automattic/woocommerce-payments/wiki/Critical-flows) and [testing instructions for critical flows](https://github.com/Automattic/woocommerce-payments/wiki/Testing-instructions-for-critical-flows), if applicable.
+- [ ] Add what's changed (description, screenshot, demo videos etc.) to the release announcement post, if applicable.

@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
-Tested up to: 5.9.3
+Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.1.0
+Stable tag: 4.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,41 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 4.2.0 - 2022-05-26 =
+* Add - Add a confirmation modal when enabling manual capture, and update UPE methods appearance if manual capture is enabled
+* Add - Fee details to order notes for successful payments.
+* Add - Introduced wcpay_test_mode filter to manipulate gateway test mode status
+* Add - Show WooPay Specific info on success page when customer paid with WooPay
+* Fix - Added support for new account status
+* Fix - Allow merchant to set store logo on Platform Checkout settings
+* Fix - Change type parameter with transaction_type for transactions url
+* Fix - Do not show country code on Platform Checkout opt-in.
+* Fix - Fixes fatal error on payment intent succeeded webhook.
+* Fix - Fix invalid_request_error when creating a payment with a negative unit_cost in level3 data
+* Fix - Fix store api url used by platform checkout to work on different permalink preferences
+* Fix - Fix the subscriptions onboarding modal and toast on newer WooCommerce versions (6.5.0+).
+* Fix - Pass store API mode to platform checkout session and endpoints.
+* Fix - Prevent fatal errors when fetching payment methods on the checkout block
+* Fix - Prevent sending empty values for required support email and phone fields.
+* Fix - Register draft order status hooks to stores with platform checkout enabled.
+* Fix - Update platform URL to pay.woo.com
+* Update - Bump minimum required version of WooCommerce from 5.2 to 5.4.
+* Update - E2E environment setup & workflow optimizations
+* Update - Enhance UPE survey.
+* Update - Modify the pointer content on the "Add new product" page when WooCommerce Subscriptions is not active.
+* Update - Refactor functions regarding timeline captured events for testing.
+* Update - Update KYC reminder email Tracks properties
+* Update - Update payment gateway method description
+* Update - Update session init request to platform checkout to use Jetpack Connection.
+* Dev - Deprecate the WC_Subscriptions_Order::get_meta() function. Use wcs_get_objects_property( $order, $meta_key, "single", $default ) instead.
+* Dev - In subscriptions-core source files, replace all cases of update_post_meta() where an Order ID is passed to use WC_Order::update_meta_data() instead.
+* Dev - In subscriptions-core source files, replace code using get_post_type( $order_id ) with WC Data Store get_order_type().
+* Dev - In subscriptions-core source files, replace the get_post_meta() calls in WCS_Post_Meta_Cache_Manager with WC_Order::get_meta().
+* Dev - Retrieving user subscription orders has been updated to use the WooCommerce specific APIs in WC_Subscriptions_Order.
+* Dev - Start using dart-sass for sass compilation by upgrading @wordpress/scripts package to 12.6.0
+* Dev - Update subscriptions-core to 2.0.0.
+* Dev - Update the wcs_get_objects_property() function to prevent calls to get_post_meta() on objects that support calling the get_meta() function.
 
 = 4.1.0 - 2022-05-05 =
 * Add - Add documents and VAT invoices feature for supported countries.
