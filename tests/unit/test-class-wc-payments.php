@@ -141,7 +141,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::maybe_register_platform_checkout_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
-		apply_filters( 'rest_request_before_callbacks', [], [], null );
+		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
 	}
 
 	private function set_platform_checkout_enabled( $is_enabled ) {
@@ -157,6 +157,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		WC_Payments::maybe_register_platform_checkout_hooks();
 
 		// Trigger the addition of the disable nonce filter when appropriate.
-		apply_filters( 'rest_request_before_callbacks', [], [], null );
+		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
 	}
 }
