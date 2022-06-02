@@ -296,6 +296,29 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 	}
 
+	public function test_process_refund_should_work_without_payment_method_id_meta() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', 'ch_yyyyyyyyy' );
+		$order->save();
+
+		// Arrange: Mock Stripe's call with an empty payment method ID.
+		$this->mock_api_client->method( 'get_payment_method' )->with( '' )->willThrowException( new Exception( 'Missing required parameter: type.' ) );
+
+		$this->mock_api_client->expects( $this->once() )->method( 'refund_charge' )->will(
+			$this->returnValue(
+				[
+					'id'       => 're_123456789',
+					'amount'   => 5000,
+					'currency' => 'usd',
+				]
+			)
+		);
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $order->get_total() );
+
+		$this->assertTrue( $result );
+	}
+
 	/**
 	 * Test saving WCPay refund id to WC Refund meta and WC Order Note.
 	 */
@@ -503,6 +526,83 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
+	}
+
+	public function test_process_refund_interac_present_without_payment_method_id_meta() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		// Arrange: Mock Stripe's call with an empty payment method ID.
+		$this->mock_api_client->method( 'get_payment_method' )->with( '' )->willThrowException( new Exception( 'Missing required parameter: type.' ) );
+
+		$this->mock_api_client
+			->method( 'get_intent' )
+			->with( $intent_id )
+			->willReturn(
+				new WC_Payments_API_Intention(
+					$intent_id,
+					5000,
+					'usd',
+					1,
+					'pm_zzzzzzzz',
+					new DateTime(),
+					'succeeded',
+					$charge_id,
+					'client_secret',
+					[],
+					[],
+					[ 'type' => 'interac_present' ]
+				)
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'list_refunds' )
+			->with( $charge_id )
+			->willReturn(
+				[
+					'data' => [
+						[
+							'id'                       => 're_123456789',
+							'object'                   => 'refund',
+							'amount'                   => 5000,
+							'balance_transaction'      => 'txn_987654321',
+							'charge'                   => 'ch_121212121212',
+							'created'                  => 1610123467,
+							'payment_intent'           => 'pi_1234567890',
+							'reason'                   => null,
+							'receipt_number'           => null,
+							'source_transfer_reversal' => null,
+							'status'                   => 'succeeded',
+							'transfer_reversal'        => null,
+							'currency'                 => 'usd',
+						],
+					],
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'refund_charge' );
+
+		$result = $this->wcpay_gateway->process_refund( $order->get_id(), $order->get_total() );
+
+		$notes             = wc_get_order_notes(
+			[
+				'order_id' => $order->get_id(),
+				'limit'    => 1,
+			]
+		);
+		$latest_wcpay_note = $notes[0];
+
+		$this->assertTrue( $result );
+		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
+		$this->assertStringContainsString( wc_price( 50, [ 'currency' => 'USD' ] ), $latest_wcpay_note->content );
 	}
 
 	public function test_process_refund_interac_present_without_app_refund() {
