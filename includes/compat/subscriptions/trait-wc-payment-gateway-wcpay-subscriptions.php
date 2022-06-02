@@ -144,9 +144,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
-		add_filter( 'wcs_copy_payment_meta_to_order', [ $this, 'copy_payment_meta_to_order' ], 10, 3 );
 		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
 		add_action( 'wcs_save_other_payment_meta', [ $this, 'save_meta_in_order_tokens' ], 10, 4 );
+
+		// To make sure payment meta is copied from subscription to order.
+		add_filter( 'wcs_copy_payment_meta_to_order', [ $this, 'append_payment_meta' ], 10, 3 );
 
 		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this, 'get_specific_old_payment_method_title' ], 10, 3 );
 		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this, 'get_specific_new_payment_method_title' ], 10, 3 );
@@ -330,15 +332,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Include the payment meta data for wcs_copy_payment_meta_to_order filter, so payment meta data is copied
-	 * from subscription to its related order correctly.
+	 * Append payment meta if order and subscription are using WCPay as payment method and if passed payment meta is an array.
 	 *
 	 * @param array           $payment_meta Associative array of meta data required for automatic payments.
 	 * @param WC_Order        $order        The subscription's related order.
 	 * @param WC_Subscription $subscription The subscription order.
 	 * @return array
 	 */
-	public function copy_payment_meta_to_order( $payment_meta, $order, $subscription ) {
+	public function append_payment_meta( $payment_meta, $order, $subscription ) {
 		if ( $this->id !== $order->get_payment_method() || $this->id !== $subscription->get_payment_method() ) {
 			return $payment_meta;
 		}
