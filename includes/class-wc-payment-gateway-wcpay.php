@@ -2726,7 +2726,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string[]
 	 */
-	public function get_default_upe_enabled_payment_method_ids(): array {
+	public function get_upe_enabled_card_payment_method(): array {
 		return in_array( 'card', $this->get_upe_enabled_payment_method_ids(), true ) ? [ 'card' ] : [];
 	}
 
@@ -2796,7 +2796,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_payment_method_ids_enabled_at_checkout( $order_id = null, $force_currency_check = false ) {
-		return $this->get_default_upe_enabled_payment_method_ids();
+		return $this->get_upe_enabled_card_payment_method();
 	}
 
 	/**
