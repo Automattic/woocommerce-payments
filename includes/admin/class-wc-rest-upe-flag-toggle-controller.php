@@ -131,7 +131,7 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 		// just in case the user added additional payment method types.
 		$this->wcpay_gateway->update_option(
 			'upe_enabled_payment_method_ids',
-			$this->wcpay_gateway->get_default_upe_enabled_payment_method_ids()
+			$this->wcpay_gateway->get_upe_enabled_card_payment_method()
 		);
 
 		// removing the note from the database.
