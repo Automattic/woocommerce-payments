@@ -7,7 +7,6 @@ import { __ } from '@wordpress/i18n';
 import {
 	registerPaymentMethod,
 	registerExpressPaymentMethod,
-	registerBlockComponent
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 
@@ -22,8 +21,6 @@ import { SavedTokenHandler } from './saved-token-handler';
 import request from './request.js';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
-import enableStripeLinkPaymentMethod from '../stripe-link'
-import {lazy} from "@wordpress/element";
 
 const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 const isStripeLinkEnabled =
@@ -38,7 +35,7 @@ const api = new WCPayAPI(
 		forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 		locale: getConfig( 'locale' ),
 		isUPEEnabled: getConfig( 'isUPEEnabled' ),
-		isStripeLinkEnabled
+		isStripeLinkEnabled,
 	},
 	request
 );
@@ -63,34 +60,6 @@ registerPaymentMethod( {
 } );
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
-
-
-registerBlockComponent( {
-	blockName: 'woocommerce/checkout-stripe-link',
-	component: lazy( () =>
-		import(
-			/* webpackChunkName: "product-category-list" */ '../stripe-link'
-			)
-	),
-} );
-
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
-	if ( isStripeLinkEnabled ) {
-		console.log(getConfig( 'upePaymentIntentData' ));
-		// enableStripeLinkPaymentMethod( {
-		// 	api: api,
-		// 	emailId: 'email',
-		// 	complete_shipping: true,
-		// 	shipping_fields: {
-		// 		address_1: 'shipping-address_1',
-		// 		address_2: 'shipping-address_2',
-		// 		city: 'shipping-city',
-		// 		state: 'components-form-token-input-1',
-		// 		postal_code: 'shipping-postcode',
-		// 		country: 'components-form-token-input-0'
-		// 	},
-		// 	complete_billing: false,
-		// } );
-	}
 } );

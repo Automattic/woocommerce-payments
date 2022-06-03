@@ -1,3 +1,5 @@
+/* global jQuery */
+
 /**
  * External dependencies
  */
@@ -20,9 +22,28 @@ import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
 import { getTerms } from '../utils/upe';
-import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
-import enableStripeLinkPaymentMethod from "wcpay/checkout/stripe-link";
-import {useAccountBusinessSupportAddress} from "../../data";
+import { PAYMENT_METHOD_NAME_CARD, WC_STORE_CART } from '../constants.js';
+import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
+import { useDispatch, useSelect } from '@wordpress/data';
+
+const useCustomerData = () => {
+	const { customerData, isInitialized } = useSelect( ( select ) => {
+		const store = select( WC_STORE_CART );
+		return {
+			customerData: store.getCustomerData(),
+			isInitialized: store.hasFinishedResolution( 'getCartData' ),
+		};
+	} );
+	const { setShippingAddress, setBillingData } = useDispatch( WC_STORE_CART );
+
+	return {
+		isInitialized,
+		billingData: customerData.billingData,
+		shippingAddress: customerData.shippingAddress,
+		setBillingData,
+		setShippingAddress,
+	};
+};
 
 const WCPayUPEFields = ( {
 	api,
@@ -56,6 +77,96 @@ const WCPayUPEFields = ( {
 	);
 
 	const gatewayConfig = getPaymentMethods()[ PAYMENT_METHOD_NAME_CARD ];
+	const customerData = useCustomerData();
+
+	useEffect( () => {
+		if (
+			paymentMethodsConfig.link !== undefined &&
+			paymentMethodsConfig.card !== undefined
+		) {
+			const shippingAddressFields = {
+				line1: 'shipping-address_1',
+				line2: 'shipping-address_2',
+				city: 'shipping-city',
+				state: 'components-form-token-input-1',
+				postal_code: 'shipping-postcode',
+				country: 'components-form-token-input-0',
+			};
+			const billingAddressFields = {
+				line1: 'billing-address_1',
+				line2: 'billing-address_2',
+				city: 'billing-city',
+				state: 'components-form-token-input-3',
+				postal_code: 'billing-postcode',
+				country: 'components-form-token-input-2',
+			};
+
+			enableStripeLinkPaymentMethod( {
+				api: api,
+				elements: elements,
+				emailId: 'email',
+				fill_field_method: ( address, nodeId, key ) => {
+					const setAddress =
+						shippingAddressFields[ key ] === nodeId
+							? customerData.setShippingAddress
+							: customerData.setBillingData;
+					const customerAddress =
+						shippingAddressFields[ key ] === nodeId
+							? customerData.shippingAddress
+							: customerData.billingData;
+
+					if ( 'line1' === key ) {
+						customerAddress.address_1 = address.address[ key ];
+					} else if ( 'line2' === key ) {
+						customerAddress.address_2 = address.address[ key ];
+					} else if ( 'postal_code' === key ) {
+						customerAddress.postcode = address.address[ key ];
+					} else {
+						customerAddress[ key ] = address.address[ key ];
+					}
+
+					setAddress( customerAddress );
+
+					function getEmail() {
+						return document.getElementById( 'email' ).value;
+					}
+
+					customerData.billingData.email = getEmail();
+					customerData.setBillingData( customerData.billingData );
+				},
+				show_button: ( linkAutofill ) => {
+					jQuery( '#email' )
+						.parent()
+						.append(
+							'<button class="wcpay-stripelink-modal-trigger"></button>'
+						);
+					if ( '' !== jQuery( '#email' ).val() ) {
+						jQuery( '.wcpay-stripelink-modal-trigger' ).show();
+					}
+
+					//Handle StripeLink button click.
+					jQuery( '.wcpay-stripelink-modal-trigger' ).on(
+						'click',
+						( event ) => {
+							event.preventDefault();
+
+							// Trigger modal.
+							linkAutofill.launch( {
+								email: jQuery( '#email' ).val(),
+							} );
+						}
+					);
+				},
+				complete_shipping: true,
+				shipping_fields: shippingAddressFields,
+				billing_fields: billingAddressFields,
+				complete_billing: () => {
+					return ! document.getElementById( 'checkbox-control-0' )
+						.checked;
+				},
+			} );
+		}
+	}, [ elements, api, customerData, paymentMethodsConfig ] );
 
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
@@ -221,26 +332,10 @@ const WCPayUPEFields = ( {
  */
 const ConsumableWCPayFields = ( { api, ...props } ) => {
 	const stripe = api.getStripe();
-console.log(stripe);
 	const [ paymentIntentId, setPaymentIntentId ] = useState( null );
 	const [ clientSecret, setClientSecret ] = useState( null );
 	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
 	const [ errorMessage, setErrorMessage ] = useState( null );
-	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
-	const isStripeLinkEnabled =
-		paymentMethodsConfig.link !== undefined &&
-		paymentMethodsConfig.card !== undefined;
-	const [
-		accountBusinessSupportAddress,
-		setAccountBusinessSupportAddress,
-	] = useAccountBusinessSupportAddress();
-	const handleAddressPropertyChange = ( property, value ) => {
-		setAccountBusinessSupportAddress( {
-			...accountBusinessSupportAddress,
-			[ property ]: value,
-		} );
-	};
-console.log(useAccountBusinessSupportAddress());
 
 	useEffect( () => {
 		if ( paymentIntentId || hasRequestedIntent ) {
@@ -262,27 +357,6 @@ console.log(useAccountBusinessSupportAddress());
 		}
 		setHasRequestedIntent( true );
 		createIntent();
-
-		if (isStripeLinkEnabled) {
-			enableStripeLinkPaymentMethod( {
-				api: api,
-				clientSecret: clientSecret,
-				setAccountBusinessSupportAddress: setAccountBusinessSupportAddress,
-				accountBusinessSupportAddress: accountBusinessSupportAddress,
-				emailId: 'email',
-				complete_shipping: true,
-				shipping_fields: {
-					address_1: 'shipping-address_1',
-					address_2: 'shipping-address_2',
-					city: 'shipping-city',
-					state: 'components-form-token-input-1',
-					postal_code: 'shipping-postcode',
-					country: 'components-form-token-input-0'
-				},
-				complete_billing: false,
-			} );
-		}
-
 	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage ] );
 
 	if ( ! clientSecret ) {
@@ -302,26 +376,6 @@ console.log(useAccountBusinessSupportAddress());
 	const options = {
 		clientSecret,
 	};
-
-
-
-	if ( isStripeLinkEnabled ) {
-		// enableStripeLinkPaymentMethod( {
-		// 	api: api,
-		// 	clientSecret: clientSecret,
-		// 	emailId: 'email',
-		// 	complete_shipping: true,
-		// 	shipping_fields: {
-		// 		address_1: 'shipping-address_1',
-		// 		address_2: 'shipping-address_2',
-		// 		city: 'shipping-city',
-		// 		state: 'components-form-token-input-1',
-		// 		postal_code: 'shipping-postcode',
-		// 		country: 'components-form-token-input-0'
-		// 	},
-		// 	complete_billing: false,
-		// } );
-	}
 
 	return (
 		<Elements stripe={ stripe } options={ options }>
