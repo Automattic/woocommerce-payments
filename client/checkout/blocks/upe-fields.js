@@ -166,7 +166,8 @@ const WCPayUPEFields = ( {
 				},
 			} );
 		}
-	}, [ elements, api, customerData, paymentMethodsConfig ] );
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ elements ] );
 
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
