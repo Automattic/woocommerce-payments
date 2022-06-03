@@ -138,3 +138,14 @@
 .woocommerce-payments-page .woocommerce-inbox-message .components-dropdown {
 	position: absolute;
 }
+
+.wc-payment-gateway-method-name-woopay-wrapper {
+	display: flex;
+	justify-content: end;
+	align-items: center;
+}
+
+.wc-payment-gateway-method-name-woopay-wrapper img {
+	margin: 0 5px;
+	padding-top: 2px;
+}

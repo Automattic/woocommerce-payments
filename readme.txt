@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
-Tested up to: 5.9.2
+Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.0.2
+Stable tag: 4.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.7 or newer.
-* WooCommerce 6.1 or newer.
+* WooCommerce 6.3 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -97,6 +97,71 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 4.2.0 - 2022-05-26 =
+* Add - Add a confirmation modal when enabling manual capture, and update UPE methods appearance if manual capture is enabled
+* Add - Fee details to order notes for successful payments.
+* Add - Introduced wcpay_test_mode filter to manipulate gateway test mode status
+* Add - Show WooPay Specific info on success page when customer paid with WooPay
+* Fix - Added support for new account status
+* Fix - Allow merchant to set store logo on Platform Checkout settings
+* Fix - Change type parameter with transaction_type for transactions url
+* Fix - Do not show country code on Platform Checkout opt-in.
+* Fix - Fixes fatal error on payment intent succeeded webhook.
+* Fix - Fix invalid_request_error when creating a payment with a negative unit_cost in level3 data
+* Fix - Fix store api url used by platform checkout to work on different permalink preferences
+* Fix - Fix the subscriptions onboarding modal and toast on newer WooCommerce versions (6.5.0+).
+* Fix - Pass store API mode to platform checkout session and endpoints.
+* Fix - Prevent fatal errors when fetching payment methods on the checkout block
+* Fix - Prevent sending empty values for required support email and phone fields.
+* Fix - Register draft order status hooks to stores with platform checkout enabled.
+* Fix - Update platform URL to pay.woo.com
+* Update - Bump minimum required version of WooCommerce from 5.2 to 5.4.
+* Update - E2E environment setup & workflow optimizations
+* Update - Enhance UPE survey.
+* Update - Modify the pointer content on the "Add new product" page when WooCommerce Subscriptions is not active.
+* Update - Refactor functions regarding timeline captured events for testing.
+* Update - Update KYC reminder email Tracks properties
+* Update - Update payment gateway method description
+* Update - Update session init request to platform checkout to use Jetpack Connection.
+* Dev - Deprecate the WC_Subscriptions_Order::get_meta() function. Use wcs_get_objects_property( $order, $meta_key, "single", $default ) instead.
+* Dev - In subscriptions-core source files, replace all cases of update_post_meta() where an Order ID is passed to use WC_Order::update_meta_data() instead.
+* Dev - In subscriptions-core source files, replace code using get_post_type( $order_id ) with WC Data Store get_order_type().
+* Dev - In subscriptions-core source files, replace the get_post_meta() calls in WCS_Post_Meta_Cache_Manager with WC_Order::get_meta().
+* Dev - Retrieving user subscription orders has been updated to use the WooCommerce specific APIs in WC_Subscriptions_Order.
+* Dev - Start using dart-sass for sass compilation by upgrading @wordpress/scripts package to 12.6.0
+* Dev - Update subscriptions-core to 2.0.0.
+* Dev - Update the wcs_get_objects_property() function to prevent calls to get_post_meta() on objects that support calling the get_meta() function.
+
+= 4.1.0 - 2022-05-05 =
+* Add - Add documents and VAT invoices feature for supported countries.
+* Add - Adding StripeLink logo in the transactions list
+* Add - Add more logging info when sending requests to WooCommerce Payments server.
+* Add - Add StripeLink payment method in WCPay
+* Add - Moving email field on checkout page when StripeLink enabled.
+* Add - Send the blog locale to the server to enable server-side translations.
+* Fix - Ensure platform checkout SMS OTP iframe modal is always visible.
+* Fix - Fix an error in refunding In-Person Payments
+* Fix - Fix compatibility tests with Woo core 6.5.
+* Fix - Fixed clearing of stored payment methods when account is updated via webhook
+* Fix - Fixed issue with order tracking when mode is changed
+* Fix - Fixed redirect URL when user is already onboarded
+* Fix - Fix platform checkout eligibility check through ajax requests
+* Fix - Fix UPE alignment issues on classic checkout
+* Fix - Generate and add styles to UPE payment form on Blocks checkout
+* Fix - New KYC flow treatment mode issus with API calls and settings menu.
+* Fix - Prevent Stripe from sending email receipts for terminal payments
+* Fix - protect usage of account status to not break Payments > Overview page when account data is not defined
+* Fix - Replace enable toggle with account eligibility flag
+* Fix - Send receipt for Interac payments.
+* Fix - update _charge_id metadata to fix Refund button
+* Update - Card testing: rework card errors handling.
+* Update - Remove Stripe specific branding options from the card readers settings page.
+* Dev - Optimize E2E Setup to install Action Scheduler & WC Blocks from WordPress.org
+* Dev - Remove merchant onboarding E2E tests along with dependency.
+* Dev - Update currency rate cache mechanism
+* Dev - Updated documentation for REST-endpoints.
+* Dev - Update GitHub Actions E2E workflow to skip running WC Blocks tests against incompatible WooCommerce versions.
 
 = 4.0.2 - 2022-04-27 =
 * Add - Adds user's email to platform checkout request data.

@@ -230,7 +230,7 @@ const isBaseFeeOnly = ( event ) => {
 	return 1 === history?.length && 'base' === history[ 0 ].type;
 };
 
-const composeNetString = ( event ) => {
+const formatNetString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
 		return formatExplicitCurrency(
 			event.amount - event.fee,
@@ -245,7 +245,15 @@ const composeNetString = ( event ) => {
 	);
 };
 
-const composeFeeString = ( event ) => {
+export const composeNetString = ( event ) => {
+	return sprintf(
+		/* translators: %s is a monetary amount */
+		__( 'Net deposit: %s', 'woocommerce-payments' ),
+		formatNetString( event )
+	);
+};
+
+export const composeFeeString = ( event ) => {
 	if ( ! event.fee_rates ) {
 		return sprintf(
 			/* translators: %s is a monetary amount */
@@ -290,7 +298,7 @@ const composeFeeString = ( event ) => {
 	);
 };
 
-const composeFXString = ( event ) => {
+export const composeFXString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
 		return;
 	}
@@ -347,13 +355,14 @@ const getRefundFailureReason = ( event ) => {
 };
 
 /**
- * Returns an array containing fee breakdown.
+ * Returns an object containing fee breakdown.
+ * Keys are fee types such as base, additional-fx, etc, except for "discount" that is an object including more discount details.
  *
  * @param {Object} event Event object
  *
- * @return {Array} Array of formatted fee strings
+ * @return {{ labelType: label, discount: {label, variable, fixed} }} Object containing formatted fee strings.
  */
-const feeBreakdown = ( event ) => {
+export const feeBreakdown = ( event ) => {
 	if ( ! event?.fee_rates?.history ) {
 		return;
 	}
@@ -422,28 +431,11 @@ const feeBreakdown = ( event ) => {
 		discount: __( 'Discount', 'woocommerce-payments' ),
 	} );
 
-	const renderDiscountSplit = (
-		percentageRateFormatted,
-		fixedRateFormatted
-	) => {
-		return (
-			<ul className="discount-split-list">
-				<li>
-					{ __( 'Variable fee: ', 'woocommerce-payments' ) }
-					{ percentageRateFormatted }%
-				</li>
-				<li>
-					{ __( 'Fixed fee: ', 'woocommerce-payments' ) }
-					{ fixedRateFormatted }
-				</li>
-			</ul>
-		);
-	};
-
-	const feeHistoryList = history.map( ( fee ) => {
-		let labelKey = fee.type;
+	const feeHistoryStrings = {};
+	history.forEach( ( fee ) => {
+		let labelType = fee.type;
 		if ( fee.additional_type ) {
-			labelKey += `-${ fee.additional_type }`;
+			labelType += `-${ fee.additional_type }`;
 		}
 
 		const {
@@ -456,24 +448,63 @@ const feeBreakdown = ( event ) => {
 		const percentageRateFormatted = formatFee( percentageRate );
 		const fixedRateFormatted = formatCurrency( fixedRate, currency );
 
-		return (
-			<li key={ labelKey }>
-				{ sprintf(
-					feeLabelMapping( fixedRate, isCapped )[ labelKey ],
-					percentageRateFormatted,
-					fixedRateFormatted
-				) }
+		const label = sprintf(
+			feeLabelMapping( fixedRate, isCapped )[ labelType ],
+			percentageRateFormatted,
+			fixedRateFormatted
+		);
 
-				{ 'discount' === fee.type &&
-					renderDiscountSplit(
-						percentageRateFormatted,
-						fixedRateFormatted
-					) }
+		if ( 'discount' === labelType ) {
+			feeHistoryStrings[ labelType ] = {
+				label,
+				variable:
+					sprintf(
+						/* translators: %s is a percentage number */
+						__( 'Variable fee: %s', 'woocommerce-payments' ),
+						percentageRateFormatted
+					) + '%',
+				fixed: sprintf(
+					/* translators: %s is a monetary amount */
+					__( 'Fixed fee: %s', 'woocommerce-payments' ),
+					fixedRateFormatted
+				),
+			};
+		} else {
+			feeHistoryStrings[ labelType ] = label;
+		}
+	} );
+
+	return feeHistoryStrings;
+};
+
+export const composeFeeBreakdown = ( event ) => {
+	const feeHistoryStrings = feeBreakdown( event );
+
+	if ( 'object' !== typeof feeHistoryStrings ) {
+		return;
+	}
+
+	const renderDiscountSplit = ( discount ) => {
+		return (
+			<ul className="discount-split-list">
+				<li key="variable">{ discount.variable }</li>
+				<li key="fixed">{ discount.fixed }</li>
+			</ul>
+		);
+	};
+
+	const list = Object.keys( feeHistoryStrings ).map( ( labelType ) => {
+		const fee = feeHistoryStrings[ labelType ];
+		return (
+			<li key={ labelType }>
+				{ 'discount' === labelType ? fee.label : fee }
+
+				{ 'discount' === labelType && renderDiscountSplit( fee ) }
 			</li>
 		);
 	} );
 
-	return <ul className="fee-breakdown-list"> { feeHistoryList } </ul>;
+	return <ul className="fee-breakdown-list"> { list } </ul>;
 };
 
 /**
@@ -559,8 +590,7 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 			];
 		case 'captured':
-			const formattedNet = composeNetString( event );
-			const feeString = composeFeeString( event );
+			const formattedNet = formatNetString( event );
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -582,13 +612,9 @@ const mapEventToTimelineItems = ( event ) => {
 					'is-success',
 					[
 						composeFXString( event ),
-						feeString,
-						feeBreakdown( event ),
-						sprintf(
-							/* translators: %s is a monetary amount */
-							__( 'Net deposit: %s', 'woocommerce-payments' ),
-							formattedNet
-						),
+						composeFeeString( event ),
+						composeFeeBreakdown( event ),
+						composeNetString( event ),
 					]
 				),
 			];
@@ -624,7 +650,10 @@ const mapEventToTimelineItems = ( event ) => {
 					),
 					'checkmark',
 					'is-success',
-					[ composeFXString( event ) ]
+					[
+						composeFXString( event ),
+						getRefundTrackingDetails( event ),
+					]
 				),
 			];
 		case 'refund_failed':
