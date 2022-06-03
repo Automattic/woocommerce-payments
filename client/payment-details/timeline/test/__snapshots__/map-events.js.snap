@@ -217,6 +217,7 @@ Array [
   Object {
     "body": Array [
       "1,00 EUR → 1,20222 USD: 21,64&nbsp;$ USD",
+      "",
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of 18,00&nbsp;€ EUR was successfully refunded.",
@@ -254,6 +255,7 @@ Array [
   Object {
     "body": Array [
       "1,00 EUR → 1,2 USD: 6,00&nbsp;$ USD",
+      "Acquirer Reference Number (ARN) 4785767637658864",
     ],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of 5,00&nbsp;€ EUR was successfully refunded.",
@@ -826,6 +828,7 @@ Array [
   Object {
     "body": Array [
       undefined,
+      "Acquirer Reference Number (ARN) 4785767637658864",
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of $100.00 USD was successfully refunded.",
@@ -863,6 +866,7 @@ Array [
   Object {
     "body": Array [
       undefined,
+      "",
     ],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of $50.00 USD was successfully refunded.",
