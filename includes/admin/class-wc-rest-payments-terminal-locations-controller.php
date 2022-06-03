@@ -145,7 +145,8 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		try {
 			// Check the existing locations to see if one of them matches the store.
 			// Originally we picked `get_bloginfo` for generating names, but later switched to `site_url` for max immutability.
-			$possible_names = [ get_bloginfo(), site_url() ];
+			$store_hostname = str_replace( [ 'https://', 'http://' ], '', get_site_url() );
+			$possible_names = [ get_bloginfo(), $store_hostname ];
 			foreach ( $this->fetch_locations() as $location ) {
 				if ( in_array( $location['display_name'], $possible_names, true ) ) {
 					$matching_address_fields = array_intersect( $location['address'], $location_address );
@@ -156,7 +157,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 			}
 
 			// If the location is missing, Create a new one and actualize the transient.
-			$location = $this->api_client->create_terminal_location( site_url(), $location_address );
+			$location = $this->api_client->create_terminal_location( $store_hostname, $location_address );
 			$this->reload_locations();
 
 			return rest_ensure_response( $this->extract_location_fields( $location ) );
