@@ -214,7 +214,7 @@ class MultiCurrency {
 			add_action( 'admin_head', [ $this, 'set_client_format_and_rounding_precision' ] );
 		}
 
-		add_action( 'init', [ $this, 'init' ] , 9);
+		add_action( 'init', [ $this, 'init' ], 9 );
 		add_action( 'rest_api_init', [ $this, 'init_rest_api' ] );
 		add_action( 'widgets_init', [ $this, 'init_widgets' ] );
 
