@@ -269,7 +269,7 @@ class WC_Payments_Subscription_Service {
 		$data = [
 			'currency'            => $currency,
 			'product'             => $wcpay_product_id,
-			'unit_amount_decimal' => round( $unit_amount, wc_get_rounding_precision() ) * 100,
+			'unit_amount_decimal' => WC_Payments_Utils::prepare_amount( $unit_amount, $currency ),
 		];
 
 		if ( $interval && $interval_count ) {
@@ -300,7 +300,7 @@ class WC_Payments_Subscription_Service {
 
 			if ( $discount ) {
 				$data[] = [
-					'amount_off' => $discount * 100,
+					'amount_off' => WC_Payments_Utils::prepare_amount( $discount, $subscription->get_currency() ),
 					'currency'   => $subscription->get_currency(),
 					'duration'   => $duration,
 					// Translators: %s Coupon code.
