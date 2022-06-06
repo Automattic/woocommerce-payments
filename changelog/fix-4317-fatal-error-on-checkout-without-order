@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-added check to prevent fatal errors on checkout
