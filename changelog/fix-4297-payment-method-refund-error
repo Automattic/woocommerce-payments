@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix refunding of orders without _payment_method_id
