@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Copy payment from a subscription to its renewal order when retrying failed renewal payment.

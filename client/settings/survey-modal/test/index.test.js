@@ -56,12 +56,13 @@ describe( 'WcPaySurveyContextProvider', () => {
 
 		expect( childrenMock ).toHaveBeenCalledWith( {
 			isSurveySubmitted: false,
+			isLoadingSsr: false,
 			submitSurvey: expect.any( Function ),
 			status: 'resolved',
-			surveyAnswers: { 'why-disable': 'slow-buggy' },
+			surveyAnswers: { 'why-disable': 'slow' },
 			setSurveyAnswers: expect.any( Function ),
 		} );
-		expect( apiFetch ).not.toHaveBeenCalled();
+		expect( apiFetch ).toHaveBeenCalledTimes( 2 ); // Calling two API endpoints to be consumed by formatSsr.
 	} );
 
 	it( 'should render survey questions radio buttons and be clickable', () => {
@@ -71,7 +72,7 @@ describe( 'WcPaySurveyContextProvider', () => {
 			<WcPaySurveyContextProvider>
 				<SurveyModal
 					setOpenModal={ setOpenModalIdentifier }
-					surveyKey="wcpay-upe-disable-early-access"
+					surveyKey="wcpay-upe-disable-early-access-2022-may"
 					surveyQuestion="why-disable"
 				/>
 			</WcPaySurveyContextProvider>

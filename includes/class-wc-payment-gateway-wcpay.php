@@ -1627,8 +1627,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	private function get_payment_method_type_for_order( $order ): string {
-		$payment_method_id      = $order->get_meta( '_payment_method_id', true );
-		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+		if ( $order->meta_exists( '_payment_method_id' ) && '' !== $order->get_meta( '_payment_method_id', true ) ) {
+			$payment_method_id      = $order->get_meta( '_payment_method_id', true );
+			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+		} elseif ( $order->meta_exists( '_intent_id' ) ) {
+			$payment_intent_id      = $order->get_meta( '_intent_id', true );
+			$payment_intent         = $this->payments_api_client->get_intent( $payment_intent_id );
+			$payment_method_details = $payment_intent ? $payment_intent->get_payment_method_details() : [];
+		}
 
 		return $payment_method_details['type'] ?? 'unknown';
 	}
@@ -2238,11 +2244,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$product_id = substr( sanitize_title( $item->get_name() ), 0, 12 );
 			}
 
-			$description     = substr( $item->get_name(), 0, 26 );
-			$quantity        = ceil( $item->get_quantity() );
-			$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
-			$tax_amount      = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
-			$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
+			$description = substr( $item->get_name(), 0, 26 );
+			$quantity    = ceil( $item->get_quantity() );
+			$tax_amount  = WC_Payments_Utils::prepare_amount( $item->get_total_tax(), $currency );
+			if ( $subtotal >= 0 ) {
+				$unit_cost       = WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency );
+				$discount_amount = WC_Payments_Utils::prepare_amount( $subtotal - $item->get_total(), $currency );
+			} else {
+				// It's possible to create products with negative price - represent it as free one with discount.
+				$discount_amount = abs( WC_Payments_Utils::prepare_amount( $subtotal / $quantity, $currency ) );
+				$unit_cost       = 0;
+			}
 
 			return (object) [
 				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.

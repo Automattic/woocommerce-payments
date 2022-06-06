@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix the subscriptions onboarding modal and toast on newer WooCommerce versions (6.5.0+).

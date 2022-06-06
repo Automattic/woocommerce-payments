@@ -121,7 +121,11 @@ const SettingsManager = () => {
 			<SettingsSection description={ TransactionsAndDepositsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<TransactionsAndDeposits />
+						<WcPayUpeContextProvider
+							defaultIsUpeEnabled={ isUpeEnabled }
+						>
+							<TransactionsAndDeposits />
+						</WcPayUpeContextProvider>
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
