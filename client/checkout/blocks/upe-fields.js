@@ -150,7 +150,6 @@ const WCPayUPEFields = ( {
 						'click',
 						( event ) => {
 							event.preventDefault();
-
 							// Trigger modal.
 							linkAutofill.launch( {
 								email: jQuery( '#email' ).val(),

@@ -16,7 +16,6 @@ const showLinkButton = ( linkAutofill ) => {
 	// Handle StripeLink button click.
 	jQuery( '.wcpay-stripelink-modal-trigger' ).on( 'click', ( event ) => {
 		event.preventDefault();
-
 		// Trigger modal.
 		linkAutofill.launch( { email: jQuery( '#billing_email' ).val() } );
 	} );
