@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.2.0
+Stable tag: 4.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.2.1 - 2022-xx-xx =
+= 4.2.1 - 2022-06-06 =
 * Fix - Add check to prevent fatal errors on checkout
 * Fix - Fix refunding of orders without _payment_method_id
 * Fix - Fix subscription renewal prices purchased in zero decimal based currencies like Yen
