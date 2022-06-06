@@ -374,10 +374,6 @@ class WC_Payments {
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
-
-			include_once WCPAY_ABSPATH . '/includes/class-platform-checkout-webhooks.php';
-			include_once WCPAY_ABSPATH . '/includes/class-platform-checkout-webhook.php';
-			Platform_Checkout_Webhooks::init();
 		}
 
 		// Load WCPay Subscriptions.
@@ -989,6 +985,9 @@ class WC_Payments {
 				add_action( 'woocommerce_cleanup_draft_orders', [ $draft_orders, 'delete_expired_draft_orders' ] );
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
+
+			include_once WCPAY_ABSPATH . '/includes/class-platform-checkout-order-status-sync.php';
+			new Platform_Checkout_Order_Status_Sync();
 		}
 	}
 

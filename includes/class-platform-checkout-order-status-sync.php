@@ -13,21 +13,12 @@ defined( 'ABSPATH' ) || exit;
  *
  * Platform Checkout Webhooks are enqueued to their associated actions, delivered, and logged.
  */
-class Platform_Checkout_Webhooks {
+class Platform_Checkout_Order_Status_Sync {
 
 	/**
-	 * Platform checkout default delivery URL.
-	 *
-	 * TODO: change it to the actual URL we'll use in the platform checkout.
-	 *
-	 * @var string
+	 * Setup webhook for the Platform Checkout Order Status Sync.
 	 */
-	protected static $delivery_url = 'http://wcpay.test/wp-json/wc/v3/test';
-
-	/**
-	 * Setup webhook for the Platform Checkout.
-	 */
-	public static function init() {
+	public function __construct() {
 		add_filter( 'woocommerce_webhook_topic_hooks', [ __CLASS__, 'add_topics' ], 20, 2 );
 		add_filter( 'woocommerce_webhook_payload', [ __CLASS__, 'create_payload' ], 10, 4 );
 		add_filter( 'woocommerce_valid_webhook_resources', [ __CLASS__, 'add_resource' ], 10, 1 );
@@ -35,7 +26,26 @@ class Platform_Checkout_Webhooks {
 		add_filter( 'woocommerce_webhook_topics', [ __CLASS__, 'add_topics_admin_menu' ], 10, 1 );
 		add_action( 'woocommerce_order_status_changed', [ __CLASS__, 'send_webhook' ], 10, 3 );
 
-		self::maybe_create_platform_checkout_order_webhook();
+		add_action( 'admin_init', [ $this, 'maybe_create_platform_checkout_order_webhook' ], 10 );
+	}
+
+	/**
+	 * Return the webhook name.
+	 *
+	 * @return string
+	 */
+	private function get_webhook_name() {
+		return __( 'WCPay platform checkout order status sync', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Return the webhook delivery URL.
+	 *
+	 * @return string
+	 */
+	private function get_webhook_delivery_url() {
+		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
+		return $platform_checkout_host . '/wp-json/platform-checkout/v1/merchant-notification';
 	}
 
 	/**
@@ -43,71 +53,45 @@ class Platform_Checkout_Webhooks {
 	 *
 	 * @return null|void
 	 */
-	private static function maybe_create_platform_checkout_order_webhook() {
-		$active_webhooks               = self::get_active_platform_checkout_webhooks();
-		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible();
-		$is_platform_checkout_enabled  = 'yes' === WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' );
-
-		if ( ! ( is_user_logged_in() && current_user_can( 'manage_woocommerce' ) ) ) {
+	public function maybe_create_platform_checkout_order_webhook() {
+		if ( ! current_user_can( 'manage_woocommerce' ) || $this->is_webhook_created() ) {
 			return;
 		}
 
-		if ( count( $active_webhooks ) ) {
-			return;
-		}
+		$this->register_webhook();
+	}
 
-		if ( ! ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) ) {
-			return;
-		}
+	/**
+	 * Return true if webhook was already created.
+	 *
+	 * @return bool
+	 */
+	private function is_webhook_created() {
+		$data_store = WC_Data_Store::load( 'webhook' );
 
-		$user = wp_get_current_user();
+		$args = [
+			'search' => $this->get_webhook_name(),
+			'status' => 'active',
+		];
 
+		$webhooks = $data_store->search_webhooks( $args );
+		return ! empty( $webhooks );
+	}
+
+	/**
+	 * Register the webhook on WooCommerce.
+	 *
+	 * @return void
+	 */
+	private function register_webhook() {
 		$webhook = new WC_Webhook();
-		$webhook->set_name( __( 'Platform Checkout order status sync', 'woocommerce-payments' ) );
-		$webhook->set_user_id( $user->ID );
+		$webhook->set_name( $this->get_webhook_name() );
+		$webhook->set_user_id( get_current_user_id() );
 		$webhook->set_topic( 'order.status_changed' );
 		$webhook->set_secret( wp_generate_password( 50, false ) );
-		$webhook->set_delivery_url( self::$delivery_url );
+		$webhook->set_delivery_url( $this->get_webhook_delivery_url() );
 		$webhook->set_status( 'active' );
 		$webhook->save();
-	}
-
-	/**
-	 * Get all existing active Platform Checkout webhooks.
-	 *
-	 * @return Platform_Checkout_Webhook[]
-	 */
-	public static function get_active_platform_checkout_webhooks() {
-		$data_store  = WC_Data_Store::load( 'webhook' );
-		$webhook_ids = $data_store->search_webhooks(
-			[
-				'search' => 'Platform Checkout',
-				'status' => 'active',
-			]
-		);
-		return self::collect_webhooks_for_output( $webhook_ids );
-	}
-
-	/**
-	 * Collect Webhooks for output
-	 *
-	 * @param array|object $webhook_ids List of Webhook IDs.
-	 *
-	 * @return Platform_Checkout_Webhook[]|array
-	 */
-	protected static function collect_webhooks_for_output( $webhook_ids ) {
-		if ( ! is_array( $webhook_ids ) ) {
-			return [];
-		}
-
-		$webhooks = [];
-		foreach ( $webhook_ids as $webhook_id ) {
-			$webhook = new Platform_Checkout_Webhook( $webhook_id );
-			if ( 0 !== $webhook->get_id() && $webhook->is_platform_checkout_webhook() ) {
-				$webhooks[] = $webhook;
-			}
-		}
-		return $webhooks;
 	}
 
 	/**
@@ -144,7 +128,8 @@ class Platform_Checkout_Webhooks {
 	 */
 	public static function create_payload( $payload, $resource, $resource_id, $id ) {
 		return [
-			'resource' => $resource,
+			'blog_id'  => $resource,
+			'order_id' => $resource,
 			'data'     => $payload,
 		];
 	}
@@ -181,5 +166,14 @@ class Platform_Checkout_Webhooks {
 	 */
 	public static function send_webhook( $id, $previous_status, $next_status ) {
 		do_action( 'wcpay_webhook_platform_checkout_order_status_changed', $id, $next_status );
+	}
+
+	/**
+	 * Removes the webhook if platform checkout is disabled.
+	 *
+	 * @return void
+	 */
+	public function on_platform_checkout_disabled() {
+
 	}
 }
