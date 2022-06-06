@@ -269,8 +269,13 @@ class WC_Payments_Subscription_Service {
 		$data = [
 			'currency'            => $currency,
 			'product'             => $wcpay_product_id,
-			'unit_amount_decimal' => WC_Payments_Utils::prepare_amount( $unit_amount, $currency ),
+			'unit_amount_decimal' => round( $unit_amount, wc_get_rounding_precision() ),
 		];
+
+		// Convert the amount to cents if it's not in a zero based currency.
+		if ( ! WC_Payments_Utils::is_zero_decimal_currency( strtolower( $currency ) ) ) {
+			$data['unit_amount_decimal'] *= 100;
+		}
 
 		if ( $interval && $interval_count ) {
 			$data['recurring'] = [
