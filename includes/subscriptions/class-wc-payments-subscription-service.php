@@ -269,6 +269,7 @@ class WC_Payments_Subscription_Service {
 		$data = [
 			'currency'            => $currency,
 			'product'             => $wcpay_product_id,
+			// We cannot use WC_Payments_Utils::prepare_amount() here because it returns an int but 'unit_amount_decimal' supports multiple decimal places even though it is cents (fractions of a cent).
 			'unit_amount_decimal' => round( $unit_amount, wc_get_rounding_precision() ),
 		];
 
