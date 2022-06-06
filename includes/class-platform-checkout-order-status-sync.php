@@ -119,7 +119,7 @@ class Platform_Checkout_Order_Status_Sync {
 	}
 
 	/**
-	 * Setup payload for the order webhook delivery.
+	 * Setup payload for the webhook delivery.
 	 *
 	 * @param array   $payload     Data to be sent out by the webhook.
 	 * @param string  $resource    Type/name of the resource.
@@ -128,9 +128,9 @@ class Platform_Checkout_Order_Status_Sync {
 	 */
 	public static function create_payload( $payload, $resource, $resource_id, $id ) {
 		return [
-			'blog_id'  => $resource,
-			'order_id' => $resource,
-			'data'     => $payload,
+			'blog_id'      => \Jetpack_Options::get_option( 'id' ),
+			'order_id'     => $resource_id,
+			'order_status' => $payload['status'],
 		];
 	}
 
@@ -159,13 +159,16 @@ class Platform_Checkout_Order_Status_Sync {
 	/**
 	 * Trigger webhook delivery.
 	 *
-	 * @param int    $id Order id.
+	 * @param int    $order_id Order id.
 	 * @param string $previous_status the old WooCommerce order status.
 	 * @param string $next_status the new WooCommerce order status.
 	 * @return void
 	 */
-	public static function send_webhook( $id, $previous_status, $next_status ) {
-		do_action( 'wcpay_webhook_platform_checkout_order_status_changed', $id, $next_status );
+	public static function send_webhook( $order_id, $previous_status, $next_status ) {
+		$order = wc_get_order( $order_id );
+		if ( $order->get_meta( 'is_woopay' ) ) {
+			do_action( 'wcpay_webhook_platform_checkout_order_status_changed', $order_id, $next_status );
+		}
 	}
 
 	/**
