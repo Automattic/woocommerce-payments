@@ -22,6 +22,13 @@ class WC_Payments_Admin {
 	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1"><span class="plugin-count">1</span></span>';
 
 	/**
+	 * WC Payments WordPress Admin menu slug.
+	 *
+	 * @var string
+	 */
+	const PAYMENTS_SUBMENU_SLUG = 'wc-admin&path=/payments/overview';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -50,20 +57,30 @@ class WC_Payments_Admin {
 	private $admin_child_pages;
 
 	/**
+	 * WC_Payments_Disputes_Summary_Cache instance to get dispute counts
+	 *
+	 * @var WC_Payments_Disputes_Summary_Cache
+	 */
+	private $disputes_summary;
+
+	/**
 	 * Hook in admin menu items.
 	 *
-	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
-	 * @param WC_Payment_Gateway_WCPay $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
-	 * @param WC_Payments_Account      $account             Account instance.
+	 * @param WC_Payments_API_Client             $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay           $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 * @param WC_Payments_Account                $account             Account instance.
+	 * @param WC_Payments_Disputes_Summary_Cache $disputes_summary    Disputes summary cache instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payment_Gateway_WCPay $gateway,
-		WC_Payments_Account $account
+		WC_Payments_Account $account,
+		WC_Payments_Disputes_Summary_Cache $disputes_summary,
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->wcpay_gateway       = $gateway;
 		$this->account             = $account;
+		$this->disputes_summary    = $disputes_summary;
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -369,6 +386,7 @@ class WC_Payments_Admin {
 
 		$this->add_menu_notification_badge();
 		$this->add_update_business_details_task();
+		$this->add_disputes_notification_badge();
 	}
 
 	/**
@@ -862,5 +880,30 @@ class WC_Payments_Admin {
 		</div>
 
 		<?php
+	}
+
+	/**
+	 * Attempts to add a notification badge on WordPress menu next to Payments menu item
+	 * to remind user that setup is required.
+	 */
+	public function add_disputes_notification_badge() {
+		global $submenu;
+
+		if ( ! isset( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] ) ) {
+			return;
+		}
+
+		$disputes_needing_response = $this->disputes_summary->get_disputes_needing_response_count();
+
+		if ( ! $disputes_needing_response ) {
+			return;
+		}
+
+		foreach ( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] as $index => $menu_item ) {
+			if ( 'wc-admin&path=/payments/disputes' === $menu_item[2] ) {
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( ' <span class="wcpay-menu-badge awaiting-mod count-%1$s"><span class="plugin-count">%1$s</span></span>', esc_html( $disputes_needing_response ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				break;
+			}
+		}
 	}
 }
