@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Modify the pointer content on the "Add new product" page when WooCommerce Subscriptions is not active.

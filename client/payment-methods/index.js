@@ -244,7 +244,13 @@ const PaymentMethods = () => {
 				<CardBody size={ null }>
 					<PaymentMethodsList className="payment-methods__available-methods">
 						{ availableMethods.map(
-							( { id, label, description, icon: Icon } ) => (
+							( {
+								id,
+								label,
+								description,
+								icon: Icon,
+								allows_manual_capture: isAllowingManualCapture,
+							} ) => (
 								<PaymentMethod
 									id={ id }
 									key={ id }
@@ -259,6 +265,9 @@ const PaymentMethods = () => {
 									Icon={ Icon }
 									status={
 										getStatusAndRequirements( id ).status
+									}
+									isAllowingManualCapture={
+										isAllowingManualCapture
 									}
 									onUncheckClick={ () => {
 										handleUncheckClick( id );

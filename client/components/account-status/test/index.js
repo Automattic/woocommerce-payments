@@ -97,6 +97,13 @@ describe( 'StatusChip', () => {
 		expect( statusChip ).toMatchSnapshot();
 	} );
 
+	test( 'renders partially restricted status', () => {
+		const { container: statusChip } = renderStatusChip(
+			'restricted_partially'
+		);
+		expect( statusChip ).toMatchSnapshot();
+	} );
+
 	test( 'renders rejected status', () => {
 		const { container: statusChip } = renderStatusChip( 'rejected_' );
 		expect( statusChip ).toMatchSnapshot();
