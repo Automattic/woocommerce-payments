@@ -366,6 +366,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 		switch ( e.data.action ) {
 			case 'auto_redirect_to_platform_checkout':
+				platformCheckoutEmailInput.value = e.data.userEmail;
 				loginSessionIframe.classList.add( 'open' );
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
