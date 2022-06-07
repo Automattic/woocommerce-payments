@@ -1081,6 +1081,26 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Update platform checkout data
+	 *
+	 * @param array $data Data to update.
+	 *
+	 * @return array An array describing request result.
+	 *
+	 * @throws API_Exception - Error contacting the API.
+	 */
+	public function update_platform_checkout( $data ) {
+		return $this->request(
+			array_merge(
+				[ 'test_mode' => $this->is_in_dev_mode() ],
+				$data
+			),
+			self::PLATFORM_CHECKOUT_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Update Stripe account data
 	 *
 	 * @param array $account_settings Settings to update.

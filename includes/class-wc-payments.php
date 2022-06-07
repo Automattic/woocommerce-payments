@@ -987,7 +987,7 @@ class WC_Payments {
 			}
 
 			include_once WCPAY_ABSPATH . '/includes/class-platform-checkout-order-status-sync.php';
-			new Platform_Checkout_Order_Status_Sync();
+			new Platform_Checkout_Order_Status_Sync( self::$api_client );
 		}
 	}
 

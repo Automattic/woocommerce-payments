@@ -16,9 +16,21 @@ defined( 'ABSPATH' ) || exit;
 class Platform_Checkout_Order_Status_Sync {
 
 	/**
-	 * Setup webhook for the Platform Checkout Order Status Sync.
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
 	 */
-	public function __construct() {
+	protected $payments_api_client;
+
+	/**
+	 * Setup webhook for the Platform Checkout Order Status Sync.
+	 *
+	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
+	 */
+	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+
+		$this->payments_api_client = $payments_api_client;
+
 		add_filter( 'woocommerce_webhook_topic_hooks', [ __CLASS__, 'add_topics' ], 20, 2 );
 		add_filter( 'woocommerce_webhook_payload', [ __CLASS__, 'create_payload' ], 10, 4 );
 		add_filter( 'woocommerce_valid_webhook_resources', [ __CLASS__, 'add_resource' ], 10, 1 );
@@ -92,6 +104,8 @@ class Platform_Checkout_Order_Status_Sync {
 		$webhook->set_delivery_url( $this->get_webhook_delivery_url() );
 		$webhook->set_status( 'active' );
 		$webhook->save();
+
+		$result = $this->payments_api_client->update_platform_checkout( [ 'webhook_secret' => $webhook->get_secret() ] );
 	}
 
 	/**
