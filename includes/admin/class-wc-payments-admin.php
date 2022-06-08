@@ -6,6 +6,7 @@
  */
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+use WCPay\Database_Cache;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -57,30 +58,30 @@ class WC_Payments_Admin {
 	private $admin_child_pages;
 
 	/**
-	 * WC_Payments_Disputes_Summary_Cache instance to get dispute counts
+	 * Database_Cache instance.
 	 *
-	 * @var WC_Payments_Disputes_Summary_Cache
+	 * @var Database_Cache
 	 */
-	private $disputes_summary;
+	private $database_cache;
 
 	/**
 	 * Hook in admin menu items.
 	 *
-	 * @param WC_Payments_API_Client             $payments_api_client WooCommerce Payments API client.
-	 * @param WC_Payment_Gateway_WCPay           $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
-	 * @param WC_Payments_Account                $account             Account instance.
-	 * @param WC_Payments_Disputes_Summary_Cache $disputes_summary    Disputes summary cache instance.
+	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 * @param WC_Payments_Account      $account             Account instance.
+	 * @param Database_Cache           $database_cache      Database Cache instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payment_Gateway_WCPay $gateway,
 		WC_Payments_Account $account,
-		WC_Payments_Disputes_Summary_Cache $disputes_summary,
+		Database_Cache $database_cache
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->wcpay_gateway       = $gateway;
 		$this->account             = $account;
-		$this->disputes_summary    = $disputes_summary;
+		$this->database_cache      = $database_cache;
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -893,7 +894,14 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$disputes_needing_response = $this->disputes_summary->get_disputes_needing_response_count();
+		$disputes_summary = $this->database_cache->get_or_add(
+			Database_Cache::DISPUTES_SUMMARY_KEY,
+			[ $this->payments_api_client, 'get_disputes_summary' ],
+			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
+			'is_array'
+		);
+
+		$disputes_needing_response = isset( $disputes_summary['statuses']['needs_response'] ) ?? 0;
 
 		if ( ! $disputes_needing_response ) {
 			return;
