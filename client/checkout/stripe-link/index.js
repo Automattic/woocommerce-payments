@@ -22,6 +22,9 @@ const showLinkButton = ( linkAutofill ) => {
 };
 
 const enableStripeLinkPaymentMethod = ( options ) => {
+	if ( ! document.getElementById( options.emailId ) ) {
+		return;
+	}
 	const api = options.api;
 	const linkAutofill = api.getStripe().linkAutofillModal( options.elements );
 
