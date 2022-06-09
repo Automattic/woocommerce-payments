@@ -37,7 +37,6 @@ class Platform_Checkout_Order_Status_Sync {
 		add_filter( 'woocommerce_webhook_payload', [ __CLASS__, 'create_payload' ], 10, 4 );
 		add_filter( 'woocommerce_valid_webhook_resources', [ __CLASS__, 'add_resource' ], 10, 1 );
 		add_filter( 'woocommerce_valid_webhook_events', [ __CLASS__, 'add_event' ], 10, 1 );
-		add_filter( 'woocommerce_webhook_topics', [ __CLASS__, 'add_topics_admin_menu' ], 10, 1 );
 		add_action( 'woocommerce_order_status_changed', [ __CLASS__, 'send_webhook' ], 10, 3 );
 
 		add_action( 'admin_init', [ $this, 'maybe_create_platform_checkout_order_webhook' ], 10 );
@@ -133,19 +132,6 @@ class Platform_Checkout_Order_Status_Sync {
 		$topic_hooks['order.status_changed'][] = 'wcpay_webhook_platform_checkout_order_status_changed';
 
 		return $topic_hooks;
-	}
-
-	/**
-	 * Add order topics to the Webhooks dropdown menu in when creating a new webhook.
-	 *
-	 * @param array $topics List of WooCommerce's standard webhook topics.
-	 */
-	public static function add_topics_admin_menu( $topics ) {
-		$front_end_topics = [
-			'order.status_changed' => __( 'Order status changed', 'woocommerce-payments' ),
-		];
-
-		return array_merge( $topics, $front_end_topics );
 	}
 
 	/**
