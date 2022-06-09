@@ -884,8 +884,8 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Attempts to add a notification badge on WordPress menu next to Payments menu item
-	 * to remind user that setup is required.
+	 * Adds a notification badge to the Payments > Disputes admin menu item to
+	 * indicate the number of disputes that need a response.
 	 */
 	public function add_disputes_notification_badge() {
 		global $submenu;
