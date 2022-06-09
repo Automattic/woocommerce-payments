@@ -1190,7 +1190,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$intent_id     = $intent->get_id();
 			$status        = $intent->get_status();
-			$charge_id     = $intent->get_charge_id();
+			$charge        = $intent->get_charge();
+			$charge_id     = $charge ? $charge->get_id() : null;
 			$client_secret = $intent->get_client_secret();
 			$currency      = $intent->get_currency();
 			$next_action   = $intent->get_next_action();
@@ -1285,7 +1286,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( $payment_needed ) {
-			$payment_method_details = $intent->get_payment_method_details();
+			$payment_method_details = $intent->get_charge()->get_payment_method_details();
 			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
 
 			if ( $order->get_meta( 'is_woopay' ) && 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
@@ -2130,7 +2131,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		Tracker::track_admin( 'wcpay_merchant_captured_auth' );
 
 		// There is a possibility of the intent being null, so we need to get the charge_id safely.
-		$charge_id = ! empty( $intent ) ? $intent->get_charge_id() : $order->get_meta( '_charge_id' );
+		$charge_id = ! empty( $intent ) ? $intent->get_charge()->get_id() : $order->get_meta( '_charge_id' );
 
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 
@@ -2185,7 +2186,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( 'canceled' === $status ) {
-			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status, $intent->get_charge_id() );
+			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status, $intent->get_charge()->get_id() );
 			return;
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
@@ -2366,7 +2367,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// An exception is thrown if an intent can't be found for the given intent ID.
 				$intent    = $this->payments_api_client->get_intent( $intent_id );
 				$status    = $intent->get_status();
-				$charge_id = $intent->get_charge_id();
+				$charge_id = $intent->get_charge()->get_id();
 
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
