@@ -5,6 +5,9 @@
  * @package WooCommerce\Payments
  */
 
+namespace WCPay\Platform_Checkout;
+
+use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -89,7 +92,7 @@ class Platform_Checkout_Order_Status_Sync {
 	 * @return array
 	 */
 	private static function get_webhook() {
-		$data_store = WC_Data_Store::load( 'webhook' );
+		$data_store = \WC_Data_Store::load( 'webhook' );
 
 		$args = [
 			'search' => self::get_webhook_name(),
@@ -107,7 +110,7 @@ class Platform_Checkout_Order_Status_Sync {
 	 * @return void
 	 */
 	private function register_webhook() {
-		$webhook = new WC_Webhook();
+		$webhook = new \WC_Webhook();
 		$webhook->set_name( $this->get_webhook_name() );
 		$webhook->set_user_id( get_current_user_id() );
 		$webhook->set_topic( 'order.status_changed' );
@@ -196,7 +199,7 @@ class Platform_Checkout_Order_Status_Sync {
 
 		if ( self::is_webhook_created() ) {
 			$webhook_id = self::get_webhook()[0];
-			$webhook    = new WC_Webhook( $webhook_id );
+			$webhook    = new \WC_Webhook( $webhook_id );
 			$webhook->delete();
 		}
 
