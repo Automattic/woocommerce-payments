@@ -106,17 +106,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		wp_set_current_user( self::USER_ID );
 
-		$this->payment_intent = new WC_Payments_API_Intention(
-			self::PAYMENT_INTENT_ID,
-			1500,
-			'usd',
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'succeeded',
-			self::CHARGE_ID,
-			''
-		);
+		$this->payment_intent = WC_Helper_Intention::create_intention();
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()

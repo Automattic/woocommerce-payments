@@ -1286,7 +1286,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( $payment_needed ) {
-			$payment_method_details = $intent->get_charge()->get_payment_method_details();
+			$charge                 = $intent ? $intent->get_charge() : null;
+			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
 
 			if ( $order->get_meta( 'is_woopay' ) && 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
@@ -1636,7 +1637,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} elseif ( $order->meta_exists( '_intent_id' ) ) {
 			$payment_intent_id      = $order->get_meta( '_intent_id', true );
 			$payment_intent         = $this->payments_api_client->get_intent( $payment_intent_id );
-			$payment_method_details = $payment_intent ? $payment_intent->get_payment_method_details() : [];
+			$charge                 = $payment_intent ? $payment_intent->get_charge() : null;
+			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 		}
 
 		return $payment_method_details['type'] ?? 'unknown';

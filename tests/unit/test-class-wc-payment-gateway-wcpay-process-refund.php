@@ -360,8 +360,8 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 	}
 
 	public function test_process_refund_interac_present_without_payment_method_id_meta() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $intent_id );
@@ -374,22 +374,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->method( 'get_intent' )
 			->with( $intent_id )
-			->willReturn(
-				new WC_Payments_API_Intention(
-					$intent_id,
-					5000,
-					'usd',
-					1,
-					'pm_zzzzzzzz',
-					new DateTime(),
-					'succeeded',
-					$charge_id,
-					'client_secret',
-					[],
-					[],
-					[ 'type' => 'interac_present' ]
-				)
-			);
+			->willReturn( WC_Helper_Intention::create_intention( [ 'charge' => [ 'payment_method_details' => [ 'type' => 'interac_present' ] ] ] ) );
 
 		$this->mock_api_client
 			->expects( $this->once() )
