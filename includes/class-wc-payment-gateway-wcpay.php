@@ -1759,6 +1759,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[ 'test_mode' => $this->is_in_test_mode() ? 1 : 0 ]
 			);
 			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
+			if ( ! $is_platform_checkout_enabled ) {
+				Platform_Checkout_Order_Status_Sync::remove_webhook();
+			}
 		}
 	}
 

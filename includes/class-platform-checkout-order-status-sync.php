@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Exceptions\API_Exception;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -46,7 +48,7 @@ class Platform_Checkout_Order_Status_Sync {
 	 *
 	 * @return string
 	 */
-	private function get_webhook_name() {
+	private static function get_webhook_name() {
 		return __( 'WCPay platform checkout order status sync', 'woocommerce-payments' );
 	}
 
@@ -55,7 +57,7 @@ class Platform_Checkout_Order_Status_Sync {
 	 *
 	 * @return string
 	 */
-	private function get_webhook_delivery_url() {
+	private static function get_webhook_delivery_url() {
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
 		return $platform_checkout_host . '/wp-json/platform-checkout/v1/merchant-notification';
 	}
@@ -66,7 +68,7 @@ class Platform_Checkout_Order_Status_Sync {
 	 * @return null|void
 	 */
 	public function maybe_create_platform_checkout_order_webhook() {
-		if ( ! current_user_can( 'manage_woocommerce' ) || $this->is_webhook_created() ) {
+		if ( ! current_user_can( 'manage_woocommerce' ) || self::is_webhook_created() ) {
 			return;
 		}
 
@@ -78,16 +80,26 @@ class Platform_Checkout_Order_Status_Sync {
 	 *
 	 * @return bool
 	 */
-	private function is_webhook_created() {
+	private static function is_webhook_created() {
+		return ! empty( self::get_webhook() );
+	}
+
+	/**
+	 * Return array with the webhook id for the platform checkout order status sync.
+	 *
+	 * @return array
+	 */
+	private static function get_webhook() {
 		$data_store = WC_Data_Store::load( 'webhook' );
 
 		$args = [
-			'search' => $this->get_webhook_name(),
+			'search' => self::get_webhook_name(),
 			'status' => 'active',
+			'limit'  => 1,
 		];
 
 		$webhooks = $data_store->search_webhooks( $args );
-		return ! empty( $webhooks );
+		return $webhooks;
 	}
 
 	/**
@@ -105,7 +117,11 @@ class Platform_Checkout_Order_Status_Sync {
 		$webhook->set_status( 'active' );
 		$webhook->save();
 
-		$result = $this->payments_api_client->update_platform_checkout( [ 'webhook_secret' => $webhook->get_secret() ] );
+		try {
+			$this->payments_api_client->update_platform_checkout( [ 'webhook_secret' => $webhook->get_secret() ] );
+		} catch ( API_Exception $e ) {
+			$webhook->delete();
+		}
 	}
 
 	/**
@@ -190,7 +206,13 @@ class Platform_Checkout_Order_Status_Sync {
 	 *
 	 * @return void
 	 */
-	public function on_platform_checkout_disabled() {
+	public static function remove_webhook() {
+
+		if ( self::is_webhook_created() ) {
+			$webhook_id = self::get_webhook()[0];
+			$webhook    = new WC_Webhook( $webhook_id );
+			$webhook->delete();
+		}
 
 	}
 }
