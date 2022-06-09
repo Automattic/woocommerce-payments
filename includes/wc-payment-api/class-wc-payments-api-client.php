@@ -2258,19 +2258,40 @@ class WC_Payments_API_Client {
 	 * De-serialize a charge array into a charge object
 	 *
 	 * @param array $charge_array - The charge array to de-serialize.
+	 * @param array $intention_array - The intention array to de-serialize.
 	 *
 	 * @return WC_Payments_API_Charge
 	 * @throws API_Exception - Unable to deserialize charge array.
 	 */
-	private function deserialize_charge_object_from_array( array $charge_array ) {
+	private function deserialize_charge_object_from_array( array $charge_array, array $intention_array = [] ) {
 		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
 		$created = new DateTime();
 		$created->setTimestamp( $charge_array['created'] );
 
+		$charge_array    = $this->add_order_info_to_object( $charge_array['id'], $charge_array );
+		$billing_details = WC_Payments_Utils::get_formatted_billing_details( $charge_array );
+		$customer        = empty( $intention_array ) ? $intention_array['customer'] ?? $charge_array['customer'] ?? null : null;
+		$payment_method  = empty( $intention_array ) ? $intention_array['payment_method'] ?? $intention_array['source'] ?? null : null;
+
 		$charge = new WC_Payments_API_Charge(
 			$charge_array['id'],
 			$charge_array['amount'],
-			$created
+			$created,
+			$charge_array['balance_transaction'] ?? null,
+			$charge_array['application_fee_amount'] ?? null,
+			$billing_details,
+			$charge_array['currency'] ?? null,
+			$customer,
+			$charge_array['disputed'] ?? false,
+			$charge_array['dispute'] ?? null,
+			$charge_array['order'] ?? null,
+			$charge_array['outcome'] ?? null,
+			$charge_array['refunded'] ?? false,
+			$charge_array['refunds'] ?? null,
+			$charge_array['paydown'] ?? null,
+			$charge_array['payment_intent'] ?? null,
+			$payment_method,
+			$charge_array['payment_method_details'] ?? []
 		);
 
 		if ( isset( $charge_array['captured'] ) ) {
@@ -2293,24 +2314,27 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
-		$charge             = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
+		$charge_array       = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
 		$next_action        = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
 		$last_payment_error = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
+		$customer           = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
+		$payment_method     = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+
+		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array, $intention_array ) : null;
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
 			$intention_array['currency'],
-			$intention_array['customer'] ?? $charge['customer'] ?? null,
-			$intention_array['payment_method'] ?? $charge['payment_method'] ?? $intention_array['source'] ?? null,
+			$customer,
+			$payment_method,
 			$created,
 			$intention_array['status'],
-			$charge ? $charge['id'] : null,
 			$intention_array['client_secret'],
+			$charge,
 			$next_action,
 			$last_payment_error,
-			$charge ? $charge['payment_method_details'] : null,
 			$metadata
 		);
 
