@@ -39,20 +39,6 @@ class WC_Helper_Intention {
 			$charge_data['id'],
 			$charge_data['amount'],
 			$charge_data['created'],
-			null,
-			null,
-			[],
-			null,
-			null,
-			false,
-			null,
-			null,
-			null,
-			false,
-			null,
-			null,
-			null,
-			null,
 			$charge_data['payment_method_details']
 		);
 	}
