@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Pass capture method preference to platform store

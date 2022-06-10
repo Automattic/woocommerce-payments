@@ -1,5 +1,10 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.2.1 - 2022-06-06 =
+* Fix - Add check to prevent fatal errors on checkout
+* Fix - Fix refunding of orders without _payment_method_id
+* Fix - Fix subscription renewal prices purchased in zero decimal based currencies like Yen
+
 = 4.2.0 - 2022-05-26 =
 * Add - Add a confirmation modal when enabling manual capture, and update UPE methods appearance if manual capture is enabled
 * Add - Fee details to order notes for successful payments.
