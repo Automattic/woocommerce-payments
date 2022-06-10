@@ -8,6 +8,7 @@ import config from 'config';
  */
 import { setupProductCheckout } from '../../utils/payments';
 import { shopperWCP } from '../../utils';
+import { getLoadingDurations } from '../../utils/performance';
 
 describe( 'Checkout page performance', () => {
 	beforeEach( async () => {
@@ -22,6 +23,25 @@ describe( 'Checkout page performance', () => {
 	} );
 
 	it( 'measures on page load', async () => {
+		await page.waitForSelector( '#payment_method_woocommerce_payments' );
+		const {
+			serverResponse,
+			firstPaint,
+			domContentLoaded,
+			loaded,
+			firstContentfulPaint,
+			firstBlock,
+		} = await getLoadingDurations();
+
 		await expect( page ).toMatch( 'Checkout' );
+		console.log(
+			'result',
+			serverResponse,
+			firstPaint,
+			domContentLoaded,
+			loaded,
+			firstContentfulPaint,
+			firstBlock
+		);
 	} );
 } );
