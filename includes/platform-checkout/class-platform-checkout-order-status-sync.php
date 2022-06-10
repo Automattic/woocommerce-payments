@@ -91,7 +91,7 @@ class Platform_Checkout_Order_Status_Sync {
 	 *
 	 * @return array
 	 */
-	private static function get_webhook() {
+	public static function get_webhook() {
 		$data_store = \WC_Data_Store::load( 'webhook' );
 
 		$args = [
