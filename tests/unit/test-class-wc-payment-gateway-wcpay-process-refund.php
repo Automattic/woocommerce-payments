@@ -374,7 +374,9 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->method( 'get_intent' )
 			->with( $intent_id )
-			->willReturn( WC_Helper_Intention::create_intention( [ 'charge' => [ 'payment_method_details' => [ 'type' => 'interac_present' ] ] ] ) );
+			->willReturn(
+				WC_Helper_Intention::create_intention( [ 'charge' => [ 'payment_method_details' => [ 'type' => 'interac_present' ] ] ] )
+			);
 
 		$this->mock_api_client
 			->expects( $this->once() )
