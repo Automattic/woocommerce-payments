@@ -19,6 +19,7 @@ import {
 	formatMethodFeesTooltip,
 } from 'wcpay/utils/account-fees';
 import './payment-method.scss';
+import { useManualCapture } from 'wcpay/data';
 
 const PaymentMethod = ( {
 	id,
@@ -30,9 +31,13 @@ const PaymentMethod = ( {
 	onCheckClick,
 	onUncheckClick,
 	className,
+	isAllowingManualCapture,
 } ) => {
 	const disabled = upeCapabilityStatuses.INACTIVE === status;
 	const { accountFees } = useContext( WCPaySettingsContext );
+	const [ isManualCaptureEnabled ] = useManualCapture();
+
+	const hasOverlay = isManualCaptureEnabled && ! isAllowingManualCapture;
 
 	const handleChange = ( newStatus ) => {
 		if ( newStatus ) {
@@ -46,6 +51,7 @@ const PaymentMethod = ( {
 			className={ classNames(
 				'payment-method',
 				{ 'has-icon-border': 'card' !== id },
+				{ 'has-overlay': hasOverlay },
 				className
 			) }
 		>
@@ -58,6 +64,7 @@ const PaymentMethod = ( {
 					delayMsOnCheck={ 1500 }
 					delayMsOnUncheck={ 0 }
 					hideLabel
+					isAllowingManualCapture={ isAllowingManualCapture }
 				/>
 			</div>
 			<div className="payment-method__icon">

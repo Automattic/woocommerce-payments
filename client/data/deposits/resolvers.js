@@ -87,6 +87,7 @@ export function* getAllDepositsOverviews() {
 }
 
 const formatQueryFilters = ( query ) => ( {
+	user_email: query.userEmail,
 	match: query.match,
 	store_currency_is: query.storeCurrencyIs,
 	date_before: formatDateValue( query.dateBefore, true ),
@@ -98,6 +99,15 @@ const formatQueryFilters = ( query ) => ( {
 	status_is: query.statusIs,
 	status_is_not: query.statusIsNot,
 } );
+
+export function getDepositsCSV( query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/deposits/download`,
+		formatQueryFilters( query )
+	);
+
+	return path;
+}
 
 /**
  * Retrieves a series of deposits from the deposits list API.

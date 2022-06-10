@@ -33,6 +33,10 @@ describe( 'FileUploadControl', () => {
 			onFileChange: jest.fn(),
 			onFileRemove: jest.fn(),
 		};
+
+		( global as any ).wcpaySettings = {
+			restUrl: 'http://example.com/wp-json/',
+		};
 	} );
 
 	test( 'renders default file upload control', () => {

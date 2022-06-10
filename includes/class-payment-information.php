@@ -43,6 +43,13 @@ class Payment_Information {
 	private $token;
 
 	/**
+	 * The CVC confirmation used for this payment.
+	 *
+	 * @var string
+	 */
+	private $cvc_confirmation;
+
+	/**
 	 * Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
 	 * @var Payment_Initiated_By
@@ -93,6 +100,7 @@ class Payment_Information {
 	 * @param \WC_Payment_Token    $token The payment token used for this payment.
 	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
 	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
+	 * @param string               $cvc_confirmation The CVC confirmation for this payment method.
 	 *
 	 * @throws Invalid_Payment_Method_Exception When no payment method is found in the provided request.
 	 */
@@ -102,7 +110,8 @@ class Payment_Information {
 		Payment_Type $payment_type = null,
 		\WC_Payment_Token $token = null,
 		Payment_Initiated_By $payment_initiated_by = null,
-		Payment_Capture_Type $manual_capture = null
+		Payment_Capture_Type $manual_capture = null,
+		string $cvc_confirmation = null
 	) {
 		if ( empty( $payment_method ) && empty( $token ) && ! \WC_Payments::is_network_saved_cards_enabled() ) {
 			// If network-wide cards are enabled, a payment method or token may not be specified and the platform default one will be used.
@@ -117,6 +126,7 @@ class Payment_Information {
 		$this->payment_initiated_by = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
 		$this->manual_capture       = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
 		$this->payment_type         = $payment_type ?? Payment_Type::SINGLE();
+		$this->cvc_confirmation     = $cvc_confirmation;
 	}
 
 	/**
@@ -209,10 +219,16 @@ class Payment_Information {
 		Payment_Initiated_By $payment_initiated_by = null,
 		Payment_Capture_Type $manual_capture = null
 	): Payment_Information {
-		$payment_method = self::get_payment_method_from_request( $request );
-		$token          = self::get_token_from_request( $request );
+		$payment_method   = self::get_payment_method_from_request( $request );
+		$token            = self::get_token_from_request( $request );
+		$cvc_confirmation = self::get_cvc_confirmation_from_request( $request );
 
-		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture );
+		if ( isset( $request['is_woopay'] ) && $request['is_woopay'] ) {
+			$order->add_meta_data( 'is_woopay', true, true );
+			$order->save_meta_data();
+		}
+
+		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation );
 	}
 
 	/**
@@ -262,6 +278,30 @@ class Payment_Information {
 		}
 
 		return $token;
+	}
+
+	/**
+	 * Extract the payment CVC confirmation from the provided request.
+	 *
+	 * @param array $request Associative array containing payment request information.
+	 *
+	 * @return string|NULL
+	 */
+	public static function get_cvc_confirmation_from_request( array $request ) {
+		$payment_method = $request['payment_method'] ?? null;
+		if ( null === $payment_method ) {
+			return null;
+		}
+
+		$cvc_request_key = 'wc-' . $payment_method . '-payment-cvc-confirmation';
+		if (
+			! isset( $request[ $cvc_request_key ] ) ||
+			'new' === $request[ $cvc_request_key ]
+		) {
+			return null;
+		}
+
+		return $request[ $cvc_request_key ];
 	}
 
 	/**
@@ -330,5 +370,14 @@ class Payment_Information {
 	 */
 	public function is_changing_payment_method_for_subscription(): bool {
 		return $this->is_changing_payment_method_for_subscription;
+	}
+
+	/**
+	 * Returns the payment method CVC confirmation.
+	 *
+	 * @return string|NULL The payment method CVC confirmation.
+	 */
+	public function get_cvc_confirmation() {
+		return $this->cvc_confirmation;
 	}
 }

@@ -7,6 +7,10 @@ import {
 	useElements,
 	PaymentElement,
 } from '@stripe/react-stripe-js';
+import {
+	getPaymentMethods,
+	// eslint-disable-next-line import/no-unresolved
+} from '@woocommerce/blocks-registry';
 import { useEffect, useState } from '@wordpress/element';
 
 /**
@@ -17,6 +21,7 @@ import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
 import { getTerms } from '../utils/upe';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
+import { getAppearance, getFontRulesFromPage } from '../upe-styles';
 
 const WCPayUPEFields = ( {
 	api,
@@ -49,6 +54,8 @@ const WCPayUPEFields = ( {
 		</p>
 	);
 
+	const gatewayConfig = getPaymentMethods()[ PAYMENT_METHOD_NAME_CARD ];
+
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
 		() =>
@@ -72,6 +79,7 @@ const WCPayUPEFields = ( {
 				}
 
 				if (
+					gatewayConfig.supports.showSaveOption &&
 					shouldSavePayment &&
 					! paymentMethodsConfig[ selectedUPEPaymentType ].isReusable
 				) {
@@ -88,6 +96,7 @@ const WCPayUPEFields = ( {
 						paymentMethodData: {
 							paymentMethod: PAYMENT_METHOD_NAME_CARD,
 							wc_payment_intent_id: paymentIntentId,
+							wcpay_selected_upe_payment_type: selectedUPEPaymentType,
 						},
 					},
 				};
@@ -144,6 +153,15 @@ const WCPayUPEFields = ( {
 
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const upeOnChange = ( event ) => {
+		// Update WC Blocks gateway config based on selected UPE payment method.
+		if (
+			getConfig( 'isSavedCardsEnabled' ) &&
+			! getConfig( 'cartContainsSubscription' )
+		) {
+			gatewayConfig.supports.showSaveOption =
+				paymentMethodsConfig[ event.value.type ].isReusable;
+		}
+
 		setIsUPEComplete( event.complete );
 		setSelectedUPEPaymentType( event.value.type );
 		setPaymentCountry( event.value.country );
@@ -177,11 +195,6 @@ const WCPayUPEFields = ( {
 			: 'never';
 	elementOptions.terms = getTerms( paymentMethodsConfig, showTerms );
 
-	const appearance = getConfig( 'upeAppearance' );
-	if ( appearance ) {
-		elementOptions.appearance = appearance;
-	}
-
 	return (
 		<>
 			{ testMode ? testCopy : '' }
@@ -207,8 +220,24 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	const [ clientSecret, setClientSecret ] = useState( null );
 	const [ hasRequestedIntent, setHasRequestedIntent ] = useState( false );
 	const [ errorMessage, setErrorMessage ] = useState( null );
+	const [ appearance, setAppearance ] = useState(
+		getConfig( 'wcBlocksUPEAppearance' )
+	);
+	const [ fontRules ] = useState( getFontRulesFromPage() );
 
 	useEffect( () => {
+		async function generateUPEAppearance() {
+			// Generate UPE input styles.
+			const upeAppearance = getAppearance( true );
+			await api.saveUPEAppearance( upeAppearance, true );
+
+			// Update appearance state
+			setAppearance( upeAppearance );
+		}
+		if ( ! appearance ) {
+			generateUPEAppearance();
+		}
+
 		if ( paymentIntentId || hasRequestedIntent ) {
 			return;
 		}
@@ -228,7 +257,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		}
 		setHasRequestedIntent( true );
 		createIntent();
-	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage ] );
+	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage, appearance ] );
 
 	if ( ! clientSecret ) {
 		if ( errorMessage ) {
@@ -246,6 +275,8 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 
 	const options = {
 		clientSecret,
+		appearance,
+		fonts: fontRules,
 	};
 
 	return (

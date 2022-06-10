@@ -22,14 +22,14 @@
     "require": {
       "php": "7.*",
       "ext-json": "*",
-      "automattic/jetpack-connection": "1.36.0",
+      "automattic/jetpack-connection": "1.37.3",
       "automattic/jetpack-config": "1.6.1",
       "automattic/jetpack-autoloader": "2.10.11",
-      "automattic/jetpack-identity-crisis": "0.7.0",
-      "automattic/jetpack-sync": "1.29.2",
-      "automattic/jetpack-tracking": "1.14.1",
+      "automattic/jetpack-identity-crisis": "0.8.4",
+      "automattic/jetpack-sync": "1.30.5",
+      "automattic/jetpack-tracking": "1.14.5",
       "myclabs/php-enum": "1.7.7",
-      "woocommerce/subscriptions-core": "1.7.0"
+      "woocommerce/subscriptions-core": "2.1.0"
     },
     "require-dev": {
       "composer/installers": "1.10.0",

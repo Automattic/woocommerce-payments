@@ -69,6 +69,11 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }
 		);
+	} else if ( 'restricted_partially' === status ) {
+		description = __(
+			'Some payment methods and deposits are disabled for this account until all required documents are provided.',
+			'woocommerce-payments'
+		);
 	} else if ( 'restricted' === status ) {
 		description = __(
 			'Payments and deposits are disabled for this account until business information is verified by the payment processor.',

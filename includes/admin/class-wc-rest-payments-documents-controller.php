@@ -45,7 +45,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<document_id>\w+)',
+			'/' . $this->rest_base . '/(?P<document_id>[\w-]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_document' ],
@@ -98,6 +98,18 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 				$e->getMessage()
 			);
 			wp_die( esc_html( $message ), '', (int) $e->get_http_code() );
+		}
+
+		// WooCommerce core only includes Tracks in admin, not the REST API, so we need to use this wc_admin method
+		// that includes WC_Tracks in case it's not loaded.
+		if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
+			wc_admin_record_tracks_event(
+				'wcpay_document_downloaded',
+				[
+					'document_id' => $document_id,
+					'mode'        => WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'live',
+				]
+			);
 		}
 
 		// Set the headers to match what was returned from the server.

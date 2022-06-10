@@ -2,11 +2,11 @@
  * Internal dependencies
  */
 import WCPayAPI from '..';
-import request from 'wcpay/checkout/blocks/request';
+import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/payment-request/utils';
 import { getConfig } from 'wcpay/utils/checkout';
 
-jest.mock( 'wcpay/checkout/blocks/request', () => jest.fn() );
+jest.mock( 'wcpay/checkout/utils/request', () => jest.fn() );
 jest.mock( 'wcpay/payment-request/utils', () => ( {
 	buildAjaxURL: jest.fn(),
 } ) );
@@ -20,10 +20,12 @@ describe( 'WCPayAPI', () => {
 		getConfig.mockReturnValue( 'foo' );
 
 		const api = new WCPayAPI( {}, request );
-		api.initPlatformCheckout();
+		api.initPlatformCheckout( 'foo@bar.com', 'qwerty123' );
 
 		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
 			_wpnonce: 'foo',
+			email: 'foo@bar.com',
+			user_session: 'qwerty123',
 		} );
 	} );
 } );

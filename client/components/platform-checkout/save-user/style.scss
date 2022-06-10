@@ -9,13 +9,12 @@
 	margin-top: $gap-large;
 
 	h3 {
-		font-weight: 400;
-		font-size: 24px;
 		margin-bottom: 0;
 	}
 
 	.components-checkbox-control__input-container {
 		margin-right: $gap-smaller;
+		height: auto;
 
 		.components-checkbox-control__input[type='checkbox'] {
 			height: 16px;
@@ -34,13 +33,19 @@
 		}
 	}
 
-	.save-details-form {
+	.save-details-checkbox {
+		margin-right: $gap-smallest;
+		> div {
+			margin-bottom: 0;
+		}
+	}
+
+	.save-details-form.form-row {
 		display: flex;
 		flex-direction: column;
 		font-size: 16px;
 		line-height: 26px;
 		font-weight: 400;
-		padding: $gap;
 		gap: $gap;
 
 		.about-platform-checkout {
@@ -49,24 +54,36 @@
 
 		.additional-information {
 			display: flex;
+			font-size: 14px;
 			flex-direction: row;
 			align-items: flex-start;
 			gap: $gap-smaller;
-			color: $gray-700;
 
-			img {
+			&:not( :last-child ) {
+				margin-bottom: $gap;
+			}
+
+			svg {
 				margin-top: 5px;
+				path {
+					fill: currentColor;
+					fill-rule: evenodd;
+				}
 			}
 		}
 
-		.tos,
-		.error-text {
-			font-size: 12px;
-			line-height: 16px;
+		.tos {
+			font-size: 14px;
 		}
 
 		.error-text {
-			margin: -16px 0 0;
+			// Using rems to base this on the theme styles.
+			font-size: 0.875rem;
+			line-height: 1.5rem;
+		}
+
+		.error-text {
+			margin-bottom: 0;
 			color: $alert-red;
 		}
 
@@ -75,6 +92,12 @@
 		}
 
 		.components-base-control {
+			font-size: 16px;
+
+			.components-text-control__input {
+				font-size: 16px;
+			}
+
 			&.has-error {
 				.iti::before {
 					content: ' ';
@@ -92,6 +115,13 @@
 					border-bottom-left-radius: 0;
 				}
 			}
+
+			&.phone-input {
+				label {
+					// Using rems to base this on the theme styles.
+					font-size: 1rem;
+				}
+			}
 		}
 	}
 }
@@ -104,8 +134,14 @@
 	line-height: 26px;
 }
 
-#payment .place-order {
-	margin-top: $gap-large !important;
+#payment {
+	.save-details-form.place-order {
+		margin-top: $gap-smaller;
+	}
+
+	.platform-checkout-save-new-user-container + .place-order {
+		margin-top: $gap-large !important;
+	}
 }
 
 // compulsary overrides required for intl-tel-input

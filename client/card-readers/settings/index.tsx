@@ -6,6 +6,7 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
+import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -19,8 +20,6 @@ import ContactsDetailsSection from './sections/contacts-details';
 import AddressDetailsSection from './sections/address-details';
 import BrandingDetailsSection from './sections/branding-details';
 import { getAdminUrl } from 'wcpay/utils';
-
-const isBrandingEnabled = false;
 
 const ReadersSettingsDescription = (): JSX.Element => (
 	<>
@@ -44,21 +43,27 @@ const ReadersSettingsDescription = (): JSX.Element => (
 );
 
 const ReceiptSettings = (): JSX.Element => {
+	const [ isSaveDisabled, setSaveDisabled ] = useState( false );
+
 	return (
 		<SettingsLayout displayBanner={ false }>
 			<SettingsSection description={ ReadersSettingsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<Card className="card-readers-settings__wrapper">
 						<CardBody>
-							<BusinessDetailsSection />
-							<ContactsDetailsSection />
+							<BusinessDetailsSection
+								setSaveDisabled={ setSaveDisabled }
+							/>
+							<ContactsDetailsSection
+								setSaveDisabled={ setSaveDisabled }
+							/>
 							<AddressDetailsSection />
-							{ isBrandingEnabled && <BrandingDetailsSection /> }
+							<BrandingDetailsSection />
 						</CardBody>
 					</Card>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SaveSettingsSection />
+			<SaveSettingsSection disabled={ isSaveDisabled } />
 		</SettingsLayout>
 	);
 };

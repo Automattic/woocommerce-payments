@@ -11,7 +11,7 @@ fi
 step "Stopping client containers"
 docker-compose -f $E2E_ROOT/env/docker-compose.yml down
 
-if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
+if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	step "Stopping server containers"
 	docker-compose -f $E2E_ROOT/deps/wcp-server/docker-compose.yml down
 fi

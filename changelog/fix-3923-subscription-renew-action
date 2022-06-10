@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Certain subscription renewal effects not executing for Subscriptions with WooCommerce Payments.

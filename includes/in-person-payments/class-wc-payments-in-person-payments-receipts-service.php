@@ -68,6 +68,22 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 		return ob_get_clean();
 	}
 
+
+	/**
+	 * Send card reader receipt to customer by email
+	 *
+	 * @param  WC_Order $order the order.
+	 * @param array    $merchant_settings The merchant settings.
+	 * @param  array    $charge the charge.
+	 * @return void
+	 */
+	public function send_customer_ipp_receipt_email( WC_Order $order, array $merchant_settings, array $charge ) {
+		$email_receipt = WC()->mailer()->get_emails()['WC_Payments_Email_IPP_Receipt'];
+		if ( $email_receipt instanceof WC_Payments_Email_IPP_Receipt ) {
+			$email_receipt->trigger( $order, $merchant_settings, $charge );
+		}
+	}
+
 	/**
 	 * Format line items
 	 *

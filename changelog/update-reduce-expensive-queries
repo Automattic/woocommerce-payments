@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Prevent expensive JOIN queries in Multi-Currency analytics if the store has never used Multi-Currency.

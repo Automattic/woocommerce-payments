@@ -200,18 +200,18 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_platform_checkout_enabled'      => [
-						'description'       => __( 'If WooCommerce Payments platform checkout should be enabled.', 'woocommerce-payments' ),
+						'description'       => __( 'If WooPay should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'platform_checkout_custom_message'  => [
-						'description'       => __( 'Custom message to display to platform checkout customers.', 'woocommerce-payments' ),
+						'description'       => __( 'Custom message to display to WooPay customers.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_fraud_prevention_enabled'       => [
-						'description'       => __( 'If fraud prevention should be enabled.', 'woocommerce-payments' ),
-						'type'              => 'boolean',
+					'platform_checkout_store_logo'      => [
+						'description'       => __( 'Store logo to display to WooPay customers.', 'woocommerce-payments' ),
+						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 				],
@@ -362,7 +362,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_card_present_eligible'          => $this->wcpay_gateway->is_card_present_eligible(),
 				'is_platform_checkout_enabled'      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'platform_checkout_custom_message'  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
-				'is_fraud_prevention_enabled'       => 'yes' === $this->wcpay_gateway->get_option( 'is_fraud_prevention_enabled' ),
+				'platform_checkout_store_logo'      => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
 			]
 		);
 	}
@@ -387,7 +387,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_account( $request );
 		$this->update_is_platform_checkout_enabled( $request );
 		$this->update_platform_checkout_custom_message( $request );
-		$this->update_is_fraud_protection_enabled( $request );
+		$this->update_platform_checkout_store_logo( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -558,7 +558,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	private function update_account( WP_REST_Request $request ) {
 		$updated_fields_callback = function ( $value, string $key ) {
 			return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
-					$this->wcpay_gateway->get_option( $key ) !== $value;
+				$this->wcpay_gateway->get_option( $key ) !== $value;
 		};
 		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
 
@@ -647,21 +647,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates the "fraud prevention" enable/disable settings.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	private function update_is_fraud_protection_enabled( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'is_fraud_prevention_enabled' ) ) {
-			return;
-		}
-
-		$is_fraud_prevention_enabled = $request->get_param( 'is_fraud_prevention_enabled' );
-
-		$this->wcpay_gateway->update_option( 'is_fraud_prevention_enabled', $is_fraud_prevention_enabled ? 'yes' : 'no' );
-	}
-
-	/**
 	 * Updates the custom message that will appear for platform checkout customers.
 	 *
 	 * @param WP_REST_Request $request Request object.
@@ -674,5 +659,20 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$platform_checkout_custom_message = $request->get_param( 'platform_checkout_custom_message' );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_custom_message', $platform_checkout_custom_message );
+	}
+
+	/**
+	 * Updates the store logo that will appear for platform checkout customers.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_platform_checkout_store_logo( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'platform_checkout_store_logo' ) ) {
+			return;
+		}
+
+		$platform_checkout_store_logo = $request->get_param( 'platform_checkout_store_logo' );
+
+		$this->wcpay_gateway->update_option( 'platform_checkout_store_logo', $platform_checkout_store_logo );
 	}
 }

@@ -16,11 +16,9 @@ import {
 	getAccountBusinessSupportEmail,
 	getAccountBusinessSupportPhone,
 	getAccountBrandingLogo,
-	getAccountBrandingIcon,
-	getAccountBrandingPrimaryColor,
-	getAccountBrandingSecondaryColor,
 	getIsPlatformCheckoutEnabled,
 	getPlatformCheckoutCustomMessage,
+	getPlatformCheckoutStoreLogo,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -261,6 +259,29 @@ describe( 'Settings selectors tests', () => {
 		} );
 	} );
 
+	describe( 'getPlatformCheckoutStoreLogo()', () => {
+		test( 'returns the value of state.settings.data.platform_checkout_store_logo', () => {
+			const state = {
+				settings: {
+					data: {
+						platform_checkout_store_logo: 'test',
+					},
+				},
+			};
+
+			expect( getPlatformCheckoutStoreLogo( state ) ).toEqual( 'test' );
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
+			expect( getPlatformCheckoutStoreLogo( state ) ).toEqual( '' );
+		} );
+	} );
+
 	describe.each( [
 		{ getFunc: getAccountBusinessName, setting: 'account_business_name' },
 		{ getFunc: getAccountBusinessURL, setting: 'account_business_url' },
@@ -277,15 +298,6 @@ describe( 'Settings selectors tests', () => {
 			setting: 'account_business_support_phone',
 		},
 		{ getFunc: getAccountBrandingLogo, setting: 'account_branding_logo' },
-		{ getFunc: getAccountBrandingIcon, setting: 'account_branding_icon' },
-		{
-			getFunc: getAccountBrandingPrimaryColor,
-			setting: 'account_branding_primary_color',
-		},
-		{
-			getFunc: getAccountBrandingSecondaryColor,
-			setting: 'account_branding_secondary_color',
-		},
 	] )( 'Test get method: %j', ( setting ) => {
 		test( 'returns the value of state.settings.data.${setting.setting}', () => {
 			const state = {
