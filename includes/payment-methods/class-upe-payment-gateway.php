@@ -273,10 +273,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public function create_payment_intent( $order_id = null ) {
 		$amount   = WC()->cart->get_total( '' );
 		$currency = get_woocommerce_currency();
+		$number   = 0;
 		$order    = wc_get_order( $order_id );
 		if ( is_a( $order, 'WC_Order' ) ) {
 			$amount   = $order->get_total();
 			$currency = $order->get_currency();
+			$number   = $order->get_order_number();
 		}
 
 		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
@@ -298,7 +300,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$converted_amount,
 				strtolower( $currency ),
 				array_values( $enabled_payment_methods ),
-				$order_id ?? 0,
+				$number,
 				$capture_method
 			);
 		} catch ( Amount_Too_Small_Exception $e ) {
@@ -317,7 +319,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$minimum_amount,
 				strtolower( $currency ),
 				array_values( $enabled_payment_methods ),
-				$order_id ?? 0,
+				$number,
 				$capture_method
 			);
 		}

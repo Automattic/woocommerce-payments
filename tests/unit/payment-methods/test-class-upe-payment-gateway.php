@@ -266,6 +266,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	public function test_update_payment_intent_adds_customer_save_payment_and_level3_data() {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();
+		$order_number        = $order->get_order_number();
 		$product_item        = current( $order->get_items( 'line_item' ) );
 		$intent_id           = 'pi_mock';
 		$user                = '';
@@ -298,6 +299,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'customer_email' => 'admin@example.org',
 					'site_url'       => 'http://example.org',
 					'order_id'       => $order_id,
+					'order_number'   => $order_number,
 					'order_key'      => $order->get_order_key(),
 					'payment_type'   => Payment_Type::SINGLE(),
 				],
@@ -335,6 +337,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	public function test_update_payment_intent_with_selected_upe_payment_method() {
 		$order                     = WC_Helper_Order::create_order();
 		$order_id                  = $order->get_id();
+		$order_number              = $order->get_order_number();
 		$product_item              = current( $order->get_items( 'line_item' ) );
 		$intent_id                 = 'pi_mock';
 		$user                      = '';
@@ -368,6 +371,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'customer_email' => 'admin@example.org',
 					'site_url'       => 'http://example.org',
 					'order_id'       => $order_id,
+					'order_number'   => $order_number,
 					'order_key'      => $order->get_order_key(),
 					'payment_type'   => Payment_Type::SINGLE(),
 				],
@@ -406,6 +410,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 	public function test_update_payment_intent_with_payment_country() {
 		$order        = WC_Helper_Order::create_order();
 		$order_id     = $order->get_id();
+		$order_number = $order->get_order_number();
 		$product_item = current( $order->get_items( 'line_item' ) );
 
 		$this->set_cart_contains_subscription_items( false );
@@ -434,6 +439,7 @@ class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
 					'customer_email' => 'admin@example.org',
 					'site_url'       => 'http://example.org',
 					'order_id'       => $order_id,
+					'order_number'   => $order_number,
 					'order_key'      => $order->get_order_key(),
 					'payment_type'   => Payment_Type::SINGLE(),
 				],
