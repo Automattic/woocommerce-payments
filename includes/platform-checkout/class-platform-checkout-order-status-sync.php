@@ -66,8 +66,6 @@ class Platform_Checkout_Order_Status_Sync {
 
 	/**
 	 * Maybe create the Platform Checkout webhook under certain conditions.
-	 *
-	 * @return null|void
 	 */
 	public function maybe_create_platform_checkout_order_webhook() {
 		if ( ! current_user_can( 'manage_woocommerce' ) || self::is_webhook_created() ) {
