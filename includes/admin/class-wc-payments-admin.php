@@ -902,7 +902,7 @@ class WC_Payments_Admin {
 		);
 
 		$needs_response_statuses   = [ 'needs_response', 'warning_needs_response' ];
-		$disputes_needing_response = array_sum( array_intersect_key( $disputes_summary['statuses'], array_flip( $needs_response_statuses ) ) );
+		$disputes_needing_response = array_sum( array_intersect_key( $disputes_summary['count_by_status'], array_flip( $needs_response_statuses ) ) );
 
 		if ( ! $disputes_needing_response ) {
 			return;
