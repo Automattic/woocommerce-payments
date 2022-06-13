@@ -253,8 +253,6 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 	public function test_disputes_notification_badge_display() {
 		global $submenu;
 
-		$this->mock_current_user_is_admin();
-
 		// Mock the database cache returning a set of disputes.
 		$this->mock_database_cache
 			->expects( $this->once() )
@@ -269,8 +267,8 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 				]
 			);
 
-		// Make sure we render the menu with submenu items.
-		$this->payments_admin->add_disputes_notification_badge();
+		$this->mock_current_user_is_admin();
+		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
 		$dispute_menu_item  = $item_names_by_urls['wc-admin&path=/payments/disputes'];
