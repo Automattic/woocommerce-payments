@@ -284,22 +284,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		return pattern.test( value );
 	};
 
-	const openLoginSessionIframe = () => {
-		loginSessionIframe.src = `${ getConfig(
-			'platformCheckoutHost'
-		) }/login-session/`;
-
-		// Insert the wrapper into the DOM.
-		parentDiv.insertBefore( loginSessionIframeWrapper, null );
-
-		setPopoverPosition();
-
-		// Focus the iframe.
-		loginSessionIframe.focus();
-	};
-
 	const closeLoginSessionIframe = () => {
-		hasCheckedLoginSession = true;
 		loginSessionIframeWrapper.remove();
 		loginSessionIframe.classList.remove( 'open' );
 		platformCheckoutEmailInput.focus();
@@ -308,6 +293,28 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
 			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
 		}
+	};
+
+	const openLoginSessionIframe = () => {
+		loginSessionIframe.src = `${ getConfig(
+			'platformCheckoutHost'
+		) }/login-session`;
+
+		// Insert the wrapper into the DOM.
+		parentDiv.insertBefore( loginSessionIframeWrapper, null );
+
+		setPopoverPosition();
+
+		// Focus the iframe.
+		loginSessionIframe.focus();
+
+		// fallback to close the login session iframe in case failed to receive event
+		// via postMessage.
+		setTimeout( () => {
+			if ( ! hasCheckedLoginSession ) {
+				closeLoginSessionIframe();
+			}
+		}, 15000 );
 	};
 
 	// Prevent show platform checkout iframe if the page comes from
@@ -366,6 +373,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 		switch ( e.data.action ) {
 			case 'auto_redirect_to_platform_checkout':
+				hasCheckedLoginSession = true;
 				platformCheckoutEmailInput.value = e.data.userEmail;
 				loginSessionIframe.classList.add( 'open' );
 				wcpayTracks.recordUserEvent(
