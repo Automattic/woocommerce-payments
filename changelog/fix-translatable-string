@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Make hardcoded string in the checkout page translatable
