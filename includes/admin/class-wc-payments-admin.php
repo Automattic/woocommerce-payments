@@ -908,6 +908,10 @@ class WC_Payments_Admin {
 			'is_array'
 		);
 
+		if ( ! isset( $disputes_summary['count_by_status'] ) ) {
+			return;
+		}
+
 		$needs_response_statuses   = [ 'needs_response', 'warning_needs_response' ];
 		$disputes_needing_response = array_sum( array_intersect_key( $disputes_summary['count_by_status'], array_flip( $needs_response_statuses ) ) );
 
