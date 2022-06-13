@@ -487,7 +487,7 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_asdfghjkl"
                     tabindex="-1"
                   >
-                    Nov 8, 2019 / 2:46AM
+                    Nov 7, 2019 / 9:46PM
                   </a>
                 </td>
               </tr>
@@ -607,7 +607,7 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_zxcvbnm"
                     tabindex="-1"
                   >
-                    Nov 6, 2019 / 11:00PM
+                    Nov 6, 2019 / 6:00PM
                   </a>
                 </td>
               </tr>
@@ -732,7 +732,7 @@ exports[`Disputes list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fdetails&id=dp_rstyuoi"
                     tabindex="-1"
                   >
-                    Nov 8, 2019 / 2:46AM
+                    Nov 7, 2019 / 9:46PM
                   </a>
                 </td>
               </tr>
