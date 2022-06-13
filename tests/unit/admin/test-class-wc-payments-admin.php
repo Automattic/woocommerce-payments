@@ -281,4 +281,36 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 
 		$this->assertEquals( 'Disputes' . $expected_badge, $dispute_menu_item );
 	}
+
+	/**
+	 * Tests WC_Payments_Admin::add_disputes_notification_badge()
+	 */
+	public function test_disputes_notification_badge_no_display() {
+		global $submenu;
+
+		// Mock the database cache returning a set of disputes.
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'count'           => 4,
+					'count_by_status' => [
+						'won'  => 1,
+						'lost' => 3,
+					],
+				]
+			);
+
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
+		$dispute_menu_item  = $item_names_by_urls['wc-admin&path=/payments/disputes'];
+
+		$this->assertEquals( 'Disputes', $dispute_menu_item );
+	}
 }
