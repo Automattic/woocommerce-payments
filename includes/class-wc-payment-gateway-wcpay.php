@@ -2133,7 +2133,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		Tracker::track_admin( 'wcpay_merchant_captured_auth' );
 
 		// There is a possibility of the intent being null, so we need to get the charge_id safely.
-		$charge_id = ! empty( $intent ) ? $intent->get_charge()->get_id() : $order->get_meta( '_charge_id' );
+		$charge    = ! empty( $intent ) ? $intent->get_charge() : null;
+		$charge_id = ! empty( $charge ) ? $charge->get_id() : $order->get_meta( '_charge_id' );
 
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 
@@ -2188,7 +2189,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( 'canceled' === $status ) {
-			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status, $intent->get_charge()->get_id() );
+			$charge    = $intent->get_charge();
+			$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
+
+			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status, $charge_id );
 			return;
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
@@ -2369,7 +2373,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// An exception is thrown if an intent can't be found for the given intent ID.
 				$intent    = $this->payments_api_client->get_intent( $intent_id );
 				$status    = $intent->get_status();
-				$charge_id = $intent->get_charge()->get_id();
+				$charge    = $intent->get_charge();
+				$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
 
 				$this->attach_exchange_info_to_order( $order, $charge_id );
 				$this->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
