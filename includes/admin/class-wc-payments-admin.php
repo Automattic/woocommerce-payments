@@ -23,6 +23,13 @@ class WC_Payments_Admin {
 	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1"><span class="plugin-count">1</span></span>';
 
 	/**
+	 * Dispute notification badge HTML format (with placeholder for the number of disputes).
+	 *
+	 * @var string
+	 */
+	const DISPUTE_NOTIFICATION_BADGE_FORMAT = ' <span class="wcpay-menu-badge awaiting-mod count-%1$s"><span class="plugin-count">%1$d</span></span>';
+
+	/**
 	 * WC Payments WordPress Admin menu slug.
 	 *
 	 * @var string
@@ -910,7 +917,7 @@ class WC_Payments_Admin {
 
 		foreach ( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] as $index => $menu_item ) {
 			if ( 'wc-admin&path=/payments/disputes' === $menu_item[2] ) {
-				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( ' <span class="wcpay-menu-badge awaiting-mod count-%1$s"><span class="plugin-count">%1$s</span></span>', esc_html( $disputes_needing_response ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( self::DISPUTE_NOTIFICATION_BADGE_FORMAT, esc_html( $disputes_needing_response ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				break;
 			}
 		}
