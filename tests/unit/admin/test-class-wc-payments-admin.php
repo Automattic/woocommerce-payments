@@ -268,6 +268,9 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 			);
 
 		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
@@ -276,6 +279,6 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		// The expected badge content should include 4 disputes needing a response.
 		$expected_badge = sprintf( WC_Payments_Admin::DISPUTE_NOTIFICATION_BADGE_FORMAT, 4 );
 
-		$this->assertEquals( 'Disputes ' . $expected_badge, $dispute_menu_item );
+		$this->assertEquals( 'Disputes' . $expected_badge, $dispute_menu_item );
 	}
 }
