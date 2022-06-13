@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Database_Cache;
 
 /**
  * WC_Payments_Admin unit tests.
@@ -21,6 +22,13 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 	 * @var WC_Payment_Gateway_WCPay|MockObject
 	 */
 	private $mock_gateway;
+
+	/**
+	 * Mock database cache
+	 *
+	 * @var Database_Cache|MockObject;
+	 */
+	private $mock_database_cache;
 
 	/**
 	 * @var WC_Payments_Admin
@@ -44,6 +52,11 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 		$this->mock_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->disableOriginalConstructor()
 			->getMock();
+
+		$this->mock_database_cache = $this->getMockBuilder( Database_Cache::class )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->mock_account->method( 'get_capital' )->willReturn(
 			[
 				'loans'              => [],
@@ -52,7 +65,7 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 			]
 		);
 
-		$this->payments_admin = new WC_Payments_Admin( $mock_api_client, $this->mock_gateway, $this->mock_account );
+		$this->payments_admin = new WC_Payments_Admin( $mock_api_client, $this->mock_gateway, $this->mock_account, $this->mock_database_cache );
 	}
 
 	public function tear_down() {
