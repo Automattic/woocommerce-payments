@@ -10,6 +10,14 @@ import { setupProductCheckout } from '../../utils/payments';
 import { shopperWCP } from '../../utils';
 import { getLoadingDurations } from '../../utils/performance';
 
+const averageMetrics = ( metrics, i ) => {
+	const results = {};
+	for ( const [ key, value ] of Object.entries( metrics ) ) {
+		results[ key ] = value.reduce( ( prev, curr ) => prev + curr ) / i;
+	}
+	return results;
+};
+
 describe( 'Checkout page performance', () => {
 	beforeEach( async () => {
 		await setupProductCheckout(
@@ -23,25 +31,42 @@ describe( 'Checkout page performance', () => {
 	} );
 
 	it( 'measures on page load', async () => {
-		await page.waitForSelector( '#payment_method_woocommerce_payments' );
-		const {
-			serverResponse,
-			firstPaint,
-			domContentLoaded,
-			loaded,
-			firstContentfulPaint,
-			firstBlock,
-		} = await getLoadingDurations();
-
+		const totalTrials = 3;
 		await expect( page ).toMatch( 'Checkout' );
-		console.log(
-			'result',
-			serverResponse,
-			firstPaint,
-			domContentLoaded,
-			loaded,
-			firstContentfulPaint,
-			firstBlock
-		);
+
+		// Run performance tests a few times, then take the average.
+		const results = {
+			serverResponse: [],
+			firstPaint: [],
+			domContentLoaded: [],
+			loaded: [],
+			firstContentfulPaint: [],
+			firstBlock: [],
+		};
+
+		let i = totalTrials;
+		while ( i-- ) {
+			await page.reload();
+			await page.waitForSelector(
+				'#payment_method_woocommerce_payments'
+			);
+			const {
+				serverResponse,
+				firstPaint,
+				domContentLoaded,
+				loaded,
+				firstContentfulPaint,
+				firstBlock,
+			} = await getLoadingDurations();
+
+			results.serverResponse.push( serverResponse );
+			results.firstPaint.push( firstPaint );
+			results.domContentLoaded.push( domContentLoaded );
+			results.loaded.push( loaded );
+			results.firstContentfulPaint.push( firstContentfulPaint );
+			results.firstBlock.push( firstBlock );
+		}
+		console.log( 'All the trial results', results );
+		console.log( 'Average', averageMetrics( results, totalTrials ) );
 	} );
 } );

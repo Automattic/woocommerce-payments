@@ -20,6 +20,7 @@ export async function getLoadingDurations() {
 			}
 		} );
 
+		// Returns metrics in milliseconds (10^-3). Spec uses DOMHighResTimeStamp https://www.w3.org/TR/hr-time-2/#sec-domhighrestimestamp.
 		return {
 			// Server side metric.
 			serverResponse: responseStart - requestStart,
