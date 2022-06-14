@@ -10,6 +10,5 @@
  *
  * Class WP_UnitTestCase
  */
-class WCPAY_UnitTestCase extends WP_UnitTestCase {
-
+class WCPAY_UnitTestCase extends \Yoast\PHPUnitPolyfills\TestCases\TestCase {
 }
