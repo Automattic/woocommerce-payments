@@ -220,7 +220,7 @@ class WC_Payments_API_Client {
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
 		$request['level3']         = $level3;
-		$request['description']    = $this->get_intent_description( $metadata['order_id'] ?? 0 );
+		$request['description']    = $this->get_intent_description( $metadata['order_number'] ?? 0 );
 
 		if ( ! empty( $payment_methods ) ) {
 			$request['payment_method_types'] = $payment_methods;
@@ -256,7 +256,7 @@ class WC_Payments_API_Client {
 	 * @param int    $amount          - Amount to charge.
 	 * @param string $currency_code   - Currency to charge in.
 	 * @param array  $payment_methods - Payment methods to include.
-	 * @param int    $order_id        - The order ID.
+	 * @param string $order_number    - The order number.
 	 * @param string $capture_method  - optional capture method (either `automatic` or `manual`).
 	 *
 	 * @return WC_Payments_API_Intention
@@ -266,13 +266,13 @@ class WC_Payments_API_Client {
 		$amount,
 		$currency_code,
 		$payment_methods,
-		$order_id,
+		$order_number,
 		$capture_method = 'automatic'
 	) {
 		$request                         = [];
 		$request['amount']               = $amount;
 		$request['currency']             = $currency_code;
-		$request['description']          = $this->get_intent_description( $order_id );
+		$request['description']          = $this->get_intent_description( $order_number );
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
 		$request['metadata']             = $this->get_fingerprint_metadata();
@@ -316,7 +316,7 @@ class WC_Payments_API_Client {
 			'receipt_email' => '',
 			'metadata'      => $metadata,
 			'level3'        => $level3,
-			'description'   => $this->get_intent_description( $metadata['order_id'] ?? 0 ),
+			'description'   => $this->get_intent_description( $metadata['order_number'] ?? 0 ),
 		];
 
 		if ( '' !== $selected_upe_payment_type ) {
@@ -2313,17 +2313,17 @@ class WC_Payments_API_Client {
 	/**
 	 * Returns a formatted intention description.
 	 *
-	 * @param  int $order_id The order ID.
-	 * @return string        A formatted intention description.
+	 * @param  string $order_number The order number (might be different from the ID).
+	 * @return string               A formatted intention description.
 	 */
-	private function get_intent_description( int $order_id ): string {
+	private function get_intent_description( $order_number ): string {
 		$domain_name = str_replace( [ 'https://', 'http://' ], '', get_site_url() );
 		$blog_id     = $this->get_blog_id();
 
 		// Forgo i18n as this is only visible in the Stripe dashboard.
 		return sprintf(
 			'Online Payment%s for %s%s',
-			0 !== $order_id ? " for Order #$order_id" : '',
+			0 !== $order_number ? " for Order #$order_number" : '',
 			$domain_name,
 			null !== $blog_id ? " blog_id $blog_id" : ''
 		);

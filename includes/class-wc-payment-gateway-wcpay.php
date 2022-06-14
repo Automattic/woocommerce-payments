@@ -1337,6 +1337,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'customer_email' => $email,
 			'site_url'       => esc_url( get_site_url() ),
 			'order_id'       => $order->get_id(),
+			'order_number'   => $order->get_order_number(),
 			'order_key'      => $order->get_order_key(),
 			'payment_type'   => $payment_type,
 		];
@@ -1627,8 +1628,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	private function get_payment_method_type_for_order( $order ): string {
-		$payment_method_id      = $order->get_meta( '_payment_method_id', true );
-		$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+		if ( $order->meta_exists( '_payment_method_id' ) && '' !== $order->get_meta( '_payment_method_id', true ) ) {
+			$payment_method_id      = $order->get_meta( '_payment_method_id', true );
+			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+		} elseif ( $order->meta_exists( '_intent_id' ) ) {
+			$payment_intent_id      = $order->get_meta( '_intent_id', true );
+			$payment_intent         = $this->payments_api_client->get_intent( $payment_intent_id );
+			$payment_method_details = $payment_intent ? $payment_intent->get_payment_method_details() : [];
+		}
 
 		return $payment_method_details['type'] ?? 'unknown';
 	}
@@ -2565,7 +2572,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$converted_amount,
 				$currency,
 				$payment_methods,
-				$order->get_id(),
+				$order->get_order_number(),
 				$capture_method
 			);
 
