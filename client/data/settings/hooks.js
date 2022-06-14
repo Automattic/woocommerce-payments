@@ -401,3 +401,19 @@ export const usePlatformCheckoutCustomMessage = () => {
 		[ updatePlatformCheckoutCustomMessage ]
 	);
 };
+
+export const usePlatformCheckoutStoreLogo = () => {
+	const { updatePlatformCheckoutStoreLogo } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getPlatformCheckoutStoreLogo } = select( STORE_NAME );
+
+			return [
+				getPlatformCheckoutStoreLogo(),
+				updatePlatformCheckoutStoreLogo,
+			];
+		},
+		[ updatePlatformCheckoutStoreLogo ]
+	);
+};

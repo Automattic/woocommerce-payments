@@ -44,7 +44,7 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->order_service = new WC_Payments_Order_Service();
+		$this->order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
 		$this->order         = WC_Helper_Order::create_order();
 	}
 
@@ -294,26 +294,6 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 		// Arrange: Set the intent status, order status, and get the expected notes.
 		$intent_status = 'requires_action';
 		$this->order->set_status( 'on-hold' );
-		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-
-		// Act: Attempt to mark the payment/order pending.
-		$this->order_service->mark_payment_started( $this->order, $this->intent_id, $intent_status, $this->charge_id );
-
-		// Assert: Check that the notes were not updated.
-		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertEquals( $expected_notes, $updated_notes );
-
-		// Assert: Check that the order is not locked.
-		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
-	}
-
-	/**
-	 * Method `mark_payment_started` should exit if the intent status is already requires_action.
-	 */
-	public function test_mark_payment_started_on_existing_intent_status_requires_action() {
-		// Arrange: Set the intent status, apply intent status, and get the expected notes.
-		$intent_status = 'requires_action';
-		$this->order->update_meta_data( '_intention_status', $intent_status );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order pending.
