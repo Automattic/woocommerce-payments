@@ -5,29 +5,30 @@
 import { useSelect } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
-export const useTimeline = ( chargeId ) =>
+export const useTimeline = ( id ) =>
 	useSelect(
 		( select ) => {
 			const {
 				getTimeline,
 				getTimelineError,
 				isResolving,
-				getCharge,
-				getChargeError,
+				getPaymentIntent,
+				getPaymentIntentError,
 			} = select( STORE_NAME );
 
 			// Make sure the charge is loaded first to get the intention ID.
-			const isChargeLoading = isResolving( 'getCharge', [ chargeId ] );
-			const chargeError = getChargeError( chargeId );
-			if ( isChargeLoading || chargeError instanceof Error ) {
+			const isLoading = isResolving( 'getPaymentIntent', [ id ] );
+			const error = getPaymentIntentError( id );
+
+			if ( isLoading || error instanceof Error ) {
 				return {
 					timeline: null,
-					timelineError: chargeError,
-					isLoading: isChargeLoading,
+					timelineError: error,
+					isLoading: isLoading,
 				};
 			}
 
-			const { payment_intent: intentionId } = getCharge( chargeId );
+			const { id: intentionId } = getPaymentIntent( id );
 			if ( ! intentionId ) {
 				// If intention ID is not available, do not render the timeline, but also don't indicate the API error.
 				return {
@@ -43,5 +44,5 @@ export const useTimeline = ( chargeId ) =>
 				isLoading: isResolving( 'getTimeline', [ intentionId ] ),
 			};
 		},
-		[ chargeId ]
+		[ id ]
 	);
