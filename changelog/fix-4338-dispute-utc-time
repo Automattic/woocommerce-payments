@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Dates presented in the "Respond by" column on the Payments → Disputes page are displayed in local time rather than UTC time.

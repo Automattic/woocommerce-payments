@@ -22,6 +22,11 @@ import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
 
+const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
+const isStripeLinkEnabled =
+	paymentMethodsConfig.link !== undefined &&
+	paymentMethodsConfig.card !== undefined;
+
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
 	{
@@ -30,6 +35,7 @@ const api = new WCPayAPI(
 		forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 		locale: getConfig( 'locale' ),
 		isUPEEnabled: getConfig( 'isUPEEnabled' ),
+		isStripeLinkEnabled,
 	},
 	request
 );
@@ -54,7 +60,6 @@ registerPaymentMethod( {
 } );
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
-
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 } );

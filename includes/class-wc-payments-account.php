@@ -310,6 +310,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get has account connected readers flag
+	 *
+	 * @return bool
+	 */
+	public function has_card_readers_available(): bool {
+		$account = $this->get_cached_account_data();
+		return $account['has_card_readers_available'] ?? false;
+	}
+
+	/**
 	 * Gets the current account fees for rendering on the settings page.
 	 *
 	 * @return array Fees.
