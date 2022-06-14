@@ -77,7 +77,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		self::$settings_route = '/wc/v3/' . ( defined( 'IS_WPCOM' ) && IS_WPCOM ? 'sites/3/' : '' ) . 'payments/settings';
+		self::$settings_route = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/settings';
 
 		require_once __DIR__ . '/../helpers/class-wc-blocks-rest-api-registration-preventer.php';
 		WC_Blocks_REST_API_Registration_Preventer::prevent();

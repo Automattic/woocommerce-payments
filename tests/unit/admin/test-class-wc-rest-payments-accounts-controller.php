@@ -34,7 +34,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
-		if ( defined( 'IS_WPCOM' ) && IS_WPCOM ) {
+		if ( $this->is_wpcom() ) {
 			add_filter( 'wcpay_dev_mode', '__return_true' );
 		} else {
 			WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
@@ -54,7 +54,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 
-		if ( defined( 'IS_WPCOM' ) && IS_WPCOM ) {
+		if ( $this->is_wpcom() ) {
 			remove_filter( 'wcpay_dev_mode', '__return_true' );
 		}
 

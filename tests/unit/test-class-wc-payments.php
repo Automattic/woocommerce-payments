@@ -83,7 +83,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	public function test_rest_endpoints_validate_nonce() {
 
-		if ( defined( 'IS_WPCOM' ) && IS_WPCOM ) {
+		if ( $this->is_wpcom() ) {
 			$this->markTestSkipped( 'must be revisited. "/wc/store/checkout" is returning 404' );
 		}
 
