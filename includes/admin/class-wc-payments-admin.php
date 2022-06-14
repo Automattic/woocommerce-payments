@@ -901,19 +901,19 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$disputes_summary = $this->database_cache->get_or_add(
+		$disputes_status_counts = $this->database_cache->get_or_add(
 			Database_Cache::DISPUTES_SUMMARY_KEY,
-			[ $this->payments_api_client, 'get_disputes_summary' ],
+			[ $this->payments_api_client, 'get_dispute_status_counts' ],
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
 		);
 
-		if ( ! isset( $disputes_summary['count_by_status'] ) ) {
+		if ( ! $disputes_status_counts ) {
 			return;
 		}
 
 		$needs_response_statuses   = [ 'needs_response', 'warning_needs_response' ];
-		$disputes_needing_response = array_sum( array_intersect_key( $disputes_summary['count_by_status'], array_flip( $needs_response_statuses ) ) );
+		$disputes_needing_response = array_sum( array_intersect_key( $disputes_status_counts, array_flip( $needs_response_statuses ) ) );
 
 		if ( ! $disputes_needing_response ) {
 			return;

@@ -824,6 +824,16 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Gets a list of dispute statuses and a total count for each.
+	 *
+	 * @return array Dispute status counts in the formatL: [ '{status}' => count ].
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_dispute_status_counts() {
+		return $this->request( [], self::DISPUTES_API . '/status_counts', self::GET );
+	}
+
+	/**
 	 * Fetch a single dispute with provided id.
 	 *
 	 * @param string $dispute_id id of requested dispute.
