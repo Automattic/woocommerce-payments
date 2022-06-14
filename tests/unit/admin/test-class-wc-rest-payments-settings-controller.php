@@ -92,7 +92,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
-		$order_service            = new WC_Payments_Order_Service();
+		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

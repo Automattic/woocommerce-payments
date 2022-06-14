@@ -58,7 +58,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_gateway          = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
-		$this->order_service         = new WC_Payments_Order_Service();
+		$this->order_service         = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		$this->controller = new WC_REST_Payments_Orders_Controller(
 			$this->mock_api_client,

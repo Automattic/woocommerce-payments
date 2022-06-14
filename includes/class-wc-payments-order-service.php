@@ -23,6 +23,22 @@ class WC_Payments_Order_Service {
 	const STATUS_PENDING   = 'pending';
 
 	/**
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	protected $api_client;
+
+	/**
+	 * WC_Payments_Order_Service constructor.
+	 *
+	 * @param WC_Payments_API_Client $api_client - WooCommerce Payments API client.
+	 */
+	public function __construct( WC_Payments_API_Client $api_client ) {
+		$this->api_client = $api_client;
+	}
+
+	/**
 	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
@@ -110,7 +126,6 @@ class WC_Payments_Order_Service {
 	 */
 	public function mark_payment_started( $order, $intent_id, $intent_status, $charge_id ) {
 		if ( ! $order->has_status( [ self::STATUS_PENDING ] )
-			|| 'requires_action' === $order->get_meta( '_intention_status' )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
@@ -318,7 +333,7 @@ class WC_Payments_Order_Service {
 	 */
 	private function generate_payment_success_note( $intent_id, $charge_id, $formatted_amount ) {
 		$transaction_url = $this->compose_transaction_url( $charge_id );
-		return sprintf(
+		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
 				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
@@ -331,6 +346,26 @@ class WC_Payments_Order_Service {
 			$charge_id
 		);
 
+		try {
+			$events = $this->api_client->get_timeline( $intent_id );
+
+			$captured_event = current(
+				array_filter(
+					$events['data'],
+					function ( array $event ) {
+						return 'captured' === $event['type'];
+					}
+				)
+			);
+
+			$details = ( new WC_Payments_Captured_Event_Note( $captured_event ) )->generate_html_note();
+
+			return $note . $details;
+		} catch ( Exception $e ) {
+			Logger::log( sprintf( 'Can not generate the detailed note for intent_id %1$s. Reason: %2$s', $intent_id, $e->getMessage() ) );
+
+			return $note;
+		}
 	}
 
 	/**
@@ -685,6 +720,8 @@ class WC_Payments_Order_Service {
 	 * @return boolean True if it has a paid status, false if not.
 	 */
 	private function is_order_paid( $order ) {
+		wp_cache_delete( $order->get_id(), 'posts' );
+
 		// Read the latest order properties from the database to avoid race conditions if webhook was handled during this request.
 		$clone_order = clone $order;
 		$clone_order->get_data_store()->read( $clone_order );
