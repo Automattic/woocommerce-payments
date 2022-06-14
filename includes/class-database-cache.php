@@ -23,11 +23,11 @@ class Database_Cache {
 	const PAYMENT_METHODS_KEY_PREFIX = 'wcpay_pm_';
 
 	/**
-	 * Disputes summary cache key.
+	 * Dispute status counts cache key.
 	 *
 	 * @var string
 	 */
-	const DISPUTES_SUMMARY_KEY = 'wcpay_disputes_summary';
+	const DISPUTE_STATUS_COUNTS_KEY = 'wcpay_dispute_status_counts_cache';
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.

@@ -902,7 +902,7 @@ class WC_Payments_Admin {
 		}
 
 		$disputes_status_counts = $this->database_cache->get_or_add(
-			Database_Cache::DISPUTES_SUMMARY_KEY,
+			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
 			[ $this->payments_api_client, 'get_dispute_status_counts' ],
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
