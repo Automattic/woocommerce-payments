@@ -259,11 +259,10 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 			->method( 'get_or_add' )
 			->willReturn(
 				[
-					'count'           => 4,
-					'count_by_status' => [
-						'needs_response'         => 1,
-						'warning_needs_response' => 3,
-					],
+					'needs_response'         => 1,
+					'warning_needs_response' => 3,
+					'won'                    => 2,
+					'lost'                   => 10,
 				]
 			);
 
@@ -294,11 +293,8 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 			->method( 'get_or_add' )
 			->willReturn(
 				[
-					'count'           => 4,
-					'count_by_status' => [
-						'won'  => 1,
-						'lost' => 3,
-					],
+					'won'  => 1,
+					'lost' => 3,
 				]
 			);
 
