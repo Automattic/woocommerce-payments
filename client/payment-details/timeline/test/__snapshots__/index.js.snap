@@ -352,7 +352,6 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   class="woocommerce-timeline-item__body"
                 >
                   <span />
-                  <span />
                 </div>
               </li>
             </ul>
@@ -483,7 +482,6 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                 <div
                   class="woocommerce-timeline-item__body"
                 >
-                  <span />
                   <span />
                 </div>
               </li>

@@ -211,7 +211,7 @@ export const DisputesList = (): JSX.Element => {
 				display: clickable(
 					dateI18n(
 						'M j, Y / g:iA',
-						moment.utc( dispute.due_by ).local().toISOString()
+						moment( dispute.due_by ).toISOString()
 					)
 				),
 			},
