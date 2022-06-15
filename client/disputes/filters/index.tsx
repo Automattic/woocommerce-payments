@@ -41,10 +41,15 @@ export const DisputesFilters = ( {
 		return filtersConfiguration;
 	};
 
+	const filterSelected = ( filterKey: string ) => {
+		console.log( `Disputes filter mode: ${ filterKey }` );
+	};
+
 	return (
 		<ReportFilters
 			filters={ populateDisputesCurrencies( filters ) }
 			advancedFilters={ advancedFilters }
+			onFilterSelect={ filterSelected }
 			showDatePicker={ false }
 			path="/payments/disputes"
 			query={ getQuery() }

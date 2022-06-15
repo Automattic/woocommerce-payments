@@ -75,6 +75,10 @@ export const filters: [ DisputesFilterType, DisputesFilterType ] = [
 				value: 'all',
 			},
 			{
+				label: __( 'Disputes needing response', 'woocommerce-payments' ),
+				value: 'need_response',
+			},
+			{
 				label: __( 'Advanced filters', 'woocommerce-payments' ),
 				value: 'advanced',
 			},

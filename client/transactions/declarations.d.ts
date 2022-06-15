@@ -38,6 +38,7 @@ declare module '@woocommerce/components' {
 		path?: string;
 		query?: Query;
 		showDatePicker: boolean;
+		onFilterSelect?: ( args: any ) => void;
 		// some properties are omitted, as we are not currently using them
 	}
 
