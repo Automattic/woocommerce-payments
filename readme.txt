@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.2.1
+Stable tag: 4.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.3.0 - 2022-xx-xx =
+= 4.3.0 - 2022-06-15 =
 * Add - Add ARN (Acquirer Reference Number) to refunds in payment details timeline.
 * Add - Add support for custom order numbers in addition to order IDs.
 * Add - record wcpay version in Platform Checkout Tracks events
