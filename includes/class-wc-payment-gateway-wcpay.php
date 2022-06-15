@@ -1337,6 +1337,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'customer_email' => $email,
 			'site_url'       => esc_url( get_site_url() ),
 			'order_id'       => $order->get_id(),
+			'order_number'   => $order->get_order_number(),
 			'order_key'      => $order->get_order_key(),
 			'payment_type'   => $payment_type,
 		];
@@ -2571,7 +2572,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$converted_amount,
 				$currency,
 				$payment_methods,
-				$order->get_id(),
+				$order->get_order_number(),
 				$capture_method
 			);
 
