@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Update transaction csv download emails to be sent to the current logged in admin.

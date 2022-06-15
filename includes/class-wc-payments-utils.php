@@ -619,4 +619,176 @@ class WC_Payments_Utils {
 			admin_url( 'admin.php' )
 		);
 	}
+
+	/**
+	 * Retrieve last WC refund from order ID.
+	 *
+	 * @param int $order_id WC Order ID.
+	 *
+	 * @return null|WC_Order_Refund
+	 */
+	public static function get_last_refund_from_order_id( $order_id ) {
+		$wc_refunds = wc_get_orders(
+			[
+				'type'    => 'shop_order_refund',
+				'parent'  => $order_id,
+				'limit'   => 1,
+				'orderby' => 'ID',
+				'order'   => 'DESC',
+			]
+		);
+
+		if ( is_array( $wc_refunds ) && ! empty( $wc_refunds ) && is_a( $wc_refunds[0], WC_Order_Refund::class ) ) {
+			return $wc_refunds[0];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Check to see if the current user is in onboarding experiment treatment mode.
+	 *
+	 * @return bool
+	 */
+	public static function is_in_onboarding_treatment_mode() {
+		if ( ! isset( $_COOKIE['tk_ai'] ) ) {
+			return false;
+		}
+
+		$abtest = new \WCPay\Experimental_Abtest(
+			sanitize_text_field( wp_unslash( $_COOKIE['tk_ai'] ) ),
+			'woocommerce',
+			'yes' === get_option( 'woocommerce_allow_tracking' )
+		);
+
+		return 'treatment' === $abtest->get_variation( 'woo_wcpayments_tasklist_click_introducing_select_business_type_202203_v3' );
+	}
+
+	/**
+	 * Return the currency format based on the symbol position.
+	 * Similar to get_woocommerce_price_format but with an input.
+	 *
+	 * @param string $currency_pos currency symbol position.
+	 *
+	 * @return string The currency format.
+	 */
+	public static function get_woocommerce_price_format( string $currency_pos ): string {
+		$default_left = '%1$s%2$s';
+
+		switch ( $currency_pos ) {
+			case 'left':
+				return $default_left;
+			case 'right':
+				return '%2$s%1$s';
+			case 'left_space':
+				return '%1$s %2$s';
+			case 'right_space':
+				return '%2$s %1$s';
+			default:
+				return $default_left;
+		}
+	}
+
+	/**
+	 * Transform the currency format returned from localization service into
+	 * the format that can be used by wc_price
+	 *
+	 * @param string $currency the currency code.
+	 *
+	 * @return array The currency format.
+	 */
+	public static function get_currency_format_for_wc_price( string $currency ): array {
+		$currency = strtoupper( $currency );
+
+		$currency_data = WC_Payments::get_localization_service()->get_currency_format( $currency );
+
+		$currency_format_for_wc_price = [];
+		foreach ( $currency_data as $key => $format ) {
+			switch ( $key ) {
+				case 'thousand_sep':
+					$currency_format_for_wc_price['thousand_separator'] = $format;
+					break;
+				case 'decimal_sep':
+					$currency_format_for_wc_price['decimal_separator'] = $format;
+					break;
+				case 'num_decimals':
+					$currency_format_for_wc_price['decimals'] = $format;
+					break;
+				case 'currency_pos':
+					$currency_format_for_wc_price['price_format'] = self::get_woocommerce_price_format( $format );
+					break;
+			}
+		}
+		$currency_format_for_wc_price['currency'] = $currency;
+
+		return $currency_format_for_wc_price;
+	}
+
+	/**
+	 * Format an amount according to the given currency format.
+	 *
+	 * @param  float  $amount   Amount to format.
+	 * @param  string $currency 3-letter currency code.
+	 *
+	 * @return string
+	 */
+	public static function format_currency( float $amount, string $currency ): string {
+		$currency = strtoupper( $currency );
+
+		$formatted = html_entity_decode(
+			wp_strip_all_tags(
+				wc_price(
+					$amount,
+					self::get_currency_format_for_wc_price( $currency )
+				)
+			)
+		);
+
+		if ( $amount >= 0 ) {
+			return $formatted;
+		}
+
+		// Handle the subtle display difference for the negative amount between PHP wc_price `-$0.74` vs JavaScript formatCurrency `$-0.74` for the same input.
+		// Remove the minus sign, and then move it right before the number.
+		$formatted = str_replace( '-', '', $formatted );
+
+		return preg_replace( '/([0-9,\.]+)/', '-$1', $formatted );
+	}
+
+	/**
+	 * Format amount according to the given currency with the currency code in the right.
+	 *
+	 * @param  float  $amount          Amount.
+	 * @param  string $currency       3-letter currency code.
+	 * @param  bool   $skip_symbol      Optional. If true, trims off the short currency symbol. Default false.
+	 * @param  array  $currency_format Optional. Additional currency format for wc_price.
+	 *
+	 * @return string Formatted currency representation
+	 */
+	public static function format_explicit_currency(
+		float $amount,
+		string $currency,
+		bool $skip_symbol = false,
+		array $currency_format = []
+	): string {
+		$currency = strtoupper( $currency );
+
+		$formatted_amount = wc_price(
+			$amount,
+			wp_parse_args( $currency_format, self::get_currency_format_for_wc_price( $currency ) )
+		);
+
+		$formatted_amount = html_entity_decode( wp_strip_all_tags( $formatted_amount ) );
+
+		if ( $skip_symbol ) {
+			$formatted_amount = preg_replace( '/[^0-9,\.]+/', '', $formatted_amount );
+		}
+
+		if ( false === strpos( $formatted_amount, $currency ) ) {
+			return $formatted_amount . ' ' . $currency;
+		}
+
+		return $formatted_amount;
+	}
+
 }

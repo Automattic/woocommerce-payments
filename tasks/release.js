@@ -2,7 +2,7 @@
 /* eslint no-process-exit: 0, no-undef: 0, strict: 0 */
 'use strict';
 require( 'shelljs/global' );
-const colors = require( 'colors' );
+const chalk = require( 'chalk' );
 const archiver = require( 'archiver' );
 const fs = require( 'fs' );
 
@@ -17,6 +17,7 @@ const filesToCopy = [
 	'includes',
 	'i18n',
 	'languages',
+	'templates',
 	'vendor',
 	'woocommerce-payments.php',
 	'changelog.txt',
@@ -47,7 +48,7 @@ const archive = archiver( 'zip', { zlib: { level: 9 } } );
 
 output.on( 'close', () => {
 	console.log(
-		colors.green(
+		chalk.green(
 			'All done: Release is built in the ' + releaseFolder + ' folder.'
 		)
 	);
@@ -55,7 +56,7 @@ output.on( 'close', () => {
 
 archive.on( 'error', ( err ) => {
 	console.error(
-		colors.red(
+		chalk.red(
 			'An error occured while creating the zip: ' +
 				err +
 				'\nYou can still probably create the zip manually from the ' +

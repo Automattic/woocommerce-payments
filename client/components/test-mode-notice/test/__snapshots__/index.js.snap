@@ -75,6 +75,28 @@ exports[`Test mode notification Component is rendered correctly 4`] = `
       class="components-notice__content"
     >
       <span>
+        Viewing test documents. To view live documents, disable test mode in WooCommerce Payments settings.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Test mode notification Component is rendered correctly 5`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
         <b>
           Test deposit:
         </b>
@@ -92,7 +114,7 @@ exports[`Test mode notification Component is rendered correctly 4`] = `
 </div>
 `;
 
-exports[`Test mode notification Component is rendered correctly 5`] = `
+exports[`Test mode notification Component is rendered correctly 6`] = `
 <div>
   <div
     class="wcpay-test-mode-notice components-notice is-warning"
@@ -118,7 +140,7 @@ exports[`Test mode notification Component is rendered correctly 5`] = `
 </div>
 `;
 
-exports[`Test mode notification Component is rendered correctly 6`] = `
+exports[`Test mode notification Component is rendered correctly 7`] = `
 <div>
   <div
     class="wcpay-test-mode-notice components-notice is-warning"
@@ -144,9 +166,31 @@ exports[`Test mode notification Component is rendered correctly 6`] = `
 </div>
 `;
 
-exports[`Test mode notification Component is rendered correctly 7`] = `<div />`;
-
-exports[`Test mode notification Component is rendered correctly 8`] = `<div />`;
+exports[`Test mode notification Component is rendered correctly 8`] = `
+<div>
+  <div
+    class="wcpay-test-mode-notice components-notice is-warning"
+  >
+    <div
+      class="components-notice__content"
+    >
+      <span>
+        <b>
+          Test document:
+        </b>
+         
+        WooCommerce Payments was in test mode when this order was placed.
+         
+        <a
+          href="https://example.com/"
+        >
+          View WooCommerce Payments settings
+        </a>
+      </span>
+    </div>
+  </div>
+</div>
+`;
 
 exports[`Test mode notification Component is rendered correctly 9`] = `<div />`;
 
@@ -155,3 +199,11 @@ exports[`Test mode notification Component is rendered correctly 10`] = `<div />`
 exports[`Test mode notification Component is rendered correctly 11`] = `<div />`;
 
 exports[`Test mode notification Component is rendered correctly 12`] = `<div />`;
+
+exports[`Test mode notification Component is rendered correctly 13`] = `<div />`;
+
+exports[`Test mode notification Component is rendered correctly 14`] = `<div />`;
+
+exports[`Test mode notification Component is rendered correctly 15`] = `<div />`;
+
+exports[`Test mode notification Component is rendered correctly 16`] = `<div />`;

@@ -70,6 +70,9 @@ declare const global: {
 		};
 		zeroDecimalCurrencies: string[];
 		currentUserEmail: string;
+		connect: {
+			country: string;
+		};
 		currencyData: {
 			[ key: string ]: {
 				code: string;
@@ -164,6 +167,9 @@ describe( 'Transactions list', () => {
 			isSubscriptionsActive: false,
 			zeroDecimalCurrencies: [],
 			currentUserEmail: 'mock@example.com',
+			connect: {
+				country: 'US',
+			},
 			currencyData: {
 				US: {
 					code: 'USD',

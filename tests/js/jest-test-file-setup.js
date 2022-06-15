@@ -68,6 +68,12 @@ global.wcSettings = {
 	// 	woocommerce_actionable_order_statuses: [],
 	// 	woocommerce_excluded_report_order_statuses: [],
 	// },
+	siteTitle: 'WooCommerce Payments Dev',
+};
+
+global.wpApiSettings = {
+	root: 'https://site.com/wp-json/',
+	nonce: 'random_wp_rest_nonce',
 };
 
 // const config = require( '../../config/development.json' );

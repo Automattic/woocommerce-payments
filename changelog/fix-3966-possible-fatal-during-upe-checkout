@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Check for variables before using them to prevent possible errors during UPE checkout process.

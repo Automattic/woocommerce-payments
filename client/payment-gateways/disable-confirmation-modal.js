@@ -37,7 +37,7 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 				</>
 			}
 		>
-			<PaymentDeleteIllustration Icon={ WooCardIcon } />
+			<PaymentDeleteIllustration icon={ WooCardIcon } />
 			<p>
 				{ interpolateComponents( {
 					mixedString: __(

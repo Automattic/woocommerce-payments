@@ -125,6 +125,11 @@
 	background-size: contain;
 }
 
+.payment-method__brand--link {
+	background: no-repeat url( '../images/cards/link.png' );
+	background-size: contain;
+}
+
 .wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {
 	border: 1px solid #ddd;
 	border-radius: 2px;
@@ -132,4 +137,15 @@
 
 .woocommerce-payments-page .woocommerce-inbox-message .components-dropdown {
 	position: absolute;
+}
+
+.wc-payment-gateway-method-name-woopay-wrapper {
+	display: flex;
+	justify-content: end;
+	align-items: center;
+}
+
+.wc-payment-gateway-method-name-woopay-wrapper img {
+	margin: 0 5px;
+	padding-top: 2px;
 }

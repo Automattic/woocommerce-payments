@@ -75,6 +75,9 @@ describe( 'Deposits information', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'FR',
+			},
 			currencyData: {
 				FR: {
 					code: 'EUR',

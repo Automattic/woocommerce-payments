@@ -91,7 +91,7 @@ const SettingsManager = () => {
 
 	return (
 		<SettingsLayout>
-			<SettingsSection Description={ GeneralSettingsDescription }>
+			<SettingsSection description={ GeneralSettingsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<GeneralSettings />
@@ -99,7 +99,7 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			{ isUPESettingsPreviewEnabled && (
-				<SettingsSection Description={ PaymentMethodsDescription }>
+				<SettingsSection description={ PaymentMethodsDescription }>
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
 							<WcPayUpeContextProvider
@@ -111,17 +111,21 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</SettingsSection>
 			) }
-			<SettingsSection Description={ ExpressCheckoutDescription }>
+			<SettingsSection description={ ExpressCheckoutDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<ExpressCheckout />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection Description={ TransactionsAndDepositsDescription }>
+			<SettingsSection description={ TransactionsAndDepositsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<TransactionsAndDeposits />
+						<WcPayUpeContextProvider
+							defaultIsUpeEnabled={ isUpeEnabled }
+						>
+							<TransactionsAndDeposits />
+						</WcPayUpeContextProvider>
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>

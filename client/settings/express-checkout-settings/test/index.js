@@ -25,9 +25,16 @@ jest.mock( '../../../data', () => ( {
 	usePlatformCheckoutCustomMessage: jest
 		.fn()
 		.mockReturnValue( [ 'test', jest.fn() ] ),
+	usePlatformCheckoutStoreLogo: jest
+		.fn()
+		.mockReturnValue( [ 'test', jest.fn() ] ),
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+} ) );
+
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );
@@ -49,6 +56,12 @@ jest.mock( 'payment-request/utils', () => ( {
 } ) );
 
 describe( 'ExpressCheckoutSettings', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			restUrl: 'http://example.com/wp-json/',
+		};
+	} );
+
 	test( 'renders banner at the top', () => {
 		render( <ExpressCheckoutSettings methodId="payment_request" /> );
 
@@ -115,9 +128,7 @@ describe( 'ExpressCheckoutSettings', () => {
 		} );
 		const breadcrumbs = linkToPayments.closest( 'h2' );
 
-		const methodName = within( breadcrumbs ).getByText(
-			'Platform Checkout'
-		);
+		const methodName = within( breadcrumbs ).getByText( 'WooPay' );
 		expect( breadcrumbs ).toContainElement( methodName );
 	} );
 
@@ -125,7 +136,7 @@ describe( 'ExpressCheckoutSettings', () => {
 		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
 
 		const label = screen.getByRole( 'checkbox', {
-			name: 'Enable Platform Checkout',
+			name: 'Enable WooPay',
 		} );
 		expect( label ).toBeInTheDocument();
 	} );

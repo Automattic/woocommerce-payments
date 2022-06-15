@@ -119,6 +119,8 @@ declare module '@woocommerce/navigation' {
 		search?: string[];
 		status_is?: string;
 		status_is_not?: string;
+		document_id?: string;
+		document_type?: string;
 	}
 
 	const onQueryChange: unknown;

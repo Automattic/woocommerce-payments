@@ -14,6 +14,9 @@ describe( 'AccountStatus', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'FR',
+			},
 			currencyData: {
 				FR: {
 					code: 'EUR',
@@ -91,6 +94,13 @@ describe( 'StatusChip', () => {
 
 	test( 'renders restricted status', () => {
 		const { container: statusChip } = renderStatusChip( 'restricted' );
+		expect( statusChip ).toMatchSnapshot();
+	} );
+
+	test( 'renders partially restricted status', () => {
+		const { container: statusChip } = renderStatusChip(
+			'restricted_partially'
+		);
 		expect( statusChip ).toMatchSnapshot();
 	} );
 

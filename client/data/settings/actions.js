@@ -97,18 +97,6 @@ export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	} );
 }
 
-export function updateIsShortStatementDescriptorEnabled( isEnabled ) {
-	return updateSettingsValues( {
-		is_short_statement_descriptor_enabled: isEnabled,
-	} );
-}
-
-export function updateShortStatementDescriptor( shortStatementDescriptor ) {
-	return updateSettingsValues( {
-		short_statement_descriptor: shortStatementDescriptor,
-	} );
-}
-
 export function updateAccountBusinessName( accountBusinessName ) {
 	return updateSettingsValues( {
 		account_business_name: accountBusinessName,
@@ -148,28 +136,6 @@ export function updateAccountBusinessSupportPhone(
 export function updateAccountBrandingLogo( accountBrandingLogo ) {
 	return updateSettingsValues( {
 		account_branding_logo: accountBrandingLogo,
-	} );
-}
-
-export function updateAccountBrandingIcon( accountBrandingIcon ) {
-	return updateSettingsValues( {
-		account_branding_icon: accountBrandingIcon,
-	} );
-}
-
-export function updateAccountBrandingPrimaryColor(
-	accountBrandingPrimaryColor
-) {
-	return updateSettingsValues( {
-		account_branding_primary_color: accountBrandingPrimaryColor,
-	} );
-}
-
-export function updateAccountBrandingSecondaryColor(
-	accountBrandingSecondaryColor
-) {
-	return updateSettingsValues( {
-		account_branding_secondary_color: accountBrandingSecondaryColor,
 	} );
 }
 
@@ -214,5 +180,11 @@ export function updateIsPlatformCheckoutEnabled( isEnabled ) {
 export function updatePlatformCheckoutCustomMessage( message ) {
 	return updateSettingsValues( {
 		platform_checkout_custom_message: message,
+	} );
+}
+
+export function updatePlatformCheckoutStoreLogo( storeLogo ) {
+	return updateSettingsValues( {
+		platform_checkout_store_logo: storeLogo,
 	} );
 }

@@ -5,6 +5,7 @@
  */
 import * as React from 'react';
 import { render, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -31,6 +32,10 @@ describe( 'FileUploadControl', () => {
 			disabled: false,
 			onFileChange: jest.fn(),
 			onFileRemove: jest.fn(),
+		};
+
+		( global as any ).wcpaySettings = {
+			restUrl: 'http://example.com/wp-json/',
 		};
 	} );
 
@@ -84,6 +89,29 @@ describe( 'FileUploadControl', () => {
 		expect( props.onFileChange ).toHaveBeenCalledWith(
 			field.key,
 			fakeFile
+		);
+	} );
+
+	test( 'triggers onFileChange two times when selecting the same file again', async () => {
+		const { container: control } = render(
+			<FileUploadControl { ...props } />
+		);
+
+		const file = new File( [ 'hello' ], 'hello.png', {
+			type: 'image/png',
+		} );
+
+		// Note: FormFileUpload does not associate file input with label so workaround is required to select it.
+		const input = control.querySelector( 'input[type="file"]' );
+		if ( input !== null ) {
+			await userEvent.upload( input, file );
+			await userEvent.upload( input, file );
+		}
+
+		expect( props.onFileChange ).toHaveBeenNthCalledWith(
+			2,
+			field.key,
+			file
 		);
 	} );
 

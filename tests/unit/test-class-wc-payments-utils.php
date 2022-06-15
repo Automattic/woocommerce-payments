@@ -442,4 +442,103 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		$result = WC_Payments_Utils::get_cached_minimum_amount( 'usd' );
 		$this->assertNull( $result );
 	}
+
+	public function test_get_last_refund_from_order_id_returns_correct_refund() {
+		$order    = WC_Helper_Order::create_order();
+		$refund_1 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+		$refund_2 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
+
+		$result = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
+
+		$this->assertEquals( $refund_2->get_id(), $result->get_id() );
+	}
+
+	public function test_get_last_refund_from_order_id_returns_null_if_no_refund_exists() {
+		$order  = WC_Helper_Order::create_order();
+		$result = WC_Payments_Utils::get_last_refund_from_order_id( $order->get_id() );
+
+		$this->assertNull( $result );
+	}
+
+	/**
+	 * @dataProvider provider_get_currency_format_for_wc_price
+	 */
+	public function test_get_currency_format_for_wc_price( string $currency, array $expected ) {
+		$result = WC_Payments_Utils::get_currency_format_for_wc_price( $currency );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function provider_get_currency_format_for_wc_price(): array {
+		$usd_format = [
+			'price_format'       => '%1$s%2$s',
+			'thousand_separator' => ',',
+			'decimal_separator'  => '.',
+			'decimals'           => 2,
+			'currency'           => 'USD',
+		];
+
+		$eur_format = [
+			'price_format'       => '%2$s %1$s',
+			'thousand_separator' => '.',
+			'decimal_separator'  => ',',
+			'decimals'           => 2,
+			'currency'           => 'EUR',
+		];
+
+		// Decimal currency.
+		$vnd_format = [
+			'price_format'       => '%2$s %1$s',
+			'thousand_separator' => '.',
+			'decimal_separator'  => ',',
+			'decimals'           => 0,
+			'currency'           => 'VND',
+		];
+
+		return [
+			'USD'                                          => [ 'usd', $usd_format ],
+			'EUR with lowercase code'                      => [ 'eur', $eur_format ],
+			'EUR with uppercase code'                      => [ 'EUR', $eur_format ],
+			'VND with lowercase code'                      => [ 'vnd', $vnd_format ],
+			'VND with uppercase code'                      => [ 'VND', $vnd_format ],
+			'Not existing code falling back to USD format' => [ 'not_exist', array_merge( $usd_format, [ 'currency' => 'NOT_EXIST' ] ) ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_format_currency
+	 */
+	public function test_format_currency( float $amount, string $currency, string $expected ) {
+		$result = WC_Payments_Utils::format_currency( $amount, $currency );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function provider_format_currency(): array {
+		return [
+			'US dollar'                      => [ 123.456, 'USD', '$123.46' ],
+			'US dollar with negative amount' => [ -123.456, 'USD', '$-123.46' ],
+			'Euro'                           => [ 12000, 'EUR', '12.000,00 €' ],
+			'CHF - no currency symbol'       => [ 123, 'CHF', 'CHF 123.00' ],
+			'VND - decimal currency'         => [ 123456, 'VND', '123.456 ₫' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_format_explicit_currency
+	 */
+	public function test_format_explicit_currency( float $amount, string $currency, bool $skip_symbol, array $custom_format, string $expected ) {
+		$result = WC_Payments_Utils::format_explicit_currency( $amount, $currency, $skip_symbol, $custom_format );
+		$this->assertSame( $expected, $result );
+	}
+
+	public function provider_format_explicit_currency(): array {
+		return [
+			'US dollar - skip symbol'                  => [ 123.456, 'USD', true, [], '123.46 USD' ],
+			'US dollar - not skip symbol'              => [ 123.456, 'USD', false, [], '$123.46 USD' ],
+			'US dollar with custom decimal'            => [ 123.456, 'USD', true, [ 'decimals' => 5 ], '123.45600 USD' ],
+			'Euro - skip symbol'                       => [ 12000, 'EUR', true, [], '12.000,00 EUR' ],
+			'Euro - not skip symbol'                   => [ 12000, 'EUR', false, [], '12.000,00 € EUR' ],
+			'VND (decimal currency) - skip symbol'     => [ 123456, 'VND', true, [], '123.456 VND' ],
+			'VND (decimal currency) - not skip symbol' => [ 123456, 'VND', false, [], '123.456 ₫ VND' ],
+		];
+	}
 }

@@ -113,29 +113,18 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_short_statement_descriptor_enabled' => [
-						'description'       => __( 'When enabled, we\'ll include the order number for card and express checkout transactions.', 'woocommerce-payments' ),
-						'type'              => 'boolean',
-						'validate_callback' => 'rest_validate_request_arg',
-					],
-					'short_statement_descriptor'        => [
-						'description'       => __( 'We\'ll use the short version in combination with the customer order number.', 'woocommerce-payments' ),
-						'type'              => 'string',
-						'validate_callback' => [ $this, 'validate_short_statement_descriptor' ],
-					],
 					'account_statement_descriptor'      => [
 						'description'       => __( 'WooCommerce Payments bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
 						'type'              => 'string',
-						'validate_callback' => [ $this, 'validate_full_statement_descriptor' ],
+						'validate_callback' => [ $this, 'validate_statement_descriptor' ],
 					],
 					'account_business_name'             => [
 						'description' => __( 'The customer-facing business name.', 'woocommerce-payments' ),
 						'type'        => 'string',
 					],
 					'account_business_url'              => [
-						'description'       => __( 'The business’s publicly available website.', 'woocommerce-payments' ),
-						'type'              => 'string',
-						'validate_callback' => [ $this, 'validate_business_support_uri' ],
+						'description' => __( 'The business’s publicly available website.', 'woocommerce-payments' ),
+						'type'        => 'string',
 					],
 					'account_business_support_address'  => [
 						'description'       => __( 'A publicly available mailing address for sending support issues to.', 'woocommerce-payments' ),
@@ -211,12 +200,17 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'is_platform_checkout_enabled'      => [
-						'description'       => __( 'If WooCommerce Payments platform checkout should be enabled.', 'woocommerce-payments' ),
+						'description'       => __( 'If WooPay should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'platform_checkout_custom_message'  => [
-						'description'       => __( 'Custom message to display to platform checkout customers.', 'woocommerce-payments' ),
+						'description'       => __( 'Custom message to display to WooPay customers.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'platform_checkout_store_logo'      => [
+						'description'       => __( 'Store logo to display to WooPay customers.', 'woocommerce-payments' ),
 						'type'              => 'string',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -226,55 +220,23 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Validate the regular statement descriptor.
-	 *
-	 * @param string          $value The value being validated.
-	 * @param WP_REST_Request $request The request made.
-	 * @param string          $param The parameter name, used in error messages.
-	 * @return true|WP_Error
-	 */
-	public function validate_full_statement_descriptor( $value, $request, $param ) {
-		return $this->validate_statement_descriptor( $value, $request, $param, 22 );
-	}
-
-	/**
-	 * Validate the short statement descriptor.
-	 *
-	 * @param string          $value The value being validated.
-	 * @param WP_REST_Request $request The request made.
-	 * @param string          $param The parameter name, used in error messages.
-	 * @return true|WP_Error
-	 */
-	public function validate_short_statement_descriptor( $value, $request, $param ) {
-		$is_short_account_statement_enabled = $request->get_param( 'is_short_statement_descriptor_enabled' );
-
-		// bypassing validation to avoid errors in the client, it won't be updated under this condition.
-		if ( ! $is_short_account_statement_enabled ) {
-			return true;
-		}
-
-		return $this->validate_statement_descriptor( $value, $request, $param, 10 );
-	}
-
-	/**
 	 * Validate the statement descriptor argument.
 	 *
 	 * @since 4.7.0
 	 *
-	 * @param string          $value The value being validated.
+	 * @param mixed           $value The value being validated.
 	 * @param WP_REST_Request $request The request made.
 	 * @param string          $param The parameter name, used in error messages.
-	 * @param int             $max_length Maximum statement length.
 	 * @return true|WP_Error
 	 */
-	public function validate_statement_descriptor( $value, $request, $param, $max_length ) {
+	public function validate_statement_descriptor( $value, $request, $param ) {
 		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
 		if ( true !== $string_validation_result ) {
 			return $string_validation_result;
 		}
 
 		try {
-			$this->wcpay_gateway->validate_account_statement_descriptor_field( $param, $value, $max_length );
+			$this->wcpay_gateway->validate_account_statement_descriptor_field( 'account_statement_descriptor', $value );
 		} catch ( Exception $exception ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
@@ -334,30 +296,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Validate the business support URL.
-	 *
-	 * @param string          $value The value being validated.
-	 * @param WP_REST_Request $request The request made.
-	 * @param string          $param The parameter name, used in error messages.
-	 * @return true|WP_Error
-	 */
-	public function validate_business_support_uri( string $value, WP_REST_Request $request, string $param ) {
-		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
-		if ( true !== $string_validation_result ) {
-			return $string_validation_result;
-		}
-
-		if ( '' !== $value && ! filter_var( $value, FILTER_VALIDATE_URL ) ) {
-			return new WP_Error(
-				'rest_invalid_pattern',
-				__( 'Error: Invalid business URL: ', 'woocommerce-payments' ) . $value
-			);
-		}
-
-		return true;
-	}
-
-	/**
 	 * Validate the business support address.
 	 *
 	 * @param array           $value The value being validated.
@@ -393,39 +331,38 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	public function get_settings(): WP_REST_Response {
 		return new WP_REST_Response(
 			[
-				'enabled_payment_method_ids'            => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
-				'available_payment_method_ids'          => $this->wcpay_gateway->get_upe_available_payment_methods(),
-				'payment_method_statuses'               => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
-				'is_wcpay_enabled'                      => $this->wcpay_gateway->is_enabled(),
-				'is_manual_capture_enabled'             => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
-				'is_test_mode_enabled'                  => $this->wcpay_gateway->is_in_test_mode(),
-				'is_dev_mode_enabled'                   => $this->wcpay_gateway->is_in_dev_mode(),
-				'is_multi_currency_enabled'             => WC_Payments_Features::is_customer_multi_currency_enabled(),
-				'is_wcpay_subscriptions_enabled'        => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
-				'is_wcpay_subscriptions_eligible'       => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
-				'is_subscriptions_plugin_active'        => $this->wcpay_gateway->is_subscriptions_plugin_active(),
-				'is_short_statement_descriptor_enabled' => 'yes' === $this->wcpay_gateway->get_option( 'is_short_statement_descriptor_enabled' ),
-				'short_statement_descriptor'            => $this->wcpay_gateway->get_option( 'short_statement_descriptor' ),
-				'account_statement_descriptor'          => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
-				'account_business_name'                 => $this->wcpay_gateway->get_option( 'account_business_name' ),
-				'account_business_url'                  => $this->wcpay_gateway->get_option( 'account_business_url' ),
-				'account_business_support_address'      => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
-				'account_business_support_email'        => $this->wcpay_gateway->get_option( 'account_business_support_email' ),
-				'account_business_support_phone'        => $this->wcpay_gateway->get_option( 'account_business_support_phone' ),
-				'account_branding_logo'                 => $this->wcpay_gateway->get_option( 'account_branding_logo' ),
-				'account_branding_icon'                 => $this->wcpay_gateway->get_option( 'account_branding_icon' ),
-				'account_branding_primary_color'        => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
-				'account_branding_secondary_color'      => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
-				'is_payment_request_enabled'            => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
-				'is_debug_log_enabled'                  => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
-				'payment_request_enabled_locations'     => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
-				'payment_request_button_size'           => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
-				'payment_request_button_type'           => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
-				'payment_request_button_theme'          => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
-				'is_saved_cards_enabled'                => $this->wcpay_gateway->is_saved_cards_enabled(),
-				'is_card_present_eligible'              => $this->wcpay_gateway->is_card_present_eligible(),
-				'is_platform_checkout_enabled'          => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
-				'platform_checkout_custom_message'      => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
+				'enabled_payment_method_ids'        => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
+				'available_payment_method_ids'      => $this->wcpay_gateway->get_upe_available_payment_methods(),
+				'payment_method_statuses'           => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
+				'is_wcpay_enabled'                  => $this->wcpay_gateway->is_enabled(),
+				'is_manual_capture_enabled'         => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
+				'is_test_mode_enabled'              => $this->wcpay_gateway->is_in_test_mode(),
+				'is_dev_mode_enabled'               => $this->wcpay_gateway->is_in_dev_mode(),
+				'is_multi_currency_enabled'         => WC_Payments_Features::is_customer_multi_currency_enabled(),
+				'is_wcpay_subscriptions_enabled'    => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
+				'is_wcpay_subscriptions_eligible'   => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
+				'is_subscriptions_plugin_active'    => $this->wcpay_gateway->is_subscriptions_plugin_active(),
+				'account_statement_descriptor'      => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
+				'account_business_name'             => $this->wcpay_gateway->get_option( 'account_business_name' ),
+				'account_business_url'              => $this->wcpay_gateway->get_option( 'account_business_url' ),
+				'account_business_support_address'  => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
+				'account_business_support_email'    => $this->wcpay_gateway->get_option( 'account_business_support_email' ),
+				'account_business_support_phone'    => $this->wcpay_gateway->get_option( 'account_business_support_phone' ),
+				'account_branding_logo'             => $this->wcpay_gateway->get_option( 'account_branding_logo' ),
+				'account_branding_icon'             => $this->wcpay_gateway->get_option( 'account_branding_icon' ),
+				'account_branding_primary_color'    => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
+				'account_branding_secondary_color'  => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
+				'is_payment_request_enabled'        => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
+				'is_debug_log_enabled'              => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
+				'payment_request_enabled_locations' => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
+				'payment_request_button_size'       => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
+				'payment_request_button_type'       => $this->wcpay_gateway->get_option( 'payment_request_button_type' ),
+				'payment_request_button_theme'      => $this->wcpay_gateway->get_option( 'payment_request_button_theme' ),
+				'is_saved_cards_enabled'            => $this->wcpay_gateway->is_saved_cards_enabled(),
+				'is_card_present_eligible'          => $this->wcpay_gateway->is_card_present_eligible(),
+				'is_platform_checkout_enabled'      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
+				'platform_checkout_custom_message'  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
+				'platform_checkout_store_logo'      => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
 			]
 		);
 	}
@@ -447,11 +384,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_payment_request_enabled_locations( $request );
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
-		$this->update_is_short_statement_descriptor_enabled( $request );
-		$this->update_short_statement_descriptor( $request );
 		$this->update_account( $request );
 		$this->update_is_platform_checkout_enabled( $request );
 		$this->update_platform_checkout_custom_message( $request );
+		$this->update_platform_checkout_store_logo( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -622,7 +558,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	private function update_account( WP_REST_Request $request ) {
 		$updated_fields_callback = function ( $value, string $key ) {
 			return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
-					$this->wcpay_gateway->get_option( $key ) !== $value;
+				$this->wcpay_gateway->get_option( $key ) !== $value;
 		};
 		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
 
@@ -726,38 +662,17 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates the "is short statement descriptor" enable/disable setting.
+	 * Updates the store logo that will appear for platform checkout customers.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	private function update_is_short_statement_descriptor_enabled( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'is_short_statement_descriptor_enabled' ) ) {
+	private function update_platform_checkout_store_logo( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'platform_checkout_store_logo' ) ) {
 			return;
 		}
 
-		$is_short_statement_descriptor_enabled = $request->get_param( 'is_short_statement_descriptor_enabled' );
+		$platform_checkout_store_logo = $request->get_param( 'platform_checkout_store_logo' );
 
-		$this->wcpay_gateway->update_option( 'is_short_statement_descriptor_enabled', $is_short_statement_descriptor_enabled ? 'yes' : 'no' );
-	}
-
-	/**
-	 * Updates short account statement descriptor.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	private function update_short_statement_descriptor( WP_REST_Request $request ) {
-		$is_short_account_statement_enabled = $request->get_param( 'is_short_statement_descriptor_enabled' );
-		$short_statement_descriptor         = $request->get_param( 'short_statement_descriptor' );
-
-		// since we're bypassing the validation on the same condition, we shouldn't update it.
-		if ( ! $is_short_account_statement_enabled ) {
-			return;
-		}
-
-		if ( null === $short_statement_descriptor ) {
-			return;
-		}
-
-		$this->wcpay_gateway->update_option( 'short_statement_descriptor', $short_statement_descriptor );
+		$this->wcpay_gateway->update_option( 'platform_checkout_store_logo', $platform_checkout_store_logo );
 	}
 }

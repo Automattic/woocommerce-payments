@@ -73,13 +73,13 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return array An associative array, containing all necessary values.
 	 */
 	public function get_payment_method_data() {
-		$is_platform_checkout_feature_enabled = WC_Payments_Features::is_platform_checkout_enabled(); // Feature flag.
-		$is_platform_checkout_enabled         = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
-		$platform_checkout_config             = [];
+		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
+		$is_platform_checkout_enabled  = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
+		$platform_checkout_config      = [];
 
-		if ( $is_platform_checkout_feature_enabled && $is_platform_checkout_enabled ) {
+		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
 			$platform_checkout_config = [
-				'platformCheckoutHost' => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'http://localhost:8090',
+				'platformCheckoutHost' => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
 			];
 		}
 

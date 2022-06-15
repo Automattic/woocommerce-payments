@@ -18,7 +18,9 @@ import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import { getTerms, getCookieValue } from '../utils/upe';
+import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import enableStripeLinkPaymentMethod from '../stripe-link';
+import apiRequest from '../utils/request';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -28,6 +30,9 @@ jQuery( function ( $ ) {
 	const isUPEEnabled = getUPEConfig( 'isUPEEnabled' );
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
+	const isStripeLinkEnabled =
+		paymentMethodsConfig.link !== undefined &&
+		paymentMethodsConfig.card !== undefined;
 
 	const gatewayUPEComponents = {};
 	for ( const paymentMethodType in paymentMethodsConfig ) {
@@ -53,77 +58,11 @@ jQuery( function ( $ ) {
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
 			isUPEEnabled,
+			isStripeLinkEnabled,
 		},
-		// A promise-based interface to jQuery.post.
-		( url, args ) => {
-			return new Promise( ( resolve, reject ) => {
-				jQuery.post( url, args ).then( resolve ).fail( reject );
-			} );
-		}
+		apiRequest
 	);
 
-	// Object to add hidden elements to compute focus and invalid states for UPE.
-	const hiddenElementsForUPE = {
-		getHiddenContainer: function () {
-			const hiddenDiv = document.createElement( 'div' );
-			hiddenDiv.setAttribute( 'id', 'wcpay-hidden-div' );
-			hiddenDiv.style.border = 0;
-			hiddenDiv.style.clip = 'rect(0 0 0 0)';
-			hiddenDiv.style.height = '1px';
-			hiddenDiv.style.margin = '-1px';
-			hiddenDiv.style.overflow = 'hidden';
-			hiddenDiv.style.padding = '0';
-			hiddenDiv.style.position = 'absolute';
-			hiddenDiv.style.width = '1px';
-			return hiddenDiv;
-		},
-		getHiddenInvalidRow: function () {
-			const hiddenInvalidRow = document.createElement( 'p' );
-			hiddenInvalidRow.classList.add(
-				'form-row',
-				'woocommerce-invalid',
-				'woocommerce-invalid-required-field'
-			);
-			return hiddenInvalidRow;
-		},
-		appendHiddenClone: function ( container, idToClone, hiddenCloneId ) {
-			const hiddenInput = jQuery( idToClone )
-				.clone()
-				.prop( 'id', hiddenCloneId );
-			container.appendChild( hiddenInput.get( 0 ) );
-			return hiddenInput;
-		},
-		init: function () {
-			if ( ! $( ' #billing_first_name' ).length ) {
-				return;
-			}
-			const hiddenDiv = this.getHiddenContainer();
-
-			// // Hidden focusable element.
-			$( hiddenDiv ).insertAfter( '#billing_first_name' );
-			this.appendHiddenClone(
-				hiddenDiv,
-				'#billing_first_name',
-				'wcpay-hidden-input'
-			);
-
-			// Hidden invalid element.
-			const hiddenInvalidRow = this.getHiddenInvalidRow();
-			this.appendHiddenClone(
-				hiddenInvalidRow,
-				'#billing_first_name',
-				'wcpay-hidden-invalid-input'
-			);
-			hiddenDiv.appendChild( hiddenInvalidRow );
-
-			// Remove transitions.
-			$( '#wcpay-hidden-input' ).css( 'transition', 'none' );
-			$( '#wcpay-hidden-input' ).trigger( 'focus' );
-		},
-		cleanup: function () {
-			$( '#wcpay-hidden-div' ).remove();
-		},
-	};
 	const hiddenBillingFields = {
 		name:
 			enabledBillingFields.includes( 'billing_first_name' ) ||
@@ -259,7 +198,10 @@ jQuery( function ( $ ) {
 			name:
 				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
 				'-',
-			email: fields.billing_email || '-',
+			email:
+				'string' === typeof fields.billing_email
+					? fields.billing_email.trim()
+					: '-',
 			phone: fields.billing_phone || '-',
 			address: {
 				country: fields.billing_country || '-',
@@ -347,9 +289,7 @@ jQuery( function ( $ ) {
 		let appearance = getUPEConfig( 'upeAppearance' );
 
 		if ( ! appearance ) {
-			hiddenElementsForUPE.init();
 			appearance = getAppearance();
-			hiddenElementsForUPE.cleanup();
 			api.saveUPEAppearance( appearance );
 		}
 
@@ -359,6 +299,36 @@ jQuery( function ( $ ) {
 			fonts: getFontRulesFromPage(),
 		} );
 		gatewayUPEComponents[ paymentMethodType ].elements = elements;
+
+		if ( isStripeLinkEnabled ) {
+			enableStripeLinkPaymentMethod( {
+				api: api,
+				elements: elements,
+				emailId: 'billing_email',
+				complete_billing: true,
+				complete_shipping: () => {
+					return ! document.getElementById(
+						'ship-to-different-address-checkbox'
+					).checked;
+				},
+				shipping_fields: {
+					line1: 'shipping_address_1',
+					line2: 'shipping_address_2',
+					city: 'shipping_city',
+					state: 'shipping_state',
+					postal_code: 'shipping_postcode',
+					country: 'shipping_country',
+				},
+				billing_fields: {
+					line1: 'billing_address_1',
+					line2: 'billing_address_2',
+					city: 'billing_city',
+					state: 'billing_state',
+					postal_code: 'billing_postcode',
+					country: 'billing_country',
+				},
+			} );
+		}
 
 		const upeSettings = {};
 		if ( getUPEConfig( 'cartContainsSubscription' ) ) {
@@ -794,7 +764,7 @@ jQuery( function ( $ ) {
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
-		if ( ! isUsingSavedPaymentMethod() ) {
+		if ( ! isUsingSavedPaymentMethod() && isWCPayChosen() ) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
 				return false;

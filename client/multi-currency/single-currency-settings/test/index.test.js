@@ -144,7 +144,22 @@ const getContainer = () => {
 describe( 'Single currency settings screen', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
-		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
 	} );
 
 	test( 'Page renders correctly', () => {

@@ -135,42 +135,6 @@ export const useAccountStatementDescriptor = () => {
 	);
 };
 
-export const useIsShortStatementDescriptorEnabled = () => {
-	const { updateIsShortStatementDescriptorEnabled } = useDispatch(
-		STORE_NAME
-	);
-
-	return useSelect(
-		( select ) => {
-			const { getIsShortStatementDescriptorEnabled } = select(
-				STORE_NAME
-			);
-
-			return [
-				getIsShortStatementDescriptorEnabled(),
-				updateIsShortStatementDescriptorEnabled,
-			];
-		},
-		[ updateIsShortStatementDescriptorEnabled ]
-	);
-};
-
-export const useShortStatementDescriptor = () => {
-	const { updateShortStatementDescriptor } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getShortStatementDescriptor } = select( STORE_NAME );
-
-			return [
-				getShortStatementDescriptor(),
-				updateShortStatementDescriptor,
-			];
-		},
-		[ updateShortStatementDescriptor ]
-	);
-};
-
 export const useAccountBusinessName = () => {
 	const { updateAccountBusinessName } = useDispatch( STORE_NAME );
 
@@ -269,51 +233,6 @@ export const useAccountBrandingLogo = () => {
 			return [ getAccountBrandingLogo(), updateAccountBrandingLogo ];
 		},
 		[ updateAccountBrandingLogo ]
-	);
-};
-
-export const useAccountBrandingIcon = () => {
-	const { updateAccountBrandingIcon } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingIcon } = select( STORE_NAME );
-
-			return [ getAccountBrandingIcon(), updateAccountBrandingIcon ];
-		},
-		[ updateAccountBrandingIcon ]
-	);
-};
-
-export const useAccountBrandingPrimaryColor = () => {
-	const { updateAccountBrandingPrimaryColor } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingPrimaryColor } = select( STORE_NAME );
-
-			return [
-				getAccountBrandingPrimaryColor(),
-				updateAccountBrandingPrimaryColor,
-			];
-		},
-		[ updateAccountBrandingPrimaryColor ]
-	);
-};
-
-export const useAccountBrandingSecondaryColor = () => {
-	const { updateAccountBrandingSecondaryColor } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingSecondaryColor } = select( STORE_NAME );
-
-			return [
-				getAccountBrandingSecondaryColor(),
-				updateAccountBrandingSecondaryColor,
-			];
-		},
-		[ updateAccountBrandingSecondaryColor ]
 	);
 };
 
@@ -480,5 +399,21 @@ export const usePlatformCheckoutCustomMessage = () => {
 			];
 		},
 		[ updatePlatformCheckoutCustomMessage ]
+	);
+};
+
+export const usePlatformCheckoutStoreLogo = () => {
+	const { updatePlatformCheckoutStoreLogo } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getPlatformCheckoutStoreLogo } = select( STORE_NAME );
+
+			return [
+				getPlatformCheckoutStoreLogo(),
+				updatePlatformCheckoutStoreLogo,
+			];
+		},
+		[ updatePlatformCheckoutStoreLogo ]
 	);
 };

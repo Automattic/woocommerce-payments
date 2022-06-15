@@ -10,17 +10,25 @@ const Agreement = () => {
 		<div className="tos">
 			{ interpolateComponents( {
 				mixedString: __(
-					'By entering your phone number and completing your purchase, you will create a Platform Checkout account and agree to {{termsOfService/}} and {{privacyPolicy/}}.',
+					'By entering your mobile phone number and completing your purchase, you will create a WooPay account, and agree to {{termsOfService/}} and {{privacyPolicy/}}.',
 					'woocommerce-payments'
 				),
 				components: {
 					termsOfService: (
-						<a href="?TODO">
+						<a
+							target="_blank"
+							href="https://wordpress.com/tos/"
+							rel="noopener noreferrer"
+						>
 							{ __( 'Terms of Service', 'woocommerce-payments' ) }
 						</a>
 					),
 					privacyPolicy: (
-						<a href="?TODO">
+						<a
+							target="_blank"
+							href="https://automattic.com/privacy/"
+							rel="noopener noreferrer"
+						>
 							{ __( 'Privacy Policy', 'woocommerce-payments' ) }
 						</a>
 					),

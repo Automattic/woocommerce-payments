@@ -16,6 +16,13 @@ class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCa
 	private $receipts_service;
 
 	/**
+	 * mock_emails
+	 *
+	 * @var WC_Emails|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_emails;
+
+	/**
 	 * mock_settings
 	 *
 	 * @var array

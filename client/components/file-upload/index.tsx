@@ -31,6 +31,7 @@ export const FileUploadControl = ( {
 	onFileRemove,
 	help,
 	showPreview,
+	uploadButtonLabel,
 }: DisputeFileUpload ): JSX.Element => {
 	const hasError = ( error && 0 < error.length ) || false;
 
@@ -40,6 +41,29 @@ export const FileUploadControl = ( {
 			size={ 18 }
 		/>
 	);
+
+	const handleButtonClick = (
+		event: React.MouseEvent< HTMLButtonElement >,
+		openFileDialog: () => void
+	) => {
+		// Get file input next to the button element and clear it's value,
+		// allowing to select the same file again in case of
+		// connection or general error or just need to select it again.
+		// This workaround is useful until we update @wordpress/components to a
+		// version the supports this: https://github.com/WordPress/gutenberg/issues/39267
+		const fileInput:
+			| HTMLInputElement
+			| null
+			| undefined = ( event.target as HTMLButtonElement )
+			.closest( '.components-form-file-upload' )
+			?.querySelector( 'input[type="file"]' );
+
+		if ( fileInput ) {
+			fileInput.value = '';
+		}
+
+		openFileDialog();
+	};
 
 	return (
 		<BaseControl
@@ -56,13 +80,6 @@ export const FileUploadControl = ( {
 			</DropZoneProvider>
 			<div className="file-upload">
 				<FormFileUpload
-					id={ `form-file-upload-${ field.key }` }
-					className={ isDone && ! hasError ? 'is-success' : '' }
-					isSecondary
-					isDestructive={ hasError }
-					isBusy={ isLoading }
-					disabled={ disabled || isLoading }
-					icon={ getIcon }
 					accept={ accept }
 					onChange={ (
 						event: React.ChangeEvent< HTMLInputElement >
@@ -72,9 +89,26 @@ export const FileUploadControl = ( {
 							( event.target.files || new FileList() )[ 0 ]
 						);
 					} }
-				>
-					{ __( 'Upload file', 'woocommerce-payments' ) }
-				</FormFileUpload>
+					render={ ( { openFileDialog } ) => (
+						<Button
+							id={ `form-file-upload-${ field.key }` }
+							className={
+								isDone && ! hasError ? 'is-success' : ''
+							}
+							isSecondary
+							isDestructive={ hasError }
+							isBusy={ isLoading }
+							disabled={ disabled || isLoading }
+							icon={ getIcon }
+							onClick={ (
+								event: React.MouseEvent< HTMLButtonElement >
+							) => handleButtonClick( event, openFileDialog ) }
+						>
+							{ uploadButtonLabel ||
+								__( 'Upload file', 'woocommerce-payments' ) }
+						</Button>
+					) }
+				></FormFileUpload>
 
 				{ hasError ? (
 					<FileUploadError error={ error } />

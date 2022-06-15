@@ -90,6 +90,10 @@ describe( 'Dispute evidence form', () => {
 	beforeEach( () => {
 		// mock Date.now that moment library uses to get current date for testing purposes
 		Date.now = jest.fn( () => new Date( '2021-06-24T12:33:37.000Z' ) );
+
+		global.wcpaySettings = {
+			restUrl: 'http://example.com/wp-json/',
+		};
 	} );
 	afterEach( () => {
 		// roll it back
@@ -170,6 +174,19 @@ describe( 'Dispute evidence page', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 
