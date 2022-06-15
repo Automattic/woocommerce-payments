@@ -6,10 +6,6 @@ This is a feature plugin for accepting payments via a WooCommerce-branded paymen
 
 -   WooCommerce
 
-## Version support policy
-
-We adopt the L-2 version support policy for WordPress core strictly, and a loose L-2 policy for WooCommerce. See [more details](./docs/version-support-policy.md).
-
 ## Development
 
 ### Install dependencies & build

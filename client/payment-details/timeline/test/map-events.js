@@ -331,8 +331,6 @@ describe( 'mapTimelineEvents', () => {
 						datetime: 1586008266,
 						deposit: null,
 						type: 'full_refund',
-						acquirer_reference_number_status: 'available',
-						acquirer_reference_number: '4785767637658864',
 					},
 				] )
 			).toMatchSnapshot();
@@ -483,8 +481,6 @@ describe( 'mapTimelineEvents', () => {
 						datetime: 1585940281,
 						deposit: null,
 						type: 'partial_refund',
-						acquirer_reference_number_status: 'available',
-						acquirer_reference_number: '4785767637658864',
 						transaction_details: {
 							customer_amount: 500,
 							customer_currency: 'EUR',
