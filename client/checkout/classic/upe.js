@@ -188,7 +188,10 @@ jQuery( function ( $ ) {
 			name:
 				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
 				'-',
-			email: fields.billing_email || '-',
+			email:
+				'string' === typeof fields.billing_email
+					? fields.billing_email.trim()
+					: '-',
 			phone: fields.billing_phone || '-',
 			address: {
 				country: fields.billing_country || '-',
