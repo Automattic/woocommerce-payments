@@ -5,6 +5,8 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl, Notice } from '@wordpress/components';
+import PhoneNumberInput from '../../../components/platform-checkout/save-user/phone-number-input';
+import '../../../components/platform-checkout/save-user/style.scss';
 
 /**
  * Internal dependencies
@@ -76,14 +78,15 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 					<span>{ businessSupportPhoneErrorMessage }</span>
 				</Notice>
 			) }
-			<TextControl
-				className="card-readers-business-phone-input"
-				label={ __( 'Support phone number', 'woocommerce-payments' ) }
-				value={ accountBusinessSupportPhone }
-				onChange={ setAccountBusinessSupportPhone }
-				type="tel"
-				onBlur={ updateSaveButtonAvailability }
-			/>
+			<div className="card-readers-business-phone-input">
+				<span>
+					{ __( 'Support phone number', 'woocommerce-payments' ) }
+				</span>
+				<PhoneNumberInput
+					handlePhoneNumberChange={ setAccountBusinessSupportPhone }
+					phoneNumber={ accountBusinessSupportPhone }
+				/>
+			</div>
 		</>
 	);
 };
