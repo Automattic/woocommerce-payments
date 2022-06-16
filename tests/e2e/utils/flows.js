@@ -490,4 +490,38 @@ export const merchantWCP = {
 			await checkbox.click();
 		}
 	},
+
+	activateWooPay: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( ! ( await page.$( '#is_woopay_enabled:checked' ) ) ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Enable WooPay',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	deactivateWooPay: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( await page.$( '#is_woopay_enabled:checked' ) ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Enable WooPay',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
 };

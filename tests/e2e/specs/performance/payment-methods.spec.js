@@ -124,3 +124,38 @@ describe( 'UPE Checkout page performance', () => {
 		);
 	} );
 } );
+
+describe( 'WooPay withou UPE Checkout page performance', () => {
+	beforeEach( async () => {
+		// Activate UPE
+		await merchant.login();
+		await merchantWCP.activateWooPay();
+		await merchant.logout();
+
+		// Setup cart
+		await setupProductCheckout(
+			config.get( 'addresses.customer.billing' )
+		);
+	} );
+
+	afterAll( async () => {
+		// Clear the cart at the end so it's ready for another test
+		await shopperWCP.emptyCart();
+
+		// Deactivate UPE
+		await merchant.login();
+		await merchantWCP.deactivateWooPay();
+		await merchant.logout();
+	} );
+
+	it( 'measures on page load', async () => {
+		const results = await measureCheckoutMetrics(
+			'#wcpay-card-element iframe'
+		);
+		console.log( 'WooPay: All the trial results', results );
+		console.log(
+			'WooPay: Average',
+			averageMetrics( results, TOTAL_TRIALS )
+		);
+	} );
+} );
