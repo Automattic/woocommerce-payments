@@ -11,10 +11,11 @@ import intlTelInput from 'intl-tel-input';
 // eslint-disable-next-line import/no-unresolved
 import utils from 'iti/utils';
 
-const PhoneNumberInput = ( { handlePhoneNumberChange } ) => {
-	const [ inputValue, setInputValue ] = useState(
-		document.getElementById( 'billing_phone' )?.value ?? ''
-	);
+const PhoneNumberInput = ( { handlePhoneNumberChange, phoneNumber } ) => {
+	const phoneNumberValue =
+		phoneNumber ||
+		( document.getElementById( 'billing_phone' )?.value ?? '' );
+	const [ inputValue, setInputValue ] = useState( phoneNumberValue );
 	const [ inputInstance, setInputInstance ] = useState( null );
 	const [ isValid, setIsValid ] = useState( true );
 
