@@ -11,64 +11,10 @@ import { setupProductCheckout } from '../../utils/payments';
 import { shopperWCP, merchantWCP } from '../../utils';
 import {
 	recreatePerformanceFile,
-	getLoadingDurations,
 	logPerformanceResult,
+	measureCheckoutMetrics,
+	averageMetrics,
 } from '../../utils/performance';
-
-// The total number of times we should run our tests for averaging.
-const TOTAL_TRIALS = 3;
-
-const averageMetrics = ( metrics, i ) => {
-	const results = {};
-	for ( const [ key, value ] of Object.entries( metrics ) ) {
-		results[ key ] = value.reduce( ( prev, curr ) => prev + curr ) / i;
-	}
-	return results;
-};
-
-/**
- * This helper function goes to checkout page *i* times. Wait
- * for the given card selector to load, retrieve all the metrics
- * and find the average.
- *
- * @param {string} selector CSS selector.
- * @return {mixed} The averaged results.
- */
-const measureCheckoutMetrics = async ( selector ) => {
-	await expect( page ).toMatch( 'Checkout' );
-
-	// Run performance tests a few times, then take the average.
-	const results = {
-		serverResponse: [],
-		firstPaint: [],
-		domContentLoaded: [],
-		loaded: [],
-		firstContentfulPaint: [],
-		firstBlock: [],
-	};
-
-	let i = TOTAL_TRIALS;
-	while ( i-- ) {
-		await page.reload();
-		await page.waitForSelector( selector );
-		const {
-			serverResponse,
-			firstPaint,
-			domContentLoaded,
-			loaded,
-			firstContentfulPaint,
-			firstBlock,
-		} = await getLoadingDurations();
-
-		results.serverResponse.push( serverResponse );
-		results.firstPaint.push( firstPaint );
-		results.domContentLoaded.push( domContentLoaded );
-		results.loaded.push( loaded );
-		results.firstContentfulPaint.push( firstContentfulPaint );
-		results.firstBlock.push( firstBlock );
-	}
-	return results;
-};
 
 describe( 'Checkout page performance', () => {
 	beforeAll( async () => {
@@ -94,7 +40,7 @@ describe( 'Checkout page performance', () => {
 			);
 			logPerformanceResult(
 				'Stripe element: Average',
-				averageMetrics( results, TOTAL_TRIALS )
+				averageMetrics( results )
 			);
 		} );
 	} );
@@ -128,7 +74,7 @@ describe( 'Checkout page performance', () => {
 			);
 			logPerformanceResult(
 				'Stripe UPE: Average',
-				averageMetrics( results, TOTAL_TRIALS )
+				averageMetrics( results )
 			);
 		} );
 	} );
@@ -162,7 +108,7 @@ describe( 'Checkout page performance', () => {
 			);
 			logPerformanceResult(
 				'WooPay: Average',
-				averageMetrics( results, TOTAL_TRIALS )
+				averageMetrics( results )
 			);
 		} );
 	} );
