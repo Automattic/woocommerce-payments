@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+IPP: Extend terminal intent creation to support payment_method_types, metadata, customer and capture_method parameters.
