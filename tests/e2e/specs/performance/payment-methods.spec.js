@@ -9,7 +9,11 @@ const { merchant } = require( '@woocommerce/e2e-utils' );
  */
 import { setupProductCheckout } from '../../utils/payments';
 import { shopperWCP, merchantWCP } from '../../utils';
-import { getLoadingDurations } from '../../utils/performance';
+import {
+	recreatePerformanceFile,
+	getLoadingDurations,
+	logPerformanceResult,
+} from '../../utils/performance';
 
 // The total number of times we should run our tests for averaging.
 const TOTAL_TRIALS = 3;
@@ -66,96 +70,100 @@ const measureCheckoutMetrics = async ( selector ) => {
 	return results;
 };
 
-describe( 'Stripe element Checkout page performance', () => {
-	beforeEach( async () => {
-		await setupProductCheckout(
-			config.get( 'addresses.customer.billing' )
-		);
+describe( 'Checkout page performance', () => {
+	beforeAll( async () => {
+		// Start a new file for every run.
+		recreatePerformanceFile();
 	} );
 
-	afterAll( async () => {
-		// Clear the cart at the end so it's ready for another test
-		await shopperWCP.emptyCart();
+	describe( 'Stripe element', () => {
+		beforeEach( async () => {
+			await setupProductCheckout(
+				config.get( 'addresses.customer.billing' )
+			);
+		} );
+
+		afterEach( async () => {
+			// Clear the cart at the end so it's ready for another test
+			await shopperWCP.emptyCart();
+		} );
+
+		it( 'measures averaged page load metrics', async () => {
+			const results = await measureCheckoutMetrics(
+				'#wcpay-card-element iframe'
+			);
+			logPerformanceResult(
+				'Stripe element: Average',
+				averageMetrics( results, TOTAL_TRIALS )
+			);
+		} );
 	} );
 
-	it( 'measures on page load', async () => {
-		const results = await measureCheckoutMetrics(
-			'#wcpay-card-element iframe'
-		);
-		console.log( 'Stripe element: All the trial results', results );
-		console.log(
-			'Stripe element: Average',
-			averageMetrics( results, TOTAL_TRIALS )
-		);
-	} );
-} );
+	describe( 'UPE', () => {
+		beforeEach( async () => {
+			// Activate UPE
+			await merchant.login();
+			await merchantWCP.activateUpe();
+			await merchant.logout();
 
-describe( 'UPE Checkout page performance', () => {
-	beforeEach( async () => {
-		// Activate UPE
-		await merchant.login();
-		await merchantWCP.activateUpe();
-		await merchant.logout();
+			// Setup cart
+			await setupProductCheckout(
+				config.get( 'addresses.customer.billing' )
+			);
+		} );
 
-		// Setup cart
-		await setupProductCheckout(
-			config.get( 'addresses.customer.billing' )
-		);
-	} );
+		afterEach( async () => {
+			// Clear the cart at the end so it's ready for another test
+			await shopperWCP.emptyCart();
 
-	afterAll( async () => {
-		// Clear the cart at the end so it's ready for another test
-		await shopperWCP.emptyCart();
+			// Deactivate UPE
+			await merchant.login();
+			await merchantWCP.deactivateUpe();
+			await merchant.logout();
+		} );
 
-		// Deactivate UPE
-		await merchant.login();
-		await merchantWCP.deactivateUpe();
-		await merchant.logout();
-	} );
-
-	it( 'measures on page load', async () => {
-		const results = await measureCheckoutMetrics(
-			'#wcpay-upe-element iframe'
-		);
-		console.log( 'Stripe UPE: All the trial results', results );
-		console.log(
-			'Stripe UPE: Average',
-			averageMetrics( results, TOTAL_TRIALS )
-		);
-	} );
-} );
-
-describe( 'WooPay withou UPE Checkout page performance', () => {
-	beforeEach( async () => {
-		// Activate UPE
-		await merchant.login();
-		await merchantWCP.activateWooPay();
-		await merchant.logout();
-
-		// Setup cart
-		await setupProductCheckout(
-			config.get( 'addresses.customer.billing' )
-		);
+		it( 'measures averaged page load metrics', async () => {
+			const results = await measureCheckoutMetrics(
+				'#wcpay-upe-element iframe'
+			);
+			logPerformanceResult(
+				'Stripe UPE: Average',
+				averageMetrics( results, TOTAL_TRIALS )
+			);
+		} );
 	} );
 
-	afterAll( async () => {
-		// Clear the cart at the end so it's ready for another test
-		await shopperWCP.emptyCart();
+	describe( 'WooPay withou UPE', () => {
+		beforeEach( async () => {
+			// Activate UPE
+			await merchant.login();
+			await merchantWCP.activateWooPay();
+			await merchant.logout();
 
-		// Deactivate UPE
-		await merchant.login();
-		await merchantWCP.deactivateWooPay();
-		await merchant.logout();
-	} );
+			// Setup cart
+			await setupProductCheckout(
+				config.get( 'addresses.customer.billing' )
+			);
+		} );
 
-	it( 'measures on page load', async () => {
-		const results = await measureCheckoutMetrics(
-			'#wcpay-card-element iframe'
-		);
-		console.log( 'WooPay: All the trial results', results );
-		console.log(
-			'WooPay: Average',
-			averageMetrics( results, TOTAL_TRIALS )
-		);
+		afterEach( async () => {
+			// Clear the cart at the end so it's ready for another test
+			await shopperWCP.emptyCart();
+
+			// Deactivate UPE
+			await merchant.login();
+			await merchantWCP.deactivateWooPay();
+			await merchant.logout();
+		} );
+
+		it( 'measures averaged page load metrics', async () => {
+			const results = await measureCheckoutMetrics(
+				'#wcpay-card-element iframe'
+			);
+			logPerformanceResult(
+				'WooPay: Average',
+				averageMetrics( results, TOTAL_TRIALS )
+			);
+		} );
 	} );
 } );

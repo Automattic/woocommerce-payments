@@ -1,3 +1,16 @@
+/**
+ * External dependencies
+ */
+import { appendFileSync, existsSync, mkdirSync, truncateSync } from 'fs';
+
+/**
+ * Internal dependencies
+ */
+import {
+	PERFORMANCE_REPORT_DIR,
+	PERFORMANCE_REPORT_FILENAME,
+} from './constants';
+
 export async function getLoadingDurations() {
 	return await page.evaluate( () => {
 		const {
@@ -36,3 +49,29 @@ export async function getLoadingDurations() {
 		};
 	} );
 }
+
+/**
+ * Writes a line to the e2e performance result.
+ *
+ * @param {string} description A title that describe this metric
+ * @param {Object} metrics array of metrics to record.
+ */
+export const logPerformanceResult = ( description, metrics ) => {
+	appendFileSync(
+		PERFORMANCE_REPORT_FILENAME,
+		JSON.stringify( { description, ...metrics } ) + '\n'
+	);
+};
+
+/**
+ * Wipe the existing performance file. Also make sure the "report" folder exists.
+ */
+export const recreatePerformanceFile = () => {
+	if ( ! existsSync( PERFORMANCE_REPORT_DIR ) ) {
+		mkdirSync( PERFORMANCE_REPORT_DIR );
+	}
+
+	if ( existsSync( PERFORMANCE_REPORT_FILENAME ) ) {
+		truncateSync( PERFORMANCE_REPORT_FILENAME );
+	}
+};
