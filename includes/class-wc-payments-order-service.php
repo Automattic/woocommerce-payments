@@ -802,7 +802,7 @@ class WC_Payments_Order_Service {
 	 * @param WP_REST_Request $request Request object.
 	 * @param array           $default_value - default value.
 	 *
-	 * @return array
+	 * @return array|null
 	 * @throws \Exception
 	 */
 	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ) :array {
@@ -829,7 +829,7 @@ class WC_Payments_Order_Service {
 	 * @param WP_REST_Request $request Request object.
 	 * @param string          $default_value default value.
 	 *
-	 * @return string
+	 * @return string|null
 	 * @throws \Exception
 	 */
 	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ) : string {
