@@ -226,7 +226,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( $should_render_full_menu ) {
-			if ( $this->account->is_card_present_eligible() ) {
+			if ( $this->account->is_card_present_eligible() && $this->account->has_card_readers_available() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [
 					'id'       => 'wc-payments-card-readers',
 					'title'    => __( 'Card Readers', 'woocommerce-payments' ),

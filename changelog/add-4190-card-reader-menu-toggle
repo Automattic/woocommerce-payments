@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Add a new flag to conditionally display the Card Readers page when account has connected card readers.
