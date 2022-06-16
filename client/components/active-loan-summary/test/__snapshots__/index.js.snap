@@ -18,7 +18,7 @@ exports[`Active loan summary renders correctly 1`] = `
       >
         <a
           class="components-button is-link"
-          href="javascript:alert('Not implemented yet')"
+          href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=flxln_123456"
         >
           View transactions
         </a>

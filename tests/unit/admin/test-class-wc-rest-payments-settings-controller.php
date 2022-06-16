@@ -7,6 +7,7 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
+use WCPay\Database_Cache;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -18,6 +19,7 @@ use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\US_Bank_Account_Payment_Method;
+use WCPay\Session_Rate_Limiter;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
@@ -63,10 +65,17 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_wcpay_account;
+
+	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		require_once __DIR__ . '/../helpers/class-wc-blocks-rest-api-registration-preventer.php';
 		WC_Blocks_REST_API_Registration_Preventer::prevent();
@@ -78,12 +87,23 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$account                  = new WC_Payments_Account( $this->mock_api_client );
-		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $account );
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$this->mock_db_cache      = $this->createMock( Database_Cache::class );
+		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache );
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
+		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
+		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client );
 
-		$this->gateway    = new WC_Payment_Gateway_WCPay( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service );
+		$this->gateway    = new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$customer_service,
+			$token_service,
+			$action_scheduler_service,
+			$mock_rate_limiter,
+			$order_service
+		);
 		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
 
 		$mock_payment_methods   = [];
@@ -111,28 +131,40 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 			$mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 		}
 
-		$mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
-
-		$this->upe_gateway    = new UPE_Payment_Gateway( $this->mock_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $mock_payment_methods, $mock_rate_limiter );
+		$this->upe_gateway    = new UPE_Payment_Gateway(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$customer_service,
+			$token_service,
+			$action_scheduler_service,
+			$mock_payment_methods,
+			$mock_rate_limiter,
+			$order_service
+		);
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
 
 		$this->mock_api_client
 			->method( 'is_server_connected' )
 			->willReturn( true );
-		$this->mock_api_client
+
+		$this->mock_wcpay_account
 			->expects( $this->any() )
-			->method( 'get_account_data' )
-			->willReturn(
-				[
-					'card_present_eligible' => true,
-					'is_live'               => true,
-					'fees'                  => $mock_payment_methods,
-				]
-			);
+			->method( 'get_fees' )
+			->willReturn( $mock_payment_methods );
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'is_card_present_eligible' )
+			->willReturn( true );
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_is_live' )
+			->willReturn( true );
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 	}
@@ -160,7 +192,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24', 'us_bank_account' ],
+			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24', 'us_bank_account', 'link' ],
 			$enabled_method_ids
 		);
 	}
@@ -391,8 +423,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_update_settings_saves_account() {
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'update_account' )
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'update_stripe_account' )
 			->with(
 				$this->equalTo(
 					[
@@ -461,8 +493,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function test_update_settings_does_not_save_account_if_not_supplied() {
 		$request = new WP_REST_Request();
 
-		$this->mock_api_client->expects( $this->never() )
-			->method( 'update_account' )
+		$this->mock_wcpay_account->expects( $this->never() )
+			->method( 'update_stripe_account' )
 			->with( $this->anything() );
 
 		$this->controller->update_settings( $request );
@@ -630,44 +662,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 				$request,
 				'account_business_support_phone',
 				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid phone number: 123test' ),
-			],
-		];
-	}
-
-	/**
-	 * Tests account business support URL validator
-	 *
-	 * @dataProvider account_business_support_uri_validation_provider
-	 */
-	public function test_validate_business_support_uri( $value, $request, $param, $expected ) {
-		$return = $this->controller->validate_business_support_uri( $value, $request, $param );
-		$this->assertEquals( $return, $expected );
-	}
-
-	/**
-	 * Provider for test_validate_business_support_uri.
-	 * @return array[] test method params.
-	 */
-	public function account_business_support_uri_validation_provider() {
-		$request = new WP_REST_Request();
-		return [
-			[
-				'http://test.com',
-				$request,
-				'account_business_url',
-				true,
-			],
-			[
-				'', // Empty value should be allowed.
-				$request,
-				'account_business_url',
-				true,
-			],
-			[
-				'test',
-				$request,
-				'account_business_url',
-				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid business URL: test' ),
 			],
 		];
 	}

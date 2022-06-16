@@ -8,8 +8,36 @@ describe( 'mapTimelineEvents', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
-			featureFlags: { capital: false },
 			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+				GB: {
+					code: 'GBP',
+					symbol: '£',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
 		};
 	} );
 
@@ -117,6 +145,22 @@ describe( 'mapTimelineEvents', () => {
 					datetime: 1585859207,
 					type: 'dispute_in_review',
 					user_id: 1,
+				},
+			] )
+		).toMatchSnapshot();
+	} );
+
+	test( 'formats refund_failed events', () => {
+		expect(
+			mapTimelineEvents( [
+				{
+					datetime: 1585859207,
+					type: 'refund_failed',
+					user_id: 1,
+					acquirer_reference_number_status: 'available',
+					acquirer_reference_number: '4785767637658864',
+					failure_reason: 'expired_or_canceled_card',
+					amount_refunded: '100',
 				},
 			] )
 		).toMatchSnapshot();
@@ -287,6 +331,8 @@ describe( 'mapTimelineEvents', () => {
 						datetime: 1586008266,
 						deposit: null,
 						type: 'full_refund',
+						acquirer_reference_number_status: 'available',
+						acquirer_reference_number: '4785767637658864',
 					},
 				] )
 			).toMatchSnapshot();
@@ -329,32 +375,16 @@ describe( 'mapTimelineEvents', () => {
 		} );
 
 		test( 'formats financing paydown events', () => {
-			global.wcpaySettings.featureFlags.capital = true;
 			expect(
 				mapTimelineEvents( [
 					{
 						type: 'financing_paydown',
-						date: 1643717044,
+						datetime: 1643717044,
 						amount: -11000,
 						loan_id: 'flxln_1KOKzdR4ByxURRrFX9A65q40',
 					},
 				] )
 			).toMatchSnapshot();
-		} );
-
-		test( 'hides financing paydown events when capital is disabled', () => {
-			global.wcpaySettings.featureFlags.capital = false;
-
-			expect(
-				mapTimelineEvents( [
-					{
-						type: 'financing_paydown',
-						date: 1643717044,
-						amount: -11000,
-						loan_id: 'flxln_1KOKzdR4ByxURRrFX9A65q40',
-					},
-				] )
-			).toEqual( [] );
 		} );
 	} );
 
@@ -443,6 +473,8 @@ describe( 'mapTimelineEvents', () => {
 		} );
 
 		test( 'formats partial_refund events', () => {
+			global.wcpaySettings.connect.country = 'FR';
+
 			expect(
 				mapTimelineEvents( [
 					{
@@ -451,6 +483,8 @@ describe( 'mapTimelineEvents', () => {
 						datetime: 1585940281,
 						deposit: null,
 						type: 'partial_refund',
+						acquirer_reference_number_status: 'available',
+						acquirer_reference_number: '4785767637658864',
 						transaction_details: {
 							customer_amount: 500,
 							customer_currency: 'EUR',
@@ -465,6 +499,8 @@ describe( 'mapTimelineEvents', () => {
 		} );
 
 		test( 'formats full_refund events', () => {
+			global.wcpaySettings.connect.country = 'FR';
+
 			expect(
 				mapTimelineEvents( [
 					{

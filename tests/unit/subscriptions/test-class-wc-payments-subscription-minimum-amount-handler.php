@@ -31,8 +31,8 @@ class WC_Payments_Subscription_Minimum_Amount_Handler_Test extends WP_UnitTestCa
 	 *
 	 * @return void
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_api_client        = $this->createMock( WC_Payments_API_Client::class );
 		$this->minimum_amount_handler = new WC_Payments_Subscription_Minimum_Amount_Handler( $this->mock_api_client );

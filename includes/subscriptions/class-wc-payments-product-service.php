@@ -109,7 +109,7 @@ class WC_Payments_Product_Service {
 	 */
 	public function get_wcpay_product_id( WC_Product $product, $test_mode = null ) : string {
 		// If the subscription product doesn't have a WC Pay product ID, create one.
-		if ( ! self::has_wcpay_product_id( $product, $test_mode ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
+		if ( ! self::has_wcpay_product_id( $product, $test_mode ) ) {
 			$is_current_environment = null === $test_mode || WC_Payments::get_gateway()->is_in_test_mode() === $test_mode;
 
 			// Only create a new wcpay product if we're trying to fetch a wcpay product ID in the current environment.

@@ -63,12 +63,14 @@ function format_price_helper( array $product, string $currency ): string {
 			width: 100%;
 			border-collapse: separate;
 			border-spacing: 0 2px;
+			font-size: 10px;
 		}
 
 		.receipt__header .title {
 			font-size: 14px;
 			line-height: 17px;
 			margin-bottom: 12px;
+			margin-top: 12px;
 			font-weight: 700;
 		}
 
@@ -93,11 +95,24 @@ function format_price_helper( array $product, string $currency ): string {
 			line-height: 2px;
 		}
 
+		.branding-logo {
+			max-width: 250px;
+			margin: 20px auto;
+		}
+
+		#powered_by {
+			font-size: 7px;
+			padding-top: 5px;
+		}
+
 	</style>
 </head>
 <body>
 	<div class="receipt">
 		<div class="receipt__header">
+			<?php if ( ! empty( $branding_logo['content_type'] ) ) { ?>
+				<img class="branding-logo" src="data:<?php echo esc_html( $branding_logo['content_type'] ); ?>;base64,<?php echo esc_html( $branding_logo['file_content'] ); ?>" alt="<?php echo esc_html( $business_name ); ?>"/>
+			<?php } ?>
 			<h1 class="title"><?php echo esc_html( $business_name ); ?></h1>
 			<hr />
 			<div class="store">
@@ -148,13 +163,29 @@ function format_price_helper( array $product, string $currency ): string {
 					<td class="align-right align-top"><?php echo wp_kses( wc_price( abs( $order_coupon['discount'] ) * -1, [ 'currency' => $order['currency'] ] ), 'post' ); ?></td>
 				</tr>
 				<?php } ?>
+				<?php if ( 0 < $order['total_fees'] ) : ?>
+					<tr>
+						<td class="align-left"><?php esc_html_e( 'Fees:', 'woocommerce-payments' ); ?></td>
+						<td class="align-right align-top">
+							<?php echo wp_kses( wc_price( $order['total_fees'], [ 'currency' => $order['currency'] ] ), 'post' ); ?>
+						</td>
+					</tr>
+				<?php endif; ?>
+				<?php if ( 0 < $order['shipping_tax'] ) : ?>
+					<tr>
+						<td class="align-left"><?php esc_html_e( 'Shipping:', 'woocommerce-payments' ); ?></td>
+						<td class="align-right align-top">
+							<?php echo wp_kses( wc_price( $order['shipping_tax'], [ 'currency' => $order['currency'] ] ), 'post' ); ?>
+						</td>
+					</tr>
+				<?php endif; ?>
 				<?php foreach ( $tax_lines as $tax_line ) { ?>
 				<tr>
 					<td class="align-left">
 						<div><?php echo esc_html__( 'Tax', 'woocommerce-payments' ); ?></div>
 						<div><?php echo esc_html( wc_round_tax_total( $tax_line['rate_percent'] ) ); ?>%</div>
 					</td>
-					<td class="align-right align-top"><?php echo wp_kses( wc_price( $tax_line['tax_total'], [ 'currency' => $order['currency'] ] ), 'post' ); ?></td>
+					<td class="align-right align-top"><?php echo wp_kses( wc_price( $tax_line['tax_total'] + $tax_line['shipping_tax_total'], [ 'currency' => $order['currency'] ] ), 'post' ); ?></td>
 				</tr>
 				<?php } ?>
 				<tr>
@@ -183,6 +214,7 @@ function format_price_helper( array $product, string $currency ): string {
 			<p id="application-preferred-name"><?php echo sprintf( '%s: %s', esc_html__( 'Application name', 'woocommerce-payments' ), esc_html( ucfirst( $receipt['application_preferred_name'] ) ) ); ?></p>
 			<p id="dedicated-file-name"><?php echo sprintf( '%s: %s', esc_html__( 'AID', 'woocommerce-payments' ), esc_html( ucfirst( $receipt['dedicated_file_name'] ) ) ); ?></p>
 			<p id="account_type"><?php echo sprintf( '%s: %s', esc_html__( 'Account Type', 'woocommerce-payments' ), esc_html( ucfirst( $receipt['account_type'] ) ) ); ?></p>
+			<p id="powered_by"><?php echo esc_html__( 'Powered by WooCommerce', 'woocommerce-payments' ); ?></p>
 		</div>
 	</div>
 </body>

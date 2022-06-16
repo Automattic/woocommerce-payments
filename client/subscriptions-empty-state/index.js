@@ -3,9 +3,12 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { render, useEffect, useState } from '@wordpress/element';
-
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import {
+	createInterpolateElement,
+	render,
+	useEffect,
+	useState,
+} from '@wordpress/element';
 import { Button } from '@wordpress/components';
 
 import wcpayTracks from '../tracks';

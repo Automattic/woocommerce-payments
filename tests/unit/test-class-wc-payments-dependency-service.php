@@ -13,8 +13,8 @@ class WC_Payments_Dependency_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Sets up things all tests need.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->dependency_service = new WC_Payments_Dependency_Service();
 	}

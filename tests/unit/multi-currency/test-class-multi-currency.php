@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
@@ -15,10 +16,8 @@ use WCPay\MultiCurrency\SettingsOnboardCta;
  * WCPay\MultiCurrency\MultiCurrency unit tests.
  */
 class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
-	const LOGGED_IN_USER_ID               = 1;
-	const ENABLED_CURRENCIES_OPTION       = 'wcpay_multi_currency_enabled_currencies';
-	const CACHED_CURRENCIES_OPTION        = 'wcpay_multi_currency_cached_currencies';
-	const CURRENCY_RETRIEVAL_ERROR_OPTION = 'wcpay_multi_currency_retrieval_error';
+	const LOGGED_IN_USER_ID         = 1;
+	const ENABLED_CURRENCIES_OPTION = 'wcpay_multi_currency_enabled_currencies';
 
 	/**
 	 * Mock enabled currencies.
@@ -82,8 +81,15 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	 */
 	private $mock_localization_service;
 
-	public function setUp() {
-		parent::setUp();
+	/**
+	 * Mock of Database_Cache.
+	 *
+	 * @var Database_Cache;
+	 */
+	private $mock_database_cache;
+
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_currency_settings(
 			'GBP',
@@ -101,13 +107,12 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			'expires'    => $this->timestamp_for_testing + DAY_IN_SECONDS,
 		];
 
-		update_option( self::CACHED_CURRENCIES_OPTION, $this->mock_cached_currencies );
 		update_option( self::ENABLED_CURRENCIES_OPTION, $this->mock_enabled_currencies );
 
 		$this->init_multi_currency();
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		WC()->session->__unset( MultiCurrency::CURRENCY_SESSION_KEY );
 		remove_all_filters( 'wcpay_multi_currency_apply_charm_only_to_products' );
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
@@ -118,11 +123,10 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		wp_set_current_user( 0 );
 
 		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding', 'manual_rate', 'exchange_rate' ] );
-		delete_option( self::CACHED_CURRENCIES_OPTION );
 		delete_option( self::ENABLED_CURRENCIES_OPTION );
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'no' );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	public function test_available_currencies_uses_wc_currencies_when_no_stripe_account() {
@@ -345,12 +349,12 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	public function test_update_selected_currency_recalculates_cart() {
 		wp_set_current_user( self::LOGGED_IN_USER_ID );
 
-		$this->assertContains( '&#36;', WC()->cart->get_total() );
+		$this->assertStringContainsString( '&#36;', WC()->cart->get_total() );
 
 		$this->multi_currency->update_selected_currency( 'GBP' );
 
-		$this->assertContains( '&pound;', WC()->cart->get_total() );
-		$this->assertNotContains( '&#36;', WC()->cart->get_total() );
+		$this->assertStringContainsString( '&pound;', WC()->cart->get_total() );
+		$this->assertStringNotContainsString( '&#36;', WC()->cart->get_total() );
 
 	}
 
@@ -558,6 +562,9 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		$mock_api_client->method( 'is_server_connected' )->willReturn( false );
 
 		$this->init_multi_currency( $mock_api_client );
+
+		$this->mock_database_cache->method( 'get' )->willReturn( $this->mock_cached_currencies );
+
 		$this->assertEquals(
 			$this->mock_cached_currencies,
 			$this->multi_currency->get_cached_currencies()
@@ -565,16 +572,19 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 	}
 
 	public function test_get_cached_currencies_with_account_rejected() {
-		update_option( self::CACHED_CURRENCIES_OPTION, null );
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get' )
+			->willReturn( null );
 
 		$this->mock_account
 			->expects( $this->once() )
 			->method( 'is_account_rejected' )
 			->willReturn( true );
 
-		$this->mock_api_client
+		$this->mock_database_cache
 			->expects( $this->never() )
-			->method( 'get_currency_rates' );
+			->method( 'get_or_add' );
 
 		$this->assertEquals(
 			null,
@@ -582,34 +592,26 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		);
 	}
 
-	public function test_get_expired_cached_currencies_with_server_retrieval_error() {
-		$currency_cache            = $this->mock_cached_currencies;
-		$currency_cache['expires'] = strtotime( 'yesterday' );
-
-		update_option( self::CACHED_CURRENCIES_OPTION, $currency_cache );
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_currency_rates' )
-			->willThrowException( new API_Exception( 'Error connecting to server', 'API_ERROR', 500 ) );
-
-		$this->assertEquals(
-			$currency_cache,
-			$this->multi_currency->get_cached_currencies()
-		);
-	}
-
-	public function test_get_cached_currencies_with_valid_cached_data() {
-		update_option( self::CACHED_CURRENCIES_OPTION, $this->mock_cached_currencies );
-
-		$this->assertEquals(
-			$this->mock_cached_currencies,
-			$this->multi_currency->get_cached_currencies()
-		);
-	}
-
 	public function test_get_cached_currencies_fetches_from_server() {
-		delete_option( self::CACHED_CURRENCIES_OPTION );
+		$get_or_add_call_count = 1;
+		$mock_database_cache   = $this->createMock( Database_Cache::class );
+		$mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_or_add' )
+			->willReturnCallback(
+				function ( $key, $generator, $validator ) use ( &$get_or_add_call_count ) {
+					if ( 1 === $get_or_add_call_count ) {
+						// Call that happens inside the init function in MultiCurrency, still use cached data.
+						$get_or_add_call_count++;
+						return $this->mock_cached_currencies;
+					} else {
+						// Second call from get_cached_currencies below.
+						return $generator();
+					}
+				}
+			);
+
+		$this->init_multi_currency( null, true, null, $mock_database_cache );
 
 		$currency_from = get_woocommerce_currency();
 		$currencies_to = get_woocommerce_currencies();
@@ -630,30 +632,6 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			$this->mock_available_currencies,
 			$result['currencies']
 		);
-
-		// Assert that the cache was correctly set.
-		$cached_data = get_option( self::CACHED_CURRENCIES_OPTION );
-		$this->assertTrue( is_array( $cached_data ) );
-		$this->assertArrayHasKey( 'currencies', $cached_data );
-		$this->assertArrayHasKey( 'updated', $cached_data );
-		$this->assertEquals(
-			$this->mock_available_currencies,
-			$result['currencies']
-		);
-	}
-
-	public function test_get_cached_currencies_handles_api_exception() {
-		delete_option( self::CACHED_CURRENCIES_OPTION );
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_currency_rates' )
-			->willThrowException( new API_Exception( 'Error connecting to server', 'API_ERROR', 500 ) );
-
-		$this->assertNull( $this->multi_currency->get_cached_currencies() );
-
-		// Assert that the cache was correctly set with the error expiration time.
-		$this->assertEquals( time() + MINUTE_IN_SECONDS, get_option( self::CURRENCY_RETRIEVAL_ERROR_OPTION ) );
 	}
 
 	public function test_storefront_integration_init_with_compatible_themes() {
@@ -743,6 +721,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 
 	public function test_get_cached_currencies_with_no_stripe_connection() {
 		$this->init_multi_currency( null, false );
+		$this->mock_database_cache->method( 'get' )->willReturn( $this->mock_cached_currencies );
 		$this->assertEquals(
 			$this->mock_cached_currencies,
 			$this->multi_currency->get_cached_currencies()
@@ -892,7 +871,7 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		}
 	}
 
-	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null ) {
+	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null, $mock_database_cache = null ) {
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
 		$this->mock_account = $mock_account ?? $this->createMock( WC_Payments_Account::class );
@@ -911,7 +890,15 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 			]
 		);
 
-		$this->multi_currency = new MultiCurrency( $mock_api_client ?? $this->mock_api_client, $this->mock_account, $this->mock_localization_service );
+		$this->mock_database_cache = $this->createMock( Database_Cache::class );
+		$this->mock_database_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
+
+		$this->multi_currency = new MultiCurrency(
+			$mock_api_client ?? $this->mock_api_client,
+			$this->mock_account,
+			$this->mock_localization_service,
+			$mock_database_cache ?? $this->mock_database_cache
+		);
 		$this->multi_currency->init_widgets();
 		$this->multi_currency->init();
 	}

@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 
 /**
  * WC_Payments_Subscriptions_Event_Handler unit tests.
@@ -50,8 +50,8 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_invoice_service      = $this->createMock( WC_Payments_Invoice_Service::class );
 		$this->mock_subscription_service = $this->createMock( WC_Payments_Subscription_Service::class );
@@ -69,7 +69,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	 * Test exception thrown during get_event_property.
 	 */
 	public function test_get_event_property_exception() {
-		$this->expectException( Rest_Request_Exception::class );
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
 		$this->expectExceptionMessage( 'garbage not found in array' );
 
 		PHPUnit_Utils::call_method(
@@ -85,7 +85,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	public function test_handle_invoice_upcoming_exception() {
 		$test_body = $this->get_mock_test_body( 'sub_ID_not_exists', 'cus_test1234' );
 
-		$this->expectException( Rest_Request_Exception::class );
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
 		$this->expectExceptionMessage( 'Cannot find subscription to handle the "invoice.upcoming" event.' );
 
 		$this->subscriptions_event_handler->handle_invoice_upcoming( $test_body );
@@ -165,7 +165,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 	public function test_handle_invoice_paid_exception() {
 		$test_body = $this->get_mock_test_body( 'sub_ID_no_invoice_paid', 'cus_test1234', 'ii_testInvoiceID' );
 
-		$this->expectException( Rest_Request_Exception::class );
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
 		$this->expectExceptionMessage( 'Cannot find subscription for the incoming "invoice.paid" event.' );
 
 		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
@@ -183,7 +183,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $wcpay_subscription_id );
 		$mock_subscription->next_payment = time();
 
-		$this->expectException( Rest_Request_Exception::class );
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
 		$this->expectExceptionMessage( 'Cannot find subscription for the incoming "invoice.paid" event.' );
 
 		$this->subscriptions_event_handler->handle_invoice_paid( $test_body );
@@ -239,7 +239,7 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
 
 		unset( $test_body['data']['object']['attempt_count'] );
 
-		$this->expectException( Rest_Request_Exception::class );
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
 		$this->expectExceptionMessage( 'attempt_count not found in array' );
 
 		$this->subscriptions_event_handler->handle_invoice_payment_failed( $test_body );

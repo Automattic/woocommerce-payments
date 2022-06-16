@@ -24,8 +24,8 @@ class WC_REST_Payments_Files_Controller_Test extends WP_UnitTestCase {
 	 */
 	private $mock_api_client;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->controller      = new WC_REST_Payments_Files_Controller( $this->mock_api_client );
 	}

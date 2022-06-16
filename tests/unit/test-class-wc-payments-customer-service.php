@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -38,27 +39,34 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 	private $mock_account;
 
 	/**
+	 * Mock Database_Cache.
+	 *
+	 * @var Database_Cache|MockObject
+	 */
+	private $mock_db_cache;
+
+	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
-		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_account    = $this->createMock( WC_Payments_Account::class );
-
-		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account );
+		$this->mock_api_client  = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_account     = $this->createMock( WC_Payments_Account::class );
+		$this->mock_db_cache    = $this->createMock( Database_Cache::class );
+		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_db_cache );
 	}
 
 	/**
 	 * Post-test teardown
 	 */
-	public function tearDown() {
+	public function tear_down() {
 		delete_user_option( 1, self::CUSTOMER_LIVE_META_KEY );
 		delete_user_option( 1, self::CUSTOMER_TEST_META_KEY );
 		delete_user_option( 1, '_wcpay_customer_id' );
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 		WC()->session->__unset( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	/**
@@ -416,22 +424,36 @@ class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
 		$this->assertEquals( $mock_payment_methods, $response );
 	}
 
-	public function test_get_payment_methods_for_customer_fetches_from_transient() {
+	public function test_get_payment_methods_for_customer_fetches_from_database_cache() {
 		$mock_payment_methods = [
 			[ 'id' => 'pm_mock1' ],
 			[ 'id' => 'pm_mock2' ],
 		];
+		$customer_id          = 'cus_12345';
+		$payment_method_name  = 'card';
+		$cache_key            = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $payment_method_name;
 
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_payment_methods' )
-			->with( 'cus_12345', 'card' )
+			->with( $customer_id, $payment_method_name )
 			->willReturn( [ 'data' => $mock_payment_methods ] );
 
-		$response = $this->customer_service->get_payment_methods_for_customer( 'cus_12345' );
+		$this->mock_db_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'get' )
+			->withConsecutive( [ $cache_key ], [ $cache_key ] )
+			->willReturnOnConsecutiveCalls( null, $mock_payment_methods );
+
+		$this->mock_db_cache
+			->expects( $this->once() )
+			->method( 'add' )
+			->with( $cache_key, $mock_payment_methods );
+
+		$response = $this->customer_service->get_payment_methods_for_customer( $customer_id );
 		$this->assertEquals( $mock_payment_methods, $response );
 
-		$response = $this->customer_service->get_payment_methods_for_customer( 'cus_12345' );
+		$response = $this->customer_service->get_payment_methods_for_customer( $customer_id );
 		$this->assertEquals( $mock_payment_methods, $response );
 	}
 

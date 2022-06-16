@@ -131,9 +131,9 @@ exports[`AccountStatus renders normal status 1`] = `
       Euro 
       (EUR) 
       <s>
-        2.9% + €0,00 per transaction
+        2.9% + 0,00&nbsp;€ per transaction
       </s>
-       2.9% + €0,30 per transaction
+       2.9% + 0,30&nbsp;€ per transaction
       <p>
         <a
           href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"
@@ -154,6 +154,16 @@ exports[`StatusChip renders complete status 1`] = `
     class="chip chip-primary is-compact"
   >
     Complete
+  </span>
+</div>
+`;
+
+exports[`StatusChip renders partially restricted status 1`] = `
+<div>
+  <span
+    class="chip chip-warning is-compact"
+  >
+    Restricted partially
   </span>
 </div>
 `;

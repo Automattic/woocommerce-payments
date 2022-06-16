@@ -43,8 +43,8 @@ class WC_Payments_Fraud_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
@@ -55,7 +55,6 @@ class WC_Payments_Fraud_Service_Test extends WP_UnitTestCase {
 
 	public function test_registers_filters_and_actions_properly() {
 		$this->assertNotFalse( has_filter( 'wcpay_prepare_fraud_config', [ $this->fraud_service, 'prepare_fraud_config' ] ) );
-		$this->assertNotFalse( has_filter( 'wcpay_current_session_id', [ $this->fraud_service, 'get_session_id' ] ) );
 		$this->assertNotFalse( has_action( 'init', [ $this->fraud_service, 'link_session_if_user_just_logged_in' ] ) );
 	}
 

@@ -21,6 +21,7 @@ import { dateI18n } from '@wordpress/date';
 import { formatExplicitCurrency } from 'utils/currency';
 import Loadable from 'components/loadable';
 import { useActiveLoanSummary } from 'wcpay/data';
+import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
 
@@ -122,6 +123,18 @@ const ActiveLoanSummaryLoading = (): JSX.Element => {
 	);
 };
 
+const getActiveLoanId = () => {
+	for ( const i in wcpaySettings.accountLoans.loans ) {
+		const [ loanId, status ] = wcpaySettings.accountLoans.loans[ i ].split(
+			'|'
+		);
+		if ( 'active' === status ) {
+			return loanId;
+		}
+	}
+	return null;
+};
+
 const ActiveLoanSummary = (): JSX.Element => {
 	const { summary, isLoading } = useActiveLoanSummary();
 
@@ -138,12 +151,23 @@ const ActiveLoanSummary = (): JSX.Element => {
 					{ __( 'Active loan overview', 'woocommerce-payments' ) }
 				</FlexItem>
 				<FlexItem>
-					<Button
-						isLink
-						href="javascript:alert('Not implemented yet')"
-					>
-						{ __( 'View transactions', 'woocommerce-payments' ) }
-					</Button>
+					{ getActiveLoanId() && (
+						<Button
+							isLink
+							href={ getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/transactions',
+								type: 'charge',
+								filter: 'advanced',
+								loan_id_is: getActiveLoanId(),
+							} ) }
+						>
+							{ __(
+								'View transactions',
+								'woocommerce-payments'
+							) }
+						</Button>
+					) }
 				</FlexItem>
 			</CardHeader>
 			<CardBody className="wcpay-loan-summary-body">

@@ -97,8 +97,8 @@ class WCPay_Multi_Currency_Tracking_Tests extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->set_up_mock_enabled_currencies();
 		$this->add_mock_orders_with_meta();
@@ -115,10 +115,10 @@ class WCPay_Multi_Currency_Tracking_Tests extends WP_UnitTestCase {
 		$this->tracking = new WCPay\MultiCurrency\Tracking( $this->mock_multi_currency );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		$this->delete_mock_orders();
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	/**

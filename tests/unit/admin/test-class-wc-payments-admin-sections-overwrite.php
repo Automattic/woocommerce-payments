@@ -27,8 +27,8 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 	 */
 	private $account_service;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->account_service = $this->getMockBuilder( WC_Payments_Account::class )->disableOriginalConstructor()->setMethods( [ 'get_cached_account_data' ] )->getMock();
 	}

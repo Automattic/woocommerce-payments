@@ -8,6 +8,7 @@
 namespace WCPay\MultiCurrency\Notes;
 
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
+use WC_Payments_Account;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,6 +28,13 @@ class NoteMultiCurrencyAvailable {
 	 */
 	// TODO: Proper url needed for setup process.
 	const NOTE_SETUP_URL = 'admin.php?page=wc-admin&path=/payments/multi-currency-setup';
+
+	/**
+	 * The account service instance.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private static $account;
 
 	/**
 	 * Get the note.
@@ -50,5 +58,31 @@ class NoteMultiCurrencyAvailable {
 		);
 
 		return $note;
+	}
+
+	/**
+	 * Add the note if it passes predefined conditions.
+	 */
+	public static function possibly_add_note() {
+		// Don't add the note if the merchant didn't create a WCPay account yet.
+		if ( is_null( self::$account ) || ! self::$account->is_stripe_connected() ) {
+			return;
+		}
+
+		if ( ! self::can_be_added() ) {
+			return;
+		}
+
+		$note = self::get_note();
+		$note->save();
+	}
+
+	/**
+	 * Sets the account service instance reference on the class.
+	 *
+	 * @param WC_Payments_Account $account account service instance.
+	 */
+	public static function set_account( WC_Payments_Account $account ) {
+		self::$account = $account;
 	}
 }

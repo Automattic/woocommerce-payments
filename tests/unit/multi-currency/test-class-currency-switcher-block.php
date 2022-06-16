@@ -36,8 +36,8 @@ class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase
 	 */
 	protected $mock_currencies;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
 		$this->mock_compatibility  = $this->createMock( Compatibility::class );

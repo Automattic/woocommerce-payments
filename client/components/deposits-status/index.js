@@ -6,7 +6,7 @@
 import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
 import GridiconNotice from 'gridicons/dist/notice';
 import { __ } from '@wordpress/i18n';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies

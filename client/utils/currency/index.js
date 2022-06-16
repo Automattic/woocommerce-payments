@@ -2,10 +2,8 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import Currency, { getCurrencyData } from '@woocommerce/currency';
+import Currency from '@woocommerce/currency';
 import { find, trimEnd, endsWith } from 'lodash';
-
-const currencyData = getCurrencyData();
 
 const currencyNames = {
 	aud: __( 'Australian dollar', 'woocommerce-payments' ),
@@ -39,15 +37,25 @@ export const formatCurrencyName = ( currencyCode ) =>
  * @return {Currency|null} Currency object
  */
 export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
+	const {
+		currencyData,
+		connect: { country = 'US' },
+	} = wcpaySettings;
+
 	const currency = find( currencyData, { code: currencyCode.toUpperCase() } );
 	if ( currency ) {
 		if (
-			null !== baseCurrencyCode &&
-			baseCurrencyCode.toUpperCase() !== currencyCode.toUpperCase()
+			( null !== baseCurrencyCode &&
+				baseCurrencyCode.toUpperCase() !==
+					currencyCode.toUpperCase() ) ||
+			currencyData[ country ]
 		) {
-			const baseCurrency = find( currencyData, {
-				code: baseCurrencyCode.toUpperCase(),
-			} );
+			const baseCurrency = baseCurrencyCode
+				? find( currencyData, {
+						code: baseCurrencyCode.toUpperCase(),
+				  } )
+				: currencyData[ country ];
+
 			if ( baseCurrency ) {
 				currency.decimalSeparator = baseCurrency.decimalSeparator;
 				currency.thousandSeparator = baseCurrency.thousandSeparator;
@@ -69,7 +77,7 @@ export const getCurrency = ( currencyCode, baseCurrencyCode = null ) => {
  *
  * @return {boolean} true if currency is zero-decimal
  */
-const isZeroDecimalCurrency = ( currencyCode ) => {
+export const isZeroDecimalCurrency = ( currencyCode ) => {
 	return wcpaySettings.zeroDecimalCurrencies.includes(
 		currencyCode.toLowerCase()
 	);
@@ -96,6 +104,7 @@ export const formatCurrency = (
 	}
 
 	const currency = getCurrency( currencyCode, baseCurrencyCode );
+
 	if ( null === currency ) {
 		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
 	}
@@ -177,6 +186,8 @@ export const formatFX = ( from, to ) => {
 };
 
 function formatExchangeRate( from, to ) {
+	const { currencyData } = wcpaySettings;
+
 	let exchangeRate =
 		'number' === typeof to.amount &&
 		'number' === typeof from.amount &&

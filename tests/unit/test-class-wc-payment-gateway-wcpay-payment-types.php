@@ -5,6 +5,9 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Session_Rate_Limiter;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
@@ -53,11 +56,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 
 
 	/**
-	 * WC_Payments_Account instance.
+	 * Mock WC_Payments_Account.
 	 *
-	 * @var WC_Payments_Account
+	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
 	 */
-	private $wcpay_account;
+	private $mock_wcpay_account;
 
 	/**
 	 * Token to be used during the tests.
@@ -72,8 +75,8 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
 		// return value of create_and_confirm_intention().
@@ -83,8 +86,8 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'request_with_level3_data', 'is_server_connected' ] )
 			->getMock();
 
-		// Arrange: Create new WC_Payments_Account instance to use later.
-		$this->wcpay_account = new WC_Payments_Account( $this->mock_api_client );
+		// Arrange: Mock WC_Payments_Account instance to use later.
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
@@ -109,17 +112,20 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 
+		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
+
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
 		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(
 				[
 					$this->mock_api_client,
-					$this->wcpay_account,
+					$this->mock_wcpay_account,
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
+					$this->mock_order_service,
 				]
 			)
 			->setMethods(
@@ -141,9 +147,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 	/**
 	 * Cleanup after all tests.
 	 */
-	public static function tearDownAfterClass() {
+	public static function tear_down_after_class() {
 		WC_Subscriptions::set_wcs_order_contains_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+
+		parent::tear_down_after_class();
 	}
 
 	private function mock_wcs_order_contains_subscription( $value ) {
@@ -169,6 +177,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 				$this->anything(),
 				$this->anything(),
 				$this->anything(),
+				$this->anything(),
 				// Metadata argument.
 				$this->callback(
 					function( $metadata ) use ( $order ) {
@@ -179,6 +188,13 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 				)
 			)
 			->will( $this->returnValue( $intent ) );
+
+		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
+		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
+		$mock_fraud_prevention
+			->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
@@ -192,6 +208,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
 			->with(
+				$this->anything(),
 				$this->anything(),
 				$this->anything(),
 				$this->anything(),
@@ -227,6 +244,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
 			->with(
+				$this->anything(),
 				$this->anything(),
 				$this->anything(),
 				$this->anything(),

@@ -18,7 +18,10 @@ describe( 'Capital reducer tests', () => {
 			status: 'active',
 		};
 		const reduced = reducer(
-			undefined, // Default state.
+			{
+				existing: 'state',
+				shouldBe: 'preserved',
+			},
 			{
 				type: types.SET_ACTIVE_LOAN_SUMMARY,
 				data: mockSummary,
@@ -26,6 +29,8 @@ describe( 'Capital reducer tests', () => {
 		);
 
 		expect( reduced ).toStrictEqual( {
+			existing: 'state',
+			shouldBe: 'preserved',
 			summary: mockSummary,
 			summaryError: undefined,
 		} );
@@ -45,6 +50,44 @@ describe( 'Capital reducer tests', () => {
 		expect( reduced ).toStrictEqual( {
 			summary: undefined,
 			summaryError: { code: 'some_error' },
+		} );
+	} );
+
+	test( 'Loans list fetch is reduced correctly', () => {
+		const mockLoansList = [ { aaa: 'bbb' }, { ccc: 'ddd' } ];
+		const reduced = reducer(
+			{
+				existing: 'state',
+				shouldBe: 'preserved',
+			},
+			{
+				type: types.SET_LOANS,
+				data: mockLoansList,
+			}
+		);
+
+		expect( reduced ).toStrictEqual( {
+			existing: 'state',
+			shouldBe: 'preserved',
+			loans: mockLoansList,
+			loansError: undefined,
+		} );
+	} );
+
+	test( 'Loans list fetch error is reduced correctly', () => {
+		const reduced = reducer(
+			{
+				loans: { some: 'data' },
+			},
+			{
+				type: types.SET_ERROR_FOR_LOANS,
+				error: { code: 'some_error' },
+			}
+		);
+
+		expect( reduced ).toStrictEqual( {
+			loans: undefined,
+			loansError: { code: 'some_error' },
 		} );
 	} );
 } );

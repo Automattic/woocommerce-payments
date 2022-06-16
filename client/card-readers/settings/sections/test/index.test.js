@@ -14,6 +14,8 @@ import BrandingFileUpload from '../../file-upload';
 
 jest.mock( '../../file-upload', () => jest.fn() );
 
+const setDisabledMock = jest.fn();
+
 describe( 'Card Reader Business Details section', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
@@ -30,7 +32,9 @@ describe( 'Card Reader Business Details section', () => {
 	} );
 
 	test( 'Renders Business section', () => {
-		render( <BusinessDetailsSection /> );
+		render(
+			<BusinessDetailsSection setSaveDisabled={ setDisabledMock } />
+		);
 
 		const heading = screen.queryByRole( 'heading', {
 			name: 'Business details',
@@ -39,7 +43,9 @@ describe( 'Card Reader Business Details section', () => {
 	} );
 
 	test( 'Renders Business settings', () => {
-		render( <BusinessDetailsSection /> );
+		render(
+			<BusinessDetailsSection setSaveDisabled={ setDisabledMock } />
+		);
 
 		const name = screen.getByLabelText( 'Business name' );
 		expect( name ).toBeInTheDocument();
@@ -130,13 +136,7 @@ describe( 'Card Reader Branding Details section', () => {
 	test( 'Renders Contacts settings', () => {
 		render( <BrandingDetailsSection /> );
 
-		const logo = screen.queryAllByText( 'File Upload' );
-		expect( logo.length ).toEqual( 2 );
-
-		const primary = screen.getByText( 'Primary color' );
-		expect( primary ).toBeInTheDocument();
-
-		const secondary = screen.getByText( 'Secondary color' );
-		expect( secondary ).toBeInTheDocument();
+		const fileUploadFields = screen.queryAllByText( 'File Upload' );
+		expect( fileUploadFields.length ).toEqual( 1 );
 	} );
 } );

@@ -79,10 +79,14 @@ class WC_Payments_Subscription_Service {
 	 */
 	private $supports = [
 		'gateway_scheduled_payments',
-		'subscriptions',
-		'subscription_suspension',
-		'subscription_reactivation',
+		'multiple_subscriptions',
 		'subscription_cancellation',
+		'subscription_payment_method_change_admin',
+		'subscription_payment_method_change_customer',
+		'subscription_payment_method_change',
+		'subscription_reactivation',
+		'subscription_suspension',
+		'subscriptions',
 	];
 
 	/**
@@ -265,8 +269,14 @@ class WC_Payments_Subscription_Service {
 		$data = [
 			'currency'            => $currency,
 			'product'             => $wcpay_product_id,
-			'unit_amount_decimal' => round( $unit_amount, wc_get_rounding_precision() ) * 100,
+			// We cannot use WC_Payments_Utils::prepare_amount() here because it returns an int but 'unit_amount_decimal' supports multiple decimal places even though it is cents (fractions of a cent).
+			'unit_amount_decimal' => round( $unit_amount, wc_get_rounding_precision() ),
 		];
+
+		// Convert the amount to cents if it's not in a zero based currency.
+		if ( ! WC_Payments_Utils::is_zero_decimal_currency( strtolower( $currency ) ) ) {
+			$data['unit_amount_decimal'] *= 100;
+		}
 
 		if ( $interval && $interval_count ) {
 			$data['recurring'] = [
@@ -296,7 +306,7 @@ class WC_Payments_Subscription_Service {
 
 			if ( $discount ) {
 				$data[] = [
-					'amount_off' => $discount * 100,
+					'amount_off' => WC_Payments_Utils::prepare_amount( $discount, $subscription->get_currency() ),
 					'currency'   => $subscription->get_currency(),
 					'duration'   => $duration,
 					// Translators: %s Coupon code.
@@ -730,18 +740,12 @@ class WC_Payments_Subscription_Service {
 		$data = [];
 
 		foreach ( $subscription->get_items() as $item ) {
-			$product = $item->get_product();
-
-			if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
-				continue;
-			}
-
 			$data[] = [
 				'metadata'   => $this->get_item_metadata( $item ),
 				'quantity'   => $item->get_quantity(),
 				'price_data' => $this->format_item_price_data(
 					$subscription->get_currency(),
-					$this->product_service->get_wcpay_product_id( $product ),
+					$this->product_service->get_wcpay_product_id( $item->get_product() ),
 					$item->get_subtotal() / $item->get_quantity(),
 					$subscription->get_billing_period(),
 					$subscription->get_billing_interval()

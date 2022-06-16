@@ -10,6 +10,6 @@
  *
  * Class WP_UnitTestCase
  */
-class WP_UnitTestCase extends \PHPUnit\Framework\TestCase {
+class WP_UnitTestCase extends \Yoast\PHPUnitPolyfills\TestCases\TestCase {
 
 }

@@ -12,8 +12,9 @@ import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import { getTerms } from '../utils/upe';
-import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
+import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import enableStripeLinkPaymentMethod from '../stripe-link';
+import apiRequest from '../utils/request';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -23,6 +24,11 @@ jQuery( function ( $ ) {
 	const isUPEEnabled = getConfig( 'isUPEEnabled' );
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const enabledBillingFields = getConfig( 'enabledBillingFields' );
+	const upePaymentIntentData = getConfig( 'upePaymentIntentData' );
+	const upeSetupIntentData = getConfig( 'upeSetupIntentData' );
+	const isStripeLinkEnabled =
+		paymentMethodsConfig.link !== undefined &&
+		paymentMethodsConfig.card !== undefined;
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -37,77 +43,11 @@ jQuery( function ( $ ) {
 			forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 			locale: getConfig( 'locale' ),
 			isUPEEnabled,
+			isStripeLinkEnabled,
 		},
-		// A promise-based interface to jQuery.post.
-		( url, args ) => {
-			return new Promise( ( resolve, reject ) => {
-				jQuery.post( url, args ).then( resolve ).fail( reject );
-			} );
-		}
+		apiRequest
 	);
 
-	// Object to add hidden elements to compute focus and invalid states for UPE.
-	const hiddenElementsForUPE = {
-		getHiddenContainer: function () {
-			const hiddenDiv = document.createElement( 'div' );
-			hiddenDiv.setAttribute( 'id', 'wcpay-hidden-div' );
-			hiddenDiv.style.border = 0;
-			hiddenDiv.style.clip = 'rect(0 0 0 0)';
-			hiddenDiv.style.height = '1px';
-			hiddenDiv.style.margin = '-1px';
-			hiddenDiv.style.overflow = 'hidden';
-			hiddenDiv.style.padding = '0';
-			hiddenDiv.style.position = 'absolute';
-			hiddenDiv.style.width = '1px';
-			return hiddenDiv;
-		},
-		getHiddenInvalidRow: function () {
-			const hiddenInvalidRow = document.createElement( 'p' );
-			hiddenInvalidRow.classList.add(
-				'form-row',
-				'woocommerce-invalid',
-				'woocommerce-invalid-required-field'
-			);
-			return hiddenInvalidRow;
-		},
-		appendHiddenClone: function ( container, idToClone, hiddenCloneId ) {
-			const hiddenInput = jQuery( idToClone )
-				.clone()
-				.prop( 'id', hiddenCloneId );
-			container.appendChild( hiddenInput.get( 0 ) );
-			return hiddenInput;
-		},
-		init: function () {
-			if ( ! $( ' #billing_first_name' ).length ) {
-				return;
-			}
-			const hiddenDiv = this.getHiddenContainer();
-
-			// // Hidden focusable element.
-			$( hiddenDiv ).insertAfter( '#billing_first_name' );
-			this.appendHiddenClone(
-				hiddenDiv,
-				'#billing_first_name',
-				'wcpay-hidden-input'
-			);
-
-			// Hidden invalid element.
-			const hiddenInvalidRow = this.getHiddenInvalidRow();
-			this.appendHiddenClone(
-				hiddenInvalidRow,
-				'#billing_first_name',
-				'wcpay-hidden-invalid-input'
-			);
-			hiddenDiv.appendChild( hiddenInvalidRow );
-
-			// Remove transitions.
-			$( '#wcpay-hidden-input' ).css( 'transition', 'none' );
-			$( '#wcpay-hidden-input' ).trigger( 'focus' );
-		},
-		cleanup: function () {
-			$( '#wcpay-hidden-div' ).remove();
-		},
-	};
 	let elements = null;
 	let upeElement = null;
 	let paymentIntentId = null;
@@ -249,7 +189,10 @@ jQuery( function ( $ ) {
 			name:
 				`${ fields.billing_first_name } ${ fields.billing_last_name }`.trim() ||
 				'-',
-			email: fields.billing_email || '-',
+			email:
+				'string' === typeof fields.billing_email
+					? fields.billing_email.trim()
+					: '-',
 			phone: fields.billing_phone || '-',
 			address: {
 				country: fields.billing_country || '-',
@@ -267,7 +210,7 @@ jQuery( function ( $ ) {
 	 *
 	 * @param {boolean} isSetupIntent {Boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
 	 */
-	const mountUPEElement = function ( isSetupIntent = false ) {
+	const mountUPEElement = async function ( isSetupIntent = false ) {
 		// Do not mount UPE twice.
 		if ( upeElement || paymentIntentId ) {
 			return;
@@ -292,73 +235,21 @@ jQuery( function ( $ ) {
 			orderId = getConfig( 'orderId' );
 		}
 
-		const intentAction = isSetupIntent
-			? api.initSetupIntent()
-			: api.createIntent( orderId );
+		let { intentId, clientSecret } = isSetupIntent
+			? getSetupIntentFromSession()
+			: getPaymentIntentFromSession();
 
 		const $upeContainer = $( '#wcpay-upe-element' );
 		blockUI( $upeContainer );
 
-		intentAction
-			.then( ( response ) => {
-				// I repeat, do NOT mount UPE twice.
-				if ( upeElement || paymentIntentId ) {
-					unblockUI( $upeContainer );
-					return;
-				}
-
-				const { client_secret: clientSecret, id: id } = response;
-				paymentIntentId = id;
-
-				let appearance = getConfig( 'upeAppearance' );
-
-				if ( ! appearance ) {
-					hiddenElementsForUPE.init();
-					appearance = getAppearance();
-					hiddenElementsForUPE.cleanup();
-					api.saveUPEAppearance( appearance );
-				}
-
-				elements = api.getStripe().elements( {
-					clientSecret,
-					appearance,
-					fonts: getFontRulesFromPage(),
-				} );
-
-				const upeSettings = {};
-				if ( getConfig( 'cartContainsSubscription' ) ) {
-					upeSettings.terms = getTerms(
-						paymentMethodsConfig,
-						'always'
-					);
-				}
-				if ( isCheckout && ! ( isOrderPay || isChangingPayment ) ) {
-					upeSettings.fields = {
-						billingDetails: hiddenBillingFields,
-					};
-				}
-
-				upeElement = elements.create( 'payment', {
-					...upeSettings,
-					wallets: {
-						applePay: 'never',
-						googlePay: 'never',
-					},
-				} );
-				upeElement.mount( '#wcpay-upe-element' );
-				unblockUI( $upeContainer );
-				upeElement.on( 'change', ( event ) => {
-					const selectedUPEPaymentType = event.value.type;
-					const isPaymentMethodReusable =
-						paymentMethodsConfig[ selectedUPEPaymentType ]
-							.isReusable;
-					showNewPaymentMethodCheckbox( isPaymentMethodReusable );
-					setSelectedUPEPaymentType( selectedUPEPaymentType );
-					setPaymentCountry( event.value.country );
-					isUPEComplete = event.complete;
-				} );
-			} )
-			.catch( ( error ) => {
+		if ( ! intentId ) {
+			try {
+				const newIntent = isSetupIntent
+					? await api.initSetupIntent()
+					: await api.createIntent( orderId );
+				intentId = newIntent.id;
+				clientSecret = newIntent.client_secret;
+			} catch ( error ) {
 				unblockUI( $upeContainer );
 				showError( error.message );
 				const gatewayErrorMessage =
@@ -366,7 +257,88 @@ jQuery( function ( $ ) {
 				$( '.payment_box.payment_method_woocommerce_payments' ).html(
 					gatewayErrorMessage
 				);
+			}
+		}
+
+		// I repeat, do NOT mount UPE twice.
+		if ( upeElement || paymentIntentId ) {
+			unblockUI( $upeContainer );
+			return;
+		}
+
+		paymentIntentId = intentId;
+
+		let appearance = getConfig( 'upeAppearance' );
+
+		if ( ! appearance ) {
+			appearance = getAppearance();
+			api.saveUPEAppearance( appearance );
+		}
+
+		elements = api.getStripe().elements( {
+			clientSecret,
+			appearance,
+			fonts: getFontRulesFromPage(),
+		} );
+
+		if ( isStripeLinkEnabled ) {
+			enableStripeLinkPaymentMethod( {
+				api: api,
+				elements: elements,
+				emailId: 'billing_email',
+				complete_billing: true,
+				complete_shipping: () => {
+					return ! document.getElementById(
+						'ship-to-different-address-checkbox'
+					).checked;
+				},
+				shipping_fields: {
+					line1: 'shipping_address_1',
+					line2: 'shipping_address_2',
+					city: 'shipping_city',
+					state: 'shipping_state',
+					postal_code: 'shipping_postcode',
+					country: 'shipping_country',
+				},
+				billing_fields: {
+					line1: 'billing_address_1',
+					line2: 'billing_address_2',
+					city: 'billing_city',
+					state: 'billing_state',
+					postal_code: 'billing_postcode',
+					country: 'billing_country',
+				},
 			} );
+		}
+
+		const upeSettings = {};
+		if ( getConfig( 'cartContainsSubscription' ) ) {
+			upeSettings.terms = getTerms( paymentMethodsConfig, 'always' );
+		}
+		if ( isCheckout && ! ( isOrderPay || isChangingPayment ) ) {
+			upeSettings.fields = {
+				billingDetails: hiddenBillingFields,
+			};
+		}
+
+		upeElement = elements.create( 'payment', {
+			...upeSettings,
+			wallets: {
+				applePay: 'never',
+				googlePay: 'never',
+			},
+		} );
+		upeElement.mount( '#wcpay-upe-element' );
+		unblockUI( $upeContainer );
+		upeElement.on( 'change', ( event ) => {
+			const selectedUPEPaymentType = event.value.type;
+			const isPaymentMethodReusable =
+				paymentMethodsConfig[ selectedUPEPaymentType ].isReusable;
+			showNewPaymentMethodCheckbox( isPaymentMethodReusable );
+			setSelectedUPEPaymentType( selectedUPEPaymentType );
+			setPaymentCountry( event.value.country );
+			isUPEComplete = event.complete;
+		} );
 	};
 
 	const renameGatewayTitle = () =>
@@ -656,6 +628,42 @@ jQuery( function ( $ ) {
 		);
 	}
 
+	/**
+	 * Returns the cached payment intent for the current cart state.
+	 *
+	 * @return {Object} The intent id and client secret required for mounting the UPE element.
+	 */
+	function getPaymentIntentFromSession() {
+		const cartHash = getCookieValue( 'woocommerce_cart_hash' );
+
+		if (
+			cartHash &&
+			upePaymentIntentData &&
+			upePaymentIntentData.startsWith( cartHash )
+		) {
+			const intentId = upePaymentIntentData.split( '-' )[ 1 ];
+			const clientSecret = upePaymentIntentData.split( '-' )[ 2 ];
+			return { intentId, clientSecret };
+		}
+
+		return {};
+	}
+
+	/**
+	 * Returns the cached setup intent.
+	 *
+	 * @return {Object} The intent id and client secret required for mounting the UPE element.
+	 */
+	function getSetupIntentFromSession() {
+		if ( upeSetupIntentData ) {
+			const intentId = upeSetupIntentData.split( '-' )[ 0 ];
+			const clientSecret = upeSetupIntentData.split( '-' )[ 1 ];
+			return { intentId, clientSecret };
+		}
+
+		return {};
+	}
+
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_CARD,
@@ -694,7 +702,7 @@ jQuery( function ( $ ) {
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
-		if ( ! isUsingSavedPaymentMethod() ) {
+		if ( ! isUsingSavedPaymentMethod() && isWCPayChosen() ) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
 				return false;
@@ -732,7 +740,4 @@ jQuery( function ( $ ) {
 			maybeShowAuthenticationModal();
 		}
 	} );
-	if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
-		handlePlatformCheckoutEmailInput( '#billing_email', api );
-	}
 } );

@@ -8,7 +8,7 @@
     "minimum-stability": "dev",
     "config": {
       "platform": {
-        "php": "7.1"
+        "php": "7.3"
       },
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
@@ -22,16 +22,18 @@
     "require": {
       "php": "7.*",
       "ext-json": "*",
-      "automattic/jetpack-connection": "1.36.0",
-      "automattic/jetpack-config": "1.6.0",
+      "automattic/jetpack-connection": "1.37.3",
+      "automattic/jetpack-config": "1.6.1",
       "automattic/jetpack-autoloader": "2.10.11",
-      "automattic/jetpack-identity-crisis": "0.7.0",
+      "automattic/jetpack-identity-crisis": "0.8.4",
+      "automattic/jetpack-sync": "1.30.5",
+      "automattic/jetpack-tracking": "1.14.5",
       "myclabs/php-enum": "1.7.7",
-      "woocommerce/subscriptions-core": "1.6.4"
+      "woocommerce/subscriptions-core": "2.1.0"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
-      "phpunit/phpunit": "7.5.20",
+      "phpunit/phpunit": "9.5.14",
       "woocommerce/woocommerce-sniffs": "0.1.0",
       "woocommerce/action-scheduler": "3.1.6",
       "kalessil/production-dependencies-guard": "dev-master",
@@ -39,7 +41,7 @@
       "php-stubs/wordpress-stubs": "5.8.2",
       "php-stubs/woocommerce-stubs": "5.9.0",
       "rregeer/phpunit-coverage-check": "0.3.1",
-      "yoast/phpunit-polyfills": "1.0.1",
+      "yoast/phpunit-polyfills": "1.0.3",
       "cweagans/composer-patches": "1.7.1",
       "automattic/jetpack-changelogger": "^3.0.7"
     },
@@ -67,9 +69,6 @@
       ],
       "composer-exit-on-patch-failure": true,
       "patches": {
-        "phpunit/phpunit": {
-          "PHP 8.1 compatibility: globals": "tests/phpunit-patches/globals-usage-compatibility.diff"
-        }
       },
       "changelogger": {
             "changelog": "changelog.txt",
@@ -77,8 +76,7 @@
                 "add": "Add",
                 "fix": "Fix",
                 "update": "Update",
-                "dev": "Dev",
-                "tweak": "Tweak"
+                "dev": "Dev"
             },
             "formatter": {
                 "filename": "bin/class-wcpay-changelog-formatter.php"

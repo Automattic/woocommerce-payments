@@ -27,6 +27,23 @@ export default class WCPayAPI {
 		this.request = request;
 	}
 
+	createStripe( publishableKey, locale, accountId = '', betas = [] ) {
+		const options = { locale };
+
+		if ( accountId ) {
+			options.stripeAccount = accountId;
+		}
+		if ( betas ) {
+			options.betas = betas;
+		}
+
+		if ( betas.includes( 'link_beta_2' ) ) {
+			options.apiVersion = '2020-08-27;link_beta=v1';
+		}
+
+		return new Stripe( publishableKey, options );
+	}
+
 	/**
 	 * Generates a new instance of Stripe.
 	 *
@@ -40,30 +57,41 @@ export default class WCPayAPI {
 			forceNetworkSavedCards,
 			locale,
 			isUPEEnabled,
+			isStripeLinkEnabled,
 		} = this.options;
 
 		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
 			if ( ! this.stripePlatform ) {
-				this.stripePlatform = new Stripe( publishableKey, { locale } );
+				this.stripePlatform = this.createStripe(
+					publishableKey,
+					locale
+				);
 			}
 			return this.stripePlatform;
 		}
 
 		if ( ! this.stripe ) {
 			if ( isUPEEnabled ) {
-				this.stripe = new Stripe( publishableKey, {
-					stripeAccount: accountId,
-					betas: [
-						'card_country_event_beta_1',
-						'us_bank_account_beta_1',
-					],
+				let betas = [ 'card_country_event_beta_1' ];
+				if ( isStripeLinkEnabled ) {
+					betas = betas.concat( [
+						'link_autofill_modal_beta_1',
+						'link_beta_2',
+					] );
+				}
+
+				this.stripe = this.createStripe(
+					publishableKey,
 					locale,
-				} );
+					accountId,
+					betas
+				);
 			} else {
-				this.stripe = new Stripe( publishableKey, {
-					stripeAccount: accountId,
+				this.stripe = this.createStripe(
+					publishableKey,
 					locale,
-				} );
+					accountId
+				);
 			}
 		}
 		return this.stripe;
@@ -212,9 +240,34 @@ export default class WCPayAPI {
 			orderId = orderIdPartials[ 0 ];
 		}
 
-		const confirmAction = isSetupIntent
-			? this.getStripe().confirmCardSetup( clientSecret )
-			: this.getStripe( true ).confirmCardPayment( clientSecret );
+		const confirmPaymentOrSetup = () => {
+			const { locale, publishableKey } = this.options;
+			const accountIdForIntentConfirmation = getConfig(
+				'accountIdForIntentConfirmation'
+			);
+
+			// If this is a setup intent we're not processing a platform checkout payment so we can
+			// use the regular getStripe function.
+			if ( isSetupIntent ) {
+				return this.getStripe().confirmCardSetup( clientSecret );
+			}
+
+			// For platform checkout we need the capability to switch up the account ID specifically for
+			// the intent confirmation step, that's why we create a new instance of the Stripe JS here.
+			if ( accountIdForIntentConfirmation ) {
+				return this.createStripe(
+					publishableKey,
+					locale,
+					accountIdForIntentConfirmation
+				).confirmCardPayment( clientSecret );
+			}
+
+			// When not dealing with a setup intent or platform checkout we need to force an account
+			// specific request in Stripe.
+			return this.getStripe( true ).confirmCardPayment( clientSecret );
+		};
+
+		const confirmAction = confirmPaymentOrSetup();
 
 		const request = confirmAction
 			// ToDo: Switch to an async function once it works with webpack.
@@ -402,12 +455,14 @@ export default class WCPayAPI {
 	 * Saves the calculated UPE appearance values in a transient.
 	 *
 	 * @param {Object} appearance The UPE appearance object with style values
+	 * @param {boolean} isBlocksCheckout True if save request is for Blocks Checkout. Default false.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	saveUPEAppearance( appearance ) {
+	saveUPEAppearance( appearance, isBlocksCheckout = false ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
-			appearance,
+			is_blocks_checkout: isBlocksCheckout,
+			appearance: JSON.stringify( appearance ),
 			action: 'save_upe_appearance',
 			// eslint-disable-next-line camelcase
 			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
@@ -546,11 +601,13 @@ export default class WCPayAPI {
 		} );
 	}
 
-	initPlatformCheckout() {
+	initPlatformCheckout( userEmail, platformCheckoutUserSession ) {
 		return this.request(
-			getPaymentRequestAjaxURL( 'init_platform_checkout' ),
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_platform_checkout' ),
 			{
-				_wpnonce: getPaymentRequestData( 'nonce' )?.checkout,
+				_wpnonce: getConfig( 'initPlatformCheckoutNonce' ),
+				email: userEmail,
+				user_session: platformCheckoutUserSession,
 			}
 		);
 	}

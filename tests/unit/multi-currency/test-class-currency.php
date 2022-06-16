@@ -26,8 +26,8 @@ class WCPay_Multi_Currency_Currency_Tests extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->timestamp_for_testing = strtotime( '1 January 2021' );
 		$this->currency              = new Currency( 'USD', 1.0, $this->timestamp_for_testing );

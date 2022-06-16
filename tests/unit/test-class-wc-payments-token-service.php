@@ -42,8 +42,8 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->user_id = get_current_user_id();
 		wp_set_current_user( 1 );
@@ -57,9 +57,9 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 	/**
 	 * Post-test teardown
 	 */
-	public function tearDown() {
+	public function tear_down() {
 		wp_set_current_user( $this->user_id );
-		parent::tearDown();
+		parent::tear_down();
 	}
 
 	/**
@@ -323,6 +323,21 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( null );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ new WC_Payment_Token_CC() ], 1, 'woocommerce_payments' );
+		$this->assertEquals( [ new WC_Payment_Token_CC() ], $result );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_failed_to_load_payment_methods_for_customer() {
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->willThrowException( new Exception( 'Failed to get payment methods.' ) );
 
 		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ new WC_Payment_Token_CC() ], 1, 'woocommerce_payments' );
 		$this->assertEquals( [ new WC_Payment_Token_CC() ], $result );

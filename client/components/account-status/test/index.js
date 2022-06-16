@@ -12,7 +12,22 @@ import StatusChip from '../status-chip';
 
 describe( 'AccountStatus', () => {
 	beforeEach( () => {
-		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'FR',
+			},
+			currencyData: {
+				FR: {
+					code: 'EUR',
+					symbol: '€',
+					symbolPosition: 'right_space',
+					thousandSeparator: ' ',
+					decimalSeparator: ',',
+					precision: 2,
+				},
+			},
+		};
 	} );
 
 	test( 'renders error status', () => {
@@ -79,6 +94,13 @@ describe( 'StatusChip', () => {
 
 	test( 'renders restricted status', () => {
 		const { container: statusChip } = renderStatusChip( 'restricted' );
+		expect( statusChip ).toMatchSnapshot();
+	} );
+
+	test( 'renders partially restricted status', () => {
+		const { container: statusChip } = renderStatusChip(
+			'restricted_partially'
+		);
 		expect( statusChip ).toMatchSnapshot();
 	} );
 

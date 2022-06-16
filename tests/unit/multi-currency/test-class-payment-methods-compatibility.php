@@ -33,8 +33,8 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->multi_currency_mock = $this
 			->getMockBuilder( WCPay\MultiCurrency\MultiCurrency::class )
@@ -62,8 +62,8 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WP_UnitTe
 		add_filter( 'pre_option__wcpay_feature_upe', [ $this, 'mock_upe_flag' ], 50, 3 );
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 		remove_filter( 'pre_option__wcpay_feature_upe', [ $this, 'mock_upe_flag' ], 50 );
 	}
 

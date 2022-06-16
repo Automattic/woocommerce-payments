@@ -122,9 +122,10 @@ const PaymentMethods = () => {
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
-	const availableMethods = availablePaymentMethodIds.map(
-		( methodId ) => methodsConfiguration[ methodId ]
-	);
+	// We filter link payment method since this will be displayed in other section (express checkout).
+	const availableMethods = availablePaymentMethodIds
+		.filter( ( id ) => 'link' !== id )
+		.map( ( methodId ) => methodsConfiguration[ methodId ] );
 
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
 		null
@@ -182,7 +183,7 @@ const PaymentMethods = () => {
 			handleDeleteModalOpen( {
 				id: itemId,
 				label: methodConfig.label,
-				Icon: methodConfig.Icon,
+				Icon: methodConfig.icon,
 			} );
 		} else {
 			completeDeleteAction( itemId );
@@ -210,7 +211,7 @@ const PaymentMethods = () => {
 				<WcPaySurveyContextProvider>
 					<SurveyModal
 						setOpenModal={ setOpenModalIdentifier }
-						surveyKey="wcpay-upe-disable-early-access"
+						surveyKey="wcpay-upe-disable-early-access-2022-may"
 						surveyQuestion="why-disable"
 					/>
 				</WcPaySurveyContextProvider>
@@ -243,7 +244,13 @@ const PaymentMethods = () => {
 				<CardBody size={ null }>
 					<PaymentMethodsList className="payment-methods__available-methods">
 						{ availableMethods.map(
-							( { id, label, description, Icon } ) => (
+							( {
+								id,
+								label,
+								description,
+								icon: Icon,
+								allows_manual_capture: isAllowingManualCapture,
+							} ) => (
 								<PaymentMethod
 									id={ id }
 									key={ id }
@@ -258,6 +265,9 @@ const PaymentMethods = () => {
 									Icon={ Icon }
 									status={
 										getStatusAndRequirements( id ).status
+									}
+									isAllowingManualCapture={
+										isAllowingManualCapture
 									}
 									onUncheckClick={ () => {
 										handleUncheckClick( id );
@@ -290,7 +300,7 @@ const PaymentMethods = () => {
 				<ConfirmPaymentMethodDeleteModal
 					id={ deleteModalParams.id }
 					label={ deleteModalParams.label }
-					Icon={ deleteModalParams.Icon }
+					icon={ deleteModalParams.Icon }
 					onConfirm={ () => {
 						completeDeleteAction( deleteModalParams.id );
 					} }

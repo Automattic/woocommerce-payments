@@ -11,14 +11,11 @@ For running E2E tests locally, create a new file named `local.env` under `tests/
 <p>
 
 ```
-WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+# WooCommerce Payments Dev Tools Repo
 WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
 
-// Use WCPay server local instance (Default: true). To use live server, set value to false
-E2E_USE_LOCAL_SERVER=true
-
-// Optional to see verbose output
-DEBUG=true
+# Optional to see additional verbose output. Default false.
+DEBUG=false
 ```
 
 </p>
@@ -37,7 +34,10 @@ It is possible to use the live server or a local docker instance of WCPay server
 By default, the local E2E environment is configured to use WCPay local server instance. Add the following env variables to configure the local server instance.
 
 ```
-// Stripe account data. Need to support level 3 data to run tests successfully.
+# WooCommerce Payments Server Repo
+WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+
+# Stripe account data. Need to support level 3 data to run tests successfully.
 E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
 E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
 E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY=<stripe whsec_xxx>
@@ -57,6 +57,9 @@ Set the value of `E2E_USE_LOCAL_SERVER` to `false` to enable live server.
 
 Once you have the blog id & tokens, add the following ev variables to your `local.env`.
 ```
+# Set local server to false for using live server. Default: true.
+E2E_USE_LOCAL_SERVER=false
+
 E2E_BLOG_TOKEN='<jetpack_blog_token>'
 E2E_USER_TOKEN='<jetpack_user_token>'
 E2E_BLOG_ID='<blog_id>'
@@ -71,15 +74,13 @@ E2E_BLOG_ID='<blog_id>'
 <summary>Installing Plugins</summary>
 <p>
 
-If you wish to run E2E test for WC Subscriptions, Action Scheduler & WC Gutenberg Products Blocks, the following env variables needs to be added to your `local.env` (replace values as required).
+If you wish to run E2E test for WC Subscriptions, the following env variables needs to be added to your `local.env` (replace values as required).
 
 For the `E2E_GH_TOKEN`, follow [these instructions to generate a GitHub Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) and assign the `repo` scope to it.
 
 ```
 E2E_GH_TOKEN='githubPersonalAccessToken'
 WC_SUBSCRIPTIONS_REPO='{owner}/{repo}'
-WC_ACTION_SCHEDULER_REPO='{owner}/{repo}'
-WC_BLOCKS_REPO='{owner}/{repo}'
 ```
 
 </p>
@@ -96,6 +97,21 @@ If you wish to skip E2E tests for WC Subscriptions, Action Scheduler or WC Guten
 SKIP_WC_SUBSCRIPTIONS_TESTS=1
 SKIP_WC_ACTION_SCHEDULER_TESTS=1
 SKIP_WC_BLOCKS_TESTS=1
+```
+
+</p>
+</details>
+
+---
+
+<details>
+<summary>Using specific version of WordPress / WooCommerce</summary>
+<p>
+
+To use a specific version of WordPress or WooCommerce for testing, the following env variables needs to be added to your `local.env`.
+```
+E2E_WP_VERSION='<wordpress_version>'
+E2E_WC_VERSION='<woocommerce_version>'
 ```
 
 </p>

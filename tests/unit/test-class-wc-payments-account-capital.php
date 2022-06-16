@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Database_Cache;
 
 /**
  * WC_Payments_Account unit tests for Capital-related methods.
@@ -26,16 +27,30 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock Database_Cache
+	 *
+	 * @var Database_Cache|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_database_cache;
+
+	/**
 	 * Previous user ID.
 	 * @var int
 	 */
 	private $previous_user_id;
 
 	/**
+	 * Mock WC_Payments_Action_Scheduler_Service
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_action_scheduler_service;
+
+	/**
 	 * Pre-test setup
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->previous_user_id = get_current_user_id();
 		// Set admin as the current user.
@@ -47,14 +62,18 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 
 		$this->mock_api_client = $this->createMock( 'WC_Payments_API_Client' );
 
+		$this->mock_database_cache = $this->createMock( Database_Cache::class );
+
+		$this->mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+
 		// Mock WC_Payments_Account without redirect_to to prevent headers already sent error.
 		$this->wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->setMethods( [ 'redirect_to' ] )
-			->setConstructorArgs( [ $this->mock_api_client ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service ] )
 			->getMock();
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		wp_set_current_user( $this->previous_user_id );
 
 		unset( $_GET['wcpay-loan-offer'] );
@@ -62,27 +81,15 @@ class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
 		remove_filter( 'wp_doing_ajax', '__return_true' );
 		remove_filter( 'wp_doing_ajax', '__return_false' );
 
-		parent::tearDown();
+		parent::tear_down();
 	}
 
-	public function test_maybe_redirect_to_capital_offer_will_run_if_capital_is_enabled() {
-		update_option( '_wcpay_feature_capital', '1' );
+	public function test_maybe_redirect_to_capital_offer_will_run() {
 		$wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setConstructorArgs( [ $this->mock_api_client ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_database_cache, $this->mock_action_scheduler_service ] )
 			->getMock();
 
 		$this->assertNotFalse(
-			has_action( 'admin_init', [ $wcpay_account, 'maybe_redirect_to_capital_offer' ] )
-		);
-	}
-
-	public function test_maybe_redirect_to_capital_offer_will_not_run_if_capital_is_disabled() {
-		update_option( '_wcpay_feature_capital', '0' );
-		$wcpay_account = $this->getMockBuilder( WC_Payments_Account::class )
-			->setConstructorArgs( [ $this->mock_api_client ] )
-			->getMock();
-
-		$this->assertFalse(
 			has_action( 'admin_init', [ $wcpay_account, 'maybe_redirect_to_capital_offer' ] )
 		);
 	}

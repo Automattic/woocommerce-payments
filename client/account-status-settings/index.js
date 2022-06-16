@@ -5,7 +5,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
-import { __experimentalCreateInterpolateElement as createInterpolateElement } from 'wordpress-element';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -68,6 +68,11 @@ const renderAccountStatusDescription = ( accountStatus ) => {
 			),
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			{ a: <a href={ accountLink } /> }
+		);
+	} else if ( 'restricted_partially' === status ) {
+		description = __(
+			'Some payment methods and deposits are disabled for this account until all required documents are provided.',
+			'woocommerce-payments'
 		);
 	} else if ( 'restricted' === status ) {
 		description = __(

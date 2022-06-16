@@ -37,16 +37,25 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	private $customer_service;
 
 	/**
+	 * WC_Payments_Order_Service instance for updating order statuses.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * WC_Payments_REST_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WooCommerce Payments API client.
 	 * @param WC_Payment_Gateway_WCPay     $gateway          WooCommerce Payments payment gateway.
 	 * @param WC_Payments_Customer_Service $customer_service Customer class instance.
+	 * @param WC_Payments_Order_Service    $order_service    Order Service class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service ) {
 		parent::__construct( $api_client );
 		$this->gateway          = $gateway;
 		$this->customer_service = $customer_service;
+		$this->order_service    = $order_service;
 	}
 
 	/**
@@ -89,6 +98,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Given an intent ID and an order ID, add the intent ID to the order and capture it.
+	 * Use-cases: Mobile apps using it for `card_present` and `interac_present` payment types.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
@@ -115,38 +125,49 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			// Do not process intents that can't be captured.
 			$intent = $this->api_client->get_intent( $intent_id );
-			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture' ], true ) ) {
+			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture', 'succeeded' ], true ) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
 			// Update the order: set the payment method and attach intent attributes.
 			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
+			$intent_id     = $intent->get_id();
+			$intent_status = $intent->get_status();
+			$charge_id     = $intent->get_charge_id();
 			$this->gateway->attach_intent_info_to_order(
 				$order,
-				$intent->get_id(),
-				$intent->get_status(),
+				$intent_id,
+				$intent_status,
 				$intent->get_payment_method_id(),
 				$intent->get_customer_id(),
-				$intent->get_charge_id(),
+				$charge_id,
 				$intent->get_currency()
 			);
 			$this->gateway->update_order_status_from_intent(
 				$order,
-				$intent->get_id(),
-				$intent->get_status(),
-				$intent->get_charge_id(),
-				$intent->get_currency()
+				$intent_id,
+				$intent_status,
+				$charge_id
 			);
 
-			// Capture the intent and update the order attributes.
-			$result = $this->gateway->capture_charge( $order );
+			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
+			// The client may send us the captured intent to link it to its WC order.
+			// Doing so via this endpoint is more reliable than depending on the payment_intent.succeeded event.
+			$is_intent_captured         = 'succeeded' === $intent->get_status();
+			$result_for_captured_intent = [
+				'status' => 'succeeded',
+				'id'     => $intent->get_id(),
+			];
+
+			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false );
+
 			if ( 'succeeded' !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
 				return new WP_Error(
 					'wcpay_capture_error',
 					sprintf(
-						// translators: %s: the error message.
+					// translators: %s: the error message.
 						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
 						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
 					),
@@ -156,7 +177,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
 			// Actualize order status.
-			$order->update_status( 'completed' );
+			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'], $charge_id );
 
 			return rest_ensure_response(
 				[
@@ -172,11 +193,15 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Returns customer id from order. Create or update customer if needed.
+	 * Use-cases: It was used by older versions of our Mobile apps in their workflows.
+	 *
+	 * @deprecated 3.9.0
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function create_customer( $request ) {
+		wc_deprecated_function( __FUNCTION__, '3.9.0' );
 		try {
 			$order_id = $request['order_id'];
 
@@ -222,6 +247,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Create a new in-person payment intent for the given order ID without confirming it.
+	 * Use-cases: Mobile apps using it for `card_present` payment types. (`interac_present` is handled by the apps via Stripe SDK).
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.

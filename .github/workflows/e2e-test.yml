@@ -13,20 +13,20 @@ on:
   workflow_dispatch:
 
 env:
-  E2E_GH_TOKEN:             ${{ secrets.E2E_GH_TOKEN }}
-  CI_USER_TOKEN:            ${{ secrets.CI_USER_TOKEN }}
-  WCP_DEV_TOOLS_REPO:       ${{ secrets.WCP_DEV_TOOLS_REPO }}
-  WCP_SERVER_REPO:          ${{ secrets.WCP_SERVER_REPO }}
-  WC_SUBSCRIPTIONS_REPO:    ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
-  WC_ACTION_SCHEDULER_REPO: ${{ secrets.WC_ACTION_SCHEDULER_REPO }}
-  WC_BLOCKS_REPO:           ${{ secrets.WC_BLOCKS_REPO }}
-  E2E_BLOG_ID:              ${{ secrets.E2E_BLOG_ID }}
-  E2E_BLOG_TOKEN:           ${{ secrets.E2E_BLOG_TOKEN }}
-  E2E_USER_TOKEN:           ${{ secrets.E2E_USER_TOKEN }}
-  E2E_RETEST:               1
-  WC_E2E_SCREENSHOTS:       1
-  E2E_SLACK_CHANNEL:        ${{ secrets.E2E_SLACK_CHANNEL }}
-  E2E_SLACK_TOKEN:          ${{ secrets.E2E_SLACK_TOKEN }}
+  E2E_GH_TOKEN:          ${{ secrets.E2E_GH_TOKEN }}
+  CI_USER_TOKEN:         ${{ secrets.CI_USER_TOKEN }}
+  WCP_DEV_TOOLS_REPO:    ${{ secrets.WCP_DEV_TOOLS_REPO }}
+  WCP_DEV_TOOLS_BRANCH:  'trunk'
+  WCP_SERVER_REPO:       ${{ secrets.WCP_SERVER_REPO }}
+  WC_SUBSCRIPTIONS_REPO: ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
+  E2E_BLOG_ID:           ${{ secrets.E2E_BLOG_ID }}
+  E2E_BLOG_TOKEN:        ${{ secrets.E2E_BLOG_TOKEN }}
+  E2E_USER_TOKEN:        ${{ secrets.E2E_USER_TOKEN }}
+  E2E_RETEST:            1
+  WC_E2E_SCREENSHOTS:    1
+  E2E_SLACK_CHANNEL:     ${{ secrets.E2E_SLACK_CHANNEL }}
+  E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
+  E2E_USE_LOCAL_SERVER:  false
 
 jobs:
   wcpay-e2e-tests:
@@ -36,7 +36,7 @@ jobs:
       fail-fast:     false
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce:   [ '4.6.0', '5.9.0', '6.1.1', 'beta' ]
+        woocommerce:   [ '5.6.2', '6.3.1', '6.5.1', 'beta' ]
         wordpress:     [ 'latest' ]
         php:           [ '7.4' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
@@ -44,18 +44,29 @@ jobs:
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
+          - woocommerce: '5.6.2'
+            test_groups: 'blocks'
+            test_branches: 'shopper'
 
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
-      WP_VERSION: ${{ matrix.wordpress }}
-      WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_WP_VERSION: ${{ matrix.wordpress }}
+      E2E_WC_VERSION: ${{ matrix.woocommerce }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
-      # Log current test configuration
-      - name: Current Test Configuration
+      # Conditionally skip WC Blocks tests. Remove/update based on min supported WC version by the blocks checkout plugin.
+      - name: Conditionally skip WC Blocks tests
+        run: |
+          SKIP_WC_VERSIONS=('5.6.2')
+          if [[ " ${SKIP_WC_VERSIONS[@]} " =~ " ${E2E_WC_VERSION} " ]]; then
+            echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
+          fi
+
+      # Log workflow configuration
+      - name: Workflow Configuration
         run: |
           echo "WordPress version: ${{ matrix.wordpress }}"
           echo "WooCommerce version: ${{ matrix.woocommerce }}"
@@ -67,36 +78,9 @@ jobs:
       - name: Clone WCPay Repository
         uses: actions/checkout@v2
 
-      # Use node version from .nvmrc
-      - name: Setup NodeJS
-        uses: actions/setup-node@v2
-        with:
-          node-version-file: '.nvmrc'
-
-      # Dependency caching
-      - name: Add composer to cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/composer/
-          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-
-      - name: Add vendor directory to cache
-        uses: actions/cache@v2
-        with:
-          path: vendor/
-          key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
-
-      - name: Add NPM directory to cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm/
-          key:  ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-
-      - name: Add node_modules to cache
-        uses: actions/cache@v2
-        with:
-          path: node_modules/
-          key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+      # Add GH token for authentication
+      - name: Add GH token for authentication
+        run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
 
       # PHP setup
       - name: PHP Setup
@@ -107,33 +91,62 @@ jobs:
           extensions:  mysql
           coverage:    none
 
-      # Prepare testing dependencies
-      - name: Prepare testing dependencies
-        run: |
-          echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
-          sudo systemctl start mysql.service
-          composer self-update 2.0.6 && composer install --no-progress
+      # Composer setup
+      - name: Composer Setup
+        run: composer self-update 2.0.6
+
+      # Use node version from .nvmrc
+      - name: Setup NodeJS
+        uses: actions/setup-node@v2
+        with:
+          node-version-file: '.nvmrc'
+
+      # Cache composer dependencies
+      - name: Cache composer dependencies
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: ./vendor
+          key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
+
+      # Cache node dependencies
+      - name: Cache node dependencies
+        id: node-cache
+        uses: actions/cache@v2
+        with:
+          path: ./node_modules
+          key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+
+      # Install composer dependencies if not present on cache
+      - name: Install composer dependencies
+        if: ${{ steps.composer-cache.outputs.cache-hit == false }}
+        run: composer install --no-progress
+
+      # Install node dependencies if not present on cache
+      - name: Install node dependencies
+        if: ${{ steps.node-cache.outputs.cache-hit == false }}
+        run: npm ci
 
       # Build WCPay client
       - name: Build WCPay Client
-        run: npm ci && npm run build:client
+        run: npm run build:client
 
       # Prepare test environment
       - name: Prepare test environment
-        run: |
-          WCPAY_DIR="$GITHUB_WORKSPACE" bash ./bin/install-wp-tests.sh woocommerce_test root root localhost $WP_VERSION $WC_VERSION false
-          npm run test:e2e-setup
+        run: npm run test:e2e-setup
 
       # Run Tests
       - name: Run E2E Tests
         run: npm run test:e2e
 
       # Archive screenshots if any
-      - name: Archive e2e test screenshots
-        if: ${{ always() }}
+      - name: Archive e2e test screenshots & logs
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
-            name: e2e-screenshots
-            path: tests/e2e/screenshots
+            name: e2e-screenshots-logs
+            path: |
+              tests/e2e/screenshots
+              tests/e2e/docker/wordpress/wp-content/debug.log
             if-no-files-found: ignore
             retention-days: 5

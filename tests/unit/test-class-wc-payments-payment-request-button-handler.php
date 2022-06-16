@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Session_Rate_Limiter;
+
 /**
  * WC_Payments_Payment_Request_Button_Handler_Test class.
  */
@@ -76,8 +78,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 	/**
 	 * Sets up things all tests need.
 	 */
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 									->disableOriginalConstructor()
@@ -96,7 +98,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 									)
 									->getMock();
 		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
-		$this->mock_wcpay_account = new WC_Payments_Account( $this->mock_api_client );
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
@@ -124,8 +126,8 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 		WC()->cart->calculate_totals();
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
 		$this->zone->delete();
@@ -139,13 +141,17 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
 		$mock_customer_service         = $this->createMock( WC_Payments_Customer_Service::class );
 		$mock_token_service            = $this->createMock( WC_Payments_Token_Service::class );
 		$mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
+		$mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
+		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 
 		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$mock_customer_service,
 			$mock_token_service,
-			$mock_action_scheduler_service
+			$mock_action_scheduler_service,
+			$mock_rate_limiter,
+			$mock_order_service
 		);
 	}
 

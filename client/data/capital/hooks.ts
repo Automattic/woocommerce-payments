@@ -9,7 +9,7 @@ import { useSelect } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
-import { SummaryResponse } from './types';
+import { SummaryResponse, LoansResponse } from './types';
 
 export const useActiveLoanSummary = (): SummaryResponse =>
 	useSelect( ( select ) => {
@@ -23,5 +23,16 @@ export const useActiveLoanSummary = (): SummaryResponse =>
 			summary: getActiveLoanSummary(),
 			summaryError: getActiveLoanSummaryError(),
 			isLoading: isResolving( 'getActiveLoanSummary' ),
+		};
+	} );
+
+export const useLoans = (): LoansResponse =>
+	useSelect( ( select ) => {
+		const { getLoans, getLoansError, isResolving } = select( STORE_NAME );
+
+		return {
+			loans: getLoans(),
+			loansError: getLoansError(),
+			isLoading: isResolving( 'getLoans' ),
 		};
 	} );

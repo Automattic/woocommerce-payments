@@ -91,18 +91,6 @@ export const getAccountBrandingLogo = ( state ) => {
 	return getSettings( state ).account_branding_logo || '';
 };
 
-export const getAccountBrandingIcon = ( state ) => {
-	return getSettings( state ).account_branding_icon || '';
-};
-
-export const getAccountBrandingPrimaryColor = ( state ) => {
-	return getSettings( state ).account_branding_primary_color || '';
-};
-
-export const getAccountBrandingSecondaryColor = ( state ) => {
-	return getSettings( state ).account_branding_secondary_color || '';
-};
-
 export const getIsManualCaptureEnabled = ( state ) => {
 	return getSettings( state ).is_manual_capture_enabled || false;
 };
@@ -165,4 +153,16 @@ export const getIsWCPaySubscriptionsEligible = ( state ) => {
 
 export const getIsSubscriptionsPluginActive = ( state ) => {
 	return getSettings( state ).is_subscriptions_plugin_active || false;
+};
+
+export const getIsPlatformCheckoutEnabled = ( state ) => {
+	return getSettings( state ).is_platform_checkout_enabled || false;
+};
+
+export const getPlatformCheckoutCustomMessage = ( state ) => {
+	return getSettings( state ).platform_checkout_custom_message || '';
+};
+
+export const getPlatformCheckoutStoreLogo = ( state ) => {
+	return getSettings( state ).platform_checkout_store_logo || '';
 };

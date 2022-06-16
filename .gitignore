@@ -51,6 +51,7 @@ tests/cli/vendor
 /tests/e2e/deps
 phpcs.xml
 phpunit.xml
+.phpunit.result.cache
 
 # Logs
 /logs

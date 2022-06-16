@@ -25,15 +25,23 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 		$this->validate_settings( $settings );
 		$this->validate_charge( $charge );
 
-		$order_data = [
-			'id'           => $order->get_id(),
-			'currency'     => $order->get_currency(),
-			'subtotal'     => $order->get_subtotal(),
-			'line_items'   => $order->get_items(),
-			'coupon_lines' => $order->get_items( 'coupon' ),
-			'tax_lines'    => $order->get_items( 'tax' ),
-			'total'        => $order->get_total(),
-		];
+		if ( $order instanceof WC_Payments_Printed_Receipt_Sample_Order ) {
+			$order_data      = $order->get_data();
+			$line_items_data = $order_data['line_items'];
+		} else {
+			$order_data      = [
+				'id'           => $order->get_id(),
+				'currency'     => $order->get_currency(),
+				'subtotal'     => $order->get_subtotal(),
+				'line_items'   => $order->get_items(),
+				'coupon_lines' => $order->get_items( 'coupon' ),
+				'tax_lines'    => $order->get_items( 'tax' ),
+				'total'        => $order->get_total(),
+				'shipping_tax' => $order->get_shipping_methods() ? $order->get_shipping_total() : 0,
+				'total_fees'   => $order->get_total_fees(),
+			];
+			$line_items_data = $this->format_line_items( $order_data );
+		}
 
 		ob_start();
 
@@ -42,8 +50,9 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 			[
 				'amount_captured'        => $charge['amount_captured'] / 100,
 				'coupon_lines'           => $order_data['coupon_lines'] ?? [],
+				'branding_logo'          => $settings['branding_logo'] ?? [],
 				'business_name'          => $settings['business_name'],
-				'line_items'             => $this->format_line_items( $order_data ),
+				'line_items'             => $line_items_data,
 				'order'                  => $order_data,
 				'payment_method_details' => $charge['payment_method_details']['card_present'],
 				'receipt'                => $charge['payment_method_details']['card_present']['receipt'],
@@ -57,6 +66,22 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 		);
 
 		return ob_get_clean();
+	}
+
+
+	/**
+	 * Send card reader receipt to customer by email
+	 *
+	 * @param  WC_Order $order the order.
+	 * @param array    $merchant_settings The merchant settings.
+	 * @param  array    $charge the charge.
+	 * @return void
+	 */
+	public function send_customer_ipp_receipt_email( WC_Order $order, array $merchant_settings, array $charge ) {
+		$email_receipt = WC()->mailer()->get_emails()['WC_Payments_Email_IPP_Receipt'];
+		if ( $email_receipt instanceof WC_Payments_Email_IPP_Receipt ) {
+			$email_receipt->trigger( $order, $merchant_settings, $charge );
+		}
 	}
 
 	/**

@@ -236,51 +236,6 @@ export const useAccountBrandingLogo = () => {
 	);
 };
 
-export const useAccountBrandingIcon = () => {
-	const { updateAccountBrandingIcon } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingIcon } = select( STORE_NAME );
-
-			return [ getAccountBrandingIcon(), updateAccountBrandingIcon ];
-		},
-		[ updateAccountBrandingIcon ]
-	);
-};
-
-export const useAccountBrandingPrimaryColor = () => {
-	const { updateAccountBrandingPrimaryColor } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingPrimaryColor } = select( STORE_NAME );
-
-			return [
-				getAccountBrandingPrimaryColor(),
-				updateAccountBrandingPrimaryColor,
-			];
-		},
-		[ updateAccountBrandingPrimaryColor ]
-	);
-};
-
-export const useAccountBrandingSecondaryColor = () => {
-	const { updateAccountBrandingSecondaryColor } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingSecondaryColor } = select( STORE_NAME );
-
-			return [
-				getAccountBrandingSecondaryColor(),
-				updateAccountBrandingSecondaryColor,
-			];
-		},
-		[ updateAccountBrandingSecondaryColor ]
-	);
-};
-
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 
@@ -416,4 +371,49 @@ export const useGetSavingError = () => {
 
 		return getSavingError();
 	}, [] );
+};
+
+export const usePlatformCheckoutEnabledSettings = () => {
+	const { updateIsPlatformCheckoutEnabled } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getIsPlatformCheckoutEnabled } = select( STORE_NAME );
+
+		return [
+			getIsPlatformCheckoutEnabled(),
+			updateIsPlatformCheckoutEnabled,
+		];
+	} );
+};
+
+export const usePlatformCheckoutCustomMessage = () => {
+	const { updatePlatformCheckoutCustomMessage } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getPlatformCheckoutCustomMessage } = select( STORE_NAME );
+
+			return [
+				getPlatformCheckoutCustomMessage(),
+				updatePlatformCheckoutCustomMessage,
+			];
+		},
+		[ updatePlatformCheckoutCustomMessage ]
+	);
+};
+
+export const usePlatformCheckoutStoreLogo = () => {
+	const { updatePlatformCheckoutStoreLogo } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getPlatformCheckoutStoreLogo } = select( STORE_NAME );
+
+			return [
+				getPlatformCheckoutStoreLogo(),
+				updatePlatformCheckoutStoreLogo,
+			];
+		},
+		[ updatePlatformCheckoutStoreLogo ]
+	);
 };

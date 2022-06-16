@@ -52,7 +52,6 @@ class WC_Payments_Fraud_Service {
 		$this->account             = $account;
 
 		add_filter( 'wcpay_prepare_fraud_config', [ $this, 'prepare_fraud_config' ], 10, 2 );
-		add_filter( 'wcpay_current_session_id', [ $this, 'get_session_id' ] );
 		add_action( 'init', [ $this, 'link_session_if_user_just_logged_in' ] );
 		add_action( 'admin_print_footer_scripts', [ $this, 'add_sift_js_tracker' ] );
 	}

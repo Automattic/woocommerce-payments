@@ -1,0 +1,560 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AddBusinessInfoTask hides the structure when no structures are available 1`] = `
+<div>
+  <li
+    class="wcpay-wizard-task complete-business-info-task"
+  >
+    <div
+      class="wcpay-wizard-task__top-border"
+    />
+    <div
+      class="wcpay-wizard-task__headline"
+      tabindex="-1"
+    >
+      <div
+        class="wcpay-wizard-task__icon-wrapper"
+      >
+        <div
+          class="wcpay-wizard-task__icon-text"
+        >
+          1
+        </div>
+        <svg
+          aria-hidden="true"
+          class="wcpay-wizard-task__icon-checkmark"
+          focusable="false"
+          height="24"
+          role="img"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+          />
+        </svg>
+      </div>
+      <span
+        class="wcpay-wizard-task__title"
+      >
+        Tell us more about your business
+      </span>
+    </div>
+    <div
+      class="wcpay-wizard-task__body"
+    >
+      <p
+        class="complete-business-info-task__subheading"
+      >
+        Preview the details we may require to verify your business and enable deposits.
+      </p>
+      <div
+        class="wcpay components-custom-select-control"
+      >
+        <label
+          class="components-custom-select-control__label"
+          for="downshift-23-toggle-button"
+          id="downshift-23-label"
+        >
+          Country
+        </label>
+        <button
+          aria-describedby="Currently selected: United States"
+          aria-expanded="false"
+          aria-haspopup="listbox"
+          aria-label="Country"
+          class="components-button components-custom-select-control__button"
+          id="downshift-23-toggle-button"
+          type="button"
+        >
+          United States
+          <svg
+            aria-hidden="true"
+            class="components-custom-select-control__button-icon"
+            focusable="false"
+            height="24"
+            role="img"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+            />
+          </svg>
+        </button>
+        <ul
+          aria-hidden="true"
+          aria-labelledby="downshift-23-label"
+          class="components-custom-select-control__menu"
+          id="downshift-23-menu"
+          role="listbox"
+          tabindex="-1"
+        />
+      </div>
+      <p
+        class="complete-business-info-task__description"
+      >
+        The primary country where your business operates
+      </p>
+      <div
+        class="wcpay components-custom-select-control"
+      >
+        <label
+          class="components-custom-select-control__label"
+          for="downshift-25-toggle-button"
+          id="downshift-25-label"
+        >
+          Business type
+        </label>
+        <button
+          aria-describedby="Currently selected: Individual"
+          aria-expanded="false"
+          aria-haspopup="listbox"
+          aria-label="Business type"
+          class="components-button components-custom-select-control__button"
+          id="downshift-25-toggle-button"
+          type="button"
+        >
+          Individual
+          <svg
+            aria-hidden="true"
+            class="components-custom-select-control__button-icon"
+            focusable="false"
+            height="24"
+            role="img"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+            />
+          </svg>
+        </button>
+        <ul
+          aria-hidden="true"
+          aria-labelledby="downshift-25-label"
+          class="components-custom-select-control__menu"
+          id="downshift-25-menu"
+          role="listbox"
+          tabindex="-1"
+        />
+      </div>
+    </div>
+  </li>
+</div>
+`;
+
+exports[`AddBusinessInfoTask shows a loadable block 1`] = `
+<div>
+  <li
+    class="wcpay-wizard-task complete-business-info-task"
+  >
+    <div
+      class="wcpay-wizard-task__top-border"
+    />
+    <div
+      class="wcpay-wizard-task__headline"
+      tabindex="-1"
+    >
+      <div
+        class="wcpay-wizard-task__icon-wrapper"
+      >
+        <div
+          class="wcpay-wizard-task__icon-text"
+        >
+          1
+        </div>
+        <svg
+          aria-hidden="true"
+          class="wcpay-wizard-task__icon-checkmark"
+          focusable="false"
+          height="24"
+          role="img"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+          />
+        </svg>
+      </div>
+      <span
+        class="wcpay-wizard-task__title"
+      >
+        Tell us more about your business
+      </span>
+    </div>
+    <div
+      class="wcpay-wizard-task__body"
+    >
+      <p
+        class="complete-business-info-task__subheading"
+      >
+        Preview the details we may require to verify your business and enable deposits.
+      </p>
+      <span
+        aria-busy="true"
+        class="is-loadable-placeholder is-block"
+      >
+        <p
+          style="line-height: 4;"
+        >
+          Block placeholder
+        </p>
+      </span>
+      <span
+        aria-busy="true"
+        class="is-loadable-placeholder is-block"
+      >
+        <p
+          style="line-height: 4;"
+        >
+          Block placeholder
+        </p>
+      </span>
+    </div>
+  </li>
+</div>
+`;
+
+exports[`AddBusinessInfoTask shows business type and structure from a selected country 1`] = `
+<div>
+  <li
+    class="wcpay-wizard-task complete-business-info-task"
+  >
+    <div
+      class="wcpay-wizard-task__top-border"
+    />
+    <div
+      class="wcpay-wizard-task__headline"
+      tabindex="-1"
+    >
+      <div
+        class="wcpay-wizard-task__icon-wrapper"
+      >
+        <div
+          class="wcpay-wizard-task__icon-text"
+        >
+          1
+        </div>
+        <svg
+          aria-hidden="true"
+          class="wcpay-wizard-task__icon-checkmark"
+          focusable="false"
+          height="24"
+          role="img"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+          />
+        </svg>
+      </div>
+      <span
+        class="wcpay-wizard-task__title"
+      >
+        Tell us more about your business
+      </span>
+    </div>
+    <div
+      class="wcpay-wizard-task__body"
+    >
+      <p
+        class="complete-business-info-task__subheading"
+      >
+        Preview the details we may require to verify your business and enable deposits.
+      </p>
+      <div
+        class="wcpay components-custom-select-control"
+      >
+        <label
+          class="components-custom-select-control__label"
+          for="downshift-3-toggle-button"
+          id="downshift-3-label"
+        >
+          Country
+        </label>
+        <button
+          aria-describedby="Currently selected: United States"
+          aria-expanded="false"
+          aria-haspopup="listbox"
+          aria-label="Country"
+          class="components-button components-custom-select-control__button"
+          id="downshift-3-toggle-button"
+          type="button"
+        >
+          United States
+          <svg
+            aria-hidden="true"
+            class="components-custom-select-control__button-icon"
+            focusable="false"
+            height="24"
+            role="img"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+            />
+          </svg>
+        </button>
+        <ul
+          aria-hidden="true"
+          aria-labelledby="downshift-3-label"
+          class="components-custom-select-control__menu"
+          id="downshift-3-menu"
+          role="listbox"
+          tabindex="-1"
+        />
+      </div>
+      <p
+        class="complete-business-info-task__description"
+      >
+        The primary country where your business operates
+      </p>
+      <div
+        class="wcpay components-custom-select-control"
+      >
+        <label
+          class="components-custom-select-control__label"
+          for="downshift-5-toggle-button"
+          id="downshift-5-label"
+        >
+          Business type
+        </label>
+        <button
+          aria-describedby="Currently selected: Company"
+          aria-expanded="false"
+          aria-haspopup="listbox"
+          aria-label="Business type"
+          class="components-button components-custom-select-control__button"
+          id="downshift-5-toggle-button"
+          type="button"
+        >
+          Company
+          <svg
+            aria-hidden="true"
+            class="components-custom-select-control__button-icon"
+            focusable="false"
+            height="24"
+            role="img"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+            />
+          </svg>
+        </button>
+        <ul
+          aria-hidden="true"
+          aria-labelledby="downshift-5-label"
+          class="components-custom-select-control__menu"
+          id="downshift-5-menu"
+          role="listbox"
+          tabindex="-1"
+        />
+      </div>
+      <div
+        class="wcpay components-custom-select-control"
+      >
+        <label
+          class="components-custom-select-control__label"
+          for="downshift-16-toggle-button"
+          id="downshift-16-label"
+        >
+          Business Structure
+        </label>
+        <button
+          aria-describedby="Currently selected: Single member LLC"
+          aria-expanded="false"
+          aria-haspopup="listbox"
+          aria-label="Business Structure"
+          class="components-button components-custom-select-control__button"
+          id="downshift-16-toggle-button"
+          type="button"
+        >
+          Single member LLC
+          <svg
+            aria-hidden="true"
+            class="components-custom-select-control__button-icon"
+            focusable="false"
+            height="24"
+            role="img"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+            />
+          </svg>
+        </button>
+        <ul
+          aria-hidden="true"
+          aria-labelledby="downshift-16-label"
+          class="components-custom-select-control__menu"
+          id="downshift-16-menu"
+          role="listbox"
+          tabindex="-1"
+        />
+      </div>
+    </div>
+  </li>
+</div>
+`;
+
+exports[`AddBusinessInfoTask shows the form 1`] = `
+<div>
+  <li
+    class="wcpay-wizard-task complete-business-info-task"
+  >
+    <div
+      class="wcpay-wizard-task__top-border"
+    />
+    <div
+      class="wcpay-wizard-task__headline"
+      tabindex="-1"
+    >
+      <div
+        class="wcpay-wizard-task__icon-wrapper"
+      >
+        <div
+          class="wcpay-wizard-task__icon-text"
+        >
+          1
+        </div>
+        <svg
+          aria-hidden="true"
+          class="wcpay-wizard-task__icon-checkmark"
+          focusable="false"
+          height="24"
+          role="img"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+          />
+        </svg>
+      </div>
+      <span
+        class="wcpay-wizard-task__title"
+      >
+        Tell us more about your business
+      </span>
+    </div>
+    <div
+      class="wcpay-wizard-task__body"
+    >
+      <p
+        class="complete-business-info-task__subheading"
+      >
+        Preview the details we may require to verify your business and enable deposits.
+      </p>
+      <div
+        class="wcpay components-custom-select-control"
+      >
+        <label
+          class="components-custom-select-control__label"
+          for="downshift-0-toggle-button"
+          id="downshift-0-label"
+        >
+          Country
+        </label>
+        <button
+          aria-describedby="Currently selected: United States"
+          aria-expanded="false"
+          aria-haspopup="listbox"
+          aria-label="Country"
+          class="components-button components-custom-select-control__button"
+          id="downshift-0-toggle-button"
+          type="button"
+        >
+          United States
+          <svg
+            aria-hidden="true"
+            class="components-custom-select-control__button-icon"
+            focusable="false"
+            height="24"
+            role="img"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+            />
+          </svg>
+        </button>
+        <ul
+          aria-hidden="true"
+          aria-labelledby="downshift-0-label"
+          class="components-custom-select-control__menu"
+          id="downshift-0-menu"
+          role="listbox"
+          tabindex="-1"
+        />
+      </div>
+      <p
+        class="complete-business-info-task__description"
+      >
+        The primary country where your business operates
+      </p>
+      <div
+        class="wcpay components-custom-select-control"
+      >
+        <label
+          class="components-custom-select-control__label"
+          for="downshift-2-toggle-button"
+          id="downshift-2-label"
+        >
+          Business type
+        </label>
+        <button
+          aria-describedby="No selection"
+          aria-expanded="false"
+          aria-haspopup="listbox"
+          aria-label="Business type"
+          class="components-button components-custom-select-control__button placeholder"
+          id="downshift-2-toggle-button"
+          type="button"
+        >
+          What type of business do you run?
+          <svg
+            aria-hidden="true"
+            class="components-custom-select-control__button-icon"
+            focusable="false"
+            height="24"
+            role="img"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+            />
+          </svg>
+        </button>
+        <ul
+          aria-hidden="true"
+          aria-labelledby="downshift-2-label"
+          class="components-custom-select-control__menu"
+          id="downshift-2-menu"
+          role="listbox"
+          tabindex="-1"
+        />
+      </div>
+    </div>
+  </li>
+</div>
+`;

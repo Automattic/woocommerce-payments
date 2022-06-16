@@ -18,11 +18,9 @@ import { getConfig } from 'utils/checkout';
 import WCPayAPI from './../api';
 import WCPayFields from './fields.js';
 import { SavedTokenHandler } from './saved-token-handler';
-import request from './request.js';
+import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
-import { platformCheckoutPaymentMethod } from 'wcpay/components/platform-checkout';
-import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -53,12 +51,6 @@ registerPaymentMethod( {
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 
-if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
-	registerExpressPaymentMethod( platformCheckoutPaymentMethod( api ) );
-	window.addEventListener( 'load', () => {
-		handlePlatformCheckoutEmailInput( '#email', api );
-	} );
-}
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 } );

@@ -13,11 +13,13 @@ import { NAMESPACE } from '../constants';
 import {
 	updateActiveLoanSummary,
 	updateErrorForActiveLoanSummary,
+	updateErrorForLoans,
+	updateLoans,
 } from './actions';
-import { ApiError, Summary } from './types';
+import { ApiError, Summary, LoansList } from './types';
 
 /**
- * Retrieve all deposits' overviews from the deposits API.
+ * Retrieve the summary data for the currently active loan.
  */
 export function* getActiveLoanSummary(): unknown {
 	const path = `${ NAMESPACE }/capital/active_loan_summary`;
@@ -35,5 +37,27 @@ export function* getActiveLoanSummary(): unknown {
 			)
 		);
 		yield updateErrorForActiveLoanSummary( e as ApiError );
+	}
+}
+
+/**
+ * Retrieve all the past and present capital loans.
+ */
+export function* getLoans(): unknown {
+	const path = `${ NAMESPACE }/capital/loans`;
+
+	try {
+		const result = yield apiFetch( { path } );
+		yield updateLoans( result as LoansList );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving the active loan summary.',
+				'woocommerce-payments'
+			)
+		);
+		yield updateErrorForLoans( e as ApiError );
 	}
 }

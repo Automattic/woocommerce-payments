@@ -3,7 +3,6 @@ declare const wcpaySettings: {
 	isSubscriptionsActive: boolean;
 	featureFlags: {
 		customSearch: boolean;
-		capital: boolean;
 	};
 	fraudServices: unknown[];
 	isJetpackConnected: boolean;
@@ -11,6 +10,8 @@ declare const wcpaySettings: {
 	accountStatus: {
 		error?: boolean;
 		status?: string;
+		country?: string;
+		hasSubmittedVatData?: boolean;
 	};
 	accountLoans: {
 		has_active_loan: boolean;
@@ -21,4 +22,10 @@ declare const wcpaySettings: {
 		country: string;
 		availableStates: Array< Record< string, string > >;
 	};
+	accountEmail: string;
+	currentUserEmail: string;
+	zeroDecimalCurrencies: string[];
+	restUrl: string;
 };
+
+declare const wcTracks: any;

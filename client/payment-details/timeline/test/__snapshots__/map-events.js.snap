@@ -33,13 +33,13 @@ Array [
   },
   Object {
     "body": Array [
-      "1,00 EUR → 1.19944 USD: $21.59 USD",
+      "1.00 EUR → 1.19944 USD: $21.59 USD",
       "Fee (2.9% + $0.30): $-0.62",
       undefined,
       "Net deposit: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "A payment of €18,00 EUR was successfully charged.",
+    "headline": "A payment of €18.00 EUR was successfully charged.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -82,13 +82,13 @@ Array [
   },
   Object {
     "body": Array [
-      "1,00 EUR → 1.19944 USD: $21.59 USD",
-      "Fee: €0,52",
+      "1.00 EUR → 1.19944 USD: $21.59 USD",
+      "Fee: €0.52",
       undefined,
       "Net deposit: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "A payment of €18,00 EUR was successfully charged.",
+    "headline": "A payment of €18.00 EUR was successfully charged.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -112,8 +112,8 @@ Array [
   },
   Object {
     "body": Array [
-      "Disputed amount: €18,00",
-      "1,00 EUR → 1.2 USD: $21.60 USD",
+      "Disputed amount: €18.00",
+      "1.00 EUR → 1.2 USD: $21.60 USD",
       "Fee: $15.00",
     ],
     "date": 2020-04-02T02:06:14.000Z,
@@ -207,7 +207,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "$21.64 USD will be deducted from a future deposit.",
+    "headline": "21,64&nbsp;$ USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -216,10 +216,11 @@ Array [
   },
   Object {
     "body": Array [
-      "1,00 EUR → 1.20222 USD: $21.64 USD",
+      "1,00 EUR → 1,20222 USD: 21,64&nbsp;$ USD",
+      "",
     ],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "A payment of €18,00 EUR was successfully refunded.",
+    "headline": "A payment of 18,00&nbsp;€ EUR was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -244,7 +245,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "$6.00 USD will be deducted from a future deposit.",
+    "headline": "6,00&nbsp;$ USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -253,10 +254,11 @@ Array [
   },
   Object {
     "body": Array [
-      "1,00 EUR → 1.2 USD: $6.00 USD",
+      "1,00 EUR → 1,2 USD: 6,00&nbsp;$ USD",
+      "Acquirer Reference Number (ARN) 4785767637658864",
     ],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "A payment of €5,00 EUR was successfully refunded.",
+    "headline": "A payment of 5,00&nbsp;€ EUR was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -466,6 +468,23 @@ Array [
 ]
 `;
 
+exports[`mapTimelineEvents formats refund_failed events 1`] = `
+Array [
+  Object {
+    "body": Array [
+      "Acquirer Reference Number (ARN) 4785767637658864",
+    ],
+    "date": 2020-04-02T20:26:47.000Z,
+    "headline": "$1.00 USD refund was attempted but failed due to the card being expired or canceled.",
+    "icon": <t
+      className="is-error"
+      icon="notice-outline"
+      size={24}
+    />,
+  },
+]
+`;
+
 exports[`mapTimelineEvents single currency events formats captured events with fee details 1`] = `
 Array [
   Object {
@@ -520,13 +539,10 @@ Array [
             className="discount-split-list"
           >
             <li>
-              Variable fee: 
-              -4.9
-              %
+              Variable fee: -4.9%
             </li>
             <li>
-              Fixed fee: 
-              £-0.20
+              Fixed fee: £-0.20
             </li>
           </ul>
         </li>
@@ -769,7 +785,7 @@ Array [
       <React.Fragment>
         Loan repayment: 
         <Link
-          href="/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=flxln_1KOKzdR4ByxURRrFX9A65q40"
+          href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=flxln_1KOKzdR4ByxURRrFX9A65q40"
           type="wc-admin"
         >
           Loan flxln_1KOKzdR4ByxURRrFX9A65q40
@@ -812,6 +828,7 @@ Array [
   Object {
     "body": Array [
       undefined,
+      "Acquirer Reference Number (ARN) 4785767637658864",
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of $100.00 USD was successfully refunded.",
@@ -849,6 +866,7 @@ Array [
   Object {
     "body": Array [
       undefined,
+      "",
     ],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of $50.00 USD was successfully refunded.",

@@ -29,8 +29,8 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 	 */
 	private $original_api_client;
 
-	public function setUp() {
-		parent::setUp();
+	public function set_up() {
+		parent::set_up();
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
@@ -47,8 +47,8 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 		$property_reflection->setValue( $account_service, $this->mock_api_client );
 	}
 
-	public function tearDown() {
-		parent::tearDown();
+	public function tear_down() {
+		parent::tear_down();
 
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 
@@ -70,6 +70,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 			->willReturn(
 				// We are providing only some of fields, needed for the assertions we are relying to.
 				[
+					'is_live'          => true,
 					'country'          => 'DE',
 					'status'           => 'complete',
 					'store_currencies' => [ 'default' => 'EUR' ],
@@ -143,6 +144,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_account_data' )
 			->willReturn(
 				[
+					'is_live'               => true,
 					'card_present_eligible' => true,
 				]
 			);

@@ -16,7 +16,25 @@ jest.mock( 'wcpay/data', () => ( {
 
 describe( 'Active loan summary', () => {
 	beforeEach( () => {
-		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			accountLoans: {
+				loans: [ 'flxln_123456|active' ],
+			},
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
 	} );
 	afterEach( () => {
 		jest.clearAllMocks();

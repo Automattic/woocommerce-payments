@@ -11,16 +11,17 @@ jobs:
       fail-fast:    false
       max-parallel: 10
       matrix:
-        woocommerce: [ '4.6.0', '4.7.0', '4.8.0', '4.9.0', '5.0.0', '5.1.0', '5.2.0', '5.3.0', '5.4.0', '5.5.0', '5.6.0', '5.7.0', '5.8.0', '5.9.0', '6.0.0', '6.1.0', '6.1.1', '6.2.0-rc.1']
+        # Minimum support version, ..., Latest version, `beta`.
+        woocommerce: [ '5.6.2', '5.7.2', '5.8.1', '5.9.1', '6.0.1', '6.1.2', '6.2.2', '6.3.1', '6.4.1', '6.5.1', 'beta' ]
         wordpress:   [ 'latest' ]
         gutenberg:   [ 'latest' ]
         php:         [ '7.4' ]
         include:
           # Edge case: oldest dependencies compatibility
-          - woocommerce: '4.6.0'
+          - woocommerce: '5.6.2'
             wordpress:   '5.7'
             gutenberg:   '11.4.0' # The latest version supporting WP 5.6.
-            php:         '7.1' # TODO This should be 7.0. Pending to fix in issue #2970.
+            php:         '7.1' # Minimum supported PHP version
     env:
       WP_VERSION:        ${{ matrix.wordpress }}
       WC_VERSION:        ${{ matrix.woocommerce }}
@@ -39,7 +40,7 @@ jobs:
           php-version: ${{ matrix.php }}
           tools:       composer
           coverage:    none
-      # TODO move this run back when we fix the edge case with PHP 7.0. See #2970.
+      # No longer needed. Early version of PHPUnit is already part of repository.
       # run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
       # run CI checks
       - run: bash bin/run-ci-tests.bash
@@ -54,7 +55,7 @@ jobs:
         woocommerce: [ 'beta' ]
         wordpress:   [ 'latest' ]
         gutenberg:   [ 'latest' ]
-        php:         [ '7.1', '8.0', '8.1' ]
+        php:         [ '7.2', '8.0', '8.1' ]
     env:
       WP_VERSION:        ${{ matrix.wordpress }}
       WC_VERSION:        ${{ matrix.woocommerce }}

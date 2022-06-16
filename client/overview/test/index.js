@@ -48,8 +48,8 @@ describe( 'Overview page', () => {
 			},
 			featureFlags: {
 				accountOverviewTaskList: true,
-				capital: true,
 			},
+			accountLoans: {},
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
@@ -144,53 +144,11 @@ describe( 'Overview page', () => {
 		).toBeNull();
 	} );
 
-	it( 'Does not display the view loan error message when Capital is disabled', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			featureFlags: {},
-		};
-
-		getQuery.mockReturnValue( { 'wcpay-loan-offer-error': '1' } );
-		getTasks.mockReturnValue( [] );
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( ( content, element ) => {
-				return (
-					loanOfferErrorText === content &&
-					! element.classList.contains( 'a11y-speak-region' )
-				);
-			} )
-		).toBeNull();
-	} );
-
-	it( 'Does not display loan summary when Capital is disabled', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			accountStatus: {
-				...global.wcpaySettings.accountStatus,
-				hasActiveLoan: true,
-			},
-			featureFlags: {},
-		};
-
-		const { container } = render( <OverviewPage /> );
-
-		expect(
-			container.querySelector( '.wcpay-loan-summary-header' )
-		).toBeNull();
-	} );
-
 	it( 'Does not display loan summary when there is no loan', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
-			accountStatus: {
-				...global.wcpaySettings.accountStatus,
-				hasActiveLoan: false,
-			},
-			featureFlags: {
-				capital: true,
+			accountLoans: {
+				has_active_loan: false,
 			},
 		};
 
@@ -201,15 +159,11 @@ describe( 'Overview page', () => {
 		).toBeNull();
 	} );
 
-	it( 'Displays loan summary when there is a loan and Capital is enabled', () => {
+	it( 'Displays loan summary when there is a loan', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
-			accountStatus: {
-				...global.wcpaySettings.accountStatus,
-				hasActiveLoan: true,
-			},
-			featureFlags: {
-				capital: true,
+			accountLoans: {
+				has_active_loan: true,
 			},
 		};
 
