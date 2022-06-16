@@ -902,6 +902,60 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 404, $data['status'] );
 	}
 
+	public function test_create_terminal_intent_invalid_payment_method_format() {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$request->set_param( 'payment_methods', 'not_an_array' );
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 500, $data['status'] );
+	}
+
+	public function test_create_terminal_intent_invalid_payment_method() {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$request->set_param( 'payment_methods', [ 'invalid_payment_method' ] );
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 500, $data['status'] );
+	}
+
+	public function test_create_terminal_intent_invalid_capture_method() {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$request->set_param( 'capture_method', 'invalid_payment_method' );
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 500, $data['status'] );
+	}
+
 	private function create_mock_order() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $this->mock_intent_id );

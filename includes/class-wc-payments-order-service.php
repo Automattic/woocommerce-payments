@@ -6,6 +6,7 @@
  */
 
 use WCPay\Logger;
+use WCPay\Constants\Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -793,5 +794,53 @@ class WC_Payments_Order_Service {
 			// Continue further, something unexpected happened, but we can't really do anything with that.
 			Logger::log( 'Error when updating status for order ' . $order->get_id() . ': ' . $e->getMessage() );
 		}
+	}
+
+	/**
+	 * Return terminal intent payment method array based on payment methods request.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @param array           $default_value - default value.
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
+	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ) :array {
+		if ( null === $request->get_param( 'payment_methods' ) ) {
+			return $default_value;
+		}
+
+		if ( ! is_array( $request->get_param( 'payment_methods' ) ) ) {
+			throw new \Exception( 'Invalid param \'payment_methods\'!' );
+		}
+
+		foreach ( $request->get_param( 'payment_methods' ) as $value ) {
+			if ( ! in_array( $value, Payment_Method::ALLOWED_PAYMENT_METHODS, true ) ) {
+				throw new \Exception( 'Invalid param \'payment_methods\'!' );
+			}
+		}
+
+		return $request->get_param( 'payment_methods' );
+	}
+
+	/**
+	 * Return terminal intent capture method based on capture method request.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @param string          $default_value default value.
+	 *
+	 * @return string
+	 * @throws \Exception
+	 */
+	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ) : string {
+		if ( null === $request->get_param( 'capture_method' ) ) {
+			return $default_value;
+		}
+
+		if ( ! in_array( $request->get_param( 'capture_method' ), [ 'manual', 'automatic' ], true ) ) {
+			throw new \Exception( 'Invalid param \'capture_method\'!' );
+		}
+
+		return $request->get_param( 'capture_method' );
 	}
 }

@@ -260,7 +260,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		}
 
 		try {
-			$result = $this->gateway->create_intent( $order, [ Payment_Method::CARD_PRESENT ], 'manual' );
+			$result = $this->gateway->create_intent(
+				$order,
+				$this->order_service->get_terminal_intent_payment_method( $request ),
+				$this->order_service->get_terminal_intent_capture_method( $request ),
+				$request->get_param( 'metadata' ) ?? [],
+				$request->get_param( 'customer_id' )
+			);
 			return rest_ensure_response( $result );
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create an intention via REST API: ' . $e );

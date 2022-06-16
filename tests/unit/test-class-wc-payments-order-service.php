@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Method;
+
 /**
  * WC_Payments_Order_Service unit tests.
  */
@@ -564,6 +566,67 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 		}
 
 		$this->assertSame( $expected, $this->order_service->order_note_exists( $this->order, $note_to_check ) );
+	}
+
+	/**
+	 * @dataProvider provider_get_terminal_intent_payment_method
+	 */
+	public function test_get_terminal_intent_payment_method( $payment_methods, $expected ) {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'payment_methods', $payment_methods );
+
+		$this->assertSame( $this->order_service->get_terminal_intent_payment_method( $request ), $expected );
+	}
+
+	public function provider_get_terminal_intent_payment_method(): array {
+		return [
+			[ null, [ Payment_Method::CARD_PRESENT ] ],
+			[ [ Payment_Method::CARD_PRESENT, Payment_Method::CARD ], [ Payment_Method::CARD_PRESENT, Payment_Method::CARD ] ],
+		];
+	}
+
+	public function test_get_terminal_intent_payment_method_not_an_array() {
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Invalid param \'payment_methods\'!' );
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'payment_methods', 'not_an_array' );
+
+		$this->order_service->get_terminal_intent_payment_method( $request );
+	}
+
+	public function test_get_terminal_intent_payment_method_invalid_value() {
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Invalid param \'payment_methods\'!' );
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'payment_methods', [ 'invalid_val' ] );
+
+		$this->order_service->get_terminal_intent_payment_method( $request );
+	}
+
+	/**
+	 * @dataProvider provider_get_terminal_intent_capture_method
+	 */
+	public function test_get_terminal_intent_capture_method( $capture_method, $expected ) {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'capture_method', $capture_method );
+
+		$this->assertSame( $expected, $this->order_service->get_terminal_intent_capture_method( $request ) );
+	}
+
+	public function provider_get_terminal_intent_capture_method(): array {
+		return [
+			[ null, 'manual' ],
+			[ 'automatic', 'automatic' ],
+		];
+	}
+
+	public function test_get_terminal_intent_capture_method_invalid_value() {
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Invalid param \'capture_method\'!' );
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'capture_method', 'invalid_val' );
+
+		$this->order_service->get_terminal_intent_capture_method( $request );
 	}
 
 	public function provider_order_note_exists(): array {
