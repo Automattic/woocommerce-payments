@@ -806,21 +806,22 @@ class WC_Payments_Order_Service {
 	 * @throws \Exception
 	 */
 	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ) :array {
-		if ( null === $request->get_param( 'payment_methods' ) ) {
+		$payment_methods = $request->get_param( 'payment_methods' );
+		if ( null === $payment_methods ) {
 			return $default_value;
 		}
 
-		if ( ! is_array( $request->get_param( 'payment_methods' ) ) ) {
+		if ( ! is_array( $payment_methods ) ) {
 			throw new \Exception( 'Invalid param \'payment_methods\'!' );
 		}
 
-		foreach ( $request->get_param( 'payment_methods' ) as $value ) {
-			if ( ! in_array( $value, Payment_Method::ALLOWED_PAYMENT_METHODS, true ) ) {
-				throw new \Exception( 'Invalid param \'payment_methods\'!' );
+		foreach ( $payment_methods as $value ) {
+			if ( ! in_array( $value, Payment_Method::IPP_ALLOWED_PAYMENT_METHODS, true ) ) {
+				throw new \Exception( 'One or more payment methods are not supported!' );
 			}
 		}
 
-		return $request->get_param( 'payment_methods' );
+		return $payment_methods;
 	}
 
 	/**
@@ -833,14 +834,15 @@ class WC_Payments_Order_Service {
 	 * @throws \Exception
 	 */
 	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ) : string {
-		if ( null === $request->get_param( 'capture_method' ) ) {
+		$capture_method = $request->get_param( 'capture_method' );
+		if ( null === $capture_method ) {
 			return $default_value;
 		}
 
-		if ( ! in_array( $request->get_param( 'capture_method' ), [ 'manual', 'automatic' ], true ) ) {
+		if ( ! in_array( $capture_method, [ 'manual', 'automatic' ], true ) ) {
 			throw new \Exception( 'Invalid param \'capture_method\'!' );
 		}
 
-		return $request->get_param( 'capture_method' );
+		return $capture_method;
 	}
 }

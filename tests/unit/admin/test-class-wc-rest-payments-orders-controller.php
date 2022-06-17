@@ -917,7 +917,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 500, $data['status'] );
+		$this->assertSame( 500, $data['status'] );
 	}
 
 	public function test_create_terminal_intent_invalid_payment_method() {
@@ -935,7 +935,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 500, $data['status'] );
+		$this->assertSame( 500, $data['status'] );
 	}
 
 	public function test_create_terminal_intent_invalid_capture_method() {
@@ -953,7 +953,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 500, $data['status'] );
+		$this->assertSame( 500, $data['status'] );
 	}
 
 	private function create_mock_order() {

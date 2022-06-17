@@ -581,7 +581,7 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 	public function provider_get_terminal_intent_payment_method(): array {
 		return [
 			[ null, [ Payment_Method::CARD_PRESENT ] ],
-			[ [ Payment_Method::CARD_PRESENT, Payment_Method::CARD ], [ Payment_Method::CARD_PRESENT, Payment_Method::CARD ] ],
+			[ [ Payment_Method::CARD_PRESENT, Payment_Method::INTERAC_PRESENT ], [ Payment_Method::CARD_PRESENT, Payment_Method::INTERAC_PRESENT ] ],
 		];
 	}
 
@@ -596,7 +596,7 @@ class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
 
 	public function test_get_terminal_intent_payment_method_invalid_value() {
 		$this->expectException( \Exception::class );
-		$this->expectExceptionMessage( 'Invalid param \'payment_methods\'!' );
+		$this->expectExceptionMessage( 'One or more payment methods are not supported!' );
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_param( 'payment_methods', [ 'invalid_val' ] );
 
