@@ -216,7 +216,7 @@ class WC_Payments_Order_Service {
 		}
 
 		$this->update_order_status( $order, self::STATUS_CANCELLED );
-		$this->add_capture_cancelled_note( $order, $intent_id, $charge_id );
+		$this->add_capture_cancelled_note( $order );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
