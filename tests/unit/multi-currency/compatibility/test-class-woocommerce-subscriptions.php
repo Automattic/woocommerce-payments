@@ -278,15 +278,25 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
 
-	// Returns code due to GET states there is a subscription switch like on the product page after clicking upgrade/downgrade button.
-	public function SKIP_test_override_selected_currency_return_currency_code_when_switch_initiated() {
+	// Test correct currency when shopper clicks upgrade/downgrade button in My Account – "switch".
+	public function test_override_selected_currency_return_currency_code_for_switch_request() {
+		// Reset/clear any previous mocked state.
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( false );
-		$_GET['switch-subscription'] = 42;
-		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
-		update_post_meta( 42, '_order_currency', 'CAD', true );
 		$this->mock_wcs_get_order_type_cart_items( false );
-		$this->assertSame( 'CAD', $this->woocommerce_subscriptions->override_selected_currency( false ) );
+	
+		// Set up an order with a non-default currency. 
+		// This might need to be a subscription object, not an order.
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'JPY' );
+		$order->save();
+		
+		// Blatantly hack mock request params for the test. :)
+		$_GET['switch-subscription'] = $order->get_id();
+		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
+
+		// update_post_meta( 42, '_order_currency', 'CAD', true );
+		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
 
 	// Returns code due to cart contains a subscription switch.
