@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Preventing duplicate order notes and emails by clearing the cache before checking order status.

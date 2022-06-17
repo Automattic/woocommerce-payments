@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fatal Error caused in rare cases where a subscription line item's quantity is zero during renewal.
