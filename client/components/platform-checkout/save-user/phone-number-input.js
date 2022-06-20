@@ -11,7 +11,7 @@ import intlTelInput from 'intl-tel-input';
 // eslint-disable-next-line import/no-unresolved
 import utils from 'iti/utils';
 
-const PhoneNumberInput = ( { onValueChange, value } ) => {
+const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 	const [ inputValue, setInputValue ] = useState( value || '' );
 	const [ inputInstance, setInputInstance ] = useState( null );
 	const [ isValid, setIsValid ] = useState( true );
@@ -121,15 +121,21 @@ const PhoneNumberInput = ( { onValueChange, value } ) => {
 		<div>
 			<input
 				type="tel"
-				aria-label={ __(
-					'Mobile phone number',
-					'woocommerce-payments'
-				) }
-				label={ __( 'Mobile phone number', 'woocommerce-payments' ) }
-				name="platform_checkout_user_phone_field[no-country-code]"
 				value={ inputValue }
 				onChange={ handlePhoneNumberInputChange }
 				onBlur={ handlePhoneNumberValidation }
+				label={
+					inputProps.label ||
+					__( 'Mobile phone number', 'woocommerce-payments' )
+				}
+				aria-label={
+					inputProps.ariaLabel ||
+					__( 'Mobile phone number', 'woocommerce-payments' )
+				}
+				name={
+					inputProps.name ||
+					'platform_checkout_user_phone_field[no-country-code]'
+				}
 				className={
 					! isValid
 						? 'phone-input input-text has-error'
