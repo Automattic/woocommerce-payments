@@ -24,9 +24,6 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const loginSessionIframeWrapper = document.createElement( 'div' );
 	loginSessionIframeWrapper.setAttribute( 'role', 'dialog' );
 	loginSessionIframeWrapper.setAttribute( 'aria-modal', 'true' );
-	loginSessionIframeWrapper.classList.add(
-		'platform-checkout-login-session-iframe-wrapper'
-	);
 
 	// Make the login session iframe.
 	const loginSessionIframe = document.createElement( 'iframe' );
@@ -375,6 +372,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			case 'auto_redirect_to_platform_checkout':
 				hasCheckedLoginSession = true;
 				platformCheckoutEmailInput.value = e.data.userEmail;
+				loginSessionIframeWrapper.classList.add(
+					'platform-checkout-login-session-iframe-wrapper'
+				);
 				loginSessionIframe.classList.add( 'open' );
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
