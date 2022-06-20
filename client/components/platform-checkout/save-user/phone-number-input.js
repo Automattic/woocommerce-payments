@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import intlTelInput from 'intl-tel-input';
 
@@ -15,6 +15,7 @@ const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 	const [ inputValue, setInputValue ] = useState( value || '' );
 	const [ inputInstance, setInputInstance ] = useState( null );
 	const [ isValid, setIsValid ] = useState( true );
+	const inputRef = useRef();
 
 	const handlePhoneNumberInputChange = ( e ) => {
 		setInputValue( e.target.value );
@@ -71,19 +72,13 @@ const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 
 	useEffect( () => {
 		let iti = null;
-		const input = document.querySelector(
-			`input[aria-label="${ __(
-				'Mobile phone number',
-				'woocommerce-payments'
-			) }"]`
-		);
 
 		const handleCountryChange = () => {
 			onValueChange( iti.getNumber() );
 		};
 
-		if ( input ) {
-			iti = intlTelInput( input, {
+		if ( inputRef.current ) {
+			iti = intlTelInput( inputRef.current, {
 				initialCountry: 'US',
 				customPlaceholder: () => '',
 				separateDialCode: true,
@@ -99,15 +94,18 @@ const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 			);
 
 			// Focus the phone number input when the component loads.
-			input.focus();
+			inputRef.current.focus();
 
-			input.addEventListener( 'countrychange', handleCountryChange );
+			inputRef.current.addEventListener(
+				'countrychange',
+				handleCountryChange
+			);
 		}
 
 		return () => {
 			if ( iti ) {
 				iti.destroy();
-				input.removeEventListener(
+				inputRef.removeEventListener(
 					'countrychange',
 					handleCountryChange
 				);
@@ -121,6 +119,7 @@ const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 		<div>
 			<input
 				type="tel"
+				ref={ inputRef }
 				value={ inputValue }
 				onChange={ handlePhoneNumberInputChange }
 				onBlur={ handlePhoneNumberValidation }
