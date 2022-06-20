@@ -11,18 +11,15 @@ import intlTelInput from 'intl-tel-input';
 // eslint-disable-next-line import/no-unresolved
 import utils from 'iti/utils';
 
-const PhoneNumberInput = ( { handlePhoneNumberChange, phoneNumber } ) => {
-	const phoneNumberValue =
-		phoneNumber ||
-		( document.getElementById( 'billing_phone' )?.value ?? '' );
-	const [ inputValue, setInputValue ] = useState( phoneNumberValue );
+const PhoneNumberInput = ( { onValueChange, value } ) => {
+	const [ inputValue, setInputValue ] = useState( value || '' );
 	const [ inputInstance, setInputInstance ] = useState( null );
 	const [ isValid, setIsValid ] = useState( true );
 
 	const handlePhoneNumberInputChange = ( e ) => {
 		setInputValue( e.target.value );
 		if ( inputInstance ) {
-			handlePhoneNumberChange( inputInstance.getNumber() );
+			onValueChange( inputInstance.getNumber() );
 		}
 	};
 
@@ -82,7 +79,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange, phoneNumber } ) => {
 		);
 
 		const handleCountryChange = () => {
-			handlePhoneNumberChange( iti.getNumber() );
+			onValueChange( iti.getNumber() );
 		};
 
 		if ( input ) {
@@ -116,7 +113,7 @@ const PhoneNumberInput = ( { handlePhoneNumberChange, phoneNumber } ) => {
 				);
 			}
 		};
-	}, [ handlePhoneNumberChange ] );
+	}, [ onValueChange ] );
 
 	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
 	// alters the DOM and we'll get warnings about "removing content without using React."

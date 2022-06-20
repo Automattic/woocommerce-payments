@@ -83,8 +83,8 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 					{ __( 'Support phone number', 'woocommerce-payments' ) }
 				</span>
 				<PhoneNumberInput
-					handlePhoneNumberChange={ setAccountBusinessSupportPhone }
-					phoneNumber={ accountBusinessSupportPhone }
+					onValueChange={ setAccountBusinessSupportPhone }
+					value={ accountBusinessSupportPhone }
 				/>
 			</div>
 		</>
