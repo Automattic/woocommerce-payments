@@ -4,6 +4,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import intlTelInput from 'intl-tel-input';
+import './style.scss';
 
 /**
  * Internal dependencies

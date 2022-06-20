@@ -14,7 +14,6 @@ import AdditionalInformation from './additional-information';
 import PhoneNumberInput from './phone-number-input';
 import Agreement from './agreement';
 import { getConfig } from 'utils/checkout';
-import './style.scss';
 
 const CheckoutPageSaveUser = () => {
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );

@@ -6,7 +6,6 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl, Notice } from '@wordpress/components';
 import PhoneNumberInput from '../../../components/platform-checkout/save-user/phone-number-input';
-import '../../../components/platform-checkout/save-user/style.scss';
 
 /**
  * Internal dependencies
