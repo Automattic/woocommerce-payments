@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Constants\Payment_Method;
 
 /**
  * WC_REST_Payments_Orders_Controller unit tests.
@@ -902,6 +903,60 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 404, $data['status'] );
 	}
 
+	public function test_create_terminal_intent_invalid_payment_method_format() {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$request->set_param( 'payment_methods', 'not_an_array' );
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 500, $data['status'] );
+	}
+
+	public function test_create_terminal_intent_invalid_payment_method() {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$request->set_param( 'payment_methods', [ 'invalid_payment_method' ] );
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 500, $data['status'] );
+	}
+
+	public function test_create_terminal_intent_invalid_capture_method() {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$request->set_param( 'capture_method', 'invalid_payment_method' );
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 500, $data['status'] );
+	}
+
 	private function create_mock_order() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $this->mock_intent_id );
@@ -910,5 +965,66 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 		return $order;
+	}
+
+	/**
+	 * @dataProvider provider_get_terminal_intent_payment_method
+	 */
+	public function test_get_terminal_intent_payment_method( $payment_methods, $expected ) {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'payment_methods', $payment_methods );
+
+		$this->assertSame( $this->controller->get_terminal_intent_payment_method( $request ), $expected );
+	}
+
+	public function provider_get_terminal_intent_payment_method(): array {
+		return [
+			[ null, [ Payment_Method::CARD_PRESENT ] ],
+			[ [ Payment_Method::CARD_PRESENT, Payment_Method::INTERAC_PRESENT ], [ Payment_Method::CARD_PRESENT, Payment_Method::INTERAC_PRESENT ] ],
+		];
+	}
+
+	public function test_get_terminal_intent_payment_method_not_an_array() {
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Invalid param \'payment_methods\'!' );
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'payment_methods', 'not_an_array' );
+
+		$this->controller->get_terminal_intent_payment_method( $request );
+	}
+
+	public function test_get_terminal_intent_payment_method_invalid_value() {
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'One or more payment methods are not supported!' );
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'payment_methods', [ 'invalid_val' ] );
+
+		$this->controller->get_terminal_intent_payment_method( $request );
+	}
+
+	/**
+	 * @dataProvider provider_get_terminal_intent_capture_method
+	 */
+	public function test_get_terminal_intent_capture_method( $capture_method, $expected ) {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'capture_method', $capture_method );
+
+		$this->assertSame( $expected, $this->controller->get_terminal_intent_capture_method( $request ) );
+	}
+
+	public function provider_get_terminal_intent_capture_method(): array {
+		return [
+			[ null, 'manual' ],
+			[ 'automatic', 'automatic' ],
+		];
+	}
+
+	public function test_get_terminal_intent_capture_method_invalid_value() {
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Invalid param \'capture_method\'!' );
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'capture_method', 'invalid_val' );
+
+		$this->controller->get_terminal_intent_capture_method( $request );
 	}
 }
