@@ -184,6 +184,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
 		);
+		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
@@ -210,6 +211,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		const emailExistsQuery = new URLSearchParams();
 		emailExistsQuery.append( 'email', email );
 		emailExistsQuery.append( 'test_mode', !! getConfig( 'testMode' ) );
+		emailExistsQuery.append(
+			'wcpay_version',
+			getConfig( 'wcpayVersionNumber' )
+		);
 
 		fetch(
 			`${ getConfig(
