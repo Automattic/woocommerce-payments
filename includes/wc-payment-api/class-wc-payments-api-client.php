@@ -2270,7 +2270,8 @@ class WC_Payments_API_Client {
 		$charge = new WC_Payments_API_Charge(
 			$charge_array['id'],
 			$charge_array['amount'],
-			$created
+			$created,
+			$charge_array['payment_method_details'] ?? []
 		);
 
 		if ( isset( $charge_array['captured'] ) ) {
@@ -2293,24 +2294,27 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
-		$charge             = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
+		$charge_array       = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
 		$next_action        = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
 		$last_payment_error = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
+		$customer           = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
+		$payment_method     = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+
+		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
 			$intention_array['currency'],
-			$intention_array['customer'] ?? $charge['customer'] ?? null,
-			$intention_array['payment_method'] ?? $charge['payment_method'] ?? $intention_array['source'] ?? null,
+			$customer,
+			$payment_method,
 			$created,
 			$intention_array['status'],
-			$charge ? $charge['id'] : null,
 			$intention_array['client_secret'],
+			$charge,
 			$next_action,
 			$last_payment_error,
-			$charge ? $charge['payment_method_details'] : null,
 			$metadata
 		);
 
