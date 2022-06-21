@@ -1,4 +1,4 @@
-/* global jQuery, wcpayPaymentRequestParams, wc_add_to_cart_variation_params */
+/* global jQuery, wcpayPaymentRequestParams, wcpayPaymentRequestPayForOrderParams, wc_add_to_cart_variation_params */
 /**
  * External dependencies
  */
@@ -12,6 +12,7 @@ import {
 	shippingAddressChangeHandler,
 	shippingOptionChangeHandler,
 	paymentMethodHandler,
+	payForOrderHandler,
 } from './event-handlers.js';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
@@ -226,14 +227,16 @@ jQuery( ( $ ) => {
 				shippingOptionChangeHandler( api, event )
 			);
 
-			paymentRequest.on( 'paymentmethod', ( event ) =>
-				paymentMethodHandler(
+			paymentRequest.on( 'paymentmethod', ( event ) => {
+				const handler = options.handler ?? paymentMethodHandler;
+
+				handler(
 					api,
 					wcpayPaymentRequest.completePayment,
 					wcpayPaymentRequest.abortPayment,
 					event
 				)
-			);
+			} );
 		},
 
 		getSelectedProductData: () => {
@@ -463,14 +466,18 @@ jQuery( ( $ ) => {
 		 */
 		init: () => {
 			if ( wcpayPaymentRequestParams.is_pay_for_order ) {
+				const {
+					total: { amount: total },
+					displayItems,
+					order,
+				} = wcpayPaymentRequestPayForOrderParams;
+
 				wcpayPaymentRequest.startPaymentRequest( {
 					stripe: api.getStripe(),
-					total: wcpayPaymentRequestPayForOrderParams.total.amount,
-					requestShipping:
-						// wcpayPaymentRequestPayForOrderParams.needs_shipping ? true : false,
-						false,
-					displayItems:
-						wcpayPaymentRequestPayForOrderParams.displayItems,
+					requestShipping: false,
+					total,
+					displayItems,
+					handler: payForOrderHandler( order ),
 				} );
 			} else if ( wcpayPaymentRequestParams.is_product_page ) {
 				wcpayPaymentRequest.startPaymentRequest( {

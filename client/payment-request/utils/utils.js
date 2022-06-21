@@ -60,7 +60,6 @@ export const getPaymentRequest = ( {
 		requestShipping,
 		displayItems,
 	};
-	console.log(options);
 
 	return stripe.paymentRequest( options );
 };

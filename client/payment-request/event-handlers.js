@@ -4,6 +4,7 @@
 import {
 	normalizeShippingAddress,
 	normalizeOrderData,
+	normalizePayForOrderData,
 	getErrorMessageFromNotice,
 } from './utils';
 
@@ -39,6 +40,36 @@ export const shippingOptionChangeHandler = async ( api, event ) => {
 	}
 };
 
+const paymentResponseHandler = async (
+	api,
+	response,
+	completePayment,
+	abortPayment,
+	event
+) => {
+	if ( 'success' !== response.result ) {
+		abortPayment( event, getErrorMessageFromNotice( response.messages ) );
+	}
+
+	try {
+		const confirmation = api.confirmIntent( response.redirect );
+		// We need to call `complete` outside of `completePayment` to close the dialog for 3DS.
+		event.complete( 'success' );
+
+		// `true` means there is no intent to confirm.
+		if ( true === confirmation ) {
+			completePayment( response.redirect );
+		} else {
+			const { request } = confirmation;
+			const redirectUrl = await request;
+
+			completePayment( redirectUrl );
+		}
+	} catch ( error ) {
+		abortPayment( event, error.message );
+	}
+};
+
 export const paymentMethodHandler = async (
 	api,
 	completePayment,
@@ -50,25 +81,41 @@ export const paymentMethodHandler = async (
 		normalizeOrderData( event )
 	);
 
-	if ( 'success' === response.result ) {
-		try {
-			const confirmation = api.confirmIntent( response.redirect );
-			// We need to call `complete` outside of `completePayment` to close the dialog for 3DS.
-			event.complete( 'success' );
-
-			// `true` means there is no intent to confirm.
-			if ( true === confirmation ) {
-				completePayment( response.redirect );
-			} else {
-				const { request } = confirmation;
-				const redirectUrl = await request;
-
-				completePayment( redirectUrl );
-			}
-		} catch ( error ) {
-			abortPayment( event, error.message );
-		}
-	} else {
-		abortPayment( event, getErrorMessageFromNotice( response.messages ) );
-	}
+	paymentResponseHandler(
+		api,
+		response,
+		completePayment,
+		abortPayment,
+		event
+	);
 };
+
+/**
+ * Generates a pay for order handler based on a particular order.
+ *
+ * @param {integer} order The ID of the order that is being paid.
+ * @return {Function} The handler.
+ */
+export const payForOrderHandler = ( order ) =>
+	/**
+	 * Same as `paymentMethodHandler`, but for the Pay for Order page.
+	 *
+	 * @param {WCPayAPI} api The API class.
+	 * @param {Function} completePayment A callback for successful payments.
+	 * @param {Function} abortPayment A callback for errors.
+	 * @param {Object} event The event data, as provided by the Stripe API.
+	 */
+	async ( api, completePayment, abortPayment, event ) => {
+		const response = await api.paymentRequestPayForOrder(
+			order,
+			normalizePayForOrderData( event )
+		);
+
+		paymentResponseHandler(
+			api,
+			response,
+			completePayment,
+			abortPayment,
+			event
+		);
+	};
