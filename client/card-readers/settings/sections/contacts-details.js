@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl, Notice } from '@wordpress/components';
 import PhoneNumberInput from '../../../components/platform-checkout/save-user/phone-number-input';
@@ -33,6 +33,8 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 	let businessSupportPhoneErrorMessage = useGetSavingError()?.data?.details
 		?.account_business_support_phone?.message;
 
+	const [ isPhoneValid, setPhoneValidity ] = useState( true );
+
 	if ( '' === accountBusinessSupportEmail ) {
 		businessSupportEmailErrorMessage = __(
 			'Support email cannot be empty, please specify.',
@@ -47,10 +49,18 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 		);
 	}
 
+	if ( ! isPhoneValid ) {
+		businessSupportPhoneErrorMessage = __(
+			'Please enter a valid mobile phone number.',
+			'woocommerce-payments'
+		);
+	}
+
 	const updateSaveButtonAvailability = () => {
 		setSaveDisabled(
 			'' === accountBusinessSupportEmail ||
-				'' === accountBusinessSupportPhone
+				'' === accountBusinessSupportPhone ||
+				isPhoneValid
 		);
 	};
 
@@ -84,6 +94,10 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 				<PhoneNumberInput
 					onValueChange={ setAccountBusinessSupportPhone }
 					value={ accountBusinessSupportPhone }
+					onValidationChange={ ( valid ) => {
+						setPhoneValidity( valid );
+						updateSaveButtonAvailability();
+					} }
 					inputProps={ {
 						label: __(
 							'Support phone number',
