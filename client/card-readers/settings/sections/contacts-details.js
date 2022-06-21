@@ -84,6 +84,17 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 				<PhoneNumberInput
 					onValueChange={ setAccountBusinessSupportPhone }
 					value={ accountBusinessSupportPhone }
+					inputProps={ {
+						label: __(
+							'Support phone number',
+							'woocommerce-payments'
+						),
+						ariaLabell: __(
+							'Support phone number',
+							'woocommerce-payments'
+						),
+						name: '',
+					} }
 				/>
 			</div>
 		</>
