@@ -16,6 +16,7 @@ import type {
 	DisputesSummary,
 } from 'wcpay/types/disputes';
 import { STORE_NAME } from '../constants';
+import { disputeNeedsResponseStatuses } from 'wcpay/disputes/filters/config';
 
 export const useDispute = (
 	id: string
@@ -57,6 +58,7 @@ export const useDisputes = ( {
 	date_before: dateBefore,
 	date_after: dateAfter,
 	date_between: dateBetween,
+	filter,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
 	orderby: orderBy,
@@ -65,6 +67,11 @@ export const useDisputes = ( {
 	useSelect(
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );
+
+			const search =
+				filter === 'needs_response'
+					? disputeNeedsResponseStatuses
+					: undefined;
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
@@ -82,6 +89,7 @@ export const useDisputes = ( {
 					dateBetween.sort( ( a, b ) =>
 						moment( a ).diff( moment( b ) )
 					),
+				search,
 				statusIs,
 				statusIsNot,
 				orderBy: orderBy || 'created',
@@ -101,6 +109,7 @@ export const useDisputes = ( {
 			dateBefore,
 			dateAfter,
 			JSON.stringify( dateBetween ),
+			filter,
 			statusIs,
 			statusIsNot,
 			orderBy,
@@ -116,12 +125,18 @@ export const useDisputesSummary = ( {
 	date_before: dateBefore,
 	date_after: dateAfter,
 	date_between: dateBetween,
+	filter,
 	status_is: statusIs,
 	status_is_not: statusIsNot,
 }: Query ): DisputesSummary =>
 	useSelect(
 		( select ) => {
 			const { getDisputesSummary, isResolving } = select( STORE_NAME );
+
+			const search =
+				filter === 'needs_response'
+					? disputeNeedsResponseStatuses
+					: undefined;
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
@@ -135,6 +150,7 @@ export const useDisputesSummary = ( {
 				dateBefore,
 				dateAfter,
 				dateBetween,
+				search,
 				statusIs,
 				statusIsNot,
 			};
@@ -152,6 +168,7 @@ export const useDisputesSummary = ( {
 			dateBefore,
 			dateAfter,
 			JSON.stringify( dateBetween ),
+			filter,
 			statusIs,
 			statusIsNot,
 		]

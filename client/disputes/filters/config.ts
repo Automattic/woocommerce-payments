@@ -30,6 +30,11 @@ const disputesStatusOptions = Object.entries( displayStatus )
 		return el != null;
 	} );
 
+export const disputeNeedsResponseStatuses = [
+	'needs_response',
+	'warning_needs_response',
+];
+
 export const filters: [ DisputesFilterType, DisputesFilterType ] = [
 	{
 		label: __( 'Dispute currency', 'woocommerce-payments' ),
