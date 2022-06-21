@@ -12,7 +12,12 @@ import './style.scss';
 // eslint-disable-next-line import/no-unresolved
 import utils from 'iti/utils';
 
-const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
+const PhoneNumberInput = ( {
+	onValueChange,
+	value,
+	onValidationChange = () => {},
+	inputProps = {},
+} ) => {
 	const [ inputInstance, setInputInstance ] = useState( null );
 	const [ isValid, setIsValid ] = useState( true );
 	const inputRef = useRef();
@@ -26,36 +31,12 @@ const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 	const handlePhoneNumberValidation = () => {
 		if ( inputInstance ) {
 			setIsValid( inputInstance.isValidNumber() );
+			onValidationChange( inputInstance.isValidNumber() );
 		} else {
 			setIsValid( true );
+			onValidationChange( true );
 		}
 	};
-
-	useEffect( () => {
-		// const formSubmitButton = document.getElementById( 'place_order' );
-		const formSubmitButton = document.querySelector(
-			'form.woocommerce-checkout button[type="submit"]'
-		);
-
-		if ( ! formSubmitButton ) {
-			return;
-		}
-
-		const updateFormSubmitButton = () => {
-			if ( isValid ) {
-				formSubmitButton.removeAttribute( 'disabled' );
-			} else {
-				formSubmitButton.setAttribute( 'disabled', 'disabled' );
-			}
-		};
-
-		updateFormSubmitButton();
-
-		return () => {
-			// Clean up
-			formSubmitButton.removeAttribute( 'disabled' );
-		};
-	}, [ isValid ] );
 
 	const removeInternationalPrefix = ( phone ) => {
 		if ( inputInstance ) {

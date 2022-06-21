@@ -19,6 +19,7 @@ const CheckoutPageSaveUser = () => {
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
 	// eslint-disable-next-line no-unused-vars
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
+	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const isRegisteredUser = usePlatformCheckoutUser();
 	const {
 		isWCPayChosen,
@@ -31,6 +32,31 @@ const CheckoutPageSaveUser = () => {
 			document.getElementById( 'billing_phone' )?.value ?? ''
 		);
 	}, [] );
+
+	useEffect( () => {
+		const formSubmitButton = document.querySelector(
+			'form.woocommerce-checkout button[type="submit"]'
+		);
+
+		if ( ! formSubmitButton ) {
+			return;
+		}
+
+		const updateFormSubmitButton = () => {
+			if ( isPhoneValid ) {
+				formSubmitButton.removeAttribute( 'disabled' );
+			} else {
+				formSubmitButton.setAttribute( 'disabled', 'disabled' );
+			}
+		};
+
+		updateFormSubmitButton();
+
+		return () => {
+			// Clean up
+			formSubmitButton.removeAttribute( 'disabled' );
+		};
+	}, [ isPhoneValid ] );
 
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
@@ -77,6 +103,7 @@ const CheckoutPageSaveUser = () => {
 					<PhoneNumberInput
 						value={ phoneNumber }
 						onValueChange={ setPhoneNumber }
+						onValidationChange={ onPhoneValidationChange }
 					/>
 					<AdditionalInformation />
 					<Agreement />
