@@ -253,11 +253,13 @@ class WC_Payments_API_Client {
 	/**
 	 * Create an intention, without confirming it.
 	 *
-	 * @param int    $amount          - Amount to charge.
-	 * @param string $currency_code   - Currency to charge in.
-	 * @param array  $payment_methods - Payment methods to include.
-	 * @param string $order_number    - The order number.
-	 * @param string $capture_method  - optional capture method (either `automatic` or `manual`).
+	 * @param int         $amount          - Amount to charge.
+	 * @param string      $currency_code   - Currency to charge in.
+	 * @param array       $payment_methods - Payment methods to include.
+	 * @param string      $order_number    - The order number.
+	 * @param string      $capture_method  - optional capture method (either `automatic` or `manual`).
+	 * @param array       $metadata        - A list of intent metadata.
+	 * @param string|null $customer_id     - Customer id for intent.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -267,7 +269,9 @@ class WC_Payments_API_Client {
 		$currency_code,
 		$payment_methods,
 		$order_number,
-		$capture_method = 'automatic'
+		$capture_method = 'automatic',
+		array $metadata = [],
+		$customer_id = null
 	) {
 		$request                         = [];
 		$request['amount']               = $amount;
@@ -275,7 +279,10 @@ class WC_Payments_API_Client {
 		$request['description']          = $this->get_intent_description( $order_number );
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
-		$request['metadata']             = $this->get_fingerprint_metadata();
+		$request['metadata']             = array_merge( $metadata, $this->get_fingerprint_metadata() );
+		if ( $customer_id ) {
+			$request['customer'] = $customer_id;
+		}
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
