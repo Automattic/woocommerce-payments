@@ -13,13 +13,11 @@ import './style.scss';
 import utils from 'iti/utils';
 
 const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
-	const [ inputValue, setInputValue ] = useState( value || '' );
 	const [ inputInstance, setInputInstance ] = useState( null );
 	const [ isValid, setIsValid ] = useState( true );
 	const inputRef = useRef();
 
-	const handlePhoneNumberInputChange = ( e ) => {
-		setInputValue( e.target.value );
+	const handlePhoneNumberInputChange = () => {
 		if ( inputInstance ) {
 			onValueChange( inputInstance.getNumber() );
 		}
@@ -71,6 +69,17 @@ const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 		};
 	}, [ isValid ] );
 
+	const removeInternationalPrefix = ( phone ) => {
+		if ( inputInstance ) {
+			return phone.replace(
+				'+' + inputInstance.getSelectedCountryData().dialCode,
+				''
+			);
+		}
+
+		return value;
+	};
+
 	useEffect( () => {
 		let iti = null;
 
@@ -87,12 +96,6 @@ const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 				utilsScript: utils,
 			} );
 			setInputInstance( iti );
-			setInputValue( ( currentInputValue ) =>
-				currentInputValue.replace(
-					'+' + iti.getSelectedCountryData().dialCode,
-					''
-				)
-			);
 
 			// Focus the phone number input when the component loads.
 			inputRef.current.focus();
@@ -121,7 +124,7 @@ const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 			<input
 				type="tel"
 				ref={ inputRef }
-				value={ inputValue }
+				value={ removeInternationalPrefix( value ) }
 				onChange={ handlePhoneNumberInputChange }
 				onBlur={ handlePhoneNumberValidation }
 				label={
