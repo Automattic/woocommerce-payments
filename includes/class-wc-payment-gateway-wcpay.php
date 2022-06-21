@@ -672,6 +672,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
+			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,
 		];
 	}
 
@@ -2553,19 +2554,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Create a payment intent without confirming the intent.
 	 *
-	 * @param WC_Order $order - Order based on which to create intent.
-	 * @param array    $payment_methods - A list of allowed payment methods. Eg. card, card_present.
-	 * @param string   $capture_method - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
+	 * @param WC_Order    $order           - Order based on which to create intent.
+	 * @param array       $payment_methods - A list of allowed payment methods. Eg. card, card_present.
+	 * @param string      $capture_method  - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
 	 *  It must be "manual" for in-person (terminal) payments.
+	 * @param array       $metadata        - A list of intent metadata.
+	 * @param string|null $customer_id     - Customer id for intent.
 	 *
 	 * @return array|WP_Error On success, an array containing info about the newly created intent. On failure, WP_Error object.
 	 *
 	 * @throws Exception - When an error occurs in intent creation.
 	 */
-	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic' ) {
+	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic', array $metadata = [], string $customer_id = null ) {
 		$currency         = strtolower( $order->get_currency() );
 		$converted_amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-		$intent           = null;
 
 		try {
 			$intent = $this->payments_api_client->create_intention(
@@ -2573,7 +2575,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$currency,
 				$payment_methods,
 				$order->get_order_number(),
-				$capture_method
+				$capture_method,
+				$metadata,
+				$customer_id
 			);
 
 			return [
