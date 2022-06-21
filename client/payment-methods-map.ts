@@ -145,9 +145,10 @@ const PaymentMethodInformationObject: Record<
 			'Accept US bank account debits from customers with a US bank account using the Automated Clearing House (ACH) system.',
 			'woocommerce-payments'
 		),
-		Icon: BankDebitIcon,
+		icon: BankDebitIcon,
 		currencies: [ 'USD' ],
 		stripe_key: 'us_bank_account_ach_payments',
+		allows_manual_capture: false,
 	},
 };
 
