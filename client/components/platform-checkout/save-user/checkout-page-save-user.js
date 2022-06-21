@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -24,6 +24,13 @@ const CheckoutPageSaveUser = () => {
 		isWCPayChosen,
 		isNewPaymentTokenChosen,
 	} = useSelectedPaymentMethod();
+
+	// This runs once to populate the phone number state if already present in the DOM.
+	useEffect( () => {
+		setPhoneNumber(
+			document.getElementById( 'billing_phone' )?.value ?? ''
+		);
+	}, [] );
 
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
@@ -68,10 +75,7 @@ const CheckoutPageSaveUser = () => {
 						{ __( 'Mobile phone number', 'woocommerce-payments' ) }
 					</span>
 					<PhoneNumberInput
-						value={
-							document.getElementById( 'billing_phone' )?.value ??
-							''
-						}
+						value={ phoneNumber }
 						onValueChange={ setPhoneNumber }
 					/>
 					<AdditionalInformation />
