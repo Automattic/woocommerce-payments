@@ -31,18 +31,6 @@ const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 		}
 	};
 
-	const ErrorText = () => {
-		if ( ! isValid ) {
-			const message = __(
-				'Please enter a valid mobile phone number.',
-				'woocommerce-payments'
-			);
-
-			return <p className="error-text">{ message }</p>;
-		}
-		return '';
-	};
-
 	useEffect( () => {
 		// const formSubmitButton = document.getElementById( 'place_order' );
 		const formSubmitButton = document.querySelector(
@@ -145,7 +133,14 @@ const PhoneNumberInput = ( { onValueChange, value, inputProps = {} } ) => {
 						: 'phone-input input-text'
 				}
 			/>
-			<ErrorText />
+			{ ! isValid && (
+				<p className="error-text">
+					{ __(
+						'Please enter a valid mobile phone number.',
+						'woocommerce-payments'
+					) }
+				</p>
+			) }
 		</div>
 	);
 };
