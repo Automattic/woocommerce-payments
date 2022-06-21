@@ -25,16 +25,7 @@ const PhoneNumberInput = ( {
 	const handlePhoneNumberInputChange = () => {
 		if ( inputInstance ) {
 			onValueChange( inputInstance.getNumber() );
-		}
-	};
-
-	const handlePhoneNumberValidation = () => {
-		if ( inputInstance ) {
-			setIsValid( inputInstance.isValidNumber() );
 			onValidationChange( inputInstance.isValidNumber() );
-		} else {
-			setIsValid( true );
-			onValidationChange( true );
 		}
 	};
 
@@ -65,6 +56,8 @@ const PhoneNumberInput = ( {
 				utilsScript: utils,
 			} );
 			setInputInstance( iti );
+			setIsValid( iti.isValidNumber() );
+			onValidationChange( iti.isValidNumber() );
 
 			// Focus the phone number input when the component loads.
 			inputRef.current.focus();
@@ -84,7 +77,7 @@ const PhoneNumberInput = ( {
 				);
 			}
 		};
-	}, [ onValueChange ] );
+	}, [ onValueChange, onValidationChange ] );
 
 	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
 	// alters the DOM and we'll get warnings about "removing content without using React."
@@ -95,7 +88,6 @@ const PhoneNumberInput = ( {
 				ref={ inputRef }
 				value={ removeInternationalPrefix( value ) }
 				onChange={ handlePhoneNumberInputChange }
-				onBlur={ handlePhoneNumberValidation }
 				label={
 					inputProps.label ||
 					__( 'Mobile phone number', 'woocommerce-payments' )
