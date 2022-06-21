@@ -105,6 +105,14 @@ const CheckoutPageSaveUser = () => {
 						onValueChange={ setPhoneNumber }
 						onValidationChange={ onPhoneValidationChange }
 					/>
+					{ ! isPhoneValid && (
+						<p className="error-text">
+							{ __(
+								'Please enter a valid mobile phone number.',
+								'woocommerce-payments'
+							) }
+						</p>
+					) }
 					<AdditionalInformation />
 					<Agreement />
 				</div>

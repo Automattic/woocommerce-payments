@@ -114,14 +114,6 @@ const PhoneNumberInput = ( {
 						: 'phone-input input-text'
 				}
 			/>
-			{ ! isValid && (
-				<p className="error-text">
-					{ __(
-						'Please enter a valid mobile phone number.',
-						'woocommerce-payments'
-					) }
-				</p>
-			) }
 		</div>
 	);
 };
