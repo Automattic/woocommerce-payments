@@ -1026,6 +1026,7 @@ class WC_Payments {
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
 		$body = [
+			'wcpay_version'        => WCPAY_VERSION_NUMBER,
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
 			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),

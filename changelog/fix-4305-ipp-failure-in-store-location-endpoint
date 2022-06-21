@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix default terminal location creation for store when blog name is empty.
