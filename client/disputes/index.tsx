@@ -22,7 +22,11 @@ import { useDispatch } from '@wordpress/data';
 /**
  * Internal dependencies.
  */
-import { useDisputes, useDisputesSummary } from 'data/index';
+import {
+	useDisputes,
+	useDisputesFilterSelection,
+	useDisputesSummary,
+} from 'data/index';
 import OrderLink from 'components/order-link';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
@@ -139,6 +143,11 @@ export const DisputesList = (): JSX.Element => {
 	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
 		getQuery()
 	);
+
+	useDisputesFilterSelection( {
+		disputesSummary,
+		isLoading: isSummaryLoading,
+	} );
 
 	const headers = getHeaders( getQuery().orderby );
 	const totalRows = disputesSummary.count || 0;

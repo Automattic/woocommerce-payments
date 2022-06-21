@@ -3,8 +3,9 @@
 /**
  * External dependencies
  */
+import { useEffect, useState } from 'react';
 import { useSelect, useDispatch } from '@wordpress/data';
-import type { Query } from '@woocommerce/navigation';
+import { getQuery, Query, updateQueryString } from '@woocommerce/navigation';
 import moment from 'moment';
 
 /**
@@ -173,3 +174,32 @@ export const useDisputesSummary = ( {
 			statusIsNot,
 		]
 	);
+
+export const useDisputesFilterSelection = ( {
+	disputesSummary,
+	isLoading,
+}: DisputesSummary ): void => {
+	// Keep track if 'all' filter has been viewed.
+	const [ allFilterViewed, setAllFilterViewed ] = useState( false );
+
+	// Select 'all' filter if summary returns 0 disputes needing response.
+	// If 'all' filter has been viewed, 'needs_response' filter can be selected.
+	useEffect( () => {
+		if (
+			false === allFilterViewed &&
+			'needs_response' === getQuery().filter &&
+			false === isLoading &&
+			0 === disputesSummary.count
+		) {
+			updateQueryString( { filter: undefined } );
+			setAllFilterViewed( true );
+		}
+	}, [ disputesSummary, isLoading, allFilterViewed ] );
+
+	// Update state if 'all' or undefined filter is present in query.
+	useEffect( () => {
+		if ( [ 'all', undefined ].includes( getQuery().filter ) ) {
+			setAllFilterViewed( true );
+		}
+	}, [] );
+};
