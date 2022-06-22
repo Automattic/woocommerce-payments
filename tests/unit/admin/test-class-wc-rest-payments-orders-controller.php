@@ -12,7 +12,7 @@ use WCPay\Constants\Payment_Method;
 /**
  * WC_REST_Payments_Orders_Controller unit tests.
  */
-class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Controller under test.
 	 *
@@ -131,7 +131,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertEquals( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
 		$this->assertEquals( 'completed', $result_order->get_status() );
-		$this->assertStringEndsWith( '/wc/v3/payments/readers/receipts/' . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
+		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/' . $this->mock_intent_id;
+		$this->assertStringEndsWith( $url, $result_order->get_meta( 'receipt_url' ) );
 	}
 
 	public function test_capture_terminal_payment_succeeded_intent() {
@@ -192,7 +193,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertSame( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
 		$this->assertSame( 'completed', $result_order->get_status() );
-		$this->assertStringEndsWith( '/wc/v3/payments/readers/receipts/' . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
+		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/';
+		$this->assertStringEndsWith( $url . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
 	}
 
 	public function test_capture_terminal_payment_completed_order() {
@@ -257,7 +259,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertSame( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
 		$this->assertSame( 'completed', $result_order->get_status() );
-		$this->assertStringEndsWith( '/wc/v3/payments/readers/receipts/' . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
+		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/';
+		$this->assertStringEndsWith( $url . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
 	}
 
 	public function test_capture_terminal_payment_intent_non_capturable() {

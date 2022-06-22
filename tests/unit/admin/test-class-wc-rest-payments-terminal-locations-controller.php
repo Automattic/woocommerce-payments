@@ -11,7 +11,7 @@ use WC_REST_Payments_Terminal_Locations_Controller as Controller;
 /**
  * WC_REST_Payments_Tos_Controller unit tests.
  */
-class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * The system under test.
