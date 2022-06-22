@@ -11,7 +11,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 /**
  * Buyer_Fingerprinting_Service_Test unit tests.
  */
-class Buyer_Fingerprinting_Service_Test extends WP_UnitTestCase {
+class Buyer_Fingerprinting_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Fraud_Prevention_Service mock object.

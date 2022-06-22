@@ -14,7 +14,7 @@ use WCPay\MultiCurrency\MultiCurrency;
 /**
  * CurrencySwitcherBlock unit tests.
  */
-class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Currency_Switcher_Block_Tests extends WCPAY_UnitTestCase {
 
 	/**
 	 * @var CurrencySwitcherBlock

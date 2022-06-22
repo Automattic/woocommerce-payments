@@ -11,7 +11,7 @@ use WCPay\Session_Rate_Limiter;
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
-class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test extends WP_UnitTestCase {
+class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test extends WCPAY_UnitTestCase {
 	const USER_ID           = 1;
 	const CUSTOMER_ID       = 'cus_mock';
 	const PAYMENT_METHOD_ID = 'pm_mock';

@@ -10,7 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * WC_REST_Payments_Onboarding_Controller unit tests.
  */
-class WC_REST_Payments_Onboarding_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Controller under test.
 	 *

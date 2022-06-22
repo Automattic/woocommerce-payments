@@ -11,7 +11,7 @@ use WCPay\Session_Rate_Limiter;
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
-class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
+class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	const USER_ID           = 1;
 	const CUSTOMER_ID       = 'cus_mock';
 	const PAYMENT_METHOD_ID = 'pm_mock';
@@ -227,19 +227,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
 			->with( $this->anything(), $this->anything(), self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, $this->anything(), false, false, $this->anything(), $this->anything(), true )
-			->willReturn(
-				new WC_Payments_API_Intention(
-					self::PAYMENT_INTENT_ID,
-					1500,
-					'usd',
-					'cus_12345',
-					'pm_12345',
-					new DateTime(),
-					'succeeded',
-					self::CHARGE_ID,
-					''
-				)
-			);
+			->willReturn( WC_Helper_Intention::create_intention() );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
