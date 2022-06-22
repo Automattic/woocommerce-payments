@@ -159,7 +159,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_attach_exchange_info_to_order_with_no_conversion() {
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
@@ -178,7 +178,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_attach_exchange_info_to_order_with_different_account_currency_no_conversion() {
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
@@ -197,7 +197,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_attach_exchange_info_to_order_with_zero_decimal_order_currency() {
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
@@ -230,7 +230,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_attach_exchange_info_to_order_with_different_order_currency() {
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_charge_id', $charge_id );
@@ -691,8 +691,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_capture_charge_success() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -701,17 +701,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 
-		$mock_intent = new WC_Payments_API_Intention(
-			$intent_id,
-			1500,
-			$order->get_currency(),
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'requires_capture',
-			$charge_id,
-			'...'
-		);
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
@@ -720,19 +710,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->returnValue(
-				new WC_Payments_API_Intention(
-					$intent_id,
-					1500,
-					$order->get_currency(),
-					'cus_12345',
-					'pm_12345',
-					new DateTime(),
-					'succeeded',
-					$charge_id,
-					'...'
-				)
-			)
+			$this->returnValue( WC_Helper_Intention::create_intention() )
 		);
 
 		$this->mock_wcpay_account
@@ -767,8 +745,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_capture_charge_success_non_usd() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -777,16 +755,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 
-		$mock_intent = new WC_Payments_API_Intention(
-			$intent_id,
-			1500,
-			'eur',
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'requires_capture',
-			$charge_id,
-			'...'
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => 'requires_capture',
+				'currency' => 'eur',
+			]
 		);
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
@@ -796,19 +769,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->returnValue(
-				new WC_Payments_API_Intention(
-					$intent_id,
-					1500,
-					'eur',
-					'cus_12345',
-					'pm_12345',
-					new DateTime(),
-					'succeeded',
-					$charge_id,
-					'...'
-				)
-			)
+			$this->returnValue( WC_Helper_Intention::create_intention( [ 'currency' => 'eur' ] ) )
 		);
 
 		$this->mock_wcpay_account
@@ -845,8 +806,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_capture_charge_failure() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -855,17 +816,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 
-		$mock_intent = new WC_Payments_API_Intention(
-			$intent_id,
-			1500,
-			$order->get_currency(),
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'requires_capture',
-			$charge_id,
-			'...'
-		);
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
@@ -873,19 +825,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->returnValue(
-				new WC_Payments_API_Intention(
-					$intent_id,
-					1500,
-					$order->get_currency(),
-					'cus_12345',
-					'pm_12345',
-					new DateTime(),
-					'requires_capture',
-					$charge_id,
-					'...'
-				)
-			)
+			$this->returnValue( $mock_intent )
 		);
 
 		$this->mock_wcpay_account
@@ -919,8 +859,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_capture_charge_failure_non_usd() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -930,17 +870,13 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_status( 'on-hold' );
 		$order->set_currency( 'EUR' );
 
-		$mock_intent = new WC_Payments_API_Intention(
-			$intent_id,
-			1500,
-			'eur',
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'requires_capture',
-			$charge_id,
-			'...'
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => 'requires_capture',
+				'currency' => 'eur',
+			]
 		);
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
 		);
@@ -948,19 +884,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->returnValue(
-				new WC_Payments_API_Intention(
-					$intent_id,
-					1500,
-					'eur',
-					'cus_12345',
-					'pm_12345',
-					new DateTime(),
-					'requires_capture',
-					$charge_id,
-					'...'
-				)
-			)
+			$this->returnValue( $mock_intent )
 		);
 
 		$this->mock_wcpay_account
@@ -996,8 +920,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_capture_charge_api_failure() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -1006,17 +930,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 
-		$mock_intent = new WC_Payments_API_Intention(
-			$intent_id,
-			1500,
-			'usd',
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'requires_capture',
-			$charge_id,
-			'...'
-		);
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
 
 		$this->mock_api_client->expects( $this->atLeastOnce() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
@@ -1060,8 +974,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_capture_charge_api_failure_non_usd() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -1071,16 +985,11 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_status( 'on-hold' );
 		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
 
-		$mock_intent = new WC_Payments_API_Intention(
-			$intent_id,
-			1500,
-			'jpy',
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'requires_capture',
-			$charge_id,
-			'...'
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => 'requires_capture',
+				'currency' => 'jpy',
+			]
 		);
 
 		$this->mock_api_client->expects( $this->atLeastOnce() )->method( 'get_intent' )->with( $intent_id )->will(
@@ -1127,8 +1036,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_capture_charge_expired() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -1137,17 +1046,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 
-		$mock_intent = new WC_Payments_API_Intention(
-			$intent_id,
-			1500,
-			'usd',
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'canceled',
-			$charge_id,
-			'...'
-		);
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'canceled' ] );
 
 		$this->mock_api_client->expects( $this->atLeastOnce() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
@@ -1189,8 +1088,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_capture_charge_metadata() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -1199,23 +1098,17 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 
-		$mock_intent     = new WC_Payments_API_Intention(
-			$intent_id,
-			1500,
-			$order->get_currency(),
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'requires_capture',
-			$charge_id,
-			'...',
-			[],
-			[],
-			[],
+		$charge = $this->create_charge_object();
+
+		$mock_intent = WC_Helper_Intention::create_intention(
 			[
-				'customer_name' => 'Test',
+				'status'   => 'requires_capture',
+				'metadata' => [
+					'customer_name' => 'Test',
+				],
 			]
 		);
+
 		$merged_metadata = [
 			'customer_name'  => 'Test',
 			'customer_email' => $order->get_billing_email(),
@@ -1233,19 +1126,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->returnValue(
-				new WC_Payments_API_Intention(
-					$intent_id,
-					1500,
-					$order->get_currency(),
-					'cus_12345',
-					'pm_12345',
-					new DateTime(),
-					'succeeded',
-					$charge_id,
-					'...'
-				)
-			)
+			$this->returnValue( WC_Helper_Intention::create_intention() )
 		);
 
 		$this->mock_wcpay_account
@@ -1279,8 +1160,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_capture_charge_without_level3() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -1289,17 +1170,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 
-		$mock_intent = new WC_Payments_API_Intention(
-			$intent_id,
-			1500,
-			$order->get_currency(),
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'requires_capture',
-			$charge_id,
-			'...'
-		);
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
 			$this->returnValue( $mock_intent )
@@ -1308,19 +1179,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			$this->returnValue( $mock_intent )
 		);
 		$this->mock_api_client->expects( $this->once() )->method( 'capture_intention' )->will(
-			$this->returnValue(
-				new WC_Payments_API_Intention(
-					$intent_id,
-					1500,
-					$order->get_currency(),
-					'cus_12345',
-					'pm_12345',
-					new DateTime(),
-					'succeeded',
-					$charge_id,
-					'...'
-				)
-			)
+			$this->returnValue( WC_Helper_Intention::create_intention() )
 		);
 
 		$this->mock_wcpay_account
@@ -1354,8 +1213,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_cancel_authorization_handles_api_exception_when_canceling() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -1373,17 +1232,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_intent' )
 			->willReturn(
-				new WC_Payments_API_Intention(
-					$intent_id,
-					1500,
-					'usd',
-					'cus_12345',
-					'pm_12345',
-					new DateTime(),
-					'canceled',
-					$charge_id,
-					'...'
-				)
+				WC_Helper_Intention::create_intention( [ 'status' => 'canceled' ] )
 			);
 
 		$this->wcpay_gateway->cancel_authorization( $order );
@@ -1400,8 +1249,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_cancel_authorization_handles_all_api_exceptions() {
-		$intent_id = 'pi_xxxxxxxxxxxxx';
-		$charge_id = 'ch_yyyyyyyyyyyyy';
+		$intent_id = 'pi_mock';
+		$charge_id = 'ch_mock';
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $intent_id );
@@ -1977,8 +1826,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->setMethods( [ 'update_meta_data', 'save' ] )
 			->getMock();
 
-		$intent_id      = 'pi_xxxxxxxxxxxxx';
-		$charge_id      = 'ch_yyyyyyyyyyyyy';
+		$intent_id      = 'pi_mock';
+		$charge_id      = 'ch_mock';
 		$customer_id    = 'cus_12345';
 		$payment_method = 'woocommerce_payments';
 		$intent_status  = 'succeeded';
@@ -2003,8 +1852,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
-		$intent_id     = 'pi_xxxxxxxxxxxxx';
-		$charge_id     = 'ch_yyyyyyyyyyyyy';
+		$intent_id     = 'pi_mock';
+		$charge_id     = 'ch_mock';
 		$intent_status = 'succeeded';
 
 		$order->expects( $this->once() )->method( 'payment_complete' )->with( $intent_id );
@@ -2024,8 +1873,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
-		$intent_id     = 'pi_xxxxxxxxxxxxx';
-		$charge_id     = 'ch_yyyyyyyyyyyyy';
+		$intent_id     = 'pi_mock';
+		$charge_id     = 'ch_mock';
 		$intent_status = 'succeeded';
 
 		$order
@@ -2037,8 +1886,8 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 	}
 
 	public function test_create_intent_success() {
-		$intent_id       = 'pi_xxxxxxxxxxxxx';
-		$charge_id       = 'ch_yyyyyyyyyyyyy';
+		$intent_id       = 'pi_mock';
+		$charge_id       = 'ch_mock';
 		$payment_methods = [ 'card_present' ];
 		$capture_method  = 'manual';
 
@@ -2046,19 +1895,7 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		$order->update_status( 'on-hold' );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'create_intention' )->will(
-			$this->returnValue(
-				new WC_Payments_API_Intention(
-					$intent_id,
-					1500,
-					$order->get_currency(),
-					'cus_12345',
-					'pm_12345',
-					new DateTime(),
-					'requires_payment_method',
-					$charge_id,
-					'...'
-				)
-			)
+			$this->returnValue( WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] ) )
 		);
 
 		$result = $this->wcpay_gateway->create_intent( $order, $payment_methods, $capture_method );
@@ -2167,5 +2004,12 @@ class WC_Payment_Gateway_WCPay_Test extends WP_UnitTestCase {
 		Fraud_Prevention_Service::set_instance( $fraud_prevention_service_mock );
 
 		return $fraud_prevention_service_mock;
+	}
+
+	private function create_charge_object() {
+		$created = new DateTime();
+		$created->setTimestamp( $this->mock_charge_created );
+
+		return new WC_Payments_API_Charge( $this->mock_charge_id, 1500, $created );
 	}
 }

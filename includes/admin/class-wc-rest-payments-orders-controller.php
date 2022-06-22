@@ -134,7 +134,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
 			$intent_id     = $intent->get_id();
 			$intent_status = $intent->get_status();
-			$charge_id     = $intent->get_charge_id();
+			$charge        = $intent->get_charge();
+			$charge_id     = $charge ? $charge->get_id() : null;
 			$this->gateway->attach_intent_info_to_order(
 				$order,
 				$intent_id,
