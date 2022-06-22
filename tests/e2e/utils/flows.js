@@ -498,7 +498,8 @@ export const merchantWCP = {
 
 		if ( ! ( await page.$( '#is_woopay_enabled:checked' ) ) ) {
 			await expect( page ).toClick( 'label', {
-				text: 'Enable WooPay',
+				text:
+					'Overrides the platform_checkout_eligible flag in the account cache',
 			} );
 		}
 
@@ -515,7 +516,8 @@ export const merchantWCP = {
 
 		if ( await page.$( '#is_woopay_enabled:checked' ) ) {
 			await expect( page ).toClick( 'label', {
-				text: 'Enable WooPay',
+				text:
+					'Overrides the platform_checkout_eligible flag in the account cache',
 			} );
 		}
 
