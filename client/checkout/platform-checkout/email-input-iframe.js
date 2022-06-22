@@ -371,7 +371,6 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		switch ( e.data.action ) {
 			case 'auto_redirect_to_platform_checkout':
 				hasCheckedLoginSession = true;
-				platformCheckoutEmailInput.value = e.data.userEmail;
 				loginSessionIframeWrapper.classList.add(
 					'platform-checkout-login-session-iframe-wrapper'
 				);
