@@ -10,7 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * WC_Payments_Admin unit tests.
  */
-class WC_Payments_Admin_Test extends WP_UnitTestCase {
+class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * @var WC_Payments_Account|MockObject
@@ -30,8 +30,8 @@ class WC_Payments_Admin_Test extends WP_UnitTestCase {
 	public function set_up() {
 		global $menu, $submenu;
 
-		$menu    = null;
-		$submenu = null;
+		$menu    = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+		$submenu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 
 		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()

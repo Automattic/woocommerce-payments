@@ -8,12 +8,12 @@
 namespace WCPay\Migrations;
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WP_UnitTestCase;
+use WCPAY_UnitTestCase;
 
 /**
  * WCPay\Migrations\Update_Service_Data_From_Server unit tests.
  */
-class Update_Service_Data_From_Server_Test extends WP_UnitTestCase {
+class Update_Service_Data_From_Server_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * WCPay gateway mock.
