@@ -16,7 +16,7 @@ import type {
 	DisputesSummary,
 } from 'wcpay/types/disputes';
 import { STORE_NAME } from '../constants';
-import { disputeNeedsResponseStatuses } from 'wcpay/disputes/filters/config';
+import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
 export const useDispute = (
 	id: string
@@ -69,8 +69,8 @@ export const useDisputes = ( {
 			const { getDisputes, isResolving } = select( STORE_NAME );
 
 			const search =
-				filter === 'needs_response'
-					? disputeNeedsResponseStatuses
+				filter === 'awaiting_response'
+					? disputeAwaitingResponseStatuses
 					: undefined;
 
 			const query = {
@@ -134,8 +134,8 @@ export const useDisputesSummary = ( {
 			const { getDisputesSummary, isResolving } = select( STORE_NAME );
 
 			const search =
-				filter === 'needs_response'
-					? disputeNeedsResponseStatuses
+				filter === 'awaiting_response'
+					? disputeAwaitingResponseStatuses
 					: undefined;
 
 			const query = {

@@ -30,7 +30,7 @@ const disputesStatusOptions = Object.entries( displayStatus )
 		return el != null;
 	} );
 
-export const disputeNeedsResponseStatuses = [
+export const disputeAwaitingResponseStatuses = [
 	'needs_response',
 	'warning_needs_response',
 ];
@@ -77,7 +77,7 @@ export const filters: [ DisputesFilterType, DisputesFilterType ] = [
 		filters: [
 			{
 				label: __( 'Needs response', 'woocommerce-payments' ),
-				value: 'needs_response',
+				value: 'awaiting_response',
 			},
 			{
 				label: __( 'All disputes', 'woocommerce-payments' ),
