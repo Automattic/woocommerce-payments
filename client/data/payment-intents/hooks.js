@@ -64,9 +64,9 @@ export const usePaymentIntentFallback = ( id ) =>
 			const paymentIntent = getPaymentIntent( id );
 
 			if ( paymentIntent?.charge?.id ) {
-				const { id: paymentIntentId } = paymentIntent.charge;
+				const { id: chargeId } = paymentIntent.charge;
 
-				return getChargeData( paymentIntentId, selectors );
+				return getChargeData( chargeId, selectors );
 			}
 
 			return {
