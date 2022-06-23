@@ -151,7 +151,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 			->method( 'is_call_in_backtrace' )
 			->with( [ 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation' ] )
 			->willReturn( true );
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->assertSame( 10.0, $this->woocommerce_subscriptions->get_subscription_product_signup_fee( 10.0, $this->mock_product ) );
 	}
 
@@ -167,7 +167,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 				[ [ 'WCS_Switch_Totals_Calculator->apportion_sign_up_fees' ] ]
 			)
 			->willReturn( false, true, true, false );
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->woocommerce_subscriptions->switch_cart_item = 'abc123';
 		$this->assertSame( 10.0, $this->woocommerce_subscriptions->get_subscription_product_signup_fee( 10.0, $this->mock_product ) );
 	}
@@ -178,7 +178,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 			->expects( $this->any() )
 			->method( 'is_call_in_backtrace' )
 			->willReturn( false );
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->woocommerce_subscriptions->switch_cart_item = 'abc123';
 
 		$this->mock_meta_data
@@ -201,7 +201,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 			->expects( $this->any() )
 			->method( 'is_call_in_backtrace' )
 			->willReturn( false );
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->woocommerce_subscriptions->switch_cart_item = 'abc123';
 
 		$this->mock_meta_data
@@ -225,7 +225,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 			->expects( $this->any() )
 			->method( 'is_call_in_backtrace' )
 			->willReturn( false );
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->woocommerce_subscriptions->switch_cart_item = 'def456';
 
 		$this->mock_product
@@ -237,7 +237,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 	}
 
 	public function test_maybe_disable_mixed_cart_return_no() {
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->assertSame( 'no', $this->woocommerce_subscriptions->maybe_disable_mixed_cart( 'yes' ) );
 	}
 
@@ -319,7 +319,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 		);
 
 		// Mock cart to simulate a switch cart item referencing our subscription.
-		$this->mock_wcs_get_order_type_cart_items_with_value( $mock_subscription->get_id() );
+		$this->mock_wcs_get_order_type_cart_items( $mock_subscription->get_id() );
 
 		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
@@ -577,7 +577,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 		);
 	}
 
-	private function mock_wcs_get_order_type_cart_items_with_value( $switch_id = 0 ) {
+	private function mock_wcs_get_order_type_cart_items( $switch_id = 0 ) {
 		WC_Subscriptions::wcs_get_order_type_cart_items(
 			function () use ( $switch_id ) {
 				if ( $switch_id ) {
@@ -587,27 +587,6 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 							'key'                 => 'abc123',
 							'subscription_switch' => [
 								'subscription_id' => $switch_id,
-							],
-						],
-					];
-				}
-
-				return [];
-			}
-		);
-	}
-
-
-	private function mock_wcs_get_order_type_cart_items( $value ) {
-		WC_Subscriptions::wcs_get_order_type_cart_items(
-			function () use ( $value ) {
-				if ( $value ) {
-					return [
-						[
-							'product_id'          => 42,
-							'key'                 => 'abc123',
-							'subscription_switch' => [
-								'subscription_id' => 42,
 							],
 						],
 					];
