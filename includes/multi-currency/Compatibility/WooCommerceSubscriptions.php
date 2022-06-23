@@ -302,11 +302,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @param  mixed $the_subscription Post object or post ID of the order.
 	 * @return WC_Subscription|false The subscription object, or false if it cannot be found.
 	 */
-	private function get_subscription( $subscription ): array {
+	private function get_subscription( $the_subscription ): array {
 		if ( ! function_exists( 'wcs_get_subscription' ) ) {
 			return false;
 		}
-		return wcs_get_subscription( $subscription );
+		return wcs_get_subscription( $the_subscription );
 	}
 
 	/**
