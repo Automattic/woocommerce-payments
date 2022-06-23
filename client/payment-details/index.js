@@ -36,7 +36,7 @@ const PaymentChargeDetails = ( { id } ) => {
 
 	useEffect( () => {
 		if ( redirect ) window.location.href = redirect.url;
-	}, [ data.payment_intent, redirect ] );
+	}, [ redirect ] );
 
 	// Check instance of chargeError because its default value is empty object
 	if ( ! isLoading && error instanceof Error ) {
