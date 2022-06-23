@@ -1366,7 +1366,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( WC()->cart->needs_shipping() ) {
 			$shipping_tax = wc_tax_enabled() && 'incl' !== get_option( 'woocommerce_tax_display_cart' ) ? 0 : WC()->cart->shipping_tax_total;
-			$items[] = [
+			$items[]      = [
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $shipping + $shipping_tax, $currency ),
 			];
