@@ -496,13 +496,27 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 
-		if ( ! ( await page.$( '#is_woopay_enabled:checked' ) ) ) {
+		if (
+			! ( await page.$( '#override_platform_checkout_eligible:checked' ) )
+		) {
 			await expect( page ).toClick( 'label', {
 				text:
 					'Overrides the platform_checkout_eligible flag in the account cache',
 			} );
 		}
 
+		if (
+			! ( await page.$(
+				'#override_platform_checkout_eligible_value:checked'
+			) )
+		) {
+			await expect( page ).toClick( 'label', {
+				text:
+					'Set platform_checkout_eligible flag to true, false otherwise',
+			} );
+		}
+
+		//Set platform_checkout_eligible flag to true, false otherwise.
 		await expect( page ).toClick( 'input[type="submit"]' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
@@ -514,10 +528,19 @@ export const merchantWCP = {
 			waitUntil: 'networkidle0',
 		} );
 
-		if ( await page.$( '#is_woopay_enabled:checked' ) ) {
+		if ( await page.$( '#override_platform_checkout_eligible:checked' ) ) {
 			await expect( page ).toClick( 'label', {
 				text:
 					'Overrides the platform_checkout_eligible flag in the account cache',
+			} );
+		}
+
+		if (
+			await page.$( '#override_platform_checkout_eligible_value:checked' )
+		) {
+			await expect( page ).toClick( 'label', {
+				text:
+					'Set platform_checkout_eligible flag to true, false otherwise',
 			} );
 		}
 
