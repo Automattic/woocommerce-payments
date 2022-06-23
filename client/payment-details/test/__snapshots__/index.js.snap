@@ -1,0 +1,434 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Payment details page should match the snapshot - Charge 1`] = `
+<div>
+  <div
+    class="wcpay-payment-details woocommerce-payments-page"
+    style="max-width: 1032px;"
+  >
+    <div
+      class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="payment-details-summary"
+        >
+          <div
+            class="payment-details-summary__section"
+          >
+            <p
+              class="payment-details-summary__amount"
+            >
+              <span
+                aria-busy="true"
+                class="is-loadable-placeholder"
+              >
+                Amount placeholder
+              </span>
+            </p>
+            <div
+              class="payment-details-summary__breakdown"
+            >
+              
+              <p>
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  Fee amount
+                </span>
+              </p>
+              
+              <p>
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  Net amount
+                </span>
+              </p>
+            </div>
+          </div>
+          <div
+            class="payment-details-summary__section"
+          >
+            <div
+              class="payment-details-summary__id"
+            >
+              <span
+                aria-busy="true"
+                class="is-loadable-placeholder"
+              >
+                Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      >
+        <span
+          aria-busy="true"
+          class="is-loadable-placeholder is-block"
+        >
+          <p
+            style="line-height: 4;"
+          >
+            Block placeholder
+          </p>
+        </span>
+      </div>
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        Timeline
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="woocommerce-timeline"
+        >
+          <p
+            class="timeline_no_events"
+          >
+            No data to display
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
+    >
+      <div
+        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      >
+        <span
+          aria-busy="true"
+          class="is-loadable-placeholder"
+        >
+          Payment method
+        </span>
+      </div>
+      <div
+        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
+      >
+        <div
+          class="payment-method-details"
+        >
+          <div
+            class="payment-method-details__column"
+          >
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  Number
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  •••• 
+                  4242
+                </span>
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  Fingerprint
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  fingerprint
+                </span>
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  Expires
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  12 / 2099
+                </span>
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  Type
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  Visa credit card
+                </span>
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  ID
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  pm_mock
+                </span>
+              </p>
+            </div>
+          </div>
+          <div
+            class="payment-method-details__column"
+          >
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  Owner
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  First Name
+                </span>
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  Owner email
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  email@example.com
+                </span>
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  Address
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  <span>
+                    Line 1 Street
+                    <br />
+                    Line 2
+                    <br />
+                    City, CA 99999
+                  </span>
+                </span>
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  Origin
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  United States of America
+                </span>
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  CVC check
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  Passed
+                </span>
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  Street check
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  Passed
+                </span>
+              </p>
+            </div>
+            <div
+              class="payment-method-detail"
+            >
+              <h4
+                class="payment-method-detail__label"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder is-block"
+                >
+                  Zip check
+                </span>
+              </h4>
+              <p
+                class="payment-method-detail__value"
+              >
+                <span
+                  aria-busy="true"
+                  class="is-loadable-placeholder"
+                >
+                  Passed
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
