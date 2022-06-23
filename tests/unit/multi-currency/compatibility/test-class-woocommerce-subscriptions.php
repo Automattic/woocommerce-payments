@@ -285,7 +285,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->mock_wcs_get_order_type_cart_items( false );
 
-		// Set up an order with a non-default currency. 
+		// Set up an order with a non-default currency.
 		// This might need to be a subscription object, not an order.
 		$order = WC_Helper_Order::create_order();
 		$order->set_currency( 'JPY' );
