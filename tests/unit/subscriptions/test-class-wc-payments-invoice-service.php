@@ -11,7 +11,7 @@ use WCPay\Exceptions\API_Exception;
 /**
  * WC_Payments_Invoice_Service_Test unit tests.
  */
-class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 
 	const PRICE_ID_KEY                       = '_wcpay_product_price_id';
 	const PENDING_INVOICE_ID_KEY             = '_wcpay_pending_invoice_id';

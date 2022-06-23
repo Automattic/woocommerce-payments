@@ -11,7 +11,7 @@ use WCPay\MultiCurrency\MultiCurrency;
 /**
  * BackendCurrencies unit tests.
  */
-class WCPay_Multi_Currency_Backend_Currencies_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Backend_Currencies_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WC_Payments_Localization_Service.
 	 *

@@ -32,7 +32,7 @@ use WC_Helper_Token;
 use WC_Payments_Utils;
 use WC_Subscriptions;
 use WC_Subscriptions_Cart;
-use WP_UnitTestCase;
+use WCPAY_UnitTestCase;
 use WP_User;
 use Exception;
 
@@ -46,7 +46,7 @@ function get_woocommerce_currency() {
 /**
  * UPE_Payment_Gateway unit tests
  */
-class UPE_Payment_Gateway_Test extends WP_UnitTestCase {
+class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Mock site currency string

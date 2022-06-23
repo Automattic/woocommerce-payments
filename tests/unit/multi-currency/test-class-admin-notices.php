@@ -8,7 +8,7 @@
 /**
  * WCPay\MultiCurrency\AdminNotices unit tests.
  */
-class WCPay_Multi_Currency_Admin_Notices_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Admin_Notices_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * WCPay\MultiCurrency\AdminNotices instance.
 	 *

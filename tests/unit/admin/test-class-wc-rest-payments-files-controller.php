@@ -11,7 +11,7 @@ use WCPay\Exceptions\API_Exception;
 /**
  * WC_REST_Payments_Files_Controller_Test unit tests.
  */
-class WC_REST_Payments_Files_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Files_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Controller under test.
 	 *

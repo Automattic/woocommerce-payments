@@ -12,7 +12,7 @@ use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 /**
  * WC_Payments_API_Client unit tests.
  */
-class WC_Payments_API_Client_Test extends WP_UnitTestCase {
+class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * System under test

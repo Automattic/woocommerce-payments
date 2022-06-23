@@ -11,7 +11,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
-class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
+class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *

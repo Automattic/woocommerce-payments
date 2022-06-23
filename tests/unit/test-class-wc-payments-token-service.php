@@ -11,7 +11,7 @@ use WCPay\Constants\Payment_Method;
 /**
  * WC_Payments_Token_Service unit tests.
  */
-class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * System under test.
