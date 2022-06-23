@@ -1357,7 +1357,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$items_total = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
 		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( '' );
 
-		if ( wc_tax_enabled() ) {
+		if ( wc_tax_enabled() && 'incl' !== get_option( 'woocommerce_tax_display_cart' ) ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Tax', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $tax, $currency ),
@@ -1365,9 +1365,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		if ( WC()->cart->needs_shipping() ) {
+			$shipping_tax = wc_tax_enabled() && 'incl' !== get_option( 'woocommerce_tax_display_cart' ) ? 0 : WC()->cart->shipping_tax_total;
 			$items[] = [
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $shipping, $currency ),
+				'amount' => WC_Payments_Utils::prepare_amount( $shipping + $shipping_tax, $currency ),
 			];
 		}
 
