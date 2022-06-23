@@ -295,17 +295,33 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 		$_GET['switch-subscription'] = $order->get_id();
 		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
 
-		// update_post_meta( 42, '_order_currency', 'CAD', true );
 		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
 
 	// Returns code due to cart contains a subscription switch.
-	public function SKIP_test_override_selected_currency_return_currency_code_when_switch_in_cart() {
+	public function test_override_selected_currency_return_currency_code_when_switch_in_cart() {
+		// Reset/clear any previous mocked state.
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( false );
-		update_post_meta( 42, '_order_currency', 'CAD', true );
-		$this->mock_wcs_get_order_type_cart_items( true );
-		$this->assertSame( 'CAD', $this->woocommerce_subscriptions->override_selected_currency( false ) );
+		$this->mock_wcs_get_order_type_cart_items( false );
+	
+		// Mock order with custom currency for switch cart item.
+		// Note we're using a WC_Order as a stand-in for a true WC_Subscription.
+		$mock_subscription = WC_Helper_Order::create_order();
+		$mock_subscription->set_currency( 'JPY' );
+		$mock_subscription->save();
+
+		// Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Mock cart to simulate a switch cart item referencing our subscription.
+		$this->mock_wcs_get_order_type_cart_items_with_value( $mock_subscription->get_id() );
+
+		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
 
 	// Returns code due to cart contains a subscription resubscribe.
@@ -560,6 +576,27 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 			}
 		);
 	}
+
+	private function mock_wcs_get_order_type_cart_items_with_value( $switch_id = 0 ) {
+		WC_Subscriptions::wcs_get_order_type_cart_items(
+			function () use ( $switch_id ) {
+				if ( $switch_id ) {
+					return [
+						[
+							'product_id'          => 42,
+							'key'                 => 'abc123',
+							'subscription_switch' => [
+								'subscription_id' => $switch_id,
+							],
+						],
+					];
+				}
+
+				return [];
+			}
+		);
+	}
+
 
 	private function mock_wcs_get_order_type_cart_items( $value ) {
 		WC_Subscriptions::wcs_get_order_type_cart_items(
