@@ -159,7 +159,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 		$switch_cart_items = $this->get_subscription_switch_cart_items();
 		if ( 0 < count( $switch_cart_items ) ) {
-			$switch_cart_item = array_shift( $switch_cart_items );
+			$switch_cart_item    = array_shift( $switch_cart_items );
 			$switch_subscription = wcs_get_subscription( $switch_cart_item['subscription_switch']['subscription_id'] );
 			return $switch_subscription ? $switch_subscription->get_currency() : $return;
 		}

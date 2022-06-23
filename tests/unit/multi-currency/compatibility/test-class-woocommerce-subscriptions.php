@@ -267,7 +267,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 
 	// Returns code due to cart contains a subscription renewal.
 	public function test_override_selected_currency_return_currency_code_when_renewal_in_cart() {
-		// Set up an order with a non-default currency. 
+		// Set up an order with a non-default currency.
 		$order = WC_Helper_Order::create_order();
 		$order->set_currency( 'JPY' );
 		$order->save();
@@ -284,14 +284,14 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->mock_wcs_get_order_type_cart_items( false );
-	
+
 		// Set up an order with a non-default currency. 
 		// This might need to be a subscription object, not an order.
 		$order = WC_Helper_Order::create_order();
 		$order->set_currency( 'JPY' );
 		$order->save();
-		
-		// Blatantly hack mock request params for the test. :)
+
+		// Blatantly hack mock request params for the test.
 		$_GET['switch-subscription'] = $order->get_id();
 		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
 
@@ -303,7 +303,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 		// Reset/clear any previous mocked state.
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( false );
-	
+
 		// Mock order with custom currency for switch cart item.
 		// Note we're using a WC_Order as a stand-in for a true WC_Subscription.
 		$mock_subscription = WC_Helper_Order::create_order();
@@ -328,7 +328,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 		// Reset/clear any previous mocked state.
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_get_order_type_cart_items( false );
-	
+
 		// Mock order with custom currency for switch cart item.
 		// Note we're using a WC_Order as a stand-in for a true WC_Subscription.
 		$mock_subscription = WC_Helper_Order::create_order();
@@ -573,7 +573,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WP_UnitTestCas
 		$this->assertTrue( $this->woocommerce_subscriptions->should_hide_widgets( false ) );
 	}
 
-	// Simulate (mock) a renewal in the cart. 
+	// Simulate (mock) a renewal in the cart.
 	// Pass 0 / no args to unmock.
 	private function mock_wcs_cart_contains_renewal( $product_id = 0, $renewal_order_id = 0 ) {
 		WC_Subscriptions::wcs_cart_contains_renewal(
