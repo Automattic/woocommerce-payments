@@ -160,13 +160,13 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		$switch_cart_items = $this->get_subscription_switch_cart_items();
 		if ( 0 < count( $switch_cart_items ) ) {
 			$switch_cart_item    = array_shift( $switch_cart_items );
-			$switch_subscription = wcs_get_subscription( $switch_cart_item['subscription_switch']['subscription_id'] );
+			$switch_subscription = $this->get_subscription( $switch_cart_item['subscription_switch']['subscription_id'] );
 			return $switch_subscription ? $switch_subscription->get_currency() : $return;
 		}
 
 		$subscription_resubscribe = $this->cart_contains_resubscribe();
 		if ( $subscription_resubscribe ) {
-			$switch_subscription = wcs_get_subscription( $subscription_resubscribe['subscription_resubscribe']['subscription_id'] );
+			$switch_subscription = $this->get_subscription( $subscription_resubscribe['subscription_resubscribe']['subscription_id'] );
 			return $switch_subscription ? $switch_subscription->get_currency() : $return;
 		}
 
@@ -294,6 +294,19 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return [];
 		}
 		return wcs_get_order_type_cart_items( 'switch' );
+	}
+
+	/**
+	 * Getter for subscription objects.
+	 *
+	 * @param  mixed $the_subscription Post object or post ID of the order.
+	 * @return WC_Subscription|false The subscription object, or false if it cannot be found.
+	 */
+	private function get_subscription( $subscription ): array {
+		if ( ! function_exists( 'wcs_get_subscription' ) ) {
+			return false;
+		}
+		return wcs_get_subscription( $subscription );
 	}
 
 	/**
