@@ -12,7 +12,7 @@ use WCPay\Session_Rate_Limiter;
 /**
  * WC_Payments_Fraud_Service unit tests.
  */
-class Session_Rate_Limiter_Test extends WP_UnitTestCase {
+class Session_Rate_Limiter_Test extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *

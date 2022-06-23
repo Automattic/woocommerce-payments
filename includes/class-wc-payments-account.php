@@ -467,7 +467,7 @@ class WC_Payments_Account {
 		}
 
 		$is_on_settings_page           = WC_Payment_Gateway_WCPay::is_current_page_settings();
-		$should_redirect_to_onboarding = get_option( 'wcpay_should_redirect_to_onboarding', false );
+		$should_redirect_to_onboarding = (bool) get_option( 'wcpay_should_redirect_to_onboarding', false );
 
 		if (
 			// If not loading the settings page...

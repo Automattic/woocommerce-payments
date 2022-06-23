@@ -10,7 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * WC_Payments_Admin_Sections_Overwrite unit tests.
  */
-class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
+class WC_Payments_Admin_Sections_Overwrite_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * @var string
@@ -236,6 +236,7 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WP_UnitTestCase {
 	private function set_is_admin() {
 		global $current_screen;
 
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$current_screen = $this->getMockBuilder( \stdClass::class )
 			->setMethods( [ 'in_admin' ] )
 			->getMock();

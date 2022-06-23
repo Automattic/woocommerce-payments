@@ -11,7 +11,7 @@ use WCPay\MultiCurrency\MultiCurrency;
 /**
  * WC_Payments_Explicit_Price_Formatter unit tests.
  */
-class WC_Payments_Explicit_Price_Formatter_Test extends WP_UnitTestCase {
+class WC_Payments_Explicit_Price_Formatter_Test extends WCPAY_UnitTestCase {
 
 	const LOGGED_IN_USER_ID         = 1;
 	const ENABLED_CURRENCIES_OPTION = 'wcpay_multi_currency_enabled_currencies';

@@ -8,7 +8,7 @@
 /**
  * WC_Payments_Localization_Service_Test unit tests.
  */
-class WC_Payments_Localization_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * WC_Payments_Localization_Service instance.
 	 *
@@ -106,7 +106,8 @@ class WC_Payments_Localization_Service_Test extends WP_UnitTestCase {
 	}
 
 	public function test_get_user_locale_returns_default_locale() {
-		$this->assertSame( 'en_US', $this->localization_service->get_user_locale() );
+		$en_locale = $this->is_wpcom() ? 'en' : 'en_US';
+		$this->assertSame( $en_locale, $this->localization_service->get_user_locale() );
 	}
 
 	public function test_get_user_locale_returns_filtered_locale() {

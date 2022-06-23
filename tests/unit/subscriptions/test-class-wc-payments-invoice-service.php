@@ -11,7 +11,7 @@ use WCPay\Exceptions\API_Exception;
 /**
  * WC_Payments_Invoice_Service_Test unit tests.
  */
-class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 
 	const PRICE_ID_KEY                       = '_wcpay_product_price_id';
 	const PENDING_INVOICE_ID_KEY             = '_wcpay_pending_invoice_id';
@@ -304,17 +304,7 @@ class WC_Payments_Invoice_Service_Test extends WP_UnitTestCase {
 		$mock_order = WC_Helper_Order::create_order();
 		$intent_id  = 'pi_paymentIntentID';
 
-		$intent = new WC_Payments_API_Intention(
-			$intent_id,
-			'10',
-			'USD',
-			'customer_id',
-			'payment_method_id',
-			new DateTime(),
-			'succeeded', // Intent status.
-			'charge_id',
-			'client_secret'
-		);
+		$intent = WC_Helper_Intention::create_intention();
 
 		$this->mock_api_client
 			->expects( $this->once() )

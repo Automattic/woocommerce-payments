@@ -11,7 +11,7 @@ use WCPay\Exceptions\API_Exception;
 /**
  * WC_Payments_Action_Scheduler_Service unit tests.
  */
-class WC_Payments_Action_Scheduler_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *
