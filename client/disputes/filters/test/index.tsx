@@ -24,7 +24,7 @@ function addCurrencyFilter( filter: string ) {
 	user.click( screen.getByRole( 'button', { name: filter } ) );
 }
 
-describe( 'Disputes filters', () => {
+describe( 'Disputes filters: Advanced', () => {
 	beforeEach( () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
