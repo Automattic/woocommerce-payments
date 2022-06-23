@@ -924,6 +924,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Returns the Stripe payment type of the selected payment method.
+	 *
+	 * @return string[]
+	 */
+	public function get_selected_stripe_payment_type_id() {
+		return $this->stripe_id;
+	}
+
+	/**
 	 * Returns the list of enabled payment method types that will function with the current checkout.
 	 *
 	 * @param string $order_id optional Order ID.
