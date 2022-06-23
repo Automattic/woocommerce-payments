@@ -385,7 +385,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					if ( 'success' === response.result ) {
 						window.location = response.url;
 					} else {
-						closeIframe();
+						closeLoginSessionIframe();
 					}
 				} );
 				break;
