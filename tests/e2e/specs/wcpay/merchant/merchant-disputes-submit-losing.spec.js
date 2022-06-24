@@ -46,6 +46,7 @@ describe( 'Disputes > Submit losing dispute', () => {
 			'p.order_number > a',
 			( anchor ) => anchor.getAttribute( 'href' )
 		);
+
 		await merchantWCP.openPaymentDetails( paymentDetailsLink );
 
 		// Verify we have a dispute for this purchase
@@ -73,13 +74,13 @@ describe( 'Disputes > Submit losing dispute', () => {
 
 		// Verify we're on the view dispute page
 		await expect( page ).toMatchElement(
-			'div.components-card > .components-card__header',
+			'div.wcpay-dispute-details .header-dispute-overview',
 			{
 				text: 'Dispute overview',
 			}
 		);
 		await expect( page ).toMatchElement(
-			'div.components-card > .components-card__header',
+			'div.wcpay-dispute-details .components-card > .components-card__header',
 			{
 				text: 'Dispute: Product not received',
 			}
@@ -100,37 +101,17 @@ describe( 'Disputes > Submit losing dispute', () => {
 			}
 		);
 
-		// Verify Lost status in disputes view
-		await page.waitForSelector( 'span.chip-light' );
-		await expect( page ).toMatchElement( 'span.chip-light', {
-			text: 'Lost',
-		} );
-	} );
-
-	it( 'should verify a dispute has been accepted properly', async () => {
-		// Re-open the dispute to view the details
-		await merchant.goToOrder( orderId );
-
-		// Pull out and follow the link to avoid working in multiple tabs
-		const paymentDetailsLink = await page.$eval(
-			'p.order_number > a',
-			( anchor ) => anchor.getAttribute( 'href' )
-		);
-		await merchantWCP.openPaymentDetails( paymentDetailsLink );
-
-		// Get the link to the dispute details
-		const disputeDetailsElement = await page.$(
-			'[data-testid="view-dispute-button"]'
-		);
-		const disputeDetailsLink = await page.evaluate(
-			( anchor ) => anchor.getAttribute( 'href' ),
-			disputeDetailsElement
-		);
-
-		// Open the dispute details
+		// If webhooks are not received, the dispute status won't be updated in the dispute list page resulting in test failure.
+		// Workaround - Open dispute details page again and check status.
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );
+		await expect( page ).toMatchElement(
+			'div.wcpay-dispute-details .header-dispute-overview',
+			{
+				text: 'Dispute overview',
+			}
+		);
 
-		// Check if buttons are not present anymore since a dispute has been accepted
+		// Confirm buttons are not present anymore since a dispute has been accepted.
 		await expect( page ).not.toMatchElement(
 			'div.components-card > .components-card__footer > a',
 			{
@@ -141,6 +122,17 @@ describe( 'Disputes > Submit losing dispute', () => {
 			'div.components-card > .components-card__footer > button',
 			{
 				text: 'Accept dispute',
+			}
+		);
+
+		// Confirm dispute status is Lost.
+		await page.waitForSelector(
+			'div.wcpay-dispute-details .header-dispute-overview span.chip-light'
+		);
+		await expect( page ).toMatchElement(
+			'div.wcpay-dispute-details .header-dispute-overview span.chip-light',
+			{
+				text: 'Lost',
 			}
 		);
 	} );
