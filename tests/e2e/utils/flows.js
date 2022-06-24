@@ -5,6 +5,9 @@
 /**
  * External dependencies
  */
+import shell from 'shelljs';
+const WP_CONTAINER = 'wcp_e2e_wordpress';
+const WP_CLI = `docker run --rm --user xfs --volumes-from ${ WP_CONTAINER } --network container:${ WP_CONTAINER } wordpress:cli`;
 
 const {
 	merchant,
@@ -39,7 +42,6 @@ const WC_SUBSCRIPTIONS_PAGE =
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
 const WP_ADMIN_PAGES = baseUrl + 'wp-admin/edit.php?post_type=page';
 const WCB_CHECKOUT = baseUrl + 'checkout-wcb/';
-const WCPAY_DEV_TOOLS = baseUrl + 'wp-admin/admin.php?page=wcpaydev';
 const SHOP_CART_PAGE = baseUrl + 'cart/';
 
 export const RUN_SUBSCRIPTIONS_TESTS =
@@ -246,57 +248,33 @@ export const shopperWCP = {
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 export const merchantWCP = {
 	activateUpe: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
+		// Enable UPE.
+		await shell.exec( `${ WP_CLI } wp option update _wcpay_feature_upe 1`, {
+			silent: true,
 		} );
 
-		if ( ! ( await page.$( '#_wcpay_feature_upe:checked' ) ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout',
-			} );
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
+		// Enable UPE additional payment methods.
+		await shell.exec(
+			`${ WP_CLI } wp option update _wcpay_feature_upe_additional_payment_methods 1`,
+			{
+				silent: true,
+			}
 		);
-
-		if ( ! isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
 	},
 
 	deactivateUpe: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
+		// Disable UPE.
+		await shell.exec( `${ WP_CLI } wp option delete _wcpay_feature_upe`, {
+			silent: true,
 		} );
 
-		if ( await page.$( '#_wcpay_feature_upe:checked' ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout',
-			} );
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
+		// Disable UPE additional payment methods.
+		await shell.exec(
+			`${ WP_CLI } wp option delete _wcpay_feature_upe_additional_payment_methods`,
+			{
+				silent: true,
+			}
 		);
-
-		if ( isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
 	},
 
 	openDisputeDetails: async ( disputeDetailsLink ) => {
