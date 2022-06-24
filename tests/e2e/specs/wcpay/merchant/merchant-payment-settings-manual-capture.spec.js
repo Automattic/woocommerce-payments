@@ -32,7 +32,7 @@ describe( 'As a merchant, I should be prompted a confirmation modal when I try t
 		await merchantWCP.deactivateUpe();
 	} );
 
-	it( 'should not show the confirmation dialog when disabling the manual capture while UPE is activated', async () => {
+	it.skip( 'should not show the confirmation dialog when disabling the manual capture while UPE is activated', async () => {
 		await merchantWCP.activateUpe();
 		await merchantWCP.openWCPSettings();
 		await merchantWCP.setCheckboxByTestId( checkboxCaptureLaterOption );
