@@ -16,7 +16,7 @@ require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 /**
  * WC_Payments_Webhook_Processing_Service unit tests.
  */
-class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * System under test.
@@ -79,7 +79,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 
 		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
-		$this->order_service = new WC_Payments_Order_Service();
+		$this->order_service = new WC_Payments_Order_Service(
+			$this->createMock( WC_Payments_API_Client::class )
+		);
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 									->disableOriginalConstructor()

@@ -23,12 +23,13 @@ use WCPay\Session_Rate_Limiter;
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
  */
-class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Tested REST route.
+	 * @var string
 	 */
-	const SETTINGS_ROUTE = '/wc/v3/payments/settings';
+	protected static $settings_route;
 
 	/**
 	 * The system under test.
@@ -76,6 +77,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		self::$settings_route = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/settings';
+
 		require_once __DIR__ . '/../helpers/class-wc-blocks-rest-api-registration-preventer.php';
 		WC_Blocks_REST_API_Registration_Preventer::prevent();
 
@@ -92,7 +95,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
-		$order_service            = new WC_Payments_Order_Service();
+		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -168,7 +171,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
-		$request = new WP_REST_Request( 'GET', self::SETTINGS_ROUTE );
+		$request = new WP_REST_Request( 'GET', self::$settings_route );
 
 		$response = rest_do_request( $request );
 
@@ -234,19 +237,19 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function test_get_settings_fails_if_user_cannot_manage_woocommerce() {
 		$cb = $this->create_can_manage_woocommerce_cap_override( false );
 		add_filter( 'user_has_cap', $cb );
-		$response = rest_do_request( new WP_REST_Request( 'GET', self::SETTINGS_ROUTE ) );
+		$response = rest_do_request( new WP_REST_Request( 'GET', self::$settings_route ) );
 		$this->assertEquals( 403, $response->get_status() );
 		remove_filter( 'user_has_cap', $cb );
 
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
 		add_filter( 'user_has_cap', $cb );
-		$response = rest_do_request( new WP_REST_Request( 'GET', self::SETTINGS_ROUTE ) );
+		$response = rest_do_request( new WP_REST_Request( 'GET', self::$settings_route ) );
 		$this->assertEquals( 200, $response->get_status() );
 		remove_filter( 'user_has_cap', $cb );
 	}
 
 	public function test_update_settings_request_returns_status_code_200() {
-		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
+		$request = new WP_REST_Request( 'POST', self::$settings_route );
 		$request->set_param( 'is_wcpay_enabled', true );
 		$request->set_param( 'enabled_payment_method_ids', [ 'card' ] );
 
@@ -284,7 +287,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_update_settings_returns_error_on_non_bool_is_wcpay_enabled_value() {
-		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
+		$request = new WP_REST_Request( 'POST', self::$settings_route );
 		$request->set_param( 'is_wcpay_enabled', 'foo' );
 
 		$response = rest_do_request( $request );
@@ -304,7 +307,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
-		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
+		$request = new WP_REST_Request( 'POST', self::$settings_route );
 		$request->set_param( 'enabled_payment_method_ids', [ 'foo', 'baz' ] );
 
 		$response = rest_do_request( $request );
@@ -314,13 +317,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	public function test_update_settings_fails_if_user_cannot_manage_woocommerce() {
 		$cb = $this->create_can_manage_woocommerce_cap_override( false );
 		add_filter( 'user_has_cap', $cb );
-		$response = rest_do_request( new WP_REST_Request( 'POST', self::SETTINGS_ROUTE ) );
+		$response = rest_do_request( new WP_REST_Request( 'POST', self::$settings_route ) );
 		$this->assertEquals( 403, $response->get_status() );
 		remove_filter( 'user_has_cap', $cb );
 
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
 		add_filter( 'user_has_cap', $cb );
-		$response = rest_do_request( new WP_REST_Request( 'POST', self::SETTINGS_ROUTE ) );
+		$response = rest_do_request( new WP_REST_Request( 'POST', self::$settings_route ) );
 		$this->assertEquals( 200, $response->get_status() );
 		remove_filter( 'user_has_cap', $cb );
 	}
@@ -354,7 +357,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_update_settings_returns_error_on_non_bool_is_manual_capture_enabled_value() {
-		$request = new WP_REST_Request( 'POST', self::SETTINGS_ROUTE );
+		$request = new WP_REST_Request( 'POST', self::$settings_route );
 		$request->set_param( 'is_manual_capture_enabled', 'foo' );
 
 		$response = rest_do_request( $request );

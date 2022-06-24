@@ -66,7 +66,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @param WC_Payment_Gateway_WCPay $gateway WooCommerce Payments gateway.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
-		$this->domain_name             = str_replace( [ 'https://', 'http://' ], '', get_site_url() ); // @codingStandardsIgnoreLine
+		$this->domain_name             = wp_parse_url( get_site_url(), PHP_URL_HOST );
 		$this->apple_pay_verify_notice = '';
 		$this->payments_api_client     = $payments_api_client;
 		$this->account                 = $account;
@@ -356,7 +356,7 @@ class WC_Payments_Apple_Pay_Registration {
 		<div class="notice notice-warning apple-pay-message">
 			<p>
 				<strong><?php echo esc_html( 'Apple Pay:' ); ?></strong>
-				<?php echo esc_html_e( 'Payment request buttons are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+				<?php echo esc_html_e( 'Express checkouts are enabled. To use Apple Pay, please use a live WooCommerce Payments account.', 'woocommerce-payments' ); ?>
 			</p>
 		</div>
 		<?php
@@ -389,14 +389,22 @@ class WC_Payments_Apple_Pay_Registration {
 				'title' => [],
 			],
 		];
-		$payment_request_button_text       = __( 'Payment request button:', 'woocommerce-payments' );
+		$payment_request_button_text       = __( 'Express checkouts:', 'woocommerce-payments' );
 		$verification_failed_without_error = __( 'Apple Pay domain verification failed.', 'woocommerce-payments' );
 		$verification_failed_with_error    = __( 'Apple Pay domain verification failed with the following error:', 'woocommerce-payments' );
-		$check_log_text                    = sprintf(
-			/* translators: 1) HTML anchor open tag 2) HTML anchor closing tag */
-			esc_html__( 'Please check the %1$slogs%2$s for more details on this issue. Debug log must be enabled to see recorded logs.', 'woocommerce-payments' ),
-			'<a href="' . admin_url( 'admin.php?page=wc-status&tab=logs' ) . '">',
-			'</a>'
+		$check_log_text                    = WC_Payments_Utils::esc_interpolated_html(
+			/* translators: a: Link to the logs page */
+			__( 'Please check the <a>logs</a> for more details on this issue. Debug log must be enabled under <strong>Advanced settings</strong> to see recorded logs.', 'woocommerce-payments' ),
+			[
+				'a'      => '<a href="' . admin_url( 'admin.php?page=wc-status&tab=logs' ) . '">',
+				'strong' => '<strong>',
+			]
+		);
+		$learn_more_text = WC_Payments_Utils::esc_interpolated_html(
+			__( '<a>Learn more</a>.', 'woocommerce-payments' ),
+			[
+				'a' => '<a href="https://woocommerce.com/document/payments/apple-pay/#triggering-domain-registration" target="_blank">',
+			]
 		);
 
 		?>
@@ -405,11 +413,13 @@ class WC_Payments_Apple_Pay_Registration {
 				<p>
 					<strong><?php echo esc_html( $payment_request_button_text ); ?></strong>
 					<?php echo esc_html( $verification_failed_without_error ); ?>
+					<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
 				</p>
 			<?php else : ?>
 				<p>
 					<strong><?php echo esc_html( $payment_request_button_text ); ?></strong>
 					<?php echo esc_html( $verification_failed_with_error ); ?>
+					<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
 				</p>
 				<p><i><?php echo wp_kses( make_clickable( esc_html( $this->apple_pay_verify_notice ) ), $allowed_html ); ?></i></p>
 			<?php endif; ?>

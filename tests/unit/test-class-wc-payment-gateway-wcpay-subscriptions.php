@@ -11,7 +11,7 @@ use WCPay\Session_Rate_Limiter;
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
-class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
+class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	const USER_ID           = 1;
 	const CUSTOMER_ID       = 'cus_mock';
 	const PAYMENT_METHOD_ID = 'pm_mock';
@@ -102,7 +102,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->order_service = new WC_Payments_Order_Service();
+		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -227,19 +227,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
 			->with( $this->anything(), $this->anything(), self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, $this->anything(), false, false, $this->anything(), $this->anything(), true )
-			->willReturn(
-				new WC_Payments_API_Intention(
-					self::PAYMENT_INTENT_ID,
-					1500,
-					'usd',
-					'cus_12345',
-					'pm_12345',
-					new DateTime(),
-					'succeeded',
-					self::CHARGE_ID,
-					''
-				)
-			);
+			->willReturn( WC_Helper_Intention::create_intention() );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );
 
@@ -609,6 +597,73 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WP_UnitTestCase {
 
 		$this->assertFalse( wp_script_is( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'registered' ) );
 		$this->assertFalse( wp_script_is( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'enqueued' ) );
+	}
+
+	public function test_append_payment_meta() {
+		$token1 = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+		$token2 = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->set_payment_method( $this->wcpay_gateway->id );
+		$subscription->add_payment_token( $token1 );
+
+		$order = WC_Helper_Order::create_order( self::USER_ID );
+		$order->set_payment_method( $this->wcpay_gateway->id );
+		$order->add_payment_token( $token2 );
+
+		$payment_meta1 = $this->wcpay_gateway->append_payment_meta( [], $order, $subscription );
+		$payment_meta2 = $this->wcpay_gateway->append_payment_meta( [ 'some-key' => 'some-value' ], $order, $subscription );
+
+		$this->assertEquals(
+			[
+				'wc_order_tokens' => [
+					'token' => [
+						'label' => 'Saved payment method',
+						'value' => $subscription->get_payment_tokens()[0],
+					],
+				],
+			],
+			$payment_meta1
+		);
+
+		$this->assertEquals(
+			[
+				'some-key'        => 'some-value',
+				'wc_order_tokens' => [
+					'token' => [
+						'label' => 'Saved payment method',
+						'value' => $subscription->get_payment_tokens()[0],
+					],
+				],
+			],
+			$payment_meta2
+		);
+	}
+
+	public function test_append_payment_meta_non_wcpay() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+
+		$order = WC_Helper_Order::create_order( self::USER_ID );
+		$order->set_payment_method( $this->wcpay_gateway->id );
+
+		$payment_meta = $this->wcpay_gateway->append_payment_meta( [ 'something' ], $order, $subscription );
+
+		$this->assertEquals(
+			[ 'something' ],
+			$payment_meta
+		);
+	}
+
+	public function test_append_payment_meta_invalid_payment_meta() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$order        = WC_Helper_Order::create_order( self::USER_ID );
+
+		$payment_meta = $this->wcpay_gateway->append_payment_meta( 'non-array', $order, $subscription );
+
+		$this->assertEquals(
+			'non-array',
+			$payment_meta
+		);
 	}
 
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {

@@ -12,7 +12,7 @@ use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 /**
  * WC_Payments_API_Client unit tests.
  */
-class WC_Payments_API_Client_Test extends WP_UnitTestCase {
+class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * System under test
@@ -1131,6 +1131,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			'customer_email' => 'test@test.com',
 			'site_url'       => 'http://example.org',
 			'order_id'       => 1,
+			'order_number'   => 13,
 			'order_key'      => 'test_key',
 			'payment_type'   => 'single',
 		];
@@ -1168,7 +1169,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						'receipt_email'        => '',
 						'metadata'             => $metadata,
 						'level3'               => $level3_data,
-						'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace(
+						'description'          => 'Online Payment for Order #' . strval( $metadata['order_number'] ) . ' for ' . str_replace(
 							[
 								'https://',
 								'http://',
@@ -1246,6 +1247,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 			'customer_email' => 'test@test.com',
 			'site_url'       => 'http://example.org',
 			'order_id'       => 1,
+			'order_number'   => 13,
 			'order_key'      => 'test_key',
 			'payment_type'   => 'single',
 		];
@@ -1285,7 +1287,7 @@ class WC_Payments_API_Client_Test extends WP_UnitTestCase {
 						'receipt_email'        => '',
 						'metadata'             => $metadata,
 						'level3'               => $level3_data,
-						'description'          => 'Online Payment for Order #' . strval( $metadata['order_id'] ) . ' for ' . str_replace(
+						'description'          => 'Online Payment for Order #' . strval( $metadata['order_number'] ) . ' for ' . str_replace(
 							[
 								'https://',
 								'http://',

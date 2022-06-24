@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -147,6 +146,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
 		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
 		add_action( 'wcs_save_other_payment_meta', [ $this, 'save_meta_in_order_tokens' ], 10, 4 );
+
+		// To make sure payment meta is copied from subscription to order.
+		add_filter( 'wcs_copy_payment_meta_to_order', [ $this, 'append_payment_meta' ], 10, 3 );
 
 		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this, 'get_specific_old_payment_method_title' ], 10, 3 );
 		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this, 'get_specific_new_payment_method_title' ], 10, 3 );
@@ -311,6 +313,45 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Return the payment meta data for this payment gateway.
+	 *
+	 * @param WC_Subscription $subscription The subscription order.
+	 * @return array
+	 */
+	private function get_payment_meta( $subscription ) {
+		$active_token = $this->get_payment_token( $subscription );
+
+		return [
+			self::$payment_method_meta_table => [
+				self::$payment_method_meta_key => [
+					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
+					'value' => empty( $active_token ) ? '' : (string) $active_token->get_id(),
+				],
+			],
+		];
+	}
+
+	/**
+	 * Append payment meta if order and subscription are using WCPay as payment method and if passed payment meta is an array.
+	 *
+	 * @param array           $payment_meta Associative array of meta data required for automatic payments.
+	 * @param WC_Order        $order        The subscription's related order.
+	 * @param WC_Subscription $subscription The subscription order.
+	 * @return array
+	 */
+	public function append_payment_meta( $payment_meta, $order, $subscription ) {
+		if ( $this->id !== $order->get_payment_method() || $this->id !== $subscription->get_payment_method() ) {
+			return $payment_meta;
+		}
+
+		if ( ! is_array( $payment_meta ) ) {
+			return $payment_meta;
+		}
+
+		return array_merge( $payment_meta, $this->get_payment_meta( $subscription ) );
+	}
+
+	/**
 	 * Include the payment meta data required to process automatic recurring payments so that store managers can
 	 * manually set up automatic recurring payments for a customer via the Edit Subscriptions screen in 2.0+.
 	 *
@@ -319,16 +360,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return array
 	 */
 	public function add_subscription_payment_meta( $payment_meta, $subscription ) {
-		$active_token = $this->get_payment_token( $subscription );
-
-		$payment_meta[ $this->id ] = [
-			self::$payment_method_meta_table => [
-				self::$payment_method_meta_key => [
-					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
-					'value' => empty( $active_token ) ? '' : (string) $active_token->get_id(),
-				],
-			],
-		];
+		$payment_meta[ $this->id ] = $this->get_payment_meta( $subscription );
 
 		// Display select element on newer Subscriptions versions.
 		add_action(

@@ -184,6 +184,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
 		);
+		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
@@ -207,13 +208,18 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const platformCheckoutLocateUser = ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
-		const emailParam = new URLSearchParams();
-		emailParam.append( 'email', email );
+		const emailExistsQuery = new URLSearchParams();
+		emailExistsQuery.append( 'email', email );
+		emailExistsQuery.append( 'test_mode', !! getConfig( 'testMode' ) );
+		emailExistsQuery.append(
+			'wcpay_version',
+			getConfig( 'wcpayVersionNumber' )
+		);
 
 		fetch(
 			`${ getConfig(
 				'platformCheckoutHost'
-			) }/wp-json/platform-checkout/v1/user/exists?${ emailParam.toString() }`
+			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`
 		)
 			.then( ( response ) => response.json() )
 			.then( ( data ) => {

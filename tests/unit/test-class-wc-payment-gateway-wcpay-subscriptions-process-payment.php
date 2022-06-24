@@ -10,7 +10,7 @@ use WCPay\Session_Rate_Limiter;
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
-class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_UnitTestCase {
+class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_UnitTestCase {
 	const USER_ID           = 1;
 	const CUSTOMER_ID       = 'cus_mock';
 	const PAYMENT_METHOD_ID = 'pm_mock';
@@ -106,17 +106,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		wp_set_current_user( self::USER_ID );
 
-		$this->payment_intent = new WC_Payments_API_Intention(
-			self::PAYMENT_INTENT_ID,
-			1500,
-			'usd',
-			'cus_12345',
-			'pm_12345',
-			new DateTime(),
-			'succeeded',
-			self::CHARGE_ID,
-			''
-		);
+		$this->payment_intent = WC_Helper_Intention::create_intention();
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
@@ -138,7 +128,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WP_Uni
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 
-		$this->order_service = new WC_Payments_Order_Service();
+		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(

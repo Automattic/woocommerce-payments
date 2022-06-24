@@ -15,10 +15,11 @@ import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import { wcPaySurveys } from './questions';
 import WcPaySurveyContext from './context';
 import InlineNotice from '../../components/inline-notice';
+import { LoadableBlock } from '../../components/loadable';
 
 const SurveyModalBody = ( { options, surveyQuestion } ) => {
 	const [ isUpeEnabled ] = useIsUpeEnabled();
-	const { surveyAnswers, setSurveyAnswers } = useContext(
+	const { surveyAnswers, setSurveyAnswers, isLoadingSsr } = useContext(
 		WcPaySurveyContext
 	);
 
@@ -59,11 +60,10 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 			/>
 			<TextareaControl
 				className="comments-text-field"
-				help={ __(
-					'Feedback will be sent anonymously to the WooCommerce Payments development team.',
+				label={ __(
+					'Please provide additional details to help us improve the experience',
 					'woocommerce-payments'
 				) }
-				label={ __( 'Comments (optional)', 'woocommerce-payments' ) }
 				onChange={ ( text ) => {
 					setSurveyAnswers( ( prev ) => ( {
 						...prev,
@@ -72,6 +72,33 @@ const SurveyModalBody = ( { options, surveyQuestion } ) => {
 				} }
 				value={ surveyAnswers.comments }
 			/>
+			<p className="ssr-label">
+				{ __(
+					'The following system status information will also be submitted:',
+					'woocommerce-payments'
+				) }
+			</p>
+			{ isLoadingSsr ? (
+				<LoadableBlock isLoading={ true } numLines={ 5 } />
+			) : (
+				<TextareaControl
+					className="ssr-text-field"
+					onChange={ ( value ) => {
+						setSurveyAnswers( ( prev ) => ( {
+							...prev,
+							ssr: value,
+						} ) );
+					} }
+					value={ surveyAnswers.ssr }
+				/>
+			) }
+
+			<p className="survey-bottom-disclaimer">
+				{ __(
+					'Feedback will be sent anonymously to the WooCommerce Payments development team.',
+					'woocommerce-payments'
+				) }
+			</p>
 		</>
 	);
 };

@@ -7,11 +7,12 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Constants\Payment_Method;
 
 /**
  * WC_REST_Payments_Orders_Controller unit tests.
  */
-class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Controller under test.
 	 *
@@ -42,12 +43,17 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 	/**
 	 * @var string
 	 */
-	private $mock_intent_id = 'pi_xxxxxxxxxxxxx';
+	private $mock_intent_id = 'pi_mock';
 
 	/**
 	 * @var string
 	 */
-	private $mock_charge_id = 'ch_yyyyyyyyyyyyy';
+	private $mock_charge_id = 'ch_mock';
+
+	/**
+	 * @var integer
+	 */
+	private $mock_charge_created = 1653076178;
 
 	public function set_up() {
 		parent::set_up();
@@ -58,7 +64,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_gateway          = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
-		$this->order_service         = new WC_Payments_Order_Service();
+		$this->order_service         = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		$this->controller = new WC_REST_Payments_Orders_Controller(
 			$this->mock_api_client,
@@ -69,33 +75,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_capture_terminal_payment_success() {
-		$order = $this->create_mock_order();
-
-		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
-		$mock_intent
-			->expects( $this->any() )
-			->method( 'get_status' )
-			->willReturn( 'requires_capture' );
-		$mock_intent
-			->expects( $this->any() )
-			->method( 'get_id' )
-			->willReturn( 'pi_mock' );
-		$mock_intent
-			->expects( $this->any() )
-			->method( 'get_payment_method_id' )
-			->willReturn( 'pm_mock' );
-		$mock_intent
-			->expects( $this->any() )
-			->method( 'get_customer_id' )
-			->willReturn( 'cus_mock' );
-		$mock_intent
-			->expects( $this->any() )
-			->method( 'get_charge_id' )
-			->willReturn( 'ch_mock' );
-		$mock_intent
-			->expects( $this->any() )
-			->method( 'get_currency' )
-			->willReturn( 'mok' );
+		$order       = $this->create_mock_order();
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -118,12 +99,12 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 			->method( 'attach_intent_info_to_order' )
 			->with(
 				$this->isInstanceOf( WC_Order::class ),
-				'pi_mock',
+				$this->mock_intent_id,
 				'requires_capture',
 				'pm_mock',
 				'cus_mock',
-				'ch_mock',
-				'mok'
+				$this->mock_charge_id,
+				'USD'
 			);
 
 		$request = new WP_REST_Request( 'POST' );
@@ -150,37 +131,13 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertEquals( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertEquals( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
 		$this->assertEquals( 'completed', $result_order->get_status() );
-		$this->assertStringEndsWith( '/wc/v3/payments/readers/receipts/pi_mock', $result_order->get_meta( 'receipt_url' ) );
+		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/' . $this->mock_intent_id;
+		$this->assertStringEndsWith( $url, $result_order->get_meta( 'receipt_url' ) );
 	}
 
 	public function test_capture_terminal_payment_succeeded_intent() {
-		$order = $this->create_mock_order();
-
-		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
-		$mock_intent
-			->expects( $this->atLeastOnce() )
-			->method( 'get_status' )
-			->willReturn( 'succeeded' );
-		$mock_intent
-			->expects( $this->atLeastOnce() )
-			->method( 'get_id' )
-			->willReturn( $this->mock_intent_id );
-		$mock_intent
-			->expects( $this->once() )
-			->method( 'get_payment_method_id' )
-			->willReturn( 'pm_mock' );
-		$mock_intent
-			->expects( $this->once() )
-			->method( 'get_customer_id' )
-			->willReturn( 'cus_mock' );
-		$mock_intent
-			->expects( $this->atLeastOnce() )
-			->method( 'get_charge_id' )
-			->willReturn( 'ch_mock' );
-		$mock_intent
-			->expects( $this->atLeastOnce() )
-			->method( 'get_currency' )
-			->willReturn( 'mok' );
+		$order       = $this->create_mock_order();
+		$mock_intent = WC_Helper_Intention::create_intention();
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -196,8 +153,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				'succeeded',
 				'pm_mock',
 				'cus_mock',
-				'ch_mock',
-				'mok'
+				$this->mock_charge_id,
+				'USD'
 			);
 		$this->mock_gateway
 			->expects( $this->once() )
@@ -236,7 +193,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertSame( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
 		$this->assertSame( 'completed', $result_order->get_status() );
-		$this->assertStringEndsWith( '/wc/v3/payments/readers/receipts/' . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
+		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/';
+		$this->assertStringEndsWith( $url . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
 	}
 
 	public function test_capture_terminal_payment_completed_order() {
@@ -245,31 +203,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$order = $this->create_mock_order();
 		$order->update_status( 'completed' );
 
-		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
-		$mock_intent
-			->expects( $this->atLeastOnce() )
-			->method( 'get_status' )
-			->willReturn( 'succeeded' );
-		$mock_intent
-			->expects( $this->atLeastOnce() )
-			->method( 'get_id' )
-			->willReturn( $this->mock_intent_id );
-		$mock_intent
-			->expects( $this->once() )
-			->method( 'get_payment_method_id' )
-			->willReturn( 'pm_mock' );
-		$mock_intent
-			->expects( $this->once() )
-			->method( 'get_customer_id' )
-			->willReturn( 'cus_mock' );
-		$mock_intent
-			->expects( $this->atLeastOnce() )
-			->method( 'get_charge_id' )
-			->willReturn( 'ch_mock' );
-		$mock_intent
-			->expects( $this->atLeastOnce() )
-			->method( 'get_currency' )
-			->willReturn( 'mok' );
+		$mock_intent = WC_Helper_Intention::create_intention();
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -285,8 +219,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 				'succeeded',
 				'pm_mock',
 				'cus_mock',
-				'ch_mock',
-				'mok'
+				$this->mock_charge_id,
+				'USD'
 			);
 		$this->mock_gateway
 			->expects( $this->once() )
@@ -325,17 +259,14 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertSame( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
 		$this->assertSame( 'completed', $result_order->get_status() );
-		$this->assertStringEndsWith( '/wc/v3/payments/readers/receipts/' . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
+		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/';
+		$this->assertStringEndsWith( $url . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
 	}
 
 	public function test_capture_terminal_payment_intent_non_capturable() {
 		$order = $this->create_mock_order();
 
-		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
-		$mock_intent
-			->expects( $this->any() )
-			->method( 'get_status' )
-			->willReturn( 'requires_payment_method' );
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -408,11 +339,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 	public function test_capture_terminal_payment_error_when_capturing() {
 		$order = $this->create_mock_order();
 
-		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
-		$mock_intent
-			->expects( $this->any() )
-			->method( 'get_status' )
-			->willReturn( 'requires_capture' );
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -453,11 +380,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 	public function test_capture_terminal_payment_error_invalid_arguments() {
 		$order = $this->create_mock_order();
 
-		$mock_intent = $this->createMock( WC_Payments_API_Intention::class );
-		$mock_intent
-			->expects( $this->any() )
-			->method( 'get_status' )
-			->willReturn( 'requires_capture' );
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -902,13 +825,137 @@ class WC_REST_Payments_Orders_Controller_Test extends WP_UnitTestCase {
 		$this->assertSame( 404, $data['status'] );
 	}
 
+	public function test_create_terminal_intent_invalid_payment_method_format() {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$request->set_param( 'payment_methods', 'not_an_array' );
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 500, $data['status'] );
+	}
+
+	public function test_create_terminal_intent_invalid_payment_method() {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$request->set_param( 'payment_methods', [ 'invalid_payment_method' ] );
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 500, $data['status'] );
+	}
+
+	public function test_create_terminal_intent_invalid_capture_method() {
+		$order = $this->create_mock_order();
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id' => $order->get_id(),
+			]
+		);
+		$request->set_param( 'capture_method', 'invalid_payment_method' );
+		$response = $this->controller->create_terminal_intent( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 500, $data['status'] );
+	}
+
 	private function create_mock_order() {
+		$charge = $this->create_charge_object();
+
 		$order = WC_Helper_Order::create_order();
 		$order->set_transaction_id( $this->mock_intent_id );
 		$order->update_meta_data( '_intent_id', $this->mock_intent_id );
-		$order->update_meta_data( '_charge_id', $this->mock_charge_id );
+		$order->update_meta_data( '_charge_id', $charge->get_id() );
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 		return $order;
+	}
+
+	/**
+	 * @dataProvider provider_get_terminal_intent_payment_method
+	 */
+	public function test_get_terminal_intent_payment_method( $payment_methods, $expected ) {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'payment_methods', $payment_methods );
+
+		$this->assertSame( $this->controller->get_terminal_intent_payment_method( $request ), $expected );
+	}
+
+	public function provider_get_terminal_intent_payment_method(): array {
+		return [
+			[ null, [ Payment_Method::CARD_PRESENT ] ],
+			[ [ Payment_Method::CARD_PRESENT, Payment_Method::INTERAC_PRESENT ], [ Payment_Method::CARD_PRESENT, Payment_Method::INTERAC_PRESENT ] ],
+		];
+	}
+
+	public function test_get_terminal_intent_payment_method_not_an_array() {
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Invalid param \'payment_methods\'!' );
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'payment_methods', 'not_an_array' );
+
+		$this->controller->get_terminal_intent_payment_method( $request );
+	}
+
+	public function test_get_terminal_intent_payment_method_invalid_value() {
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'One or more payment methods are not supported!' );
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'payment_methods', [ 'invalid_val' ] );
+
+		$this->controller->get_terminal_intent_payment_method( $request );
+	}
+
+	/**
+	 * @dataProvider provider_get_terminal_intent_capture_method
+	 */
+	public function test_get_terminal_intent_capture_method( $capture_method, $expected ) {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'capture_method', $capture_method );
+
+		$this->assertSame( $expected, $this->controller->get_terminal_intent_capture_method( $request ) );
+	}
+
+	public function provider_get_terminal_intent_capture_method(): array {
+		return [
+			[ null, 'manual' ],
+			[ 'automatic', 'automatic' ],
+		];
+	}
+
+	public function test_get_terminal_intent_capture_method_invalid_value() {
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Invalid param \'capture_method\'!' );
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'capture_method', 'invalid_val' );
+
+		$this->controller->get_terminal_intent_capture_method( $request );
+	}
+
+	private function create_charge_object() {
+		$created = new DateTime();
+		$created->setTimestamp( $this->mock_charge_created );
+
+		return new WC_Payments_API_Charge( $this->mock_charge_id, 1500, $created );
 	}
 }

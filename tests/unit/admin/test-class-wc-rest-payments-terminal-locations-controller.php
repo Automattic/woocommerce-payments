@@ -11,7 +11,7 @@ use WC_REST_Payments_Terminal_Locations_Controller as Controller;
 /**
  * WC_REST_Payments_Tos_Controller unit tests.
  */
-class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * The system under test.
@@ -50,7 +50,7 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WP_UnitTestCas
 		$this->location   = [
 			'id'           => 'tml_XXXXXX',
 			'livemode'     => true,
-			'display_name' => get_bloginfo(),
+			'display_name' => str_replace( [ 'https://', 'http://' ], '', get_site_url() ),
 			'address'      => [
 				'city'        => WC()->countries->get_base_city(),
 				'country'     => WC()->countries->get_base_country(),

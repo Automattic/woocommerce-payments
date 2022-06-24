@@ -1,0 +1,40 @@
+{
+  "title": "Payment with only base fee",
+  "capturedEvent": {
+    "type": "captured",
+    "amount": 1500,
+    "fee": 74,
+    "fee_rates": {
+      "percentage": 0.029,
+      "fixed": 30,
+      "fixed_currency": "USD",
+      "history": [
+        {
+          "type": "base",
+          "percentage_rate": 0.029,
+          "fixed_rate": 30,
+          "currency": "usd"
+        }
+      ]
+    },
+    "currency": "USD",
+    "datetime": 1651997740,
+    "deposit": {
+      "id": "wcpay_estimated_daily_usd_1652572800",
+      "arrival_date": "1652572800"
+    },
+    "transaction_id": "txn_3Kx5HD2EFxam75ai1FerGksO",
+    "transaction_details": {
+      "customer_currency": "USD",
+      "customer_amount": 1500,
+      "customer_fee": 74,
+      "store_currency": "USD",
+      "store_amount": 1500,
+      "store_fee": 74
+    }
+  },
+  "expectation": {
+    "feeString": "Base fee (2.9% + $0.30): $-0.74",
+    "netString": "Net deposit: $14.26 USD"
+  }
+}
