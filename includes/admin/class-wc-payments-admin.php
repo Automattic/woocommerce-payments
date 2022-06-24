@@ -901,21 +901,9 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$disputes_status_counts = $this->database_cache->get_or_add(
-			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
-			[ $this->payments_api_client, 'get_dispute_status_counts' ],
-			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
-			'is_array'
-		);
+		$disputes_needing_response = $this->get_disputes_awaiting_response_count();
 
-		if ( ! $disputes_status_counts ) {
-			return;
-		}
-
-		$needs_response_statuses   = [ 'needs_response', 'warning_needs_response' ];
-		$disputes_needing_response = array_sum( array_intersect_key( $disputes_status_counts, array_flip( $needs_response_statuses ) ) );
-
-		if ( ! $disputes_needing_response ) {
+		if ( $disputes_needing_response <= 0 ) {
 			return;
 		}
 
@@ -925,5 +913,26 @@ class WC_Payments_Admin {
 				break;
 			}
 		}
+	}
+
+	/**
+	 * Gets the number of disputes which need a response. ie have a 'needs_response' or 'warning_needs_response' status.
+	 *
+	 * @return int The number of disputes which need a response.
+	 */
+	public function get_disputes_awaiting_response_count() {
+		$disputes_status_counts = $this->database_cache->get_or_add(
+			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
+			[ $this->payments_api_client, 'get_dispute_status_counts' ],
+			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
+			'is_array'
+		);
+
+		if ( empty( $disputes_status_counts ) ) {
+			return 0;
+		}
+
+		$needs_response_statuses = [ 'needs_response', 'warning_needs_response' ];
+		return array_sum( array_intersect_key( $disputes_status_counts, array_flip( $needs_response_statuses ) ) );
 	}
 }
