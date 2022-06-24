@@ -4,7 +4,6 @@
 import { merchantWCP } from '../../../utils';
 
 const { merchant } = require( '@woocommerce/e2e-utils' );
-const { takeScreenshotFor } = require( '@woocommerce/e2e-environment' );
 
 const checkboxCaptureLaterOption = 'capture-later-checkbox';
 const paymentMethodWarningIconId = 'loadable-checkbox-icon-warning';
@@ -53,10 +52,6 @@ describe( 'As a merchant, I should be prompted a confirmation modal when I try t
 		await merchantWCP.activateUpe();
 		await merchantWCP.openWCPSettings();
 
-		await takeScreenshotFor(
-			'should show the UPE methods disabled when manual capture is enabled - 1'
-		);
-
 		await merchantWCP.setCheckboxByTestId( checkboxCaptureLaterOption );
 		const confirmationModal = await expect( page ).toMatchElement(
 			confirmationModalClass
@@ -65,13 +60,14 @@ describe( 'As a merchant, I should be prompted a confirmation modal when I try t
 			text: 'Enable',
 		} );
 
-		await takeScreenshotFor(
-			'should show the UPE methods disabled when manual capture is enabled - 2'
+		await page.waitForSelector(
+			`[data-testid="${ paymentMethodWarningIconId }"]`
 		);
 
 		const paymentMethodWarningIconElement = await page.$(
 			`[data-testid="${ paymentMethodWarningIconId }"]`
 		);
+
 		await expect( paymentMethodWarningIconElement ).toMatch(
 			'cannot be enabled at checkout. Click to expand.'
 		);
