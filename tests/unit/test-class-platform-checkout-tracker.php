@@ -10,7 +10,7 @@ use WCPay\Platform_Checkout_Tracker;
 /**
  * Platform_Checkout_Tracker unit tests.
  */
-class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
+class Platform_Checkout_Tracker_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * @var Platform_Checkout_Tracker
@@ -81,10 +81,11 @@ class Platform_Checkout_Tracker_Test extends WP_UnitTestCase {
 		global $current_screen;
 
 		if ( ! $is_admin ) {
-			$current_screen = null;
+			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 			return;
 		}
 
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$current_screen = $this->getMockBuilder( \stdClass::class )
 			->setMethods( [ 'in_admin' ] )
 			->getMock();

@@ -22,4 +22,21 @@
 	padding-bottom: 1.5em;
 }
 
+button.wcpay-stripelink-modal-trigger {
+	display: none;
+	position: absolute;
+	right: 5px;
+	width: 64px;
+	height: 40px;
+	background: no-repeat
+		url( '../../../assets/images/payment-methods/link.svg' );
+	background-color: transparent;
+	cursor: pointer;
+	border: none;
+}
+
+button.wcpay-stripelink-modal-trigger:hover {
+	background-color: transparent;
+	border-color: transparent;
+}
 @import '../platform-checkout/style';

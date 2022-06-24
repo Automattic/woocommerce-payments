@@ -17,7 +17,7 @@ require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 /**
  * WC_Payments_Webhook_Processing_Service unit tests.
  */
-class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * System under test.

@@ -51,6 +51,9 @@ class WC_Payments_Subscription_Minimum_Amount_Handler {
 	 */
 	public function get_minimum_recurring_amount( $minimum_amount, $currency_code ) {
 		$transient_key = self::MINIMUM_RECURRING_AMOUNT_TRANSIENT_KEY . "_$currency_code";
+		// Enforce uppercase.
+		$transient_key = strtoupper( $transient_key );
+
 		// Minimum amount is purposefully immediately overwritten. The calling function passes a default value which we must receive.
 		$minimum_amount = get_transient( $transient_key );
 

@@ -252,13 +252,15 @@ class WC_Payments_Invoice_Service {
 			return;
 		}
 
+		$charge = $intent_object->get_charge();
+
 		$this->gateway->attach_intent_info_to_order(
 			$order,
 			$intent_id,
 			$intent_object->get_status(),
 			$intent_object->get_payment_method_id(),
 			$intent_object->get_customer_id(),
-			$intent_object->get_charge_id(),
+			$charge ? $charge->get_id() : null,
 			$intent_object->get_currency()
 		);
 	}
