@@ -40,7 +40,7 @@ describe( 'Disputes > Submit losing dispute', () => {
 		await merchant.logout();
 	} );
 
-	it( 'should process a losing dispute', async () => {
+	it( 'should process and confirm a losing dispute', async () => {
 		// Pull out and follow the link to avoid working in multiple tabs
 		const paymentDetailsLink = await page.$eval(
 			'p.order_number > a',
