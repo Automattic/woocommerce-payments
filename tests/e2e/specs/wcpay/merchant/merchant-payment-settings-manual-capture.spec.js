@@ -48,7 +48,7 @@ describe( 'As a merchant, I should be prompted a confirmation modal when I try t
 		await merchantWCP.deactivateUpe();
 	} );
 
-	it( 'should show the UPE methods disabled when manual capture is enabled', async () => {
+	it.skip( 'should show the UPE methods disabled when manual capture is enabled', async () => {
 		await merchantWCP.activateUpe();
 		await merchantWCP.openWCPSettings();
 
