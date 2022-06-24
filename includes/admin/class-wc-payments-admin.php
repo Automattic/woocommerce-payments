@@ -933,6 +933,6 @@ class WC_Payments_Admin {
 		}
 
 		$needs_response_statuses = [ 'needs_response', 'warning_needs_response' ];
-		return array_sum( array_intersect_key( $disputes_status_counts, array_flip( $needs_response_statuses ) ) );
+		return (int) array_sum( array_intersect_key( $disputes_status_counts, array_flip( $needs_response_statuses ) ) );
 	}
 }
