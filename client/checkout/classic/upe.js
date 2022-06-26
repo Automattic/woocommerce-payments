@@ -279,6 +279,7 @@ jQuery( function ( $ ) {
 			clientSecret,
 			appearance,
 			fonts: getFontRulesFromPage(),
+			loader: 'never',
 		} );
 
 		if ( isStripeLinkEnabled ) {
