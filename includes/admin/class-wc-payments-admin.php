@@ -909,6 +909,8 @@ class WC_Payments_Admin {
 
 		foreach ( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] as $index => $menu_item ) {
 			if ( 'wc-admin&path=/payments/disputes' === $menu_item[2] ) {
+				// Direct the user to the disputes which need a response by default.
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][2]  = admin_url( add_query_arg( [ 'filter' => 'awaiting_response' ], 'admin.php?page=' . $menu_item[2] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( self::DISPUTE_NOTIFICATION_BADGE_FORMAT, esc_html( $disputes_needing_response ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				break;
 			}
