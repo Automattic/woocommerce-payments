@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-Refactor WC_Payments_API_Intention to receive an instance of WC_Payments_API_Change instead of multiple charge-related fields.
+Refactor WC_Payments_API_Intention to receive an instance of WC_Payments_API_Charge instead of multiple charge-related fields.
