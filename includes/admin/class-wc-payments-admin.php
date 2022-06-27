@@ -910,7 +910,9 @@ class WC_Payments_Admin {
 		foreach ( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] as $index => $menu_item ) {
 			if ( 'wc-admin&path=/payments/disputes' === $menu_item[2] ) {
 				// Direct the user to the disputes which need a response by default.
-				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][2]  = admin_url( add_query_arg( [ 'filter' => 'awaiting_response' ], 'admin.php?page=' . $menu_item[2] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][2] = admin_url( add_query_arg( [ 'filter' => 'awaiting_response' ], 'admin.php?page=' . $menu_item[2] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+				// Append the dispute notification badge to indicate the number of disputes needing a response.
 				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( self::DISPUTE_NOTIFICATION_BADGE_FORMAT, esc_html( $disputes_needing_response ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				break;
 			}
@@ -922,7 +924,7 @@ class WC_Payments_Admin {
 	 *
 	 * @return int The number of disputes which need a response.
 	 */
-	public function get_disputes_awaiting_response_count() {
+	private function get_disputes_awaiting_response_count() {
 		$disputes_status_counts = $this->database_cache->get_or_add(
 			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
 			[ $this->payments_api_client, 'get_dispute_status_counts' ],
