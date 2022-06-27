@@ -9,12 +9,12 @@ namespace WCPay\Migrations;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payment_Gateway_WCPay;
-use WP_UnitTestCase;
+use WCPAY_UnitTestCase;
 
 /**
  * WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update unit tests.
  */
-class Allowed_Payment_Request_Button_Types_Update_Test extends WP_UnitTestCase {
+class Allowed_Payment_Request_Button_Types_Update_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * WCPay gateway mock.

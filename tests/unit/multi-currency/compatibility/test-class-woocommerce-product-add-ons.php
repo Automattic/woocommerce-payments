@@ -12,7 +12,7 @@ use WCPay\MultiCurrency\Utils;
 /**
  * WCPay\MultiCurrency\Compatibility\WooCommerceProductAddOns unit tests.
  */
-class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTestCase {
 
 	/**
 	 * Mock WCPay\MultiCurrency\MultiCurrency.

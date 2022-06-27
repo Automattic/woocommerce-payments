@@ -10,7 +10,7 @@ use WCPay\Exceptions\Rest_Request_Exception;
 /**
  * Class WC_Payments_Remote_Note_Service tests.
  */
-class WC_Payments_Remote_Note_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Remote_Note_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Instance of WC_Payments_Remote_Note_Service under test.

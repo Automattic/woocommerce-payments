@@ -10,7 +10,7 @@ use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 /**
  * WC_Payments_Subscriptions_Event_Handler unit tests.
  */
-class WC_Payments_Subscriptions_Event_Handler_Test extends WP_UnitTestCase {
+class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Subscription meta key used to store WCPay subscription's ID.

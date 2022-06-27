@@ -15,7 +15,7 @@ use WCPay\MultiCurrency\SettingsOnboardCta;
 /**
  * WCPay\MultiCurrency\MultiCurrency unit tests.
  */
-class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	const LOGGED_IN_USER_ID         = 1;
 	const ENABLED_CURRENCIES_OPTION = 'wcpay_multi_currency_enabled_currencies';
 
@@ -901,6 +901,9 @@ class WCPay_Multi_Currency_Tests extends WP_UnitTestCase {
 		);
 		$this->multi_currency->init_widgets();
 		$this->multi_currency->init();
+
+		// Fix an issue in WPCOM tests.
+		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->multi_currency );
 	}
 
 	private function mock_theme( $theme ) {

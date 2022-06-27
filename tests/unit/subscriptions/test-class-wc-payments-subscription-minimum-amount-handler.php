@@ -10,7 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * WC_Payments_Subscription_Minimum_Amount_Handler unit tests.
  */
-class WC_Payments_Subscription_Minimum_Amount_Handler_Test extends WP_UnitTestCase {
+class WC_Payments_Subscription_Minimum_Amount_Handler_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Mock WC_Payments_API_Client.
