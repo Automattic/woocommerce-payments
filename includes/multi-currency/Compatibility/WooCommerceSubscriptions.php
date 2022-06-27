@@ -300,9 +300,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * Getter for subscription objects.
 	 *
 	 * @param  mixed $the_subscription Post object or post ID of the order.
-	 * @return WC_Subscription|false The subscription object, or false if it cannot be found.
+	 * @return mixed The subscription object, or false if it cannot be found. 
+	 *               Note: this is WC_Subscription|bool in normal use, but in tests 
+	 *               we use WC_Order to simulate a subscription (hence `mixed`).
 	 */
-	private function get_subscription( $the_subscription ): array {
+	private function get_subscription( $the_subscription ) {
 		if ( ! function_exists( 'wcs_get_subscription' ) ) {
 			return false;
 		}
