@@ -24,7 +24,33 @@ function addCurrencyFilter( filter: string ) {
 	user.click( screen.getByRole( 'button', { name: filter } ) );
 }
 
-describe( 'Disputes filters', () => {
+describe( 'Disputes filters: Needs response', () => {
+	test( 'selecting the Needs response filter adds query param', () => {
+		updateQueryString( {}, '/', {} );
+		render( <DisputesFilters /> );
+		expect( getQuery().filter ).toEqual( undefined );
+
+		// Select the Needs response filter.
+		user.click( screen.getByRole( 'button', { name: /All disputes/i } ) );
+		user.click( screen.getByRole( 'button', { name: /Needs response/i } ) );
+		expect( getQuery().filter ).toEqual( 'awaiting_response' );
+	} );
+
+	test( 'when filter query param is awaiting_response, the Needs response filter option is selected', () => {
+		updateQueryString( { filter: 'awaiting_response' }, '/', {} );
+		render( <DisputesFilters /> );
+
+		// All disputes filter option should not be selected.
+		expect(
+			screen.queryByRole( 'button', { name: /All disputes/i } )
+		).toBeNull();
+
+		// Needs response filter option should be selected.
+		screen.getByRole( 'button', { name: /Needs response/i } );
+	} );
+} );
+
+describe( 'Disputes filters: Advanced', () => {
 	beforeEach( () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
