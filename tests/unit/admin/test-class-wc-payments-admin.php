@@ -273,12 +273,21 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
-		$dispute_menu_item  = $item_names_by_urls['wc-admin&path=/payments/disputes'];
+		$dispute_query_args = [
+			'page'   => 'wc-admin',
+			'path'   => '/payments/disputes',
+			'filter' => 'awaiting_response',
+		];
+
+		$dispute_url = admin_url( add_query_arg( $dispute_query_args, 'admin.php' ) );
+
+		// Assert the submenu includes a disputes item that links directly to the disputes screen with the awaiting_response filter.
+		$this->assertArrayHasKey( $item_names_by_urls, $dispute_url );
 
 		// The expected badge content should include 4 disputes needing a response.
 		$expected_badge = sprintf( WC_Payments_Admin::DISPUTE_NOTIFICATION_BADGE_FORMAT, 4 );
 
-		$this->assertEquals( 'Disputes' . $expected_badge, $dispute_menu_item );
+		$this->assertEquals( 'Disputes' . $expected_badge, $item_names_by_urls[ $dispute_url ] );
 	}
 
 	/**
