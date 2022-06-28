@@ -42,13 +42,14 @@ const PhoneNumberInput = ( {
 
 	useEffect( () => {
 		let iti = null;
+		const currentRef = inputRef.current;
 
 		const handleCountryChange = () => {
 			onValueChange( iti.getNumber() );
 		};
 
-		if ( inputRef.current ) {
-			iti = intlTelInput( inputRef.current, {
+		if ( currentRef ) {
+			iti = intlTelInput( currentRef, {
 				initialCountry: 'US',
 				customPlaceholder: () => '',
 				separateDialCode: true,
@@ -60,18 +61,15 @@ const PhoneNumberInput = ( {
 			onValidationChange( iti.isValidNumber() );
 
 			// Focus the phone number input when the component loads.
-			inputRef.current.focus();
+			currentRef.focus();
 
-			inputRef.current.addEventListener(
-				'countrychange',
-				handleCountryChange
-			);
+			currentRef.addEventListener( 'countrychange', handleCountryChange );
 		}
 
 		return () => {
 			if ( iti ) {
 				iti.destroy();
-				inputRef.removeEventListener(
+				currentRef.removeEventListener(
 					'countrychange',
 					handleCountryChange
 				);
