@@ -46,6 +46,7 @@ const PhoneNumberInput = ( {
 
 		const handleCountryChange = () => {
 			onValueChange( iti.getNumber() );
+			onValidationChange( iti.isValidNumber() );
 		};
 
 		if ( currentRef ) {
