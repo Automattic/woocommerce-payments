@@ -166,8 +166,8 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 		$subscription_resubscribe = $this->cart_contains_resubscribe();
 		if ( $subscription_resubscribe ) {
-			$switch_subscription = $this->get_subscription( $subscription_resubscribe['subscription_resubscribe']['subscription_id'] );
-			return $switch_subscription ? $switch_subscription->get_currency() : $return;
+			$subscription = $this->get_subscription( $subscription_resubscribe['subscription_resubscribe']['subscription_id'] );
+			return $subscription ? $subscription->get_currency() : $return;
 		}
 
 		return $return;
