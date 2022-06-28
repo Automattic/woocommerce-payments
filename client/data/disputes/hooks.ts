@@ -25,6 +25,9 @@ export const useDispute = (
 	isLoading: boolean;
 	doAccept: () => void;
 } => {
+	const { acceptDispute } = useDispatch( STORE_NAME );
+	const doAccept = () => acceptDispute( id );
+
 	const { dispute, isLoading } = useSelect(
 		( select ) => {
 			const { getDispute, isResolving } = select( STORE_NAME );
@@ -36,9 +39,6 @@ export const useDispute = (
 		},
 		[ id ]
 	);
-
-	const { acceptDispute } = useDispatch( STORE_NAME );
-	const doAccept = () => acceptDispute( id );
 
 	return { dispute, isLoading, doAccept };
 };
