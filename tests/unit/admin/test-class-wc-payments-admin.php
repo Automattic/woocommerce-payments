@@ -282,7 +282,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$dispute_url = admin_url( add_query_arg( $dispute_query_args, 'admin.php' ) );
 
 		// Assert the submenu includes a disputes item that links directly to the disputes screen with the awaiting_response filter.
-		$this->assertArrayHasKey( $item_names_by_urls, $dispute_url );
+		$this->assertArrayHasKey( $dispute_url, $item_names_by_urls );
 
 		// The expected badge content should include 4 disputes needing a response.
 		$expected_badge = sprintf( WC_Payments_Admin::DISPUTE_NOTIFICATION_BADGE_FORMAT, 4 );
