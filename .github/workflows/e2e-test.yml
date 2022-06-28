@@ -37,7 +37,7 @@ jobs:
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
         woocommerce:   [ '5.8.1', '6.4.1', '6.6.0', 'beta' ]
-        wordpress:     [ 'latest' ]
+        wordpress:     [ 'latest', 'nightly' ]
         php:           [ '7.4' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
