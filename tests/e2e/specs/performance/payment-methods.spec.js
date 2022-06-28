@@ -79,7 +79,7 @@ describe( 'Checkout page performance', () => {
 		} );
 	} );
 
-	describe( 'WooPay withou UPE', () => {
+	describe( 'WooPay without UPE', () => {
 		beforeEach( async () => {
 			// Activate UPE
 			await merchant.login();
