@@ -19,7 +19,6 @@ const PhoneNumberInput = ( {
 	inputProps = {},
 } ) => {
 	const [ inputInstance, setInputInstance ] = useState( null );
-	const [ isValid, setIsValid ] = useState( true );
 	const inputRef = useRef();
 
 	const handlePhoneNumberInputChange = () => {
@@ -58,7 +57,6 @@ const PhoneNumberInput = ( {
 				utilsScript: utils,
 			} );
 			setInputInstance( iti );
-			setIsValid( iti.isValidNumber() );
 			onValidationChange( iti.isValidNumber() );
 
 			// Focus the phone number input when the component loads.
@@ -100,7 +98,7 @@ const PhoneNumberInput = ( {
 					'platform_checkout_user_phone_field[no-country-code]'
 				}
 				className={
-					! isValid
+					inputInstance && ! inputInstance.isValidNumber()
 						? 'phone-input input-text has-error'
 						: 'phone-input input-text'
 				}
