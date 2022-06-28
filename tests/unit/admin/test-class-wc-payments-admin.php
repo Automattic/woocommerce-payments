@@ -275,7 +275,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
 		$dispute_query_args = [
 			'page'   => 'wc-admin',
-			'path'   => '/payments/disputes',
+			'path'   => '%2Fpayments%2Fdisputes',
 			'filter' => 'awaiting_response',
 		];
 
