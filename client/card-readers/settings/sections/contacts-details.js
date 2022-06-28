@@ -60,7 +60,7 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 		setSaveDisabled(
 			'' === accountBusinessSupportEmail ||
 				'' === accountBusinessSupportPhone ||
-				isPhoneValid
+				! isPhoneValid
 		);
 	};
 
