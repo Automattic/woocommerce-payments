@@ -328,7 +328,7 @@ class WC_Payments {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
 
-		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::$card_gateway, self::$customer_service );
+		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::$card_gateway, self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		self::maybe_register_platform_checkout_hooks();
@@ -365,7 +365,7 @@ class WC_Payments {
 		// Add admin screens.
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
-			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account );
+			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account, self::$database_cache );
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
