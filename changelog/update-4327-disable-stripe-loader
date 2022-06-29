@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+disable loader so that Stripe's skeleton loader is not used.

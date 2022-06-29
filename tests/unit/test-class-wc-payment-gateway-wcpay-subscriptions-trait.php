@@ -8,7 +8,7 @@
 /**
  * WC_Payment_Gateway_WCPay_Subscriptions_Trait_Test unit tests.
  */
-class WC_Payment_Gateway_WCPay_Subscriptions_Trait_Test extends WP_UnitTestCase {
+class WC_Payment_Gateway_WCPay_Subscriptions_Trait_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * System under test.

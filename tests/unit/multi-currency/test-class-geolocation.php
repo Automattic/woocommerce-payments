@@ -8,7 +8,7 @@
 /**
  * WCPay\MultiCurrency\Geolocation unit tests.
  */
-class WCPay_Multi_Currency_Geolocation_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Geolocation_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * WC_Payments_Localization_Service mock.
 	 *

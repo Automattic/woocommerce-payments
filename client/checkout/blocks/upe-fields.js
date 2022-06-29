@@ -389,6 +389,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		clientSecret,
 		appearance,
 		fonts: fontRules,
+		loader: 'never',
 	};
 
 	return (
