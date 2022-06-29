@@ -11,6 +11,7 @@ const e2ePaths = {
 	wcpay: path.resolve( __dirname, '../specs/wcpay' ),
 	subscriptions: path.resolve( __dirname, '../specs/subscriptions' ),
 	blocks: path.resolve( __dirname, '../specs/blocks' ),
+	performance: path.resolve( __dirname, '../specs/performance' ),
 };
 
 // Allow E2E tests to run specific tests - wcpay, subscriptions, blocks, all (default).
