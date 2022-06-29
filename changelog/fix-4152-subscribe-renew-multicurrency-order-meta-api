@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Use high-level order currency API for multicurrency subscription renewal orders (get_post_meta is not recommended for orders).
