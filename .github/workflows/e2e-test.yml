@@ -48,10 +48,11 @@ jobs:
             test_groups: 'blocks'
             test_branches: 'shopper'
           - wordpress: 'nightly'
-        include:
+            woocommerce: '5.8.1' 
           - wordpress: 'nightly'
-            woocommerce: 'beta'
-      
+            woocommerce: '6.4.1'
+          - wordpress: 'nightly'
+            woocommerce: 'beta'   
 
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
