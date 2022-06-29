@@ -379,7 +379,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
 				);
 				api.initPlatformCheckout(
-					e.data.userEmail,
+					'',
 					e.data.platformCheckoutUserSession
 				).then( ( response ) => {
 					if ( 'success' === response.result ) {
