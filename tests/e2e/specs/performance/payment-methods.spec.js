@@ -8,7 +8,12 @@ const { merchant } = require( '@woocommerce/e2e-utils' );
  * Internal dependencies
  */
 import { setupProductCheckout } from '../../utils/payments';
-import { shopperWCP, merchantWCP } from '../../utils';
+import {
+	shopperWCP,
+	merchantWCP,
+	describeif,
+	RUN_WC_PERFORMANCE_TESTS,
+} from '../../utils';
 import {
 	recreatePerformanceFile,
 	logPerformanceResult,
@@ -16,7 +21,7 @@ import {
 	averageMetrics,
 } from '../../utils/performance';
 
-describe( 'Checkout page performance', () => {
+describeif( RUN_WC_PERFORMANCE_TESTS )( 'Checkout page performance', () => {
 	beforeAll( async () => {
 		// Start a new file for every run.
 		recreatePerformanceFile();
