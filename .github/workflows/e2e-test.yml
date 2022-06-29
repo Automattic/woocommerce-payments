@@ -47,6 +47,11 @@ jobs:
           - woocommerce: '5.8.1'
             test_groups: 'blocks'
             test_branches: 'shopper'
+          - wordpress: 'nightly'
+        include:
+          - wordpress: 'nightly'
+            woocommerce: 'beta'
+      
 
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
