@@ -132,3 +132,10 @@ export interface DisputesTableHeader extends TableCardColumn {
 	cellClassName?: string;
 	visible?: boolean;
 }
+
+export interface DisputeStatusCounts {
+	disputeStatusCounts: {
+		[ key: string ]: number;
+	};
+	isLoading: boolean;
+}
