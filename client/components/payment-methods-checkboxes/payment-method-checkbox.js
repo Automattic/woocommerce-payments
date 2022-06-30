@@ -6,6 +6,7 @@ import React, { useContext, useEffect } from 'react';
 import { Icon, VisuallyHidden } from '@wordpress/components';
 import { useCallback } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -21,6 +22,7 @@ import PaymentMethodsMap from '../../payment-methods-map';
 import Pill from '../pill';
 import Tooltip from '../tooltip';
 import './payment-method-checkbox.scss';
+import { useManualCapture } from 'wcpay/data';
 
 const PaymentMethodDescription = ( { name } ) => {
 	const description = PaymentMethodsMap[ name ]?.description;
@@ -60,10 +62,17 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 		}
 	}, [ disabled, checked, handleChange ] );
 
+	const [ isManualCaptureEnabled ] = useManualCapture();
 	const paymentMethod = PaymentMethodsMap[ name ];
+	const hasOverlay =
+		isManualCaptureEnabled && ! paymentMethod.allows_manual_capture;
 
 	return (
-		<li className="payment-method-checkbox">
+		<li
+			className={ classNames( 'payment-method-checkbox', {
+				'has-overlay': hasOverlay,
+			} ) }
+		>
 			<LoadableCheckboxControl
 				label={ paymentMethod.label }
 				checked={ checked }
