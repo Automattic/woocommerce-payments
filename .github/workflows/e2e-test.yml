@@ -36,11 +36,14 @@ jobs:
       fail-fast:     false
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce:   [ '5.8.1', '6.4.1', '6.6.0', 'beta' ]
+        woocommerce:   [ '5.8.1', '6.4.1', 'latest', 'beta' ]
         wordpress:     [ 'latest' ]
         php:           [ '7.4' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
+        include:
+          - woocommerce: 'latest'
+          - wordpress: 'nightly'
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
