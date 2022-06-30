@@ -1079,7 +1079,6 @@ class WC_Payments {
 			// Respond with same message platform would respond with on failure.
 			$response_body_json = wp_json_encode( [ 'result' => 'failure' ] );
 		} else {
-			do_action( 'woocommerce_payments_platform_checkout_redirected' );
 			$response_body_json = wp_remote_retrieve_body( $response );
 		}
 
