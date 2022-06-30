@@ -7,10 +7,19 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Database_Cache;
+
 /**
  * REST controller for disputes.
  */
 class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
+
+	/**
+	 * Database_Cache instance.
+	 *
+	 * @var Database_Cache
+	 */
+	private $database_cache;
 
 	/**
 	 * Endpoint path.
@@ -18,6 +27,17 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 * @var string
 	 */
 	protected $rest_base = 'payments/disputes';
+
+	/**
+	 * WC_REST_Payments_Disputes_Controller constructor.
+	 *
+	 * @param WC_Payments_API_Client $api_client     WooCommerce Payments API client.
+	 * @param Database_Cache         $database_cache Database_Cache instance.
+	 */
+	public function __construct( WC_Payments_API_Client $api_client, Database_Cache $database_cache ) {
+		$this->api_client     = $api_client;
+		$this->database_cache = $database_cache;
+	}
 
 	/**
 	 * Configure REST API routes.
@@ -68,13 +88,21 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
-
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/(?P<dispute_id>\w+)/close',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'close_dispute' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/status_counts',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_dispute_status_counts' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -154,6 +182,32 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		$filters    = $this->get_disputes_filters( $request );
 
 		return $this->forward_request( 'get_disputes_export', [ $filters, $user_email ] );
+	}
+
+	/**
+	 * Retrieve a list of dispute statuses and a total count for each status via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 *
+	 * @return WP_REST_Response The response containing the dispute status counts.
+	 */
+	public function get_dispute_status_counts( WP_REST_Request $request ) {
+		$statuses = $request->get_param( 'statuses' );
+
+		$disputes_status_counts = $this->database_cache->get_or_add(
+			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
+			[ $this->payments_api_client, 'get_dispute_status_counts' ],
+			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
+			'is_array'
+		);
+
+		if ( empty( $disputes_status_counts ) ) {
+			$disputes_status_counts = new stdClass();
+		}
+
+		$disputes_status_counts = array_intersect_key( $disputes_status_counts, array_flip( $statuses ) );
+
+		return rest_ensure_response( $disputes_status_counts );
 	}
 
 	/**
