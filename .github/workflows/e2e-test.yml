@@ -41,12 +41,6 @@ jobs:
         php:           [ '7.4' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
-        include:
-          - woocommerce:   'latest'
-            wordpress:     'nightly'
-            php:           [ '7.4' ]
-            test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
-            test_branches: [ 'merchant', 'shopper' ]
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
@@ -71,6 +65,116 @@ jobs:
             echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
           fi
 
+      # Log workflow configuration
+      - name: Workflow Configuration
+        run: |
+          echo "WordPress version: ${{ matrix.wordpress }}"
+          echo "WooCommerce version: ${{ matrix.woocommerce }}"
+          echo "PHP version: ${{ matrix.php }}"
+          echo "Test Group: ${{ matrix.test_groups }}"
+          echo "Test Branch: ${{ matrix.test_branches }}"
+
+      # Clone Repo
+      - name: Clone WCPay Repository
+        uses: actions/checkout@v2
+
+      # Add GH token for authentication
+      - name: Add GH token for authentication
+        run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
+
+      # PHP setup
+      - name: PHP Setup
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools:       composer
+          extensions:  mysql
+          coverage:    none
+
+      # Composer setup
+      - name: Composer Setup
+        run: composer self-update 2.0.6
+
+      # Use node version from .nvmrc
+      - name: Setup NodeJS
+        uses: actions/setup-node@v2
+        with:
+          node-version-file: '.nvmrc'
+
+      # Cache composer dependencies
+      - name: Cache composer dependencies
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: ./vendor
+          key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
+
+      # Cache node dependencies
+      - name: Cache node dependencies
+        id: node-cache
+        uses: actions/cache@v2
+        with:
+          path: ./node_modules
+          key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+
+      # Install composer dependencies if not present on cache
+      - name: Install composer dependencies
+        if: ${{ steps.composer-cache.outputs.cache-hit == false }}
+        run: composer install --no-progress
+
+      # Install node dependencies if not present on cache
+      - name: Install node dependencies
+        if: ${{ steps.node-cache.outputs.cache-hit == false }}
+        run: npm ci
+
+      # Build WCPay client
+      - name: Build WCPay Client
+        run: npm run build:client
+
+      # Prepare test environment
+      - name: Prepare test environment
+        run: npm run test:e2e-setup
+
+      # Run Tests
+      - name: Run E2E Tests
+        run: npm run test:e2e
+
+      # Archive screenshots if any
+      - name: Archive e2e test screenshots & logs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+            name: e2e-screenshots-logs
+            path: |
+              tests/e2e/screenshots
+              tests/e2e/docker/wordpress/wp-content/debug.log
+            if-no-files-found: ignore
+            retention-days: 5
+  wcpay-wp-nightly:
+    runs-on: ubuntu-18.04
+
+    strategy:
+      fail-fast:     false
+      matrix:
+        # Min WooCommerce | L-2 | L(atest) | beta
+        woocommerce:   [ 'latest' ]
+        wordpress:     [ 'nightly' ]
+        php:           [ '7.4' ]
+        test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
+        test_branches: [ 'merchant', 'shopper' ]
+        exclude:
+          - test_groups: 'blocks'
+            test_branches: 'merchant'
+
+    name: WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+
+    env:
+      E2E_WP_VERSION: ${{ matrix.wordpress }}
+      E2E_WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_GROUP:  ${{ matrix.test_groups }}
+      E2E_BRANCH: ${{ matrix.test_branches }}
+
+    steps:
       # Log workflow configuration
       - name: Workflow Configuration
         run: |
