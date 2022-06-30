@@ -311,7 +311,9 @@ export const merchantWCP = {
 
 	openChallengeDispute: async () => {
 		await Promise.all( [
-			evalAndClick( 'a.components-button.is-primary' ),
+			evalAndClick(
+				'div.wcpay-dispute-details a.components-button.is-primary'
+			),
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
 			uiLoaded(),
 		] );
