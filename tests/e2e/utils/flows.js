@@ -322,7 +322,9 @@ export const merchantWCP = {
 	openAcceptDispute: async () => {
 		await Promise.all( [
 			page.removeAllListeners( 'dialog' ),
-			evalAndClick( 'button.components-button.is-secondary' ),
+			evalAndClick(
+				'div.wcpay-dispute-details button.components-button.is-secondary'
+			),
 			page.on( 'dialog', async ( dialog ) => {
 				await dialog.accept();
 			} ),
