@@ -42,8 +42,11 @@ jobs:
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
         include:
-          - woocommerce: 'latest'
-            wordpress: 'nightly'
+          - woocommerce:   'latest'
+            wordpress:     'nightly'
+            php:           [ '7.4' ]
+            test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
+            test_branches: [ 'merchant', 'shopper' ]
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
