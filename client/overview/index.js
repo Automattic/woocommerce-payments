@@ -35,7 +35,10 @@ const OverviewPage = () => {
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
 	} = wcpaySettings;
-	const { disputes, isLoading } = useDisputes( getQuery() );
+	const { disputes, isLoading } = useDisputes( {
+		...getQuery(),
+		per_page: 999
+	} );
 	const { isLoading: settingsIsLoading, settings } = useSettings();
 
 	const tasksUnsorted = getTasks( {
