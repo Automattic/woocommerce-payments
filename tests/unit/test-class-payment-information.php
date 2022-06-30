@@ -14,7 +14,7 @@ use WCPay\Payment_Methods\CC_Payment_Gateway;
 /**
  * Payment_Information unit tests.
  */
-class Payment_Information_Test extends WP_UnitTestCase {
+class Payment_Information_Test extends WCPAY_UnitTestCase {
 	const PAYMENT_METHOD_REQUEST_KEY = 'wcpay-payment-method';
 	const PAYMENT_METHOD             = 'pm_mock';
 	const CARD_TOKEN_REQUEST_KEY     = 'wc-' . CC_Payment_Gateway::GATEWAY_ID . '-payment-token';

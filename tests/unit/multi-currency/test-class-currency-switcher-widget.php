@@ -10,7 +10,7 @@ use WCPay\MultiCurrency\Currency;
 /**
  * WCPay\MultiCurrency\CurrencySwitcherWidget unit tests.
  */
-class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WCPay\MultiCurrency\Compatibility.
 	 *

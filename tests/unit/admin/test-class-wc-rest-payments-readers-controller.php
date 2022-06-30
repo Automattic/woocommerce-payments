@@ -14,7 +14,7 @@ require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-prin
 /**
  * WC_REST_Payments_Reader_Controller_Test unit tests.
  */
-class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Controller under test.
 	 *

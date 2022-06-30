@@ -94,6 +94,7 @@ require_once dirname( __FILE__ ) . '/../../vendor/yoast/phpunit-polyfills/phpuni
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
+require dirname( __FILE__ ) . '/../WCPAY_UnitTestCase.php';
 
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {

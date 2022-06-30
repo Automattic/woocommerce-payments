@@ -8,7 +8,7 @@
 /**
  * WC_Payments_DB unit tests.
  */
-class WC_Payments_DB_Test extends WP_UnitTestCase {
+class WC_Payments_DB_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * @var WC_Payments_DB

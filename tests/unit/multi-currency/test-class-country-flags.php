@@ -10,7 +10,7 @@ use WCPay\MultiCurrency\CountryFlags;
 /**
  * Class CountryFlags tests.
  */
-class Country_Flags_Test extends WP_UnitTestCase {
+class Country_Flags_Test extends WCPAY_UnitTestCase {
 	public function test_get_by_country_returns_emoji_flag() {
 		$this->assertEquals( CountryFlags::get_by_country( 'US' ), '🇺🇸' );
 	}

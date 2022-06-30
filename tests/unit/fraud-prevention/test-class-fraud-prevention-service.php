@@ -10,7 +10,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 /**
  * Fraud_Prevention_Service_Test unit tests.
  */
-class Fraud_Prevention_Service_Test extends WP_UnitTestCase {
+class Fraud_Prevention_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * WC_Session mock object.
