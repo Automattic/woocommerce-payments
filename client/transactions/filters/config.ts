@@ -6,7 +6,7 @@ import { __, _x, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { displayType } from 'transactions/strings';
+import { displayType, customerCurrency } from 'transactions/strings';
 
 interface TransactionsFilterEntryType {
 	label: string;
@@ -28,6 +28,14 @@ const transactionTypesOptions = Object.entries( displayType )
 		if ( type === 'card_reader_fee' ) {
 			return null;
 		}
+		return { label, value: type };
+	} )
+	.filter( function ( el ) {
+		return el != null;
+	} );
+
+const customerCurrencyOptions = Object.entries( customerCurrency )
+	.map( ( [ type, label ] ) => {
 		return { label, value: type };
 	} )
 	.filter( function ( el ) {
@@ -149,6 +157,52 @@ export const advancedFilters = {
 			],
 			input: {
 				component: 'Date',
+			},
+		},
+		customer_currency: {
+			labels: {
+				add: __( 'Customer currency', 'woocommerce-payments' ),
+				remove: __(
+					'Remove transaction customer currency filter',
+					'woocommerce-payments'
+				),
+				rule: __(
+					'Select a transaction customer currency filter match',
+					'woocommerce-payments'
+				),
+				/* translators: A sentence describing a Transaction customer currency filter. */
+				title: __(
+					'{{title}}Customer currency{{/title}} {{rule /}} {{filter /}}',
+					'woocommerce-payments'
+				),
+				filter: __(
+					'Select a customer currency',
+					'woocommerce-payments'
+				),
+			},
+			rules: [
+				{
+					value: 'is',
+					/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen presentment currency. */
+					label: _x(
+						'Is',
+						'transaction customer currency',
+						'woocommerce-payments'
+					),
+				},
+				{
+					value: 'is_not',
+					/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen presentment currency. */
+					label: _x(
+						'Is not',
+						'transaction customer currency',
+						'woocommerce-payments'
+					),
+				},
+			],
+			input: {
+				component: 'SelectControl',
+				options: customerCurrencyOptions,
 			},
 		},
 		type: {

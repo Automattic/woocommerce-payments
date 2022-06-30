@@ -22,3 +22,9 @@ export const displayType = {
 	financing_payout: __( 'Loan dispersement', 'woocommerce-payments' ),
 	financing_paydown: __( 'Loan repayment', 'woocommerce-payments' ),
 };
+
+export const customerCurrency = {
+	gbp: 'GBP (£)',
+	usd: 'USD ($)',
+	eur: 'EUR (€)',
+};
