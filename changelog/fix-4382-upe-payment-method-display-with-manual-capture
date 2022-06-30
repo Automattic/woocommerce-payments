@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Correctly show UPE payment methods when UPE is first enabled while manual capture is already enabled
