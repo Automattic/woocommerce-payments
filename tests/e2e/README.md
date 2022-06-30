@@ -97,7 +97,6 @@ If you wish to skip E2E tests for WC Subscriptions, Action Scheduler or WC Guten
 SKIP_WC_SUBSCRIPTIONS_TESTS=1
 SKIP_WC_ACTION_SCHEDULER_TESTS=1
 SKIP_WC_BLOCKS_TESTS=1
-SKIP_WC_PERFORMANCE_TESTS=1
 ```
 
 </p>
