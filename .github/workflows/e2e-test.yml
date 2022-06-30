@@ -43,7 +43,7 @@ jobs:
         test_branches: [ 'merchant', 'shopper' ]
         include:
           - woocommerce: 'latest'
-          - wordpress: 'nightly'
+            wordpress: 'nightly'
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
