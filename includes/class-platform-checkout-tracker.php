@@ -52,6 +52,7 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_blocks_checkout_order_processed', [ $this, 'checkout_order_processed' ] );
 		add_action( 'woocommerce_payments_save_user_in_platform_checkout', [ $this, 'must_save_payment_method_to_platform' ] );
+		add_action( 'woocommerce_payments_platform_checkout_redirected', [ $this, 'checkout_redirect' ] );
 	}
 
 	/**
@@ -299,6 +300,15 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 			[
 				'source' => 'checkout',
 			]
+		);
+	}
+
+	/**
+	 * Record a Tracks event that user will be redirected to platform checkout.
+	 */
+	public function checkout_redirect() {
+		$this->maybe_record_event(
+			'platform_checkout_redirect'
 		);
 	}
 
