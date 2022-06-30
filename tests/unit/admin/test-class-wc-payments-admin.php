@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Database_Cache;
 
 /**
  * WC_Payments_Admin unit tests.
@@ -21,6 +22,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 * @var WC_Payment_Gateway_WCPay|MockObject
 	 */
 	private $mock_gateway;
+
+	/**
+	 * Mock database cache
+	 *
+	 * @var Database_Cache|MockObject;
+	 */
+	private $mock_database_cache;
 
 	/**
 	 * @var WC_Payments_Admin
@@ -44,6 +52,11 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_account = $this->getMockBuilder( WC_Payments_Account::class )
 			->disableOriginalConstructor()
 			->getMock();
+
+		$this->mock_database_cache = $this->getMockBuilder( Database_Cache::class )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->mock_account->method( 'get_capital' )->willReturn(
 			[
 				'loans'              => [],
@@ -52,7 +65,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->payments_admin = new WC_Payments_Admin( $mock_api_client, $this->mock_gateway, $this->mock_account );
+		$this->payments_admin = new WC_Payments_Admin( $mock_api_client, $this->mock_gateway, $this->mock_account, $this->mock_database_cache );
 	}
 
 	public function tear_down() {
@@ -232,5 +245,77 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Tests WC_Payments_Admin::add_disputes_notification_badge()
+	 */
+	public function test_disputes_notification_badge_display() {
+		global $submenu;
+
+		// Mock the database cache returning a set of disputes.
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'needs_response'         => 1,
+					'warning_needs_response' => 3,
+					'won'                    => 2,
+					'lost'                   => 10,
+				]
+			);
+
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
+		$dispute_query_args = [
+			'page'   => 'wc-admin',
+			'path'   => '%2Fpayments%2Fdisputes',
+			'filter' => 'awaiting_response',
+		];
+
+		$dispute_url = admin_url( add_query_arg( $dispute_query_args, 'admin.php' ) );
+
+		// Assert the submenu includes a disputes item that links directly to the disputes screen with the awaiting_response filter.
+		$this->assertArrayHasKey( $dispute_url, $item_names_by_urls );
+
+		// The expected badge content should include 4 disputes needing a response.
+		$expected_badge = sprintf( WC_Payments_Admin::DISPUTE_NOTIFICATION_BADGE_FORMAT, 4 );
+
+		$this->assertEquals( 'Disputes' . $expected_badge, $item_names_by_urls[ $dispute_url ] );
+	}
+
+	/**
+	 * Tests WC_Payments_Admin::add_disputes_notification_badge()
+	 */
+	public function test_disputes_notification_badge_no_display() {
+		global $submenu;
+
+		// Mock the database cache returning a set of disputes.
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'won'  => 1,
+					'lost' => 3,
+				]
+			);
+
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
+		$dispute_menu_item  = $item_names_by_urls['wc-admin&path=/payments/disputes'];
+
+		$this->assertEquals( 'Disputes', $dispute_menu_item );
 	}
 }

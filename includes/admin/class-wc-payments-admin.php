@@ -6,6 +6,7 @@
  */
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+use WCPay\Database_Cache;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,6 +21,20 @@ class WC_Payments_Admin {
 	 * @var string
 	 */
 	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1"><span class="plugin-count">1</span></span>';
+
+	/**
+	 * Dispute notification badge HTML format (with placeholder for the number of disputes).
+	 *
+	 * @var string
+	 */
+	const DISPUTE_NOTIFICATION_BADGE_FORMAT = ' <span class="wcpay-menu-badge awaiting-mod count-%1$s"><span class="plugin-count">%1$d</span></span>';
+
+	/**
+	 * WC Payments WordPress Admin menu slug.
+	 *
+	 * @var string
+	 */
+	const PAYMENTS_SUBMENU_SLUG = 'wc-admin&path=/payments/overview';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API.
@@ -50,20 +65,30 @@ class WC_Payments_Admin {
 	private $admin_child_pages;
 
 	/**
+	 * Database_Cache instance.
+	 *
+	 * @var Database_Cache
+	 */
+	private $database_cache;
+
+	/**
 	 * Hook in admin menu items.
 	 *
 	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
 	 * @param WC_Payment_Gateway_WCPay $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 * @param WC_Payments_Account      $account             Account instance.
+	 * @param Database_Cache           $database_cache      Database Cache instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payment_Gateway_WCPay $gateway,
-		WC_Payments_Account $account
+		WC_Payments_Account $account,
+		Database_Cache $database_cache
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->wcpay_gateway       = $gateway;
 		$this->account             = $account;
+		$this->database_cache      = $database_cache;
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -369,6 +394,7 @@ class WC_Payments_Admin {
 
 		$this->add_menu_notification_badge();
 		$this->add_update_business_details_task();
+		$this->add_disputes_notification_badge();
 	}
 
 	/**
@@ -862,5 +888,55 @@ class WC_Payments_Admin {
 		</div>
 
 		<?php
+	}
+
+	/**
+	 * Adds a notification badge to the Payments > Disputes admin menu item to
+	 * indicate the number of disputes that need a response.
+	 */
+	public function add_disputes_notification_badge() {
+		global $submenu;
+
+		if ( ! isset( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] ) ) {
+			return;
+		}
+
+		$disputes_needing_response = $this->get_disputes_awaiting_response_count();
+
+		if ( $disputes_needing_response <= 0 ) {
+			return;
+		}
+
+		foreach ( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] as $index => $menu_item ) {
+			if ( 'wc-admin&path=/payments/disputes' === $menu_item[2] ) {
+				// Direct the user to the disputes which need a response by default.
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][2] = admin_url( add_query_arg( [ 'filter' => 'awaiting_response' ], 'admin.php?page=' . $menu_item[2] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+				// Append the dispute notification badge to indicate the number of disputes needing a response.
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( self::DISPUTE_NOTIFICATION_BADGE_FORMAT, esc_html( $disputes_needing_response ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Gets the number of disputes which need a response. ie have a 'needs_response' or 'warning_needs_response' status.
+	 *
+	 * @return int The number of disputes which need a response.
+	 */
+	private function get_disputes_awaiting_response_count() {
+		$disputes_status_counts = $this->database_cache->get_or_add(
+			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
+			[ $this->payments_api_client, 'get_dispute_status_counts' ],
+			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
+			'is_array'
+		);
+
+		if ( empty( $disputes_status_counts ) ) {
+			return 0;
+		}
+
+		$needs_response_statuses = [ 'needs_response', 'warning_needs_response' ];
+		return (int) array_sum( array_intersect_key( $disputes_status_counts, array_flip( $needs_response_statuses ) ) );
 	}
 }
