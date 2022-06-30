@@ -68,6 +68,10 @@
 		}
 	}
 
+	&__label {
+		text-transform: initial;
+	}
+
 	&__info {
 		> * {
 			margin: 0;
