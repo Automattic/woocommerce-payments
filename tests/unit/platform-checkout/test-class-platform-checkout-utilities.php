@@ -10,7 +10,7 @@ use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 /**
  * Platform_Checkout_Utilities unit tests.
  */
-class Platform_Checkout_Utilities_Test extends WP_UnitTestCase {
+class Platform_Checkout_Utilities_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 		$this->gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );

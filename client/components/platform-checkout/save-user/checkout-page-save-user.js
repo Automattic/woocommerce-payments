@@ -37,7 +37,7 @@ const CheckoutPageSaveUser = () => {
 
 	return (
 		<>
-			<h3>Remember your details?</h3>
+			<h3>{ __( 'Remember your details?', 'woocommerce-payments' ) }</h3>
 			<span>
 				<label htmlFor="save_user_in_platform_checkout">
 					<input

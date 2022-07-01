@@ -310,6 +310,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Get has account connected readers flag
+	 *
+	 * @return bool
+	 */
+	public function has_card_readers_available(): bool {
+		$account = $this->get_cached_account_data();
+		return $account['has_card_readers_available'] ?? false;
+	}
+
+	/**
 	 * Gets the current account fees for rendering on the settings page.
 	 *
 	 * @return array Fees.
@@ -457,7 +467,7 @@ class WC_Payments_Account {
 		}
 
 		$is_on_settings_page           = WC_Payment_Gateway_WCPay::is_current_page_settings();
-		$should_redirect_to_onboarding = get_option( 'wcpay_should_redirect_to_onboarding', false );
+		$should_redirect_to_onboarding = (bool) get_option( 'wcpay_should_redirect_to_onboarding', false );
 
 		if (
 			// If not loading the settings page...

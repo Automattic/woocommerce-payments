@@ -8,7 +8,7 @@
 /**
  * WC_Payments_Order_Service unit tests.
  */
-class WC_Payments_Order_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * System under test.

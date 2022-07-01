@@ -10,7 +10,7 @@ use WCPay\Session_Rate_Limiter;
 /**
  * WC_Payments_Payment_Request_Button_Handler_Test class.
  */
-class WC_Payments_Payment_Request_Button_Handler_Test extends WP_UnitTestCase {
+class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase {
 	const SHIPPING_ADDRESS = [
 		'country'   => 'US',
 		'state'     => 'CA',

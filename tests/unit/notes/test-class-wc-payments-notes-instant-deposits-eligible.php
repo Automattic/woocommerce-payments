@@ -8,7 +8,7 @@
 /**
  * Class WC_Payments_Notes_Instant_Deposits_Eligible tests.
  */
-class WC_Payments_Notes_Instant_Deposits_Eligible_Test extends WP_UnitTestCase {
+class WC_Payments_Notes_Instant_Deposits_Eligible_Test extends WCPAY_UnitTestCase {
 	public function test_removes_note_on_extension_deactivation() {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			// Trigger WCPay extension deactivation callback.

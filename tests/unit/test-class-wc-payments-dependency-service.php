@@ -8,7 +8,7 @@
 /**
  * WC_Payments_Dependency_Service_Test class.
  */
-class WC_Payments_Dependency_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Dependency_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Sets up things all tests need.
