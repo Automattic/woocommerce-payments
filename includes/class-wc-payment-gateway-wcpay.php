@@ -22,6 +22,7 @@ use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Payment_Methods\Link_Payment_Method;
+use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -1764,6 +1765,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[ 'test_mode' => $this->is_in_test_mode() ? 1 : 0 ]
 			);
 			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
+			if ( ! $is_platform_checkout_enabled ) {
+				Platform_Checkout_Order_Status_Sync::remove_webhook();
+			}
 		}
 	}
 
