@@ -54,7 +54,7 @@ jobs:
           - wordpress: 'nightly'
             woocommerce: 'beta'   
 
-    name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WC - ${{ matrix.woocommerce }} | WP - ${{ matrix.wordpress }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
       E2E_WP_VERSION: ${{ matrix.wordpress }}
