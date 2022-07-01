@@ -44,6 +44,16 @@ const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 				: '–',
 		},
 		{
+			title: __( 'Channel', 'woocommerce-payments' ),
+			content: (
+				<span>
+					{ charge.payment_method_details?.type === 'card_present'
+						? 'In-Person'
+						: 'Online' }
+				</span>
+			),
+		},
+		{
 			title: __( 'Customer', 'woocommerce-payments' ),
 			content: <CustomerLink customer={ charge.billing_details } />,
 		},
