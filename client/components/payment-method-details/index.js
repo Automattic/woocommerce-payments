@@ -18,6 +18,7 @@ const formatDetails = ( payment ) => {
 		case 'au_becs_debit':
 		case 'sepa_debit':
 		case 'card_present':
+		case 'interac_present':
 			return (
 				<Fragment>
 					&nbsp;&bull;&bull;&bull;&bull;&nbsp;{ paymentMethod.last4 }
