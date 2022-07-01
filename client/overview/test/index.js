@@ -30,7 +30,7 @@ const loanOfferErrorText =
 	'There was a problem redirecting you to the loan offer. Please check that it is not expired and try again.';
 
 const serverLinkErrorText =
-	'There was a problem redirecting you to the requested link. Please check that it is not expired and try again.';
+	'There was a problem redirecting you to the requested link. Please check that it is valid and try again.';
 
 describe( 'Overview page', () => {
 	beforeEach( () => {

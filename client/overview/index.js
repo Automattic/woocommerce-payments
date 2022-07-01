@@ -122,7 +122,7 @@ const OverviewPage = () => {
 			{ showServerLinkError && (
 				<Notice status="error" isDismissible={ false }>
 					{ __(
-						'There was a problem redirecting you to the requested link. Please check that it is not expired and try again.',
+						'There was a problem redirecting you to the requested link. Please check that it is valid and try again.',
 						'woocommerce-payments'
 					) }
 				</Notice>
