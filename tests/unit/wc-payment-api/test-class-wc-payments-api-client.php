@@ -977,7 +977,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 					]
 				),
 				true,
-				true // get_capital_links should use user token auth.
+				true // get_link should use user token auth.
 			)
 			->willReturn(
 				[
