@@ -650,7 +650,10 @@ const mapEventToTimelineItems = ( event ) => {
 					),
 					'checkmark',
 					'is-success',
-					[ composeFXString( event ) ]
+					[
+						composeFXString( event ),
+						getRefundTrackingDetails( event ),
+					]
 				),
 			];
 		case 'refund_failed':

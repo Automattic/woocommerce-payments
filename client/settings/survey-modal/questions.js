@@ -4,11 +4,12 @@
  * */
 export const wcPaySurveys = [
 	{
-		key: 'wcpay-upe-disable-early-access',
-		defaultAnswer: { 'why-disable': 'slow-buggy' },
+		key: 'wcpay-upe-disable-early-access-2022-may',
+		defaultAnswer: { 'why-disable': 'slow' },
 		questions: {
 			'why-disable': {
-				'slow-buggy': 'It is slow or buggy',
+				slow: 'It is slow',
+				buggy: 'It is buggy',
 				'theme-compatibility': 'It does not work with my theme',
 				'missing-features':
 					'It is missing features I need(describe below)',

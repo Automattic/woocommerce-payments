@@ -11,7 +11,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
-class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
+class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *
@@ -166,7 +166,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( false );
 
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', 'cus_1234', 'pm_56789', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+		$intent = WC_Helper_Intention::create_intention();
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
@@ -203,7 +203,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( true );
 
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', 'cus_1234', 'pm_56789', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+		$intent = WC_Helper_Intention::create_intention();
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )
@@ -239,7 +239,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WP_UnitTestCase {
 		);
 		$order->add_payment_token( $this->token );
 
-		$intent = new WC_Payments_API_Intention( 'pi_mock', 1500, 'usd', 'cus_1234', 'pm_56789', new DateTime(), 'succeeded', 'ch_mock', 'client_secret_123' );
+		$intent = WC_Helper_Intention::create_intention();
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'create_and_confirm_intention' )

@@ -8,7 +8,7 @@
 /**
  * WC_REST_Payments_Survey_Controller_Test unit tests.
  */
-class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Survey_Controller_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Tested REST route.
@@ -63,17 +63,22 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 					$this->arrayHasKey( 'survey_responses' ),
 					$this->callback(
 						function ( $argument ) {
-							return 'wcpay-upe-disable-early-access' === $argument['survey_id'];
+							return 'wcpay-upe-disable-early-access-2022-may' === $argument['survey_id'];
 						}
 					),
 					$this->callback(
 						function ( $argument ) {
-							return 'slow-buggy' === $argument['survey_responses']['why-disable'];
+							return 'slow' === $argument['survey_responses']['why-disable'];
 						}
 					),
 					$this->callback(
 						function ( $argument ) {
 							return 'test comment' === $argument['survey_responses']['comments']['text'];
+						}
+					),
+					$this->callback(
+						function ( $argument ) {
+							return 'System Status Report' === $argument['survey_responses']['ssr']['text'];
 						}
 					)
 				)
@@ -88,8 +93,9 @@ class WC_REST_Payments_Survey_Controller_Test extends WP_UnitTestCase {
 		$request = new WP_REST_Request( 'POST', self::ROUTE );
 		$request->set_body_params(
 			[
-				'why-disable' => 'slow-buggy',
+				'why-disable' => 'slow',
 				'comments'    => 'test comment',
+				'ssr'         => 'System Status Report',
 			]
 		);
 

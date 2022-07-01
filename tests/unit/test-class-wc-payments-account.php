@@ -11,7 +11,7 @@ use WCPay\Database_Cache;
 /**
  * WC_Payments_Account unit tests.
  */
-class WC_Payments_Account_Test extends WP_UnitTestCase {
+class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 	const NO_REQUIREMENTS      = false;
 	const PENDING_REQUIREMENTS = true;
@@ -86,7 +86,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		$this->assertFalse( WC_Payments_Account::is_on_boarding_disabled() );
 		// The option should be updated.
-		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
 	public function test_maybe_redirect_to_onboarding_stripe_disconnected_and_on_boarding_disabled_redirects() {
@@ -108,7 +108,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		$this->assertTrue( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		$this->assertTrue( WC_Payments_Account::is_on_boarding_disabled() );
 		// The option should be updated.
-		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
 	public function test_maybe_redirect_to_onboarding_account_error() {
@@ -125,7 +125,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		// Should not update the option.
-		$this->assertTrue( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+		$this->assertTrue( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
 	public function test_maybe_redirect_to_onboarding_account_connected() {
@@ -149,7 +149,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		// The option should be updated.
-		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
 	public function test_maybe_redirect_to_onboarding_checks_the_account_once() {
@@ -175,7 +175,7 @@ class WC_Payments_Account_Test extends WP_UnitTestCase {
 		// call the method twice but use the mock_api_client to make sure the account has been retrieved only once.
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
 		// The option should be updated.
-		$this->assertFalse( get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
 	public function test_maybe_redirect_to_onboarding_returns_true_and_on_boarding_re_enabled() {

@@ -8,7 +8,7 @@
 /**
  * WC_Payments_Subscriptions unit tests.
  */
-class WC_Payments_Subscriptions_Test extends WP_UnitTestCase {
+class WC_Payments_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Tests WC_Payments_Subscriptions::get_product_service().

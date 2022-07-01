@@ -13,11 +13,17 @@ import PlatformCheckoutSettings from '../platform-checkout-settings';
 import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
+	usePlatformCheckoutStoreLogo,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
 	usePlatformCheckoutEnabledSettings: jest.fn(),
 	usePlatformCheckoutCustomMessage: jest.fn(),
+	usePlatformCheckoutStoreLogo: jest.fn(),
+} ) );
+
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn( () => ( { createErrorNotice: jest.fn() } ) ),
 } ) );
 
 const getMockPlatformCheckoutEnabledSettings = (
@@ -29,6 +35,10 @@ const getMockPlatformCheckoutCustomMessage = (
 	message,
 	updatePlatformCheckoutCustomMessageHandler
 ) => [ message, updatePlatformCheckoutCustomMessageHandler ];
+const getMockPlatformCheckoutStoreLogo = (
+	message,
+	updatePlatformCheckoutStoreLogoHandler
+) => [ message, updatePlatformCheckoutStoreLogoHandler ];
 
 describe( 'PlatformCheckoutSettings', () => {
 	beforeEach( () => {
@@ -39,6 +49,14 @@ describe( 'PlatformCheckoutSettings', () => {
 		usePlatformCheckoutCustomMessage.mockReturnValue(
 			getMockPlatformCheckoutCustomMessage( '', jest.fn() )
 		);
+
+		usePlatformCheckoutStoreLogo.mockReturnValue(
+			getMockPlatformCheckoutStoreLogo( '', jest.fn() )
+		);
+
+		global.wcpaySettings = {
+			restUrl: 'http://example.com/wp-json/',
+		};
 	} );
 
 	it( 'renders settings with defaults', () => {
@@ -48,16 +66,6 @@ describe( 'PlatformCheckoutSettings', () => {
 		const [ enableCheckbox ] = screen.queryAllByRole( 'checkbox' );
 
 		expect( enableCheckbox ).toBeInTheDocument();
-
-		// confirm settings headings
-		expect(
-			screen.queryByRole( 'heading', { name: 'Custom message' } )
-		).toBeInTheDocument();
-
-		// confirm radio button groups displayed
-		const customMessageTextbox = screen.queryByRole( 'textbox' );
-
-		expect( customMessageTextbox ).toBeInTheDocument();
 	} );
 
 	it( 'triggers the hooks when the enable setting is being interacted with', () => {
@@ -90,7 +98,17 @@ describe( 'PlatformCheckoutSettings', () => {
 			)
 		);
 
-		render( <PlatformCheckoutSettings section="general" /> );
+		render( <PlatformCheckoutSettings section="appearance" /> );
+
+		// confirm settings headings
+		expect(
+			screen.queryByRole( 'heading', { name: 'Custom message' } )
+		).toBeInTheDocument();
+
+		// confirm radio button groups displayed
+		const customMessageTextbox = screen.queryByRole( 'textbox' );
+
+		expect( customMessageTextbox ).toBeInTheDocument();
 
 		expect(
 			updatePlatformCheckoutCustomMessageHandler

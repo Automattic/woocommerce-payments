@@ -31,7 +31,7 @@ SITE_URL=$WP_URL
 
 # Setup WCPay local server instance.
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
-if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
+if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	if [[ $FORCE_E2E_DEPS_SETUP || ! -d "$SERVER_PATH" ]]; then
 		step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
 
@@ -64,7 +64,7 @@ if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
-	WP_LISTEN_PORT=$(docker ps | grep woocommerce_payments_server_wordpress_e2e | sed -En "s/.*0:([0-9]+).*/\1/p")
+	WP_LISTEN_PORT=$(docker ps | grep "$SERVER_CONTAINER" | sed -En "s/.*0:([0-9]+).*/\1/p")
 	echo "WordPress instance listening on port ${WP_LISTEN_PORT}"
 
 	if [[ -n $CI ]]; then
@@ -78,6 +78,12 @@ if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	step "Configuring server with stripe account"
 	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
+
+	if [[ -n $CI ]]; then
+		step "Disable Xdebug on server container"
+		docker exec "$SERVER_CONTAINER" \
+		sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
+	fi
 fi
 
 cd "$cwd"
@@ -97,6 +103,12 @@ step "Starting CLIENT containers"
 redirect_output docker-compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
 	docker-compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d phpMyAdmin
+fi
+
+if [[ -n $CI ]]; then
+	step "Disabling Xdebug on client container"
+	docker exec "$CLIENT_CONTAINER" \
+	sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
 fi
 
 echo
@@ -222,7 +234,10 @@ fi
 echo "Activating dev tools plugin"
 cli wp plugin activate "$DEV_TOOLS_DIR"
 
-if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
+echo "Disabling WPCOM requests proxy"
+cli wp option update wcpaydev_proxy 0
+
+if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	echo "Setting redirection to local server"
 	# host.docker.internal is not available in linux. Use ip address for docker0 interface to redirect requests from container.
 	if [[ -n $CI ]]; then
@@ -232,10 +247,10 @@ if [[ -z $CI && "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	echo "Setting Jetpack blog_id"
 	cli wp wcpay_dev set_blog_id "$BLOG_ID"
-else
-	echo "Disabling WPCOM requests proxy"
-	cli wp option update wcpaydev_proxy 0
 
+	echo "Refresh WCPay Account Data"
+	cli wp wcpay_dev refresh_account_data
+else
 	echo "Setting Jetpack blog_id"
 	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_BLOG_TOKEN" --user_token="$E2E_USER_TOKEN"
 fi

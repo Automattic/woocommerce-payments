@@ -11,7 +11,7 @@ use WCPay\Constants\Payment_Method;
 /**
  * WC_Payments_Token_Service unit tests.
  */
-class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * System under test.
@@ -323,6 +323,21 @@ class WC_Payments_Token_Service_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( null );
+
+		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ new WC_Payment_Token_CC() ], 1, 'woocommerce_payments' );
+		$this->assertEquals( [ new WC_Payment_Token_CC() ], $result );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_failed_to_load_payment_methods_for_customer() {
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->willThrowException( new Exception( 'Failed to get payment methods.' ) );
 
 		$result = $this->token_service->woocommerce_get_customer_payment_tokens( [ new WC_Payment_Token_CC() ], 1, 'woocommerce_payments' );
 		$this->assertEquals( [ new WC_Payment_Token_CC() ], $result );

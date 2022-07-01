@@ -6,6 +6,7 @@
  */
 
 use WCPay\Logger;
+use WCPay\Constants\Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -126,7 +127,6 @@ class WC_Payments_Order_Service {
 	 */
 	public function mark_payment_started( $order, $intent_id, $intent_status, $charge_id ) {
 		if ( ! $order->has_status( [ self::STATUS_PENDING ] )
-			|| 'requires_action' === $order->get_meta( '_intention_status' )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
@@ -721,6 +721,8 @@ class WC_Payments_Order_Service {
 	 * @return boolean True if it has a paid status, false if not.
 	 */
 	private function is_order_paid( $order ) {
+		wp_cache_delete( $order->get_id(), 'posts' );
+
 		// Read the latest order properties from the database to avoid race conditions if webhook was handled during this request.
 		$clone_order = clone $order;
 		$clone_order->get_data_store()->read( $clone_order );

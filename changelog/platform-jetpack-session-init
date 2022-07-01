@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Update session init request to platform checkout to use Jetpack Connection.

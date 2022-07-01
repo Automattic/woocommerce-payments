@@ -40,6 +40,16 @@ const methods = {
 					</>
 				),
 			},
+			{
+				section: 'appearance',
+				description: () => (
+					<>
+						<div>
+							<h2>{ __( 'Checkout appearance' ) }</h2>
+						</div>
+					</>
+				),
+			},
 		],
 		controls: ( props ) => <PlatformCheckoutSettings { ...props } />,
 	},
