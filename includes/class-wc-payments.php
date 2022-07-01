@@ -26,6 +26,7 @@ use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
@@ -274,6 +275,7 @@ class WC_Payments {
 		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
+		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -985,6 +987,8 @@ class WC_Payments {
 				add_action( 'woocommerce_cleanup_draft_orders', [ $draft_orders, 'delete_expired_draft_orders' ] );
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
+
+			new Platform_Checkout_Order_Status_Sync( self::$api_client );
 		}
 	}
 
