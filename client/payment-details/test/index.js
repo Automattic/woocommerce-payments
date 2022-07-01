@@ -105,26 +105,9 @@ global.wcSettings = {
 };
 
 global.wcpaySettings = {
-	featureFlags: {
-		paymentTimeline: true,
-	},
+	featureFlags: { paymentTimeline: true },
 	zeroDecimalCurrencies: [ 'usd' ],
-	connect: {
-		country: 'US',
-		availableCountries: {
-			US: 'United States (US)',
-		},
-	},
-	currencyData: {
-		US: {
-			code: 'USD',
-			symbol: '$',
-			symbolPosition: 'left',
-			thousandSeparator: ',',
-			decimalSeparator: '.',
-			precision: 2,
-		},
-	},
+	connect: { country: 'US' },
 };
 
 describe( 'Payment details page', () => {
