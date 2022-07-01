@@ -13,7 +13,7 @@ import { getPaymentIntent } from '../resolvers';
 
 const errorResponse = { code: 'error' };
 
-const chargeResponse = {
+const paymentIntentResponse = {
 	data: {
 		id: 'pi_test_1',
 		amount: 8903,
@@ -59,10 +59,12 @@ describe( 'getPaymentIntent resolver', () => {
 
 	describe( 'on success', () => {
 		test( 'should update state with payment intent data', () => {
-			expect( generator.next( chargeResponse.data ).value ).toEqual(
+			expect(
+				generator.next( paymentIntentResponse.data ).value
+			).toEqual(
 				updatePaymentIntent(
-					chargeResponse.data.id,
-					chargeResponse.data
+					paymentIntentResponse.data.id,
+					paymentIntentResponse.data
 				)
 			);
 		} );
