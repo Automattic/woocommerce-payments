@@ -12,7 +12,11 @@ import React from 'react';
 /**
  * Internal dependencies.
  */
-import { getChargeAmounts, getChargeStatus } from 'utils/charge';
+import {
+	getChargeAmounts,
+	getChargeStatus,
+	getChargeChannel,
+} from 'utils/charge';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
 import HorizontalList from 'components/horizontal-list';
@@ -47,9 +51,7 @@ const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 			title: __( 'Channel', 'woocommerce-payments' ),
 			content: (
 				<span>
-					{ charge.payment_method_details?.type === 'card_present'
-						? 'In-Person'
-						: 'Online' }
+					{ getChargeChannel( charge.payment_method_details?.type ) }
 				</span>
 			),
 		},

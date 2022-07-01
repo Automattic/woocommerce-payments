@@ -39,6 +39,7 @@ import { displayType } from 'transactions/strings';
 import { displayStatus as displayDepositStatus } from 'deposits/strings';
 import { formatStringValue } from 'utils';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import { getChargeChannel } from 'utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
@@ -340,10 +341,8 @@ export const TransactionsList = (
 				),
 			},
 			channel: {
-				value: txn.source === 'card_present' ? 'In-Person' : 'Online',
-				display: clickable(
-					txn.source === 'card_present' ? 'In-Person' : 'Online'
-				),
+				value: getChargeChannel( txn.source ),
+				display: clickable( getChargeChannel( txn.source ) ),
 			},
 			type: {
 				value: displayType[ dataType ],

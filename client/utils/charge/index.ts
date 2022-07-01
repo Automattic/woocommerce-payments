@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { sumBy, get } from 'lodash';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -119,4 +120,12 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	balance.net = balance.amount - balance.fee - balance.refunded;
 
 	return balance;
+};
+
+export const getChargeChannel = ( type: string ): string => {
+	if ( type === 'card_present' || type === 'interac_present' ) {
+		return __( 'In-Person', 'woocommerce-payments' );
+	}
+
+	return __( 'Online', 'woocommerce-payments' );
 };
