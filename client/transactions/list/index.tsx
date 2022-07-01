@@ -58,6 +58,7 @@ interface Column extends TableCardColumn {
 		| 'transaction_id'
 		| 'date'
 		| 'type'
+		| 'channel'
 		| 'amount'
 		| 'fees'
 		| 'net'
@@ -99,6 +100,13 @@ const getColumns = (
 			key: 'type',
 			label: __( 'Type', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
+			required: true,
+			isLeftAligned: true,
+		},
+		{
+			key: 'channel',
+			label: __( 'Channel', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Channel', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 		},
@@ -329,6 +337,12 @@ export const TransactionsList = (
 						'M j, Y / g:iA',
 						moment.utc( txn.date ).local().toISOString()
 					)
+				),
+			},
+			channel: {
+				value: txn.source === 'card_present' ? 'In-Person' : 'Online',
+				display: clickable(
+					txn.source === 'card_present' ? 'In-Person' : 'Online'
 				),
 			},
 			type: {
