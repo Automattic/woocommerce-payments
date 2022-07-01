@@ -1332,9 +1332,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 				$product_name = $cart_item['data']->get_name();
 
+				$item_tax = wc_tax_enabled() && 'incl' !== get_option( 'woocommerce_tax_display_cart' ) ? 0 : $cart_item['line_subtotal_tax'];
+
 				$item = [
 					'label'  => $product_name . $quantity_label,
-					'amount' => WC_Payments_Utils::prepare_amount( $amount, $currency ),
+					'amount' => WC_Payments_Utils::prepare_amount( $amount + $item_tax, $currency ),
 				];
 
 				$items[] = $item;
