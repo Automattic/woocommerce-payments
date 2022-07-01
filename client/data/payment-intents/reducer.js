@@ -5,7 +5,7 @@
  */
 import TYPES from './action-types';
 
-const receivePaymentIntent = ( state = {}, { type, id, data, error } ) => {
+const receivePaymentIntents = ( state = {}, { type, id, data, error } ) => {
 	switch ( type ) {
 		case TYPES.SET_PAYMENT_INTENT:
 			state = {
@@ -29,4 +29,4 @@ const receivePaymentIntent = ( state = {}, { type, id, data, error } ) => {
 	return state;
 };
 
-export default receivePaymentIntent;
+export default receivePaymentIntents;
