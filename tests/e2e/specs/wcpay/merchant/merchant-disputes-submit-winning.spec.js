@@ -45,7 +45,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await merchant.logout();
 	} );
 
-	it( 'should process a winning dispute', async () => {
+	it( 'should process and confirm a winning dispute', async () => {
 		// Pull out and follow the link to avoid working in multiple tabs
 		const paymentDetailsLink = await page.$eval(
 			'p.order_number > a',
@@ -78,13 +78,13 @@ describe( 'Disputes > Submit winning dispute', () => {
 
 		// Verify we're on the view dispute page
 		await expect( page ).toMatchElement(
-			'div.components-card > .components-card__header',
+			'div.wcpay-dispute-details .header-dispute-overview',
 			{
 				text: 'Dispute overview',
 			}
 		);
 		await expect( page ).toMatchElement(
-			'div.components-card > .components-card__header',
+			'div.wcpay-dispute-details .components-card > .components-card__header',
 			{
 				text: 'Dispute: Fraudulent',
 			}
@@ -100,19 +100,30 @@ describe( 'Disputes > Submit winning dispute', () => {
 		);
 
 		// Verify the content blocks are present
-		await expect( page ).toMatchElement( '.components-card__header', {
-			text: 'General evidence',
-		} );
-		await expect( page ).toMatchElement( '.components-card__header', {
-			text: 'Shipping information',
-		} );
-		await expect( page ).toMatchElement( '.components-card__header', {
-			text: 'Additional details',
-		} );
+		await expect( page ).toMatchElement(
+			'div.wcpay-dispute-evidence .components-card__header',
+			{
+				text: 'General evidence',
+			}
+		);
+		await expect( page ).toMatchElement(
+			'div.wcpay-dispute-evidence .components-card__header',
+			{
+				text: 'Shipping information',
+			}
+		);
+		await expect( page ).toMatchElement(
+			'div.wcpay-dispute-evidence .components-card__header',
+			{
+				text: 'Additional details',
+			}
+		);
 
 		// Fill Additional Details field with required text in order to win dispute
-		await expect( page ).toFill(
-			'#inspector-textarea-control-3',
+		await expect(
+			page
+		).toFill(
+			'div.wcpay-dispute-evidence #inspector-textarea-control-3',
 			'winning_evidence',
 			{ delay: 20 }
 		);
@@ -121,7 +132,7 @@ describe( 'Disputes > Submit winning dispute', () => {
 		await Promise.all( [
 			page.removeAllListeners( 'dialog' ),
 			evalAndClick(
-				'div.components-card__footer > div > button.components-button.is-primary'
+				'div.wcpay-dispute-evidence .components-card__footer > div > button.components-button.is-primary'
 			),
 			page.on( 'dialog', async ( dialog ) => {
 				await dialog.accept();
@@ -142,41 +153,33 @@ describe( 'Disputes > Submit winning dispute', () => {
 			}
 		);
 
-		// Verify Won status in disputes view
-		await page.waitForSelector( 'span.chip-light' );
-		await expect( page ).toMatchElement( 'span.chip-light', {
-			text: 'Won',
-		} );
-	} );
-
-	it( 'should verify a dispute has been challenged properly', async () => {
-		// Re-open the dispute to view the details
-		await merchant.goToOrder( orderId );
-
-		// Pull out and follow the link to avoid working in multiple tabs
-		const paymentDetailsLink = await page.$eval(
-			'p.order_number > a',
-			( anchor ) => anchor.getAttribute( 'href' )
-		);
-		await merchantWCP.openPaymentDetails( paymentDetailsLink );
-
-		// Get the link to the dispute details
-		const disputeDetailsElement = await page.$(
-			'[data-testid="view-dispute-button"]'
-		);
-		const disputeDetailsLink = await page.evaluate(
-			( anchor ) => anchor.getAttribute( 'href' ),
-			disputeDetailsElement
-		);
-
-		// Open the dispute details
+		// If webhooks are not received, the dispute status won't be updated in the dispute list page resulting in test failure.
+		// Workaround - Open dispute details page again and check status.
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );
-
-		// Check if a new button is present now
-		const buttonText = await page.$eval(
-			'div.components-card > div.components-flex > div > a',
-			( el ) => el.innerText
+		await expect( page ).toMatchElement(
+			'div.wcpay-dispute-details .header-dispute-overview',
+			{
+				text: 'Dispute overview',
+			}
 		);
-		await expect( page ).toMatch( buttonText, 'View submitted evidence' );
+
+		// Check view submitted evidence is present on page.
+		await expect( page ).toMatchElement(
+			'div.wcpay-dispute-details .components-card > div.components-flex > div > a',
+			{
+				text: 'View submitted evidence',
+			}
+		);
+
+		// Confirm dispute status is Won.
+		await page.waitForSelector(
+			'div.wcpay-dispute-details .header-dispute-overview span.chip-light'
+		);
+		await expect( page ).toMatchElement(
+			'div.wcpay-dispute-details .header-dispute-overview span.chip-light',
+			{
+				text: 'Won',
+			}
+		);
 	} );
 } );

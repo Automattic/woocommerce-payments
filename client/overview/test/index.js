@@ -29,6 +29,9 @@ jest.mock( '@woocommerce/navigation', () => ( { getQuery: jest.fn() } ) );
 const loanOfferErrorText =
 	'There was a problem redirecting you to the loan offer. Please check that it is not expired and try again.';
 
+const serverLinkErrorText =
+	'There was a problem redirecting you to the requested link. Please check that it is valid and try again.';
+
 describe( 'Overview page', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
@@ -111,6 +114,37 @@ describe( 'Overview page', () => {
 		expect(
 			container.querySelector( '.wcpay-jetpack-idc-notice' )
 		).toBeVisible();
+	} );
+
+	it( 'Displays the server link redirection error message for query param wcpay-server-link-error=1', () => {
+		getQuery.mockReturnValue( { 'wcpay-server-link-error': '1' } );
+		getTasks.mockReturnValue( [] );
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( ( content, element ) => {
+				return (
+					serverLinkErrorText === content &&
+					! element.classList.contains( 'a11y-speak-region' )
+				);
+			} )
+		).toBeVisible();
+	} );
+
+	it( 'Does not display the server link redirection error message when there the query parameter is not present', () => {
+		getTasks.mockReturnValue( [] );
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( ( content, element ) => {
+				return (
+					serverLinkErrorText === content &&
+					! element.classList.contains( 'a11y-speak-region' )
+				);
+			} )
+		).toBeNull();
 	} );
 
 	it( 'Displays the view loan error message for query param wcpay-loan-offer-error=1', () => {
