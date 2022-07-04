@@ -432,13 +432,16 @@ class WC_Payments_Admin {
 			$path = WC()->plugin_path() . '/i18n/locale-info.php';
 		}
 
-		$locale_info   = include $path;
+		$locale_info = include $path;
+		// Get symbols for those currencies without a short one.
+		$symbols       = get_woocommerce_currency_symbols();
 		$currency_data = [];
 
 		foreach ( $locale_info as $key => $value ) {
+			$currency_code         = $value['currency_code'] ?? '';
 			$currency_data[ $key ] = [
-				'code'              => $value['currency_code'] ?? '',
-				'symbol'            => $value['short_symbol'] ?? '',
+				'code'              => $currency_code,
+				'symbol'            => $value['short_symbol'] ?? $symbols[ $currency_code ] ?? '',
 				'symbolPosition'    => $value['currency_pos'] ?? '',
 				'thousandSeparator' => $value['thousand_sep'] ?? '',
 				'decimalSeparator'  => $value['decimal_sep'] ?? '',
