@@ -127,7 +127,15 @@ describe( 'Payment details page', () => {
 		window.location = location;
 	} );
 
-	it( 'should match the snapshot - Charge', () => {
+	it( 'should match the snapshot - Payment Intent query param', () => {
+		const { container } = render(
+			<PaymentDetailsPage query={ paymentIntentQuery } />
+		);
+
+		expect( container ).toMatchSnapshot();
+	} );
+
+	it( 'should match the snapshot - Charge query param', () => {
 		const { container } = render(
 			<PaymentDetailsPage query={ chargeQuery } />
 		);
