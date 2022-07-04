@@ -97,6 +97,30 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
               <span
                 class="woocommerce-list__item-title"
               >
+                Channel
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <span>
+                  Online
+                </span>
+              </span>
+            </div>
+          </div>
+        </li>
+        <li
+          class="woocommerce-list__item"
+        >
+          <div
+            class="woocommerce-list__item-inner"
+          >
+            <div
+              class="woocommerce-list__item-text"
+            >
+              <span
+                class="woocommerce-list__item-title"
+              >
                 Customer
               </span>
               <span
@@ -278,6 +302,30 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
                 class="woocommerce-list__item-content"
               >
                 Sep 19, 2019, 5:24pm
+              </span>
+            </div>
+          </div>
+        </li>
+        <li
+          class="woocommerce-list__item"
+        >
+          <div
+            class="woocommerce-list__item-inner"
+          >
+            <div
+              class="woocommerce-list__item-text"
+            >
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Channel
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <span>
+                  Online
+                </span>
               </span>
             </div>
           </div>
@@ -505,6 +553,30 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
                 class="woocommerce-list__item-content"
               >
                 Sep 19, 2019, 5:24pm
+              </span>
+            </div>
+          </div>
+        </li>
+        <li
+          class="woocommerce-list__item"
+        >
+          <div
+            class="woocommerce-list__item-inner"
+          >
+            <div
+              class="woocommerce-list__item-text"
+            >
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Channel
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <span>
+                  Online
+                </span>
               </span>
             </div>
           </div>
@@ -802,6 +874,30 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
               <span
                 class="woocommerce-list__item-title"
               >
+                Channel
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <span>
+                  Online
+                </span>
+              </span>
+            </div>
+          </div>
+        </li>
+        <li
+          class="woocommerce-list__item"
+        >
+          <div
+            class="woocommerce-list__item-inner"
+          >
+            <div
+              class="woocommerce-list__item-text"
+            >
+              <span
+                class="woocommerce-list__item-title"
+              >
                 Customer
               </span>
               <span
@@ -986,6 +1082,30 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
                 class="woocommerce-list__item-content"
               >
                 Sep 19, 2019, 5:24pm
+              </span>
+            </div>
+          </div>
+        </li>
+        <li
+          class="woocommerce-list__item"
+        >
+          <div
+            class="woocommerce-list__item-inner"
+          >
+            <div
+              class="woocommerce-list__item-text"
+            >
+              <span
+                class="woocommerce-list__item-title"
+              >
+                Channel
+              </span>
+              <span
+                class="woocommerce-list__item-content"
+              >
+                <span>
+                  Online
+                </span>
               </span>
             </div>
           </div>
