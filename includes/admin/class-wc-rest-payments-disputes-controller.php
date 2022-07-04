@@ -192,7 +192,26 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response The response containing the dispute status counts.
 	 */
 	public function get_dispute_status_counts( WP_REST_Request $request ) {
-		$statuses = $request->get_param( 'statuses' );
+		$statuses          = $request->get_param( 'statuses' );
+		$possible_statuses = [
+			'warning_needs_response',
+			'warning_under_review',
+			'warning_closed',
+			'needs_response',
+			'under_review',
+			'charge_refunded',
+			'won',
+			'lost',
+		];
+		if ( ! $statuses ) {
+			$statuses = $possible_statuses;
+		}
+		$statuses = array_filter(
+			$statuses,
+			function( $status ) use ( $possible_statuses ) {
+				return in_array( $status, $possible_statuses, true );
+			}
+		);
 
 		$disputes_status_counts = $this->database_cache->get_or_add(
 			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
