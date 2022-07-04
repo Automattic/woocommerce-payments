@@ -71,7 +71,7 @@ describe( 'getPaymentIntent resolver', () => {
 	} );
 
 	describe( 'on error', () => {
-		test( 'should update state with error on error', () => {
+		test( 'should update state with error', () => {
 			expect( generator.throw( errorResponse ).value ).toEqual(
 				dispatch(
 					'core/notices',
