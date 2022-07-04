@@ -84,6 +84,16 @@ class RestController extends \WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/customer-currencies',
+			[
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_customer_currencies' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -179,5 +189,16 @@ class RestController extends \WC_Payments_REST_Controller {
 		$params = $request->get_params();
 		WC_Payments_Multi_Currency()->update_settings( $params );
 		return WC_Payments_Multi_Currency()->get_settings();
+	}
+
+	/**
+	 * Get the list of customer currencies in use in the store.
+	 *
+	 * @param \WP_Rest_Request $request Full data about the request.
+	 *
+	 * @return array The customer currencies.
+	 */
+	public function get_customer_currencies( $request ) {
+		return WC_Payments_Multi_Currency()->get_customer_currencies();
 	}
 }

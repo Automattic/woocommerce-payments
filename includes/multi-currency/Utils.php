@@ -22,7 +22,7 @@ class Utils {
 	 * @param ?string $start_date Allows filtering to only show currencies used within a particular range.
 	 * @param ?string $end_date   Allows filtering to only show currencies used within a particular range.
 	 *
-	 * @return bool
+	 * @return array
 	 */
 	public function get_customer_currencies( $start_date = null, $end_date = null ) {
 		global $wpdb;

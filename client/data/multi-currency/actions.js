@@ -21,6 +21,13 @@ export function updateCurrencies( data ) {
 	};
 }
 
+export function updateCustomerCurrencies( data ) {
+	return {
+		type: TYPES.SET_CUSTOMER_CURRENCIES,
+		data,
+	};
+}
+
 export function updateAvailableCurrencies( data ) {
 	return {
 		type: TYPES.SET_AVAILABLE_CURRENCIES,

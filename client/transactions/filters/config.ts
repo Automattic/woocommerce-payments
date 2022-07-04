@@ -6,7 +6,8 @@ import { __, _x, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { displayType, customerCurrency } from 'transactions/strings';
+import { displayType } from 'transactions/strings';
+import { useCustomerCurrencies } from 'wcpay/data';
 
 interface TransactionsFilterEntryType {
 	label: string;
@@ -34,7 +35,7 @@ const transactionTypesOptions = Object.entries( displayType )
 		return el != null;
 	} );
 
-const customerCurrencyOptions = Object.entries( customerCurrency )
+const customerCurrencyOptions = Object.entries( [] )
 	.map( ( [ type, label ] ) => {
 		return { label, value: type };
 	} )

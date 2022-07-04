@@ -36,6 +36,19 @@ export const useEnabledCurrencies = () => {
 	};
 };
 
+export const useCustomerCurrencies = () => {
+	const customerCurrencies = useSelect( ( select ) => {
+		const { getCustomerCurrencies } = select( STORE_NAME );
+
+		return getCustomerCurrencies();
+	} );
+	const { submitCustomerCurrenciesUpdate } = useDispatch( STORE_NAME );
+	return {
+		customerCurrencies,
+		submitCustomerCurrenciesUpdate,
+	};
+};
+
 export const useStoreSettings = () => {
 	const { storeSettings, isLoading } = useSelect( ( select ) => {
 		const { getStoreSettings, isResolving } = select( STORE_NAME );

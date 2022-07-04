@@ -553,6 +553,16 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Gets all of the customer currencies that have ever been used to make an order on the store.
+	 *
+	 * @return array Array of currencies, in the following format: [ 'usd' => 'USD ($)' ].
+	 */
+	public function get_customer_currencies(): array {
+		$currencies = $this->utils->get_customer_currencies();
+		return $currencies;
+	}
+
+	/**
 	 * Gets the store base currency. Initializes it if needed.
 	 *
 	 * @return Currency The store base currency.
