@@ -63,6 +63,7 @@ class WC_Payments_API_Client {
 	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
 	const DOCUMENTS_API                = 'documents';
 	const VAT_API                      = 'vat';
+	const LINKS_API                    = 'links';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1098,6 +1099,26 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Update platform checkout data
+	 *
+	 * @param array $data Data to update.
+	 *
+	 * @return array An array describing request result.
+	 *
+	 * @throws API_Exception - Error contacting the API.
+	 */
+	public function update_platform_checkout( $data ) {
+		return $this->request(
+			array_merge(
+				[ 'test_mode' => $this->is_in_dev_mode() ],
+				$data
+			),
+			self::PLATFORM_CHECKOUT_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Update Stripe account data
 	 *
 	 * @param array $account_settings Settings to update.
@@ -1248,6 +1269,25 @@ class WC_Payments_API_Client {
 				'refresh_url' => $refresh_url,
 			],
 			self::ACCOUNTS_API . '/capital_links',
+			self::POST,
+			true,
+			true
+		);
+	}
+
+	/**
+	 * Get a link's details from the server.
+	 *
+	 * @param array $args The arguments to be sent with the link request.
+	 *
+	 * @return array The link object with an url field.
+	 *
+	 * @throws API_Exception When something goes wrong with the request, or the link is not valid.
+	 */
+	public function get_link( array $args ) {
+		return $this->request(
+			$args,
+			self::LINKS_API,
 			self::POST,
 			true,
 			true
