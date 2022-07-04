@@ -14,6 +14,7 @@ import type {
 	Dispute,
 	CachedDisputes,
 	DisputesSummary,
+	DisputeStatusCounts,
 } from 'wcpay/types/disputes';
 import { STORE_NAME } from '../constants';
 import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
@@ -172,4 +173,23 @@ export const useDisputesSummary = ( {
 			statusIs,
 			statusIsNot,
 		]
+	);
+
+export const useDisputeStatusCounts = (
+	statuses: string[]
+): DisputeStatusCounts =>
+	useSelect(
+		( select ) => {
+			const { getDisputeStatusCounts, isResolving } = select(
+				STORE_NAME
+			);
+
+			return {
+				disputeStatusCounts: getDisputeStatusCounts( statuses ),
+				isLoading: isResolving( 'getDisputeStatusCounts', [
+					statuses,
+				] ),
+			};
+		},
+		[ statuses ]
 	);

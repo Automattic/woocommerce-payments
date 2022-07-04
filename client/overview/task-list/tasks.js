@@ -13,33 +13,20 @@ import moment from 'moment';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 
-const getDisputesToResolve = ( disputes ) => {
-	if ( ! disputes ) {
-		return 0;
-	}
-	const incompleteDisputes = disputes.filter( ( { status } ) => {
-		return [ 'warning_needs_response', 'needs_response' ].includes(
-			status
-		);
-	} );
-	return incompleteDisputes.length;
-};
-
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
 	needsHttpsSetup,
-	disputes = [],
+	numDisputesToRespond = 0,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	let accountDetailsTaskDescription;
 
-	const isDisputeTaskVisible = 0 < disputes.length;
-	const disputesToResolve = getDisputesToResolve( disputes );
+	const isDisputeTaskVisible = 0 < numDisputesToRespond;
 
 	if ( accountRestrictedSoon ) {
 		accountDetailsTaskDescription = sprintf(
@@ -135,15 +122,16 @@ export const getTasks = ( {
 				_n(
 					'1 disputed payment needs your response',
 					'%s disputed payments need your response',
-					disputesToResolve,
+					numDisputesToRespond,
 					'woocommerce-payments'
 				),
-				disputesToResolve ? disputesToResolve : disputes.length
+				numDisputesToRespond
 			),
-			additionalInfo: disputesToResolve
-				? __( 'View and respond', 'woocommerce-payments' )
-				: '',
-			completed: 0 === disputesToResolve,
+			additionalInfo:
+				0 < numDisputesToRespond
+					? __( 'View and respond', 'woocommerce-payments' )
+					: '',
+			completed: 0 === numDisputesToRespond,
 			isDeletable: true,
 			isDismissable: true,
 			allowSnooze: true,

@@ -81,9 +81,10 @@ export function* acceptDispute( id ) {
 	}
 }
 
-export function updateDisputeStatusCounts( data ) {
+export function updateDisputeStatusCounts( query, data ) {
 	return {
 		type: TYPES.SET_DISPUTE_STATUS_COUNTS,
+		query,
 		data,
 	};
 }

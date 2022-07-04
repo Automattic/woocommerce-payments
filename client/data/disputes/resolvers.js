@@ -17,6 +17,7 @@ import {
 	updateDispute,
 	updateDisputes,
 	updateDisputesSummary,
+	updateDisputeStatusCounts,
 } from './actions';
 
 const formatQueryFilters = ( query ) => ( {
@@ -105,6 +106,31 @@ export function* getDisputesSummary( query ) {
 			'createErrorNotice',
 			__(
 				'Error retrieving the summary of disputes.',
+				'woocommerce-payments'
+			)
+		);
+	}
+}
+
+/**
+ * Retrieve a list of dispute statuses and a total count for each.
+ *
+ * @param {string} statuses Dispute statuses to retrieve.
+ */
+export function* getDisputeStatusCounts( statuses ) {
+	const path = addQueryArgs( `${ NAMESPACE }/disputes/status_counts`, {
+		statuses,
+	} );
+
+	try {
+		const result = yield apiFetch( { path } );
+		yield updateDisputeStatusCounts( statuses, result );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving dispute status counts.',
 				'woocommerce-payments'
 			)
 		);
