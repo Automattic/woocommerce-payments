@@ -75,9 +75,10 @@ const CheckoutPageSaveUser = () => {
 					<input
 						type="checkbox"
 						checked={ isSaveDetailsChecked }
-						onChange={ () =>
-							setIsSaveDetailsChecked( ( v ) => ! v )
-						}
+						onChange={ () => {
+							setIsSaveDetailsChecked( ( v ) => ! v );
+							setPhoneNumber( '' );
+						} }
 						name="save_user_in_platform_checkout"
 						id="save_user_in_platform_checkout"
 						value="true"
