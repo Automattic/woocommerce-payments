@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add platform checkout order status sync webhooks
