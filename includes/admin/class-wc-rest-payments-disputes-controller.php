@@ -196,7 +196,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 
 		$disputes_status_counts = $this->database_cache->get_or_add(
 			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
-			[ $this->payments_api_client, 'get_dispute_status_counts' ],
+			[ $this->api_client, 'get_dispute_status_counts' ],
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
 		);
