@@ -62,20 +62,13 @@ class WC_Payments_Explicit_Price_Formatter {
 			self::$multi_currency_instance = WC_Payments_Multi_Currency();
 		}
 
-		// If the instance isn't initalized yet, skip the checks.
+		// If the instance isn't initialized yet, skip the checks.
 		if ( ! self::$multi_currency_instance->is_initialized() ) {
 			return false;
 		}
 
-		$enabled_currencies = self::$multi_currency_instance->get_enabled_currencies();
-
-		// If there isn't any enabled currency, skip it.
-		if ( empty( $enabled_currencies ) ) {
-			return false;
-		}
-
-		// Don't attach explicit price filters with a single currency setup.
-		if ( is_array( $enabled_currencies ) && 1 === count( $enabled_currencies ) ) {
+		// If no additional currencies are enabled, skip it.
+		if ( ! self::$multi_currency_instance->has_additional_currencies_enabled() ) {
 			return false;
 		}
 
