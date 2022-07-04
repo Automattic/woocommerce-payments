@@ -581,6 +581,7 @@ describe( 'Transactions list', () => {
 				'"Transaction Id"',
 				'"Date / Time"',
 				'Type',
+				'Channel',
 				'Amount',
 				'Fees',
 				'Net',
