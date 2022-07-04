@@ -26,13 +26,6 @@ const CheckoutPageSaveUser = () => {
 		isNewPaymentTokenChosen,
 	} = useSelectedPaymentMethod();
 
-	// This runs once to populate the phone number state if already present in the DOM.
-	useEffect( () => {
-		setPhoneNumber(
-			document.getElementById( 'billing_phone' )?.value ?? ''
-		);
-	}, [] );
-
 	useEffect( () => {
 		const formSubmitButton = document.querySelector(
 			'form.woocommerce-checkout button[type="submit"]'
