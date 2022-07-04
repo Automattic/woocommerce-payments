@@ -150,6 +150,7 @@ export const formatExplicitCurrency = (
 	baseCurrencyCode = null
 ) => {
 	let formatted = formatCurrency( amount, currencyCode, baseCurrencyCode );
+	if ( ! wcpaySettings.shouldUseExplicitPrice ) return formatted;
 	if ( skipSymbol ) {
 		formatted = removeCurrencySymbol( formatted );
 	}

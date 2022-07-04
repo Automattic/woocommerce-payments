@@ -50,7 +50,7 @@ class WC_Payments_Explicit_Price_Formatter {
 	 *
 	 * @return  bool  Whether if it should return explicit price or not
 	 */
-	private static function should_output_explicit_price() {
+	public static function should_output_explicit_price() {
 		// If customer Multi-Currency is disabled, don't use explicit currencies.
 		// Because it'll have only the store currency active, same as count == 1.
 		if ( ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {

@@ -478,6 +478,7 @@ class WC_Payments_Admin {
 			],
 			'needsHttpsSetup'         => $this->wcpay_gateway->needs_https_setup(),
 			'isMultiCurrencyEnabled'  => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'shouldUseExplicitPrice'  => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
 			'overviewTasksVisibility' => [
 				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
 				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
