@@ -139,6 +139,32 @@ const getMockTransactions: () => Transaction[] = () => [
 		deposit_id: 'po_mock',
 		loan_id: 'flxln_mock',
 	},
+	{
+		available_on: '',
+		transaction_id: 'txn_mmtr89gjh5',
+		date: '2020-01-02 19:55:05',
+		type: 'charge',
+		source: 'card_present',
+		order: {
+			number: 335,
+			url: 'https://example.com/order/335',
+			// eslint-disable-next-line camelcase
+			customer_url: 'https://example.com/customer/my-name',
+		},
+		customer_name: 'Best customer',
+		customer_email: 'best@customer.com',
+		customer_country: 'US',
+		charge_id: 'ch_rskkmpe46yu',
+		amount: 2000,
+		fees: 75,
+		net: 1925,
+		currency: 'usd',
+		customer_amount: 2000,
+		customer_currency: 'usd',
+		risk_level: 0,
+		deposit_id: undefined,
+		loan_id: undefined,
+	},
 ];
 
 function getUnformattedAmount( formattedAmount: string ) {
