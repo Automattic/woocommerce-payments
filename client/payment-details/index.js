@@ -38,7 +38,7 @@ const PaymentChargeDetails = ( { id } ) => {
 		if ( redirect ) window.location.href = redirect.url;
 	}, [ redirect ] );
 
-	// Check instance of chargeError because its default value is empty object
+	// Check instance of error because its default value is empty object
 	if ( ! isLoading && error instanceof Error ) {
 		return (
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
