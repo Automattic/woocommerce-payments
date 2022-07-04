@@ -102,7 +102,10 @@ const CheckoutPageSaveUser = () => {
 						{ __( 'Mobile phone number', 'woocommerce-payments' ) }
 					</span>
 					<PhoneNumberInput
-						value={ phoneNumber }
+						value={
+							phoneNumber ||
+							document.getElementById( 'billing_phone' )?.value
+						}
 						onValueChange={ setPhoneNumber }
 						onValidationChange={ onPhoneValidationChange }
 					/>
