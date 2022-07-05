@@ -47,6 +47,7 @@ describe( 'Disputes reducer tests', () => {
 			cached: {},
 			queries: {},
 			summary: {},
+			statusCounts: {},
 		} );
 
 		const stateAfterTwo = reducer( stateAfterOne, {
@@ -62,6 +63,7 @@ describe( 'Disputes reducer tests', () => {
 			cached: {},
 			queries: {},
 			summary: {},
+			statusCounts: {},
 		} );
 	} );
 
@@ -87,6 +89,7 @@ describe( 'Disputes reducer tests', () => {
 				},
 			},
 			summary: {},
+			statusCounts: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -156,6 +159,7 @@ describe( 'Disputes reducer tests', () => {
 					},
 				},
 			},
+			statusCounts: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );

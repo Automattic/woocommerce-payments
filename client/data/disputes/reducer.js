@@ -16,7 +16,7 @@ const defaultState = {
 	queries: {},
 	summary: {},
 	cached: {},
-	status_counts: {},
+	statusCounts: {},
 };
 
 const receiveDisputes = (
@@ -55,7 +55,7 @@ const receiveDisputes = (
 		case TYPES.SET_DISPUTE_STATUS_COUNTS:
 			return {
 				...state,
-				status_counts: data,
+				statusCounts: data,
 			};
 	}
 

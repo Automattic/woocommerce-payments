@@ -72,5 +72,5 @@ export const getDisputesSummary = ( state, query ) => {
 };
 
 export const getDisputeStatusCounts = ( state ) => {
-	return getDisputesState( state ).status_counts || {};
+	return getDisputesState( state ).statusCounts || {};
 };
