@@ -11,7 +11,7 @@ use WCPay\Session_Rate_Limiter;
 /**
  * WC_REST_UPE_Flag_Toggle_Controller unit tests.
  */
-class WC_REST_UPE_Flag_Toggle_Controller_Test extends WP_UnitTestCase {
+class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Tested REST route.
