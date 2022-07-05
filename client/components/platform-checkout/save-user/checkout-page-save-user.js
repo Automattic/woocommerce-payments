@@ -36,9 +36,11 @@ const CheckoutPageSaveUser = () => {
 		}
 
 		const updateFormSubmitButton = () => {
-			if ( isPhoneValid ) {
+			if ( isSaveDetailsChecked && isPhoneValid ) {
 				formSubmitButton.removeAttribute( 'disabled' );
-			} else {
+			}
+
+			if ( isSaveDetailsChecked && ! isPhoneValid ) {
 				formSubmitButton.setAttribute( 'disabled', 'disabled' );
 			}
 		};
@@ -49,7 +51,7 @@ const CheckoutPageSaveUser = () => {
 			// Clean up
 			formSubmitButton.removeAttribute( 'disabled' );
 		};
-	}, [ isPhoneValid ] );
+	}, [ isPhoneValid, isSaveDetailsChecked ] );
 
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
