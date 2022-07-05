@@ -93,10 +93,7 @@ const PhoneNumberInput = ( {
 					inputProps.ariaLabel ||
 					__( 'Mobile phone number', 'woocommerce-payments' )
 				}
-				name={
-					inputProps.name ||
-					'platform_checkout_user_phone_field[no-country-code]'
-				}
+				name={ inputProps.name }
 				className={
 					inputInstance && ! inputInstance.isValidNumber()
 						? 'phone-input input-text has-error'

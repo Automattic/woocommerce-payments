@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
 import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import AdditionalInformation from './additional-information';
-import PhoneNumberInput from './phone-number-input';
+import PhoneNumberInput from 'settings/phone-input';
 import Agreement from './agreement';
 import { getConfig } from 'utils/checkout';
 
@@ -101,6 +101,10 @@ const CheckoutPageSaveUser = () => {
 						}
 						onValueChange={ setPhoneNumber }
 						onValidationChange={ onPhoneValidationChange }
+						inputProps={ {
+							name:
+								'platform_checkout_user_phone_field[no-country-code]',
+						} }
 					/>
 					{ ! isPhoneValid && (
 						<p className="error-text">

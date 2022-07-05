@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl, Notice } from '@wordpress/components';
-import PhoneNumberInput from '../../../components/platform-checkout/save-user/phone-number-input';
+import PhoneNumberInput from 'settings/phone-input';
 
 /**
  * Internal dependencies
