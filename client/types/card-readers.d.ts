@@ -1,3 +1,9 @@
+export interface CardReader {
+	id: string;
+	device_type: string;
+	is_active: boolean;
+}
+
 export interface AccountBusinessSupportAddress {
 	line1: string;
 	line2: string;
