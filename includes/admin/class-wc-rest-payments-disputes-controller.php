@@ -189,7 +189,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
-	 * @return WP_REST_Response The response containing the dispute status counts.
+	 * @return WP_REST_Response|WP_Error The response containing the dispute status counts or an error in case there is a problem.
 	 */
 	public function get_dispute_status_counts( WP_REST_Request $request ) {
 		$disputes_status_counts = $this->database_cache->get_or_add(
