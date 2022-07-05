@@ -22,6 +22,7 @@ import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
 import { useDisputeStatusCounts } from 'data';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
+import { disputeAwaitingResponseStatuses } from '../disputes/filters/config';
 
 import './style.scss';
 import { useSettings } from 'wcpay/data';
@@ -35,20 +36,15 @@ const OverviewPage = () => {
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
 	} = wcpaySettings;
-	const { disputeStatusCounts, isLoading } = useDisputeStatusCounts( [
-		'warning_needs_response',
-		'needs_response',
-	] );
+	const { disputeStatusCounts, isLoading } = useDisputeStatusCounts(
+		disputeAwaitingResponseStatuses
+	);
 	const { isLoading: settingsIsLoading, settings } = useSettings();
 
-	const numDisputesToRespond = Object.keys( disputeStatusCounts )
-		.filter( ( disputeStatus ) =>
-			[ 'warning_needs_response', 'needs_response' ].includes(
-				disputeStatus
-			)
-		)
-		.map( ( disputeStatus ) => disputeStatusCounts[ disputeStatus ] )
-		.reduce( ( a, b ) => a + b, 0 );
+	const numDisputesToRespond = Object.values( disputeStatusCounts ).reduce(
+		( a, b ) => a + b,
+		0
+	);
 	const tasksUnsorted = getTasks( {
 		accountStatus,
 		showUpdateDetailsTask,
