@@ -957,6 +957,48 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( [ 'url' => 'https://capital.url' ], $result );
 	}
 
+	public function test_get_link() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/links', 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
+				wp_json_encode(
+					[
+						'test_mode' => false,
+						'type'      => 'login_link',
+						'param'     => 'some_other_param',
+					]
+				),
+				true,
+				true // get_link should use user token auth.
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'url' => 'https://login.url' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->get_link(
+			[
+				'type'  => 'login_link',
+				'param' => 'some_other_param',
+			]
+		);
+
+		$this->assertEquals( [ 'url' => 'https://login.url' ], $result );
+	}
+
 	public function test_add_tos_agreement() {
 		$this->mock_http_client
 			->expects( $this->once() )
