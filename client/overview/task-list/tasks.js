@@ -19,6 +19,7 @@ export const getTasks = ( {
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
 	needsHttpsSetup,
+	numDisputes = 0,
 	numDisputesToRespond = 0,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
@@ -26,7 +27,7 @@ export const getTasks = ( {
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	let accountDetailsTaskDescription;
 
-	const isDisputeTaskVisible = 0 < numDisputesToRespond;
+	const isDisputeTaskVisible = 0 < numDisputes;
 
 	if ( accountRestrictedSoon ) {
 		accountDetailsTaskDescription = sprintf(
@@ -125,7 +126,7 @@ export const getTasks = ( {
 					numDisputesToRespond,
 					'woocommerce-payments'
 				),
-				numDisputesToRespond
+				numDisputesToRespond ? numDisputesToRespond : numDisputes
 			),
 			additionalInfo:
 				0 < numDisputesToRespond

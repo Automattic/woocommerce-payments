@@ -71,21 +71,6 @@ export const getDisputesSummary = ( state, query ) => {
 	return getDisputesSummaryForQuery( state, query ).data || {};
 };
 
-/**
- * Retrieves the dispute status counts corresponding to the provided query.
- *
- * @param {Object} state Current wp.data state.
- * @param {Object} query The dispute status counts query.
- *
- * @return {Object} The dispute status counts for the given query.
- */
-const getDisputeStatusCountsForQuery = ( state, query ) => {
-	const index = getResourceId( query );
-	const statusCounts = getDisputesState( state ).status_counts || {};
-
-	return statusCounts[ index ] || {};
-};
-
-export const getDisputeStatusCounts = ( state, query ) => {
-	return getDisputeStatusCountsForQuery( state, query ).data || {};
+export const getDisputeStatusCounts = ( state ) => {
+	return getDisputesState( state ).status_counts || {};
 };

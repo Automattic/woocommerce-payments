@@ -36,20 +36,25 @@ const OverviewPage = () => {
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
 	} = wcpaySettings;
-	const { disputeStatusCounts, isLoading } = useDisputeStatusCounts(
-		disputeAwaitingResponseStatuses
-	);
+	const { disputeStatusCounts, isLoading } = useDisputeStatusCounts();
 	const { isLoading: settingsIsLoading, settings } = useSettings();
 
-	const numDisputesToRespond = Object.values( disputeStatusCounts ).reduce(
+	const numDisputes = Object.values( disputeStatusCounts ).reduce(
 		( a, b ) => a + b,
 		0
 	);
+	const numDisputesToRespond = Object.keys( disputeStatusCounts )
+		.filter( ( disputeStatus ) =>
+			disputeAwaitingResponseStatuses.includes( disputeStatus )
+		)
+		.map( ( disputeStatus ) => disputeStatusCounts[ disputeStatus ] )
+		.reduce( ( a, b ) => a + b, 0 );
 	const tasksUnsorted = getTasks( {
 		accountStatus,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
+		numDisputes,
 		numDisputesToRespond,
 	} );
 	const tasks =

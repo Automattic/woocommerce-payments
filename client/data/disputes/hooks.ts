@@ -175,21 +175,12 @@ export const useDisputesSummary = ( {
 		]
 	);
 
-export const useDisputeStatusCounts = (
-	statuses: string[]
-): DisputeStatusCounts =>
-	useSelect(
-		( select ) => {
-			const { getDisputeStatusCounts, isResolving } = select(
-				STORE_NAME
-			);
+export const useDisputeStatusCounts = (): DisputeStatusCounts =>
+	useSelect( ( select ) => {
+		const { getDisputeStatusCounts, isResolving } = select( STORE_NAME );
 
-			return {
-				disputeStatusCounts: getDisputeStatusCounts( statuses ),
-				isLoading: isResolving( 'getDisputeStatusCounts', [
-					statuses,
-				] ),
-			};
-		},
-		[ statuses ]
-	);
+		return {
+			disputeStatusCounts: getDisputeStatusCounts(),
+			isLoading: isResolving( 'getDisputeStatusCounts' ),
+		};
+	} );

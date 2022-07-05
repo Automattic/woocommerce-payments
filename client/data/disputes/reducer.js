@@ -55,12 +55,7 @@ const receiveDisputes = (
 		case TYPES.SET_DISPUTE_STATUS_COUNTS:
 			return {
 				...state,
-				status_counts: {
-					...state.status_counts,
-					[ index ]: {
-						data: data,
-					},
-				},
+				status_counts: data,
 			};
 	}
 

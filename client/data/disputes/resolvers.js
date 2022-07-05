@@ -114,17 +114,13 @@ export function* getDisputesSummary( query ) {
 
 /**
  * Retrieve a list of dispute statuses and a total count for each.
- *
- * @param {string} statuses Dispute statuses to retrieve.
  */
-export function* getDisputeStatusCounts( statuses ) {
-	const path = addQueryArgs( `${ NAMESPACE }/disputes/status_counts`, {
-		statuses,
-	} );
+export function* getDisputeStatusCounts() {
+	const path = addQueryArgs( `${ NAMESPACE }/disputes/status_counts` );
 
 	try {
 		const result = yield apiFetch( { path } );
-		yield updateDisputeStatusCounts( statuses, result );
+		yield updateDisputeStatusCounts( result );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',

@@ -144,7 +144,8 @@ describe( 'getTasks()', () => {
 	} );
 
 	it( 'should not include the dispute resolution task', () => {
-		const disputes = [];
+		const numDisputes = 0;
+		const numDisputesToRespond = 0;
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -152,21 +153,15 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			disputes,
+			numDisputes,
+			numDisputesToRespond,
 		} );
 
 		expect( actual ).toEqual( [] );
 	} );
 	it( 'should include the dispute resolution task', () => {
-		const disputes = [
-			{
-				id: 123,
-				amount: 10,
-				currency: 'USD',
-				evidence_details: { due_by: 1624147199 },
-				status: 'needs_response',
-			},
-		];
+		const numDisputes = 1;
+		const numDisputesToRespond = 1;
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -174,7 +169,8 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			disputes,
+			numDisputes,
+			numDisputesToRespond,
 		} );
 
 		expect( actual ).toEqual(
@@ -188,22 +184,8 @@ describe( 'getTasks()', () => {
 		);
 	} );
 	it( 'should include the dispute resolution task as completed', () => {
-		const disputes = [
-			{
-				id: 456,
-				amount: 10,
-				currency: 'USD',
-				evidence_details: { due_by: 1624147199 },
-				status: 'another_status',
-			},
-			{
-				id: 789,
-				amount: 10,
-				currency: 'USD',
-				evidence_details: { due_by: 1624147199 },
-				status: 'won',
-			},
-		];
+		const numDisputes = 2;
+		const numDisputesToRespond = 0;
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -211,7 +193,8 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			disputes,
+			numDisputes,
+			numDisputesToRespond,
 		} );
 
 		expect( actual ).toEqual(
@@ -229,24 +212,8 @@ describe( 'getTasks()', () => {
 
 describe( 'taskSort()', () => {
 	it( 'should sort the tasks', () => {
-		/*eslint-disable camelcase*/
-		const disputes = [
-			{
-				id: 123,
-				amount: 10,
-				currency: 'USD',
-				evidence_details: { due_by: 1624147199 },
-				status: 'won',
-			},
-			{
-				id: 456,
-				amount: 10,
-				currency: 'USD',
-				evidence_details: { due_by: 1624147199 },
-				status: 'needs_response',
-			},
-		];
-		/*eslint-enable camelcase*/
+		const numDisputes = 2;
+		const numDisputesToRespond = 1;
 		const unsortedTasks = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -255,7 +222,8 @@ describe( 'taskSort()', () => {
 				accountLink: 'http://example.com',
 			},
 			isAccountOverviewTasksEnabled: true,
-			disputes,
+			numDisputes,
+			numDisputesToRespond,
 		} );
 		unsortedTasks.unshift( {
 			key: 'test-element',
