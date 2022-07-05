@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.2.0
+Stable tag: 4.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.7 or newer.
-* WooCommerce 6.1 or newer.
+* WooCommerce 6.4 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -97,6 +97,30 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 4.3.0 - 2022-06-15 =
+* Add - Add ARN (Acquirer Reference Number) to refunds in payment details timeline.
+* Add - Add support for custom order numbers in addition to order IDs.
+* Add - record wcpay version in Platform Checkout Tracks events
+* Fix - Billing emails containing spaces.
+* Fix - Copy payment from a subscription to its renewal order when retrying failed renewal payment.
+* Fix - Dates presented in the "Respond by" column on the Payments → Disputes page are displayed in local time rather than UTC time.
+* Fix - Fatal Error caused in rare cases where a subscription line item's quantity is zero during renewal.
+* Fix - Fix default terminal location creation for store when blog name is empty.
+* Fix - Make hardcoded string in the checkout page translatable
+* Fix - Pass capture method preference to platform store
+* Fix - Preventing duplicate order notes and emails by clearing the cache before checking order status.
+* Fix - Verify domain with Apple Pay on websites using alternate folder structure.
+* Update - Add a new flag to conditionally display the Card Readers page when account has connected card readers.
+* Update - Bump minimum required version of WooCommerce from 5.4 to 5.6.
+* Update - Prevent expensive JOIN queries in Multi-Currency analytics if the store has never used Multi-Currency.
+* Dev - Add developer document for "Version Support Policy"
+* Dev - Update subscriptions-core to 2.1.0.
+
+= 4.2.1 - 2022-06-06 =
+* Fix - Add check to prevent fatal errors on checkout
+* Fix - Fix refunding of orders without _payment_method_id
+* Fix - Fix subscription renewal prices purchased in zero decimal based currencies like Yen
 
 = 4.2.0 - 2022-05-26 =
 * Add - Add a confirmation modal when enabling manual capture, and update UPE methods appearance if manual capture is enabled

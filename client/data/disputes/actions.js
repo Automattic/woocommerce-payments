@@ -55,6 +55,7 @@ export function* acceptDispute( id ) {
 			getAdminUrl( {
 				page: 'wc-admin',
 				path: '/payments/disputes',
+				filter: 'awaiting_response',
 			} )
 		);
 

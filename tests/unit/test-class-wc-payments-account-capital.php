@@ -11,7 +11,7 @@ use WCPay\Database_Cache;
 /**
  * WC_Payments_Account unit tests for Capital-related methods.
  */
-class WC_Payments_Account_Capital_Test extends WP_UnitTestCase {
+class WC_Payments_Account_Capital_Test extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *

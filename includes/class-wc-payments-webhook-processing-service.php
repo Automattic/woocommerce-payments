@@ -10,6 +10,7 @@ use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
+use WCPay\Database_Cache;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -76,6 +77,13 @@ class WC_Payments_Webhook_Processing_Service {
 	private $customer_service;
 
 	/**
+	 * Database_Cache instance.
+	 *
+	 * @var Database_Cache
+	 */
+	private $database_cache;
+
+	/**
 	 * WC_Payments_Webhook_Processing_Service constructor.
 	 *
 	 * @param WC_Payments_API_Client                          $api_client          WooCommerce Payments API client.
@@ -86,6 +94,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
 	 * @param WC_Payment_Gateway_WCPay                        $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
 	 * @param WC_Payments_Customer_Service                    $customer_service    WC_Payments_Customer_Service instance.
+	 * @param Database_Cache                                  $database_cache      Database_Cache instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
@@ -95,7 +104,8 @@ class WC_Payments_Webhook_Processing_Service {
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service,
 		WC_Payment_Gateway_WCPay $wcpay_gateway,
-		WC_Payments_Customer_Service $customer_service
+		WC_Payments_Customer_Service $customer_service,
+		Database_Cache $database_cache
 	) {
 		$this->wcpay_db            = $wcpay_db;
 		$this->account             = $account;
@@ -105,6 +115,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->receipt_service     = $receipt_service;
 		$this->wcpay_gateway       = $wcpay_gateway;
 		$this->customer_service    = $customer_service;
+		$this->database_cache      = $database_cache;
 	}
 
 	/**
@@ -413,6 +424,9 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $reason );
+
+		// Clear the dispute statuses cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
 	}
 
 	/**
@@ -442,6 +456,9 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$this->order_service->mark_payment_dispute_closed( $order, $dispute_id, $status );
+
+		// Clear the dispute statuses cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
 	}
 
 	/**
@@ -495,6 +512,9 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$order->add_order_note( $note );
+
+		// Clear the dispute statuses cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
 	}
 
 	/**

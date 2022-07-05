@@ -8,7 +8,7 @@
 /**
  * WC_Payments_Captured_Event_Note_Test unit tests.
  */
-class WC_Payments_Captured_Event_Note_Test extends WP_UnitTestCase {
+class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 *

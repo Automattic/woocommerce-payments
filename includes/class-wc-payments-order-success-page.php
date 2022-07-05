@@ -23,13 +23,13 @@ class WC_Payments_Order_Success_Page {
 	/**
 	 * Return the WooPay thank you notice when the order was created via WooPay
 	 *
-	 * @param string   $text  the default thank you text.
-	 * @param WC_Order $order the order being shown.
+	 * @param string        $text  the default thank you text.
+	 * @param WC_Order|null $order the order being shown.
 	 *
 	 * @return string
 	 */
 	public function show_woopay_thankyou_notice( $text, $order ) {
-		if ( ! $order->get_meta( 'is_woopay' ) ) {
+		if ( ! $order || ! $order->get_meta( 'is_woopay' ) ) {
 			return $text;
 		}
 

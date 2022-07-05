@@ -13,7 +13,7 @@ use WCPay\MultiCurrency\MultiCurrency;
 /**
  * Analytics unit tests.
  */
-class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Analytics instance.
 	 *
@@ -29,11 +29,19 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 	private $mock_multi_currency;
 
 	/**
+	 * Mock orders.
+	 *
+	 * @var array An array of order ids.
+	 */
+	private $mock_orders = [];
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
+		$this->add_mock_order_with_meta();
 		$this->set_is_admin( true );
 		$this->set_is_rest_request( true );
 		add_filter(
@@ -42,7 +50,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 				return true;
 			}
 		);
-
 		// Add manage_woocommerce capability to user.
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
 		add_filter( 'user_has_cap', $cb );
@@ -51,6 +58,14 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 		$this->analytics           = new Analytics( $this->mock_multi_currency );
 
 		remove_filter( 'user_has_cap', $cb );
+	}
+
+	/**
+	 * Post-test tear down.
+	 */
+	public function tear_down() {
+		parent::tear_down();
+		$this->delete_mock_orders();
 	}
 
 	/**
@@ -288,10 +303,11 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 		global $current_screen;
 
 		if ( ! $is_admin ) {
-			$current_screen = null;
+			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 			return;
 		}
 
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$current_screen = $this->getMockBuilder( \stdClass::class )
 			->setMethods( [ 'in_admin' ] )
 			->getMock();
@@ -314,5 +330,31 @@ class WCPay_Multi_Currency_Analytics_Tests extends WP_UnitTestCase {
 
 			return $allcaps;
 		};
+	}
+
+	/**
+	 * This will create a mock order with the appropriate Multi-Currency meta data.
+	 */
+	private function add_mock_order_with_meta() {
+		$order_id = wp_insert_post(
+			[
+				'post_type'   => 'shop_order',
+				'post_status' => 'wc-processing',
+			]
+		);
+
+		update_post_meta( $order_id, '_wcpay_multi_currency_order_exchange_rate', 0.5353 );
+		update_post_meta( $order_id, '_payment_method', 'stripe' );
+		update_post_meta( $order_id, '_order_total', 12.64 );
+		update_post_meta( $order_id, '_order_currency', 'EUR' );
+
+		// Add to the array of mock order IDs so we can delete it later.
+		$this->mock_orders[] = $order_id;
+	}
+
+	private function delete_mock_orders() {
+		foreach ( $this->mock_orders as $order_id ) {
+			wp_delete_post( $order_id, true );
+		}
 	}
 }

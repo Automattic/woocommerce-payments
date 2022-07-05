@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Disputes filters when filtering by status should render all statuses 1`] = `
+exports[`Disputes filters: Advanced when filtering by status should render all statuses 1`] = `
 HTMLOptionsCollection [
   <option
     value="warning_needs_response"
