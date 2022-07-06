@@ -3,6 +3,7 @@
 /**
  * Internal Dependencies
  */
+import { ApiError } from '../../types/errors';
 import ACTION_TYPES from './action-types';
 
 export interface Summary {
@@ -36,10 +37,6 @@ export interface CapitalLoan {
 
 export interface LoansList {
 	data: CapitalLoan[];
-}
-
-export interface ApiError {
-	code: string;
 }
 
 export interface SummaryResponse {
