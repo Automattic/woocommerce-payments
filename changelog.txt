@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 4.4.0 - 2022-xx-xx =
+= 4.4.0 - 2022-07-06 =
 * Add - Add handler for authenticated server links
 * Add - Add platform checkout order status sync webhooks
 * Add - Display a badge indicating the number of disputes which need a response in Payments > Disputes
