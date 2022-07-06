@@ -134,7 +134,7 @@ export const getTasks = ( {
 			title: sprintf(
 				_n(
 					'1 disputed payment needs your response',
-					'%s disputed payments needs your response',
+					'%s disputed payments need your response',
 					disputesToResolve,
 					'woocommerce-payments'
 				),
