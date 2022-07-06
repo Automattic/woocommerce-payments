@@ -71,7 +71,7 @@ describe( 'Card Reader Contact Details section', () => {
 		const email = screen.getByLabelText( 'Support email' );
 		expect( email ).toBeInTheDocument();
 
-		const phone = screen.getByLabelText( 'Mobile phone number' );
+		const phone = screen.getByLabelText( 'Support phone number' );
 		expect( phone ).toBeInTheDocument();
 	} );
 } );
