@@ -297,6 +297,7 @@ jQuery( function ( $ ) {
 			clientSecret,
 			appearance,
 			fonts: getFontRulesFromPage(),
+			loader: 'never',
 		} );
 		gatewayUPEComponents[ paymentMethodType ].elements = elements;
 

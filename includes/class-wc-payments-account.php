@@ -71,6 +71,9 @@ class WC_Payments_Account {
 
 		// Add capital offer redirection.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
+
+		// Add server links handler.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
 	}
 
 	/**
@@ -433,6 +436,47 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the request is for the server links handler, and redirects to the link if it's valid.
+	 *
+	 * Only admins are be able to perform this action. The redirect doesn't happen if the request is an AJAX request.
+	 * This method will end execution after the redirect if the user is allowed to view the link and the link is valid.
+	 */
+	public function maybe_redirect_to_server_link() {
+		if ( wp_doing_ajax() ) {
+			return;
+		}
+
+		// Safety check to prevent non-admin users to be redirected to the view offer page.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		// This is an automatic redirection page, used to authenticate users that come from an email link. For this reason
+		// we're not using a nonce. The GET parameter accessed here is just to indicate that we should process the redirection.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['wcpay-link-handler'] ) ) {
+			return;
+		}
+
+		// Get all request arguments to be forwarded and remove the link handler identifier.
+		$args = $_GET;
+		unset( $args['wcpay-link-handler'] );
+
+		try {
+			$link = $this->payments_api_client->get_link( $args );
+
+			$this->redirect_to( $link['url'] );
+		} catch ( API_Exception $e ) {
+			$error_url = add_query_arg(
+				[ 'wcpay-server-link-error' => '1' ],
+				self::get_overview_page_url()
+			);
+
+			$this->redirect_to( $error_url );
+		}
+	}
+
+	/**
 	 * Utility function to immediately redirect to the main "Welcome to WooCommerce Payments" onboarding page.
 	 * Note that this function immediately ends the execution.
 	 *
@@ -467,7 +511,7 @@ class WC_Payments_Account {
 		}
 
 		$is_on_settings_page           = WC_Payment_Gateway_WCPay::is_current_page_settings();
-		$should_redirect_to_onboarding = get_option( 'wcpay_should_redirect_to_onboarding', false );
+		$should_redirect_to_onboarding = (bool) get_option( 'wcpay_should_redirect_to_onboarding', false );
 
 		if (
 			// If not loading the settings page...

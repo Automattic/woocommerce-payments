@@ -10,7 +10,7 @@ use WCPay\MultiCurrency\Currency;
 /**
  * WCPay\MultiCurrency\Tracking unit tests.
  */
-class WCPay_Multi_Currency_Tracking_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Tracking_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * WCPay\MultiCurrency\Tracking instance.
 	 *
