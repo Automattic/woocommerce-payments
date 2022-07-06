@@ -9,17 +9,37 @@ import './style.scss';
 /**
  * Internal dependencies
  */
+// @ts-ignore: Cannot find module
 // eslint-disable-next-line import/no-unresolved
+// eslint-disable-next-line ban-ts-comment
 import utils from 'iti/utils';
+
+interface PhoneNumberInputProps {
+	value: string;
+	onValidationChange: ( isValid: boolean ) => void;
+	onValueChange: ( value: string ) => void;
+	inputProps: {
+		label: string;
+		ariaLabel: string;
+		name: string;
+	};
+}
 
 const PhoneNumberInput = ( {
 	onValueChange,
 	value,
 	onValidationChange = () => {},
-	inputProps = {},
-} ) => {
-	const [ inputInstance, setInputInstance ] = useState( null );
-	const inputRef = useRef();
+	inputProps = {
+		label: '',
+		ariaLabel: '',
+		name: '',
+	},
+}: PhoneNumberInputProps ): JSX.Element => {
+	const [
+		inputInstance,
+		setInputInstance,
+	] = useState< intlTelInput.Plugin | null >( null );
+	const inputRef = useRef< HTMLInputElement >( null );
 
 	const handlePhoneNumberInputChange = () => {
 		if ( inputInstance ) {
@@ -28,7 +48,7 @@ const PhoneNumberInput = ( {
 		}
 	};
 
-	const removeInternationalPrefix = ( phone ) => {
+	const removeInternationalPrefix = ( phone: string ) => {
 		if ( inputInstance ) {
 			return phone.replace(
 				'+' + inputInstance.getSelectedCountryData().dialCode,
@@ -40,12 +60,14 @@ const PhoneNumberInput = ( {
 	};
 
 	useEffect( () => {
-		let iti = null;
+		let iti: intlTelInput.Plugin | null = null;
 		const currentRef = inputRef.current;
 
 		const handleCountryChange = () => {
-			onValueChange( iti.getNumber() );
-			onValidationChange( iti.isValidNumber() );
+			if ( iti ) {
+				onValueChange( iti.getNumber() );
+				onValidationChange( iti.isValidNumber() );
+			}
 		};
 
 		if ( currentRef ) {
@@ -68,10 +90,13 @@ const PhoneNumberInput = ( {
 		return () => {
 			if ( iti ) {
 				iti.destroy();
-				currentRef.removeEventListener(
-					'countrychange',
-					handleCountryChange
-				);
+
+				if ( currentRef ) {
+					currentRef.removeEventListener(
+						'countrychange',
+						handleCountryChange
+					);
+				}
 			}
 		};
 	}, [ onValueChange, onValidationChange ] );
@@ -85,10 +110,6 @@ const PhoneNumberInput = ( {
 				ref={ inputRef }
 				value={ removeInternationalPrefix( value ) }
 				onChange={ handlePhoneNumberInputChange }
-				label={
-					inputProps.label ||
-					__( 'Mobile phone number', 'woocommerce-payments' )
-				}
 				aria-label={
 					inputProps.ariaLabel ||
 					__( 'Mobile phone number', 'woocommerce-payments' )
