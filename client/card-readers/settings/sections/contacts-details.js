@@ -99,15 +99,10 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 						updateSaveButtonAvailability();
 					} }
 					inputProps={ {
-						label: __(
+						ariaLabel: __(
 							'Support phone number',
 							'woocommerce-payments'
 						),
-						ariaLabell: __(
-							'Support phone number',
-							'woocommerce-payments'
-						),
-						name: '',
 					} }
 				/>
 			</div>
