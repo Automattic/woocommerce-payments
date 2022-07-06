@@ -133,7 +133,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 		return [
 			'id'                     => $this->get_id(),
 			'amount'                 => $this->get_amount(),
-			'created'                => $this->get_created(),
+			'created'                => $this->get_created()->getTimestamp(),
 			'payment_method_details' => $this->get_payment_method_details(),
 		];
 	}

@@ -258,7 +258,7 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 			'amount'         => $this->get_amount(),
 			'currency'       => $this->get_currency(),
 			'charge'         => $this->get_charge(),
-			'created'        => $this->get_created(),
+			'created'        => $this->get_created()->getTimestamp(),
 			'customer'       => $this->get_customer_id(),
 			'metadata'       => $this->get_metadata(),
 			'payment_method' => $this->get_payment_method_id(),
