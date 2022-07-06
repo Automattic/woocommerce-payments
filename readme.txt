@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.4.0
+Stable tag: 4.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.4.0 - 2022-07-06 =
+= 4.4.0 - 2022-xx-xx =
 * Add - Add handler for authenticated server links
 * Add - Add platform checkout order status sync webhooks
 * Add - Display a badge indicating the number of disputes which need a response in Payments > Disputes
