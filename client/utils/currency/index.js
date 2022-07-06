@@ -134,7 +134,7 @@ const appendCurrencyCode = ( formatted, currencyCode ) => {
 };
 
 /**
- * Formats amount according to the given currency.
+ * Formats amount according to the given currency. Falls back to `formatCurrency` when no additional currencies are enabled.
  *
  * @param {number} amount       Amount
  * @param {string} currencyCode Currency code
