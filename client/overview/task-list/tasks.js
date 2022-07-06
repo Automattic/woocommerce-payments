@@ -154,6 +154,7 @@ export const getTasks = ( {
 				window.location.href = getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/disputes',
+					filter: 'awaiting_response',
 				} );
 			},
 		},
