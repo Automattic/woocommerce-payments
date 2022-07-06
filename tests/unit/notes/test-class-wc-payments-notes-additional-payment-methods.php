@@ -8,7 +8,7 @@
 /**
  * Class WC_Payments_Notes_Additional_Payment_Methods tests.
  */
-class WC_Payments_Notes_Additional_Payment_Methods_Test extends WP_UnitTestCase {
+class WC_Payments_Notes_Additional_Payment_Methods_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 

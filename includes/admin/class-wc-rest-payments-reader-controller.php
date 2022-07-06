@@ -273,10 +273,13 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			if ( 'succeeded' !== $payment_intent->get_status() ) {
 				throw new \RuntimeException( __( 'Invalid payment intent', 'woocommerce-payments' ) );
 			}
-			$charge = $this->api_client->get_charge( $payment_intent->get_charge_id() );
+
+			$charge       = $payment_intent->get_charge();
+			$charge_id    = $charge ? $charge->get_id() : null;
+			$charge_array = $this->api_client->get_charge( $charge_id );
 
 			/* Collect receipt data, stored on the store side. */
-			$order = wc_get_order( $charge['order']['number'] );
+			$order = wc_get_order( $charge_array['order']['number'] );
 			if ( false === $order ) {
 				throw new \RuntimeException( __( 'Order not found', 'woocommerce-payments' ) );
 			}
@@ -296,7 +299,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			];
 
 			/* Generate receipt */
-			$response = [ 'html_content' => $this->receipts_service->get_receipt_markup( $settings, $order, $charge ) ];
+			$response = [ 'html_content' => $this->receipts_service->get_receipt_markup( $settings, $order, $charge_array ) ];
 		} catch ( \Throwable $e ) {
 			$error_status_code = $e instanceof API_Exception ? $e->get_http_code() : 500;
 			$response          = new WP_Error( 'generate_print_receipt_error', $e->getMessage(), [ 'status' => $error_status_code ] );
