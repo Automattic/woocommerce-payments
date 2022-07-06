@@ -7,16 +7,14 @@ import { render, screen, fireEvent } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import PhoneNumberInput from '../phone-number-input';
+import PhoneNumberInput from '../';
 
 describe( 'PhoneNumberInput', () => {
 	const handlePhoneNumberChangeMock = jest.fn();
 
 	it( 'should render phone number input', () => {
 		render(
-			<PhoneNumberInput
-				handlePhoneNumberChange={ handlePhoneNumberChangeMock }
-			/>
+			<PhoneNumberInput onValueChange={ handlePhoneNumberChangeMock } />
 		);
 		expect(
 			screen.queryByLabelText( 'Mobile phone number' )
@@ -25,9 +23,7 @@ describe( 'PhoneNumberInput', () => {
 
 	it( 'should render the default selected country with code', () => {
 		render(
-			<PhoneNumberInput
-				handlePhoneNumberChange={ handlePhoneNumberChangeMock }
-			/>
+			<PhoneNumberInput onValueChange={ handlePhoneNumberChangeMock } />
 		);
 		expect(
 			screen.queryByRole( 'combobox', { name: 'United States: +1' } )
@@ -36,9 +32,7 @@ describe( 'PhoneNumberInput', () => {
 
 	it( 'should call the handlePhoneNumberChange with phone number including country code', () => {
 		render(
-			<PhoneNumberInput
-				handlePhoneNumberChange={ handlePhoneNumberChangeMock }
-			/>
+			<PhoneNumberInput onValueChange={ handlePhoneNumberChangeMock } />
 		);
 
 		expect( handlePhoneNumberChangeMock ).not.toHaveBeenCalled();
