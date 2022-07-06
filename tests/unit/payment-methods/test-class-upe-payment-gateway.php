@@ -21,6 +21,7 @@ use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
+use WC_Payments_API_Intention;
 use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
 use WC_Payments_Order_Service;
