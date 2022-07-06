@@ -18,8 +18,7 @@ export default ( { storeName, storeLogo, ...props } ) => {
 	return (
 		<>
 			<svg
-				width="680"
-				height="33"
+				width="100%"
 				viewBox="0 0 680 33"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
@@ -30,8 +29,7 @@ export default ( { storeName, storeLogo, ...props } ) => {
 				<circle cx="34" cy="17" r="3" fill="#DCDCDE" />
 			</svg>
 			<svg
-				width="680"
-				height="261"
+				width="100%"
 				viewBox="0 0 680 261"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
