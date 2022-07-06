@@ -8,17 +8,45 @@ import { getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { filters, advancedFilters, TransactionsFilterType } from './config';
+import {
+	getFilters,
+	getAdvancedFilters,
+	TransactionsFilterType,
+} from './config';
 import { formatCurrencyName } from '../../utils/currency';
 import './style.scss';
 
 interface TransactionsFiltersProps {
 	storeCurrencies?: string[];
+	customerCurrencies?: string[];
 }
 
 export const TransactionsFilters = ( {
 	storeCurrencies,
+	customerCurrencies,
 }: TransactionsFiltersProps ): JSX.Element => {
+	const customerCurrencyOptions = Object.entries( {
+		gbp: 'GBP (£)',
+		usd: 'USD ($)',
+		eur: 'EUR (€)',
+	} )
+		.map( ( [ type, label ] ) => {
+			return { label, value: type };
+		} )
+		.filter( function ( el ) {
+			return el != null;
+		} );
+
+	// const customerCurrencyOptions = customerCurrencies?.reduce(
+	// 	( obj, currency ) => {
+	// 		return {
+	// 			...obj,
+	// 			[ currency ]: currency.toUpperCase(),
+	// 		};
+	// 	},
+	// 	{}
+	// );
+
 	const populateDepositCurrencies = (
 		filtersConfiguration: TransactionsFilterType[]
 	) => {
@@ -45,8 +73,10 @@ export const TransactionsFilters = ( {
 	return (
 		<div className="woocommerce-filters-transactions">
 			<ReportFilters
-				filters={ populateDepositCurrencies( filters ) }
-				advancedFilters={ advancedFilters }
+				filters={ populateDepositCurrencies( getFilters() ) }
+				advancedFilters={ getAdvancedFilters(
+					customerCurrencyOptions
+				) }
 				showDatePicker={ false }
 				path="/payments/transactions"
 				query={ getQuery() }

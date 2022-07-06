@@ -59,6 +59,7 @@ interface TransactionsSummary {
 		net?: number;
 		currency?: string;
 		store_currencies?: string[];
+		customer_currencies?: string[];
 	};
 	isLoading: boolean;
 }

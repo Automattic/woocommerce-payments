@@ -605,11 +605,15 @@ export const TransactionsList = (
 	const storeCurrencies =
 		transactionsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
+	const customerCurrencies = transactionsSummary.customer_currencies;
 
 	return (
 		<Page>
 			{ showFilters && (
-				<TransactionsFilters storeCurrencies={ storeCurrencies } />
+				<TransactionsFilters
+					storeCurrencies={ storeCurrencies }
+					customerCurrencies={ customerCurrencies }
+				/>
 			) }
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
