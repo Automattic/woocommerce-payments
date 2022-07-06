@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Tweak TypeScript definitions for Card readers as suggested on GitHub.
