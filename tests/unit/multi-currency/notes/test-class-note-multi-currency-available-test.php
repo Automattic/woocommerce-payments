@@ -10,7 +10,7 @@ use WCPay\MultiCurrency\Notes\NoteMultiCurrencyAvailable;
 /**
  * Class Note_Multi_Currency_Available_Test tests.
  */
-class Note_Multi_Currency_Available_Test extends WP_UnitTestCase {
+class Note_Multi_Currency_Available_Test extends WCPAY_UnitTestCase {
 	public function test_removes_note_on_extension_deactivation() {
 		if ( version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
 			// Trigger WCPay extension deactivation callback.

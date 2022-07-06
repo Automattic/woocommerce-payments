@@ -9,6 +9,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Database_Cache;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -16,7 +17,7 @@ require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
 /**
  * WC_Payments_Webhook_Processing_Service unit tests.
  */
-class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * System under test.
@@ -62,6 +63,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 	private $mock_customer_service;
 
 	/**
+	 * Mock database cache
+	 *
+	 * @var Database_Cache
+	 */
+	private $mock_database_cache;
+
+	/**
 	 * @var array
 	 */
 	private $event_body;
@@ -96,7 +104,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WP_UnitTestCase {
 
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 
-		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $mock_wcpay_account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service, $this->mock_wcpay_gateway, $this->mock_customer_service );
+		$this->mock_database_cache = $this->createMock( Database_Cache::class );
+
+		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $mock_api_client, $this->mock_db_wrapper, $mock_wcpay_account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service, $this->mock_wcpay_gateway, $this->mock_customer_service, $this->mock_database_cache );
 
 		// Build the event body data.
 		$event_object = [];

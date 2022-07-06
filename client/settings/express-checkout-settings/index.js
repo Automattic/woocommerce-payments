@@ -37,7 +37,14 @@ const methods = {
 								'woocommerce-payments'
 							) }
 						</p>
-						<div style={ { marginTop: 50 } }>
+					</>
+				),
+			},
+			{
+				section: 'appearance',
+				description: () => (
+					<>
+						<div>
 							<h2>{ __( 'Checkout appearance' ) }</h2>
 						</div>
 					</>

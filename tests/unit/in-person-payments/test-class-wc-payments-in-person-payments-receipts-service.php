@@ -8,7 +8,7 @@
 /**
  * WC_Payments_In_Person_Payments_Receipts_Service_Test unit tests.
  */
-class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WP_UnitTestCase {
+class WC_Payments_In_Person_Payments_Receipts_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * System under test.
 	 * @var WC_Payments_In_Person_Payments_Receipts_Service

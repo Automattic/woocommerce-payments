@@ -25,6 +25,8 @@ services:
       - ./docker/wc-payments-php.ini:/usr/local/etc/php/conf.d/wc-payments-php.ini
       - dockerdirectory:/var/www/html/wp-content/plugins/woocommerce-payments/docker
       - ./docker/bin:/var/scripts
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  
   db:
     container_name: woocommerce_payments_mysql
     image: mariadb:10.5.8
