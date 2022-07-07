@@ -12,8 +12,14 @@ import {
 	updateDispute,
 	updateDisputes,
 	updateDisputesSummary,
+	updateDisputeStatusCounts,
 } from '../actions';
-import { getDispute, getDisputes, getDisputesSummary } from '../resolvers';
+import {
+	getDispute,
+	getDisputes,
+	getDisputesSummary,
+	getDisputeStatusCounts,
+} from '../resolvers';
 
 const mockDisputes = [
 	{
@@ -135,6 +141,47 @@ describe( 'getDisputesSummary resolver', () => {
 		test( 'should update state with disputes summary data', () => {
 			expect( generator.next( mockSummary ).value ).toEqual(
 				updateDisputesSummary( query, mockSummary )
+			);
+		} );
+	} );
+
+	describe( 'on error', () => {
+		test( 'should update state with error', () => {
+			expect( generator.throw( errorResponse ).value ).toEqual(
+				dispatch(
+					'core/notices',
+					'createErrorNotice',
+					expect.any( String )
+				)
+			);
+		} );
+	} );
+} );
+
+describe( 'getDisputeStatusCounts resolver', () => {
+	let generator = null;
+	const mockStatusCounts = {
+		warning_needs_response: 2,
+		needs_response: 1,
+	};
+
+	beforeEach( () => {
+		generator = getDisputeStatusCounts();
+		expect( generator.next().value ).toEqual(
+			apiFetch( {
+				path: `/wc/v3/payments/disputes/status_counts`,
+			} )
+		);
+	} );
+
+	afterEach( () => {
+		expect( generator.next().done ).toStrictEqual( true );
+	} );
+
+	describe( 'on success', () => {
+		test( 'should update state with dispute status counts', () => {
+			expect( generator.next( mockStatusCounts ).value ).toEqual(
+				updateDisputeStatusCounts( mockStatusCounts )
 			);
 		} );
 	} );

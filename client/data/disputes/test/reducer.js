@@ -208,4 +208,34 @@ describe( 'Disputes reducer tests', () => {
 
 		expect( reduced ).toStrictEqual( after );
 	} );
+
+	test( 'Dispute status counts updated correctly', () => {
+		const before = {
+			byId: {},
+			cached: {},
+			queries: {},
+			summary: {},
+			statusCounts: {
+				warning_needs_response: 2,
+			},
+		};
+
+		const reduced = reducer( before, {
+			type: types.SET_DISPUTE_STATUS_COUNTS,
+			data: {
+				warning_needs_response: 3,
+				needs_response: 1,
+			},
+		} );
+
+		const after = {
+			...before,
+			statusCounts: {
+				warning_needs_response: 3,
+				needs_response: 1,
+			},
+		};
+
+		expect( reduced ).toStrictEqual( after );
+	} );
 } );
