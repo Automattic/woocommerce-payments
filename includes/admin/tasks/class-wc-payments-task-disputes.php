@@ -39,6 +39,22 @@ class WC_Payments_Task_Disputes extends Task {
 	}
 
 	/**
+	 * Get the parent list ID.
+	 *
+	 * This function prior to WC 6.4.0 was abstract and so is needed for backwards compatibility.
+	 *
+	 * @return string
+	 */
+	public function get_parent_id() {
+		// WC 6.4.0 compatibility.
+		if ( is_callable( 'parent::get_parent_id' ) ) {
+			return parent::get_parent_id();
+		}
+
+		return 'extended';
+	}
+
+	/**
 	 * Gets the task content.
 	 *
 	 * @return string
