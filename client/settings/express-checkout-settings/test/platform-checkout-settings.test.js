@@ -66,16 +66,6 @@ describe( 'PlatformCheckoutSettings', () => {
 		const [ enableCheckbox ] = screen.queryAllByRole( 'checkbox' );
 
 		expect( enableCheckbox ).toBeInTheDocument();
-
-		// confirm settings headings
-		expect(
-			screen.queryByRole( 'heading', { name: 'Custom message' } )
-		).toBeInTheDocument();
-
-		// confirm radio button groups displayed
-		const customMessageTextbox = screen.queryByRole( 'textbox' );
-
-		expect( customMessageTextbox ).toBeInTheDocument();
 	} );
 
 	it( 'triggers the hooks when the enable setting is being interacted with', () => {
@@ -108,7 +98,17 @@ describe( 'PlatformCheckoutSettings', () => {
 			)
 		);
 
-		render( <PlatformCheckoutSettings section="general" /> );
+		render( <PlatformCheckoutSettings section="appearance" /> );
+
+		// confirm settings headings
+		expect(
+			screen.queryByRole( 'heading', { name: 'Custom message' } )
+		).toBeInTheDocument();
+
+		// confirm radio button groups displayed
+		const customMessageTextbox = screen.queryByRole( 'textbox' );
+
+		expect( customMessageTextbox ).toBeInTheDocument();
 
 		expect(
 			updatePlatformCheckoutCustomMessageHandler
