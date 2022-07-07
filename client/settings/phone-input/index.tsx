@@ -11,7 +11,6 @@ import './style.scss';
  */
 // @ts-ignore: Cannot find module
 // eslint-disable-next-line import/no-unresolved
-// eslint-disable-next-line ban-ts-comment
 import utils from 'iti/utils';
 
 interface PhoneNumberInputProps {
@@ -28,7 +27,7 @@ interface PhoneNumberInputProps {
 const PhoneNumberInput = ( {
 	onValueChange,
 	value,
-	onValidationChange = () => {},
+	onValidationChange = ( validation ) => validation,
 	inputProps = {
 		label: '',
 		ariaLabel: '',
