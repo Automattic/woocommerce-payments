@@ -41,7 +41,7 @@ const getChargeData = (
 	};
 };
 
-export const usePaymentIntentFallback = (
+export const usePaymentIntentWithChargeFallback = (
 	id: string
 ): PaymentIntentionFallbackResponse =>
 	useSelect(

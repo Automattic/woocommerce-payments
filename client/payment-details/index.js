@@ -15,7 +15,7 @@ import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import PaymentCardReaderChargeDetails from './readers';
-import { usePaymentIntentFallback } from 'wcpay/data/payment-intents';
+import { usePaymentIntentWithChargeFallback } from 'wcpay/data/payment-intents';
 
 const PaymentDetails = ( props ) => {
 	if ( 'card_reader_fee' === props.query.transaction_type ) {
@@ -31,7 +31,12 @@ const PaymentDetails = ( props ) => {
 };
 
 const PaymentChargeDetails = ( { id } ) => {
-	const { data, isLoading, error, redirect } = usePaymentIntentFallback( id );
+	const {
+		data,
+		isLoading,
+		error,
+		redirect,
+	} = usePaymentIntentWithChargeFallback( id );
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
 	useEffect( () => {
