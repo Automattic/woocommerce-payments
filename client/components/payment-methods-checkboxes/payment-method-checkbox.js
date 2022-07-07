@@ -64,13 +64,13 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 
 	const [ isManualCaptureEnabled ] = useManualCapture();
 	const paymentMethod = PaymentMethodsMap[ name ];
-	const hasOverlay =
+	const needsOverlay =
 		isManualCaptureEnabled && ! paymentMethod.allows_manual_capture;
 
 	return (
 		<li
 			className={ classNames( 'payment-method-checkbox', {
-				'has-overlay': hasOverlay,
+				overlay: needsOverlay,
 			} ) }
 		>
 			<LoadableCheckboxControl
