@@ -13,7 +13,6 @@ defined( 'ABSPATH' ) || exit;
  * Class that controls Multi-Currency Utils.
  */
 class Utils {
-
 	/**
 	 * Checks backtrace calls to see if a certain call has been made.
 	 *
