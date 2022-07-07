@@ -72,7 +72,7 @@ const CheckoutPageSaveUser = () => {
 						checked={ isSaveDetailsChecked }
 						onChange={ () => {
 							setIsSaveDetailsChecked( ( v ) => ! v );
-							setPhoneNumber( '' );
+							setPhoneNumber( null );
 						} }
 						name="save_user_in_platform_checkout"
 						id="save_user_in_platform_checkout"
