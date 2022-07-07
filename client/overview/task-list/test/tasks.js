@@ -184,7 +184,7 @@ describe( 'getTasks()', () => {
 		);
 	} );
 	it( 'should include the dispute resolution task as completed', () => {
-		const numDisputes = 2;
+		const numDisputes = 1;
 		const numDisputesToRespond = 0;
 		const actual = getTasks( {
 			accountStatus: {
@@ -203,7 +203,7 @@ describe( 'getTasks()', () => {
 					key: 'dispute-resolution-task',
 					completed: true,
 					level: 3,
-					title: '2 disputed payments need your response',
+					title: '1 disputed payment needs your response',
 				} ),
 			] )
 		);

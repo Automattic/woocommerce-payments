@@ -123,7 +123,7 @@ export const getTasks = ( {
 				_n(
 					'1 disputed payment needs your response',
 					'%s disputed payments need your response',
-					numDisputesToRespond,
+					numDisputesToRespond ? numDisputesToRespond : numDisputes,
 					'woocommerce-payments'
 				),
 				numDisputesToRespond ? numDisputesToRespond : numDisputes
