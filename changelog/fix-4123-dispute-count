@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Pagination and grammar issue for dispute task list.
+Correctly show the number of disputes that need to be responded in task list.
