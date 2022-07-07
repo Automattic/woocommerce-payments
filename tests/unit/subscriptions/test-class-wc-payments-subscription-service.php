@@ -10,7 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 /**
  * WC_Payments_Subscription_Service_Test unit tests.
  */
-class WC_Payments_Subscription_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Subscription meta key used to store WCPay subscription's ID.

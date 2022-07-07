@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.3.0
+Stable tag: 4.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.7 or newer.
-* WooCommerce 6.3 or newer.
+* WooCommerce 6.4 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -97,6 +97,24 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 4.4.0 - 2022-07-06 =
+* Add - Add handler for authenticated server links
+* Add - Add platform checkout order status sync webhooks
+* Add - Display a badge indicating the number of disputes which need a response in Payments > Disputes
+* Add - Disputes page: add a new filter option to the Show dropdown for displaying disputes awaiting a response.
+* Add - In Person Payments: Extend terminal intent creation to support payment_method_types, metadata, customer and capture_method parameters.
+* Add - Introduce StripeLink into WooCommerce blocks
+* Add - Support remote inbox notes with relative admin URLs
+* Fix - Fix payment methods in account after enabling Stripe Link
+* Fix - Hide Platform Checkout iframe on browser back button.
+* Fix - Platform Checkout settings responsiveness.
+* Fix - Use high-level order currency API for multicurrency subscription renewal orders (get_post_meta is not recommended for orders).
+* Update - Bump minimum required version of WooCommerce from 5.6 to 5.8.
+* Update - disable loader so that Stripe's skeleton loader is not used.
+* Update - Refactor WC_Payments_API_Intention to receive an instance of WC_Payments_API_Charge instead of multiple charge-related fields.
+* Dev - Include the WCPay version in the requests to the Platform Checkout
+* Dev - Update selectors & flow for dispute related tests
 
 = 4.3.0 - 2022-06-15 =
 * Add - Add ARN (Acquirer Reference Number) to refunds in payment details timeline.

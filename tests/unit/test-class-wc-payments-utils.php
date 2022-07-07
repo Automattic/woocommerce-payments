@@ -11,7 +11,7 @@ use WCPay\Exceptions\Amount_Too_Small_Exception;
 /**
  * WC_Payments_Utils unit tests.
  */
-class WC_Payments_Utils_Test extends WP_UnitTestCase {
+class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	public function test_esc_interpolated_html_returns_raw_string() {
 		$result = WC_Payments_Utils::esc_interpolated_html(
 			'hello world',
@@ -419,10 +419,11 @@ class WC_Payments_Utils_Test extends WP_UnitTestCase {
 		global $current_screen;
 
 		if ( ! $is_admin ) {
-			$current_screen = null;
+			$current_screen = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 			return;
 		}
 
+		// phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$current_screen = $this->getMockBuilder( \stdClass::class )
 			->setMethods( [ 'in_admin' ] )
 			->getMock();

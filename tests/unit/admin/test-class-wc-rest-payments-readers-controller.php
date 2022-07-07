@@ -14,7 +14,7 @@ require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-prin
 /**
  * WC_REST_Payments_Reader_Controller_Test unit tests.
  */
-class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
+class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Controller under test.
 	 *
@@ -252,7 +252,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 	public function test_generate_print_receipt() {
 		$order = WC_Helper_Order::create_order();
 
-		$payment_intent = $this->mock_payment_intent();
+		$payment_intent = WC_Helper_Intention::create_intention();
 
 		$charge = $this->mock_charge( $order->get_id() );
 
@@ -263,13 +263,13 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_intent' )
-			->with( '42' )
+			->with( 'pi_mock' )
 			->willReturn( $payment_intent );
 
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_charge' )
-			->with( $payment_intent->get_charge_id() )
+			->with( 'ch_mock' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
@@ -284,7 +284,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->willReturn( $receipt );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_intent_id', 42 );
+		$request->set_param( 'payment_intent_id', 'pi_mock' );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -418,8 +418,8 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_intent' )
-			->with( '42' )
-			->willReturn( $this->mock_payment_intent( 'processing' ) );
+			->with( 'pi_mock' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] ) );
 
 		$this->mock_api_client
 			->expects( $this->never() )
@@ -434,7 +434,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_receipt_markup' );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_intent_id', 42 );
+		$request->set_param( 'payment_intent_id', 'pi_mock' );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -448,7 +448,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_intent' )
-			->with( '42' )
+			->with( 'pi_mock' )
 			->willThrowException( new API_Exception( 'Something bad happened', 'test error', 500 ) );
 
 		$this->mock_api_client
@@ -464,7 +464,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_receipt_markup' );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_intent_id', 42 );
+		$request->set_param( 'payment_intent_id', 'pi_mock' );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -475,20 +475,20 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 	}
 
 	public function test_generate_print_receipt_order_not_found(): void {
-		$payment_intent = $this->mock_payment_intent();
+		$payment_intent = WC_Helper_Intention::create_intention();
 
 		$charge = $this->mock_charge( '42' );
 
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_intent' )
-			->with( '42' )
+			->with( 'pi_mock' )
 			->willReturn( $payment_intent );
 
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_charge' )
-			->with( $payment_intent->get_charge_id() )
+			->with( 'ch_mock' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
@@ -500,7 +500,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_receipt_markup' );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_intent_id', 42 );
+		$request->set_param( 'payment_intent_id', 'pi_mock' );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -513,20 +513,20 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 	public function test_generate_print_receipt_handle_settings_exception(): void {
 		$order = WC_Helper_Order::create_order();
 
-		$payment_intent = $this->mock_payment_intent();
+		$payment_intent = WC_Helper_Intention::create_intention();
 
 		$charge = $this->mock_charge( $order->get_id() );
 
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_intent' )
-			->with( '42' )
+			->with( 'pi_mock' )
 			->willReturn( $payment_intent );
 
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_charge' )
-			->with( $payment_intent->get_charge_id() )
+			->with( 'ch_mock' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
@@ -539,7 +539,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->method( 'get_receipt_markup' );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_intent_id', 42 );
+		$request->set_param( 'payment_intent_id', 'pi_mock' );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -552,7 +552,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 	public function test_generate_print_receipt_handle_receipt_service_exception(): void {
 		$order = WC_Helper_Order::create_order();
 
-		$payment_intent = $this->mock_payment_intent();
+		$payment_intent = WC_Helper_Intention::create_intention();
 
 		$charge = $this->mock_charge( $order->get_id() );
 
@@ -561,13 +561,13 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_intent' )
-			->with( '42' )
+			->with( 'pi_mock' )
 			->willReturn( $payment_intent );
 
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_charge' )
-			->with( $payment_intent->get_charge_id() )
+			->with( 'ch_mock' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
@@ -582,7 +582,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 			->willThrowException( new Exception( 'Something bad' ) );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'payment_intent_id', 42 );
+		$request->set_param( 'payment_intent_id', 'pi_mock' );
 
 		$response = $this->controller->generate_print_receipt( $request );
 
@@ -590,20 +590,6 @@ class WC_REST_Payments_Reader_Controller_Test extends WP_UnitTestCase {
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertSame( 500, $data['status'] );
-	}
-
-	private function mock_payment_intent( $status = 'succeeded' ): WC_Payments_API_Intention {
-		return new WC_Payments_API_Intention(
-			'42',
-			42,
-			'USD',
-			'42',
-			'42',
-			new DateTime(),
-			$status,
-			'42',
-			'secret'
-		);
 	}
 
 	private function mock_charge( string $order_id ): array {

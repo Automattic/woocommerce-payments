@@ -12,7 +12,7 @@ use WCPay\Exceptions\API_Exception;
 /**
  * WC_Payments_Customer_Service unit tests.
  */
-class WC_Payments_Customer_Service_Test extends WP_UnitTestCase {
+class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 
 	const CUSTOMER_LIVE_META_KEY = '_wcpay_customer_id_live';
 	const CUSTOMER_TEST_META_KEY = '_wcpay_customer_id_test';

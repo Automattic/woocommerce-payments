@@ -13,6 +13,7 @@ import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 
 jQuery( function ( $ ) {
@@ -204,49 +205,6 @@ jQuery( function ( $ ) {
 		};
 	};
 
-	const enableStripeLinkPaymentMethod = () => {
-		const linkAutofill = api.getStripe().linkAutofillModal( elements );
-
-		$( '#billing_email' ).on( 'keyup', ( event ) => {
-			linkAutofill.launch( { email: event.target.value } );
-		} );
-
-		// Handle StripeLink button click.
-		$( '.wcpay-stripelink-modal-trigger' ).on( 'click', ( event ) => {
-			event.preventDefault();
-
-			// Trigger modal.
-			linkAutofill.launch( { email: $( '#billing_email' ).val() } );
-		} );
-
-		linkAutofill.on( 'autofill', ( event ) => {
-			const { billingAddress } = event.value;
-			const fillWith = ( nodeId, key ) => {
-				document.getElementById( nodeId ).value =
-					billingAddress.address[ key ];
-			};
-
-			fillWith( 'billing_address_1', 'line1' );
-			fillWith( 'billing_address_2', 'line2' );
-			fillWith( 'billing_city', 'city' );
-			fillWith( 'billing_state', 'state' );
-			fillWith( 'billing_postcode', 'postal_code' );
-			fillWith( 'billing_country', 'country' );
-		} );
-
-		// Display StripeLink button if email field is prefilled.
-		if ( '' !== $( '#billing_email' ).val() ) {
-			const linkButtonTop =
-				$( '#billing_email' ).position().top +
-				( $( '#billing_email' ).outerHeight() - 40 ) / 2;
-			$( '.wcpay-stripelink-modal-trigger' ).show();
-			$( '.wcpay-stripelink-modal-trigger' ).css(
-				'top',
-				linkButtonTop + 'px'
-			);
-		}
-	};
-
 	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
@@ -321,10 +279,37 @@ jQuery( function ( $ ) {
 			clientSecret,
 			appearance,
 			fonts: getFontRulesFromPage(),
+			loader: 'never',
 		} );
 
 		if ( isStripeLinkEnabled ) {
-			enableStripeLinkPaymentMethod();
+			enableStripeLinkPaymentMethod( {
+				api: api,
+				elements: elements,
+				emailId: 'billing_email',
+				complete_billing: true,
+				complete_shipping: () => {
+					return ! document.getElementById(
+						'ship-to-different-address-checkbox'
+					).checked;
+				},
+				shipping_fields: {
+					line1: 'shipping_address_1',
+					line2: 'shipping_address_2',
+					city: 'shipping_city',
+					state: 'shipping_state',
+					postal_code: 'shipping_postcode',
+					country: 'shipping_country',
+				},
+				billing_fields: {
+					line1: 'billing_address_1',
+					line2: 'billing_address_2',
+					city: 'billing_city',
+					state: 'billing_state',
+					postal_code: 'billing_postcode',
+					country: 'billing_country',
+				},
+			} );
 		}
 
 		const upeSettings = {};

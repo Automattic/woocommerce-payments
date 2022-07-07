@@ -8,7 +8,7 @@
 /**
  * WCPay\MultiCurrency\Utils unit tests.
  */
-class WCPay_Multi_Currency_Utils_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Utils_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * WCPay\MultiCurrency\Utils instance.
 	 *

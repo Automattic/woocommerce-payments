@@ -11,7 +11,7 @@ use WCPay\MultiCurrency\StorefrontIntegration;
 /**
  * WCPay\MultiCurrency\StorefrontIntegration unit tests.
  */
-class WCPay_Multi_Currency_Storefront_Integration_Tests extends WP_UnitTestCase {
+class WCPay_Multi_Currency_Storefront_Integration_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Mock MultiCurrency.
 	 *
