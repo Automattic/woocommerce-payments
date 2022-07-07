@@ -11,10 +11,15 @@ import PhoneNumberInput from '../';
 
 describe( 'PhoneNumberInput', () => {
 	const handlePhoneNumberChangeMock = jest.fn();
+	const handlePhoneValidationChangeMock = jest.fn();
 
 	it( 'should render phone number input', () => {
 		render(
-			<PhoneNumberInput onValueChange={ handlePhoneNumberChangeMock } />
+			<PhoneNumberInput
+				onValueChange={ handlePhoneNumberChangeMock }
+				onValidationChange={ handlePhoneValidationChangeMock }
+				value="123"
+			/>
 		);
 		expect(
 			screen.queryByLabelText( 'Mobile phone number' )
@@ -23,16 +28,24 @@ describe( 'PhoneNumberInput', () => {
 
 	it( 'should render the default selected country with code', () => {
 		render(
-			<PhoneNumberInput onValueChange={ handlePhoneNumberChangeMock } />
+			<PhoneNumberInput
+				onValueChange={ handlePhoneNumberChangeMock }
+				onValidationChange={ handlePhoneValidationChangeMock }
+				value="123"
+			/>
 		);
 		expect(
 			screen.queryByRole( 'combobox', { name: 'United States: +1' } )
 		).toBeInTheDocument();
 	} );
 
-	it( 'should call the handlePhoneNumberChange with phone number including country code', () => {
+	it( 'should call the onValueChange with phone number including country code', () => {
 		render(
-			<PhoneNumberInput onValueChange={ handlePhoneNumberChangeMock } />
+			<PhoneNumberInput
+				onValueChange={ handlePhoneNumberChangeMock }
+				onValidationChange={ handlePhoneValidationChangeMock }
+				value="123"
+			/>
 		);
 
 		expect( handlePhoneNumberChangeMock ).not.toHaveBeenCalled();
