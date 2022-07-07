@@ -56,7 +56,7 @@ const PhoneNumberInput = ( {
 			);
 		}
 
-		return value;
+		return phone;
 	};
 
 	useEffect( () => {
