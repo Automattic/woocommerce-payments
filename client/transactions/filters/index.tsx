@@ -25,27 +25,28 @@ export const TransactionsFilters = ( {
 	storeCurrencies,
 	customerCurrencies,
 }: TransactionsFiltersProps ): JSX.Element => {
-	const customerCurrencyOptions = Object.entries( {
-		gbp: 'GBP (£)',
-		usd: 'USD ($)',
-		eur: 'EUR (€)',
-	} )
-		.map( ( [ type, label ] ) => {
-			return { label, value: type };
-		} )
-		.filter( function ( el ) {
-			return el != null;
-		} );
+	// Example with hard-coded options.
+	// const customerCurrencyOptions = Object.entries( {
+	// 	gbp: 'GBP (£)',
+	// 	usd: 'USD ($)',
+	// 	eur: 'EUR (€)',
+	// } )
+	// 	.map( ( [ type, label ] ) => {
+	// 		return { label, value: type };
+	// 	} )
+	// 	.filter( function ( el ) {
+	// 		return el != null;
+	// 	} );
 
-	// const customerCurrencyOptions = customerCurrencies?.reduce(
-	// 	( obj, currency ) => {
-	// 		return {
-	// 			...obj,
-	// 			[ currency ]: currency.toUpperCase(),
-	// 		};
-	// 	},
-	// 	{}
-	// );
+	const customerCurrencyOptions = customerCurrencies?.reduce(
+		( obj, currency ) => {
+			return {
+				...obj,
+				[ currency ]: currency.toUpperCase(),
+			};
+		},
+		{}
+	);
 
 	const populateDepositCurrencies = (
 		filtersConfiguration: TransactionsFilterType[]
