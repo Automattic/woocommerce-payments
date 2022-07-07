@@ -55,4 +55,26 @@ describe( 'PhoneNumberInput', () => {
 
 		expect( handlePhoneNumberChangeMock ).toHaveBeenCalledWith( '+1201' );
 	} );
+
+	it( 'should call the onValidationChange with true if value is valid', () => {
+		render(
+			<PhoneNumberInput
+				onValueChange={ handlePhoneNumberChangeMock }
+				onValidationChange={ handlePhoneValidationChangeMock }
+				value="123"
+			/>
+		);
+
+		const input = screen.queryByLabelText( 'Mobile phone number' ); // The label text for our input.
+
+		expect( handlePhoneValidationChangeMock ).toHaveBeenLastCalledWith(
+			false
+		);
+
+		fireEvent.change( input, { target: { value: '2345678901' } } );
+
+		expect( handlePhoneValidationChangeMock ).toHaveBeenLastCalledWith(
+			true
+		);
+	} );
 } );
