@@ -36,8 +36,8 @@ jobs:
       fail-fast:     false
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce:   [ '5.8.1', '6.4.1', '6.6.0', 'beta' ]
-        wordpress:     [ 'latest' ]
+        woocommerce:   [ '5.8.1', '6.4.1', 'latest', 'beta' ]
+        wordpress:     [ 'latest', 'nightly' ]
         php:           [ '7.4' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
@@ -47,8 +47,14 @@ jobs:
           - woocommerce: '5.8.1'
             test_groups: 'blocks'
             test_branches: 'shopper'
+          - wordpress: 'nightly'
+            woocommerce: '5.8.1' 
+          - wordpress: 'nightly'
+            woocommerce: '6.4.1'
+          - wordpress: 'nightly'
+            woocommerce: 'beta'   
 
-    name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WC - ${{ matrix.woocommerce }} | WP - ${{ matrix.wordpress }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
       E2E_WP_VERSION: ${{ matrix.wordpress }}
