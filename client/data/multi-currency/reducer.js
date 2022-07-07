@@ -55,14 +55,6 @@ const receiveMultiCurrencies = (
 					[ data.code ]: data.data,
 				},
 			};
-		case TYPES.SET_CUSTOMER_CURRENCIES:
-			return {
-				...state,
-				customer_currencies: {
-					...state,
-					[ data.code ]: data.data,
-				},
-			};
 		case TYPES.SET_STORE_SETTINGS:
 			return {
 				...state,

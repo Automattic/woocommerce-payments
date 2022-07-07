@@ -13,7 +13,6 @@ import { __ } from '@wordpress/i18n';
 import { NAMESPACE } from '../constants';
 import {
 	updateCurrencies,
-	updateCustomerCurrencies,
 	updateCurrencySettings,
 	updateStoreSettings,
 } from './actions';
@@ -27,22 +26,6 @@ export function* getCurrencies() {
 	try {
 		const result = yield apiFetch( { path } );
 		yield updateCurrencies( result );
-	} catch ( e ) {
-		yield dispatch( 'core/notices' ).createErrorNotice(
-			__( 'Error retrieving currencies.', 'woocommerce-payments' )
-		);
-	}
-}
-
-/**
- * Retrieve a list of customer currencies used on the site from the site's REST API.
- */
-export function* getCustomerCurrencies() {
-	const path = `${ NAMESPACE }/multi-currency/customer-currencies`;
-
-	try {
-		const result = yield apiFetch( { path } );
-		yield updateCustomerCurrencies( result );
 	} catch ( e ) {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error retrieving currencies.', 'woocommerce-payments' )

@@ -28,10 +28,6 @@ export const getEnabledCurrencies = ( state ) => {
 	return getCurrencies( state ).enabled || {};
 };
 
-export const getCustomerCurrencies = ( state ) => {
-	return getCustomerCurrencies( state ).customer_currencies || {};
-};
-
 export const getDefaultCurrency = ( state ) => {
 	return getCurrencies( state ).default || {};
 };
