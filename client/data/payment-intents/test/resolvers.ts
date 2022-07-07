@@ -10,10 +10,11 @@ import { apiFetch, dispatch } from '@wordpress/data-controls';
  */
 import { updatePaymentIntent, updateErrorForPaymentIntent } from '../actions';
 import { getPaymentIntent } from '../resolvers';
+import { PaymentIntent } from '../../../types/payment-intents';
 
 const errorResponse = { code: 'error' };
 
-const paymentIntentResponse = {
+const paymentIntentResponse: { data: PaymentIntent } = {
 	data: {
 		id: 'pi_test_1',
 		amount: 8903,
@@ -21,21 +22,13 @@ const paymentIntentResponse = {
 		charge: {
 			id: 'ch_test_1',
 			amount: 8903,
-			created: {
-				date: '2022-06-09 20:23:55.000000',
-				timezone_type: 3,
-				timezone: 'UTC',
-			},
+			created: 1656701170,
 			payment_method_details: {
 				card: {},
 				type: 'card',
 			},
 		},
-		created: {
-			date: '2022-06-09 20:23:55.000000',
-			timezone_type: 3,
-			timezone: 'UTC',
-		},
+		created: 1656701169,
 		customer: 'cus_test',
 		metadata: {},
 		payment_method: 'pm_test',
@@ -44,7 +37,7 @@ const paymentIntentResponse = {
 };
 
 describe( 'getPaymentIntent resolver', () => {
-	let generator = null;
+	let generator: Generator< unknown >;
 
 	beforeEach( () => {
 		generator = getPaymentIntent( 'pi_test_1' );
@@ -80,7 +73,7 @@ describe( 'getPaymentIntent resolver', () => {
 				)
 			);
 			expect( generator.next().value ).toEqual(
-				updateErrorForPaymentIntent( 'pi_test_1', null, errorResponse )
+				updateErrorForPaymentIntent( 'pi_test_1', errorResponse )
 			);
 		} );
 	} );

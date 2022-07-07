@@ -5,6 +5,8 @@
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { __ } from '@wordpress/i18n';
+import { ApiError } from '../../types/errors';
+import { PaymentIntent } from '../../types/payment-intents';
 
 /**
  * Internal dependencies
@@ -12,18 +14,18 @@ import { __ } from '@wordpress/i18n';
 import { NAMESPACE } from '../constants';
 import { updatePaymentIntent, updateErrorForPaymentIntent } from './actions';
 
-export function* getPaymentIntent( id ) {
+export function* getPaymentIntent( id: string ): Generator< unknown > {
 	try {
-		const results = yield apiFetch( {
+		const result = yield apiFetch( {
 			path: `${ NAMESPACE }/payment_intents/${ id }`,
 		} );
-		yield updatePaymentIntent( id, results );
+		yield updatePaymentIntent( id, result as PaymentIntent );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
 			'createErrorNotice',
 			__( 'Error retrieving transaction.', 'woocommerce-payments' )
 		);
-		yield updateErrorForPaymentIntent( id, null, e );
+		yield updateErrorForPaymentIntent( id, e as ApiError );
 	}
 }

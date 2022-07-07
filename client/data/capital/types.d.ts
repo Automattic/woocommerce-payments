@@ -58,10 +58,6 @@ export interface CapitalState {
 	loansError?: ApiError;
 }
 
-export interface State {
-	capital?: CapitalState;
-}
-
 export interface UpdateSummaryAction {
 	type: ACTION_TYPES.SET_ACTIVE_LOAN_SUMMARY;
 	data: Summary;

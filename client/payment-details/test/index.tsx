@@ -5,11 +5,23 @@
  */
 import { render } from '@testing-library/react';
 import { useSelect } from '@wordpress/data';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
 import PaymentDetailsPage from '../';
+
+declare const global: {
+	wcSettings: { countries: Record< string, string > };
+	wcpaySettings: {
+		zeroDecimalCurrencies: string[];
+		featureFlags: Record< string, boolean >;
+		connect: {
+			country: string;
+		};
+	};
+};
 
 // Workaround for mocking @wordpress/data.
 // See https://github.com/WordPress/gutenberg/issues/15031
@@ -25,7 +37,7 @@ jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
 
-useSelect.mockImplementation( ( cb ) =>
+( useSelect as jest.Mock ).mockImplementation( ( cb ) =>
 	cb(
 		jest.fn().mockReturnValue( {
 			getCharge: jest.fn().mockReturnValue( {
@@ -119,8 +131,9 @@ describe( 'Payment details page', () => {
 		'admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock';
 
 	beforeEach( () => {
-		delete window.location;
-		window.location = { href: 'http://example.com' };
+		Object.defineProperty( window, 'location', {
+			value: { href: 'http://example.com' },
+		} );
 	} );
 
 	afterAll( () => {

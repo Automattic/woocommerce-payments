@@ -2,40 +2,48 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { SelectorMap, useSelect } from '@wordpress/data';
 import { getAdminUrl } from 'wcpay/utils';
+import { Charge } from '../../types/charges';
+import { ApiError } from '../../types/errors';
+import { PaymentIntent } from '../../types/payment-intents';
 import { STORE_NAME } from '../constants';
+import { PaymentIntentionFallbackResponse } from './types';
 
-const getIsChargeId = ( id ) => -1 !== id.indexOf( 'ch_' );
+const getIsChargeId = ( id: string ): boolean => -1 !== id.indexOf( 'ch_' );
 
 const getChargeData = (
-	chargeId,
-	{ getCharge, isResolving, getChargeError },
+	chargeId: string,
+	{ getCharge, isResolving, getChargeError }: SelectorMap,
 	isChargeId = false
 ) => {
-	const data = getCharge( chargeId );
+	const data: Charge = getCharge( chargeId );
 	const shouldRedirect = !! ( isChargeId && data.payment_intent );
 
-	const redirect = shouldRedirect && {
-		url: getAdminUrl( {
-			page: 'wc-admin',
-			path: '/payments/transactions/details',
-			id: data.payment_intent,
-		} ),
-	};
+	const redirect = shouldRedirect
+		? {
+				url: getAdminUrl( {
+					page: 'wc-admin',
+					path: '/payments/transactions/details',
+					id: data.payment_intent,
+				} ),
+		  }
+		: undefined;
 
-	const isLoading =
+	const isLoading: boolean =
 		isResolving( 'getCharge', [ chargeId ] ) || shouldRedirect;
 
 	return {
 		data,
 		redirect,
 		isLoading,
-		error: getChargeError( chargeId ),
+		error: getChargeError( chargeId ) as ApiError,
 	};
 };
 
-export const usePaymentIntentFallback = ( id ) =>
+export const usePaymentIntentFallback = (
+	id: string
+): PaymentIntentionFallbackResponse =>
 	useSelect(
 		( select ) => {
 			const selectors = select( STORE_NAME );
@@ -61,7 +69,7 @@ export const usePaymentIntentFallback = ( id ) =>
 				isResolving,
 			} = selectors;
 
-			const paymentIntent = getPaymentIntent( id );
+			const paymentIntent: PaymentIntent = getPaymentIntent( id );
 
 			if ( paymentIntent?.charge?.id ) {
 				const { id: chargeId } = paymentIntent.charge;
@@ -70,7 +78,7 @@ export const usePaymentIntentFallback = ( id ) =>
 			}
 
 			return {
-				data: {},
+				data: {} as Charge,
 				error: getPaymentIntentError( id ),
 				isLoading: isResolving( 'getPaymentIntent', [ id ] ),
 			};

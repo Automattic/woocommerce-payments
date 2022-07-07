@@ -4,7 +4,8 @@
  * Internal dependencies
  */
 import { ApiError } from '../../types/errors';
-import { CapitalLoan, CapitalState, State, Summary } from './types';
+import { State } from '../types';
+import { CapitalLoan, CapitalState, Summary } from './types';
 
 /**
  * Retrieves the Capital loans state from the wp.data store if the state
