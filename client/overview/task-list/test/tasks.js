@@ -144,7 +144,6 @@ describe( 'getTasks()', () => {
 	} );
 
 	it( 'should not include the dispute resolution task', () => {
-		const numDisputes = 0;
 		const numDisputesToRespond = 0;
 		const actual = getTasks( {
 			accountStatus: {
@@ -153,14 +152,12 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			numDisputes,
 			numDisputesToRespond,
 		} );
 
 		expect( actual ).toEqual( [] );
 	} );
 	it( 'should include the dispute resolution task', () => {
-		const numDisputes = 1;
 		const numDisputesToRespond = 1;
 		const actual = getTasks( {
 			accountStatus: {
@@ -169,7 +166,6 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			numDisputes,
 			numDisputesToRespond,
 		} );
 
@@ -183,36 +179,10 @@ describe( 'getTasks()', () => {
 			] )
 		);
 	} );
-	it( 'should include the dispute resolution task as completed', () => {
-		const numDisputes = 1;
-		const numDisputesToRespond = 0;
-		const actual = getTasks( {
-			accountStatus: {
-				status: 'restricted_soon',
-				currentDeadline: 1620857083,
-				pastDue: false,
-				accountLink: 'http://example.com',
-			},
-			numDisputes,
-			numDisputesToRespond,
-		} );
-
-		expect( actual ).toEqual(
-			expect.arrayContaining( [
-				expect.objectContaining( {
-					key: 'dispute-resolution-task',
-					completed: true,
-					level: 3,
-					title: '1 disputed payment needs your response',
-				} ),
-			] )
-		);
-	} );
 } );
 
 describe( 'taskSort()', () => {
 	it( 'should sort the tasks', () => {
-		const numDisputes = 2;
 		const numDisputesToRespond = 1;
 		const unsortedTasks = getTasks( {
 			accountStatus: {
@@ -222,7 +192,6 @@ describe( 'taskSort()', () => {
 				accountLink: 'http://example.com',
 			},
 			isAccountOverviewTasksEnabled: true,
-			numDisputes,
 			numDisputesToRespond,
 		} );
 		unsortedTasks.unshift( {

@@ -39,10 +39,6 @@ const OverviewPage = () => {
 	const { disputeStatusCounts, isLoading } = useDisputeStatusCounts();
 	const { isLoading: settingsIsLoading, settings } = useSettings();
 
-	const numDisputes = Object.values( disputeStatusCounts ).reduce(
-		( a, b ) => a + b,
-		0
-	);
 	const numDisputesToRespond = Object.keys( disputeStatusCounts )
 		.filter( ( disputeStatus ) =>
 			disputeAwaitingResponseStatuses.includes( disputeStatus )
@@ -54,7 +50,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
-		numDisputes,
 		numDisputesToRespond,
 	} );
 	const tasks =
