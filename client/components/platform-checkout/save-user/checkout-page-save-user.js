@@ -98,8 +98,10 @@ const CheckoutPageSaveUser = () => {
 					</span>
 					<PhoneNumberInput
 						value={
-							phoneNumber ||
-							document.getElementById( 'billing_phone' )?.value
+							phoneNumber === null
+								? document.getElementById( 'billing_phone' )
+										?.value
+								: phoneNumber
 						}
 						onValueChange={ setPhoneNumber }
 						onValidationChange={ onPhoneValidationChange }
