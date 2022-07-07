@@ -296,8 +296,10 @@ function wcpay_get_jetpack_idc_custom_content(): array {
  * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
  */
 function wcpay_tasks_init() {
-	include_once WCPAY_ABSPATH . '/includes/class-wc-payments-tasks.php';
-	WC_Payments_Tasks::init();
+	if ( class_exists( 'Automattic\WooCommerce\Admin\Features\OnboardingTasks\Task' ) ) {
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-tasks.php';
+		WC_Payments_Tasks::init();
+	}
 }
 
 add_action( 'plugins_loaded', 'wcpay_tasks_init' );
