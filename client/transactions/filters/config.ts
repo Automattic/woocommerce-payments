@@ -52,10 +52,10 @@ const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
 	return { label: loanDisplayValue, value: loanDefinitionSplitted[ 0 ] };
 }, [] );
 
-export const getFilters = (): [
-	TransactionsFilterType,
-	TransactionsFilterType
-] => {
+export const getFilters = (
+	depositCurrencyOptions: TransactionsFilterEntryType[],
+	showDepositCurrencyFilter: boolean
+): [ TransactionsFilterType, TransactionsFilterType ] => {
 	return [
 		{
 			label: __( 'Deposit currency', 'woocommerce-payments' ),
@@ -73,13 +73,13 @@ export const getFilters = (): [
 				'date_after',
 				'date_between',
 			],
-			showFilters: () => false,
+			showFilters: () => showDepositCurrencyFilter,
 			filters: [
 				{
 					label: __( 'All currencies', 'woocommerce-payments' ),
 					value: '---',
 				},
-				// Other values are getting injected later, taking values from store.
+				...depositCurrencyOptions,
 			],
 			defaultValue: '---',
 		},
@@ -114,7 +114,9 @@ export const getFilters = (): [
  */
 
 /*eslint-disable max-len*/
-export const getAdvancedFilters = ( customerCurrencyOptions: any ): any => {
+export const getAdvancedFilters = (
+	customerCurrencyOptions?: TransactionsFilterEntryType[]
+): any => {
 	return {
 		/** translators: A sentence describing filters for Transactions. */
 		title: __(
