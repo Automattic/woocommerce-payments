@@ -11,7 +11,6 @@ import { getQuery } from '@woocommerce/navigation';
 import { getFilters, getAdvancedFilters } from './config';
 import { formatCurrencyName } from '../../utils/currency';
 import './style.scss';
-import { __ } from '@wordpress/i18n/build-types';
 
 interface TransactionsFiltersProps {
 	storeCurrencies?: string[];
