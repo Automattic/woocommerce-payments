@@ -110,7 +110,7 @@ export const getFilters = (
 };
 
 /**
- * TODO: Add an interface here for advanced filters.
+ * TODO: Add an interface here for advanced filters, or adjust ESLint rules to allow using inferred type.
  */
 
 /*eslint-disable max-len*/
