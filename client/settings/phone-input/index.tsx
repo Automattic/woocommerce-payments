@@ -9,8 +9,6 @@ import './style.scss';
 /**
  * Internal dependencies
  */
-// @ts-ignore: Cannot find module
-// eslint-disable-next-line import/no-unresolved
 import utils from 'iti/utils';
 
 interface PhoneNumberInputProps {
