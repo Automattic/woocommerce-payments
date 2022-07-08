@@ -136,6 +136,18 @@ const OverviewPage = () => {
 				</ErrorBoundary>
 			) }
 
+			{ !! accountOverviewTaskList &&
+				0 < tasks.length &&
+				! isLoading &&
+				! accountRejected && (
+					<ErrorBoundary>
+						<TaskList
+							tasks={ tasks }
+							overviewTasksVisibility={ overviewTasksVisibility }
+						/>
+					</ErrorBoundary>
+				) }
+
 			<ErrorBoundary>
 				<AccountStatus
 					accountStatus={ wcpaySettings.accountStatus }
@@ -148,18 +160,6 @@ const OverviewPage = () => {
 					<ActiveLoanSummary />
 				</ErrorBoundary>
 			) }
-
-			{ !! accountOverviewTaskList &&
-				0 < tasks.length &&
-				! isLoading &&
-				! accountRejected && (
-					<ErrorBoundary>
-						<TaskList
-							tasks={ tasks }
-							overviewTasksVisibility={ overviewTasksVisibility }
-						/>
-					</ErrorBoundary>
-				) }
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
