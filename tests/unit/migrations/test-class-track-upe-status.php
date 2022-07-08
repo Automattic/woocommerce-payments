@@ -8,13 +8,13 @@
 namespace WCPay\Migrations;
 
 use WCPay\Tracker;
-use WP_UnitTestCase;
+use WCPAY_UnitTestCase;
 use WC_Payments_Features;
 
 /**
  * WCPay\Migrations\Track_Upe_Status unit tests.
  */
-class Track_Upe_Status_Test extends WP_UnitTestCase {
+class Track_Upe_Status_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Pre-test setup

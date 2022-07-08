@@ -26,6 +26,7 @@ use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
@@ -274,6 +275,7 @@ class WC_Payments {
 		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
+		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -328,7 +330,7 @@ class WC_Payments {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
 
-		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::$card_gateway, self::$customer_service );
+		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::$card_gateway, self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		self::maybe_register_platform_checkout_hooks();
@@ -365,7 +367,7 @@ class WC_Payments {
 		// Add admin screens.
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
-			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account );
+			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account, self::$database_cache );
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
@@ -985,6 +987,8 @@ class WC_Payments {
 				add_action( 'woocommerce_cleanup_draft_orders', [ $draft_orders, 'delete_expired_draft_orders' ] );
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
+
+			new Platform_Checkout_Order_Status_Sync( self::$api_client );
 		}
 	}
 
@@ -1022,6 +1026,7 @@ class WC_Payments {
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
 		$body = [
+			'wcpay_version'        => WCPAY_VERSION_NUMBER,
 			'user_id'              => $user->ID,
 			'customer_id'          => $customer_id,
 			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),

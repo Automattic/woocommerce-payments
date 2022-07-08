@@ -63,6 +63,7 @@ class WC_Payments_API_Client {
 	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
 	const DOCUMENTS_API                = 'documents';
 	const VAT_API                      = 'vat';
+	const LINKS_API                    = 'links';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -253,11 +254,13 @@ class WC_Payments_API_Client {
 	/**
 	 * Create an intention, without confirming it.
 	 *
-	 * @param int    $amount          - Amount to charge.
-	 * @param string $currency_code   - Currency to charge in.
-	 * @param array  $payment_methods - Payment methods to include.
-	 * @param string $order_number    - The order number.
-	 * @param string $capture_method  - optional capture method (either `automatic` or `manual`).
+	 * @param int         $amount          - Amount to charge.
+	 * @param string      $currency_code   - Currency to charge in.
+	 * @param array       $payment_methods - Payment methods to include.
+	 * @param string      $order_number    - The order number.
+	 * @param string      $capture_method  - optional capture method (either `automatic` or `manual`).
+	 * @param array       $metadata        - A list of intent metadata.
+	 * @param string|null $customer_id     - Customer id for intent.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -267,7 +270,9 @@ class WC_Payments_API_Client {
 		$currency_code,
 		$payment_methods,
 		$order_number,
-		$capture_method = 'automatic'
+		$capture_method = 'automatic',
+		array $metadata = [],
+		$customer_id = null
 	) {
 		$request                         = [];
 		$request['amount']               = $amount;
@@ -275,7 +280,10 @@ class WC_Payments_API_Client {
 		$request['description']          = $this->get_intent_description( $order_number );
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
-		$request['metadata']             = $this->get_fingerprint_metadata();
+		$request['metadata']             = array_merge( $metadata, $this->get_fingerprint_metadata() );
+		if ( $customer_id ) {
+			$request['customer'] = $customer_id;
+		}
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -824,6 +832,16 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Gets a list of dispute statuses and a total count for each.
+	 *
+	 * @return array Dispute status counts in the format: [ '{status}' => count ].
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_dispute_status_counts() {
+		return $this->request( [], self::DISPUTES_API . '/status_counts', self::GET );
+	}
+
+	/**
 	 * Fetch a single dispute with provided id.
 	 *
 	 * @param string $dispute_id id of requested dispute.
@@ -1081,6 +1099,26 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Update platform checkout data
+	 *
+	 * @param array $data Data to update.
+	 *
+	 * @return array An array describing request result.
+	 *
+	 * @throws API_Exception - Error contacting the API.
+	 */
+	public function update_platform_checkout( $data ) {
+		return $this->request(
+			array_merge(
+				[ 'test_mode' => $this->is_in_dev_mode() ],
+				$data
+			),
+			self::PLATFORM_CHECKOUT_API,
+			self::POST
+		);
+	}
+
+	/**
 	 * Update Stripe account data
 	 *
 	 * @param array $account_settings Settings to update.
@@ -1231,6 +1269,25 @@ class WC_Payments_API_Client {
 				'refresh_url' => $refresh_url,
 			],
 			self::ACCOUNTS_API . '/capital_links',
+			self::POST,
+			true,
+			true
+		);
+	}
+
+	/**
+	 * Get a link's details from the server.
+	 *
+	 * @param array $args The arguments to be sent with the link request.
+	 *
+	 * @return array The link object with an url field.
+	 *
+	 * @throws API_Exception When something goes wrong with the request, or the link is not valid.
+	 */
+	public function get_link( array $args ) {
+		return $this->request(
+			$args,
+			self::LINKS_API,
 			self::POST,
 			true,
 			true
@@ -2263,7 +2320,8 @@ class WC_Payments_API_Client {
 		$charge = new WC_Payments_API_Charge(
 			$charge_array['id'],
 			$charge_array['amount'],
-			$created
+			$created,
+			$charge_array['payment_method_details'] ?? []
 		);
 
 		if ( isset( $charge_array['captured'] ) ) {
@@ -2286,24 +2344,27 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
 
-		$charge             = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
+		$charge_array       = 0 < $intention_array['charges']['total_count'] ? end( $intention_array['charges']['data'] ) : null;
 		$next_action        = ! empty( $intention_array['next_action'] ) ? $intention_array['next_action'] : [];
 		$last_payment_error = ! empty( $intention_array['last_payment_error'] ) ? $intention_array['last_payment_error'] : [];
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
+		$customer           = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
+		$payment_method     = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+
+		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 
 		$intent = new WC_Payments_API_Intention(
 			$intention_array['id'],
 			$intention_array['amount'],
 			$intention_array['currency'],
-			$intention_array['customer'] ?? $charge['customer'] ?? null,
-			$intention_array['payment_method'] ?? $charge['payment_method'] ?? $intention_array['source'] ?? null,
+			$customer,
+			$payment_method,
 			$created,
 			$intention_array['status'],
-			$charge ? $charge['id'] : null,
 			$intention_array['client_secret'],
+			$charge,
 			$next_action,
 			$last_payment_error,
-			$charge ? $charge['payment_method_details'] : null,
 			$metadata
 		);
 

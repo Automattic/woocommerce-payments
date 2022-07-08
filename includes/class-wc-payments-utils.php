@@ -790,5 +790,4 @@ class WC_Payments_Utils {
 
 		return $formatted_amount;
 	}
-
 }

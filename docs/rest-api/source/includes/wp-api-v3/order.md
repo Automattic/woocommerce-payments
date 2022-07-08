@@ -23,6 +23,11 @@ Create a new in-person payment intent for the given order ID without confirming 
 	</div>
 </div>
 
+### Optional parameters
+- `payment_methods` - array with payment methods. Accepted values: `card_present` and `interac_present`
+- `metadata` - metadata that will be attached to the PaymentIntent
+- `customer_id` - customer that will be attached to the PaymentIntent
+
 ```shell
 curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/create_terminal_intent \
 	-u consumer_key:consumer_secret

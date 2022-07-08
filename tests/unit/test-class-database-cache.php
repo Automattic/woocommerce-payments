@@ -10,7 +10,7 @@ use WCPay\Database_Cache;
 /**
  * Database_Cache unit tests.
  */
-class Database_Cache_Test extends WP_UnitTestCase {
+class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 	const MOCK_KEY = 'mock_key';
 

@@ -170,6 +170,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 				'created_before'  => $request->get_param( 'date_before' ),
 				'created_after'   => $request->get_param( 'date_after' ),
 				'created_between' => $request->get_param( 'date_between' ),
+				'search'          => $request->get_param( 'search' ),
 				'status_is'       => $request->get_param( 'status_is' ),
 				'status_is_not'   => $request->get_param( 'status_is_not' ),
 			],

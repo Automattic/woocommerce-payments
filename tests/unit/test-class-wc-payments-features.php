@@ -8,7 +8,7 @@
 /**
  * WC_Payments_Features unit tests.
  */
-class WC_Payments_Features_Test extends WP_UnitTestCase {
+class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
 		'_wcpay_feature_upe'                     => 'upe',
