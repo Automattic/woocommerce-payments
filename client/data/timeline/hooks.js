@@ -12,7 +12,6 @@ export const useTimeline = ( id ) =>
 				getTimeline,
 				getTimelineError,
 				isResolving,
-				getPaymentIntent,
 				getPaymentIntentError,
 			} = select( STORE_NAME );
 
@@ -28,20 +27,10 @@ export const useTimeline = ( id ) =>
 				};
 			}
 
-			const { id: intentionId } = getPaymentIntent( id );
-			if ( ! intentionId ) {
-				// If intention ID is not available, do not render the timeline, but also don't indicate the API error.
-				return {
-					timeline: null,
-					timelineError: null,
-					isLoading: false,
-				};
-			}
-
 			return {
-				timeline: getTimeline( intentionId ),
-				timelineError: getTimelineError( intentionId ),
-				isLoading: isResolving( 'getTimeline', [ intentionId ] ),
+				timeline: getTimeline( id ),
+				timelineError: getTimelineError( id ),
+				isLoading: isResolving( 'getTimeline', [ id ] ),
 			};
 		},
 		[ id ]

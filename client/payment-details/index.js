@@ -1,9 +1,10 @@
 /**
  * External dependencies
  */
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
+import { getAdminUrl } from 'wcpay/utils';
 
 /**
  * Internal dependencies
@@ -15,7 +16,10 @@ import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import PaymentCardReaderChargeDetails from './readers';
-import { usePaymentIntentWithChargeFallback } from 'wcpay/data/payment-intents';
+import {
+	getIsChargeId,
+	usePaymentIntentWithChargeFallback,
+} from 'wcpay/data/payment-intents';
 
 const PaymentDetails = ( props ) => {
 	if ( 'card_reader_fee' === props.query.transaction_type ) {
@@ -33,15 +37,27 @@ const PaymentDetails = ( props ) => {
 const PaymentChargeDetails = ( { id } ) => {
 	const {
 		data,
-		isLoading,
 		error,
-		redirect,
+		isLoading: isLoadingData,
 	} = usePaymentIntentWithChargeFallback( id );
+	const isChargeId = useMemo( () => getIsChargeId( id ), [ id ] );
+	const isLoading = isChargeId || isLoadingData;
+
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
 	useEffect( () => {
-		if ( redirect ) window.location.href = redirect.url;
-	}, [ redirect ] );
+		const shouldRedirect = !! ( isChargeId && data.payment_intent );
+
+		if ( shouldRedirect ) {
+			const url = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/transactions/details',
+				id: data.payment_intent,
+			} );
+
+			window.location.href = url;
+		}
+	}, [ data, id, isChargeId ] );
 
 	// Check instance of error because its default value is empty object
 	if ( ! isLoading && error instanceof Error ) {
@@ -69,9 +85,9 @@ const PaymentChargeDetails = ( { id } ) => {
 					isLoading={ isLoading }
 				/>
 			</ErrorBoundary>
-			{ wcpaySettings.featureFlags.paymentTimeline && (
+			{ ! isChargeId && wcpaySettings.featureFlags.paymentTimeline && (
 				<ErrorBoundary>
-					<PaymentDetailsTimeline chargeId={ id } />
+					<PaymentDetailsTimeline paymentIntentId={ id } />
 				</ErrorBoundary>
 			) }
 			<ErrorBoundary>

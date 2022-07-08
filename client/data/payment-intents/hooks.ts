@@ -2,48 +2,19 @@
 /**
  * External dependencies
  */
-import { SelectorMap, useSelect } from '@wordpress/data';
-import { getAdminUrl } from 'wcpay/utils';
+import { useSelect } from '@wordpress/data';
 import { Charge } from '../../types/charges';
-import { ApiError } from '../../types/errors';
 import { PaymentIntent } from '../../types/payment-intents';
+import { getChargeData } from '../charges';
+import { ChargeResponse } from '../charges/types';
 import { STORE_NAME } from '../constants';
-import { PaymentIntentionFallbackResponse } from './types';
 
-const getIsChargeId = ( id: string ): boolean => -1 !== id.indexOf( 'ch_' );
-
-const getChargeData = (
-	chargeId: string,
-	{ getCharge, isResolving, getChargeError }: SelectorMap,
-	isChargeId = false
-) => {
-	const data: Charge = getCharge( chargeId );
-	const shouldRedirect = !! ( isChargeId && data.payment_intent );
-
-	const redirect = shouldRedirect
-		? {
-				url: getAdminUrl( {
-					page: 'wc-admin',
-					path: '/payments/transactions/details',
-					id: data.payment_intent,
-				} ),
-		  }
-		: undefined;
-
-	const isLoading: boolean =
-		isResolving( 'getCharge', [ chargeId ] ) || shouldRedirect;
-
-	return {
-		data,
-		redirect,
-		isLoading,
-		error: getChargeError( chargeId ) as ApiError,
-	};
-};
+export const getIsChargeId = ( id: string ): boolean =>
+	-1 !== id.indexOf( 'ch_' );
 
 export const usePaymentIntentWithChargeFallback = (
 	id: string
-): PaymentIntentionFallbackResponse =>
+): ChargeResponse =>
 	useSelect(
 		( select ) => {
 			const selectors = select( STORE_NAME );
@@ -55,7 +26,7 @@ export const usePaymentIntentWithChargeFallback = (
 			 * It should redirect from "ch_" ID to the equivalent "pi_" ID
 			 */
 			if ( isChargeId ) {
-				return getChargeData( id, selectors, isChargeId );
+				return getChargeData( id, selectors );
 			}
 
 			/**

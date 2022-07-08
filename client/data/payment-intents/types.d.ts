@@ -31,12 +31,3 @@ export interface PaymentIntentsState {
 export type PaymentIntentsActions =
 	| UpdatePaymentIntentAction
 	| UpdateErrorForPaymentIntentAction;
-
-export interface PaymentIntentionFallbackResponse {
-	data: Charge;
-	error: ApiError;
-	isLoading: boolean;
-	redirect?: {
-		url: string;
-	};
-}

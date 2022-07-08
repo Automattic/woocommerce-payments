@@ -88,28 +88,6 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
       <div
         class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
       >
-        Timeline
-      </div>
-      <div
-        class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
-      >
-        <div
-          class="woocommerce-timeline"
-        >
-          <p
-            class="timeline_no_events"
-          >
-            No data to display
-          </p>
-        </div>
-      </div>
-    </div>
-    <div
-      class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
-    >
-      <div
-        class="components-flex components-card__header is-size-large e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
-      >
         <span
           aria-busy="true"
           class="is-loadable-placeholder"
