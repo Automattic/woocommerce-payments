@@ -184,7 +184,7 @@ describe( 'Transactions filters', () => {
 			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
-			expect( getQuery().type_is ).toEqual( 'eur' );
+			expect( getQuery().customer_currency_is ).toEqual( 'eur' );
 		} );
 
 		test( 'should filter by is_not', () => {
@@ -198,7 +198,7 @@ describe( 'Transactions filters', () => {
 			);
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
-			expect( getQuery().type_is_not ).toEqual( 'eur' );
+			expect( getQuery().customer_currency_is_not ).toEqual( 'eur' );
 		} );
 	} );
 } );
