@@ -96,7 +96,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 * @return string
 	 */
 	public function get_time() {
-		return __( '30 minutes', 'woocommerce-payments' );
+		return '';
 	}
 
 	/**
