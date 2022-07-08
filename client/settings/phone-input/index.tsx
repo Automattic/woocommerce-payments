@@ -78,9 +78,6 @@ const PhoneNumberInput = ( {
 			setInputInstance( iti );
 			onValidationChange( iti.isValidNumber() );
 
-			// Focus the phone number input when the component loads.
-			currentRef.focus();
-
 			currentRef.addEventListener( 'countrychange', handleCountryChange );
 		}
 
