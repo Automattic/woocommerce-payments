@@ -220,7 +220,7 @@ describe( 'getTasks()', () => {
 					key: 'dispute-resolution-task',
 					completed: true,
 					level: 3,
-					title: '2 disputed payments needs your response',
+					title: '2 disputed payments need your response',
 				} ),
 			] )
 		);

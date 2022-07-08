@@ -12,7 +12,7 @@
  * WC tested up to: 6.6.0
  * Requires at least: 5.7
  * Requires PHP: 7.0
- * Version: 4.3.0
+ * Version: 4.4.0
  *
  * @package WooCommerce\Payments
  */
@@ -287,3 +287,19 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 
 	return $custom_content;
 }
+
+/**
+ * Initialize WC_Payments tasks. This exists outside of wcpay_init()
+ * to ensure hooks run in time to be included in WooCommerce TaskLists.
+ *
+ * Note that this gets called on the "plugins_loaded" filter,
+ * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
+ */
+function wcpay_tasks_init() {
+	if ( class_exists( 'Automattic\WooCommerce\Admin\Features\OnboardingTasks\Task' ) ) {
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-tasks.php';
+		WC_Payments_Tasks::init();
+	}
+}
+
+add_action( 'plugins_loaded', 'wcpay_tasks_init' );
