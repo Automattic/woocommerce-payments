@@ -57,7 +57,7 @@ const PaymentChargeDetails = ( { id } ) => {
 
 			window.location.href = url;
 		}
-	}, [ data, id, isChargeId ] );
+	}, [ data.payment_intent, isChargeId ] );
 
 	// Check instance of error because its default value is empty object
 	if ( ! isLoading && error instanceof Error ) {
