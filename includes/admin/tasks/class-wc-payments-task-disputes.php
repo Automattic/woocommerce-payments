@@ -14,6 +14,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * WC Onboarding Task displayed if disputes awaiting response.
+ *
+ * Note: this task is separate to the Payments → Overview disputes task, which is defined in client/overview/task-list/tasks.js.
  */
 class WC_Payments_Task_Disputes extends Task {
 
