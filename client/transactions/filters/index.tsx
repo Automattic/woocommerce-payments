@@ -11,6 +11,7 @@ import { getQuery } from '@woocommerce/navigation';
 import { getFilters, getAdvancedFilters } from './config';
 import { formatCurrencyName } from '../../utils/currency';
 import './style.scss';
+import { store } from '@wordpress/icons/build-types';
 
 interface TransactionsFiltersProps {
 	storeCurrencies: string[];
@@ -24,7 +25,7 @@ export const TransactionsFilters = ( {
 	const advancedFilters = useMemo(
 		() =>
 			getAdvancedFilters(
-				customerCurrencies?.map( ( currencyCode: string ) => ( {
+				customerCurrencies.map( ( currencyCode: string ) => ( {
 					label: formatCurrencyName( currencyCode ),
 					value: currencyCode,
 				} ) )
@@ -35,11 +36,11 @@ export const TransactionsFilters = ( {
 	const filters = useMemo(
 		() =>
 			getFilters(
-				storeCurrencies?.map( ( currencyCode: string ) => ( {
+				storeCurrencies.map( ( currencyCode: string ) => ( {
 					label: formatCurrencyName( currencyCode ),
 					value: currencyCode,
 				} ) ),
-				true
+				2 < storeCurrencies.length
 			),
 		[ storeCurrencies ]
 	);
