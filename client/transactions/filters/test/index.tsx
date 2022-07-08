@@ -23,7 +23,12 @@ describe( 'Transactions filters', () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
-		const { rerender } = render( <TransactionsFilters /> );
+		const { rerender } = render(
+			<TransactionsFilters
+				storeCurrencies={ [] }
+				customerCurrencies={ [] }
+			/>
+		);
 
 		// select advanced filter view
 		user.click(
@@ -32,7 +37,12 @@ describe( 'Transactions filters', () => {
 		user.click(
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
 		);
-		rerender( <TransactionsFilters /> );
+		rerender(
+			<TransactionsFilters
+				storeCurrencies={ [] }
+				customerCurrencies={ [] }
+			/>
+		);
 	} );
 
 	describe( 'when filtering by date', () => {

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ReportFilters } from '@woocommerce/components';
 import { getQuery } from '@woocommerce/navigation';
 
@@ -13,40 +13,43 @@ import { formatCurrencyName } from '../../utils/currency';
 import './style.scss';
 
 interface TransactionsFiltersProps {
-	storeCurrencies?: string[];
-	customerCurrencies?: string[];
+	storeCurrencies: string[];
+	customerCurrencies: string[];
 }
 
 export const TransactionsFilters = ( {
 	storeCurrencies,
 	customerCurrencies,
 }: TransactionsFiltersProps ): JSX.Element => {
-	const customerCurrencyOptions = customerCurrencies?.map(
-		( currencyCode: string ) => ( {
-			label: formatCurrencyName( currencyCode ),
-			value: currencyCode,
-		} )
+	const advancedFilters = useMemo(
+		() =>
+			getAdvancedFilters(
+				customerCurrencies?.map( ( currencyCode: string ) => ( {
+					label: formatCurrencyName( currencyCode ),
+					value: currencyCode,
+				} ) )
+			),
+		[ customerCurrencies ]
 	);
 
-	const currencies = storeCurrencies || [];
-	const depositCurrencyOptions = currencies?.map(
-		( currencyCode: string ) => ( {
-			label: formatCurrencyName( currencyCode ),
-			value: currencyCode,
-		} )
+	const filters = useMemo(
+		() =>
+			getFilters(
+				storeCurrencies?.map( ( currencyCode: string ) => ( {
+					label: formatCurrencyName( currencyCode ),
+					value: currencyCode,
+				} ) ),
+				true
+			),
+		[ storeCurrencies ]
 	);
 
 	return (
 		<div className="woocommerce-filters-transactions">
 			<ReportFilters
 				key={ customerCurrencies?.length }
-				filters={ getFilters(
-					depositCurrencyOptions,
-					2 < depositCurrencyOptions.length
-				) }
-				advancedFilters={ getAdvancedFilters(
-					customerCurrencyOptions
-				) }
+				filters={ filters }
+				advancedFilters={ advancedFilters }
 				showDatePicker={ false }
 				path="/payments/transactions"
 				query={ getQuery() }

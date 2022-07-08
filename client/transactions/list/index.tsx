@@ -605,7 +605,7 @@ export const TransactionsList = (
 	const storeCurrencies =
 		transactionsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
-	const customerCurrencies = transactionsSummary.customer_currencies;
+	const customerCurrencies = transactionsSummary.customer_currencies || [];
 
 	return (
 		<Page>
