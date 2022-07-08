@@ -3,7 +3,6 @@
 /**
  * Internal Dependencies
  */
-import { Charge } from '../../types/charges';
 import { ApiError } from '../../types/errors';
 import { PaymentIntent } from '../../types/payment-intents';
 import ACTION_TYPES from './action-types';
