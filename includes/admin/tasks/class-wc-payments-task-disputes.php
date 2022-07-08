@@ -66,6 +66,15 @@ class WC_Payments_Task_Disputes extends Task {
 	}
 
 	/**
+	 * Get the additional info.
+	 *
+	 * @return string
+	 */
+	public function get_additional_info() {
+		return __( 'View and respond', 'woocommerce-payments' );
+	}
+
+	/**
 	 * Gets the task's action label.
 	 *
 	 * @return string
