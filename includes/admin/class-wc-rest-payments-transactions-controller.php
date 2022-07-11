@@ -137,15 +137,17 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	private function get_transactions_filters( $request ) {
 		return array_filter(
 			[
-				'match'             => $request->get_param( 'match' ),
-				'date_before'       => $request->get_param( 'date_before' ),
-				'date_after'        => $request->get_param( 'date_after' ),
-				'date_between'      => $request->get_param( 'date_between' ),
-				'type_is'           => $request->get_param( 'type_is' ),
-				'type_is_not'       => $request->get_param( 'type_is_not' ),
-				'store_currency_is' => $request->get_param( 'store_currency_is' ),
-				'loan_id_is'        => $request->get_param( 'loan_id_is' ),
-				'search'            => $request->get_param( 'search' ),
+				'match'                    => $request->get_param( 'match' ),
+				'date_before'              => $request->get_param( 'date_before' ),
+				'date_after'               => $request->get_param( 'date_after' ),
+				'date_between'             => $request->get_param( 'date_between' ),
+				'type_is'                  => $request->get_param( 'type_is' ),
+				'type_is_not'              => $request->get_param( 'type_is_not' ),
+				'store_currency_is'        => $request->get_param( 'store_currency_is' ),
+				'customer_currency_is'     => $request->get_param( 'customer_currency_is' ),
+				'customer_currency_is_not' => $request->get_param( 'customer_currency_is_not' ),
+				'loan_id_is'               => $request->get_param( 'loan_id_is' ),
+				'search'                   => $request->get_param( 'search' ),
 			],
 			static function ( $filter ) {
 				return null !== $filter;

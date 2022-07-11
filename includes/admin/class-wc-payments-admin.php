@@ -432,13 +432,16 @@ class WC_Payments_Admin {
 			$path = WC()->plugin_path() . '/i18n/locale-info.php';
 		}
 
-		$locale_info   = include $path;
+		$locale_info = include $path;
+		// Get symbols for those currencies without a short one.
+		$symbols       = get_woocommerce_currency_symbols();
 		$currency_data = [];
 
 		foreach ( $locale_info as $key => $value ) {
+			$currency_code         = $value['currency_code'] ?? '';
 			$currency_data[ $key ] = [
-				'code'              => $value['currency_code'] ?? '',
-				'symbol'            => $value['short_symbol'] ?? '',
+				'code'              => $currency_code,
+				'symbol'            => $value['short_symbol'] ?? $symbols[ $currency_code ] ?? '',
 				'symbolPosition'    => $value['currency_pos'] ?? '',
 				'thousandSeparator' => $value['thousand_sep'] ?? '',
 				'decimalSeparator'  => $value['decimal_sep'] ?? '',
@@ -478,6 +481,7 @@ class WC_Payments_Admin {
 			],
 			'needsHttpsSetup'         => $this->wcpay_gateway->needs_https_setup(),
 			'isMultiCurrencyEnabled'  => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'shouldUseExplicitPrice'  => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
 			'overviewTasksVisibility' => [
 				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
 				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),

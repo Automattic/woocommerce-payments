@@ -1,5 +1,25 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Transactions filters when filtering by customer currency should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="eur"
+  >
+    Euro
+  </option>,
+  <option
+    value="usd"
+  >
+    United States (US) dollar
+  </option>,
+  <option
+    value="gbp"
+  >
+    Pound sterling
+  </option>,
+]
+`;
+
 exports[`Transactions filters when filtering by type should render all types 1`] = `
 HTMLOptionsCollection [
   <option

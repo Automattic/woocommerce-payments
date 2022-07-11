@@ -114,6 +114,8 @@ declare module '@woocommerce/navigation' {
 		date_between?: string[];
 		type_is?: unknown;
 		type_is_not?: unknown;
+		customer_currency_is?: unknown;
+		customer_currency_is_not?: unknown;
 		store_currency_is?: string;
 		loan_id_is?: string;
 		search?: string[];

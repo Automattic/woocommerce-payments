@@ -859,6 +859,24 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * @dataProvider get_has_additional_currencies_enabled_provider
+	 */
+	public function test_has_additional_currencies_enabled( $currencies, $expected ) {
+		update_option( self::ENABLED_CURRENCIES_OPTION, $currencies );
+		$this->init_multi_currency();
+
+		$this->assertSame( $expected, $this->multi_currency->has_additional_currencies_enabled() );
+	}
+
+	public function get_has_additional_currencies_enabled_provider() {
+		return [
+			[ [], false ],
+			[ [ 'USD' ], false ],
+			[ [ 'USD', 'EUR' ], true ],
+		];
+	}
+
 	private function mock_currency_settings( $currency_code, $settings ) {
 		foreach ( $settings as $setting => $value ) {
 			update_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ), $value );

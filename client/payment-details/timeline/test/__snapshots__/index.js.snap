@@ -169,7 +169,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      $115.00 USD was added to your 
+                      $115.00 was added to your 
                       <a
                         data-link-type="wc-admin"
                         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
@@ -300,7 +300,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      $100.00 USD will be deducted from a future deposit.
+                      $100.00 will be deducted from a future deposit.
                     </span>
                   </div>
                   <span
@@ -339,7 +339,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      A payment of $100.00 USD was successfully refunded.
+                      A payment of $100.00 was successfully refunded.
                     </span>
                   </div>
                   <span
@@ -432,7 +432,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      $50.00 USD will be deducted from a future deposit.
+                      $50.00 will be deducted from a future deposit.
                     </span>
                   </div>
                   <span
@@ -471,7 +471,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      A payment of $50.00 USD was successfully refunded.
+                      A payment of $50.00 was successfully refunded.
                     </span>
                   </div>
                   <span
@@ -654,7 +654,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      $110.00 USD will be deducted from a future deposit.
+                      $110.00 will be deducted from a future deposit.
                     </span>
                   </div>
                   <span
@@ -789,7 +789,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      $59.50 USD was added to your 
+                      $59.50 was added to your 
                       <a
                         data-link-type="wc-admin"
                         href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
@@ -835,7 +835,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      A payment of $63.00 USD was successfully charged.
+                      A payment of $63.00 was successfully charged.
                     </span>
                   </div>
                   <span
@@ -853,7 +853,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   </span>
                   <span />
                   <span>
-                    Net deposit: $59.50 USD
+                    Net deposit: $59.50
                   </span>
                 </div>
               </li>
@@ -934,7 +934,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      A payment of $77.00 USD failed.
+                      A payment of $77.00 failed.
                     </span>
                   </div>
                   <span
@@ -1012,7 +1012,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Authorization for $86.00 USD expired.
+                      Authorization for $86.00 expired.
                     </span>
                   </div>
                   <span
@@ -1090,7 +1090,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      Authorization for $59.00 USD was voided.
+                      Authorization for $59.00 was voided.
                     </span>
                   </div>
                   <span
@@ -1180,7 +1180,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                       </g>
                     </svg>
                     <span>
-                      A payment of $79.00 USD was successfully authorized.
+                      A payment of $79.00 was successfully authorized.
                     </span>
                   </div>
                   <span
@@ -1376,7 +1376,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                       </g>
                     </svg>
                     <span>
-                      $0.66 USD will be added to a future deposit.
+                      $0.66 will be added to a future deposit.
                     </span>
                   </div>
                   <span
@@ -1415,7 +1415,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                       </g>
                     </svg>
                     <span>
-                      A payment of $1.00 USD was successfully charged.
+                      A payment of $1.00 was successfully charged.
                     </span>
                   </div>
                   <span
@@ -1446,7 +1446,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                     </ul>
                   </span>
                   <span>
-                    Net deposit: $0.66 USD
+                    Net deposit: $0.66
                   </span>
                 </div>
               </li>
@@ -1515,7 +1515,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                       </g>
                     </svg>
                     <span>
-                      A payment of $1.00 USD was successfully authorized.
+                      A payment of $1.00 was successfully authorized.
                     </span>
                   </div>
                   <span
