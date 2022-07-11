@@ -48,7 +48,10 @@ const paymentResponseHandler = async (
 	event
 ) => {
 	if ( 'success' !== response.result ) {
-		abortPayment( event, getErrorMessageFromNotice( response.messages ) );
+		return abortPayment(
+			event,
+			getErrorMessageFromNotice( response.messages )
+		);
 	}
 
 	try {

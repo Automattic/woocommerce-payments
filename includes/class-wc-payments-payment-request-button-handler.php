@@ -1111,6 +1111,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 	/**
 	 * Handles payment requests on the Pay for Order page.
+	 *
+	 * @throws Exception All exceptions are handled within the method.
 	 */
 	public function ajax_pay_for_order() {
 		check_ajax_referer( 'pay_for_order' );
@@ -1124,31 +1126,47 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return;
 		}
 
-		$order_id = intval( $_POST['order'] );
-		$this->add_order_meta( $order_id );
-
-		$order = wc_get_order( $order_id );
-		if ( ! $order->needs_payment() ) {
-			return; // Todo: Throw a message, which says no payment is needed.
-		}
-
 		try {
+			// Set up an environment, similar to core checkout.
+			wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+			wc_set_time_limit( 0 );
+
+			// Load the order.
+			$order_id = intval( $_POST['order'] );
+			$this->add_order_meta( $order_id );
+			$order = wc_get_order( $order_id );
+
+			if ( ! is_a( $order, WC_Order::class ) ) {
+				throw new Exception( __( 'Invalid order!', 'woocommerce-payments' ) );
+			}
+
+			if ( ! $order->needs_payment() ) {
+				throw new Exception( __( 'This order does not require payment!', 'woocommerce-payments' ) );
+			}
+
+			// Load the gateway.
 			$all_gateways = WC()->payment_gateways->get_available_payment_gateways();
 			$gateway      = $all_gateways['woocommerce_payments'];
 			$result       = $gateway->process_payment( $order_id );
 
-			// Redirect to success/confirmation/payment page.
-			if ( isset( $result['result'] ) && 'success' === $result['result'] ) {
-				$result['order_id'] = $order_id;
-				$result = apply_filters( 'woocommerce_payment_successful_result', $result, $order_id );
-				wp_send_json( $result );
+			// process_payment() should only return `success` or throw an exception.
+			if ( ! is_array( $result ) || ! isset( $result['result'] ) || 'success' !== $result['result'] || ! isset( $result['redirect'] ) ) {
+				throw new Exception( __( 'Unable to determine payment success.', 'woocommerce-payments' ) );
 			}
+
+			// Include the order ID in the result.
+			$result['order_id'] = $order_id;
+
+			// Respond with the result.
+			wp_send_json( apply_filters( 'woocommerce_payment_successful_result', $result, $order_id ) );
 		} catch ( Exception $e ) {
-			wc_add_notice( $e->getMessage(), 'error' ); // ToDo: Send JSON error!
+			$result = [
+				'result'   => 'error',
+				'messages' => $e->getMessage(),
+			];
+
+			wp_send_json( $result );
 		}
-
-
-		// ///////////////////////////////////////////////////.
 	}
 
 	/**
