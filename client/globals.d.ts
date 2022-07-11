@@ -26,6 +26,7 @@ declare const wcpaySettings: {
 	currentUserEmail: string;
 	zeroDecimalCurrencies: string[];
 	restUrl: string;
+	shouldUseExplicitPrice: boolean;
 };
 
 declare const wcTracks: any;
