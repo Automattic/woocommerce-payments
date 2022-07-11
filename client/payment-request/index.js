@@ -235,7 +235,7 @@ jQuery( ( $ ) => {
 					wcpayPaymentRequest.completePayment,
 					wcpayPaymentRequest.abortPayment,
 					event
-				)
+				);
 			} );
 		},
 
