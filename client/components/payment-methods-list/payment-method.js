@@ -37,7 +37,7 @@ const PaymentMethod = ( {
 	const { accountFees } = useContext( WCPaySettingsContext );
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
-	const hasOverlay = isManualCaptureEnabled && ! isAllowingManualCapture;
+	const needsOverlay = isManualCaptureEnabled && ! isAllowingManualCapture;
 
 	const handleChange = ( newStatus ) => {
 		if ( newStatus ) {
@@ -51,7 +51,7 @@ const PaymentMethod = ( {
 			className={ classNames(
 				'payment-method',
 				{ 'has-icon-border': 'card' !== id },
-				{ 'has-overlay': hasOverlay },
+				{ overlay: needsOverlay },
 				className
 			) }
 		>

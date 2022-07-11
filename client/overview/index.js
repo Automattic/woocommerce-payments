@@ -54,6 +54,8 @@ const OverviewPage = () => {
 
 	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
 	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
+	const showServerLinkError =
+		'1' === queryParams[ 'wcpay-server-link-error' ];
 	const accountRejected =
 		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
 
@@ -117,24 +119,20 @@ const OverviewPage = () => {
 				</Notice>
 			) }
 
+			{ showServerLinkError && (
+				<Notice status="error" isDismissible={ false }>
+					{ __(
+						'There was a problem redirecting you to the requested link. Please check that it is valid and try again.',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
+
 			<TestModeNotice topic={ topics.overview } />
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					<DepositsInformation />
-				</ErrorBoundary>
-			) }
-
-			<ErrorBoundary>
-				<AccountStatus
-					accountStatus={ wcpaySettings.accountStatus }
-					accountFees={ activeAccountFees }
-				/>
-			</ErrorBoundary>
-
-			{ wcpaySettings.accountLoans.has_active_loan && (
-				<ErrorBoundary>
-					<ActiveLoanSummary />
 				</ErrorBoundary>
 			) }
 
@@ -149,6 +147,19 @@ const OverviewPage = () => {
 						/>
 					</ErrorBoundary>
 				) }
+
+			<ErrorBoundary>
+				<AccountStatus
+					accountStatus={ wcpaySettings.accountStatus }
+					accountFees={ activeAccountFees }
+				/>
+			</ErrorBoundary>
+
+			{ wcpaySettings.accountLoans.has_active_loan && (
+				<ErrorBoundary>
+					<ActiveLoanSummary />
+				</ErrorBoundary>
+			) }
 
 			{ ! accountRejected && (
 				<ErrorBoundary>

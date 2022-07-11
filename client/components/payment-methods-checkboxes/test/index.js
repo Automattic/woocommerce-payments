@@ -19,13 +19,13 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		const handleChange = jest.fn();
 
 		const upeMethods = [
-			[ 'Bancontact', true ],
-			[ 'EPS', false ],
+			[ 'bancontact', true ],
+			[ 'eps', false ],
 			[ 'giropay', false ],
-			[ 'iDEAL', false ],
-			[ 'Przelewy24 (P24)', false ],
-			[ 'SEPA Direct Debit', false ],
-			[ 'Sofort', false ],
+			[ 'ideal', false ],
+			[ 'p24', false ],
+			[ 'sepa_debit', false ],
+			[ 'sofort', false ],
 		];
 
 		render(
@@ -75,22 +75,14 @@ describe( 'PaymentMethodsCheckboxes', () => {
 
 		expect( handleChange ).toHaveBeenNthCalledWith(
 			1,
-			'Bancontact',
+			'bancontact',
 			false
 		);
 		expect( handleChange ).toHaveBeenNthCalledWith( 3, 'giropay', true );
-		expect( handleChange ).toHaveBeenNthCalledWith( 4, 'iDEAL', true );
-		expect( handleChange ).toHaveBeenNthCalledWith(
-			5,
-			'Przelewy24 (P24)',
-			true
-		);
-		expect( handleChange ).toHaveBeenNthCalledWith(
-			6,
-			'SEPA Direct Debit',
-			true
-		);
-		expect( handleChange ).toHaveBeenNthCalledWith( 7, 'Sofort', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 4, 'ideal', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 5, 'p24', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 6, 'sepa_debit', true );
+		expect( handleChange ).toHaveBeenNthCalledWith( 7, 'sofort', true );
 		jest.useRealTimers();
 	} );
 
