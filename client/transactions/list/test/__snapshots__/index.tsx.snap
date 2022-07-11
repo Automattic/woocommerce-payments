@@ -760,33 +760,6 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
             <span
               class="woocommerce-filters-label"
             >
-              Deposit currency
-              :
-            </span>
-            <div
-              class="components-dropdown"
-            >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-dropdown-button"
-                type="button"
-              >
-                <div
-                  class="woocommerce-dropdown-button__labels"
-                >
-                  <span>
-                    United States (US) dollar
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
-          <div
-            class="woocommerce-filters-filter"
-          >
-            <span
-              class="woocommerce-filters-label"
-            >
               Show
               :
             </span>
@@ -2115,33 +2088,6 @@ exports[`Transactions list subscription column renders correctly 1`] = `
             <span
               class="woocommerce-filters-label"
             >
-              Deposit currency
-              :
-            </span>
-            <div
-              class="components-dropdown"
-            >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-dropdown-button"
-                type="button"
-              >
-                <div
-                  class="woocommerce-dropdown-button__labels"
-                >
-                  <span>
-                    All currencies
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
-          <div
-            class="woocommerce-filters-filter"
-          >
-            <span
-              class="woocommerce-filters-label"
-            >
               Show
               :
             </span>
@@ -2921,33 +2867,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
             <span
               class="woocommerce-filters-label"
             >
-              Deposit currency
-              :
-            </span>
-            <div
-              class="components-dropdown"
-            >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-dropdown-button"
-                type="button"
-              >
-                <div
-                  class="woocommerce-dropdown-button__labels"
-                >
-                  <span>
-                    All currencies
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
-          <div
-            class="woocommerce-filters-filter"
-          >
-            <span
-              class="woocommerce-filters-label"
-            >
               Show
               :
             </span>
@@ -3692,33 +3611,6 @@ exports[`Transactions list when not filtered by deposit renders table summary on
         <div
           class="woocommerce-filters__basic-filters"
         >
-          <div
-            class="woocommerce-filters-filter"
-          >
-            <span
-              class="woocommerce-filters-label"
-            >
-              Deposit currency
-              :
-            </span>
-            <div
-              class="components-dropdown"
-            >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-dropdown-button"
-                type="button"
-              >
-                <div
-                  class="woocommerce-dropdown-button__labels"
-                >
-                  <span>
-                    All currencies
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
           <div
             class="woocommerce-filters-filter"
           >

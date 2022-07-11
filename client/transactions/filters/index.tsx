@@ -40,7 +40,7 @@ export const TransactionsFilters = ( {
 					label: formatCurrencyName( currencyCode ),
 					value: currencyCode,
 				} ) ),
-				2 < storeCurrencies.length
+				storeCurrencies.length > 1
 			),
 		[ storeCurrencies ]
 	);
