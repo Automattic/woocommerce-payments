@@ -760,33 +760,6 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
             <span
               class="woocommerce-filters-label"
             >
-              Deposit currency
-              :
-            </span>
-            <div
-              class="components-dropdown"
-            >
-              <button
-                aria-expanded="false"
-                class="components-button woocommerce-dropdown-button"
-                type="button"
-              >
-                <div
-                  class="woocommerce-dropdown-button__labels"
-                >
-                  <span>
-                    United States (US) dollar
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
-          <div
-            class="woocommerce-filters-filter"
-          >
-            <span
-              class="woocommerce-filters-label"
-            >
               Show
               :
             </span>
