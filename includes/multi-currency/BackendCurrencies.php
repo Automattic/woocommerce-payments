@@ -46,6 +46,11 @@ class BackendCurrencies {
 		$this->multi_currency       = $multi_currency;
 		$this->localization_service = $localization_service;
 
+		// Skip if no additional currencies are enabled.
+		if ( ! $this->multi_currency->has_additional_currencies_enabled() ) {
+			return;
+		}
+
 		// We need to check first if it's a request coming from the backend, frontend REST requests shouldn't be
 		// affected by this.
 		$is_backend_request = 0 === stripos( wp_get_referer(), admin_url() );
