@@ -327,9 +327,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		if ( $order->get_shipping_total() ) {
-			// todo: Use $order->get_shipping_method() to display the name of the shipping method.
+			$shipping_label = sprintf(
+				// Translators: %s is the name of the shipping method.
+				__( 'Shipping (%s)', 'woocommerce-payments' ),
+				$order->get_shipping_method()
+			);
+
 			$items[] = [
-				'label'  => __( 'Shipping', 'woocommerce-payments' ),
+				'label'  => $shipping_label,
 				'amount' => WC_Payments_Utils::prepare_amount( $order->get_shipping_total(), $currency ),
 			];
 		}
