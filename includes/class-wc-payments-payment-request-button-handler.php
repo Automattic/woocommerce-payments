@@ -313,10 +313,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$items = [];
 
 		foreach ( $order->get_items() as $item ) {
-			$items[] = [
-				'label'  => $item->get_name(),
-				'amount' => WC_Payments_Utils::prepare_amount( $item->get_total(), $currency ),
-			];
+			if ( method_exists( $item, 'get_total' ) ) {
+				$items[] = [
+					'label'  => $item->get_name(),
+					'amount' => WC_Payments_Utils::prepare_amount( $item->get_total(), $currency ),
+				];
+			}
 		}
 
 		if ( $order->get_total_tax() ) {
