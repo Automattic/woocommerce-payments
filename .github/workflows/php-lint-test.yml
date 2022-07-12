@@ -5,7 +5,7 @@ on:
 
 env:
   WP_VERSION:        latest
-  WC_VERSION: 6.3.0  # the min supported version as per L-2 policy
+  WC_VERSION: 6.5.1  # the min supported version as per L-2 policy
   GUTENBERG_VERSION: latest
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.1'
+          php-version: '7.2'
           tools:       composer
           coverage:    none
       # install dependencies and run linter
@@ -36,7 +36,7 @@ jobs:
       fail-fast:    false
       max-parallel: 10
       matrix:
-        php: [ '7.1', '7.2', '7.3', '7.4' ]
+        php: [ '7.2', '7.3', '7.4' ]
     steps:
       # clone the repository
       - uses: actions/checkout@v2
