@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl, Notice } from '@wordpress/components';
 import PhoneNumberInput from 'settings/phone-input';
@@ -56,13 +56,18 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 		);
 	}
 
-	const updateSaveButtonAvailability = () => {
+	const updateSaveButtonAvailability = useCallback( () => {
 		setSaveDisabled(
 			'' === accountBusinessSupportEmail ||
 				'' === accountBusinessSupportPhone ||
 				! isPhoneValid
 		);
-	};
+	}, [
+		accountBusinessSupportEmail,
+		accountBusinessSupportPhone,
+		isPhoneValid,
+		setSaveDisabled,
+	] );
 
 	return (
 		<>
@@ -94,10 +99,13 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 				<PhoneNumberInput
 					onValueChange={ setAccountBusinessSupportPhone }
 					value={ accountBusinessSupportPhone }
-					onValidationChange={ ( valid ) => {
-						setPhoneValidity( valid );
-						updateSaveButtonAvailability();
-					} }
+					onValidationChange={ useCallback(
+						( valid ) => {
+							setPhoneValidity( valid );
+							updateSaveButtonAvailability();
+						},
+						[ setPhoneValidity, updateSaveButtonAvailability ]
+					) }
 					inputProps={ {
 						ariaLabel: __(
 							'Support phone number',
