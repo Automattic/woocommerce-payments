@@ -41,7 +41,7 @@ class WC_Payments_Order_Service {
 	public function __construct( WC_Payments_API_Client $api_client ) {
 		$this->api_client = $api_client;
 
-		add_action( self::ADD_FREE_BREAKDOWN_TO_ORDER_NOTES, [ $this, 'add_fee_breakdown_to_order_notes' ] );
+		add_action( self::ADD_FREE_BREAKDOWN_TO_ORDER_NOTES, [ $this, 'add_fee_breakdown_to_order_notes' ], 10, 2 );
 	}
 
 	/**
@@ -69,12 +69,15 @@ class WC_Payments_Order_Service {
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->api_client );
 		$action_hook              = self::ADD_FREE_BREAKDOWN_TO_ORDER_NOTES;
 
-		// Update the note with the fee breakdown details 2 minutes after the order.
-		$reminder_time            = $reminder_time = time() + ( 2 * MINUTE_IN_SECONDS );
+		// Update the note with the fee breakdown details 1 minute after the order.
+		$reminder_time = time() + ( 1 * MINUTE_IN_SECONDS );
 		$action_scheduler_service->schedule_job(
 			$reminder_time,
 			$action_hook,
-			[ 'order_id' =>  $order->get_id(), 'intent_id' => $intent_id ]
+			[
+				'order_id'  => $order->get_id(),
+				'intent_id' => $intent_id,
+			]
 		);
 
 		$this->update_order_status( $order, 'payment_complete', $intent_id );
@@ -343,14 +346,12 @@ class WC_Payments_Order_Service {
 	/**
 	 * Adds a note with the fee breakdown for the order.
 	 *
- 	 * @param array $fee_breakdown_args The array with order id and intent id for processing.
+	 * @param string $order_id  WC Order Id.
+	 * @param string $intent_id The intent id for the payment.
 	 */
-	public function add_fee_breakdown_to_order_notes( $fee_breakdown_args ) {
-		$order_id  = $fee_breakdown_args['order_id'];
-		$intent_id = $fee_breakdown_args['intent_id'];
-		$order    = wc_get_order( $order_id );
+	public function add_fee_breakdown_to_order_notes( $order_id, $intent_id ) {
+		$order = wc_get_order( $order_id );
 		try {
-			Logger::debug('In scheduled action for adding fee breakdown' . $order_id . " : " . $intent_id );
 			$events = $this->api_client->get_timeline( $intent_id );
 
 			$captured_event = current(
@@ -366,7 +367,6 @@ class WC_Payments_Order_Service {
 
 			// Add fee breakdown details to the note.
 			$note = '<strong>Fee breakdown</strong>:' . $details;
-			Logger::debug('Updating order with fee breakdown ' . $note );
 			// Update the order with the new note.
 			$order->add_order_note( $note );
 			$order->save();
