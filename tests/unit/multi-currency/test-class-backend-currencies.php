@@ -55,7 +55,26 @@ class WCPay_Multi_Currency_Backend_Currencies_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider woocommerce_filter_provider
 	 */
-	public function test_registers_woocommerce_filter( $filter, $function_name ) {
+	public function test_registers_woocommerce_filter_with_one_enabled_currency( $filter, $function_name ) {
+		$this->mock_multi_currency
+			->method( 'has_additional_currencies_enabled' )
+			->willReturn( false );
+
+		$this->assertFalse(
+			has_filter( $filter, [ $this->backend_currencies, $function_name ] ),
+			"Filter '$filter' was registered with '$function_name' with one currency enabled"
+		);
+	}
+
+	/**
+	 * @dataProvider woocommerce_filter_provider
+	 */
+	public function test_registers_woocommerce_filter_with_multiple_enabled_currencies( $filter, $function_name ) {
+		$this->mock_multi_currency
+			->method( 'has_additional_currencies_enabled' )
+			->willReturn( true );
+		$this->backend_currencies = new BackendCurrencies( $this->mock_multi_currency, $this->mock_localization_service );
+
 		$this->assertGreaterThan(
 			10,
 			has_filter( $filter, [ $this->backend_currencies, $function_name ] ),

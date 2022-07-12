@@ -164,6 +164,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	iframeWrapper.insertBefore( iframeArrow, null );
 	iframeWrapper.insertBefore( iframe, null );
 
+	// Error message to display when there's an error contacting WooPay.
+	const errorMessage = document.createElement( 'div' );
+	errorMessage.textContent = __(
+		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
+		'woocommerce-payments'
+	);
+
 	const closeIframe = ( focus = true ) => {
 		window.removeEventListener( 'resize', getWindowSize );
 		window.removeEventListener( 'resize', setPopoverPosition );
@@ -202,6 +209,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		iframe.focus();
 	};
 
+	const showErrorMessage = () => {
+		parentDiv.insertBefore(
+			errorMessage,
+			platformCheckoutEmailInput.nextSibling
+		);
+	};
+
 	document.addEventListener( 'keyup', ( event ) => {
 		if ( 'Escape' === event.key && closeIframe() ) {
 			event.stopPropagation();
@@ -210,6 +224,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	const platformCheckoutLocateUser = ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
+
+		if ( parentDiv.contains( errorMessage ) ) {
+			parentDiv.removeChild( errorMessage );
+		}
 
 		const emailExistsQuery = new URLSearchParams();
 		emailExistsQuery.append( 'email', email );
@@ -224,7 +242,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				'platformCheckoutHost'
 			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`
 		)
-			.then( ( response ) => response.json() )
+			.then( ( response ) => {
+				if ( 200 !== response.status ) {
+					showErrorMessage();
+				}
+
+				return response.json();
+			} )
 			.then( ( data ) => {
 				// Dispatch an event after we get the response.
 				const PlatformCheckoutUserCheckEvent = new CustomEvent(
@@ -244,6 +268,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 						wcpayTracks.events.PLATFORM_CHECKOUT_OFFERED
 					);
 				}
+			} )
+			.catch( () => {
+				showErrorMessage();
 			} )
 			.finally( () => {
 				spinner.remove();
@@ -326,6 +353,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					if ( 'success' === response.result ) {
 						window.location = response.url;
 					} else {
+						showErrorMessage();
 						closeIframe();
 					}
 				} );
