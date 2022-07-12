@@ -23,6 +23,9 @@ class WC_Payments_Order_Service {
 	const STATUS_ON_HOLD   = 'on-hold';
 	const STATUS_PENDING   = 'pending';
 
+	const ADD_FREE_BREAKDOWN_TO_ORDER_NOTES = 'wcpay_add_fee_breakdown_to_order_notes';
+
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -37,6 +40,8 @@ class WC_Payments_Order_Service {
 	 */
 	public function __construct( WC_Payments_API_Client $api_client ) {
 		$this->api_client = $api_client;
+
+		add_action( self::ADD_FREE_BREAKDOWN_TO_ORDER_NOTES, [ $this, 'add_fee_breakdown_to_order_notes' ] );
 	}
 
 	/**
@@ -54,11 +59,23 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->generate_payment_success_note( $intent_id, $charge_id, $this->get_order_amount( $order ) );
+		$note = $this->generate_payment_success_note( $charge_id, $this->get_order_amount( $order ) );
 
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
+
+		// Dispatch call here to update the order note with fee breakdown.
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->api_client );
+		$action_hook              = self::ADD_FREE_BREAKDOWN_TO_ORDER_NOTES;
+
+		// Update the note with the fee breakdown details 2 minutes after the order.
+		$reminder_time            = $reminder_time = time() + ( 2 * MINUTE_IN_SECONDS );
+		$action_scheduler_service->schedule_job(
+			$reminder_time,
+			$action_hook,
+			[ 'order_id' =>  $order->get_id(), 'intent_id' => $intent_id ]
+		);
 
 		$this->update_order_status( $order, 'payment_complete', $intent_id );
 		$order->add_order_note( $note );
@@ -324,30 +341,16 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Get content for the success order note.
+	 * Adds a note with the fee breakdown for the order.
 	 *
-	 * @param string $intent_id        The ID of the intent associated with this order.
-	 * @param string $charge_id        The charge ID related to the intent/order.
-	 * @param string $formatted_amount The formatted order total.
-	 *
-	 * @return string Note content.
+ 	 * @param array $fee_breakdown_args The array with order id and intent id for processing.
 	 */
-	private function generate_payment_success_note( $intent_id, $charge_id, $formatted_amount ) {
-		$transaction_url = $this->compose_transaction_url( $charge_id );
-		$note            = sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
-				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
-				[
-					'strong' => '<strong>',
-					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
-				]
-			),
-			$formatted_amount,
-			$charge_id
-		);
-
+	public function add_fee_breakdown_to_order_notes( $fee_breakdown_args ) {
+		$order_id  = $fee_breakdown_args['order_id'];
+		$intent_id = $fee_breakdown_args['intent_id'];
+		$order    = wc_get_order( $order_id );
 		try {
+			Logger::debug('In scheduled action for adding fee breakdown' . $order_id . " : " . $intent_id );
 			$events = $this->api_client->get_timeline( $intent_id );
 
 			$captured_event = current(
@@ -361,12 +364,41 @@ class WC_Payments_Order_Service {
 
 			$details = ( new WC_Payments_Captured_Event_Note( $captured_event ) )->generate_html_note();
 
-			return $note . $details;
+			// Add fee breakdown details to the note.
+			$note = '<strong>Fee breakdown</strong>:' . $details;
+			Logger::debug('Updating order with fee breakdown ' . $note );
+			// Update the order with the new note.
+			$order->add_order_note( $note );
+			$order->save();
+
 		} catch ( Exception $e ) {
 			Logger::log( sprintf( 'Can not generate the detailed note for intent_id %1$s. Reason: %2$s', $intent_id, $e->getMessage() ) );
-
-			return $note;
 		}
+	}
+
+	/**
+	 * Get content for the success order note.
+	 *
+	 * @param string $charge_id        The charge ID related to the intent/order.
+	 * @param string $formatted_amount The formatted order total.
+	 *
+	 * @return string Note content.
+	 */
+	private function generate_payment_success_note( $charge_id, $formatted_amount ) {
+		$transaction_url = $this->compose_transaction_url( $charge_id );
+
+		return sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
+				__( 'A payment of %1$s was <strong>successfully charged</strong> using WooCommerce Payments (<a>%2$s</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$formatted_amount,
+			$charge_id
+		);
 	}
 
 	/**
