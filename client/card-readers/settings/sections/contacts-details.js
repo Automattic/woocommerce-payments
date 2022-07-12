@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl, Notice } from '@wordpress/components';
 import PhoneNumberInput from 'settings/phone-input';
@@ -56,16 +56,16 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 		);
 	}
 
-	const updateSaveButtonAvailability = useCallback( () => {
+	useEffect( () => {
 		setSaveDisabled(
 			'' === accountBusinessSupportEmail ||
 				'' === accountBusinessSupportPhone ||
 				! isPhoneValid
 		);
 	}, [
+		isPhoneValid,
 		accountBusinessSupportEmail,
 		accountBusinessSupportPhone,
-		isPhoneValid,
 		setSaveDisabled,
 	] );
 
@@ -85,7 +85,6 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 				value={ accountBusinessSupportEmail }
 				onChange={ setAccountBusinessSupportEmail }
 				type="email"
-				onBlur={ updateSaveButtonAvailability }
 			/>
 			{ businessSupportPhoneErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
@@ -99,13 +98,7 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 				<PhoneNumberInput
 					onValueChange={ setAccountBusinessSupportPhone }
 					value={ accountBusinessSupportPhone }
-					onValidationChange={ useCallback(
-						( valid ) => {
-							setPhoneValidity( valid );
-							updateSaveButtonAvailability();
-						},
-						[ setPhoneValidity, updateSaveButtonAvailability ]
-					) }
+					onValidationChange={ setPhoneValidity }
 					inputProps={ {
 						ariaLabel: __(
 							'Support phone number',
