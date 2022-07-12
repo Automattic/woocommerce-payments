@@ -23,7 +23,7 @@ jobs:
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.1'
+          php-version: '7.2'
           tools:       composer
           coverage:    none
       # install dependencies and run linter
