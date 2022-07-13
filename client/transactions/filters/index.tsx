@@ -1,51 +1,54 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ReportFilters } from '@woocommerce/components';
 import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
-import { filters, advancedFilters, TransactionsFilterType } from './config';
+import { getFilters, getAdvancedFilters } from './config';
 import { formatCurrencyName } from '../../utils/currency';
 import './style.scss';
 
 interface TransactionsFiltersProps {
-	storeCurrencies?: string[];
+	storeCurrencies: string[];
+	customerCurrencies: string[];
 }
 
 export const TransactionsFilters = ( {
 	storeCurrencies,
+	customerCurrencies,
 }: TransactionsFiltersProps ): JSX.Element => {
-	const populateDepositCurrencies = (
-		filtersConfiguration: TransactionsFilterType[]
-	) => {
-		filtersConfiguration.forEach( ( filter ) => {
-			if ( 'store_currency_is' === filter.param ) {
-				const currencies = storeCurrencies || [];
-				// Generate select options: pick the first one (default) and add provided currencies
-				filter.filters = [
-					filter.filters[ 0 ],
-					...currencies.map( ( currencyCode: string ) => ( {
-						label: formatCurrencyName( currencyCode ),
-						value: currencyCode,
-					} ) ),
-				];
-				// Show the select when several currencies are available.
-				if ( 2 < filter.filters.length ) {
-					filter.showFilters = () => true;
-				}
-			}
-		} );
-		return filtersConfiguration;
-	};
+	const advancedFilters = useMemo(
+		() =>
+			getAdvancedFilters(
+				customerCurrencies.map( ( currencyCode: string ) => ( {
+					label: formatCurrencyName( currencyCode ),
+					value: currencyCode,
+				} ) )
+			),
+		[ customerCurrencies ]
+	);
+
+	const filters = useMemo(
+		() =>
+			getFilters(
+				storeCurrencies.map( ( currencyCode: string ) => ( {
+					label: formatCurrencyName( currencyCode ),
+					value: currencyCode,
+				} ) ),
+				storeCurrencies.length > 1
+			),
+		[ storeCurrencies ]
+	);
 
 	return (
 		<div className="woocommerce-filters-transactions">
 			<ReportFilters
-				filters={ populateDepositCurrencies( filters ) }
+				key={ customerCurrencies?.length }
+				filters={ filters }
 				advancedFilters={ advancedFilters }
 				showDatePicker={ false }
 				path="/payments/transactions"
