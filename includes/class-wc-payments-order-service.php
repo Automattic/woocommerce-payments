@@ -69,10 +69,9 @@ class WC_Payments_Order_Service {
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->api_client );
 		$action_hook              = self::ADD_FREE_BREAKDOWN_TO_ORDER_NOTES;
 
-		// Update the note with the fee breakdown details 1 minute after the order.
-		$reminder_time = time() + ( 1 * MINUTE_IN_SECONDS );
+		// Update the note with the fee breakdown details async.
 		$action_scheduler_service->schedule_job(
-			$reminder_time,
+			time(),
 			$action_hook,
 			[
 				'order_id'  => $order->get_id(),
