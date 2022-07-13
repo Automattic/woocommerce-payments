@@ -23,7 +23,7 @@ class WC_Payments_Order_Service {
 	const STATUS_ON_HOLD   = 'on-hold';
 	const STATUS_PENDING   = 'pending';
 
-	const ADD_FREE_BREAKDOWN_TO_ORDER_NOTES = 'wcpay_add_fee_breakdown_to_order_notes';
+	const ADD_FEE_BREAKDOWN_TO_ORDER_NOTES = 'wcpay_add_fee_breakdown_to_order_notes';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -40,7 +40,7 @@ class WC_Payments_Order_Service {
 	public function __construct( WC_Payments_API_Client $api_client ) {
 		$this->api_client = $api_client;
 
-		add_action( self::ADD_FREE_BREAKDOWN_TO_ORDER_NOTES, [ $this, 'add_fee_breakdown_to_order_notes' ], 10, 2 );
+		add_action( self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this, 'add_fee_breakdown_to_order_notes' ], 10, 2 );
 	}
 
 	/**
@@ -67,7 +67,7 @@ class WC_Payments_Order_Service {
 		// Update the note with the fee breakdown details async.
 		WC_Payments::get_action_scheduler_service()->schedule_job(
 			time(),
-			self::ADD_FREE_BREAKDOWN_TO_ORDER_NOTES,
+			self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES,
 			[
 				'order_id'  => $order->get_id(),
 				'intent_id' => $intent_id,
