@@ -318,6 +318,7 @@ class Analytics {
 		$prefix       = 'wcpay_multicurrency_';
 		$currency_tbl = $prefix . 'currency_postmeta';
 
+		// TODO: Figure out where the nonce is stored.
 		/* phpcs:disable WordPress.Security.NonceVerification */
 		if ( isset( $_GET['currency'] ) ) {
 			$currency  = sanitize_text_field( wp_unslash( $_GET['currency'] ) );
