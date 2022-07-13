@@ -25,7 +25,6 @@ class WC_Payments_Order_Service {
 
 	const ADD_FREE_BREAKDOWN_TO_ORDER_NOTES = 'wcpay_add_fee_breakdown_to_order_notes';
 
-
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -65,14 +64,10 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		// Dispatch call here to update the order note with fee breakdown.
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->api_client );
-		$action_hook              = self::ADD_FREE_BREAKDOWN_TO_ORDER_NOTES;
-
 		// Update the note with the fee breakdown details async.
-		$action_scheduler_service->schedule_job(
+		WC_Payments::get_action_scheduler_service()->schedule_job(
 			time(),
-			$action_hook,
+			self::ADD_FREE_BREAKDOWN_TO_ORDER_NOTES,
 			[
 				'order_id'  => $order->get_id(),
 				'intent_id' => $intent_id,
@@ -365,7 +360,14 @@ class WC_Payments_Order_Service {
 			$details = ( new WC_Payments_Captured_Event_Note( $captured_event ) )->generate_html_note();
 
 			// Add fee breakdown details to the note.
-			$note = '<strong>Fee breakdown</strong>:' . $details;
+			$title = WC_Payments_Utils::esc_interpolated_html(
+				// phpcs:ignore WordPress.WP.I18n.NoHtmlWrappedStrings
+				__( '<strong>Fee details:</strong>', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+				]
+			);
+			$note = $title . $details;
 			// Update the order with the new note.
 			$order->add_order_note( $note );
 			$order->save();
