@@ -4,7 +4,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { TextControl, Notice } from '@wordpress/components';
+import { TextControl, Notice, BaseControl } from '@wordpress/components';
 import PhoneNumberInput from 'settings/phone-input';
 
 /**
@@ -91,10 +91,11 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 					<span>{ businessSupportPhoneErrorMessage }</span>
 				</Notice>
 			) }
-			<div className="card-readers-business-phone-input">
-				<span>
-					{ __( 'Support phone number', 'woocommerce-payments' ) }
-				</span>
+			<BaseControl
+				label={ __( 'Support phone number', 'woocommerce-payments' ) }
+				className="card-readers-business-phone-input"
+				id="support-phone-number-input"
+			>
 				<PhoneNumberInput
 					onValueChange={ setAccountBusinessSupportPhone }
 					value={ accountBusinessSupportPhone }
@@ -105,8 +106,9 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 							'woocommerce-payments'
 						),
 					} }
+					id="support-phone-number-input"
 				/>
-			</div>
+			</BaseControl>
 		</>
 	);
 };

@@ -31,6 +31,7 @@ const PhoneNumberInput = ( {
 		ariaLabel: '',
 		name: '',
 	},
+	...props
 }: PhoneNumberInputProps ): JSX.Element => {
 	const [
 		inputInstance,
@@ -114,6 +115,7 @@ const PhoneNumberInput = ( {
 						? 'phone-input input-text has-error'
 						: 'phone-input input-text'
 				}
+				{ ...props }
 			/>
 		</div>
 	);
