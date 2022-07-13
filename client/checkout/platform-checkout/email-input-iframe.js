@@ -4,6 +4,8 @@
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
+import request from '../utils/request';
+import showErrorCheckout from '../utils/show-error-checkout';
 
 export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
@@ -222,11 +224,28 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}
 	} );
 
-	const platformCheckoutLocateUser = ( email ) => {
+	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
 		if ( parentDiv.contains( errorMessage ) ) {
 			parentDiv.removeChild( errorMessage );
+		}
+
+		if ( 'undefined' !== typeof wcPayHasSubscriptionsInCart ) {
+			try {
+				const userExistsData = await request( wcPayUserExistsUrl, {
+					email,
+				} );
+
+				if ( userExistsData[ 'user-exists' ] ) {
+					showErrorCheckout( userExistsData.message, false );
+					spinner.remove();
+					return;
+				}
+			} catch {
+				showErrorMessage();
+				spinner.remove();
+			}
 		}
 
 		const emailExistsQuery = new URLSearchParams();

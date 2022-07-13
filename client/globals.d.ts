@@ -30,3 +30,6 @@ declare const wcpaySettings: {
 };
 
 declare const wcTracks: any;
+
+declare const wcPayHasSubscriptionsInCart: boolean;
+declare const wcPayUserExistsUrl: string;
