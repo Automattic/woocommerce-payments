@@ -5,6 +5,34 @@
 import { addFilter } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 
+const currencyOptions = [
+	{
+		label: __( 'All currencies', 'woocommerce-payments' ),
+		value: 'ALL',
+	},
+	...wcSettings.multiCurrency,
+];
+
+const addCurrencyFilters = ( filters ) => {
+	return [
+		{
+			label: __( 'Customer currency', 'woocommerce-payments' ),
+			staticParams: [],
+			param: 'currency',
+			showFilters: () => true,
+			defaultValue: 'ALL',
+			filters: [ ...( currencyOptions || [] ) ],
+		},
+		...filters,
+	];
+};
+
+addFilter(
+	'woocommerce_admin_orders_report_filters',
+	'woocommerce-payments',
+	addCurrencyFilters
+);
+
 addFilter(
 	'woocommerce_admin_report_table',
 	'woocommerce-payments',

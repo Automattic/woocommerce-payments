@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use WC_Order;
 use WC_Order_Refund;
 use WC_Payments;
@@ -56,6 +58,9 @@ class Analytics {
 	 * @return void
 	 */
 	public function init() {
+		// See if this can be a filter..
+		$this->add_currency_settings();
+
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		}
@@ -64,7 +69,12 @@ class Analytics {
 			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 
+		// Add a filter when the order stats table is updated.
 		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'update_order_stats_data' ], self::PRIORITY_LATEST, 2 );
+
+		// Add filters when the query args are updated.
+		add_filter( 'woocommerce_analytics_orders_query_args', [ $this, 'apply_customer_currency_arg' ] );
+		add_filter( 'woocommerce_analytics_orders_stats_query_args', [ $this, 'apply_customer_currency_arg' ] );
 
 		// If we aren't making a REST request, or no multi currency orders exist in the merchant's store,
 		// return before adding these filters.
@@ -75,8 +85,37 @@ class Analytics {
 
 		$this->set_sql_replacements();
 
+		// Add the filters that are applied in each analytics query.
 		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ], self::PRIORITY_LATE, 2 );
 		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ], self::PRIORITY_LATE, 2 );
+
+		// Add the WHERE clause filter which is applied only on Order related queries.
+		add_filter( 'woocommerce_analytics_clauses_where_orders_subquery', [ $this, 'filter_where_clauses' ] );
+		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_total', [ $this, 'filter_where_clauses' ] );
+		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_interval', [ $this, 'filter_where_clauses' ] );
+	}
+
+	/**
+	 * Add the list of currencies used on the store to the wcSettings to allow it to be accessed by the front-end JS script.
+	 *
+	 * @return void
+	 */
+	public function add_currency_settings() {
+		// TODO: This should actually get all the currencies ever used in the store.
+		$enabled_currencies = $this->multi_currency->get_enabled_currencies();
+		$currencies         = [];
+
+		foreach ( $enabled_currencies as $currency ) {
+			$currencies[] = [
+				'label' => $currency->get_name(),
+				'value' => $currency->get_code(),
+			];
+		}
+		$data_registry = Package::container()->get(
+			AssetDataRegistry::class
+		);
+
+		$data_registry->add( 'multiCurrency', $currencies );
 	}
 
 	/**
@@ -119,6 +158,24 @@ class Analytics {
 	 */
 	public function disable_report_caching( $args ): bool {
 		return false;
+	}
+
+	/**
+	 * If the customer currency is set, add it as a query parameter to requests to the data store.
+	 * This ensures that the cache is updated when this value is changed between requests.
+	 *
+	 * @param array $args The arguments passed in via the GET request.
+	 *
+	 * @return array
+	 */
+	public function apply_customer_currency_arg( $args ): array {
+		/* phpcs:disable WordPress.Security.NonceVerification */
+		if ( isset( $_GET['currency'] ) ) {
+			$currency         = sanitize_text_field( wp_unslash( $_GET['currency'] ) );
+			$args['currency'] = $currency;
+		}
+
+		return $args;
 	}
 
 	/**
@@ -244,6 +301,30 @@ class Analytics {
 		}
 
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_join_clauses', $clauses );
+	}
+
+	/**
+	 * Add the WHERE clauses (if a customer currency has been selected).
+	 *
+	 * @param string[] $clauses - An array containing the JOIN clauses to be applied.
+	 *
+	 * @return array
+	 */
+	public function filter_where_clauses( array $clauses ): array {
+		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_where_clauses', false ) ) {
+			return $clauses;
+		}
+
+		$prefix       = 'wcpay_multicurrency_';
+		$currency_tbl = $prefix . 'currency_postmeta';
+
+		/* phpcs:disable WordPress.Security.NonceVerification */
+		if ( isset( $_GET['currency'] ) ) {
+			$currency  = sanitize_text_field( wp_unslash( $_GET['currency'] ) );
+			$clauses[] = "AND {$currency_tbl}.meta_value = '{$currency}'";
+		}
+
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
 	}
 
 	/**
