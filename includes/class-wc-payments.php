@@ -810,6 +810,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Action_Scheduler_Service
+	 *
+	 * @return WC_Payments_Action_Scheduler_Service Action Scheduler Service instance
+	 */
+	public static function get_action_scheduler_service() {
+		return self::$action_scheduler_service;
+	}
+
+	/**
 	 * Returns the WC_Payments_Fraud_Service instance
 	 *
 	 * @return WC_Payments_Fraud_Service Fraud Service instance
