@@ -169,9 +169,8 @@ class Analytics {
 	 * @return array
 	 */
 	public function apply_customer_currency_arg( $args ): array {
-		/* phpcs:disable WordPress.Security.NonceVerification */
-		if ( isset( $_GET['currency'] ) ) {
-			$currency         = sanitize_text_field( wp_unslash( $_GET['currency'] ) );
+		$currency = $this->get_customer_currency_from_request();
+		if ( ! is_null( $currency ) ) {
 			$args['currency'] = $currency;
 		}
 
@@ -318,10 +317,8 @@ class Analytics {
 		$prefix       = 'wcpay_multicurrency_';
 		$currency_tbl = $prefix . 'currency_postmeta';
 
-		// TODO: Figure out where the nonce is stored.
-		/* phpcs:disable WordPress.Security.NonceVerification */
-		if ( isset( $_GET['currency'] ) ) {
-			$currency  = sanitize_text_field( wp_unslash( $_GET['currency'] ) );
+		$currency = $this->get_customer_currency_from_request();
+		if ( ! is_null( $currency ) ) {
 			$clauses[] = "AND {$currency_tbl}.meta_value = '{$currency}'";
 		}
 
@@ -447,6 +444,23 @@ class Analytics {
 	 */
 	private function get_sql_replacements(): array {
 		return $this->sql_replacements;
+	}
+
+	/**
+	 * Check the passed in query params to see if currency has been passed in.
+	 * Will return null if no currency variable was passed in, otherwise will
+	 * return the currency.
+	 *
+	 * @return string|null
+	 */
+	private function get_customer_currency_from_request() {
+		// TODO: Figure out where the nonce is stored.
+		/* phpcs:disable WordPress.Security.NonceVerification */
+		if ( isset( $_GET['currency'] ) ) {
+			return sanitize_text_field( wp_unslash( $_GET['currency'] ) );
+		}
+
+		return null;
 	}
 
 	/**
