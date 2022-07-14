@@ -620,10 +620,11 @@ class MultiCurrency {
 	 * Update the selected currency from a currency code.
 	 *
 	 * @param string $currency_code Three letter currency code.
+	 * @param bool   $persist_change Set true to store the change in the session cookie if it doesn't exist yet.
 	 *
 	 * @return void
 	 */
-	public function update_selected_currency( string $currency_code ) {
+	public function update_selected_currency( string $currency_code, bool $persist_change = true ) {
 		$code     = strtoupper( $currency_code );
 		$user_id  = get_current_user_id();
 		$currency = $this->get_enabled_currencies()[ $code ] ?? null;
@@ -638,7 +639,7 @@ class MultiCurrency {
 		if ( 0 === $user_id && WC()->session ) {
 			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->get_code() );
 			// Set the session cookie if is not yet to persist the selected currency.
-			if ( ! WC()->session->has_session() && ! headers_sent() ) {
+			if ( ! WC()->session->has_session() && ! headers_sent() && $persist_change ) {
 				WC()->session->set_customer_session_cookie( true );
 			}
 		} elseif ( $user_id ) {
@@ -693,7 +694,7 @@ class MultiCurrency {
 			return;
 		}
 
-		$this->update_selected_currency( $currency );
+		$this->update_selected_currency( $currency, false );
 	}
 
 	/**
