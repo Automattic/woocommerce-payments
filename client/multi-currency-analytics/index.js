@@ -10,7 +10,7 @@ const currencyOptions = [
 		label: __( 'All currencies', 'woocommerce-payments' ),
 		value: 'ALL',
 	},
-	...wcSettings.multiCurrency,
+	...wcSettings.customerCurrencies,
 ];
 
 const addCurrencyFilters = ( filters ) => {

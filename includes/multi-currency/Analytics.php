@@ -7,11 +7,10 @@
 
 namespace WCPay\MultiCurrency;
 
-use Automattic\WooCommerce\Blocks\Package;
-use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use WC_Order;
 use WC_Order_Refund;
 use WC_Payments;
+use WCPay\Database_Cache;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -58,9 +57,6 @@ class Analytics {
 	 * @return void
 	 */
 	public function init() {
-		// See if this can be a filter..
-		$this->add_currency_settings();
-
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
 		}
@@ -93,29 +89,6 @@ class Analytics {
 		add_filter( 'woocommerce_analytics_clauses_where_orders_subquery', [ $this, 'filter_where_clauses' ] );
 		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_total', [ $this, 'filter_where_clauses' ] );
 		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_interval', [ $this, 'filter_where_clauses' ] );
-	}
-
-	/**
-	 * Add the list of currencies used on the store to the wcSettings to allow it to be accessed by the front-end JS script.
-	 *
-	 * @return void
-	 */
-	public function add_currency_settings() {
-		// TODO: This should actually get all the currencies ever used in the store.
-		$enabled_currencies = $this->multi_currency->get_enabled_currencies();
-		$currencies         = [];
-
-		foreach ( $enabled_currencies as $currency ) {
-			$currencies[] = [
-				'label' => $currency->get_name(),
-				'value' => $currency->get_code(),
-			];
-		}
-		$data_registry = Package::container()->get(
-			AssetDataRegistry::class
-		);
-
-		$data_registry->add( 'multiCurrency', $currencies );
 	}
 
 	/**

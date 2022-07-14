@@ -12,6 +12,8 @@ use WC_Payments_Account;
 use WC_Payments_Utils;
 use WC_Payments_API_Client;
 use WC_Payments_Localization_Service;
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 use WCPay\Logger;
@@ -246,6 +248,7 @@ class MultiCurrency {
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
+		$this->register_customer_currencies();
 
 		// If the store currency has been updated, we need to update the notice that will display any manual currencies.
 		if ( $store_currency_updated ) {
@@ -337,6 +340,34 @@ class MultiCurrency {
 			wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 		}
+	}
+
+	/**
+	 * Add the list of currencies used on the store to the wcSettings to allow it to be accessed by the front-end JS script.
+	 *
+	 * @return void
+	 */
+	public function register_customer_currencies() {
+		$currencies           = $this->get_all_customer_currencies();
+		$available_currencies = $this->get_available_currencies();
+		$currency_options     = [];
+
+		foreach ( $currencies as $currency ) {
+			if ( ! isset( $available_currencies[ $currency ] ) ) {
+				continue;
+			}
+
+			$currency_details   = $available_currencies[ $currency ];
+			$currency_options[] = [
+				'label' => $currency_details->get_name(),
+				'value' => $currency_details->get_code(),
+			];
+		}
+		$data_registry = Package::container()->get(
+			AssetDataRegistry::class
+		);
+
+		$data_registry->add( 'customerCurrencies', $currency_options );
 	}
 
 	/**
@@ -1339,6 +1370,41 @@ class MultiCurrency {
 			&& 'wcpay_multi_currency' === $current_tab
 			&& 'woocommerce_page_wc-settings' === $current_screen->base
 		);
+	}
+
+	/**
+	 * Get all of the currencies that have been used in the store.
+	 *
+	 * @return array
+	 */
+	public function get_all_customer_currencies() {
+		$data = $this->database_cache->get_or_add(
+			Database_Cache::CUSTOMER_CURRENCIES_KEY,
+			function() {
+				global $wpdb;
+
+				$currencies = $wpdb->get_col(
+					"SELECT
+						DISTINCT(meta_value)
+					FROM
+						{$wpdb->postmeta}
+					WHERE meta_key = '_order_currency'"
+				);
+
+				return [
+					'currencies' => $currencies,
+					'updated'    => time(),
+				];
+			},
+			function ( $data ) {
+				// Return true if the data looks valid and was updated an hour or less ago.
+				return is_array( $data ) &&
+					isset( $data['currencies'], $data['updated'] ) &&
+					$data['updated'] >= ( time() - HOUR_IN_SECONDS );
+			}
+		);
+
+		return $data['currencies'] ?? [];
 	}
 
 	/**

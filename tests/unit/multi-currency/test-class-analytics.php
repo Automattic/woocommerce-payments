@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Database_Cache;
 use WCPay\MultiCurrency\Analytics;
 use WCPay\MultiCurrency\Currency;
 use WCPay\MultiCurrency\MultiCurrency;
@@ -27,6 +28,13 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	 * @var MultiCurrency|MockObject
 	 */
 	private $mock_multi_currency;
+
+	/**
+	 * Mock Database_Cache
+	 *
+	 * @var Database_Cache|MockObject
+	 */
+	private $mock_database_cache;
 
 	/**
 	 * Mock orders.
@@ -55,7 +63,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
-		$this->analytics           = new Analytics( $this->mock_multi_currency );
+		$this->mock_database_cache = $this->createMock( Database_Cache::class );
+		$this->analytics           = new Analytics( $this->mock_multi_currency, $this->mock_database_cache );
 
 		remove_filter( 'user_has_cap', $cb );
 	}
