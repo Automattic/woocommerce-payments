@@ -1068,7 +1068,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Update the saved payment method information with checkout values.
 	 *
 	 * @param string $payment_method The payment method to update.
-	 * @param string $order_id       WC order id.
+	 * @param int    $order_id       WC order id.
 	 */
 	public function update_saved_payment_method( $payment_method, $order_id ) {
 		$order = wc_get_order( $order_id );
