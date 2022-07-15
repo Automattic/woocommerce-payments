@@ -1,7 +1,11 @@
 /* global jQuery */
 
 // Show error notice at top of checkout form.
-const showErrorCheckout = ( errorMessage, isFirst ) => {
+const showErrorCheckout = (
+	errorMessage,
+	isFirst = false,
+	validateFields = true
+) => {
 	let messageWrapper = '';
 	if ( errorMessage.includes( 'woocommerce-error' ) ) {
 		messageWrapper = errorMessage;
@@ -32,10 +36,12 @@ const showErrorCheckout = ( errorMessage, isFirst ) => {
 			messageWrapper +
 			'</div>'
 	);
-	$container
-		.find( '.input-text, select, input:checkbox' )
-		.trigger( 'validate' )
-		.blur();
+	if ( validateFields ) {
+		$container
+			.find( '.input-text, select, input:checkbox' )
+			.trigger( 'validate' )
+			.blur();
+	}
 
 	let scrollElement = jQuery( '.woocommerce-NoticeGroup-checkout' );
 	if ( ! scrollElement.length ) {

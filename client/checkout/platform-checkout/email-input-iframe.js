@@ -241,7 +241,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				);
 
 				if ( userExistsData[ 'user-exists' ] ) {
-					showErrorCheckout( userExistsData.message, false );
+					showErrorCheckout( userExistsData.message, false, false );
 					spinner.remove();
 					return;
 				}
