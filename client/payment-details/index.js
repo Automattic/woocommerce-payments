@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
@@ -40,7 +40,7 @@ const PaymentChargeDetails = ( { id } ) => {
 		error,
 		isLoading: isLoadingData,
 	} = usePaymentIntentWithChargeFallback( id );
-	const isChargeId = useMemo( () => getIsChargeId( id ), [ id ] );
+	const isChargeId = getIsChargeId( id );
 	const isLoading = isChargeId || isLoadingData;
 
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
