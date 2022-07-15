@@ -2,9 +2,10 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { TextControl, Notice } from '@wordpress/components';
+import { TextControl, Notice, BaseControl } from '@wordpress/components';
+import PhoneNumberInput from 'settings/phone-input';
 
 /**
  * Internal dependencies
@@ -32,6 +33,8 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 	let businessSupportPhoneErrorMessage = useGetSavingError()?.data?.details
 		?.account_business_support_phone?.message;
 
+	const [ isPhoneValid, setPhoneValidity ] = useState( true );
+
 	if ( '' === accountBusinessSupportEmail ) {
 		businessSupportEmailErrorMessage = __(
 			'Support email cannot be empty, please specify.',
@@ -46,12 +49,25 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 		);
 	}
 
-	const updateSaveButtonAvailability = () => {
+	if ( ! isPhoneValid ) {
+		businessSupportPhoneErrorMessage = __(
+			'Please enter a valid mobile phone number.',
+			'woocommerce-payments'
+		);
+	}
+
+	useEffect( () => {
 		setSaveDisabled(
 			'' === accountBusinessSupportEmail ||
-				'' === accountBusinessSupportPhone
+				'' === accountBusinessSupportPhone ||
+				! isPhoneValid
 		);
-	};
+	}, [
+		isPhoneValid,
+		accountBusinessSupportEmail,
+		accountBusinessSupportPhone,
+		setSaveDisabled,
+	] );
 
 	return (
 		<>
@@ -69,21 +85,30 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 				value={ accountBusinessSupportEmail }
 				onChange={ setAccountBusinessSupportEmail }
 				type="email"
-				onBlur={ updateSaveButtonAvailability }
 			/>
 			{ businessSupportPhoneErrorMessage && (
 				<Notice status="error" isDismissible={ false }>
 					<span>{ businessSupportPhoneErrorMessage }</span>
 				</Notice>
 			) }
-			<TextControl
-				className="card-readers-business-phone-input"
+			<BaseControl
 				label={ __( 'Support phone number', 'woocommerce-payments' ) }
-				value={ accountBusinessSupportPhone }
-				onChange={ setAccountBusinessSupportPhone }
-				type="tel"
-				onBlur={ updateSaveButtonAvailability }
-			/>
+				className="card-readers-business-phone-input"
+				id="support-phone-number-input"
+			>
+				<PhoneNumberInput
+					onValueChange={ setAccountBusinessSupportPhone }
+					value={ accountBusinessSupportPhone }
+					onValidationChange={ setPhoneValidity }
+					inputProps={ {
+						ariaLabel: __(
+							'Support phone number',
+							'woocommerce-payments'
+						),
+					} }
+					id="support-phone-number-input"
+				/>
+			</BaseControl>
 		</>
 	);
 };
