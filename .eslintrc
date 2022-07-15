@@ -23,8 +23,7 @@
 		"browser": true,
 		"context": true,
 		"jestPuppeteer": true,
-		"wcPayHasSubscriptionsInCart": true,
-		"wcPayUserExistsUrl": true
+		"wcPayPlatformCheckoutSubscriptions": true
 	},
 	"settings": {
 		"react": {

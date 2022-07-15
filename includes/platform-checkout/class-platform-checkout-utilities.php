@@ -33,10 +33,11 @@ class Platform_Checkout_Utilities {
 		if ( $enable_platform_checkout && ! is_user_logged_in() ) {
 			wp_localize_script(
 				'WCPAY_CHECKOUT',
-				'wcPayHasSubscriptionsInCart',
-				$has_subscription_in_cart ? 1 : 0
+				'wcPayPlatformCheckoutSubscriptions',
+				[
+					'user_exists_url' => get_rest_url( null, '/wc/v3/users/exists' ),
+				]
 			);
-			wp_localize_script( 'WCPAY_CHECKOUT', 'wcPayUserExistsUrl', get_rest_url( null, '/wc/v3/users/exists' ) );
 		}
 
 		return $enable_platform_checkout;

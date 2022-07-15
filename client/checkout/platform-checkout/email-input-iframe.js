@@ -231,11 +231,14 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			parentDiv.removeChild( errorMessage );
 		}
 
-		if ( 'undefined' !== typeof wcPayHasSubscriptionsInCart ) {
+		if ( 'undefined' !== typeof wcPayPlatformCheckoutSubscriptions ) {
 			try {
-				const userExistsData = await request( wcPayUserExistsUrl, {
-					email,
-				} );
+				const userExistsData = await request(
+					wcPayPlatformCheckoutSubscriptions.user_exists_url,
+					{
+						email,
+					}
+				);
 
 				if ( userExistsData[ 'user-exists' ] ) {
 					showErrorCheckout( userExistsData.message, false );
