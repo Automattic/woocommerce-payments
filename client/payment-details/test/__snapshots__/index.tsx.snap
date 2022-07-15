@@ -455,7 +455,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               
               <p>
                 Net: 
-                $1,426.00 USD
+                $1,426.00
               </p>
             </div>
           </div>
