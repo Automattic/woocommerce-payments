@@ -5,7 +5,7 @@
 import { useSelect } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
-export const useTimeline = ( id ) =>
+export const useTimeline = ( paymentIntentId ) =>
 	useSelect(
 		( select ) => {
 			const {
@@ -16,8 +16,10 @@ export const useTimeline = ( id ) =>
 			} = select( STORE_NAME );
 
 			// Make sure the charge is loaded first to get the intention ID.
-			const isLoading = isResolving( 'getPaymentIntent', [ id ] );
-			const error = getPaymentIntentError( id );
+			const isLoading = isResolving( 'getPaymentIntent', [
+				paymentIntentId,
+			] );
+			const error = getPaymentIntentError( paymentIntentId );
 
 			if ( isLoading || error instanceof Error ) {
 				return {
@@ -28,10 +30,10 @@ export const useTimeline = ( id ) =>
 			}
 
 			return {
-				timeline: getTimeline( id ),
-				timelineError: getTimelineError( id ),
-				isLoading: isResolving( 'getTimeline', [ id ] ),
+				timeline: getTimeline( paymentIntentId ),
+				timelineError: getTimelineError( paymentIntentId ),
+				isLoading: isResolving( 'getTimeline', [ paymentIntentId ] ),
 			};
 		},
-		[ id ]
+		[ paymentIntentId ]
 	);
