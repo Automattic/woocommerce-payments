@@ -12,8 +12,6 @@ use WC_Payments_Account;
 use WC_Payments_Utils;
 use WC_Payments_API_Client;
 use WC_Payments_Localization_Service;
-use Automattic\WooCommerce\Blocks\Package;
-use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 use WCPay\Logger;
@@ -248,7 +246,6 @@ class MultiCurrency {
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
-		$this->register_customer_currencies();
 
 		// If the store currency has been updated, we need to update the notice that will display any manual currencies.
 		if ( $store_currency_updated ) {
@@ -340,34 +337,6 @@ class MultiCurrency {
 			wp_enqueue_script( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_MULTI_CURRENCY_SETTINGS' );
 		}
-	}
-
-	/**
-	 * Add the list of currencies used on the store to the wcSettings to allow it to be accessed by the front-end JS script.
-	 *
-	 * @return void
-	 */
-	public function register_customer_currencies() {
-		$currencies           = $this->get_all_customer_currencies();
-		$available_currencies = $this->get_available_currencies();
-		$currency_options     = [];
-
-		foreach ( $currencies as $currency ) {
-			if ( ! isset( $available_currencies[ $currency ] ) ) {
-				continue;
-			}
-
-			$currency_details   = $available_currencies[ $currency ];
-			$currency_options[] = [
-				'label' => $currency_details->get_name(),
-				'value' => $currency_details->get_code(),
-			];
-		}
-		$data_registry = Package::container()->get(
-			AssetDataRegistry::class
-		);
-
-		$data_registry->add( 'customerCurrencies', $currency_options );
 	}
 
 	/**

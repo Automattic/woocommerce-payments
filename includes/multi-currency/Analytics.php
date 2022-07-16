@@ -7,10 +7,11 @@
 
 namespace WCPay\MultiCurrency;
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use WC_Order;
 use WC_Order_Refund;
 use WC_Payments;
-use WCPay\Database_Cache;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -59,6 +60,7 @@ class Analytics {
 	public function init() {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+			$this->register_customer_currencies();
 		}
 
 		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
@@ -108,6 +110,34 @@ class Analytics {
 			\WC_Payments::get_file_version( 'dist/multi-currency-analytics.js' ),
 			true
 		);
+	}
+
+	/**
+	 * Add the list of currencies used on the store to the wcSettings to allow it to be accessed by the front-end JS script.
+	 *
+	 * @return void
+	 */
+	public function register_customer_currencies() {
+		$currencies           = $this->multi_currency->get_all_customer_currencies();
+		$available_currencies = $this->multi_currency->get_available_currencies();
+		$currency_options     = [];
+
+		foreach ( $currencies as $currency ) {
+			if ( ! isset( $available_currencies[ $currency ] ) ) {
+				continue;
+			}
+
+			$currency_details   = $available_currencies[ $currency ];
+			$currency_options[] = [
+				'label' => $currency_details->get_name(),
+				'value' => $currency_details->get_code(),
+			];
+		}
+		$data_registry = Package::container()->get(
+			AssetDataRegistry::class
+		);
+
+		$data_registry->add( 'customerCurrencies', $currency_options, true );
 	}
 
 	/**

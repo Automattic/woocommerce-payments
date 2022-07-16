@@ -6,9 +6,7 @@
  */
 
 use WCPay\Database_Cache;
-use WCPay\Exceptions\API_Exception;
 use WCPay\MultiCurrency\MultiCurrency;
-use WCPay\MultiCurrency\Utils;
 use WCPay\MultiCurrency\Settings;
 use WCPay\MultiCurrency\SettingsOnboardCta;
 
@@ -598,6 +596,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$mock_database_cache
 			->expects( $this->exactly( 2 ) )
 			->method( 'get_or_add' )
+			->with( Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() )
 			->willReturnCallback(
 				function ( $key, $generator, $validator ) use ( &$get_or_add_call_count ) {
 					if ( 1 === $get_or_add_call_count ) {
@@ -877,6 +876,42 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		];
 	}
 
+	public function test_get_all_customer_currencies() {
+		$mock_orders = [];
+
+		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'GBP' );
+		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'EUR' );
+		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'USD' );
+
+		$mock_database_cache = $this->createMock( Database_Cache::class );
+		$mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_or_add' )
+			->withConsecutive(
+				[ Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() ],
+				[ Database_Cache::CUSTOMER_CURRENCIES_KEY, $this->anything(), $this->anything() ]
+			)->willReturnCallback(
+				function( $key, $generator, $validator ) {
+					if ( Database_Cache::CURRENCIES_KEY === $key ) {
+						return $this->mock_cached_currencies;
+					} else {
+						// If calling the get all customer currencies function, run the callback function.
+						return $generator();
+					}
+				}
+			);
+
+		$this->init_multi_currency( null, true, null, $mock_database_cache );
+
+		$result = $this->multi_currency->get_all_customer_currencies();
+
+		$this->assertEquals( [ 'GBP', 'EUR', 'USD' ], $result );
+
+		foreach ( $mock_orders as $order_id ) {
+			wp_delete_post( $order_id, true );
+		}
+	}
+
 	private function mock_currency_settings( $currency_code, $settings ) {
 		foreach ( $settings as $setting => $value ) {
 			update_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ), $value );
@@ -922,6 +957,20 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		// Fix an issue in WPCOM tests.
 		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->multi_currency );
+	}
+
+	private function add_mock_order_with_currency_meta( $currency ) {
+		// Insert a couple of orders into the database to verify the customer currencies get fetched correctly.
+		$order_id = wp_insert_post(
+			[
+				'post_type'   => 'shop_order',
+				'post_status' => 'wc-processing',
+			]
+		);
+
+		update_post_meta( $order_id, '_order_currency', $currency );
+
+		return $order_id;
 	}
 
 	private function mock_theme( $theme ) {
