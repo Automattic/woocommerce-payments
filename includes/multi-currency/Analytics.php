@@ -129,7 +129,7 @@ class Analytics {
 
 			$currency_details   = $available_currencies[ $currency ];
 			$currency_options[] = [
-				'label' => $currency_details->get_name(),
+				'label' => html_entity_decode( $currency_details->get_name() ),
 				'value' => $currency_details->get_code(),
 			];
 		}

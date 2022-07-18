@@ -1369,7 +1369,7 @@ class MultiCurrency {
 				// Return true if the data looks valid and was updated an hour or less ago.
 				return is_array( $data ) &&
 					isset( $data['currencies'], $data['updated'] ) &&
-					$data['updated'] >= ( time() - HOUR_IN_SECONDS );
+					$data['updated'] >= ( time() - ( 5 * MINUTE_IN_SECONDS ) );
 			}
 		);
 

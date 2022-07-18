@@ -42,7 +42,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	 *
 	 * @var array An array of customer currencies.
 	 */
-	private $mock_customer_currencies = [ 'EUR', 'USD', 'GBP' ];
+	private $mock_customer_currencies = [ 'EUR', 'USD', 'GBP', 'ISK' ];
 
 	/**
 	 * Mock available currencies.
@@ -110,6 +110,14 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_register_customer_currencies() {
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_all_customer_currencies' )
+			->willReturn( $this->mock_customer_currencies );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_available_currencies' )
+			->willReturn( $this->get_mock_available_currencies() );
+
 		$this->analytics->register_customer_currencies();
 
 		$data_registry = Package::container()->get(
@@ -413,6 +421,8 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 				'GBP' => new Currency( 'GBP', 1.2 ),
 				'USD' => new Currency( 'USD', 1 ),
 				'EUR' => new Currency( 'EUR', 0.9 ),
+				'ISK' => new Currency( 'ISK', 30.52 ),
+				'NZD' => new Currency( 'NZD', 1.4 ),
 			];
 		}
 
