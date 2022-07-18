@@ -208,8 +208,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 	public function get_product_price( $product ) {
 		$product_price = $product->get_price();
 
-		//If prices should include tax, add it in 
-		if(! $this->prices_exclude_tax()) {
+		// If prices should include tax, using tax inclusive price.
+		if ( ! $this->prices_exclude_tax() ) {
 			$product_price = wc_get_price_including_tax( $product );
 		}
 
