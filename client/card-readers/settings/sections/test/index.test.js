@@ -57,7 +57,9 @@ describe( 'Card Reader Business Details section', () => {
 
 describe( 'Card Reader Contact Details section', () => {
 	test( 'Renders Contacts section', () => {
-		render( <ContactsDetailsSection /> );
+		render(
+			<ContactsDetailsSection setSaveDisabled={ setDisabledMock } />
+		);
 
 		const heading = screen.queryByRole( 'heading', {
 			name: 'Customer support contacts',
@@ -66,7 +68,9 @@ describe( 'Card Reader Contact Details section', () => {
 	} );
 
 	test( 'Renders Contacts settings', () => {
-		render( <ContactsDetailsSection /> );
+		render(
+			<ContactsDetailsSection setSaveDisabled={ setDisabledMock } />
+		);
 
 		const email = screen.getByLabelText( 'Support email' );
 		expect( email ).toBeInTheDocument();
