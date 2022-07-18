@@ -341,8 +341,8 @@ export const TransactionsList = (
 				),
 			},
 			channel: {
-				value: getChargeChannel( txn.source ),
-				display: clickable( getChargeChannel( txn.source ) ),
+				value: getChargeChannel( txn.channel ),
+				display: clickable( getChargeChannel( txn.channel ) ),
 			},
 			type: {
 				value: displayType[ dataType ],
