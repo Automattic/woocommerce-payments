@@ -99,6 +99,8 @@ const getMockTransactions: () => Transaction[] = () => [
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
 		},
+		channel: 'online',
+		source_identifier: '1234',
 		customer_name: 'Another customer',
 		customer_email: 'another@customer.com',
 		customer_country: 'US',
@@ -125,6 +127,8 @@ const getMockTransactions: () => Transaction[] = () => [
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
 		},
+		channel: 'online',
+		source_identifier: '1234',
 		customer_name: 'My name',
 		customer_email: 'a@b.com',
 		customer_country: 'US',
@@ -151,6 +155,8 @@ const getMockTransactions: () => Transaction[] = () => [
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
 		},
+		channel: 'in_person',
+		source_identifier: '1234',
 		customer_name: 'Best customer',
 		customer_email: 'best@customer.com',
 		customer_country: 'US',
