@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { uniq } from 'lodash';
 import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
@@ -31,6 +31,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import { useTransactions, useTransactionsSummary } from 'data/index';
+import { Transaction } from 'data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
@@ -49,6 +50,7 @@ import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 import DownloadButton from 'components/download-button';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
+import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -74,6 +76,26 @@ interface Column extends TableCardColumn {
 	visible?: boolean;
 	cellClassName?: string;
 }
+
+const getPaymentSourceDetails = ( txn: Transaction ) => {
+	switch ( txn.source ) {
+		case 'giropay':
+			return <Fragment>{ txn.source_identifier }</Fragment>;
+		case 'p24':
+			return (
+				<Fragment>
+					{ p24BankList[ txn.source_identifier ] ?? '' }
+				</Fragment>
+			);
+		default:
+			return (
+				<Fragment>
+					&nbsp;&bull;&bull;&bull;&bull;&nbsp;{ ' ' }
+					{ txn.source_identifier }
+				</Fragment>
+			);
+	}
+};
 
 const getColumns = (
 	includeDeposit: boolean,
@@ -354,9 +376,12 @@ export const TransactionsList = (
 				value: txn.source,
 				display: ! isFinancingType ? (
 					clickable(
-						<span
-							className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-						/>
+						<span className="payment-method-details">
+							<span
+								className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+							/>
+							{ getPaymentSourceDetails( txn ) }
+						</span>
 					)
 				) : (
 					<span className={ 'payment-method__brand' }>—</span>
