@@ -123,7 +123,11 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 };
 
 export const getChargeChannel = ( type: string ): string => {
-	if ( type === 'card_present' || type === 'interac_present' ) {
+	if (
+		type === 'card_present' ||
+		type === 'interac_present' ||
+		type === 'in_person'
+	) {
 		return __( 'In-Person', 'woocommerce-payments' );
 	}
 
