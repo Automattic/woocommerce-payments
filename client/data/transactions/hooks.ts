@@ -37,6 +37,8 @@ export interface Transaction {
 	transaction_id: string;
 	date: string;
 	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
+	channel: 'in_person' | 'online';
+	source_identifier: string;
 	source: string;
 	loan_id?: string;
 	metadata?: {
