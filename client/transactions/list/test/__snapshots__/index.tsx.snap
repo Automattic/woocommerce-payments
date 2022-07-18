@@ -587,8 +587,15 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -721,8 +728,15 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -842,8 +856,15 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--card_present"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--card_present"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -1474,8 +1495,15 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -1608,8 +1636,15 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -1729,8 +1764,15 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--card_present"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--card_present"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -2338,8 +2380,15 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -3008,8 +3057,15 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -3145,8 +3201,15 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -3269,8 +3332,15 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--card_present"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--card_present"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -3916,8 +3986,15 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -4050,8 +4127,15 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -4171,8 +4255,15 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--card_present"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--card_present"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -4818,8 +4909,15 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -4952,8 +5050,15 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -5073,8 +5178,15 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--card_present"
-                    />
+                      class="payment-method-details"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--card_present"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
