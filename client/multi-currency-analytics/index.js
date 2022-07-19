@@ -5,13 +5,19 @@
 import { addFilter } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 
+const customerCurrencies = wcSettings.customerCurrencies.sort( ( a, b ) => {
+	return a.label < b.label ? -1 : 1;
+} );
+
 const currencyOptions = [
 	{
 		label: __( 'All currencies', 'woocommerce-payments' ),
 		value: 'ALL',
 	},
-	...wcSettings.customerCurrencies,
+	...customerCurrencies,
 ];
+
+console.log( customerCurrencies );
 
 const addCurrencyFilters = ( filters ) => {
 	return [
