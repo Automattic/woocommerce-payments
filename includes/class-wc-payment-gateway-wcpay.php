@@ -1039,27 +1039,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Manages customer details held on WCPay server for WordPress user associated with an order.
 	 *
-	 * @param WC_Order $order WC Order object.
+	 * @param WC_Order    $order WC Order object.
+	 * @param string|null $account_id Account ID, if not default.
 	 *
 	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
 	 */
-	protected function manage_customer_details_for_order( $order ) {
+	protected function manage_customer_details_for_order( $order, $account_id = null ) {
 		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
 		}
 
 		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID, $account_id );
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 
 		if ( null === $customer_id ) {
 			// Create a new customer.
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data, $account_id );
 		} else {
 			// Update the existing customer with the current details. In the event the old customer can't be
 			// found a new one is created, so we update the customer ID here as well.
-			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
+			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data, $account_id );
 		}
 
 		return [ $user, $customer_id ];
@@ -1104,9 +1105,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$account_id = $_POST['wcpay-account'] ?? null;
+		if ( $account_id === $this->account->get_stripe_account_id() ) {
+			$account_id = null;
+		}
 		WC_Payments_Utils::switch_to_account( $account_id );
 
-		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $account_id );
 
 		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
