@@ -60,6 +60,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	const SUCCESSFUL_INTENT_STATUS = [ 'succeeded', 'requires_capture', 'processing' ];
 
+	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';
+
 	/**
 	 * Set of parameters to build the URL to the gateway's settings page.
 	 *
@@ -370,6 +372,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
+
+		add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 2 );
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
@@ -1061,6 +1065,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Update the saved payment method information with checkout values.
+	 *
+	 * @param string $payment_method The payment method to update.
+	 * @param int    $order_id       WC order id.
+	 */
+	public function update_saved_payment_method( $payment_method, $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		try {
+			$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_method, $order );
+		} catch ( Exception $e ) {
+			// If updating the payment method fails, log the error message.
+			Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
+		}
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param WC_Cart|null              $cart Cart.
@@ -1082,14 +1103,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
-		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
+		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
-			try {
-				$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_information->get_payment_method(), $order );
-			} catch ( Exception $e ) {
-				// If updating the payment method fails, log the error message but catch the error to avoid crashing the checkout flow.
-				Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
-			}
+			$this->action_scheduler_service->schedule_job(
+				time(),
+				self::UPDATE_SAVED_PAYMENT_METHOD,
+				[
+					'payment_method' => $payment_information->get_payment_method(),
+					'order_id'       => $order->get_id(),
+				]
+			);
 		}
 
 		$intent_failed  = false;
