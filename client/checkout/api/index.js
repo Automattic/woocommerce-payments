@@ -332,7 +332,10 @@ export default class WCPayAPI {
 	initSetupIntent() {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_setup_intent' ),
-			{ _ajax_nonce: getConfig( 'createSetupIntentNonce' ) }
+			{
+				wcpay_account_id: getConfig( 'accountId' ),
+				_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+			}
 		).then( ( response ) => {
 			if ( ! response.success ) {
 				throw response.data.error;
@@ -387,6 +390,7 @@ export default class WCPayAPI {
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'create_payment_intent' ),
 			{
 				wcpay_order_id: orderId,
+				wcpay_account_id: getConfig( 'accountId' ),
 				_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
 			}
 		)
@@ -432,6 +436,7 @@ export default class WCPayAPI {
 				save_payment_method: savePaymentMethod,
 				wcpay_selected_upe_payment_type: selectedUPEPaymentType,
 				wcpay_payment_country: paymentCountry,
+				wcpay_account_id: getConfig( 'accountId' ),
 				_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
 			}
 		)
@@ -494,6 +499,7 @@ export default class WCPayAPI {
 			{
 				...fields,
 				wc_payment_intent_id: paymentIntentId,
+				'wcpay-account': getConfig( 'accountId' ),
 			}
 		)
 			.then( ( response ) => {
