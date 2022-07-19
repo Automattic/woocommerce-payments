@@ -1559,6 +1559,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$charge_id = $order->get_meta( '_charge_id', true );
+		WC_Payments_Utils::switch_to_account( $order->get_meta( '_wcpay_account_id' ) );
 
 		try {
 			// If the payment method is Interac, the refund already exists (refunded via Mobile app).
