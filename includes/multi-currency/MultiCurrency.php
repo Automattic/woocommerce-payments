@@ -1342,6 +1342,41 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Get all of the currencies that have been used in the store.
+	 *
+	 * @return array
+	 */
+	public function get_all_customer_currencies() {
+		$data = $this->database_cache->get_or_add(
+			Database_Cache::CUSTOMER_CURRENCIES_KEY,
+			function() {
+				global $wpdb;
+
+				$currencies = $wpdb->get_col(
+					"SELECT
+						DISTINCT(meta_value)
+					FROM
+						{$wpdb->postmeta}
+					WHERE meta_key = '_order_currency'"
+				);
+
+				return [
+					'currencies' => $currencies,
+					'updated'    => time(),
+				];
+			},
+			function ( $data ) {
+				// Return true if the data looks valid and was updated an hour or less ago.
+				return is_array( $data ) &&
+					isset( $data['currencies'], $data['updated'] ) &&
+					$data['updated'] >= ( time() - ( 5 * MINUTE_IN_SECONDS ) );
+			}
+		);
+
+		return $data['currencies'] ?? [];
+	}
+
+	/**
 	 * Checks if there are additional currencies enabled beyond the store's default one.
 	 *
 	 * @return bool
