@@ -440,6 +440,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$account_id = null;
 		}
 		WC_Payments_Utils::switch_to_account( $account_id );
+		$order->update_meta_data( '_wcpay_account_id', $account_id );
+		$order->save_meta_data();
 
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );

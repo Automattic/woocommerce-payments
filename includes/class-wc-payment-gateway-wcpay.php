@@ -1109,6 +1109,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$account_id = null;
 		}
 		WC_Payments_Utils::switch_to_account( $account_id );
+		$order->update_meta_data( '_wcpay_account_id', $account_id );
+		$order->save_meta_data();
 
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $account_id );
 
@@ -2372,6 +2374,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'order_not_found'
 				);
 			}
+
+			WC_Payments_Utils::switch_to_account( $order->get_meta( '_wcpay_account_id' ) );
 
 			$intent_id          = $order->get_meta( '_intent_id', true );
 			$intent_id_received = isset( $_POST['intent_id'] )
