@@ -863,6 +863,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<div id="wcpay-card-element"></div>
 				<div id="wcpay-errors" role="alert"></div>
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
+				<input id="wcpay-account" type="hidden" name="wcpay-account" />
 				<input type="hidden" name="wcpay-is-platform-payment-method" value="<?php echo esc_attr( $this->should_use_stripe_platform_on_checkout_page() ); ?>" />
 			<?php
 			if ( $this->is_saved_cards_enabled() ) {
@@ -1100,6 +1101,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
+
+		// phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$account_id = $_POST['wcpay-account'] ?? null;
+		WC_Payments_Utils::switch_to_account( $account_id );
 
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
