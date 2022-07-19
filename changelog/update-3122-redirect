@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add redirect from charge ID to the payment intent ID equivalent in the transactions detail screen

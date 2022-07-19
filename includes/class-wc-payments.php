@@ -731,6 +731,10 @@ class WC_Payments {
 			$vat_controller = new WC_REST_Payments_VAT_Controller( self::$api_client );
 			$vat_controller->register_routes();
 		}
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
+		$payment_intents_controller->register_routes();
 	}
 
 	/**

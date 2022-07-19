@@ -8,7 +8,7 @@
 /**
  * An intention object used by the WooCommerce Payments API.
  */
-class WC_Payments_API_Intention {
+class WC_Payments_API_Intention implements \JsonSerializable {
 	/**
 	 * Intention ID
 	 *
@@ -247,5 +247,22 @@ class WC_Payments_API_Intention {
 	 */
 	public function get_metadata() {
 		return $this->metadata;
+	}
+
+	/**
+	 * Defines which data will be serialized to JSON
+	 */
+	public function jsonSerialize(): array {
+		return [
+			'id'             => $this->get_id(),
+			'amount'         => $this->get_amount(),
+			'currency'       => $this->get_currency(),
+			'charge'         => $this->get_charge(),
+			'created'        => $this->get_created()->getTimestamp(),
+			'customer'       => $this->get_customer_id(),
+			'metadata'       => $this->get_metadata(),
+			'payment_method' => $this->get_payment_method_id(),
+			'status'         => $this->get_status(),
+		];
 	}
 }
