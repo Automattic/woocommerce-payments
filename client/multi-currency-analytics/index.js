@@ -17,8 +17,6 @@ const currencyOptions = [
 	...customerCurrencies,
 ];
 
-console.log( customerCurrencies );
-
 const addCurrencyFilters = ( filters ) => {
 	return [
 		{
