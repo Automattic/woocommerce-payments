@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use WC_Order;
 use WC_Order_Refund;
 use WC_Payments;
@@ -58,13 +60,19 @@ class Analytics {
 	public function init() {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+			$this->register_customer_currencies();
 		}
 
 		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
 			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 
+		// Add a filter when the order stats table is updated.
 		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'update_order_stats_data' ], self::PRIORITY_LATEST, 2 );
+
+		// Add filters when the query args are updated.
+		add_filter( 'woocommerce_analytics_orders_query_args', [ $this, 'apply_customer_currency_arg' ] );
+		add_filter( 'woocommerce_analytics_orders_stats_query_args', [ $this, 'apply_customer_currency_arg' ] );
 
 		// If we aren't making a REST request, or no multi currency orders exist in the merchant's store,
 		// return before adding these filters.
@@ -75,8 +83,14 @@ class Analytics {
 
 		$this->set_sql_replacements();
 
+		// Add the filters that are applied in each analytics query.
 		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ], self::PRIORITY_LATE, 2 );
 		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ], self::PRIORITY_LATE, 2 );
+
+		// Add the WHERE clause filter which is applied only on Order related queries.
+		add_filter( 'woocommerce_analytics_clauses_where_orders_subquery', [ $this, 'filter_where_clauses' ] );
+		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_total', [ $this, 'filter_where_clauses' ] );
+		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_interval', [ $this, 'filter_where_clauses' ] );
 	}
 
 	/**
@@ -96,6 +110,34 @@ class Analytics {
 			\WC_Payments::get_file_version( 'dist/multi-currency-analytics.js' ),
 			true
 		);
+	}
+
+	/**
+	 * Add the list of currencies used on the store to the wcSettings to allow it to be accessed by the front-end JS script.
+	 *
+	 * @return void
+	 */
+	public function register_customer_currencies() {
+		$currencies           = $this->multi_currency->get_all_customer_currencies();
+		$available_currencies = $this->multi_currency->get_available_currencies();
+		$currency_options     = [];
+
+		foreach ( $currencies as $currency ) {
+			if ( ! isset( $available_currencies[ $currency ] ) ) {
+				continue;
+			}
+
+			$currency_details   = $available_currencies[ $currency ];
+			$currency_options[] = [
+				'label' => html_entity_decode( $currency_details->get_name() ),
+				'value' => $currency_details->get_code(),
+			];
+		}
+		$data_registry = Package::container()->get(
+			AssetDataRegistry::class
+		);
+
+		$data_registry->add( 'customerCurrencies', $currency_options, true );
 	}
 
 	/**
@@ -119,6 +161,23 @@ class Analytics {
 	 */
 	public function disable_report_caching( $args ): bool {
 		return false;
+	}
+
+	/**
+	 * If the customer currency is set, add it as a query parameter to requests to the data store.
+	 * This ensures that the cache is updated when this value is changed between requests.
+	 *
+	 * @param array $args The arguments passed in via the GET request.
+	 *
+	 * @return array
+	 */
+	public function apply_customer_currency_arg( $args ): array {
+		$currency = $this->get_customer_currency_from_request();
+		if ( ! is_null( $currency ) ) {
+			$args['currency'] = $currency;
+		}
+
+		return $args;
 	}
 
 	/**
@@ -247,6 +306,29 @@ class Analytics {
 	}
 
 	/**
+	 * Add the WHERE clauses (if a customer currency has been selected).
+	 *
+	 * @param string[] $clauses - An array containing the JOIN clauses to be applied.
+	 *
+	 * @return array
+	 */
+	public function filter_where_clauses( array $clauses ): array {
+		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_where_clauses', false ) ) {
+			return $clauses;
+		}
+
+		$prefix       = 'wcpay_multicurrency_';
+		$currency_tbl = $prefix . 'currency_postmeta';
+
+		$currency = $this->get_customer_currency_from_request();
+		if ( ! is_null( $currency ) ) {
+			$clauses[] = "AND {$currency_tbl}.meta_value = '{$currency}'";
+		}
+
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
+	}
+
+	/**
 	 * Check to see whether we should convert an order to store in the order stats table.
 	 *
 	 * @param WC_Order|WC_Order_Refund $order The order.
@@ -365,6 +447,23 @@ class Analytics {
 	 */
 	private function get_sql_replacements(): array {
 		return $this->sql_replacements;
+	}
+
+	/**
+	 * Check the passed in query params to see if currency has been passed in.
+	 * Will return null if no currency variable was passed in, otherwise will
+	 * return the currency.
+	 *
+	 * @return string|null
+	 */
+	private function get_customer_currency_from_request() {
+		// TODO: Figure out where the nonce is stored.
+		/* phpcs:disable WordPress.Security.NonceVerification */
+		if ( isset( $_GET['currency'] ) ) {
+			return sanitize_text_field( wp_unslash( $_GET['currency'] ) );
+		}
+
+		return null;
 	}
 
 	/**

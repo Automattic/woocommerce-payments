@@ -980,6 +980,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 
+		$order_id = $order->get_id();
+
 		$intent = WC_Helper_Intention::create_intention();
 
 		$this->mock_api_client
@@ -987,19 +989,19 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'create_and_confirm_intention' )
 			->will( $this->returnValue( $intent ) );
 
-		$this->mock_customer_service
+		$this->mock_action_scheduler_service
 			->expects( $this->once() )
-			->method( 'update_payment_method_with_billing_details_from_order' )
+			->method( 'schedule_job' )
 			->with(
-				'pm_mock',
-				$this->callback(
-					function( $source_order ) use ( $order ) {
-						return $source_order->get_id() === $order->get_id();
-					}
-				)
+				time(),
+				'wcpay_update_saved_payment_method',
+				[
+					'payment_method' => 'pm_mock',
+					'order_id'       => $order_id,
+				]
 			);
 
-		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->mock_wcpay_gateway->process_payment( $order_id );
 	}
 
 	public function test_save_payment_method_to_platform() {
