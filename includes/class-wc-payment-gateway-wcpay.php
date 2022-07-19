@@ -1105,6 +1105,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$account_id = $_POST['wcpay-account'] ?? null;
+		if ( empty( $account_id ) && ! empty( $order->get_meta( '_wcpay_account_id' ) ) ) {
+			$account_id = $order->get_meta( '_wcpay_account_id' );
+		}
 		if ( $account_id === $this->account->get_stripe_account_id() ) {
 			$account_id = null;
 		}
