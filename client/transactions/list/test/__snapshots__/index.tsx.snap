@@ -809,7 +809,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                     tabindex="-1"
                   >
-                    $20.00 USD
+                    $20.00
                   </a>
                 </td>
                 <td
@@ -833,7 +833,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                     tabindex="-1"
                   >
-                    $19.25 USD
+                    $19.25
                   </a>
                 </td>
                 <td
@@ -1690,7 +1690,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                     tabindex="-1"
                   >
-                    $20.00 USD
+                    $20.00
                   </a>
                 </td>
                 <td
@@ -1714,7 +1714,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                     tabindex="-1"
                   >
-                    $19.25 USD
+                    $19.25
                   </a>
                 </td>
                 <td
@@ -3255,7 +3255,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                     tabindex="-1"
                   >
-                    $20.00 USD
+                    $20.00
                   </a>
                 </td>
                 <td
@@ -3279,7 +3279,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                     tabindex="-1"
                   >
-                    $19.25 USD
+                    $19.25
                   </a>
                 </td>
                 <td
@@ -4181,7 +4181,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                     tabindex="-1"
                   >
-                    $20.00 USD
+                    $20.00
                   </a>
                 </td>
                 <td
@@ -4205,7 +4205,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                     tabindex="-1"
                   >
-                    $19.25 USD
+                    $19.25
                   </a>
                 </td>
                 <td
@@ -5104,7 +5104,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                     tabindex="-1"
                   >
-                    $20.00 USD
+                    $20.00
                   </a>
                 </td>
                 <td
@@ -5128,7 +5128,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                     tabindex="-1"
                   >
-                    $19.25 USD
+                    $19.25
                   </a>
                 </td>
                 <td

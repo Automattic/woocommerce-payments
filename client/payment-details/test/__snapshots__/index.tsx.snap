@@ -512,6 +512,30 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                 <span
                   class="woocommerce-list__item-title"
                 >
+                  Channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Online
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
                   Customer
                 </span>
                 <span
