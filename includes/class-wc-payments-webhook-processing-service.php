@@ -385,14 +385,14 @@ class WC_Payments_Webhook_Processing_Service {
 			WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY => $currency,
 		];
 
-		$is_dirty = false;
+		$order_changed = false;
 		foreach ( $meta_data_to_update as $key => $value ) {
 			if ( $value && ! $order->get_meta( $key ) ) {
-				$is_dirty = true;
+				$order_changed = true;
 				$order->update_meta_data( $key, $value );
 			}
 		}
-		if ( true === $is_dirty ) {
+		if ( true === $order_changed ) {
 			$order->save();
 		}
 
