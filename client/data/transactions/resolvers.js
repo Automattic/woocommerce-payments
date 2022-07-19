@@ -33,6 +33,8 @@ export const formatQueryFilters = ( query ) => ( {
 	store_currency_is: query.storeCurrencyIs,
 	loan_id_is: query.loanIdIs,
 	deposit_id: query.depositId,
+	customer_currency_is: query.customerCurrencyIs,
+	customer_currency_is_not: query.customerCurrencyIsNot,
 	search: query.search,
 } );
 

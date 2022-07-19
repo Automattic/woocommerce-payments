@@ -63,6 +63,7 @@ class WC_Payments_API_Client {
 	const WEBHOOK_FETCH_API            = 'webhook/failed_events';
 	const DOCUMENTS_API                = 'documents';
 	const VAT_API                      = 'vat';
+	const LINKS_API                    = 'links';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1268,6 +1269,25 @@ class WC_Payments_API_Client {
 				'refresh_url' => $refresh_url,
 			],
 			self::ACCOUNTS_API . '/capital_links',
+			self::POST,
+			true,
+			true
+		);
+	}
+
+	/**
+	 * Get a link's details from the server.
+	 *
+	 * @param array $args The arguments to be sent with the link request.
+	 *
+	 * @return array The link object with an url field.
+	 *
+	 * @throws API_Exception When something goes wrong with the request, or the link is not valid.
+	 */
+	public function get_link( array $args ) {
+		return $this->request(
+			$args,
+			self::LINKS_API,
 			self::POST,
 			true,
 			true

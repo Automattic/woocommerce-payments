@@ -16,8 +16,10 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 
 import './style.scss';
 
-const PaymentDetailsTimeline = ( { chargeId } ) => {
-	const { timeline, timelineError, isLoading } = useTimeline( chargeId );
+const PaymentDetailsTimeline = ( { paymentIntentId } ) => {
+	const { timeline, timelineError, isLoading } = useTimeline(
+		paymentIntentId
+	);
 
 	const items = mapTimelineEvents( timeline );
 

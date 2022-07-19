@@ -40,7 +40,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
             
             <p>
               Net: 
-              $19.30 USD
+              $19.30
             </p>
           </div>
         </div>
@@ -261,7 +261,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
             
             <p>
               Net: 
-              $19.30 USD
+              $19.30
             </p>
           </div>
         </div>
@@ -503,7 +503,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
           >
             <p>
               Refunded: 
-              $-20.00 USD
+              $-20.00
             </p>
             <p>
               Fee: 
@@ -512,7 +512,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
             
             <p>
               Net: 
-              $-0.70 USD
+              $-0.70
             </p>
           </div>
         </div>
@@ -808,7 +808,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
           >
             <p>
               Refunded: 
-              $-12.00 USD
+              $-12.00
             </p>
             <p>
               Fee: 
@@ -817,7 +817,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
             
             <p>
               Net: 
-              $7.30 USD
+              $7.30
             </p>
           </div>
         </div>
@@ -1032,7 +1032,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
           >
             <p>
               Refunded: 
-              $-15.00 USD
+              $-15.00
             </p>
             <p>
               Fee: 
@@ -1041,7 +1041,7 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
             
             <p>
               Net: 
-              $-10.70 USD
+              $-10.70
             </p>
           </div>
         </div>

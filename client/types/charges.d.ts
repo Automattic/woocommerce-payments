@@ -26,6 +26,11 @@ interface ChargeRefunds {
 	data: ChargeRefund[];
 }
 
+export interface PaymentMethodDetails {
+	card?: any;
+	type: 'card_present' | 'card';
+}
+
 export interface Charge {
 	id: string;
 	amount: number;
@@ -59,10 +64,7 @@ export interface Charge {
 		amount: number;
 	};
 	payment_intent: null | string;
-	payment_method_details: {
-		card?: any;
-		type: 'card_present' | 'card';
-	};
+	payment_method_details: PaymentMethodDetails;
 	refunded: boolean;
 	refunds: ChargeRefunds;
 	status: string;

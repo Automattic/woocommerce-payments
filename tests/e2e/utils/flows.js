@@ -311,7 +311,9 @@ export const merchantWCP = {
 
 	openChallengeDispute: async () => {
 		await Promise.all( [
-			evalAndClick( 'a.components-button.is-primary' ),
+			evalAndClick(
+				'div.wcpay-dispute-details a.components-button.is-primary'
+			),
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
 			uiLoaded(),
 		] );
@@ -320,7 +322,9 @@ export const merchantWCP = {
 	openAcceptDispute: async () => {
 		await Promise.all( [
 			page.removeAllListeners( 'dialog' ),
-			evalAndClick( 'button.components-button.is-secondary' ),
+			evalAndClick(
+				'div.wcpay-dispute-details button.components-button.is-secondary'
+			),
 			page.on( 'dialog', async ( dialog ) => {
 				await dialog.accept();
 			} ),
@@ -489,5 +493,63 @@ export const merchantWCP = {
 		if ( true === checkboxStatus ) {
 			await checkbox.click();
 		}
+	},
+
+	activateWooPay: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if (
+			! ( await page.$( '#override_platform_checkout_eligible:checked' ) )
+		) {
+			await expect( page ).toClick( 'label', {
+				text:
+					'Override the platform_checkout_eligible flag in the account cache',
+			} );
+		}
+
+		if (
+			! ( await page.$(
+				'#override_platform_checkout_eligible_value:checked'
+			) )
+		) {
+			await expect( page ).toClick( 'label', {
+				text:
+					'Set platform_checkout_eligible flag to true, false otherwise',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	deactivateWooPay: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( await page.$( '#override_platform_checkout_eligible:checked' ) ) {
+			await expect( page ).toClick( 'label', {
+				text:
+					'Override the platform_checkout_eligible flag in the account cache',
+			} );
+		}
+
+		if (
+			await page.$( '#override_platform_checkout_eligible_value:checked' )
+		) {
+			await expect( page ).toClick( 'label', {
+				text:
+					'Set platform_checkout_eligible flag to true, false otherwise',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
 	},
 };

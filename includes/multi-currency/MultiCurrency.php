@@ -1342,6 +1342,16 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Checks if there are additional currencies enabled beyond the store's default one.
+	 *
+	 * @return bool
+	 */
+	public function has_additional_currencies_enabled(): bool {
+		$enabled_currencies = $this->get_enabled_currencies();
+		return count( $enabled_currencies ) > 1;
+	}
+
+	/**
 	 * Returns if the currency initialization are completed
 	 *
 	 * @return  bool    If the initializations have been completedÎ

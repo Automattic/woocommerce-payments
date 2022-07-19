@@ -4,8 +4,9 @@
  */
 import React, { useContext, useEffect } from 'react';
 import { Icon, VisuallyHidden } from '@wordpress/components';
-import { useCallback, useMemo } from '@wordpress/element';
+import { useCallback } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -17,11 +18,11 @@ import {
 } from '../../utils/account-fees';
 import LoadableCheckboxControl from 'components/loadable-checkbox';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import PaymentMethodIcon from '../../settings/payment-method-icon';
 import PaymentMethodsMap from '../../payment-methods-map';
 import Pill from '../pill';
 import Tooltip from '../tooltip';
 import './payment-method-checkbox.scss';
+import { useManualCapture } from 'wcpay/data';
 
 const PaymentMethodDescription = ( { name } ) => {
 	const description = PaymentMethodsMap[ name ]?.description;
@@ -61,14 +62,19 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 		}
 	}, [ disabled, checked, handleChange ] );
 
-	const label = useMemo( () => <PaymentMethodIcon name={ name } showName />, [
-		name,
-	] );
+	const [ isManualCaptureEnabled ] = useManualCapture();
+	const paymentMethod = PaymentMethodsMap[ name ];
+	const needsOverlay =
+		isManualCaptureEnabled && ! paymentMethod.allows_manual_capture;
 
 	return (
-		<li className="payment-method-checkbox">
+		<li
+			className={ classNames( 'payment-method-checkbox', {
+				overlay: needsOverlay,
+			} ) }
+		>
 			<LoadableCheckboxControl
-				label={ label }
+				label={ paymentMethod.label }
 				checked={ checked }
 				disabled={ disabled }
 				onChange={ ( state ) => {
@@ -76,9 +82,18 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 				} }
 				delayMsOnCheck={ 1500 }
 				delayMsOnUncheck={ 0 }
+				hideLabel={ true }
+				isAllowingManualCapture={ paymentMethod.allows_manual_capture }
 			/>
+			<div className={ 'woocommerce-payments__payment-method-icon' }>
+				{ paymentMethod.icon() }
+			</div>
 			<div className={ 'payment-method-checkbox__pills' }>
 				<div className={ 'payment-method-checkbox__pills-left' }>
+					<span className="payment-method-checkbox__label">
+						{ paymentMethod.label }
+					</span>
+
 					{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
 						<Tooltip
 							content={ __(
@@ -104,7 +119,7 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 										'information. Follow the instructions sent by our partner Stripe to %s.',
 									'woocommerce-payments'
 								),
-								label,
+								paymentMethod.label,
 								wcpaySettings?.accountEmail ?? ''
 							) }
 						>

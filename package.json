@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "4.3.0",
+  "version": "4.4.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -35,6 +35,7 @@
     "test:e2e-reset": "npm run test:e2e-down && npm run test:e2e-cleanup",
     "test:e2e": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.config.js",
     "test:e2e-dev": "NODE_CONFIG_DIR='tests/e2e/config' JEST_PUPPETEER_CONFIG='tests/e2e/config/jest-puppeteer.config.js' wp-scripts test-e2e --config tests/e2e/config/jest.config.js --puppeteer-interactive",
+    "test:e2e-performance": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.performance.config.js",
     "test:update-snapshots": "npm run test:js -- --updateSnapshot",
     "test:php": "./bin/run-tests.sh",
     "watch": "webpack --watch",
@@ -77,6 +78,7 @@
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.5",
     "@testing-library/user-event": "10.4.1",
+    "@types/intl-tel-input": "^17.0.4",
     "@types/lodash": "4.14.170",
     "@types/react": "16.14.5",
     "@types/wordpress__components": "9.8.6",
