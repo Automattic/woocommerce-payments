@@ -15,6 +15,7 @@ use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Database_Cache;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -876,6 +877,8 @@ class WC_Payments_API_Client {
 		];
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
+		// Invalidate the dispute status cache.
+		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -893,6 +896,8 @@ class WC_Payments_API_Client {
 	 */
 	public function close_dispute( $dispute_id ) {
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
+		// Invalidate the dispute status cache.
+		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
