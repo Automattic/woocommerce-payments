@@ -122,6 +122,19 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	return balance;
 };
 
+/**
+ * Displays the transaction's channel: Online | In-Person.
+ *
+ * This method is called in two places: The individual transaction page, and the list of transactions page.
+ * In the individual transaction page, we are getting the data from Stripe, so we pass the transaction.type
+ * which can be card_present or interac_present for In-Person payments.
+ * In the list of transactions, the type holds the brand of the payment method, so we aren't passing it.
+ * Instead, we pass the transaction.channel directly, which might be in_person|online.
+ *
+ * @param {string} type The transaction type.
+ * @return {string} Online or In-Person.
+ *
+ */
 export const getChargeChannel = ( type: string ): string => {
 	if (
 		type === 'card_present' ||
