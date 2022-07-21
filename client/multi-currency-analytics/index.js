@@ -55,7 +55,7 @@ addFilter(
 			...tableData.headers,
 			{
 				isNumeric: false,
-				isSortable: true,
+				isSortable: false,
 				key: 'customer_currency',
 				label: __( 'Customer currency', 'woocommerce-payments' ),
 				required: false,
