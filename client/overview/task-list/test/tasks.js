@@ -144,7 +144,7 @@ describe( 'getTasks()', () => {
 	} );
 
 	it( 'should not include the dispute resolution task', () => {
-		const numDisputesToRespond = 0;
+		const numDisputesNeedingResponse = 0;
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -152,13 +152,13 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			numDisputesToRespond,
+			numDisputesNeedingResponse,
 		} );
 
 		expect( actual ).toEqual( [] );
 	} );
 	it( 'should include the dispute resolution task', () => {
-		const numDisputesToRespond = 1;
+		const numDisputesNeedingResponse = 1;
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -166,7 +166,7 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			numDisputesToRespond,
+			numDisputesNeedingResponse,
 		} );
 
 		expect( actual ).toEqual(
@@ -183,7 +183,7 @@ describe( 'getTasks()', () => {
 
 describe( 'taskSort()', () => {
 	it( 'should sort the tasks', () => {
-		const numDisputesToRespond = 1;
+		const numDisputesNeedingResponse = 1;
 		const unsortedTasks = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -192,7 +192,7 @@ describe( 'taskSort()', () => {
 				accountLink: 'http://example.com',
 			},
 			isAccountOverviewTasksEnabled: true,
-			numDisputesToRespond,
+			numDisputesNeedingResponse,
 		} );
 		unsortedTasks.unshift( {
 			key: 'test-element',

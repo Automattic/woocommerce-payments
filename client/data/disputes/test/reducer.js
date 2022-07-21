@@ -47,7 +47,6 @@ describe( 'Disputes reducer tests', () => {
 			cached: {},
 			queries: {},
 			summary: {},
-			statusCounts: {},
 		} );
 
 		const stateAfterTwo = reducer( stateAfterOne, {
@@ -89,7 +88,6 @@ describe( 'Disputes reducer tests', () => {
 				},
 			},
 			summary: {},
-			statusCounts: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -159,7 +157,6 @@ describe( 'Disputes reducer tests', () => {
 					},
 				},
 			},
-			statusCounts: {},
 		};
 
 		expect( reduced ).toStrictEqual( after );
@@ -203,36 +200,6 @@ describe( 'Disputes reducer tests', () => {
 						count: 42,
 					},
 				},
-			},
-		};
-
-		expect( reduced ).toStrictEqual( after );
-	} );
-
-	test( 'Dispute status counts updated correctly', () => {
-		const before = {
-			byId: {},
-			cached: {},
-			queries: {},
-			summary: {},
-			statusCounts: {
-				warning_needs_response: 2,
-			},
-		};
-
-		const reduced = reducer( before, {
-			type: types.SET_DISPUTE_STATUS_COUNTS,
-			data: {
-				warning_needs_response: 3,
-				needs_response: 1,
-			},
-		} );
-
-		const after = {
-			...before,
-			statusCounts: {
-				warning_needs_response: 3,
-				needs_response: 1,
 			},
 		};
 

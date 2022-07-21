@@ -85,7 +85,6 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
 	require_once $_plugin_dir . 'includes/class-platform-checkout-tracker.php';
-	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );

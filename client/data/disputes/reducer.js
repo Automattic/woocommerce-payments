@@ -11,13 +11,7 @@ import { map, keyBy } from 'lodash';
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
 
-const defaultState = {
-	byId: {},
-	queries: {},
-	summary: {},
-	cached: {},
-	statusCounts: {},
-};
+const defaultState = { byId: {}, queries: {}, summary: {}, cached: {} };
 
 const receiveDisputes = (
 	state = defaultState,
@@ -51,11 +45,6 @@ const receiveDisputes = (
 						data: data,
 					},
 				},
-			};
-		case TYPES.SET_DISPUTE_STATUS_COUNTS:
-			return {
-				...state,
-				statusCounts: data,
 			};
 	}
 

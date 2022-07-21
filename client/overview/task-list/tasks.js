@@ -19,14 +19,14 @@ export const getTasks = ( {
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
 	needsHttpsSetup,
-	numDisputesToRespond = 0,
+	numDisputesNeedingResponse = 0,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	let accountDetailsTaskDescription;
 
-	const isDisputeTaskVisible = 0 < numDisputesToRespond;
+	const isDisputeTaskVisible = 0 < numDisputesNeedingResponse;
 
 	if ( accountRestrictedSoon ) {
 		accountDetailsTaskDescription = sprintf(
@@ -122,16 +122,16 @@ export const getTasks = ( {
 				_n(
 					'1 disputed payment needs your response',
 					'%s disputed payments need your response',
-					numDisputesToRespond,
+					numDisputesNeedingResponse,
 					'woocommerce-payments'
 				),
-				numDisputesToRespond
+				numDisputesNeedingResponse
 			),
 			additionalInfo:
-				0 < numDisputesToRespond
+				0 < numDisputesNeedingResponse
 					? __( 'View and respond', 'woocommerce-payments' )
 					: '',
-			completed: 0 === numDisputesToRespond,
+			completed: 0 === numDisputesNeedingResponse,
 			isDeletable: true,
 			isDismissable: true,
 			allowSnooze: true,

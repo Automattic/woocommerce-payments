@@ -80,10 +80,3 @@ export function* acceptDispute( id ) {
 		yield dispatch( 'core/notices', 'createErrorNotice', message );
 	}
 }
-
-export function updateDisputeStatusCounts( data ) {
-	return {
-		type: TYPES.SET_DISPUTE_STATUS_COUNTS,
-		data,
-	};
-}

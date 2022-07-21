@@ -70,7 +70,3 @@ const getDisputesSummaryForQuery = ( state, query ) => {
 export const getDisputesSummary = ( state, query ) => {
 	return getDisputesSummaryForQuery( state, query ).data || {};
 };
-
-export const getDisputeStatusCounts = ( state ) => {
-	return getDisputesState( state ).statusCounts || {};
-};

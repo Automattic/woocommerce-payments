@@ -661,7 +661,7 @@ class WC_Payments {
 		$transactions_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
-		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client, self::$database_cache );
+		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
 		$disputes_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
