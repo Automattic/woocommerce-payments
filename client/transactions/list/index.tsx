@@ -211,7 +211,10 @@ export const TransactionsList = (
 	const totalRows = transactionsSummary.count || 0;
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL =
-			getDetailsURL( txn.charge_id, 'transactions' ) +
+			getDetailsURL(
+				txn.payment_intent_id || txn.charge_id,
+				'transactions'
+			) +
 			'&transaction_id=' +
 			txn.transaction_id +
 			'&transaction_type=' +
