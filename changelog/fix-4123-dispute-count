@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Correctly show the number of disputes that need to be responded in task list.
