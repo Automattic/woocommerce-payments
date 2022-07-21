@@ -62,7 +62,6 @@ describe( 'Disputes reducer tests', () => {
 			cached: {},
 			queries: {},
 			summary: {},
-			statusCounts: {},
 		} );
 	} );
 
