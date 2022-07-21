@@ -20,7 +20,6 @@ import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
-import { useDisputes } from 'data';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 
 import './style.scss';
@@ -34,8 +33,8 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
+		numDisputesNeedingResponse,
 	} = wcpaySettings;
-	const { disputes, isLoading } = useDisputes( getQuery() );
 	const { isLoading: settingsIsLoading, settings } = useSettings();
 
 	const tasksUnsorted = getTasks( {
@@ -43,7 +42,7 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
-		disputes,
+		numDisputesNeedingResponse,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -138,7 +137,6 @@ const OverviewPage = () => {
 
 			{ !! accountOverviewTaskList &&
 				0 < tasks.length &&
-				! isLoading &&
 				! accountRejected && (
 					<ErrorBoundary>
 						<TaskList
