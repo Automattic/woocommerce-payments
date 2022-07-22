@@ -422,7 +422,6 @@ jQuery( function ( $ ) {
 					useSetUpIntent
 				);
 			}
-			mountUPEElement( useSetUpIntent );
 		}
 	}
 
