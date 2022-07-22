@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WooCommercePreOrders
+ * Class WooCommercePointsAndRewards
  *
  * @package WCPay\MultiCurrency\Compatibility
  */
@@ -65,7 +65,7 @@ class WooCommercePointsAndRewards extends BaseCompatibility {
 		$value  = (float) ( $ratio[1] ?? 0 );
 
 		$rate  = $this->selected_currency->get_rate();
-		$value = (float) $value * $rate;
+		$value = $value * $rate;
 
 		return "$points:$value";
 	}
