@@ -294,7 +294,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		];
 
 		// Simulate a currency being passed in via GET request.
-		$_GET['currency_is'] = 'USD';
+		$_GET['currency_is'] = [ 'USD' ];
 
 		$this->assertEquals(
 			$expected,
@@ -330,7 +330,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		];
 
 		// Simulate a currency being passed in via GET request.
-		$_GET['currency_is_not'] = 'USD';
+		$_GET['currency_is_not'] = [ 'USD' ];
 
 		$this->assertEquals(
 			$expected,
@@ -381,7 +381,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'wcpay_multi_currency_disable_filter_where_clauses', '__return_true' );
 
 		// Nothing should be appended to the clauses array, because the filter is disabled.
-		$_GET['currency'] = 'USD';
+		$_GET['currency_is'] = [ 'USD' ];
 
 		$this->assertEquals( $expected, $this->analytics->filter_where_clauses( $expected ) );
 	}
