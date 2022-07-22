@@ -5,7 +5,8 @@
 import { addFilter } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 
-const customerCurrencies = wcSettings.customerCurrencies.sort( ( a, b ) => {
+const customerCurrencies = wcSettings.customerCurrencies ?? [];
+const customerCurrencyOptions = customerCurrencies.sort( ( a, b ) => {
 	return a.label < b.label ? -1 : 1;
 } );
 
@@ -57,7 +58,7 @@ addFilter(
 				],
 				input: {
 					component: 'SelectControl',
-					options: customerCurrencies,
+					options: customerCurrencyOptions,
 				},
 				allowMultiple: true,
 			},
