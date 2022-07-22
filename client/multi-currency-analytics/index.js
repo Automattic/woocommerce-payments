@@ -49,7 +49,7 @@ addFilter(
 						// eslint-disable-next-line max-len
 						/* translators: Sentence fragment, logical, "Is Not" refers to searching for orders not matching a chosen currency. */
 						label: __(
-							'Is not',
+							'Is Not',
 							'customer currency',
 							'woocommerce-payments'
 						),
