@@ -28,7 +28,17 @@ interface ChargeRefunds {
 
 export interface PaymentMethodDetails {
 	card?: any;
-	type: 'card_present' | 'card';
+	type:
+		| 'card'
+		| 'card_present'
+		| 'au_becs_debit'
+		| 'bancontact'
+		| 'eps'
+		| 'giropay'
+		| 'ideal'
+		| 'p24'
+		| 'sepa_debit'
+		| 'sofort';
 }
 
 export interface Charge {
