@@ -11,10 +11,11 @@
 class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_upe'                     => 'upe',
-		'_wcpay_feature_upe_settings_preview'    => 'upeSettingsPreview',
-		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
-		'_wcpay_feature_documents'               => 'documents',
+		'_wcpay_feature_upe'                        => 'upe',
+		'_wcpay_feature_upe_settings_preview'       => 'upeSettingsPreview',
+		'_wcpay_feature_customer_multi_currency'    => 'multiCurrency',
+		'_wcpay_feature_documents'                  => 'documents',
+		'_wcpay_feature_account_overview_task_list' => 'accountOverviewTaskList',
 	];
 
 	public function set_up() {
