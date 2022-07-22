@@ -39,7 +39,31 @@ export interface Transaction {
 	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
 	channel: 'in_person' | 'online';
 	source_identifier: string;
-	source: string;
+	source:
+		| 'ach_credit_transfer'
+		| 'ach_debit'
+		| 'acss_debit'
+		| 'alipay'
+		| 'au_becs_debit'
+		| 'bancontact'
+		| 'eps'
+		| 'giropay'
+		| 'sepa_debit'
+		| 'ideal'
+		| 'klarna'
+		| 'multibanco'
+		| 'p24'
+		| 'sofort'
+		| 'stripe_account'
+		| 'wechat'
+		| 'amex'
+		| 'diners'
+		| 'discover'
+		| 'jcb'
+		| 'mastercard'
+		| 'unionpay'
+		| 'visa'
+		| 'link';
 	loan_id?: string;
 	metadata?: {
 		charge_type: 'card_reader_fee';

@@ -148,7 +148,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		transaction_id: 'txn_mmtr89gjh5',
 		date: '2020-01-02 19:55:05',
 		type: 'charge',
-		source: 'card_present',
+		source: 'visa',
 		order: {
 			number: 335,
 			url: 'https://example.com/order/335',
