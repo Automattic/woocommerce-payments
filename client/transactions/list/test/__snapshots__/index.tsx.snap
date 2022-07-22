@@ -859,7 +859,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       class="payment-method-details"
                     >
                       <span
-                        class="payment-method__brand payment-method__brand--card_present"
+                        class="payment-method__brand payment-method__brand--visa"
                       />
                        •••• 
                        
@@ -1740,7 +1740,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       class="payment-method-details"
                     >
                       <span
-                        class="payment-method__brand payment-method__brand--card_present"
+                        class="payment-method__brand payment-method__brand--visa"
                       />
                        •••• 
                        
@@ -3308,7 +3308,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       class="payment-method-details"
                     >
                       <span
-                        class="payment-method__brand payment-method__brand--card_present"
+                        class="payment-method__brand payment-method__brand--visa"
                       />
                        •••• 
                        
@@ -4231,7 +4231,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       class="payment-method-details"
                     >
                       <span
-                        class="payment-method__brand payment-method__brand--card_present"
+                        class="payment-method__brand payment-method__brand--visa"
                       />
                        •••• 
                        
@@ -5154,7 +5154,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       class="payment-method-details"
                     >
                       <span
-                        class="payment-method__brand payment-method__brand--card_present"
+                        class="payment-method__brand payment-method__brand--visa"
                       />
                        •••• 
                        
