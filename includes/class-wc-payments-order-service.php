@@ -58,7 +58,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$note = $this->generate_payment_success_note( $charge_id, $this->get_order_amount( $order ) );
+		$note = $this->generate_payment_success_note( $intent_id, $charge_id, $this->get_order_amount( $order ) );
 
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
@@ -380,13 +380,14 @@ class WC_Payments_Order_Service {
 	/**
 	 * Get content for the success order note.
 	 *
+	 * @param string $intent_id        The payment intent ID related to the intent/order.
 	 * @param string $charge_id        The charge ID related to the intent/order.
 	 * @param string $formatted_amount The formatted order total.
 	 *
 	 * @return string Note content.
 	 */
-	private function generate_payment_success_note( $charge_id, $formatted_amount ) {
-		$transaction_url = $this->compose_transaction_url( $charge_id );
+	private function generate_payment_success_note( $intent_id, $charge_id, $formatted_amount ) {
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -398,7 +399,7 @@ class WC_Payments_Order_Service {
 				]
 			),
 			$formatted_amount,
-			$charge_id
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 	}
 
@@ -413,7 +414,7 @@ class WC_Payments_Order_Service {
 	 * @return string Note content.
 	 */
 	private function generate_payment_failure_note( $intent_id, $charge_id, $message, $formatted_amount ) {
-		$transaction_url = $this->compose_transaction_url( $charge_id );
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
@@ -424,7 +425,7 @@ class WC_Payments_Order_Service {
 				]
 			),
 			$formatted_amount,
-			$intent_id
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
 		if ( ! empty( $message ) ) {
@@ -444,7 +445,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function add_payment_authorized_note( $order, $intent_id, $charge_id ) {
-		$transaction_url = $this->compose_transaction_url( $charge_id );
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
@@ -455,7 +456,7 @@ class WC_Payments_Order_Service {
 				]
 			),
 			$this->get_order_amount( $order ),
-			$intent_id
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
 		$order->add_order_note( $note );
@@ -497,7 +498,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function add_capture_success_note( $order, $intent_id, $charge_id ) {
-		$transaction_url = $this->compose_transaction_url( $charge_id );
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the successfully charged amount, %2: transaction ID of the payment */
@@ -508,7 +509,7 @@ class WC_Payments_Order_Service {
 				]
 			),
 			$this->get_order_amount( $order ),
-			$charge_id
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
 		$order->add_order_note( $note );
@@ -525,7 +526,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function add_capture_failed_note( $order, $intent_id, $charge_id, $message ) {
-		$transaction_url = $this->compose_transaction_url( $charge_id );
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
@@ -536,7 +537,7 @@ class WC_Payments_Order_Service {
 				]
 			),
 			$this->get_order_amount( $order ),
-			$intent_id
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
 		if ( ! empty( $message ) ) {
@@ -555,7 +556,7 @@ class WC_Payments_Order_Service {
 	 * @return string Note content.
 	 */
 	private function generate_capture_expired_note( $intent_id, $charge_id ) {
-		$transaction_url = $this->compose_transaction_url( $charge_id );
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -566,7 +567,7 @@ class WC_Payments_Order_Service {
 					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
 				]
 			),
-			$intent_id
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
 
 	}
@@ -629,28 +630,6 @@ class WC_Payments_Order_Service {
 				]
 			),
 			$status
-		);
-	}
-
-	/**
-	 * Composes url for transaction details page.
-	 *
-	 * @param string $charge_id Charge id.
-	 *
-	 * @return string Transaction details page url.
-	 */
-	private function compose_transaction_url( $charge_id ) {
-		if ( empty( $charge_id ) ) {
-			return '';
-		}
-
-		return add_query_arg(
-			[
-				'page' => 'wc-admin',
-				'path' => '/payments/transactions/details',
-				'id'   => $charge_id,
-			],
-			admin_url( 'admin.php' )
 		);
 	}
 
