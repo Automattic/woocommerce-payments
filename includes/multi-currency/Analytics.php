@@ -459,29 +459,20 @@ class Analytics {
 	 * @return array
 	 */
 	private function get_customer_currency_args_from_request(): array {
-		$fn = function( string $currency ): string {
-			return sanitize_text_field( wp_unslash( $currency ) );
-		};
-
 		$args = [
 			'currency_is'     => [],
 			'currency_is_not' => [],
 		];
 
-		// TODO: Figure out where the nonce is stored.
 		/* phpcs:disable WordPress.Security.NonceVerification */
-		if ( isset( $_GET['currency_is'] ) ) {
-			/* phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized */
-			$currency_is         = is_array( $_GET['currency_is'] ) ? $_GET['currency_is'] : [ $_GET['currency_is'] ];
-			$args['currency_is'] = array_map( $fn, $currency_is );
+		if ( isset( $_GET['currency_is'] ) && is_array( $_GET['currency_is'] ) ) {
+			$args['currency_is'] = array_map( 'sanitize_text_field', wp_unslash( $_GET['currency_is'] ) );
 		}
 
-		/* phpcs:disable WordPress.Security.NonceVerification */
 		if ( isset( $_GET['currency_is_not'] ) ) {
-			/* phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized */
-			$currency_is_not         = is_array( $_GET['currency_is_not'] ) ? $_GET['currency_is_not'] : [ $_GET['currency_is_not'] ];
-			$args['currency_is_not'] = array_map( $fn, $currency_is_not );
+			$args['currency_is_not'] = array_map( 'sanitize_text_field', wp_unslash( $_GET['currency_is_not'] ) );
 		}
+		/* phpcs:enable WordPress.Security.NonceVerification */
 
 		return $args;
 	}
