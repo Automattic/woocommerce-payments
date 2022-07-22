@@ -5,10 +5,13 @@
 import { addFilter } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 
-const customerCurrencies = wcSettings.customerCurrencies ?? [];
-const customerCurrencyOptions = customerCurrencies.sort( ( a, b ) => {
-	return a.label < b.label ? -1 : 1;
-} );
+const getCustomerCurrencies = () => {
+	return (
+		wcSettings.customerCurrencies.sort( ( a, b ) => {
+			return a.label < b.label ? -1 : 1;
+		} ) ?? []
+	);
+};
 
 addFilter(
 	'woocommerce_admin_orders_report_advanced_filters',
@@ -58,7 +61,7 @@ addFilter(
 				],
 				input: {
 					component: 'SelectControl',
-					options: customerCurrencyOptions,
+					options: getCustomerCurrencies(),
 				},
 				allowMultiple: true,
 			},
