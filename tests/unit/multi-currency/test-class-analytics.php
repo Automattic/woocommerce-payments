@@ -284,17 +284,91 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_filter_where_clauses_with_currency() {
+	public function test_filter_where_clauses_with_currency_is() {
 		global $wpdb;
 
 		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
 		$expected = [
 			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
-			"AND wcpay_multicurrency_currency_postmeta.meta_value = 'USD'",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value IN ('USD')",
 		];
 
 		// Simulate a currency being passed in via GET request.
-		$_GET['currency'] = 'USD';
+		$_GET['currency_is'] = 'USD';
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_multiple_currency_is() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value IN ('USD', 'EUR')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is'] = [ 'USD', 'EUR' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_currency_is_not() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value NOT IN ('USD')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is_not'] = 'USD';
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_multiple_currency_is_not() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value NOT IN ('USD', 'EUR')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is_not'] = [ 'USD', 'EUR' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_multiple_currency_args() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value IN ('GBP')",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value NOT IN ('USD', 'EUR')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is']     = [ 'GBP' ];
+		$_GET['currency_is_not'] = [ 'USD', 'EUR' ];
 
 		$this->assertEquals(
 			$expected,
