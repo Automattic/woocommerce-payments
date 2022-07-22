@@ -56,15 +56,7 @@ const BecsDetails = ( { charge = {}, isLoading } ) => {
 			? formatPaymentMethodDetails( charge )
 			: paymentMethodPlaceholders;
 
-	const {
-		bsb,
-		last4,
-		fingerprint,
-		id,
-		name,
-		email,
-		formattedAddress,
-	} = details;
+	const { bsb, last4, id, name, email, formattedAddress } = details;
 
 	// Shorthand for more readable code.
 	const Detail = PaymentDetailsPaymentMethodDetail;
@@ -84,13 +76,6 @@ const BecsDetails = ( { charge = {}, isLoading } ) => {
 					label={ __( 'Account', 'woocommerce-payments' ) }
 				>
 					&bull;&bull;&bull;&bull;&bull;&nbsp;{ last4 }
-				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
-					label={ __( 'Fingerprint', 'woocommerce-payments' ) }
-				>
-					{ fingerprint }
 				</Detail>
 
 				<Detail

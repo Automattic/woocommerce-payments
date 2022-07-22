@@ -139,30 +139,6 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
                   aria-busy="true"
                   class="is-loadable-placeholder is-block"
                 >
-                  Fingerprint
-                </span>
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder"
-                >
-                  fingerprint
-                </span>
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
-              >
-                <span
-                  aria-busy="true"
-                  class="is-loadable-placeholder is-block"
-                >
                   Expires
                 </span>
               </h4>
@@ -682,20 +658,6 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               >
                 •••• 
                 4242
-              </p>
-            </div>
-            <div
-              class="payment-method-detail"
-            >
-              <h4
-                class="payment-method-detail__label"
-              >
-                Fingerprint
-              </h4>
-              <p
-                class="payment-method-detail__value"
-              >
-                fingerprint
               </p>
             </div>
             <div
