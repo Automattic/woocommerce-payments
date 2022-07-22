@@ -6,7 +6,6 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
-import { getHistory } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	Button,
@@ -562,6 +561,7 @@ export default ( { query } ) => {
 		const href = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/disputes',
+			filter: 'awaiting_response',
 		} );
 
 		wcpayTracks.recordEvent(
@@ -594,7 +594,7 @@ export default ( { query } ) => {
 			],
 		} );
 
-		getHistory().push( href );
+		window.location.replace( href );
 	};
 
 	const handleSaveError = ( err, submit ) => {
