@@ -177,6 +177,7 @@ describe( 'getTasks()', () => {
 					completed: false,
 					level: 3,
 					title: '1 disputed payment needs your response',
+					additionalInfo: 'View and respond',
 				} ),
 			] )
 		);
@@ -201,6 +202,7 @@ describe( 'getTasks()', () => {
 					completed: false,
 					level: 3,
 					title: '2000 disputed payments need your response',
+					additionalInfo: 'View and respond',
 				} ),
 			] )
 		);
