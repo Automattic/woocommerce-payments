@@ -52,12 +52,6 @@ class WCPay_Multi_Currency_WooCommercePointsAndRewards_Tests extends WCPAY_UnitT
 	 * @dataProvider filters_provider
 	 */
 	public function test_registers_woocommerce_filters_properly( $filter, $function_name ) {
-		$this->mock_multi_currency
-			->expects( $this->once() )
-			->method( 'get_selected_currency' )
-			->willReturn( new Currency( 'EUR' ) );
-		$this->wc_points_rewards = new WooCommercePointsAndRewards( $this->mock_multi_currency, $this->mock_utils );
-
 		$priority = has_filter( $filter, [ $this->wc_points_rewards, $function_name ] );
 		$this->assertGreaterThan(
 			10,
@@ -73,35 +67,71 @@ class WCPay_Multi_Currency_WooCommercePointsAndRewards_Tests extends WCPAY_UnitT
 		];
 	}
 
-	/**
-	 * @dataProvider points_ratio_provider
-	 */
-	public function test_convert_points_ratio( $backtrace, $rate, $ratio, $converted_ratio ) {
+	public function test_get_selected_currency_called_only_once() {
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_selected_currency' );
+
+		$this->wc_points_rewards->convert_points_ratio();
+		$this->wc_points_rewards->convert_points_ratio();
+	}
+
+
+	public function test_convert_points_ratio_skip_on_select_and_default_currency_match() {
+		$ratio = '';
+
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_selected_currency' );
+
+		$this->mock_utils
+			->expects( $this->never() )
+			->method( 'is_call_in_backtrace' );
+
+		$this->assertEquals( $ratio, $this->wc_points_rewards->convert_points_ratio( $ratio ) );
+	}
+
+	public function test_convert_points_ratio_skip_on_discount_backtrace() {
+		$ratio = '';
+
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_selected_currency' )
+			->willReturn( new Currency( 'EUR' ) );
+
 		$this->mock_utils
 			->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
-			->willReturnCallback(
-				function ( $with ) use ( $backtrace ) {
-					return $with === $backtrace;
-				}
-			);
+			->with( [ 'WC_Points_Rewards_Discount->get_discount_data' ] )
+			->willReturn( true );
 
+		$this->assertEquals( $ratio, $this->wc_points_rewards->convert_points_ratio( $ratio ) );
+	}
+
+	/**
+	 * @dataProvider points_ratio_provider
+	 */
+	public function test_convert_points_ratio( $rate, $ratio, $converted_ratio ) {
 		$this->mock_multi_currency
-			->expects( $backtrace ? $this->never() : $this->once() )
+			->expects( $this->once() )
 			->method( 'get_selected_currency' )
 			->willReturn( new Currency( 'EUR', $rate ) );
+
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_call_in_backtrace' )
+			->willReturn( false );
 
 		$this->assertEquals( $converted_ratio, $this->wc_points_rewards->convert_points_ratio( $ratio ) );
 	}
 
 	public function points_ratio_provider() {
 		return [
-			[ [ 'WC_Points_Rewards_Discount->get_discount_data' ], 0, '1:1', '1:1' ],
-			[ null, 0, '', '0:0' ],
-			[ null, 0, '1', '1:0' ],
-			[ null, 0.5, '1:1', '1:0.5' ],
-			[ null, 2, '1:1.23', '1:2.46' ],
-			[ null, 20, '1:10', '1:200' ],
+			[ 0, '', '0:0' ],
+			[ 0, '1', '1:0' ],
+			[ 0.5, '1:1', '1:0.5' ],
+			[ 2, '1:1.23', '1:2.46' ],
+			[ 20, '1:10', '1:200' ],
 		];
 	}
 
