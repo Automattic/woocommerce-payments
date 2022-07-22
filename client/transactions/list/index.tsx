@@ -78,6 +78,10 @@ interface Column extends TableCardColumn {
 }
 
 const getPaymentSourceDetails = ( txn: Transaction ) => {
+	if ( ! txn.source_identifier ) {
+		return <Fragment></Fragment>;
+	}
+
 	switch ( txn.source ) {
 		case 'giropay':
 			return <Fragment>{ txn.source_identifier }</Fragment>;
