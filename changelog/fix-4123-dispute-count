@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Show the correct number of disputes needing a response in the Payments > Overview task list.
