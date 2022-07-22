@@ -1,5 +1,4 @@
 Significance: patch
-Type: dev
-Comment: Fix only relates to E2E tests.
+Type: fix
 
-
+Fix for an issue where a console error relating to wcSettings displayed on WooCommerce > Settings page.
