@@ -157,6 +157,7 @@ describe( 'getTasks()', () => {
 
 		expect( actual ).toEqual( [] );
 	} );
+
 	it( 'should include the dispute resolution task', () => {
 		const numDisputesNeedingResponse = 1;
 		const actual = getTasks( {
@@ -175,6 +176,31 @@ describe( 'getTasks()', () => {
 					key: 'dispute-resolution-task',
 					completed: false,
 					level: 3,
+					title: '1 disputed payment needs your response',
+				} ),
+			] )
+		);
+	} );
+
+	it( 'should include the dispute resolution task with multiple disputes', () => {
+		const numDisputesNeedingResponse = 2000;
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+			},
+			numDisputesNeedingResponse,
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'dispute-resolution-task',
+					completed: false,
+					level: 3,
+					title: '2000 disputed payments need your response',
 				} ),
 			] )
 		);
