@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Exclude blocks tests against incompatible WC versions + exclude specific WC versions for WP nightly tests
