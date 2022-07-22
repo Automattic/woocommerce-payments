@@ -127,11 +127,8 @@ export const getTasks = ( {
 				),
 				numDisputesNeedingResponse
 			),
-			additionalInfo:
-				0 < numDisputesNeedingResponse
-					? __( 'View and respond', 'woocommerce-payments' )
-					: '',
-			completed: 0 === numDisputesNeedingResponse,
+			additionalInfo: __( 'View and respond', 'woocommerce-payments' ),
+			completed: false,
 			isDeletable: true,
 			isDismissable: true,
 			allowSnooze: true,
