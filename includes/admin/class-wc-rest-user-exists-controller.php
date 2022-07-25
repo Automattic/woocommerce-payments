@@ -57,19 +57,19 @@ class WC_REST_User_Exists_Controller extends WP_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function user_exists( WP_REST_Request $request ): WP_REST_Response {
-		$email   = $request->get_param( 'email' );
-		$user    = get_user_by( 'email', $email );
-		$message = null;
+		$email        = $request->get_param( 'email' );
+		$email_exists = ! empty( email_exists( $email ) );
+		$message      = null;
 
-		// Use this function to show the core error message.
-		if ( ! empty( $user ) ) {
+		if ( $email_exists ) {
+			// Use this function to show the core error message.
 			$error   = wc_create_new_customer( $email );
 			$message = $error->get_error_message();
 		}
 
 		return new WP_REST_Response(
 			[
-				'user-exists' => ! empty( $user ),
+				'user-exists' => $email_exists,
 				'message'     => $message,
 			]
 		);
