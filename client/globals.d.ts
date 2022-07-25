@@ -32,4 +32,3 @@ declare const wcpaySettings: {
 declare const wcTracks: any;
 
 declare const wcPayPlatformCheckoutSubscriptions: any;
-declare const wcPayUserExistsUrl: string;
