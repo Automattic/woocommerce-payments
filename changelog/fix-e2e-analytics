@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix for an issue where a console error relating to wcSettings displayed on WooCommerce > Settings page.
