@@ -71,8 +71,8 @@ class Analytics {
 		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'update_order_stats_data' ], self::PRIORITY_LATEST, 2 );
 
 		// Add filters when the query args are updated.
-		add_filter( 'woocommerce_analytics_orders_query_args', [ $this, 'apply_customer_currency_arg' ] );
-		add_filter( 'woocommerce_analytics_orders_stats_query_args', [ $this, 'apply_customer_currency_arg' ] );
+		add_filter( 'woocommerce_analytics_orders_query_args', [ $this, 'apply_customer_currency_args' ] );
+		add_filter( 'woocommerce_analytics_orders_stats_query_args', [ $this, 'apply_customer_currency_args' ] );
 
 		// If we aren't making a REST request, or no multi currency orders exist in the merchant's store,
 		// return before adding these filters.
@@ -171,13 +171,9 @@ class Analytics {
 	 *
 	 * @return array
 	 */
-	public function apply_customer_currency_arg( $args ): array {
-		$currency = $this->get_customer_currency_from_request();
-		if ( ! is_null( $currency ) ) {
-			$args['currency'] = $currency;
-		}
-
-		return $args;
+	public function apply_customer_currency_args( $args ): array {
+		$currency_args = $this->get_customer_currency_args_from_request();
+		return array_merge( $args, $currency_args );
 	}
 
 	/**
@@ -320,9 +316,15 @@ class Analytics {
 		$prefix       = 'wcpay_multicurrency_';
 		$currency_tbl = $prefix . 'currency_postmeta';
 
-		$currency = $this->get_customer_currency_from_request();
-		if ( ! is_null( $currency ) ) {
-			$clauses[] = "AND {$currency_tbl}.meta_value = '{$currency}'";
+		$currency_args = $this->get_customer_currency_args_from_request();
+		if ( ! empty( $currency_args['currency_is'] ) ) {
+			$currency_is = sprintf( "'%s'", implode( "', '", $currency_args['currency_is'] ) );
+			$clauses[]   = "AND {$currency_tbl}.meta_value IN ({$currency_is})";
+		}
+
+		if ( ! empty( $currency_args['currency_is_not'] ) ) {
+			$currency_is_not = sprintf( "'%s'", implode( "', '", $currency_args['currency_is_not'] ) );
+			$clauses[]       = "AND {$currency_tbl}.meta_value NOT IN ({$currency_is_not})";
 		}
 
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
@@ -454,16 +456,25 @@ class Analytics {
 	 * Will return null if no currency variable was passed in, otherwise will
 	 * return the currency.
 	 *
-	 * @return string|null
+	 * @return array
 	 */
-	private function get_customer_currency_from_request() {
-		// TODO: Figure out where the nonce is stored.
+	private function get_customer_currency_args_from_request(): array {
+		$args = [
+			'currency_is'     => [],
+			'currency_is_not' => [],
+		];
+
 		/* phpcs:disable WordPress.Security.NonceVerification */
-		if ( isset( $_GET['currency'] ) ) {
-			return sanitize_text_field( wp_unslash( $_GET['currency'] ) );
+		if ( isset( $_GET['currency_is'] ) && is_array( $_GET['currency_is'] ) ) {
+			$args['currency_is'] = array_map( 'sanitize_text_field', wp_unslash( $_GET['currency_is'] ) );
 		}
 
-		return null;
+		if ( isset( $_GET['currency_is_not'] ) ) {
+			$args['currency_is_not'] = array_map( 'sanitize_text_field', wp_unslash( $_GET['currency_is_not'] ) );
+		}
+		/* phpcs:enable WordPress.Security.NonceVerification */
+
+		return $args;
 	}
 
 	/**

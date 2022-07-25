@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Correctly show the number of disputes that need to be responded in task list.
+Show the correct number of disputes needing a response in the Payments > Overview task list.

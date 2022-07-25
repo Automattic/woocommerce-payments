@@ -2700,29 +2700,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_transaction_url( $order ) {
-		$charge_id = $order->get_meta( '_charge_id' );
-		return $this->compose_transaction_url( $charge_id );
-	}
+		$intent_id = $order->get_meta( '_intent_id', true );
+		$charge_id = $order->get_meta( '_charge_id', true );
 
-	/**
-	 * Composes url for transaction details page.
-	 *
-	 * @param  string $charge_id Charge id.
-	 * @return string            Transaction details page url.
-	 */
-	protected function compose_transaction_url( $charge_id ) {
-		if ( empty( $charge_id ) ) {
-			return '';
-		}
-
-		return add_query_arg(
-			[
-				'page' => 'wc-admin',
-				'path' => '/payments/transactions/details',
-				'id'   => $charge_id,
-			],
-			admin_url( 'admin.php' )
-		);
+		return WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 	}
 
 	/**

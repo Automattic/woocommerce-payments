@@ -33,8 +33,9 @@ const OverviewPage = () => {
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
-		numDisputesNeedingResponse,
 	} = wcpaySettings;
+	const numDisputesNeedingResponse =
+		parseInt( wcpaySettings.numDisputesNeedingResponse, 10 ) || 0;
 	const { isLoading: settingsIsLoading, settings } = useSettings();
 
 	const tasksUnsorted = getTasks( {
