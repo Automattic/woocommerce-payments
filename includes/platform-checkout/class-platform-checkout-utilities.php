@@ -30,7 +30,7 @@ class Platform_Checkout_Utilities {
 
 		$enable_platform_checkout = $is_platform_checkout_eligible && $is_platform_checkout_enabled && ! $disable_for_subscription;
 
-		if ( $enable_platform_checkout && ! is_user_logged_in() ) {
+		if ( $enable_platform_checkout && $has_subscription_in_cart && ! is_user_logged_in() ) {
 			wp_localize_script(
 				'WCPAY_CHECKOUT',
 				'wcPayPlatformCheckoutSubscriptions',
