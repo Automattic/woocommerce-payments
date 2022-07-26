@@ -60,7 +60,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	const SUCCESSFUL_INTENT_STATUS = [ 'succeeded', 'requires_capture', 'processing' ];
 
-	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';
+	const UPDATE_SAVED_PAYMENT_METHOD     = 'wcpay_update_saved_payment_method';
+	const UPDATE_CUSTOMER_WITH_ORDER_DATA = 'wcpay_update_customer_with_order_data';
 
 	/**
 	 * Set of parameters to build the URL to the gateway's settings page.
@@ -374,6 +375,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
 		add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 2 );
+		add_action( self::UPDATE_CUSTOMER_WITH_ORDER_DATA, [ $this, 'update_customer_with_order_data' ], 10, 2 );
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
@@ -1036,6 +1038,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Update the customer details with the incoming order data.
+	 *
+	 * @param int    $order_id       WC order id.
+	 * @param string $customer_id    The customer id to update details for.
+	 */
+	public function update_customer_with_order_data( $order_id, $customer_id ) {
+		$order = wc_get_order( $order_id );
+		$user  = $order->get_user();
+
+		// Update the existing customer with the current order details.
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+		$this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
+	}
+
+	/**
 	 * Manages customer details held on WCPay server for WordPress user associated with an order.
 	 *
 	 * @param WC_Order $order WC Order object.
@@ -1049,16 +1066,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
 
 		if ( null === $customer_id ) {
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 			// Create a new customer.
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		} else {
-			// Update the existing customer with the current details. In the event the old customer can't be
-			// found a new one is created, so we update the customer ID here as well.
-			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
+			// Update the customer with order data async.
+			$this->action_scheduler_service->schedule_job(
+				time(),
+				self::UPDATE_CUSTOMER_WITH_ORDER_DATA,
+				[
+					'order_id'    => $order->get_id(),
+					'customer_id' => $customer_id,
+				]
+			);
 		}
 
 		return [ $user, $customer_id ];
