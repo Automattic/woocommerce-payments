@@ -72,6 +72,7 @@ export interface Transaction {
 		interval_from: string;
 		interval_to: string;
 	};
+	payment_intent_id?: string;
 }
 
 interface Transactions {

@@ -114,6 +114,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		risk_level: 0,
 		deposit_id: undefined,
 		loan_id: undefined,
+		payment_intent_id: 'pi_mock',
 	},
 	{
 		transaction_id: 'txn_oa9kaKaa8',
@@ -142,6 +143,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		risk_level: 2,
 		deposit_id: 'po_mock',
 		loan_id: 'flxln_mock',
+		payment_intent_id: 'pi_mock',
 	},
 	{
 		available_on: '',
