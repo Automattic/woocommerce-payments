@@ -525,7 +525,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&transaction_type=refund"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                     tabindex="-1"
                   >
                     Online
@@ -644,7 +644,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                     tabindex="-1"
                   >
                     Online
@@ -1406,7 +1406,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&transaction_type=refund"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                     tabindex="-1"
                   >
                     Online
@@ -1525,7 +1525,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                     tabindex="-1"
                   >
                     Online
@@ -2269,7 +2269,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                     tabindex="-1"
                   >
                     Online
@@ -2958,7 +2958,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&transaction_type=refund"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                     tabindex="-1"
                   >
                     Online
@@ -3087,7 +3087,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                     tabindex="-1"
                   >
                     Online
@@ -3897,7 +3897,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&transaction_type=refund"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                     tabindex="-1"
                   >
                     Online
@@ -4016,7 +4016,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                     tabindex="-1"
                   >
                     Online
@@ -4820,7 +4820,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j23w39dsajda&transaction_id=txn_j23jda9JJa&transaction_type=refund"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                     tabindex="-1"
                   >
                     Online
@@ -4939,7 +4939,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_j239jda&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                     tabindex="-1"
                   >
                     Online
