@@ -4,14 +4,17 @@
 const showErrorCheckout = (
 	errorMessage,
 	isFirst = false,
-	validateFields = true
+	validateFields = true,
+	customId = null
 ) => {
 	let messageWrapper = '';
 	if ( errorMessage.includes( 'woocommerce-error' ) ) {
 		messageWrapper = errorMessage;
 	} else {
 		messageWrapper =
-			'<ul class="woocommerce-error" role="alert">' +
+			'<ul class="woocommerce-error" role="alert"' +
+			( customId ? ' id="' + customId + '"' : '' ) +
+			'>' +
 			errorMessage +
 			'</ul>';
 	}

@@ -224,11 +224,22 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}
 	} );
 
+	// Store if the subscription login error is being shown
+	// to remove it when change the e-mail address.
+	let hasPlatformCheckoutSubscriptionLoginError = false;
+
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
 		if ( parentDiv.contains( errorMessage ) ) {
 			parentDiv.removeChild( errorMessage );
+		}
+
+		if ( hasPlatformCheckoutSubscriptionLoginError ) {
+			document
+				.querySelector( '#platform-checkout-subscriptions-login-error' )
+				.remove();
+			hasPlatformCheckoutSubscriptionLoginError = false;
 		}
 
 		if ( 'undefined' !== typeof wcPayPlatformCheckoutSubscriptions ) {
@@ -241,7 +252,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				);
 
 				if ( userExistsData[ 'user-exists' ] ) {
-					showErrorCheckout( userExistsData.message, false, false );
+					hasPlatformCheckoutSubscriptionLoginError = true;
+					showErrorCheckout(
+						userExistsData.message,
+						false,
+						false,
+						'platform-checkout-subscriptions-login-error'
+					);
 					spinner.remove();
 					return;
 				}
