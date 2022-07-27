@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Make updating saved payment method async.

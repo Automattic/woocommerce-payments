@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Make adding fee breakdown to order notes async.

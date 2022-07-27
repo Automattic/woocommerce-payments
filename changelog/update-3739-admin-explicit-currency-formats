@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Skip explicit currency format in admin area when no additional currencies are enabled, matching current fronted behaviour.

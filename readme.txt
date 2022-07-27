@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.4.0
+Stable tag: 4.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,37 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 4.5.0 - 2022-07-27 =
+* Add - Add "Things to do" task list to the Payments Overview screen
+* Add - Add a task to the WooCommerce > Home screen notifying merchants of disputed payments that need a response.
+* Add - Add E2E test to measure checkout page performance
+* Add - Add redirect from charge ID to the payment intent ID equivalent in the transactions detail screen
+* Add - Adds support for filtering by customer currency in order analytics section
+* Add - Add support for filtering by multiple customer currencies in analytics
+* Add - Customer currency filter added to transactions page.
+* Add - Multi-Currency compatibility with Points & Rewards plugin.
+* Fix - Correctly show UPE payment methods when UPE is first enabled while manual capture is already enabled
+* Fix - Exclude blocks tests against incompatible WC versions + exclude specific WC versions for WP nightly tests
+* Fix - Fix a grammatical issue in the dispute task on the Payments > Overview screen when there is more than 1 dispute which needs a response.
+* Fix - Fix an issue with sorting by customer currency in Analytics > Orders
+* Fix - Fix caching issues after accepting a dispute. Resolves issues where the number of disputes needing a response doesn't update after accepting a dispute.
+* Fix - Fixed missing intent metadata in order
+* Fix - Fix for an issue where a console error relating to wcSettings displayed on WooCommerce > Settings page.
+* Fix - Shipping tax conversion while using Multicurrency.
+* Fix - Show the correct number of disputes needing a response in the Payments > Overview task list.
+* Fix - Show WooPay error message.
+* Update - Align Pricing display on Apple Pay/ Google Pay pop-ups with Cart
+* Update - Make adding fee breakdown to order notes async.
+* Update - Make updating saved payment method async.
+* Update - Move the “Things to do” task list to a more visible position on the Payments Overview screen.
+* Update - Redirect users to the disputes screen filtered to disputes which need a response when clicking on the Payments > Overview dispute task.
+* Update - Skip explicit currency format in admin area when no additional currencies are enabled, matching current fronted behaviour.
+* Update - Update transaction details link to use Payment Intent ID instead of Charge ID
+* Dev - Bump minimum required version of WooCommerce from 5.8 to 6.0 and WordPress from 5.7 to 5.8.
+* Dev - Included prelease version of WordPress into E2E tests
+* Dev - Tweak TypeScript definitions for Card readers as suggested on GitHub.
+* Dev - Use country-phone input component for terminal settings phone field
 
 = 4.4.0 - 2022-07-06 =
 * Add - Add handler for authenticated server links
