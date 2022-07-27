@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.4.0
+Stable tag: 4.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.5.0 - 2022-xx-xx =
+= 4.5.0 - 2022-07-27 =
 * Add - Add "Things to do" task list to the Payments Overview screen
 * Add - Add a task to the WooCommerce > Home screen notifying merchants of disputed payments that need a response.
 * Add - Add E2E test to measure checkout page performance
