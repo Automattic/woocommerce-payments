@@ -44,6 +44,7 @@ export interface Transaction {
 		interval_from: string;
 		interval_to: string;
 	};
+	payment_intent_id?: string;
 }
 
 interface Transactions {
@@ -59,6 +60,7 @@ interface TransactionsSummary {
 		net?: number;
 		currency?: string;
 		store_currencies?: string[];
+		customer_currencies?: string[];
 	};
 	isLoading: boolean;
 }
@@ -76,6 +78,8 @@ export const useTransactions = (
 		type_is: typeIs,
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
+		customer_currency_is: customerCurrencyIs,
+		customer_currency_is_not: customerCurrencyIsNot,
 		loan_id_is: loanIdIs,
 		search,
 	}: Query,
@@ -109,6 +113,8 @@ export const useTransactions = (
 				typeIs,
 				typeIsNot,
 				storeCurrencyIs,
+				customerCurrencyIs,
+				customerCurrencyIsNot,
 				loanIdIs,
 				depositId,
 				search,
@@ -132,6 +138,8 @@ export const useTransactions = (
 			typeIs,
 			typeIsNot,
 			storeCurrencyIs,
+			customerCurrencyIs,
+			customerCurrencyIsNot,
 			loanIdIs,
 			depositId,
 			JSON.stringify( search ),
@@ -147,6 +155,8 @@ export const useTransactionsSummary = (
 		type_is: typeIs,
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
+		customer_currency_is: customerCurrencyIs,
+		customer_currency_is_not: customerCurrencyIsNot,
 		loan_id_is: loanIdIs,
 		search,
 	}: Query,
@@ -166,6 +176,8 @@ export const useTransactionsSummary = (
 				typeIs,
 				typeIsNot,
 				storeCurrencyIs,
+				customerCurrencyIs,
+				customerCurrencyIsNot,
 				loanIdIs,
 				depositId,
 				search,
@@ -184,6 +196,8 @@ export const useTransactionsSummary = (
 			typeIs,
 			typeIsNot,
 			storeCurrencyIs,
+			customerCurrencyIs,
+			customerCurrencyIsNot,
 			loanIdIs,
 			depositId,
 			JSON.stringify( search ),

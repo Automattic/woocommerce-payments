@@ -211,7 +211,10 @@ export const TransactionsList = (
 	const totalRows = transactionsSummary.count || 0;
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL =
-			getDetailsURL( txn.charge_id, 'transactions' ) +
+			getDetailsURL(
+				txn.payment_intent_id || txn.charge_id,
+				'transactions'
+			) +
 			'&transaction_id=' +
 			txn.transaction_id +
 			'&transaction_type=' +
@@ -447,6 +450,8 @@ export const TransactionsList = (
 				search,
 				type_is: typeIs,
 				type_is_not: typeIsNot,
+				customer_currency_is: customerCurrencyIs,
+				customer_currency_is_not: customerCurrencyIsNot,
 			} = params;
 			const depositId = props.depositId;
 
@@ -485,6 +490,8 @@ export const TransactionsList = (
 							search,
 							typeIs,
 							typeIsNot,
+							customerCurrencyIs,
+							customerCurrencyIsNot,
 							depositId,
 						} ),
 						method: 'POST',
@@ -601,11 +608,15 @@ export const TransactionsList = (
 	const storeCurrencies =
 		transactionsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
+	const customerCurrencies = transactionsSummary.customer_currencies || [];
 
 	return (
 		<Page>
 			{ showFilters && (
-				<TransactionsFilters storeCurrencies={ storeCurrencies } />
+				<TransactionsFilters
+					storeCurrencies={ storeCurrencies }
+					customerCurrencies={ customerCurrencies }
+				/>
 			) }
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"

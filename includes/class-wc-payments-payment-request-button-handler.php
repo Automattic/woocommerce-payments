@@ -207,9 +207,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function get_product_price( $product ) {
 		$product_price = $product->get_price();
+
+		// If prices should include tax, using tax inclusive price.
+		if ( ! $this->prices_exclude_tax() ) {
+			$product_price = wc_get_price_including_tax( $product );
+		}
+
 		// Add subscription sign-up fees to product price.
 		if ( 'subscription' === $product->get_type() && class_exists( 'WC_Subscriptions_Product' ) ) {
-			$product_price = $product->get_price() + WC_Subscriptions_Product::get_sign_up_fee( $product );
+			$product_price = $product_price + WC_Subscriptions_Product::get_sign_up_fee( $product );
 		}
 
 		return $product_price;
@@ -250,19 +256,21 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 		}
 
-		$data  = [];
-		$items = [];
+		$data          = [];
+		$items         = [];
+		$product_price = $this->get_product_price( $product );
 
 		$items[] = [
 			'label'  => $product->get_name(),
-			'amount' => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ), $currency ),
+			'amount' => WC_Payments_Utils::prepare_amount( $product_price, $currency ),
 		];
 
+		$tax = $this->prices_exclude_tax() ? wc_format_decimal( wc_get_price_including_tax( $product ) - $product_price ) : 0;
 		if ( wc_tax_enabled() ) {
 			$items[] = [
 				'label'   => __( 'Tax', 'woocommerce-payments' ),
-				'amount'  => 0,
-				'pending' => true,
+				'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
+				'pending' => ( 0 === $tax ? true : false ),
 			];
 		}
 
@@ -284,7 +292,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems'] = $items;
 		$data['total']        = [
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ), $currency ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $product_price + $tax, $currency ),
 			'pending' => true,
 		];
 
@@ -1285,6 +1293,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Whether tax should be displayed on seperate line.
+	 * returns true if tax is enabled & display of tax in checkout is set to exclusive.
+	 *
+	 * @return boolean
+	 */
+	private function prices_exclude_tax() {
+		return wc_tax_enabled() && 'incl' !== get_option( 'woocommerce_tax_display_cart' );
+	}
+
+	/**
 	 * Builds the shipping methods to pass to Payment Request
 	 *
 	 * @param array $shipping_methods Shipping methods.
@@ -1332,9 +1350,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 				$product_name = $cart_item['data']->get_name();
 
+				$item_tax = $this->prices_exclude_tax() ? 0 : ( $cart_item['line_subtotal_tax'] ?? 0 );
+
 				$item = [
 					'label'  => $product_name . $quantity_label,
-					'amount' => WC_Payments_Utils::prepare_amount( $amount, $currency ),
+					'amount' => WC_Payments_Utils::prepare_amount( $amount + $item_tax, $currency ),
 				];
 
 				$items[] = $item;
@@ -1357,7 +1377,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$items_total = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
 		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( '' );
 
-		if ( wc_tax_enabled() ) {
+		if ( $this->prices_exclude_tax() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Tax', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $tax, $currency ),
@@ -1365,9 +1385,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		if ( WC()->cart->needs_shipping() ) {
-			$items[] = [
+			$shipping_tax = $this->prices_exclude_tax() ? 0 : WC()->cart->shipping_tax_total;
+			$items[]      = [
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $shipping, $currency ),
+				'amount' => WC_Payments_Utils::prepare_amount( $shipping + $shipping_tax, $currency ),
 			];
 		}
 

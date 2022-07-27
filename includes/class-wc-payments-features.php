@@ -58,7 +58,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_account_overview_task_list_enabled() {
-		return get_option( '_wcpay_feature_account_overview_task_list' );
+		return get_option( '_wcpay_feature_account_overview_task_list', '1' );
 	}
 
 	/**
@@ -97,6 +97,15 @@ class WC_Payments_Features {
 		// read directly from cache, ignore cache expiration check.
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
+	}
+
+	/**
+	 * Checks whether the platform checkout is elegible for paying for subscriptions.
+	 *
+	 * @return boolean
+	 */
+	public static function is_platform_checkout_subscriptions_enabled() {
+		return '1' === get_option( '_wcpay_feature_platform_checkout_subscriptions_enabled', '0' );
 	}
 
 	/**
