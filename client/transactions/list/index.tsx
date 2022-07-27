@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { uniq } from 'lodash';
 import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
@@ -31,6 +31,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import { useTransactions, useTransactionsSummary } from 'data/index';
+import { Transaction } from 'data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import ClickableCell from 'components/clickable-cell';
@@ -39,6 +40,7 @@ import { displayType } from 'transactions/strings';
 import { displayStatus as displayDepositStatus } from 'deposits/strings';
 import { formatStringValue } from 'utils';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import { getChargeChannel } from 'utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
@@ -48,6 +50,7 @@ import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 import DownloadButton from 'components/download-button';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
+import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -58,6 +61,7 @@ interface Column extends TableCardColumn {
 		| 'transaction_id'
 		| 'date'
 		| 'type'
+		| 'channel'
 		| 'amount'
 		| 'fees'
 		| 'net'
@@ -72,6 +76,30 @@ interface Column extends TableCardColumn {
 	visible?: boolean;
 	cellClassName?: string;
 }
+
+const getPaymentSourceDetails = ( txn: Transaction ) => {
+	if ( ! txn.source_identifier ) {
+		return <Fragment></Fragment>;
+	}
+
+	switch ( txn.source ) {
+		case 'giropay':
+			return <Fragment>{ txn.source_identifier }</Fragment>;
+		case 'p24':
+			return (
+				<Fragment>
+					{ p24BankList[ txn.source_identifier ] ?? '' }
+				</Fragment>
+			);
+		default:
+			return (
+				<Fragment>
+					&nbsp;&bull;&bull;&bull;&bull;&nbsp;{ ' ' }
+					{ txn.source_identifier }
+				</Fragment>
+			);
+	}
+};
 
 const getColumns = (
 	includeDeposit: boolean,
@@ -99,6 +127,13 @@ const getColumns = (
 			key: 'type',
 			label: __( 'Type', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Type', 'woocommerce-payments' ),
+			required: true,
+			isLeftAligned: true,
+		},
+		{
+			key: 'channel',
+			label: __( 'Channel', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Channel', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 		},
@@ -211,7 +246,10 @@ export const TransactionsList = (
 	const totalRows = transactionsSummary.count || 0;
 	const rows = transactions.map( ( txn ) => {
 		const detailsURL =
-			getDetailsURL( txn.charge_id, 'transactions' ) +
+			getDetailsURL(
+				txn.payment_intent_id || txn.charge_id,
+				'transactions'
+			) +
 			'&transaction_id=' +
 			txn.transaction_id +
 			'&transaction_type=' +
@@ -331,6 +369,10 @@ export const TransactionsList = (
 					)
 				),
 			},
+			channel: {
+				value: getChargeChannel( txn.channel ),
+				display: clickable( getChargeChannel( txn.channel ) ),
+			},
 			type: {
 				value: displayType[ dataType ],
 				display: clickable(
@@ -341,9 +383,12 @@ export const TransactionsList = (
 				value: txn.source,
 				display: ! isFinancingType ? (
 					clickable(
-						<span
-							className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-						/>
+						<span className="payment-method-details">
+							<span
+								className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+							/>
+							{ getPaymentSourceDetails( txn ) }
+						</span>
 					)
 				) : (
 					<span className={ 'payment-method__brand' }>—</span>

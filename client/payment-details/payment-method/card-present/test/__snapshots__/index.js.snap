@@ -29,20 +29,6 @@ exports[`CardPresentDetails renders loading 1`] = `
         <h4
           class="payment-method-detail__label"
         >
-          Fingerprint
-        </h4>
-        <p
-          class="payment-method-detail__value"
-        >
-          123456789abc
-        </p>
-      </div>
-      <div
-        class="payment-method-detail"
-      >
-        <h4
-          class="payment-method-detail__label"
-        >
           Expires
         </h4>
         <p
