@@ -177,6 +177,7 @@
 		flex-direction: column;
 		margin: 0 -#{$grid-unit-30} -#{$grid-unit-30} 0;
 		padding-left: 4px;
+		max-height: 350px;
 	}
 
 	&__search {
