@@ -22,8 +22,7 @@
 		"page": true,
 		"browser": true,
 		"context": true,
-		"jestPuppeteer": true,
-		"wcPayPlatformCheckoutSubscriptions": true
+		"jestPuppeteer": true
 	},
 	"settings": {
 		"react": {

@@ -242,10 +242,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			hasPlatformCheckoutSubscriptionLoginError = false;
 		}
 
-		if ( 'undefined' !== typeof wcPayPlatformCheckoutSubscriptions ) {
+		if ( getConfig( 'platformCheckoutNeedLogin' ) ) {
 			try {
 				const userExistsData = await request(
-					wcPayPlatformCheckoutSubscriptions.user_exists_url,
+					getConfig( 'userExistsEndpoint' ),
 					{
 						email,
 					}
