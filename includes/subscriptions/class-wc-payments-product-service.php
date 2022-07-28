@@ -128,11 +128,12 @@ class WC_Payments_Product_Service {
 	 * return string       The item's WCPay product id.
 	 */
 	public function get_wcpay_product_id_for_item( string $type ) : string {
-		if ( ! get_option( self::get_wcpay_product_id_option() . '_' . $type ) ) {
-			$this->create_product_for_item_type( $type );
+		$sanitized_type = str_replace( ' ', '_', trim( strtolower( $type ) ) );
+		if ( ! get_option( self::get_wcpay_product_id_option() . '_' . $sanitized_type ) ) {
+			$this->create_product_for_item_type( $sanitized_type );
 		}
 
-		return get_option( self::get_wcpay_product_id_option() . '_' . $type );
+		return get_option( self::get_wcpay_product_id_option() . '_' . $sanitized_type );
 	}
 
 	/**
