@@ -494,4 +494,62 @@ export const merchantWCP = {
 			await checkbox.click();
 		}
 	},
+
+	activateWooPay: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if (
+			! ( await page.$( '#override_platform_checkout_eligible:checked' ) )
+		) {
+			await expect( page ).toClick( 'label', {
+				text:
+					'Override the platform_checkout_eligible flag in the account cache',
+			} );
+		}
+
+		if (
+			! ( await page.$(
+				'#override_platform_checkout_eligible_value:checked'
+			) )
+		) {
+			await expect( page ).toClick( 'label', {
+				text:
+					'Set platform_checkout_eligible flag to true, false otherwise',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	deactivateWooPay: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( await page.$( '#override_platform_checkout_eligible:checked' ) ) {
+			await expect( page ).toClick( 'label', {
+				text:
+					'Override the platform_checkout_eligible flag in the account cache',
+			} );
+		}
+
+		if (
+			await page.$( '#override_platform_checkout_eligible_value:checked' )
+		) {
+			await expect( page ).toClick( 'label', {
+				text:
+					'Set platform_checkout_eligible flag to true, false otherwise',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
 };

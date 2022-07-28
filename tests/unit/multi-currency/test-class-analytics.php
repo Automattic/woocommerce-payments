@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\MultiCurrency\Analytics;
 use WCPay\MultiCurrency\Currency;
@@ -36,6 +38,20 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	private $mock_orders = [];
 
 	/**
+	 * Mock customer currencies
+	 *
+	 * @var array An array of customer currencies.
+	 */
+	private $mock_customer_currencies = [ 'EUR', 'USD', 'GBP', 'ISK' ];
+
+	/**
+	 * Mock available currencies.
+	 *
+	 * @var array An array of available currencies.
+	 */
+	private $mock_available_currencies = [];
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -55,7 +71,16 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
-		$this->analytics           = new Analytics( $this->mock_multi_currency );
+
+		$this->mock_multi_currency->expects( $this->any() )
+			->method( 'get_all_customer_currencies' )
+			->willReturn( $this->mock_customer_currencies );
+
+		$this->mock_multi_currency->expects( $this->any() )
+			->method( 'get_available_currencies' )
+			->willReturn( $this->get_mock_available_currencies() );
+
+		$this->analytics = new Analytics( $this->mock_multi_currency );
 
 		remove_filter( 'user_has_cap', $cb );
 	}
@@ -82,6 +107,24 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			'select clause filters added with late priority' => [ 'woocommerce_analytics_clauses_select', 'filter_select_clauses', 20 ],
 			'join clause filters added with late priority' => [ 'woocommerce_analytics_clauses_join', 'filter_join_clauses', 20 ],
 		];
+	}
+
+	public function test_register_customer_currencies() {
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_all_customer_currencies' )
+			->willReturn( $this->mock_customer_currencies );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_available_currencies' )
+			->willReturn( $this->get_mock_available_currencies() );
+
+		$this->analytics->register_customer_currencies();
+
+		$data_registry = Package::container()->get(
+			AssetDataRegistry::class
+		);
+
+		$this->assertTrue( $data_registry->exists( 'customerCurrencies' ) );
 	}
 
 	public function test_update_order_stats_data_with_non_multi_currency_order() {
@@ -229,6 +272,120 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected, $this->analytics->filter_select_clauses( $clauses, 'orders_stats' ) );
 	}
 
+	public function test_filter_where_clauses_when_no_currency_provided() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_currency_is() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value IN ('USD')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is'] = [ 'USD' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_multiple_currency_is() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value IN ('USD', 'EUR')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is'] = [ 'USD', 'EUR' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_currency_is_not() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value NOT IN ('USD')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is_not'] = [ 'USD' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_multiple_currency_is_not() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value NOT IN ('USD', 'EUR')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is_not'] = [ 'USD', 'EUR' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_multiple_currency_args() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value IN ('GBP')",
+			"AND wcpay_multicurrency_currency_postmeta.meta_value NOT IN ('USD', 'EUR')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is']     = [ 'GBP' ];
+		$_GET['currency_is_not'] = [ 'USD', 'EUR' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_disable_filter() {
+		$expected = [ 'Santa Claus', 'Mrs. Claus' ];
+		add_filter( 'wcpay_multi_currency_disable_filter_where_clauses', '__return_true' );
+
+		// Nothing should be appended to the clauses array, because the filter is disabled.
+		$_GET['currency_is'] = [ 'USD' ];
+
+		$this->assertEquals( $expected, $this->analytics->filter_where_clauses( $expected ) );
+	}
+
 	/**
 	 * @dataProvider join_clause_provider
 	 */
@@ -330,6 +487,20 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 
 			return $allcaps;
 		};
+	}
+
+	private function get_mock_available_currencies() {
+		if ( empty( $this->mock_available_currencies ) ) {
+			$this->mock_available_currencies = [
+				'GBP' => new Currency( 'GBP', 1.2 ),
+				'USD' => new Currency( 'USD', 1 ),
+				'EUR' => new Currency( 'EUR', 0.9 ),
+				'ISK' => new Currency( 'ISK', 30.52 ),
+				'NZD' => new Currency( 'NZD', 1.4 ),
+			];
+		}
+
+		return $this->mock_available_currencies;
 	}
 
 	/**
