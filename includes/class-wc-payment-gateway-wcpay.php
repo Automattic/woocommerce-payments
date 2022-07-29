@@ -2637,8 +2637,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception - When an error occurs in setup intent creation.
 	 */
 	public function create_and_confirm_setup_intent() {
+		$payment_information             = Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification
+		$should_save_in_platform_account = false;
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_information = Payment_Information::from_payment_request( $_POST );
+		if ( ! empty( $_POST['save_payment_method_in_platform_account'] ) && filter_var( wp_unslash( $_POST['save_payment_method_in_platform_account'] ), FILTER_VALIDATE_BOOLEAN ) ) {
+			$should_save_in_platform_account = true;
+		}
 
 		// Determine the customer adding the payment method, create one if we don't have one already.
 		$user        = wp_get_current_user();
@@ -2650,7 +2655,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		return $this->payments_api_client->create_and_confirm_setup_intent(
 			$payment_information->get_payment_method(),
-			$customer_id
+			$customer_id,
+			$should_save_in_platform_account
 		);
 	}
 
