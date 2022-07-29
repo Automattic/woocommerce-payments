@@ -35,13 +35,21 @@ const useCustomerData = () => {
 			isInitialized: store.hasFinishedResolution( 'getCartData' ),
 		};
 	} );
-	const { setShippingAddress, setBillingData } = useDispatch( WC_STORE_CART );
+	const {
+		setShippingAddress,
+		setBillingData,
+		setBillingAddress,
+	} = useDispatch( WC_STORE_CART );
 
 	return {
 		isInitialized,
 		billingData: customerData.billingData,
+		// Backward compatibility billingData/billingAddress
+		billingAddress: customerData.billingAddress,
 		shippingAddress: customerData.shippingAddress,
 		setBillingData,
+		// Backward compatibility setBillingData/setBillingAddress
+		setBillingAddress,
 		setShippingAddress,
 	};
 };
