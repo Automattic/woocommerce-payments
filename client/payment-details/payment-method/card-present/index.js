@@ -87,7 +87,6 @@ const CardPresentDetails = ( { charge = {}, isLoading } ) => {
 
 	const {
 		last4,
-		fingerprint,
 		date,
 		cardType,
 		id,
@@ -108,13 +107,6 @@ const CardPresentDetails = ( { charge = {}, isLoading } ) => {
 					label={ __( 'Number', 'woocommerce-payments' ) }
 				>
 					&bull;&bull;&bull;&bull;&nbsp;{ last4 }
-				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
-					label={ __( 'Fingerprint', 'woocommerce-payments' ) }
-				>
-					{ fingerprint }
 				</Detail>
 
 				<Detail

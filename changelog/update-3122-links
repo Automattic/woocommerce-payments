@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Update transaction details link to use Payment Intent ID instead of Charge ID
