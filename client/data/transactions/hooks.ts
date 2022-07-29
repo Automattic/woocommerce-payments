@@ -37,7 +37,35 @@ export interface Transaction {
 	transaction_id: string;
 	date: string;
 	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
-	source: string;
+	channel: 'in_person' | 'online';
+	// A field to identify the payment's source.
+	// Usually last 4 digits for card payments, bank name for bank transfers...
+	source_identifier: string;
+	source:
+		| 'ach_credit_transfer'
+		| 'ach_debit'
+		| 'acss_debit'
+		| 'alipay'
+		| 'au_becs_debit'
+		| 'bancontact'
+		| 'eps'
+		| 'giropay'
+		| 'sepa_debit'
+		| 'ideal'
+		| 'klarna'
+		| 'multibanco'
+		| 'p24'
+		| 'sofort'
+		| 'stripe_account'
+		| 'wechat'
+		| 'amex'
+		| 'diners'
+		| 'discover'
+		| 'jcb'
+		| 'mastercard'
+		| 'unionpay'
+		| 'visa'
+		| 'link';
 	loan_id?: string;
 	metadata?: {
 		charge_type: 'card_reader_fee';
