@@ -145,7 +145,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->add_payment_started_note( $order, $intent_id, $charge_id );
+		$this->add_payment_started_note( $order, $intent_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 

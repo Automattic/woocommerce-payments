@@ -2219,7 +2219,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$charge    = $intent->get_charge();
 			$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
 
-			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status, $charge_id );
+			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status );
 			return;
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
