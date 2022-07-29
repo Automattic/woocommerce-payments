@@ -388,7 +388,6 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
-		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
 	}
 
 	/**
