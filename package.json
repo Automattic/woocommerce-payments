@@ -39,6 +39,7 @@
     "test:update-snapshots": "npm run test:js -- --updateSnapshot",
     "test:php": "./bin/run-tests.sh",
     "watch": "webpack --watch",
+    "hmr": "webpack server",
     "start": "npm run watch",
     "dev": "npm run up && npm run watch",
     "up:recreate": "docker-compose up --build --force-recreate -d && ./bin/docker-setup.sh",
