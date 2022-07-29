@@ -118,11 +118,13 @@ const WCPayUPEFields = ( {
 					const setAddress =
 						shippingAddressFields[ key ] === nodeId
 							? customerData.setShippingAddress
-							: customerData.setBillingData;
+							: customerData.setBillingData ||
+							  customerData.setBillingAddress;
 					const customerAddress =
 						shippingAddressFields[ key ] === nodeId
 							? customerData.shippingAddress
-							: customerData.billingData;
+							: customerData.billingData ||
+							  customerData.billingAddress;
 
 					if ( 'line1' === key ) {
 						customerAddress.address_1 = address.address[ key ];
@@ -140,8 +142,15 @@ const WCPayUPEFields = ( {
 						return document.getElementById( 'email' ).value;
 					}
 
-					customerData.billingData.email = getEmail();
-					customerData.setBillingData( customerData.billingData );
+					if ( customerData.billingData ) {
+						customerData.billingData.email = getEmail();
+						customerData.setBillingData( customerData.billingData );
+					} else {
+						customerData.billingAddress.email = getEmail();
+						customerData.setBillingAddress(
+							customerData.billingAddress
+						);
+					}
 				},
 				show_button: ( linkAutofill ) => {
 					jQuery( '#email' )
