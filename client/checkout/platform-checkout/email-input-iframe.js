@@ -4,6 +4,8 @@
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
+import request from '../utils/request';
+import showErrorCheckout from '../utils/show-error-checkout';
 
 export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
@@ -222,11 +224,48 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}
 	} );
 
-	const platformCheckoutLocateUser = ( email ) => {
+	// Store if the subscription login error is being shown
+	// to remove it when change the e-mail address.
+	let hasPlatformCheckoutSubscriptionLoginError = false;
+
+	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
 		if ( parentDiv.contains( errorMessage ) ) {
 			parentDiv.removeChild( errorMessage );
+		}
+
+		if ( hasPlatformCheckoutSubscriptionLoginError ) {
+			document
+				.querySelector( '#platform-checkout-subscriptions-login-error' )
+				.remove();
+			hasPlatformCheckoutSubscriptionLoginError = false;
+		}
+
+		if ( getConfig( 'platformCheckoutNeedLogin' ) ) {
+			try {
+				const userExistsData = await request(
+					getConfig( 'userExistsEndpoint' ),
+					{
+						email,
+					}
+				);
+
+				if ( userExistsData[ 'user-exists' ] ) {
+					hasPlatformCheckoutSubscriptionLoginError = true;
+					showErrorCheckout(
+						userExistsData.message,
+						false,
+						false,
+						'platform-checkout-subscriptions-login-error'
+					);
+					spinner.remove();
+					return;
+				}
+			} catch {
+				showErrorMessage();
+				spinner.remove();
+			}
 		}
 
 		const emailExistsQuery = new URLSearchParams();
