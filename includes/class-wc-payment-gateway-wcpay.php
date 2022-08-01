@@ -678,6 +678,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,
+			'platformCheckoutNeedLogin'      => ! is_user_logged_in() && $platform_checkout_util->is_subscription_item_in_cart(),
+			'userExistsEndpoint'             => get_rest_url( null, '/wc/v3/users/exists' ),
 		];
 	}
 
