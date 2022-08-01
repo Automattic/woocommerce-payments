@@ -603,7 +603,11 @@ jQuery( function ( $ ) {
 		) {
 			const intentId = upePaymentIntentData.split( '-' )[ 1 ];
 			const clientSecret = upePaymentIntentData.split( '-' )[ 2 ];
-			return { intentId, clientSecret };
+			const accountId = upePaymentIntentData.split( '-' )[ 3 ];
+
+			if ( accountId === getConfig( 'accountId' ) ) {
+				return { intentId, clientSecret };
+			}
 		}
 
 		return {};
@@ -618,7 +622,11 @@ jQuery( function ( $ ) {
 		if ( upeSetupIntentData ) {
 			const intentId = upeSetupIntentData.split( '-' )[ 0 ];
 			const clientSecret = upeSetupIntentData.split( '-' )[ 1 ];
-			return { intentId, clientSecret };
+			const accountId = upeSetupIntentData.split( '-' )[ 2 ];
+
+			if ( accountId === getConfig( 'accountId' ) ) {
+				return { intentId, clientSecret };
+			}
 		}
 
 		return {};

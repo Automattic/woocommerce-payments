@@ -297,6 +297,8 @@ jQuery( function ( $ ) {
 		// Populate form with the payment method.
 		$( paymentSelector ).val( id );
 
+		$( '#wcpay-account' ).val( getConfig( 'accountId' ) );
+
 		// Re-submit the form.
 		$form.removeClass( 'processing' ).submit();
 	};

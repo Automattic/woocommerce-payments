@@ -61,6 +61,10 @@ class WC_Payments_REST_Controller extends WP_REST_Controller {
 	 * Override this method if custom permissions required.
 	 */
 	public function check_permission() {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$account_id = isset( $_COOKIE['account_id'] ) ? $_COOKIE['account_id'] : null;
+		WC_Payments_Utils::switch_to_account( $account_id );
+
 		return current_user_can( 'manage_woocommerce' );
 	}
 }

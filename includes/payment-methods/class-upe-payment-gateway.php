@@ -167,6 +167,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			}
 
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$account_id = isset( $_POST['wcpay_account_id'] ) ? $_POST['wcpay_account_id'] : null;
+			WC_Payments_Utils::switch_to_account( $account_id );
+
 			$order_id                  = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
 			$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : '';
 			$save_payment_method       = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false;
@@ -242,13 +246,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			}
 
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$account_id = isset( $_POST['wcpay_account_id'] ) ? $_POST['wcpay_account_id'] : null;
+			WC_Payments_Utils::switch_to_account( $account_id );
+
 			// If paying from order, we need to get the total from the order instead of the cart.
 			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
 
-			$response = $this->create_payment_intent( $order_id );
+			$response = $this->create_payment_intent( $order_id, $account_id );
 
 			if ( strpos( $response['id'], 'pi_' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
-				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'] );
+				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'], $account_id );
 			}
 
 			wp_send_json_success( $response, 200 );
@@ -267,11 +275,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Creates payment intent using current cart or order and store details.
 	 *
-	 * @param int $order_id The id of the order if intent created from Order.
+	 * @param int         $order_id The id of the order if intent created from Order.
+	 * @param string|null $account_id Account ID, if not default.
 	 *
 	 * @return array
 	 */
-	public function create_payment_intent( $order_id = null ) {
+	public function create_payment_intent( $order_id = null, $account_id ) {
 		$amount   = WC()->cart->get_total( '' );
 		$currency = get_woocommerce_currency();
 		$number   = 0;
@@ -284,7 +293,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
 		if ( 1 > $converted_amount ) {
-			return $this->create_setup_intent();
+			return $this->create_setup_intent( $account_id );
 		}
 
 		$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
@@ -346,7 +355,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			}
 
-			$response = $this->create_setup_intent();
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$account_id = isset( $_POST['wcpay_account_id'] ) ? $_POST['wcpay_account_id'] : null;
+			WC_Payments_Utils::switch_to_account( $account_id );
+
+			$response = $this->create_setup_intent( $account_id );
 
 			$this->add_upe_setup_intent_to_session( $response['id'], $response['client_secret'] );
 
@@ -366,15 +379,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Creates setup intent without confirmation.
 	 *
+	 * @param string|null $account_id Account ID, if not default.
+	 *
 	 * @return array
 	 */
-	public function create_setup_intent() {
+	public function create_setup_intent( $account_id = null ) {
 		// Determine the customer managing the payment methods, create one if we don't have one already.
 		$user        = wp_get_current_user();
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID, $account_id );
 		if ( null === $customer_id ) {
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new \WC_Customer( $user->ID ) );
-			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
+			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data, $account_id );
 		}
 
 		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
@@ -419,6 +434,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_type              = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 		$save_payment_method       = $payment_type->equals( Payment_Type::RECURRING() ) || ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$account_id = $_POST['wcpay-account'] ?? null;
+		if ( $account_id === $this->account->get_stripe_account_id() ) {
+			$account_id = null;
+		}
+		WC_Payments_Utils::switch_to_account( $account_id );
+		$order->update_meta_data( '_wcpay_account_id', $account_id );
+		$order->save_meta_data();
 
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
@@ -591,6 +615,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );
+
+			WC_Payments_Utils::switch_to_account( $order->get_meta( '_wcpay_account_id' ) );
 
 			// Get user/customer for order.
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
@@ -1162,15 +1188,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @param string $intent_id     The payment intent id.
 	 * @param string $client_secret The payment intent client secret.
+	 * @param string $account_id Account ID, if not default.
 	 */
-	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
+	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '', string $account_id = '' ) {
 		$cart_hash = 'undefined';
 
 		if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
 			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
 		}
 
-		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret;
+		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret . '-' . $account_id;
 
 		WC()->session->set( self::KEY_UPE_PAYMENT_INTENT, $value );
 	}

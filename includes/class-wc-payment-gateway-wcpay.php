@@ -659,7 +659,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return [
 			'publishableKey'                 => $this->account->get_publishable_key( $this->is_in_test_mode() ),
 			'testMode'                       => $this->is_in_test_mode(),
-			'accountId'                      => $this->account->get_stripe_account_id(),
+			'accountId'                      => apply_filters( 'wcpay_account_id', $this->account->get_stripe_account_id() ),
 			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
@@ -865,6 +865,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<div id="wcpay-card-element"></div>
 				<div id="wcpay-errors" role="alert"></div>
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
+				<input id="wcpay-account" type="hidden" name="wcpay-account" />
 				<input type="hidden" name="wcpay-is-platform-payment-method" value="<?php echo esc_attr( $this->should_use_stripe_platform_on_checkout_page() ); ?>" />
 			<?php
 			if ( $this->is_saved_cards_enabled() ) {
@@ -1040,27 +1041,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Manages customer details held on WCPay server for WordPress user associated with an order.
 	 *
-	 * @param WC_Order $order WC Order object.
+	 * @param WC_Order    $order WC Order object.
+	 * @param string|null $account_id Account ID, if not default.
 	 *
 	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
 	 */
-	protected function manage_customer_details_for_order( $order ) {
+	protected function manage_customer_details_for_order( $order, $account_id = null ) {
 		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
 		}
 
 		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID, $account_id );
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 
 		if ( null === $customer_id ) {
 			// Create a new customer.
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data, $account_id );
 		} else {
 			// Update the existing customer with the current details. In the event the old customer can't be
 			// found a new one is created, so we update the customer ID here as well.
-			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
+			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data, $account_id );
 		}
 
 		return [ $user, $customer_id ];
@@ -1103,7 +1105,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount   = $order->get_total();
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
-		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+		// phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$account_id = $_POST['wcpay-account'] ?? null;
+		if ( empty( $account_id ) && ! empty( $order->get_meta( '_wcpay_account_id' ) ) ) {
+			$account_id = $order->get_meta( '_wcpay_account_id' );
+		}
+		if ( $account_id === $this->account->get_stripe_account_id() ) {
+			$account_id = null;
+		}
+		WC_Payments_Utils::switch_to_account( $account_id );
+		$order->update_meta_data( '_wcpay_account_id', $account_id );
+		$order->save_meta_data();
+
+		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $account_id );
 
 		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
@@ -1550,6 +1564,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$charge_id = $order->get_meta( '_charge_id', true );
+		WC_Payments_Utils::switch_to_account( $order->get_meta( '_wcpay_account_id' ) );
 
 		try {
 			// If the payment method is Interac, the refund already exists (refunded via Mobile app).
@@ -2365,6 +2380,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'order_not_found'
 				);
 			}
+
+			WC_Payments_Utils::switch_to_account( $order->get_meta( '_wcpay_account_id' ) );
 
 			$intent_id          = $order->get_meta( '_intent_id', true );
 			$intent_id_received = isset( $_POST['intent_id'] )

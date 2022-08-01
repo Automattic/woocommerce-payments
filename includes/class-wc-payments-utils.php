@@ -805,4 +805,22 @@ class WC_Payments_Utils {
 
 		return $formatted_amount;
 	}
+
+	/**
+	 * Sets account ID for all API requests to server.
+	 *
+	 * @param string $account_id Account ID to use.
+	 */
+	public static function switch_to_account( $account_id ) {
+		if ( ! empty( $account_id ) ) {
+			add_filter(
+				'wcpay_api_request_params',
+				function( $params ) use ( $account_id ) {
+					$params['account_id'] = $account_id;
+					return $params;
+				}
+			);
+		}
+	}
+
 }
