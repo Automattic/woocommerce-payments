@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ask for login when buying a subscription with WooPay.
