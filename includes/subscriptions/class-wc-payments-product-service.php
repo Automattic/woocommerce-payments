@@ -128,13 +128,22 @@ class WC_Payments_Product_Service {
 	 * return string       The item's WCPay product id.
 	 */
 	public function get_wcpay_product_id_for_item( string $type ) : string {
-		$sanitized_type  = sanitize_key( str_replace( ' ', '_', strtolower( trim( $type ) ) ) );
+		$sanitized_type  = self::sanitize_option_key( $type );
 		$option_key_name = self::get_wcpay_product_id_option() . '_' . $sanitized_type;
 		if ( ! get_option( $option_key_name ) ) {
 			$this->create_product_for_item_type( $sanitized_type );
 		}
-
 		return get_option( $option_key_name );
+	}
+
+	/**
+	 * Sanitize option key string to replace space with underscore, and remove special characters.
+	 *
+	 * @param string $type Non sanitized input.
+	 * return string       Sanitized output.
+	 */
+	public static function sanitize_option_key( string $type ) {
+		return sanitize_key( str_replace( ' ', '_', strtolower( trim( $type ) ) ) );
 	}
 
 	/**
