@@ -274,9 +274,7 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $mock_product_id, $this->product_service->get_wcpay_product_id( $this->mock_product ) );
 	}
 
-	/**
-	 * Tests for WC_Payments_Product_Service::get_wcpay_product_id_option()
-	 */
+
 	public function test_get_wcpay_product_id_option() {
 		$this->assertSame( '_wcpay_product_id_live', WC_Payments_Product_Service::get_wcpay_product_id_option() );
 
@@ -286,13 +284,24 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests for WC_Payments_Product_Service::get_wcpay_price_id_option()
+	 * Tests for WC_Payments_Product_Service::get_wcpay_product_id_for_item()
 	 */
-	public function test_get_wcpay_price_id_option() {
-		$this->assertSame( '_wcpay_product_price_id_live', WC_Payments_Product_Service::get_wcpay_price_id_option() );
+	public function test_get_wcpay_product_id_for_item() {
 
-		// set to testmode.
-		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
-		$this->assertSame( '_wcpay_product_price_id_test', WC_Payments_Product_Service::get_wcpay_price_id_option() );
+		$this->mock_api_client->expects( $this->once() )
+		->method( 'create_product' )
+		->willReturn(
+			[
+				'wcpay_product_id' => 'product_id_test123',
+				'wcpay_price_id'   => 'price_test123',
+			]
+		);
+
+		// If type is 'Test Tax *&^ name', the result should be _wcpay_product_id_live_test_tax__name.
+		$test_type = 'Test Tax *&^ name';
+		$this->product_service->get_wcpay_product_id_for_item( $test_type );
+
+		$this->assertFalse( get_option( '_wcpay_product_id_live_Test Tax *&^ name' ) );
+		$this->assertSame( 'product_id_test123', get_option( '_wcpay_product_id_live_test_tax__name' ) );
 	}
 }
