@@ -967,6 +967,8 @@ class WC_Payments {
 
 		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
+			add_action( 'woocommerce_payment_complete', [ __CLASS__, 'wc_payment_complete_during_platform_checkout' ] );
+			add_filter( 'woocommerce_order_has_status', [ __CLASS__, 'wc_order_has_status_during_platform_checkout' ], 10, 3 );
 			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
 			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 
@@ -1150,6 +1152,88 @@ class WC_Payments {
 		}
 
 		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
+	}
+
+	/**
+	 * During a platform checkout, when the 'woocommerce_payment_complete' action gets
+	 * called, add a '_is_processed_by_merchant' flag to the $order (if not already set)
+	 * indicating that the $order has been processed by the merchant.
+	 *
+	 * The '_is_processed_by_merchant' flag serves as a way to control the status of an
+	 * order based on whether the $order has completed payment in the merchant site.
+	 *
+	 * @param mixed $order_id the order ID for the $order that has completed payment.
+	 * @return void
+	 */
+	public static function wc_payment_complete_during_platform_checkout( $order_id ) {
+		// Only apply this workaround when checking out.
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$is_post_request     = 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? '' );
+		$is_checkout_request = false !== strpos( ( $_SERVER['REQUEST_URI'] ?? '' ), 'checkout' );
+		$is_checking_out     = $is_post_request && $is_checkout_request;
+
+		if ( $is_checking_out ) {
+			$wc_order = wc_get_order( $order_id );
+
+			// Avoid setting '_is_processed_by_merchant' more than once.
+			$is_processed_by_merchant = filter_var(
+				$wc_order->get_meta( '_is_processed_by_merchant' ),
+				FILTER_VALIDATE_BOOLEAN
+			);
+
+			if ( ! $is_processed_by_merchant ) {
+				// Add this to prevent AbstractCartRoute::cart_updated( $request ) from
+				// updating the cart, after the $order has been processed by the merchant site.
+				// Otherwise, it will put the $order in an inconsistent state.
+				$wc_order->add_meta_data( '_is_processed_by_merchant', 'true' );
+				$wc_order->save_meta_data();
+			}
+		}
+	}
+
+	/**
+	 * During a platform checkout, the status of an $order will be considered "processing" and will
+	 * cause a new "checkout-draft" order to be created. This will cause a scenario where an order
+	 * will be processed on the platform and the new "checkout-draft" will attempt to be processed.
+	 *
+	 * This workaround prevents a new "checkout-draft" from being created and instead continues to
+	 * process the already created $order (with a status of "processing") by temporarily treating
+	 * that $order as having a status of "checkout-draft", until the $order has completed payment.
+	 *
+	 * @param bool         $has_order_status predetermined condition whether $wc_order has status $order_status.
+	 * @param mixed        $wc_order the order being evaluated.
+	 * @param string|array $order_status status to test the order status against.
+	 * @return bool|mixed true if $wc_order has the status $order_status.
+	 */
+	public static function wc_order_has_status_during_platform_checkout( $has_order_status, $wc_order, $order_status ) {
+		// Only apply this workaround when checking out.
+		$is_post_request     = 'POST' === ( $_SERVER['REQUEST_METHOD'] ?? '' );
+		$is_checkout_request = false !== strpos( ( $_SERVER['REQUEST_URI'] ?? '' ), 'checkout' );
+		$is_checking_out     = $is_post_request && $is_checkout_request;
+
+		// Only apply this workaround when determining if the $order's status is
+		// set to "checkout-draft".
+		$is_gauging_checkout_draft = 'checkout-draft' === $order_status;
+
+		// Only apply this workaround until the order has been processed by the merchant.
+		$is_processed_by_merchant = filter_var(
+			$wc_order->get_meta( '_is_processed_by_merchant' ),
+			FILTER_VALIDATE_BOOLEAN
+		);
+
+		if ( $is_checking_out && $is_gauging_checkout_draft && ! $is_processed_by_merchant ) {
+			$session_order_id_raw = wc()->session->get_session_data()['store_api_draft_order'] ?? '';
+			$session_order_id     = is_numeric( $session_order_id_raw ) ? intval( $session_order_id_raw ) : 0;
+
+			if ( $session_order_id === $wc_order->get_id() ) {
+				// Workaround: Temporarily consider the $order's status as "checkout-draft" in order to
+				// avoid creating a new $order when Checkout::create_or_update_draft_order( $request )
+				// is called. This is to avoid creating and processing and additional $order.
+				return true;
+			}
+		}
+
+		return $has_order_status;
 	}
 
 	/**
