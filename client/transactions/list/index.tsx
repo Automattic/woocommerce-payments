@@ -619,7 +619,7 @@ export const TransactionsList = (
 					transactionsSummary.count as number,
 					'woocommerce-payments'
 				),
-				value: `${ transactionsSummary.count }`,
+				value: `${ formatStoreNumber( transactionsSummary.count ) }`,
 			},
 		];
 
