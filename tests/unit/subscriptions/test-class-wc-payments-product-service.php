@@ -274,7 +274,9 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $mock_product_id, $this->product_service->get_wcpay_product_id( $this->mock_product ) );
 	}
 
-
+	/**
+	 * Tests for WC_Payments_Product_Service::get_wcpay_product_id_option()
+	 */
 	public function test_get_wcpay_product_id_option() {
 		$this->assertSame( '_wcpay_product_id_live', WC_Payments_Product_Service::get_wcpay_product_id_option() );
 
@@ -301,9 +303,15 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		$test_type = 'Test Tax *&^ name';
 		$this->product_service->get_wcpay_product_id_for_item( $test_type );
 
-		$this->assertSame( 'test_tax__name', WC_Payments_Product_Service::sanitize_option_key( $test_type ) );
-
 		$this->assertFalse( get_option( '_wcpay_product_id_live_Test Tax *&^ name' ) );
 		$this->assertSame( 'product_id_test123', get_option( '_wcpay_product_id_live_test_tax__name' ) );
+	}
+
+	/**
+	 * Tests for WC_Payments_Product_Service::sanitize_option_key()
+	 */
+	public function test_sanitize_option_key() {
+		$test_type = 'Test Tax *&^ name';
+		$this->assertSame( 'test_tax__name', WC_Payments_Product_Service::sanitize_option_key( $test_type ) );
 	}
 }
