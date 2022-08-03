@@ -125,7 +125,7 @@ class WC_Payments_Product_Service {
 	 * Gets the WC Pay product ID associated with a WC product.
 	 *
 	 * @param string $type The item type to create a product for.
-	 * return string       The item's WCPay product id.
+	 * @return string       The item's WCPay product id.
 	 */
 	public function get_wcpay_product_id_for_item( string $type ) : string {
 		$sanitized_type  = self::sanitize_option_key( $type );
@@ -140,10 +140,10 @@ class WC_Payments_Product_Service {
 	 * Sanitize option key string to replace space with underscore, and remove special characters.
 	 *
 	 * @param string $type Non sanitized input.
-	 * return string       Sanitized output.
+	 * @return string       Sanitized output.
 	 */
 	public static function sanitize_option_key( string $type ) {
-		return sanitize_key( str_replace( ' ', '_', strtolower( trim( $type ) ) ) );
+		return sanitize_key( str_replace( ' ', '_', trim( $type ) ) );
 	}
 
 	/**
