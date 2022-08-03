@@ -2328,7 +2328,23 @@ class WC_Payments_API_Client {
 			$charge_array['id'],
 			$charge_array['amount'],
 			$created,
-			$charge_array['payment_method_details'] ?? []
+			$charge_array['payment_method_details'] ?? null,
+			$charge_array['amount_captured'] ?? null,
+			$charge_array['amount_refunded'] ?? null,
+			$charge_array['application_fee_amount'] ?? null,
+			$charge_array['balance_transaction'] ?? null,
+			$charge_array['billing_details'] ?? null,
+			$charge_array['currency'] ?? null,
+			$charge_array['dispute'] ?? null,
+			$charge_array['disputed'] ?? null,
+			$charge_array['order'] ?? null,
+			$charge_array['outcome'] ?? null,
+			$charge_array['paid'] ?? null,
+			$charge_array['paydown'] ?? null,
+			$charge_array['payment_intent'] ?? null,
+			$charge_array['refunded'] ?? null,
+			$charge_array['refunds'] ?? null,
+			$charge_array['status'] ?? null
 		);
 
 		if ( isset( $charge_array['captured'] ) ) {
