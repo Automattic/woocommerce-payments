@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { Fragment, useState } from 'react';
-import { uniq } from 'lodash';
+import { uniq, partial } from 'lodash';
 import { useDispatch } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
 import { dateI18n } from '@wordpress/date';
@@ -27,6 +27,8 @@ import {
 	generateCSVFileName,
 } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
+import { numberFormat } from '@woocommerce/number';
+
 /**
  * Internal dependencies
  */
@@ -52,6 +54,11 @@ import DownloadButton from 'components/download-button';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 
+const siteNumberOptions = {
+	thousandSeparator: ',',
+};
+
+const formatStoreNumber = partial( numberFormat, siteNumberOptions );
 interface TransactionsListProps {
 	depositId?: string;
 }
