@@ -15,6 +15,8 @@ import 'components/account-status/shared.scss';
 
 const DepositsStatus = ( props ) => {
 	const { depositsStatus, iconSize } = props;
+	const isCustomDepositSchedulesEnabled =
+		window.wcpaySettings.featureFlags.customDepositSchedules;
 	let className = 'account-status__info__green';
 	let description;
 	let icon = <GridiconCheckmarkCircle size={ iconSize } />;
@@ -29,7 +31,15 @@ const DepositsStatus = ( props ) => {
 		description = __( 'Weekly', 'woocommerce-payments' );
 	} else if ( 'monthly' === depositsStatus ) {
 		description = __( 'Monthly', 'woocommerce-payments' );
-	} else if ( 'manual' === depositsStatus ) {
+	} else if (
+		isCustomDepositSchedulesEnabled &&
+		'manual' === depositsStatus
+	) {
+		description = __( 'Manual', 'woocommerce-payments' );
+	} else if (
+		( ! isCustomDepositSchedulesEnabled && 'manual' === depositsStatus ) ||
+		'blocked' === depositsStatus
+	) {
 		const learnMoreHref =
 			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
 		description = createInterpolateElement(
