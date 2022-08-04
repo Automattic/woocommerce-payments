@@ -1232,11 +1232,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
 			}
 		} else {
-			// For $0 orders, we need to save the payment method using a setup intent.
-			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
-				$payment_information->get_payment_method(),
-				$customer_id
-			);
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
+
+			if ( ! empty( $platform_checkout_intent_id ) ) {
+				// If the setup intent is included in the request use that intent.
+				$intent = $this->payments_api_client->get_setup_intent( $platform_checkout_intent_id );
+			} else {
+				// For $0 orders, we need to save the payment method using a setup intent.
+				$intent = $this->payments_api_client->create_and_confirm_setup_intent(
+					$payment_information->get_payment_method(),
+					$customer_id
+				);
+			}
 
 			$intent_id     = $intent['id'];
 			$status        = $intent['status'];
