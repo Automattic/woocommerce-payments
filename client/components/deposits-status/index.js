@@ -16,7 +16,7 @@ import 'components/account-status/shared.scss';
 const DepositsStatus = ( props ) => {
 	const { depositsStatus, iconSize } = props;
 	const isCustomDepositSchedulesEnabled =
-		window.wcpaySettings.featureFlags.customDepositSchedules;
+		window.wcpaySettings?.featureFlags?.customDepositSchedules;
 	let className = 'account-status__info__green';
 	let description;
 	let icon = <GridiconCheckmarkCircle size={ iconSize } />;

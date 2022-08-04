@@ -95,7 +95,7 @@ export const getDepositScheduleDescriptor = ( {
 	last_deposit: last,
 } ) => {
 	const isCustomDepositSchedulesEnabled =
-		window.wcpaySettings.featureFlags.customDepositSchedules;
+		window.wcpaySettings?.featureFlags?.customDepositSchedules;
 
 	if (
 		disabled ||
