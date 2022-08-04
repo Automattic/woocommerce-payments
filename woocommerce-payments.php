@@ -164,8 +164,15 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 				return true;
 			}
 
-			if ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) && 4 >= count( $GLOBALS['argv'] ) && 'plugin' === $GLOBALS['argv'][1] && 'activate' === $GLOBALS['argv'][2] && $plugin_name === $GLOBALS['argv'][3] ) {
-				return true;
+			if ( defined( 'WP_CLI' ) && WP_CLI ) {
+				$expected_arguments = [
+					'plugin',
+					'activate',
+					$plugin_name,
+				];
+				if ( array_intersect( $expected_arguments, $GLOBALS['argv'] ) === $expected_arguments ) {
+					return true;
+				}
 			}
 
 			if ( is_multisite() ) {
