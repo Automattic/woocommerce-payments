@@ -10,6 +10,14 @@ import { render } from '@testing-library/react';
 import DepositsStatus from '../';
 
 describe( 'DepositsStatus', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			featureFlags: {
+				customDepositSchedules: false,
+			},
+		};
+	} );
+
 	test( 'renders disabled status', () => {
 		const { container: depositsStatus } = renderDepositsStatus(
 			'disabled',
@@ -42,11 +50,25 @@ describe( 'DepositsStatus', () => {
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
-	test( 'renders manual status', () => {
-		const { container: depositsStatus } = renderDepositsStatus(
+	test( 'renders manual status', async () => {
+		const { container: depositsStatus, findByText } = renderDepositsStatus(
 			'manual',
 			20
 		);
+		expect( await findByText( /Temporarily suspended/i ) ).toBeVisible();
+		expect( depositsStatus ).toMatchSnapshot();
+	} );
+
+	test( 'renders manual status with feature flag enabled', async () => {
+		// Enable custom deposit schedules feature flag.
+		global.wcpaySettings.featureFlags.customDepositSchedules = true;
+
+		const { container: depositsStatus, findByText } = renderDepositsStatus(
+			'manual',
+			20
+		);
+
+		expect( await findByText( /Manual/i ) ).toBeVisible();
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
