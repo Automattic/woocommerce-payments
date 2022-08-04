@@ -21,7 +21,7 @@ const AdditionalInformation = () => {
 					{ interpolateComponents( {
 						mixedString: __(
 							'Enter your mobile phone number to save your checkout information for faster checkouts here, ' +
-								'and at other stores powered by {{wooPayLink/}} .',
+								'and at other stores powered by {{wooPayLink/}}.',
 							'woocommerce-payments'
 						),
 						components: {
