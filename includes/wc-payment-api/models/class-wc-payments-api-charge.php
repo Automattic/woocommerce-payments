@@ -50,6 +50,13 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	private $payment_method_details;
 
 	/**
+	 * Payment method id
+	 *
+	 * @var string|null
+	 */
+	private $payment_method;
+
+	/**
 	 * Amount in cents captured
 	 *
 	 * @var int|null
@@ -168,6 +175,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	 * @param integer     $amount                 - Amount charged.
 	 * @param DateTime    $created                - Time charge created.
 	 * @param array       $payment_method_details - Payment method details object.
+	 * @param string|null $payment_method         - Payment method id.
 	 * @param int|null    $amount_captured        - Amount in cents captured.
 	 * @param int|null    $amount_refunded        - Amount in cents refunded.
 	 * @param int|null    $application_fee_amount - The amount of the application fee requested for the charge.
@@ -190,6 +198,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 		$amount,
 		DateTime $created,
 		$payment_method_details = [],
+		$payment_method = null,
 		$amount_captured = null,
 		$amount_refunded = null,
 		$application_fee_amount = null,
@@ -211,6 +220,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 		$this->amount                 = $amount;
 		$this->created                = $created;
 		$this->payment_method_details = $payment_method_details;
+		$this->payment_method         = $payment_method;
 		$this->amount_captured        = $amount_captured;
 		$this->amount_refunded        = $amount_refunded;
 		$this->application_fee_amount = $application_fee_amount;
@@ -284,6 +294,15 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	 */
 	public function get_payment_method_details() {
 		return $this->payment_method_details;
+	}
+
+	/**
+	 * Returns the payment method id associated with this charge
+	 *
+	 * @return array
+	 */
+	public function get_payment_method() {
+		return $this->payment_method;
 	}
 
 	/**
@@ -440,6 +459,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 			'amount'                 => $this->get_amount(),
 			'created'                => $this->get_created()->getTimestamp(),
 			'payment_method_details' => $this->get_payment_method_details(),
+			'payment_method'         => $this->get_payment_method(),
 			'amount_captured'        => $this->get_amount_captured(),
 			'amount_refunded'        => $this->get_amount_refunded(),
 			'application_fee_amount' => $this->get_application_fee_amount(),
