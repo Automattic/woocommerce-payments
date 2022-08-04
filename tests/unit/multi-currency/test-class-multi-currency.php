@@ -380,13 +380,13 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( 'GBP', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 	}
 
-	public function test_update_selected_currency_by_geolocation_does_not_set_session() {
+	public function test_update_selected_currency_by_geolocation_does_not_set_session_when_currency_not_enabled() {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
 
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function() {
-				return 'CA';
+				return 'CL';
 			}
 		);
 
