@@ -299,7 +299,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	/**
 	 * Returns the payment method id associated with this charge
 	 *
-	 * @return array
+	 * @return string|null
 	 */
 	public function get_payment_method() {
 		return $this->payment_method;
