@@ -24,6 +24,7 @@ env:
   E2E_USER_TOKEN:        ${{ secrets.E2E_USER_TOKEN }}
   E2E_RETEST:            1
   E2E_RETRY_TIMES:       2 # Config value per https://www.npmjs.com/package/@woocommerce/e2e-environment/v/0.3.0#user-content-the-jest-object
+  WC_E2E_FOLDER:         ''
   WC_E2E_SCREENSHOTS:    1
   E2E_SLACK_CHANNEL:     ${{ secrets.E2E_SLACK_CHANNEL }}
   E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
