@@ -425,7 +425,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$order_status  = 'cancelled'; // WooCommerce uses double 'l'.
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
-		$this->order_service->mark_payment_capture_cancelled( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$this->order_service->mark_payment_capture_cancelled( $this->order, $this->intent_id, $intent_status );
 
 		// Assert: Check to make sure the intent_status meta was set.
 		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
@@ -538,7 +538,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$order_status  = 'completed';
 
 		// Act: Attempt to mark the payment/order complete.
-		$this->order_service->mark_terminal_payment_completed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$this->order_service->mark_terminal_payment_completed( $this->order, $this->intent_id, $intent_status );
 
 		// Assert: Check to make sure the intent_status meta was set.
 		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );

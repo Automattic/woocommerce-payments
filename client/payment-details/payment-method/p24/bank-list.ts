@@ -1,4 +1,4 @@
-export default {
+const banks: Record< string, string > = {
 	alior_bank: 'Alior Bank',
 	bank_millennium: 'Bank Millenium',
 	bank_nowy_bfg_sa: 'Bank Nowy BFG S.A.',
@@ -25,3 +25,5 @@ export default {
 	toyota_bank: 'Toyota Bank',
 	volkswagen_bank: 'Volkswagen Bank',
 };
+
+export default banks;
