@@ -170,11 +170,26 @@ jQuery( function ( $ ) {
 	 */
 	const getSelectedGatewayPaymentMethod = () => {
 		const gatewayCardId = getUPEConfig( 'gatewayId' );
-		const selectedGatewayId = $(
-			'li.wc_payment_method input.input-radio:checked'
-		).attr( 'id' );
+		let selectedGatewayId = null;
+
+		// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
+
+		if ( $( 'li.wc_payment_method' ).length ) {
+			selectedGatewayId = $(
+				'li.wc_payment_method input.input-radio:checked'
+			).attr( 'id' );
+		} else if ( $( 'li.woocommerce-PaymentMethod' ).length ) {
+			selectedGatewayId = $(
+				'li.woocommerce-PaymentMethod input.input-radio:checked'
+			).attr( 'id' );
+		}
+
+		if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
+			selectedGatewayId = 'payment_method_woocommerce_payments_card';
+		}
 
 		let selectedPaymentMethod = null;
+
 		for ( const paymentMethodType in paymentMethodsConfig ) {
 			if (
 				`payment_method_${ gatewayCardId }_${ paymentMethodType }` ===
@@ -747,15 +762,6 @@ jQuery( function ( $ ) {
 
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
-		if (
-			'woocommerce_payments' !==
-			$(
-				"#add_payment_method input:checked[name='payment_method']"
-			).val()
-		) {
-			return;
-		}
-
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
 			const paymentMethodType = getSelectedGatewayPaymentMethod();
 			const paymentIntentId =
