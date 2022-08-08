@@ -197,14 +197,16 @@ class MultiCurrency {
 	 * @param WC_Payments_Account              $payments_account     Payments Account instance.
 	 * @param WC_Payments_Localization_Service $localization_service Localization Service instance.
 	 * @param Database_Cache                   $database_cache       Database Cache instance.
+	 * @param Utils                            $utils                Optional Utils instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache ) {
-		$this->payments_api_client     = $payments_api_client;
-		$this->payments_account        = $payments_account;
-		$this->localization_service    = $localization_service;
-		$this->database_cache          = $database_cache;
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $payments_account, WC_Payments_Localization_Service $localization_service, Database_Cache $database_cache, Utils $utils = null ) {
+		$this->payments_api_client  = $payments_api_client;
+		$this->payments_account     = $payments_account;
+		$this->localization_service = $localization_service;
+		$this->database_cache       = $database_cache;
+		// If a Utils instance is not passed as argument, initialize it. This allows to mock it in tests.
+		$this->utils                   = $utils ?? new Utils();
 		$this->geolocation             = new Geolocation( $this->localization_service );
-		$this->utils                   = new Utils();
 		$this->compatibility           = new Compatibility( $this, $this->utils );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
 
@@ -640,7 +642,7 @@ class MultiCurrency {
 			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->get_code() );
 			// Set the session cookie if is not yet to persist the selected currency.
 			if ( ! WC()->session->has_session() && ! headers_sent() && $persist_change ) {
-				WC()->session->set_customer_session_cookie( true );
+				$this->utils->set_customer_session_cookie( true );
 			}
 		} elseif ( $user_id ) {
 			update_user_meta( $user_id, self::CURRENCY_META_KEY, $currency->get_code() );
