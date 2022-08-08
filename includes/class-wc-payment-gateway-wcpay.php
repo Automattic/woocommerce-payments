@@ -576,7 +576,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Add notice explaining test mode when it's enabled.
 	 */
 	public function display_test_mode_notice() {
-		if ( $this->is_in_test_mode() ) {
+		if ( $this->is_in_test_mode() && get_class( $this ) === 'WCPay\Payment_Methods\CC_Payment_Gateway' ) {
 			?>
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
@@ -2580,7 +2580,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @throws Exception - When an error occurs in intent creation.
 	 */
-
 	public function create_intent( WC_Order $order, array $selected_payment_method_type, string $capture_method = 'automatic', array $metadata = [], string $customer_id = null ) {
 		$currency         = strtolower( $order->get_currency() );
 		$converted_amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
