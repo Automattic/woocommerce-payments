@@ -118,7 +118,11 @@ class Analytics {
 	 * @return void
 	 */
 	public function register_customer_currencies() {
-		$currencies           = $this->multi_currency->get_all_customer_currencies();
+		$currencies = $this->multi_currency->get_all_customer_currencies();
+		if ( empty( $currencies ) ) {
+			$currencies   = [];
+			$currencies[] = $this->multi_currency->get_default_currency();
+		}
 		$available_currencies = $this->multi_currency->get_available_currencies();
 		$currency_options     = [];
 
