@@ -2,6 +2,9 @@
  * External dependencies
  */
 import React from 'react';
+import { Experiment } from '@woocommerce/explat';
+import { TabPanel } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -15,7 +18,8 @@ import {
 } from '../empty-state-table/list';
 import EmptyStateTable from 'empty-state-table';
 import ListBanner from '../empty-state-table/transactions-banner.svg';
-import { Experiment } from '@woocommerce/explat';
+import Authorizations from './uncaptured';
+import './style.scss';
 
 export const TransactionsPage = (): JSX.Element => {
 	const defaultExperience = (
@@ -37,11 +41,36 @@ export const TransactionsPage = (): JSX.Element => {
 
 	return (
 		<Page>
-			<Experiment
-				name="wcpay_empty_state_preview_mode_v5"
-				treatmentExperience={ treatmentExperience }
-				defaultExperience={ defaultExperience }
-			/>
+			<TabPanel
+				className="wcpay-transactions-page"
+				activeClass="active-tab"
+				tabs={ [
+					{
+						name: 'transactions-page',
+						title: __( 'Transactions', 'woocommerce-payments' ),
+						className: 'transactions-list',
+					},
+					{
+						name: 'uncaptured-page',
+						title: __( 'Uncaptured', 'woocommerce-payments' ),
+						className: 'authorizations-list',
+					},
+				] }
+			>
+				{ ( tab ) => {
+					if ( 'uncaptured-page' === tab.name ) {
+						return <Authorizations />;
+					}
+
+					return (
+						<Experiment
+							name="wcpay_empty_state_preview_mode_v5"
+							treatmentExperience={ treatmentExperience }
+							defaultExperience={ defaultExperience }
+						/>
+					);
+				} }
+			</TabPanel>
 		</Page>
 	);
 };
