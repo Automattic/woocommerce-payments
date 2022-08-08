@@ -172,6 +172,8 @@ jQuery( function ( $ ) {
 		const gatewayCardId = getUPEConfig( 'gatewayId' );
 		let selectedGatewayId = null;
 
+		// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
+
 		if ( $( 'li.wc_payment_method' ).length ) {
 			selectedGatewayId = $(
 				'li.wc_payment_method input.input-radio:checked'
