@@ -376,7 +376,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
                     tabindex="-1"
                   >
-                    $20.00 USD
+                    $20.00
                   </a>
                 </td>
                 <td
@@ -459,7 +459,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
                     tabindex="-1"
                   >
-                    $30.00 USD
+                    $30.00
                   </a>
                 </td>
                 <td
@@ -513,7 +513,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              $50.00 USD
+              $50.00
             </span>
             <span
               class="woocommerce-table__summary-label"
@@ -904,7 +904,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock1"
                     tabindex="-1"
                   >
-                    $20.00 USD
+                    $20.00
                   </a>
                 </td>
                 <td
@@ -987,7 +987,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=po_mock2"
                     tabindex="-1"
                   >
-                    $30.00 USD
+                    $30.00
                   </a>
                 </td>
                 <td

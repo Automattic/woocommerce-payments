@@ -88,18 +88,6 @@ describe( 'Disputes > Submit losing dispute', () => {
 
 		// Accept the dispute
 		await merchantWCP.openAcceptDispute();
-		await page.waitForSelector(
-			'div.components-snackbar > .components-snackbar__content'
-		);
-
-		// Verify the dispute has been accepted properly
-		await expect( page ).toMatchElement(
-			'div.components-snackbar > .components-snackbar__content',
-			{
-				text:
-					'You have accepted the dispute for order #' + orderId + '.',
-			}
-		);
 
 		// If webhooks are not received, the dispute status won't be updated in the dispute list page resulting in test failure.
 		// Workaround - Open dispute details page again and check status.

@@ -12,6 +12,7 @@ describe( 'Currency utilities', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
+			shouldUseExplicitPrice: true,
 			zeroDecimalCurrencies: [ 'vnd', 'jpy' ],
 			connect: {
 				country: 'US',

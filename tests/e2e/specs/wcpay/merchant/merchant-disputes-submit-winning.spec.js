@@ -141,17 +141,6 @@ describe( 'Disputes > Submit winning dispute', () => {
 			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
 			uiLoaded(),
 		] );
-		await page.waitForSelector(
-			'div.components-snackbar > .components-snackbar__content'
-		);
-
-		// Verify the dispute has been challenged properly
-		await expect( page ).toMatchElement(
-			'div.components-snackbar > .components-snackbar__content',
-			{
-				text: 'Evidence submitted!',
-			}
-		);
 
 		// If webhooks are not received, the dispute status won't be updated in the dispute list page resulting in test failure.
 		// Workaround - Open dispute details page again and check status.

@@ -8,6 +8,7 @@ describe( 'mapTimelineEvents', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
+			shouldUseExplicitPrice: true,
 			zeroDecimalCurrencies: [],
 			connect: {
 				country: 'US',

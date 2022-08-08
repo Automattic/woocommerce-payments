@@ -134,7 +134,7 @@ const appendCurrencyCode = ( formatted, currencyCode ) => {
 };
 
 /**
- * Formats amount according to the given currency.
+ * Formats amount according to the given currency. Falls back to `formatCurrency` when no additional currencies are enabled.
  *
  * @param {number} amount       Amount
  * @param {string} currencyCode Currency code
@@ -150,6 +150,7 @@ export const formatExplicitCurrency = (
 	baseCurrencyCode = null
 ) => {
 	let formatted = formatCurrency( amount, currencyCode, baseCurrencyCode );
+	if ( ! wcpaySettings.shouldUseExplicitPrice ) return formatted;
 	if ( skipSymbol ) {
 		formatted = removeCurrencySymbol( formatted );
 	}
