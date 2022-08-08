@@ -127,6 +127,24 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$this->assertTrue( $data_registry->exists( 'customerCurrencies' ) );
 	}
 
+	public function test_register_customer_currencies_for_empty_customer_currencies() {
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_all_customer_currencies' )
+			->willReturn( [] );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_available_currencies' )
+			->willReturn( $this->get_mock_available_currencies() );
+
+		$this->analytics->register_customer_currencies();
+
+		$data_registry = Package::container()->get(
+			AssetDataRegistry::class
+		);
+
+		$this->assertTrue( $data_registry->exists( 'customerCurrencies' ) );
+	}
+
 	public function test_update_order_stats_data_with_non_multi_currency_order() {
 		$args  = $this->order_args_provider( 123, 0, 1, 15.50, 1.50, 0, 14.00 );
 		$order = wc_create_order();
