@@ -88,6 +88,13 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	 */
 	private $mock_database_cache;
 
+	/**
+	 * Mock of Utils.
+	 *
+	 * @var Utils;
+	 */
+	private $mock_utils;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -382,6 +389,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_update_selected_currency_by_geolocation_does_not_set_session_when_currency_not_enabled() {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->mock_localization_service->method( 'get_country_locale_data' )->with( 'CL' )->willReturn( [ 'currency_code' => 'CLP' ] );
 
 		add_filter(
 			'woocommerce_geolocate_ip',
@@ -393,6 +401,23 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->multi_currency->update_selected_currency_by_geolocation();
 
 		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+	}
+
+	public function test_update_selected_currency_by_geolocation_does_not_set_session_cookie() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->mock_localization_service->method( 'get_country_locale_data' )->with( 'CA' )->willReturn( [ 'currency_code' => 'CAD' ] );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CA';
+			}
+		);
+
+		$this->mock_utils
+			->expects( $this->never() )
+			->method( 'set_customer_session_cookie' );
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
 	}
 
 	public function test_update_selected_currency_by_geolocation_updates_session_when_currency_is_enabled() {
@@ -910,6 +935,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 		$this->mock_database_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
+
+		$this->mock_utils = $this->createMock( Utils::class );
 
 		$this->multi_currency = new MultiCurrency(
 			$mock_api_client ?? $this->mock_api_client,
