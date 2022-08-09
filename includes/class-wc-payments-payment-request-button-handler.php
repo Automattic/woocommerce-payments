@@ -1137,6 +1137,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 			|| ! isset( $_POST['wcpay-payment-method'] ) || empty( $_POST['wcpay-payment-method'] )
 		) {
 			// Incomplete request.
+			$response = [
+				'result'   => 'error',
+				'messages' => __( 'Invalid request', 'woocommerce-payments' ),
+			];
+			wp_send_json( $response, 400 );
 			return;
 		}
 
