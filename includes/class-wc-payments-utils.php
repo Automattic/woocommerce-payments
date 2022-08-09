@@ -241,6 +241,20 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Apple Pay supported country codes.
+	 *
+	 * @return string[]
+	 */
+	public static function supported_applepay_country_codes(): array {
+		return [
+			'ZA', 'AU', 'CN', 'HK', 'JP', 'MO', 'NZ', 'SG', 'TW', 'AM', 'AT', 'AZ', 'BY', 'BE', 'BG', 'HR', 'CY', 'CZ', // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
+			'DK', 'EE', 'FO', 'FI', 'FR', 'GE', 'DE', 'GR', 'GL', 'GG', 'HU', 'IS', 'IE', 'IM', 'IT', 'KZ', 'JE', 'LV', // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
+			'LI', 'LT', 'LU', 'MT', 'MD', 'MC', 'ME', 'NL', 'NO', 'PL', 'PT', 'RO', 'SM', 'RS', 'SK', 'SI', 'ES', 'SE', // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
+			'CH', 'UA', 'GB', 'VA', 'AR', 'CO', 'CR', 'BR', 'MX', 'PE', 'BH', 'IL', 'PS', 'QA', 'SA', 'AE', 'CA', 'US',  // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
+		];
+	}
+
+	/**
 	 * Verifies whether a certain ZIP code is valid for the US, incl. 4-digit extensions.
 	 *
 	 * @param string $zip The ZIP code to verify.

@@ -379,6 +379,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
+
+		add_action( 'woocommerce_woocommerce_payments_admin_applepay_notice', [ $this, 'display_not_supported_apple_pay' ] );
 	}
 
 	/**
@@ -595,6 +597,62 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Add notices explaining how to enable Apple Pay.
+	 *
+	 * @return void
+	 */
+	public function display_not_supported_apple_pay() {
+		if ( 'yes' !== $this->get_option( 'payment_request' ) ) {
+			return;
+		}
+
+		$is_in_supported_countries               = in_array( $this->account->get_account_country(), WC_Payments_Utils::supported_applepay_country_codes(), true );
+		$well_known_dir                          = untrailingslashit( ABSPATH ) . '/' . WC_Payments_Apple_Pay_Registration::DOMAIN_ASSOCIATION_FILE_DIR;
+		$fullpath                                = $well_known_dir . '/' . WC_Payments_Apple_Pay_Registration::DOMAIN_ASSOCIATION_FILE_NAME;
+		$has_domain_association_file_permissions = is_dir( $well_known_dir ) &&
+			( substr( sprintf( '%o', fileperms( $well_known_dir ) ), -4 ) === '0755' ) &&
+			file_exists( $fullpath ) &&
+			substr( sprintf( '%o', fileperms( $fullpath ) ), -4 ) === '0644';
+
+		if ( $is_in_supported_countries && $has_domain_association_file_permissions ) {
+			return;
+		}
+		if ( ! $is_in_supported_countries ) {
+			?>
+			<div id="wcpay-applepay-error" class="notice notice-error">
+				<p>
+					<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
+					<?php esc_html_e( 'You are not in the countries and regions that support Apple Pay. You can find a full list of countries and regions at', 'woocommerce-payments' ); ?>
+					<a href="https://support.apple.com/en-us/HT207957">https://support.apple.com/en-us/HT207957</a>
+				</p>
+			</div>
+			<?php
+		}
+
+		if ( ! $has_domain_association_file_permissions ) {
+			?>
+		<div id="wcpay-applepay-error" class="notice notice-error">
+			<p>
+				<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
+				<?php esc_html_e( 'Invalid domain association file permissions.', 'woocommerce-payments' ); ?>
+				<?php
+				esc_html(
+					sprintf(
+						/* translators: 1: well known dir, 2: full path */
+						__( '%1$s needs to have 755 permissions and %2$s 644', 'woocommerce-payments' ),
+						$well_known_dir,
+						$fullpath
+					)
+				);
+				?>
+				<?php esc_html_e( 'Set the proper permissions and disable/enable Apple Pay. ', 'woocommerce-payments' ); ?>
+			</p>
+		</div>
+			<?php
+		}
+	}
+
+	/**
 	 * Add notice explaining that the selected currency is not available.
 	 */
 	public function display_not_supported_currency_notice() {
@@ -623,6 +681,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function admin_options() {
 		// Add notices to the WooCommerce Payments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
+		do_action( 'woocommerce_woocommerce_payments_admin_applepay_notice' );
 
 		$this->output_payments_settings_screen();
 	}
