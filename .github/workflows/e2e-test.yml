@@ -64,6 +64,7 @@ jobs:
       E2E_WC_VERSION: ${{ matrix.woocommerce }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
+      E2E_RESULT_FILEPATH: './tests/e2e/results.json'
 
     steps:
       # Conditionally skip WC Blocks tests. Remove/update based on min supported WC version by the blocks checkout plugin.
@@ -146,7 +147,21 @@ jobs:
 
       # Run Tests
       - name: Run E2E Tests
-        run: npm run test:e2e
+        run: | 
+          npm run test:e2e --json --outputFile="$E2E_RESULT_FILEPATH"
+          if [[ $? -ne 0 ]]; then
+            echo 'Some tests failed but we will try again in the next job.'
+            exit 0
+          fi 
+      
+      - name: Re-try failed test files
+        run: |
+          if [[ $(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites') -gt 0 ]]; then
+            echo "Re-running failed test files..."
+            cat "$E2E_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e
+          else
+            echo 'Good news! No failed test file to run.'
+          fi
 
       # Archive screenshots if any
       - name: Archive e2e test screenshots & logs
