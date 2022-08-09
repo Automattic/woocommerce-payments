@@ -198,7 +198,6 @@ export const AuthorizationsList = (): JSX.Element => {
 	return (
 		<Page>
 			<TableCard
-				hasSearch
 				className="authorizations-list woocommerce-report-table has-search"
 				title={ __(
 					'Uncaptured transactions',
