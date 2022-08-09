@@ -147,17 +147,20 @@ jobs:
 
       # Run Tests
       - name: Run E2E Tests
+        id: first_run_e2e_tests
+        # Use +e to trap errors when running E2E tests.
         shell: /bin/bash +e {0}
         run: | 
           npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH"
           E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
+          echo "::set-output name=E2E_NUM_FAILED_TEST_SUITES::$(echo E2E_NUM_FAILED_TEST_SUITES)"
           if [[ ${E2E_NUM_FAILED_TEST_SUITES} -gt 0 ]]; then
-            echo 'Some tests failed but we will try them again in the next job.'
+            echo '::notice Some tests failed but we will try them again in the next job.'
             exit 0
           fi
       
       - name: Re-try failed test files
-        if: ${{ env.E2E_NUM_FAILED_TEST_SUITES > 0  }}
+        if: ${{ steps.first_run_e2e_tests.outputs.E2E_NUM_FAILED_TEST_SUITES > 0  }}
         run: |
           cat "$E2E_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e
 
