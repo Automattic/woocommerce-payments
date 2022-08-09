@@ -1147,8 +1147,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			// Load the order.
 			$order_id = intval( $_POST['order'] );
-			$this->add_order_meta( $order_id );
-			$order = wc_get_order( $order_id );
+			$order    = wc_get_order( $order_id );
 
 			if ( ! is_a( $order, WC_Order::class ) ) {
 				throw new Exception( __( 'Invalid order!', 'woocommerce-payments' ) );
@@ -1157,6 +1156,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			if ( ! $order->needs_payment() ) {
 				throw new Exception( __( 'This order does not require payment!', 'woocommerce-payments' ) );
 			}
+
+			$this->add_order_meta( $order_id );
 
 			// Load the gateway.
 			$all_gateways = WC()->payment_gateways->get_available_payment_gateways();
