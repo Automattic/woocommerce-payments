@@ -207,9 +207,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function get_product_price( $product ) {
 		$product_price = $product->get_price();
+
+		// If prices should include tax, using tax inclusive price.
+		if ( ! $this->prices_exclude_tax() ) {
+			$product_price = wc_get_price_including_tax( $product );
+		}
+
 		// Add subscription sign-up fees to product price.
 		if ( 'subscription' === $product->get_type() && class_exists( 'WC_Subscriptions_Product' ) ) {
-			$product_price = $product->get_price() + WC_Subscriptions_Product::get_sign_up_fee( $product );
+			$product_price = $product_price + WC_Subscriptions_Product::get_sign_up_fee( $product );
 		}
 
 		return $product_price;
@@ -250,19 +256,21 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 		}
 
-		$data  = [];
-		$items = [];
+		$data          = [];
+		$items         = [];
+		$product_price = $this->get_product_price( $product );
 
 		$items[] = [
 			'label'  => $product->get_name(),
-			'amount' => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ), $currency ),
+			'amount' => WC_Payments_Utils::prepare_amount( $product_price, $currency ),
 		];
 
+		$tax = $this->prices_exclude_tax() ? wc_format_decimal( wc_get_price_including_tax( $product ) - $product_price ) : 0;
 		if ( wc_tax_enabled() ) {
 			$items[] = [
 				'label'   => __( 'Tax', 'woocommerce-payments' ),
-				'amount'  => 0,
-				'pending' => true,
+				'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
+				'pending' => ( 0 === $tax ? true : false ),
 			];
 		}
 
@@ -284,7 +292,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems'] = $items;
 		$data['total']        = [
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ), $currency ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $product_price + $tax, $currency ),
 			'pending' => true,
 		];
 
@@ -370,7 +378,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * @return  void
 	 */
 	public function add_order_meta( $order_id, $posted_data ) {
-		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $_POST['payment_request_type'] ) || ! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method'] ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 

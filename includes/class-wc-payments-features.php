@@ -58,7 +58,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_account_overview_task_list_enabled() {
-		return get_option( '_wcpay_feature_account_overview_task_list' );
+		return get_option( '_wcpay_feature_account_overview_task_list', '1' );
 	}
 
 	/**

@@ -116,6 +116,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ], 10, 0 );
 		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
+		add_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
 	}
 
 	/**

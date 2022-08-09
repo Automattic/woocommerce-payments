@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Pass a parameter when creating an intention when the request comes from the platform checkout and it has a subscription
