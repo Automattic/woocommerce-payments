@@ -5,7 +5,8 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { TableCard, TableCardColumn } from '@woocommerce/components';
+import { TableCard, TableCardColumn, Search } from '@woocommerce/components';
+import { Button } from '@wordpress/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
 /**
@@ -13,6 +14,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
  */
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
+import autocompleter from 'transactions/autocompleter';
 
 interface Column extends TableCardColumn {
 	key:
@@ -196,6 +198,7 @@ export const AuthorizationsList = (): JSX.Element => {
 	return (
 		<Page>
 			<TableCard
+				hasSearch
 				className="authorizations-list woocommerce-report-table has-search"
 				title={ __(
 					'Uncaptured transactions',
@@ -209,15 +212,21 @@ export const AuthorizationsList = (): JSX.Element => {
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
-				actions={
-					[
-						/*<Search
+				actions={ [
+					<Button
+						isPrimary
+						isBusy={ false }
+						disabled={ false }
+						key="capture-button"
+					>
+						{ __( 'Capture payments', 'woocommerce-payments' ) }
+					</Button>,
+
+					<Search
 						allowFreeTextSearch={ true }
 						inlineTags
 						key="search"
-						onChange={ onSearchChange }
-						placeholder={ searchPlaceholder }
-						selected={ searchedLabels }
+						placeholder={ __( 'Search', 'woocommerce-payments' ) }
 						showClearButton={ true }
 						type={
 							wcpaySettings.featureFlags.customSearch
@@ -226,15 +235,14 @@ export const AuthorizationsList = (): JSX.Element => {
 						}
 						autocompleter={ autocompleter }
 					/>,
-					downloadable && (
+					/*downloadable && (
 						<DownloadButton
 							key="download"
 							isDisabled={ isLoading || isDownloading }
 							onClick={ onDownload }
 						/>
 					),*/
-					]
-				}
+				] }
 			/>
 		</Page>
 	);
