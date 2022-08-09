@@ -145,7 +145,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->add_payment_started_note( $order, $intent_id, $charge_id );
+		$this->add_payment_started_note( $order, $intent_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -221,17 +221,16 @@ class WC_Payments_Order_Service {
 	 * @param WC_Order $order         Order object.
 	 * @param string   $intent_id     The ID of the intent associated with this order.
 	 * @param string   $intent_status The status of the intent related to this order.
-	 * @param string   $charge_id     The charge ID related to the intent/order.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_capture_cancelled( $order, $intent_id, $intent_status, $charge_id ) {
+	public function mark_payment_capture_cancelled( $order, $intent_id, $intent_status ) {
 		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
 		$this->update_order_status( $order, self::STATUS_CANCELLED );
-		$this->add_capture_cancelled_note( $order, $intent_id, $charge_id );
+		$this->add_capture_cancelled_note( $order );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -305,11 +304,10 @@ class WC_Payments_Order_Service {
 	 * @param WC_Order $order         Order object.
 	 * @param string   $intent_id     The ID of the intent associated with this order.
 	 * @param string   $intent_status The status of the intent related to this order.
-	 * @param string   $charge_id     The charge ID related to the intent/order.
 	 *
 	 * @return void
 	 */
-	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status, $charge_id ) {
+	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
 		$this->update_order_status( $order, self::STATUS_COMPLETED, $intent_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -467,11 +465,10 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order $order     Order object.
 	 * @param string   $intent_id The ID of the intent associated with this order.
-	 * @param string   $charge_id The charge ID related to the intent/order.
 	 *
 	 * @return void
 	 */
-	private function add_payment_started_note( $order, $intent_id, $charge_id ) {
+	private function add_payment_started_note( $order, $intent_id ) {
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
