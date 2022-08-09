@@ -712,6 +712,10 @@ class WC_Payments {
 		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
 		$onboarding_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-user-exists-controller.php';
+		$user_exists_controller = new WC_REST_User_Exists_Controller();
+		$user_exists_controller->register_routes();
+
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
@@ -731,6 +735,10 @@ class WC_Payments {
 			$vat_controller = new WC_REST_Payments_VAT_Controller( self::$api_client );
 			$vat_controller->register_routes();
 		}
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
+		$payment_intents_controller->register_routes();
 	}
 
 	/**
