@@ -32,6 +32,9 @@ describe( 'Saved cards ', () => {
 			} );
 
 			it( 'should save the card', async () => {
+				// TODO - just try to break tests.
+				expect( true ).toMatch( 'false' );
+
 				await shopperWCP.goToPaymentMethods();
 				await shopperWCP.addNewPaymentMethod( cardType, card );
 				await expect( page ).toMatch(
