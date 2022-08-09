@@ -1149,6 +1149,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( '_stripe_customer_id', $customer_id );
 		$order->update_meta_data( '_wcpay_mode', $this->is_in_test_mode() ? 'test' : 'prod' );
 
+		if ( substr( $payment_method, 0, 4 ) === 'src_' ) {
+			try {
+				$this->payments_api_client->attach_source( $payment_method, $customer_id );
+			} catch ( Exception $e ) {
+				Logger::log( $e->getMessage() );
+			}
+		}
+
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( ! $payment_needed && ! $save_payment_method_to_store ) {
 			$order->payment_complete();

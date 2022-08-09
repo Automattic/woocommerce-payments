@@ -1345,6 +1345,32 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Attach a source to a customer.
+	 *
+	 * @param array  $source_id   ID of source.
+	 * @param string $customer_id ID of customer to attach to.
+	 *
+	 * @throws API_Exception Error attaching source.
+	 */
+	public function attach_source( $source_id, $customer_id ) {
+		if ( null === $customer_id || '' === trim( $customer_id ) ) {
+			throw new API_Exception(
+				__( 'Customer ID is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_customer_id_missing',
+				400
+			);
+		}
+
+		$this->request(
+			[
+				'source' => $source_id,
+			],
+			self::CUSTOMERS_API . '/' . $customer_id . '/sources',
+			self::POST
+		);
+	}
+
+	/**
 	 * Create a product.
 	 *
 	 * @param array $product_data Product data.
