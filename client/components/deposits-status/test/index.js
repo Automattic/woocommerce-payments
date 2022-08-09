@@ -59,6 +59,29 @@ describe( 'DepositsStatus', () => {
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
+	test( 'renders blocked status', async () => {
+		const { container: depositsStatus, findByText } = renderDepositsStatus(
+			'blocked',
+			20
+		);
+
+		expect( await findByText( /Temporarily suspended/i ) ).toBeVisible();
+		expect( depositsStatus ).toMatchSnapshot();
+	} );
+
+	test( 'renders blocked status with feature flag enabled', async () => {
+		// Enable custom deposit schedules feature flag.
+		global.wcpaySettings.featureFlags.customDepositSchedules = true;
+
+		const { container: depositsStatus, findByText } = renderDepositsStatus(
+			'blocked',
+			20
+		);
+
+		expect( await findByText( /Temporarily suspended/i ) ).toBeVisible();
+		expect( depositsStatus ).toMatchSnapshot();
+	} );
+
 	test( 'renders manual status with feature flag enabled', async () => {
 		// Enable custom deposit schedules feature flag.
 		global.wcpaySettings.featureFlags.customDepositSchedules = true;
