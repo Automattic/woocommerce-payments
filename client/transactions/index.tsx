@@ -21,6 +21,8 @@ import ListBanner from '../empty-state-table/transactions-banner.svg';
 import Authorizations from './uncaptured';
 import './style.scss';
 
+const displayAuthorizations = false;
+
 export const TransactionsPage = (): JSX.Element => {
 	const defaultExperience = (
 		<>
@@ -39,39 +41,49 @@ export const TransactionsPage = (): JSX.Element => {
 		/>
 	);
 
-	return (
-		<Page>
-			<TabPanel
-				className="wcpay-transactions-page"
-				activeClass="active-tab"
-				tabs={ [
-					{
-						name: 'transactions-page',
-						title: __( 'Transactions', 'woocommerce-payments' ),
-						className: 'transactions-list',
-					},
-					{
-						name: 'uncaptured-page',
-						title: __( 'Uncaptured', 'woocommerce-payments' ),
-						className: 'authorizations-list',
-					},
-				] }
-			>
-				{ ( tab ) => {
-					if ( 'uncaptured-page' === tab.name ) {
-						return <Authorizations />;
-					}
+	if ( displayAuthorizations ) {
+		return (
+			<Page>
+				<TabPanel
+					className="wcpay-transactions-page"
+					activeClass="active-tab"
+					tabs={ [
+						{
+							name: 'transactions-page',
+							title: __( 'Transactions', 'woocommerce-payments' ),
+							className: 'transactions-list',
+						},
+						{
+							name: 'uncaptured-page',
+							title: __( 'Uncaptured', 'woocommerce-payments' ),
+							className: 'authorizations-list',
+						},
+					] }
+				>
+					{ ( tab ) => {
+						if ( 'uncaptured-page' === tab.name ) {
+							return <Authorizations />;
+						}
 
-					return (
-						<Experiment
-							name="wcpay_empty_state_preview_mode_v5"
-							treatmentExperience={ treatmentExperience }
-							defaultExperience={ defaultExperience }
-						/>
-					);
-				} }
-			</TabPanel>
-		</Page>
+						return (
+							<Experiment
+								name="wcpay_empty_state_preview_mode_v5"
+								treatmentExperience={ treatmentExperience }
+								defaultExperience={ defaultExperience }
+							/>
+						);
+					} }
+				</TabPanel>
+			</Page>
+		);
+	}
+
+	return (
+		<Experiment
+			name="wcpay_empty_state_preview_mode_v5"
+			treatmentExperience={ treatmentExperience }
+			defaultExperience={ defaultExperience }
+		/>
 	);
 };
 
