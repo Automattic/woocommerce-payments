@@ -636,10 +636,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
 				<?php esc_html_e( 'Invalid domain association file permissions.', 'woocommerce-payments' ); ?>
 				<?php
-				esc_html(
+				echo esc_html(
 					sprintf(
 						/* translators: 1: well known dir, 2: full path */
-						__( '%1$s needs to have 755 permissions and %2$s 644', 'woocommerce-payments' ),
+						__( '%1$s needs to have 755 permissions and %2$s 644.', 'woocommerce-payments' ),
 						$well_known_dir,
 						$fullpath
 					)
