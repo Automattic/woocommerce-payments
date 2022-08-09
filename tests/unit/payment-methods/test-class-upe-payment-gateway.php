@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Class UPE_Payment_Gateway_Test
  *
@@ -40,14 +41,16 @@ use WCPay\Constants\Payment_Method;
 /**
  * Overriding global function within namespace for testing
  */
-function get_woocommerce_currency() {
+function get_woocommerce_currency()
+{
 	return UPE_Payment_Gateway_Test::$mock_site_currency ? UPE_Payment_Gateway_Test::$mock_site_currency : \get_woocommerce_currency();
 }
 
 /**
  * UPE_Payment_Gateway unit tests
  */
-class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
+class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
+{
 
 	/**
 	 * Mock site currency string
@@ -155,13 +158,14 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp(): void {
+	public function setUp(): void
+	{
 		parent::setUp();
 
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
 		// return value of create_and_confirm_intention().
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
-		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
+		$this->mock_api_client = $this->getMockBuilder('WC_Payments_API_Client')
 			->disableOriginalConstructor()
 			->setMethods(
 				[
@@ -178,37 +182,37 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			)
 			->getMock();
 
-		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
+		$this->mock_wcpay_account = $this->createMock(WC_Payments_Account::class);
+		$this->mock_wcpay_account->method('get_account_country')->willReturn('US');
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
-		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
+		$this->mock_customer_service = $this->getMockBuilder('WC_Payments_Customer_Service')
 			->disableOriginalConstructor()
 			->getMock();
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
-		$this->mock_token_service = $this->getMockBuilder( 'WC_Payments_Token_Service' )
+		$this->mock_token_service = $this->getMockBuilder('WC_Payments_Token_Service')
 			->disableOriginalConstructor()
-			->setMethods( [ 'add_payment_method_to_user' ] )
+			->setMethods(['add_payment_method_to_user'])
 			->getMock();
 
 		// Arrange: Mock WC_Payments_Action_Scheduler_Service so its methods aren't called directly.
-		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
+		$this->mock_action_scheduler_service = $this->getMockBuilder('WC_Payments_Action_Scheduler_Service')
 			->disableOriginalConstructor()
 			->getMock();
 
 		$this->mock_payment_methods = [];
 
-		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
-		foreach ( $this->payment_method_classes as $payment_method_class ) {
-			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $this->mock_token_service ] )
-				->setMethods( [ 'is_subscription_item_in_cart' ] )
+		$this->mock_rate_limiter = $this->createMock(Session_Rate_Limiter::class);
+		foreach ($this->payment_method_classes as $payment_method_class) {
+			$mock_payment_method = $this->getMockBuilder($payment_method_class)
+				->setConstructorArgs([$this->mock_token_service])
+				->setMethods(['is_subscription_item_in_cart'])
 				->getMock();
-			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
+			$this->mock_payment_methods[$mock_payment_method->get_id()] = $mock_payment_method;
 		}
 
-		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
+		$this->order_service = new WC_Payments_Order_Service($this->mock_api_client);
 
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
@@ -217,16 +221,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
-	private function setup_payment_gateways() {
-		 $payment_gateways = [];
+	private function setup_payment_gateways()
+	{
+		$payment_gateways = [];
 
-		foreach ( $this->payment_method_classes as $payment_method_id => $payment_method_class ) {
-			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $this->mock_token_service ] )
-				->setMethods( [ 'is_subscription_item_in_cart' ] )
+		foreach ($this->payment_method_classes as $payment_method_id => $payment_method_class) {
+			$mock_payment_method = $this->getMockBuilder($payment_method_class)
+				->setConstructorArgs([$this->mock_token_service])
+				->setMethods(['is_subscription_item_in_cart'])
 				->getMock();
 
-			$mock_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
+			$mock_gateway = $this->getMockBuilder(UPE_Payment_Gateway::class)
 				->setConstructorArgs(
 					[
 						$this->mock_api_client,
@@ -252,19 +257,19 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 			// Arrange: Set the return value of get_return_url() so it can be used in a test later.
 			$mock_gateway
-				->expects( $this->any() )
-				->method( 'get_return_url' )
+				->expects($this->any())
+				->method('get_return_url')
 				->will(
-					$this->returnValue( $this->return_url )
+					$this->returnValue($this->return_url)
 				);
 			$mock_gateway
-				->expects( $this->any() )
-				->method( 'parent_process_payment' )
+				->expects($this->any())
+				->method('parent_process_payment')
 				->will(
-					$this->returnValue( $this->mock_payment_result )
+					$this->returnValue($this->mock_payment_result)
 				);
 
-			$payment_gateways[ $payment_method_id ] = $mock_gateway;
+			$payment_gateways[$payment_method_id] = $mock_gateway;
 		}
 
 		return $payment_gateways;
@@ -275,10 +280,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @return void
 	 */
-	public function test_payment_fields_outputs_fields() {
+	public function test_payment_fields_outputs_fields()
+	{
 		$payment_gateways = $this->setup_payment_gateways();
 
-		foreach ( $payment_gateways as $payment_method_id => $mock_payment_gateway ) {
+		foreach ($payment_gateways as $payment_method_id => $mock_payment_gateway) {
 			// $this->set_cart_contains_subscription_items( false );
 			// $this->set_get_upe_enabled_payment_method_statuses_return_value($mock_payment_gateway);
 
@@ -291,153 +297,173 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$actual_output = ob_get_contents();
 			ob_end_clean();
 
-			$this->assertStringContainsString( '<div class="wcpay-upe-element" data-payment-method-type="' . $payment_method_id . '"></div>', $actual_output );
+			$this->assertStringContainsString('<div class="wcpay-upe-element" data-payment-method-type="' . $payment_method_id . '"></div>', $actual_output);
 		}
 	}
 
-	// public function test_update_payment_intent_adds_customer_save_payment_and_level3_data() {
-	// $order               = WC_Helper_Order::create_order();
-	// $order_id            = $order->get_id();
-	// $order_number        = $order->get_order_number();
-	// $product_item        = current( $order->get_items( 'line_item' ) );
-	// $intent_id           = 'pi_mock';
-	// $user                = '';
-	// $customer_id         = 'cus_mock';
-	// $save_payment_method = true;
+	public function test_update_payment_intent_adds_customer_save_payment_and_level3_data()
+	{
+		$order               = WC_Helper_Order::create_order();
+		$order_id            = $order->get_id();
+		$order_number        = $order->get_order_number();
+		$product_item        = current($order->get_items('line_item'));
+		$intent_id           = 'pi_mock';
+		$user                = '';
+		$customer_id         = 'cus_mock';
+		$save_payment_method = true;
 
-	// $this->set_cart_contains_subscription_items( false );
+		$payment_gateways = $this->setup_payment_gateways();
 
-	// $this->mock_upe_gateway->expects( $this->once() )
-	// ->method( 'manage_customer_details_for_order' )
-	// ->will(
-	// $this->returnValue( [ $user, $customer_id ] )
-	// );
+		$this->set_cart_contains_subscription_items(false);
 
-	// $this->mock_customer_service
-	// ->expects( $this->never() )
-	// ->method( 'create_customer_for_user' );
+		$this->mock_customer_service
+			->expects($this->never())
+			->method('create_customer_for_user');
 
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'update_intention' )
-	// ->with(
-	// 'pi_mock',
-	// 5000,
-	// 'usd',
-	// true,
-	// 'cus_mock',
-	// [
-	// 'customer_name'  => 'Jeroen Sormani',
-	// 'customer_email' => 'admin@example.org',
-	// 'site_url'       => 'http://example.org',
-	// 'order_id'       => $order_id,
-	// 'order_number'   => $order_number,
-	// 'order_key'      => $order->get_order_key(),
-	// 'payment_type'   => Payment_Type::SINGLE(),
-	// ],
-	// [
-	// 'merchant_reference' => (string) $order_id,
-	// 'customer_reference' => (string) $order_id,
-	// 'shipping_amount'    => 1000.0,
-	// 'line_items'         => [
-	// (object) [
-	// 'product_code'        => 30,
-	// 'product_description' => 'Beanie with Logo',
-	// 'unit_cost'           => 1800,
-	// 'quantity'            => 1,
-	// 'tax_amount'          => 270,
-	// 'discount_amount'     => 0,
-	// 'product_code'        => $product_item->get_product_id(),
-	// 'product_description' => 'Dummy Product',
-	// 'unit_cost'           => 1000.0,
-	// 'quantity'            => 4,
-	// 'tax_amount'          => 0.0,
-	// 'discount_amount'     => 0.0,
-	// ],
-	// ],
-	// ]
-	// )
-	// ->willReturn(
-	// [
-	// 'sucess' => 'true',
-	// ]
-	// );
+		$this->mock_api_client
+			->expects($this->exactly(count($payment_gateways)))
+			->method('update_intention')
+			->with(
+				'pi_mock',
+				5000,
+				'usd',
+				true,
+				'cus_mock',
+				[
+					'customer_name'  => 'Jeroen Sormani',
+					'customer_email' => 'admin@example.org',
+					'site_url'       => 'http://example.org',
+					'order_id'       => $order_id,
+					'order_number'   => $order_number,
+					'order_key'      => $order->get_order_key(),
+					'payment_type'   => Payment_Type::SINGLE(),
+				],
+				[
+					'merchant_reference' => (string) $order_id,
+					'customer_reference' => (string) $order_id,
+					'shipping_amount'    => 1000.0,
+					'line_items'         => [
+						(object) [
+							'product_code'        => 30,
+							'product_description' => 'Beanie with Logo',
+							'unit_cost'           => 1800,
+							'quantity'            => 1,
+							'tax_amount'          => 270,
+							'discount_amount'     => 0,
+							'product_code'        => $product_item->get_product_id(),
+							'product_description' => 'Dummy Product',
+							'unit_cost'           => 1000.0,
+							'quantity'            => 4,
+							'tax_amount'          => 0.0,
+							'discount_amount'     => 0.0,
+						],
+					],
+				]
+			)
+			->willReturn(
+				[
+					'sucess' => true,
+				]
+			);
 
-	// $result = $this->mock_upe_gateway->update_payment_intent( $intent_id, $order_id, $save_payment_method );
-	// }
+		// Test update_payment_intent on each payment gateway.
+		foreach ($payment_gateways as $mock_payment_gateway) {
+			$mock_payment_gateway
+				->method('manage_customer_details_for_order')
+				->will(
+					$this->returnValue([$user, $customer_id])
+				);
+			$result = $mock_payment_gateway->update_payment_intent($intent_id, $order_id, $save_payment_method);
+			$this->assertSame(['success' => true], $result);
+		}
+	}
 
-	// public function test_update_payment_intent_with_selected_upe_payment_method() {
-	// $order                     = WC_Helper_Order::create_order();
-	// $order_id                  = $order->get_id();
-	// $order_number              = $order->get_order_number();
-	// $product_item              = current( $order->get_items( 'line_item' ) );
-	// $intent_id                 = 'pi_mock';
-	// $user                      = '';
-	// $customer_id               = 'cus_mock';
-	// $save_payment_method       = true;
-	// $selected_upe_payment_type = 'giropay';
+	public function test_update_payment_intent_with_selected_upe_payment_method()
+	{
+		$order                     = WC_Helper_Order::create_order();
+		$order_id                  = $order->get_id();
+		$order_number              = $order->get_order_number();
+		$product_item              = current($order->get_items('line_item'));
+		$intent_id                 = 'pi_mock';
+		$user                      = '';
+		$customer_id               = 'cus_mock';
+		$save_payment_method       = true;
 
-	// $this->set_cart_contains_subscription_items( false );
+		$mock_api_test_input = [];
 
-	// $this->mock_upe_gateway->expects( $this->once() )
-	// ->method( 'manage_customer_details_for_order' )
-	// ->will(
-	// $this->returnValue( [ $user, $customer_id ] )
-	// );
+		$payment_gateways = $this->setup_payment_gateways();
 
-	// $this->mock_customer_service
-	// ->expects( $this->never() )
-	// ->method( 'create_customer_for_user' );
+		$this->set_cart_contains_subscription_items(false);
 
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'update_intention' )
-	// ->with(
-	// 'pi_mock',
-	// 5000,
-	// 'usd',
-	// true,
-	// 'cus_mock',
-	// [
-	// 'customer_name'  => 'Jeroen Sormani',
-	// 'customer_email' => 'admin@example.org',
-	// 'site_url'       => 'http://example.org',
-	// 'order_id'       => $order_id,
-	// 'order_number'   => $order_number,
-	// 'order_key'      => $order->get_order_key(),
-	// 'payment_type'   => Payment_Type::SINGLE(),
-	// ],
-	// [
-	// 'merchant_reference' => (string) $order_id,
-	// 'shipping_amount'    => 1000.0,
-	// 'line_items'         => [
-	// (object) [
-	// 'product_code'        => 30,
-	// 'product_description' => 'Beanie with Logo',
-	// 'unit_cost'           => 1800,
-	// 'quantity'            => 1,
-	// 'tax_amount'          => 270,
-	// 'discount_amount'     => 0,
-	// 'product_code'        => $product_item->get_product_id(),
-	// 'product_description' => 'Dummy Product',
-	// 'unit_cost'           => 1000.0,
-	// 'quantity'            => 4,
-	// 'tax_amount'          => 0.0,
-	// 'discount_amount'     => 0.0,
-	// ],
-	// ],
-	// 'customer_reference' => (string) $order_id,
-	// ],
-	// 'giropay'
-	// )
-	// ->willReturn(
-	// [
-	// 'sucess' => 'true',
-	// ]
-	// );
+		$this->mock_customer_service
+			->expects($this->never())
+			->method('create_customer_for_user');
 
-	// $result = $this->mock_upe_gateway->update_payment_intent( $intent_id, $order_id, $save_payment_method, $selected_upe_payment_type );
-	// }
+		/**
+		 * In order to test each gateway, we need to setup mock_api_client so that
+		 * its input are mocked in sequence, matching the gateways.
+		 */
+		foreach ($payment_gateways as $payment_method_id => $mock_payment_gateway) {
+			$mock_api_test_input[] = [
+				'pi_mock',
+				5000,
+				'usd',
+				true,
+				'cus_mock',
+				[
+					'customer_name'  => 'Jeroen Sormani',
+					'customer_email' => 'admin@example.org',
+					'site_url'       => 'http://example.org',
+					'order_id'       => $order_id,
+					'order_number'   => $order_number,
+					'order_key'      => $order->get_order_key(),
+					'payment_type'   => Payment_Type::SINGLE(),
+				],
+				[
+					'merchant_reference' => (string) $order_id,
+					'shipping_amount'    => 1000.0,
+					'line_items'         => [
+						(object) [
+							'product_code'        => 30,
+							'product_description' => 'Beanie with Logo',
+							'unit_cost'           => 1800,
+							'quantity'            => 1,
+							'tax_amount'          => 270,
+							'discount_amount'     => 0,
+							'product_code'        => $product_item->get_product_id(),
+							'product_description' => 'Dummy Product',
+							'unit_cost'           => 1000.0,
+							'quantity'            => 4,
+							'tax_amount'          => 0.0,
+							'discount_amount'     => 0.0,
+						],
+					],
+					'customer_reference' => (string) $order_id
+				],
+				$payment_method_id
+			];
+		}
+
+		$this->mock_api_client
+			->method('update_intention')
+			->withConsecutive(...$mock_api_test_input)
+			->willReturn(
+				[
+					'sucess' => 'true',
+				]
+			);
+
+		// Test update_payment_intent on each payment gateway.
+		foreach ($payment_gateways as $payment_method_id => $mock_payment_gateway) {
+			$mock_payment_gateway
+				->method('manage_customer_details_for_order')
+				->will(
+					$this->returnValue([$user, $customer_id])
+				);
+			$result = $mock_payment_gateway->update_payment_intent($intent_id, $order_id, $save_payment_method, $payment_method_id);
+			$this->assertSame(['success' => true], $result);
+		}
+	}
 
 	// public function test_update_payment_intent_with_payment_country() {
 	// $order        = WC_Helper_Order::create_order();
@@ -1594,18 +1620,20 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
 	 */
-	private function set_cart_contains_subscription_items( $cart_contains_subscriptions ) {
-		foreach ( $this->mock_payment_methods as $mock_payment_method ) {
-			$mock_payment_method->expects( $this->any() )
-				->method( 'is_subscription_item_in_cart' )
+	private function set_cart_contains_subscription_items($cart_contains_subscriptions)
+	{
+		foreach ($this->mock_payment_methods as $mock_payment_method) {
+			$mock_payment_method->expects($this->any())
+				->method('is_subscription_item_in_cart')
 				->will(
-					$this->returnValue( $cart_contains_subscriptions )
+					$this->returnValue($cart_contains_subscriptions)
 				);
 		}
 	}
 
-	private function setup_saved_payment_method() {
-		$token = WC_Helper_Token::create_token( 'pm_mock' );
+	private function setup_saved_payment_method()
+	{
+		$token = WC_Helper_Token::create_token('pm_mock');
 
 		return [
 			'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
@@ -1613,8 +1641,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
-	private function set_get_upe_enabled_payment_method_statuses_return_value( $mock_payment_gateway, $return_value = null ) {
-		if ( null === $return_value ) {
+	private function set_get_upe_enabled_payment_method_statuses_return_value($mock_payment_gateway, $return_value = null)
+	{
+		if (null === $return_value) {
 			$return_value = [
 				'card_payments' => [
 					'status' => 'active',
@@ -1622,8 +1651,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			];
 		}
 		$mock_payment_gateway
-			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_statuses' )
-			->will( $this->returnValue( $return_value ) );
+			->expects($this->any())
+			->method('get_upe_enabled_payment_method_statuses')
+			->will($this->returnValue($return_value));
 	}
 }
