@@ -440,11 +440,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Add needed order meta
 	 *
 	 * @param integer $order_id    The order ID.
-	 * @param array   $posted_data The posted data from checkout form.
 	 *
 	 * @return  void
 	 */
-	public function add_order_meta( $order_id, $posted_data = null ) {
+	public function add_order_meta( $order_id ) {
 		if ( empty( $_POST['payment_request_type'] ) || ! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method'] ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
