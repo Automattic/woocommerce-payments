@@ -147,6 +147,7 @@ jobs:
 
       # Run Tests
       - name: Run E2E Tests
+        shell: /bin/bash +e {0}
         run: | 
           npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH"
           E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
