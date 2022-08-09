@@ -942,7 +942,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			$mock_api_client ?? $this->mock_api_client,
 			$this->mock_account,
 			$this->mock_localization_service,
-			$mock_database_cache ?? $this->mock_database_cache
+			$mock_database_cache ?? $this->mock_database_cache,
+			$this->mock_utils
 		);
 		$this->multi_currency->init_widgets();
 		$this->multi_currency->init();
