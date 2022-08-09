@@ -67,6 +67,9 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 		} );
 
 		it( 'should have a charge for subscription cost with fee', async () => {
+			// TODO - just try to break tests.
+			expect( true ).toMatch( 'false' );
+
 			await merchant.login();
 
 			await merchant.goToOrder( orderId );
