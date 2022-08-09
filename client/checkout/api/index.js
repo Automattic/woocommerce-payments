@@ -186,13 +186,13 @@ export default class WCPayAPI {
 			 */
 			send() {
 				return stripe
-					.createPaymentMethod( this.args )
+					.createSource( this.args.card )
 					.then( ( paymentMethod ) => {
 						if ( paymentMethod.error ) {
 							throw paymentMethod.error;
 						}
 
-						return paymentMethod;
+						return { paymentMethod: paymentMethod.source };
 					} );
 			}
 		} )();
