@@ -1172,16 +1172,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 			// Include the order ID in the result.
 			$result['order_id'] = $order_id;
 
-			// Respond with the result.
-			wp_send_json( apply_filters( 'woocommerce_payment_successful_result', $result, $order_id ) );
+			$result = apply_filters( 'woocommerce_payment_successful_result', $result, $order_id );
 		} catch ( Exception $e ) {
 			$result = [
 				'result'   => 'error',
 				'messages' => $e->getMessage(),
 			];
-
-			wp_send_json( $result );
 		}
+
+		wp_send_json( $result );
 	}
 
 	/**
