@@ -153,9 +153,9 @@ jobs:
         run: | 
           npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH"
           E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
-          echo "::set-output name=E2E_NUM_FAILED_TEST_SUITES::$(echo E2E_NUM_FAILED_TEST_SUITES)"
+          echo "::set-output name=E2E_NUM_FAILED_TEST_SUITES::$(echo "$E2E_NUM_FAILED_TEST_SUITES")"
           if [[ ${E2E_NUM_FAILED_TEST_SUITES} -gt 0 ]]; then
-            echo '::notice Some tests failed but we will try them again in the next job.'
+            echo '::notice::Some tests failed but we will try them again in the next job.'
             exit 0
           fi
       
