@@ -149,19 +149,16 @@ jobs:
       - name: Run E2E Tests
         run: | 
           npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH"
-          if [[ $? -ne 0 ]]; then
-            echo 'Some tests failed but we will try again in the next job.'
+          E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
+          if [[ ${E2E_NUM_FAILED_TEST_SUITES} -gt 0 ]]; then
+            echo 'Some tests failed but we will try them again in the next job.'
             exit 0
-          fi 
+          fi
       
       - name: Re-try failed test files
+        if: ${{ env.E2E_NUM_FAILED_TEST_SUITES > 0  }}
         run: |
-          if [[ $(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites') -gt 0 ]]; then
-            echo "Re-running failed test files..."
-            cat "$E2E_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e
-          else
-            echo 'Good news! No failed test file to run.'
-          fi
+          cat "$E2E_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e
 
       # Archive screenshots if any
       - name: Archive e2e test screenshots & logs
