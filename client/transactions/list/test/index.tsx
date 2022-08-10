@@ -99,6 +99,8 @@ const getMockTransactions: () => Transaction[] = () => [
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
 		},
+		channel: 'online',
+		source_identifier: '1234',
 		customer_name: 'Another customer',
 		customer_email: 'another@customer.com',
 		customer_country: 'US',
@@ -126,6 +128,8 @@ const getMockTransactions: () => Transaction[] = () => [
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
 		},
+		channel: 'online',
+		source_identifier: '1234',
 		customer_name: 'My name',
 		customer_email: 'a@b.com',
 		customer_country: 'US',
@@ -140,6 +144,34 @@ const getMockTransactions: () => Transaction[] = () => [
 		deposit_id: 'po_mock',
 		loan_id: 'flxln_mock',
 		payment_intent_id: 'pi_mock',
+	},
+	{
+		available_on: '',
+		transaction_id: 'txn_mmtr89gjh5',
+		date: '2020-01-02 19:55:05',
+		type: 'charge',
+		source: 'visa',
+		order: {
+			number: 335,
+			url: 'https://example.com/order/335',
+			// eslint-disable-next-line camelcase
+			customer_url: 'https://example.com/customer/my-name',
+		},
+		channel: 'in_person',
+		source_identifier: '1234',
+		customer_name: 'Best customer',
+		customer_email: 'best@customer.com',
+		customer_country: 'US',
+		charge_id: 'ch_rskkmpe46yu',
+		amount: 2000,
+		fees: 75,
+		net: 1925,
+		currency: 'usd',
+		customer_amount: 2000,
+		customer_currency: 'usd',
+		risk_level: 0,
+		deposit_id: undefined,
+		loan_id: undefined,
 	},
 ];
 
@@ -557,6 +589,7 @@ describe( 'Transactions list', () => {
 				'"Transaction Id"',
 				'"Date / Time"',
 				'Type',
+				'Channel',
 				'Amount',
 				'Fees',
 				'Net',
@@ -615,28 +648,31 @@ describe( 'Transactions list', () => {
 			expect( displayFirstTransaction[ 1 ] ).toBe(
 				csvFirstTransaction[ 2 ]
 			); // type
+			expect( displayFirstTransaction[ 2 ] ).toBe(
+				csvFirstTransaction[ 3 ]
+			); // channel
 			expect(
-				getUnformattedAmount( displayFirstTransaction[ 2 ] ).indexOf(
-					csvFirstTransaction[ 3 ]
+				getUnformattedAmount( displayFirstTransaction[ 3 ] ).indexOf(
+					csvFirstTransaction[ 4 ]
 				)
 			).not.toBe( -1 ); // amount
 			expect(
-				-Number( getUnformattedAmount( displayFirstTransaction[ 3 ] ) )
+				-Number( getUnformattedAmount( displayFirstTransaction[ 4 ] ) )
 			).toEqual(
 				Number(
-					csvFirstTransaction[ 4 ].replace( /['"]+/g, '' ) // strip extra quotes
+					csvFirstTransaction[ 5 ].replace( /['"]+/g, '' ) // strip extra quotes
 				)
 			); // fees
 			expect(
-				getUnformattedAmount( displayFirstTransaction[ 4 ] ).indexOf(
-					csvFirstTransaction[ 5 ]
+				getUnformattedAmount( displayFirstTransaction[ 5 ] ).indexOf(
+					csvFirstTransaction[ 6 ]
 				)
 			).not.toBe( -1 ); // net
-			expect( displayFirstTransaction[ 5 ] ).toBe(
-				csvFirstTransaction[ 6 ]
+			expect( displayFirstTransaction[ 6 ] ).toBe(
+				csvFirstTransaction[ 7 ]
 			); // order number
-			expect( displayFirstTransaction[ 7 ] ).toBe(
-				csvFirstTransaction[ 8 ].replace( /['"]+/g, '' ) // strip extra quotes
+			expect( displayFirstTransaction[ 8 ] ).toBe(
+				csvFirstTransaction[ 9 ].replace( /['"]+/g, '' ) // strip extra quotes
 			); // customer
 		} );
 	} );
