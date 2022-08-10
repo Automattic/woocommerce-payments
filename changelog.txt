@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.3.1 - 2022-08-08 =
+* Security update.
+
 = 4.3.0 - 2022-06-15 =
 * Add - Add ARN (Acquirer Reference Number) to refunds in payment details timeline.
 * Add - Add support for custom order numbers in addition to order IDs.
