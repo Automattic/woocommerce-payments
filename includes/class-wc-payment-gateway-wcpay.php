@@ -1013,9 +1013,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WCPay\Payment_Information $payment_information Payment info.
 	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
 	 *
-	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
-	 * @throws API_Exception                Error processing the payment.
-	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
+	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
+	 * @throws API_Exception                   Error processing the payment.
+	 * @throws Add_Payment_Method_Exception    When $0 order processing failed.
+	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
 		$order                                       = $payment_information->get_order();
@@ -1112,10 +1113,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
 
+			// Initializing the intent variable here to ensure we don't try to use an undeclared
+			// variable later.
+			$intent = null;
 			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the intent is included in the request use that intent.
-				$intent = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
-			} else {
+				$intent                   = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
+				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
+				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+				if ( $intent_meta_order_id !== $order_id ) {
+					throw new Intent_Authentication_Exception(
+						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						'order_id_mismatch'
+					);
+				}
+			}
+
+			if ( empty( $intent ) ) {
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 				$intent = $this->payments_api_client->create_and_confirm_intention(
 					$converted_amount,

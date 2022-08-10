@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.7
 Tested up to: 5.9.2
 Requires PHP: 7.0
-Stable tag: 3.9.3
+Stable tag: 3.9.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,9 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 3.9.4 - 2022-08-08 =
+* Security update.
 
 = 3.9.3 - 2022-04-05 =
 * Fix - Payment Request Button - Do not set WC session cookie and HTML container on the product page if not enabled.
