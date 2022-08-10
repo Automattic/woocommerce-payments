@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.1.1 - 2022-08-08 =
+* Security update.
+
 = 4.1.0 - 2022-05-05 =
 * Add - Add documents and VAT invoices feature for supported countries.
 * Add - Adding StripeLink logo in the transactions list
