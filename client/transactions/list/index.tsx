@@ -53,23 +53,6 @@ import wcpayTracks from 'tracks';
 import DownloadButton from 'components/download-button';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
-
-const siteLang = document.documentElement.lang;
-const siteNumberOptions = {
-	thousandSeparator: ',',
-};
-
-if ( [ 'fr-CA', 'pl-PL', 'fr-FR', 'fr-BE' ].includes( siteLang ) ) {
-	siteNumberOptions.thousandSeparator = ' ';
-} else if (
-	[ 'de-AT', 'nl-BE', 'de-DE', 'it-IT', 'nl', 'es', 'pt-BR' ].includes(
-		siteLang
-	)
-) {
-	siteNumberOptions.thousandSeparator = '.';
-}
-
-const formatStoreNumber = partial( numberFormat, siteNumberOptions );
 interface TransactionsListProps {
 	depositId?: string;
 }
@@ -94,6 +77,28 @@ interface Column extends TableCardColumn {
 	visible?: boolean;
 	cellClassName?: string;
 }
+
+const applyThousandSeparator = ( trxCount: number ) => {
+	const siteLang = document.documentElement.lang;
+	const siteNumberOptions = {
+		thousandSeparator: ',',
+	};
+
+	if ( [ 'fr', 'pl' ].some( ( lang ) => siteLang.startsWith( lang ) ) ) {
+		siteNumberOptions.thousandSeparator = ' ';
+	} else if ( 'de-CH' === siteLang ) {
+		siteNumberOptions.thousandSeparator = "'";
+	} else if (
+		[ 'de', 'nl', 'it', 'es', 'pt' ].some( ( lang ) =>
+			siteLang.startsWith( lang )
+		)
+	) {
+		siteNumberOptions.thousandSeparator = '.';
+	}
+
+	const formattedNumber = partial( numberFormat, siteNumberOptions );
+	return formattedNumber( trxCount );
+};
 
 const getPaymentSourceDetails = ( txn: Transaction ) => {
 	if ( ! txn.source_identifier ) {
@@ -630,7 +635,9 @@ export const TransactionsList = (
 					transactionsSummary.count as number,
 					'woocommerce-payments'
 				),
-				value: `${ formatStoreNumber( transactionsSummary.count ) }`,
+				value: `${ applyThousandSeparator(
+					transactionsSummary.count as number
+				) }`,
 			},
 		];
 
