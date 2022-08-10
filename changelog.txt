@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.0.3 - 2022-08-08 =
+* Security update.
+
 = 4.0.2 - 2022-04-27 =
 * Add - Adds user's email to platform checkout request data.
 * Fix - Fixed non-working emails customization setting page caused by WCPay.
