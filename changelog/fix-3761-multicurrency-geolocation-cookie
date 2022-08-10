@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Avoid saving a session cookie when the currency is changed because of geolocation
