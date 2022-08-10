@@ -234,13 +234,6 @@ export const AuthorizationsList = (): JSX.Element => {
 						}
 						autocompleter={ autocompleter }
 					/>,
-					/*downloadable && (
-						<DownloadButton
-							key="download"
-							isDisabled={ isLoading || isDownloading }
-							onClick={ onDownload }
-						/>
-					),*/
 				] }
 			/>
 		</Page>
