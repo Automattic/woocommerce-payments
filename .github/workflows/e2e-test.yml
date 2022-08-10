@@ -36,7 +36,7 @@ jobs:
       fail-fast:     false
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce:   [ '6.0.1', '6.5.1', 'latest', 'beta' ]
+        woocommerce:   [ '6.2.2', '6.6.1', 'latest', 'beta' ]
         wordpress:     [ 'latest', 'nightly' ]
         php:           [ '7.4' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
@@ -44,16 +44,11 @@ jobs:
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
-          - woocommerce: '6.0.1'
-            test_groups: 'blocks'
-            test_branches: 'shopper'
-          - woocommerce: '6.5.1'
+          - woocommerce: '6.2.2'
             test_groups: 'blocks'
             test_branches: 'shopper'
           - wordpress: 'nightly'
-            woocommerce: '6.0.1'
-          - wordpress: 'nightly'
-            woocommerce: '6.5.1'
+            woocommerce: '6.2.2'
           - wordpress: 'nightly'
             woocommerce: 'beta'
 
@@ -70,7 +65,7 @@ jobs:
       # Conditionally skip WC Blocks tests. Remove/update based on min supported WC version by the blocks checkout plugin.
       - name: Conditionally skip WC Blocks tests
         run: |
-          SKIP_WC_VERSIONS=('6.0.1' '6.5.1')
+          SKIP_WC_VERSIONS=('6.2.2')
           if [[ " ${SKIP_WC_VERSIONS[@]} " =~ " ${E2E_WC_VERSION} " ]]; then
             echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
           fi
