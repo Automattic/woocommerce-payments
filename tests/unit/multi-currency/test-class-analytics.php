@@ -118,6 +118,10 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			->method( 'get_available_currencies' )
 			->willReturn( $this->get_mock_available_currencies() );
 
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_default_currency' )
+			->willReturn( new Currency( 'USD', 1.0 ) );
+
 		$this->analytics->register_customer_currencies();
 
 		$data_registry = Package::container()->get(
@@ -135,6 +139,10 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_available_currencies' )
 			->willReturn( $this->get_mock_available_currencies() );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_default_currency' )
+			->willReturn( new Currency( 'USD', 1.0 ) );
 
 		$this->analytics->register_customer_currencies();
 
