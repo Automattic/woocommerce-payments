@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Not focusing email field when showing error message to prevent the autocompletion box from covering the error message.
