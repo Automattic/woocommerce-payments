@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 3.9.4 - 2022-08-08 =
+= 4.5.1 - 2022-08-08 =
 * Security update.
 
 = 4.5.0 - 2022-07-27 =
