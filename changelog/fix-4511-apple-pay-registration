@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix errors for apple pay registration
+Fix file permission and merchant country errors for apple pay registration.
