@@ -64,7 +64,7 @@ jobs:
       E2E_WC_VERSION: ${{ matrix.woocommerce }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
-      E2E_RESULT_FILEPATH: './tests/e2e/results.json'
+      E2E_FIRST_RUN_RESULT_FILEPATH: 'tests/e2e/results.json'
 
     steps:
       # Conditionally skip WC Blocks tests. Remove/update based on min supported WC version by the blocks checkout plugin.
@@ -150,9 +150,9 @@ jobs:
         # Use +e to trap errors when running E2E tests.
         shell: /bin/bash +e {0}
         run: | 
-          npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH"
+          npm run test:e2e -- --json --outputFile="$E2E_FIRST_RUN_RESULT_FILEPATH"
           
-          E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
+          E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_FIRST_RUN_RESULT_FILEPATH" | jq '.numFailedTestSuites')
 
           echo "::set-output name=FIRST_RUN_FAILED_TEST_SUITES::$(echo $E2E_NUM_FAILED_TEST_SUITES)"
 
@@ -165,7 +165,7 @@ jobs:
         if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
         # Filter failed E2E files from the result JSON file, and re-run them.
         run: |
-          cat "$E2E_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e
+          cat "$E2E_FIRST_RUN_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e
 
       # Archive screenshots if any
       - name: Archive e2e test screenshots & logs
@@ -176,5 +176,6 @@ jobs:
             path: |
               tests/e2e/screenshots
               tests/e2e/docker/wordpress/wp-content/debug.log
+              ${{ env.E2E_FIRST_RUN_RESULT_FILEPATH }}
             if-no-files-found: ignore
             retention-days: 5
