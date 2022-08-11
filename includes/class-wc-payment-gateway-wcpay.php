@@ -625,7 +625,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					<?php
 					echo sprintf(
 						/* translators: 1: supported country list */
-						__( 'Your account is registered in a country or region <a href="%1$s">not supported</a> by Apply Pay.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						__( 'Apple Pay isn’t currently supported in your country. Learn more about <a href="%1$s">the countries and regions where Apple Pay is supported (Apple Support)</a>', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						'https://support.apple.com/en-us/HT207957'
 					);
 					?>
