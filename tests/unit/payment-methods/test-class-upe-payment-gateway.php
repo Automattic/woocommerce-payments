@@ -559,68 +559,91 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 		$mock_payment_gateway->create_payment_intent($order_id);
 	}
 
-	// public function test_create_payment_intent_defaults_to_automatic_capture()
-	// {
-	// 	$order    = WC_Helper_Order::create_order();
-	// 	$order_id = $order->get_id();
-	// 	$intent   = WC_Helper_Intention::create_intention(['status' => 'requires_payment_method']);
-	// 	$this->mock_api_client
-	// 		->expects($this->once())
-	// 		->method('create_intention')
-	// 		->with(
-	// 			5000,
-	// 			'usd',
-	// 			['card'],
-	// 			$order_id,
-	// 			'automatic'
-	// 		)
-	// 		->willReturn($intent);
-	// 	$this->set_get_upe_enabled_payment_method_statuses_return_value();
+	public function test_create_payment_intent_defaults_to_automatic_capture()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_payment_gateway = $payment_gateways[Payment_Method::CARD];
 
-	// 	$this->mock_upe_gateway->create_payment_intent($order_id);
-	// }
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = WC_Helper_Intention::create_intention(['status' => 'requires_payment_method']);
+		$this->mock_api_client
+			->expects($this->once())
+			->method('create_intention')
+			->with(
+				5000,
+				'usd',
+				['card'],
+				$order_id,
+				'automatic'
+			)
+			->willReturn($intent);
 
-	// public function test_create_payment_intent_with_automatic_capture() {
-	// $order    = WC_Helper_Order::create_order();
-	// $order_id = $order->get_id();
-	// $intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
-	// $this->mock_upe_gateway->settings['manual_capture'] = 'no';
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'create_intention' )
-	// ->with(
-	// 5000,
-	// 'usd',
-	// [ 'card' ],
-	// $order_id,
-	// 'automatic'
-	// )
-	// ->willReturn( $intent );
-	// $this->set_get_upe_enabled_payment_method_statuses_return_value();
+		$mock_payment_gateway->method('get_payment_method_ids_enabled_at_checkout')
+			->willReturn([Payment_Method::CARD]);
 
-	// $this->mock_upe_gateway->create_payment_intent( $order_id );
-	// }
+		$this->set_get_upe_enabled_payment_method_statuses_return_value($mock_payment_gateway);
 
-	// public function test_create_payment_intent_with_manual_capture() {
-	// $order    = WC_Helper_Order::create_order();
-	// $order_id = $order->get_id();
-	// $intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
-	// $this->mock_upe_gateway->settings['manual_capture'] = 'yes';
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'create_intention' )
-	// ->with(
-	// 5000,
-	// 'usd',
-	// [ 'card' ],
-	// $order_id,
-	// 'manual'
-	// )
-	// ->willReturn( $intent );
-	// $this->set_get_upe_enabled_payment_method_statuses_return_value();
+		$mock_payment_gateway->create_payment_intent($order_id);
+	}
 
-	// $this->mock_upe_gateway->create_payment_intent( $order_id );
-	// }
+	public function test_create_payment_intent_with_automatic_capture()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_payment_gateway = $payment_gateways[Payment_Method::CARD];
+
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = WC_Helper_Intention::create_intention(['status' => 'requires_payment_method']);
+		$mock_payment_gateway->settings['manual_capture'] = 'no';
+		$this->mock_api_client
+			->expects($this->once())
+			->method('create_intention')
+			->with(
+				5000,
+				'usd',
+				['card'],
+				$order_id,
+				'automatic'
+			)
+			->willReturn($intent);
+
+		$mock_payment_gateway->method('get_payment_method_ids_enabled_at_checkout')
+			->willReturn([Payment_Method::CARD]);
+
+		$this->set_get_upe_enabled_payment_method_statuses_return_value($mock_payment_gateway);
+
+		$mock_payment_gateway->create_payment_intent($order_id);
+	}
+
+	public function test_create_payment_intent_with_manual_capture()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_payment_gateway = $payment_gateways[Payment_Method::CARD];
+
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = WC_Helper_Intention::create_intention(['status' => 'requires_payment_method']);
+		$mock_payment_gateway->settings['manual_capture'] = 'yes';
+		$this->mock_api_client
+			->expects($this->once())
+			->method('create_intention')
+			->with(
+				5000,
+				'usd',
+				['card'],
+				$order_id,
+				'manual'
+			)
+			->willReturn($intent);
+
+		$mock_payment_gateway->method('get_payment_method_ids_enabled_at_checkout')
+			->willReturn([Payment_Method::CARD]);
+
+		$this->set_get_upe_enabled_payment_method_statuses_return_value($mock_payment_gateway);
+
+		$mock_payment_gateway->create_payment_intent($order_id);
+	}
 
 	// public function test_create_setup_intent_existing_customer() {
 	// $_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
@@ -1299,64 +1322,77 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 	// $this->assertEquals( $mock_token, $this->mock_upe_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 	// }
 
+	public function test_create_payment_intent_uses_cached_minimum_amount()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_payment_gateway = $payment_gateways[Payment_Method::CARD];
 
+		$order = WC_Helper_Order::create_order();
+		$order->set_total(0.45);
+		$order->save();
 
+		set_transient('wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS);
 
-	// public function test_create_payment_intent_uses_cached_minimum_amount() {
-	// $order = WC_Helper_Order::create_order();
-	// $order->set_total( 0.45 );
-	// $order->save();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'status' => 'requires_payment_method',
+				'amount' => 50,
+			]
+		);
 
-	// set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
+		$this->mock_api_client
+			->expects($this->once())
+			->method('create_intention')
+			->with(50, 'usd', ['card'])
+			->willReturn($intent);
 
-	// $intent = WC_Helper_Intention::create_intention(
-	// [
-	// 'status' => 'requires_payment_method',
-	// 'amount' => 50,
-	// ]
-	// );
+		$mock_payment_gateway->method('get_payment_method_ids_enabled_at_checkout')
+			->willReturn([Payment_Method::CARD]);
 
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'create_intention' )
-	// ->with( 50, 'usd', [ 'card' ] )
-	// ->willReturn( $intent );
-	// $this->set_get_upe_enabled_payment_method_statuses_return_value();
+		$this->set_get_upe_enabled_payment_method_statuses_return_value($mock_payment_gateway);
 
-	// $this->mock_upe_gateway->create_payment_intent( $order->get_id() );
-	// }
+		$mock_payment_gateway->create_payment_intent($order->get_id());
+	}
 
-	// public function test_create_payment_intent_creates_new_intent_with_minimum_amount() {
-	// $order = WC_Helper_Order::create_order();
-	// $order->set_currency( 'USD' );
-	// $order->set_total( 0.45 );
-	// $order->save();
+	public function test_create_payment_intent_creates_new_intent_with_minimum_amount()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_payment_gateway = $payment_gateways[Payment_Method::CARD];
 
-	// $intent = WC_Helper_Intention::create_intention(
-	// [
-	// 'status' => 'requires_payment_method',
-	// 'amount' => 50,
-	// ]
-	// );
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency('USD');
+		$order->set_total(0.45);
+		$order->save();
 
-	// $this->mock_api_client
-	// ->expects( $this->exactly( 2 ) )
-	// ->method( 'create_intention' )
-	// ->withConsecutive(
-	// [ 45, 'usd', [ 'card' ] ],
-	// [ 50, 'usd', [ 'card' ] ]
-	// )
-	// ->will(
-	// $this->onConsecutiveCalls(
-	// $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $0.50 usd', 50, 'usd', 400 ) ),
-	// $this->returnValue( $intent )
-	// )
-	// );
-	// $this->set_get_upe_enabled_payment_method_statuses_return_value();
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'status' => 'requires_payment_method',
+				'amount' => 50,
+			]
+		);
 
-	// $result = $this->mock_upe_gateway->create_payment_intent( $order->get_id() );
-	// $this->assertsame( 'cs_mock', $result['client_secret'] );
-	// }
+		$this->mock_api_client
+			->expects($this->exactly(2))
+			->method('create_intention')
+			->withConsecutive(
+				[45, 'usd', ['card']],
+				[50, 'usd', ['card']]
+			)
+			->will(
+				$this->onConsecutiveCalls(
+					$this->throwException(new Amount_Too_Small_Exception('Error: Amount must be at least $0.50 usd', 50, 'usd', 400)),
+					$this->returnValue($intent)
+				)
+			);
+
+		$mock_payment_gateway->method('get_payment_method_ids_enabled_at_checkout')
+			->willReturn([Payment_Method::CARD]);
+
+		$this->set_get_upe_enabled_payment_method_statuses_return_value($mock_payment_gateway);
+
+		$result = $mock_payment_gateway->create_payment_intent($order->get_id());
+		$this->assertsame('cs_mock', $result['client_secret']);
+	}
 
 	// public function test_process_payment_rejects_with_cached_minimum_acount() {
 	// $order = WC_Helper_Order::create_order();
