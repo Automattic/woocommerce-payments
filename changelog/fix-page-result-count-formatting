@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Add the thousand separator to the transactions count.
+
+
