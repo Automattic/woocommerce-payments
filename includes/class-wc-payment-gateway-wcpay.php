@@ -582,7 +582,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Add notice explaining test mode when it's enabled.
 	 */
 	public function display_test_mode_notice() {
-		if ( $this->is_in_test_mode() ) {
+		if ( $this->is_in_test_mode() && get_class( $this ) === 'WCPay\Payment_Methods\CC_Payment_Gateway' ) {
 			?>
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
