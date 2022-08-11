@@ -23,7 +23,7 @@ const receiveAuthorizations = (
 		data: Authorization[];
 		error: string;
 	}
-) => {
+): Record< string, any > => {
 	const index = getResourceId( query );
 
 	switch ( type ) {

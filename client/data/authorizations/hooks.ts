@@ -3,7 +3,6 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
-import moment from 'moment';
 import type { Query } from '@woocommerce/navigation';
 
 /**
@@ -48,8 +47,6 @@ export const useAuthorizations = ( {}: Query ): Authorizations =>
 		} = select( STORE_NAME );
 
 		const query = {};
-
-		const data = getAuthorizations( query );
 
 		return {
 			authorizations: getAuthorizations( query ),

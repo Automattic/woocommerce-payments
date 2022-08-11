@@ -10,7 +10,11 @@ import { Authorization, AuthorizationsSummary } from './hooks';
 export function updateAuthorizations(
 	query: Query,
 	data: Array< Authorization >
-) {
+): {
+	type: string;
+	data: Array< Authorization >;
+	query: Query;
+} {
 	return {
 		type: TYPES.SET_AUTHORIZATIONS,
 		data,
@@ -21,7 +25,11 @@ export function updateAuthorizations(
 export function updateAuthorizationsSummary(
 	query: Query,
 	data: AuthorizationsSummary
-) {
+): {
+	type: string;
+	data: AuthorizationsSummary;
+	query: Query;
+} {
 	return {
 		type: TYPES.SET_AUTHORIZATIONS_SUMMARY,
 		data,

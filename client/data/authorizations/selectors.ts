@@ -1,6 +1,6 @@
 /** @format */
 
-import { Query } from '@woocommerce/navigation';
+import { Authorization, AuthorizationsSummary } from './hooks';
 
 /**
  * Internal dependencies
@@ -15,18 +15,24 @@ import { Query } from '@woocommerce/navigation';
  *
  * @return {Object} The list of authorizations for the given query.
  */
-const getAuthorizationsForQuery = ( state: any, query: Query ) => {
+const getAuthorizationsForQuery = ( state: Record< string, any > ) => {
 	return state.authorizations;
 };
 
-export const getAuthorizations = ( state: any, query: Query ) => {
+export const getAuthorizations = (
+	state: Record< string, any >
+): Array< Authorization > => {
 	return state.authorizations?.authorizations || [];
 };
 
-export const getAuthorizationsError = ( state: any, query: Query ) => {
-	return getAuthorizationsForQuery( state, query ).error || {};
+export const getAuthorizationsError = (
+	state: Record< string, any >
+): Error => {
+	return getAuthorizationsForQuery( state ).error || {};
 };
 
-export const getAuthorizationsSummary = ( state: any, query: Query ) => {
+export const getAuthorizationsSummary = (
+	state: Record< string, any >
+): AuthorizationsSummary => {
 	return state.authorizations?.summary;
 };
