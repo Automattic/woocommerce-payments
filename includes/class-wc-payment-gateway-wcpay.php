@@ -1113,9 +1113,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WCPay\Payment_Information $payment_information Payment info.
 	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
 	 *
-	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
-	 * @throws API_Exception                Error processing the payment.
-	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
+	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
+	 * @throws API_Exception                   Error processing the payment.
+	 * @throws Add_Payment_Method_Exception    When $0 order processing failed.
+	 * @throws Intent_Authentication_Exception When intent verfication failed.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
 		$order                                       = $payment_information->get_order();
@@ -1270,11 +1271,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
 				$intent = $this->payments_api_client->get_setup_intent( $platform_checkout_intent_id );
+
+				$intent_meta_order_id_raw = ! empty( $intent['metadata'] ) ? $intent['metadata']['order_id'] ?? '' : '';
+				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+				if ( $intent_meta_order_id !== $order_id ) {
+					throw new Intent_Authentication_Exception(
+						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						'order_id_mismatch'
+					);
+				}
 			} else {
 				// For $0 orders, we need to save the payment method using a setup intent.
 				$intent = $this->payments_api_client->create_and_confirm_setup_intent(
 					$payment_information->get_payment_method(),
-					$customer_id
+					$customer_id,
+					false,
+					$metadata
 				);
 			}
 

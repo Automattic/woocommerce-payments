@@ -500,16 +500,18 @@ class WC_Payments_API_Client {
 	 * @param string $payment_method_id        - ID of payment method to be saved.
 	 * @param string $customer_id              - ID of the customer.
 	 * @param bool   $save_in_platform_account - Indicate whether payment method should be stored in platform store.
+	 * @param array  $metadata                 - Meta data values to be sent along with setup intent creation.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id, $save_in_platform_account = false ) {
+	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id, $save_in_platform_account = false, $metadata = [] ) {
 		$request = [
 			'payment_method'           => $payment_method_id,
 			'customer'                 => $customer_id,
 			'save_in_platform_account' => $save_in_platform_account,
 			'confirm'                  => 'true',
+			'metadata'                 => $metadata,
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
