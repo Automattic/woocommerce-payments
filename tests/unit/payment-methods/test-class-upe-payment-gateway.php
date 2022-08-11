@@ -36,6 +36,7 @@ use WC_Subscriptions_Cart;
 use WCPAY_UnitTestCase;
 use WP_User;
 use Exception;
+use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
 
 /**
@@ -158,9 +159,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 	/**
 	 * Pre-test setup
 	 */
-	public function setUp(): void
+	public function set_up()
 	{
-		parent::setUp();
+		parent::set_up();
 
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
 		// return value of create_and_confirm_intention().
@@ -201,17 +202,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->mock_payment_methods = [];
-
 		$this->mock_rate_limiter = $this->createMock(Session_Rate_Limiter::class);
-		foreach ($this->payment_method_classes as $payment_method_class) {
-			$mock_payment_method = $this->getMockBuilder($payment_method_class)
-				->setConstructorArgs([$this->mock_token_service])
-				->setMethods(['is_subscription_item_in_cart'])
-				->getMock();
-			$this->mock_payment_methods[$mock_payment_method->get_id()] = $mock_payment_method;
-		}
-
 		$this->order_service = new WC_Payments_Order_Service($this->mock_api_client);
 
 		// Arrange: Define a $_POST array which includes the payment method,
@@ -224,12 +215,14 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 	private function setup_payment_gateways()
 	{
 		$payment_gateways = [];
+		$this->mock_payment_methods = [];
 
 		foreach ($this->payment_method_classes as $payment_method_id => $payment_method_class) {
 			$mock_payment_method = $this->getMockBuilder($payment_method_class)
 				->setConstructorArgs([$this->mock_token_service])
 				->setMethods(['is_subscription_item_in_cart'])
 				->getMock();
+			$this->mock_payment_methods[$mock_payment_method->get_id()] = $mock_payment_method;
 
 			$mock_gateway = $this->getMockBuilder(UPE_Payment_Gateway::class)
 				->setConstructorArgs(
@@ -251,6 +244,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 						'parent_process_payment',
 						'get_upe_enabled_payment_method_statuses',
 						'is_payment_recurring',
+						'get_payment_method_ids_enabled_at_checkout'
 					]
 				)
 				->getMock();
@@ -276,7 +270,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * Test the UI <div> container that will hold the payment method.    *
+	 * Test the UI <div> container that will hold the payment method.
 	 *
 	 * @return void
 	 */
@@ -287,6 +281,9 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 		foreach ($payment_gateways as $payment_method_id => $mock_payment_gateway) {
 			// $this->set_cart_contains_subscription_items( false );
 			// $this->set_get_upe_enabled_payment_method_statuses_return_value($mock_payment_gateway);
+			$mock_payment_gateway
+				->method('get_payment_method_ids_enabled_at_checkout')
+				->willReturn([]);
 
 			/**
 			 * This tests each payment method output separately without concatenating the output
@@ -465,108 +462,122 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 		}
 	}
 
-	// public function test_update_payment_intent_with_payment_country() {
-	// $order        = WC_Helper_Order::create_order();
-	// $order_id     = $order->get_id();
-	// $order_number = $order->get_order_number();
-	// $product_item = current( $order->get_items( 'line_item' ) );
+	public function test_update_payment_intent_with_payment_country()
+	{
+		$order        = WC_Helper_Order::create_order();
+		$order_id     = $order->get_id();
+		$order_number = $order->get_order_number();
+		$product_item = current($order->get_items('line_item'));
 
-	// $this->set_cart_contains_subscription_items( false );
+		$payment_gateways = $this->setup_payment_gateways();
 
-	// $this->mock_upe_gateway->expects( $this->once() )
-	// ->method( 'manage_customer_details_for_order' )
-	// ->will(
-	// $this->returnValue( [ '', 'cus_mock' ] )
-	// );
+		$this->set_cart_contains_subscription_items(false);
 
-	// $this->mock_customer_service
-	// ->expects( $this->never() )
-	// ->method( 'create_customer_for_user' );
+		$this->mock_customer_service
+			->expects($this->never())
+			->method('create_customer_for_user');
 
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'update_intention' )
-	// ->with(
-	// 'pi_mock',
-	// 5000,
-	// 'usd',
-	// false,
-	// 'cus_mock',
-	// [
-	// 'customer_name'  => 'Jeroen Sormani',
-	// 'customer_email' => 'admin@example.org',
-	// 'site_url'       => 'http://example.org',
-	// 'order_id'       => $order_id,
-	// 'order_number'   => $order_number,
-	// 'order_key'      => $order->get_order_key(),
-	// 'payment_type'   => Payment_Type::SINGLE(),
-	// ],
-	// [
-	// 'merchant_reference' => (string) $order_id,
-	// 'shipping_amount'    => 1000.0,
-	// 'line_items'         => [
-	// (object) [
-	// 'product_code'        => 30,
-	// 'product_description' => 'Beanie with Logo',
-	// 'unit_cost'           => 1800,
-	// 'quantity'            => 1,
-	// 'tax_amount'          => 270,
-	// 'discount_amount'     => 0,
-	// 'product_code'        => $product_item->get_product_id(),
-	// 'product_description' => 'Dummy Product',
-	// 'unit_cost'           => 1000.0,
-	// 'quantity'            => 4,
-	// 'tax_amount'          => 0.0,
-	// 'discount_amount'     => 0.0,
-	// ],
-	// ],
-	// 'customer_reference' => (string) $order_id,
-	// ],
-	// null,
-	// 'US'
-	// )
-	// ->willReturn(
-	// [
-	// 'sucess' => 'true',
-	// ]
-	// );
+		$this->mock_api_client
+			->expects($this->exactly(count($payment_gateways)))
+			->method('update_intention')
+			->with(
+				'pi_mock',
+				5000,
+				'usd',
+				false,
+				'cus_mock',
+				[
+					'customer_name'  => 'Jeroen Sormani',
+					'customer_email' => 'admin@example.org',
+					'site_url'       => 'http://example.org',
+					'order_id'       => $order_id,
+					'order_number'   => $order_number,
+					'order_key'      => $order->get_order_key(),
+					'payment_type'   => Payment_Type::SINGLE(),
+				],
+				[
+					'merchant_reference' => (string) $order_id,
+					'shipping_amount'    => 1000.0,
+					'line_items'         => [
+						(object) [
+							'product_code'        => 30,
+							'product_description' => 'Beanie with Logo',
+							'unit_cost'           => 1800,
+							'quantity'            => 1,
+							'tax_amount'          => 270,
+							'discount_amount'     => 0,
+							'product_code'        => $product_item->get_product_id(),
+							'product_description' => 'Dummy Product',
+							'unit_cost'           => 1000.0,
+							'quantity'            => 4,
+							'tax_amount'          => 0.0,
+							'discount_amount'     => 0.0,
+						],
+					],
+					'customer_reference' => (string) $order_id,
+				],
+				null,
+				'US'
+			)
+			->willReturn(
+				[
+					'sucess' => 'true',
+				]
+			);
 
-	// $this->mock_upe_gateway->update_payment_intent( 'pi_mock', $order_id, false, null, 'US' );
-	// }
+		// Test update_payment_intent on each payment gateway.
+		foreach ($payment_gateways as $mock_payment_gateway) {
+			$mock_payment_gateway
+				->method('manage_customer_details_for_order')
+				->will(
+					$this->returnValue(['', 'cus_mock'])
+				);
+			$result = $mock_payment_gateway->update_payment_intent('pi_mock', $order_id, false, null, 'US');
+			$this->assertSame(['success' => true], $result);
+		}
+	}
 
-	// public function test_create_payment_intent_uses_order_amount_if_order() {
-	// $order    = WC_Helper_Order::create_order();
-	// $order_id = $order->get_id();
-	// $intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'create_intention' )
-	// ->with( 5000, 'usd', [ 'card' ] )
-	// ->willReturn( $intent );
-	// $this->set_cart_contains_subscription_items( false );
-	// $this->set_get_upe_enabled_payment_method_statuses_return_value();
+	public function test_create_payment_intent_uses_order_amount_if_order()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_payment_gateway = $payment_gateways[Payment_Method::CARD];
 
-	// $result = $this->mock_upe_gateway->create_payment_intent( $order_id );
-	// }
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = WC_Helper_Intention::create_intention(['status' => 'requires_payment_method']);
+		$this->mock_api_client
+			->expects($this->once())
+			->method('create_intention')
+			->with(5000, 'usd', ['card'])
+			->willReturn($intent);
+		$this->set_cart_contains_subscription_items(false);
 
-	// public function test_create_payment_intent_defaults_to_automatic_capture() {
-	// $order    = WC_Helper_Order::create_order();
-	// $order_id = $order->get_id();
-	// $intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'create_intention' )
-	// ->with(
-	// 5000,
-	// 'usd',
-	// [ 'card' ],
-	// $order_id,
-	// 'automatic'
-	// )
-	// ->willReturn( $intent );
-	// $this->set_get_upe_enabled_payment_method_statuses_return_value();
+		$mock_payment_gateway->method('get_payment_method_ids_enabled_at_checkout')
+			->willReturn([Payment_Method::CARD]);
 
-	// $this->mock_upe_gateway->create_payment_intent( $order_id );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value($mock_payment_gateway);
+		$mock_payment_gateway->create_payment_intent($order_id);
+	}
+
+	// public function test_create_payment_intent_defaults_to_automatic_capture()
+	// {
+	// 	$order    = WC_Helper_Order::create_order();
+	// 	$order_id = $order->get_id();
+	// 	$intent   = WC_Helper_Intention::create_intention(['status' => 'requires_payment_method']);
+	// 	$this->mock_api_client
+	// 		->expects($this->once())
+	// 		->method('create_intention')
+	// 		->with(
+	// 			5000,
+	// 			'usd',
+	// 			['card'],
+	// 			$order_id,
+	// 			'automatic'
+	// 		)
+	// 		->willReturn($intent);
+	// 	$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
+	// 	$this->mock_upe_gateway->create_payment_intent($order_id);
 	// }
 
 	// public function test_create_payment_intent_with_automatic_capture() {
