@@ -13,11 +13,7 @@ import { updateAuthorizations, updateAuthorizationsSummary } from './actions';
 import { Authorization } from './hooks';
 import { Query } from '@woocommerce/navigation';
 
-enum RiskLevel {
-	HIGH = 'high',
-	ELEVATED = 'elevated',
-	NORMAL = 'normal',
-}
+type RiskLevel = 'high' | 'elevated' | 'normal';
 
 /**
  * Retrieves the transactions summary from the summary API.
@@ -41,11 +37,7 @@ export function* getAuthorizations( query: Query ): any {
 		);
 
 		const randomRisk = (): RiskLevel => {
-			const risks: Array< RiskLevel > = [
-				RiskLevel.ELEVATED,
-				RiskLevel.NORMAL,
-				RiskLevel.HIGH,
-			];
+			const risks: Array< RiskLevel > = [ 'elevated', 'normal', 'high' ];
 
 			return risks[ Math.floor( Math.random() * risks.length ) ];
 		};
