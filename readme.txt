@@ -99,7 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 4.5.1 - 2022-08-08 =
-* Security update.
+* Update - Security update.
 
 = 4.5.0 - 2022-07-27 =
 * Add - Add "Things to do" task list to the Payments Overview screen
