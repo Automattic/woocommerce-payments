@@ -524,27 +524,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )
-			->method( 'orders_with_charge_id_from_charge_ids' )
+			->method( 'orders_from_charge_ids' )
 			->with(
 				[
 					'ch_test_1',
 					'ch_test_2',
 				]
 			)
-			->will(
-				$this->returnValue(
-					[
-						[
-							'order'     => $order_1,
-							'charge_id' => 'ch_test_1',
-						],
-						[
-							'order'     => $order_2,
-							'charge_id' => 'ch_test_2',
-						],
-					]
-				)
-			);
+			->will( $this->returnValue( [ $order_1, $order_2 ] ) );
 
 		$this->set_http_mock_response(
 			200,
