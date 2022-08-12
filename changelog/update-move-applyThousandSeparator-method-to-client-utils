@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: Move the applyThousandSeparator method to client/utils and use from there
+
+

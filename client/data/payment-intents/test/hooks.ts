@@ -1,18 +1,25 @@
 /** @format */
 
 /**
+ * External dependencies
+ */
+import { useSelect } from '@wordpress/data';
+
+/**
  * Internal dependencies
  */
 import { usePaymentIntentWithChargeFallback } from '../';
 import { STORE_NAME } from '../../constants';
-import { useSelect } from '@wordpress/data';
+import { OutcomeRiskLevel } from '../../../types/charges';
 import { PaymentIntent } from '../../../types/payment-intents';
 
 jest.mock( '@wordpress/data' );
 
-const paymentIntentId = 'pi_mock';
-const chargeId = 'ch_mock';
-const paymentIntentMock: PaymentIntent = {
+export const chargeId = 'ch_mock';
+
+export const paymentIntentId = 'pi_mock';
+
+export const paymentIntentMock: PaymentIntent = {
 	id: paymentIntentId,
 	amount: 8903,
 	currency: 'USD',
@@ -24,6 +31,52 @@ const paymentIntentMock: PaymentIntent = {
 			card: {},
 			type: 'card',
 		},
+		payment_method: 'pm_mock',
+		amount_captured: 8903,
+		amount_refunded: 8903,
+		application_fee_amount: 82,
+		balance_transaction: {
+			fee: 82,
+			amount: 8903,
+			currency: 'usd',
+		},
+		billing_details: {
+			address: {
+				city: 'City',
+				country: 'US',
+				line1: 'Line 1',
+				line2: 'Line 2',
+				postal_code: 'Postal code',
+				state: 'State',
+			},
+			email: 'admin@example.com',
+			name: 'First Name',
+			phone: '0-000-000-0000',
+			formatted_address: 'Line 1<br/>Line 2<br/>City, State Postal code',
+		},
+		currency: 'usd',
+		dispute: null,
+		disputed: false,
+		order: {
+			number: Number( '67' ),
+			url: 'http://order.url',
+			customer_url: 'customer.url',
+			subscriptions: [],
+		},
+		outcome: {
+			network_status: 'approved_by_network',
+			reason: null,
+			risk_level: 'normal' as OutcomeRiskLevel,
+			risk_score: 56,
+			seller_message: 'Payment complete.',
+			type: 'authorized',
+		},
+		paid: true,
+		paydown: null,
+		payment_intent: paymentIntentId,
+		refunded: true,
+		refunds: null,
+		status: 'succeeded',
 	},
 	created: 1656701169,
 	customer: 'cus_mock',
@@ -74,14 +127,11 @@ describe( 'Payment Intent hooks', () => {
 
 		it( 'should return the correct data if a payment intent id is provided', async () => {
 			selectors = {
+				isResolving: jest.fn().mockReturnValue( false ),
 				getPaymentIntent: jest
 					.fn()
 					.mockReturnValue( paymentIntentMock ),
-				getCharge: jest
-					.fn()
-					.mockReturnValue( paymentIntentMock.charge ),
-				getChargeError: jest.fn().mockReturnValue( {} ),
-				isResolving: jest.fn().mockReturnValue( false ),
+				getPaymentIntentError: jest.fn().mockReturnValue( {} ),
 			};
 
 			const result = usePaymentIntentWithChargeFallback(
@@ -91,7 +141,6 @@ describe( 'Payment Intent hooks', () => {
 			expect( selectors.getPaymentIntent ).toHaveBeenCalledWith(
 				paymentIntentId
 			);
-			expect( selectors.getCharge ).toHaveBeenCalledWith( chargeId );
 
 			expect( result ).toEqual( {
 				data: paymentIntentMock.charge,
@@ -102,7 +151,6 @@ describe( 'Payment Intent hooks', () => {
 
 		it( 'should return an empty object if there is no payment intent data yet', async () => {
 			selectors = {
-				getCharge: jest.fn().mockReturnValue( {} ),
 				isResolving: jest.fn().mockReturnValue( true ),
 				getPaymentIntent: jest.fn().mockReturnValue( {} ),
 				getPaymentIntentError: jest.fn().mockReturnValue( {} ),
@@ -115,7 +163,6 @@ describe( 'Payment Intent hooks', () => {
 			expect( selectors.getPaymentIntent ).toHaveBeenCalledWith(
 				paymentIntentId
 			);
-			expect( selectors.getCharge ).not.toHaveBeenCalled();
 
 			expect( result ).toEqual( {
 				data: {},
