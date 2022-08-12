@@ -645,68 +645,76 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 		$mock_payment_gateway->create_payment_intent($order_id);
 	}
 
-	// public function test_create_setup_intent_existing_customer() {
-	// $_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+	public function test_create_setup_intent_existing_customer()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_payment_gateway = $payment_gateways[Payment_Method::CARD];
 
-	// $this->mock_customer_service
-	// ->expects( $this->once() )
-	// ->method( 'get_customer_id_by_user_id' )
-	// ->will( $this->returnValue( 'cus_mock' ) );
+		$_POST = ['wcpay-payment-method' => 'pm_mock'];
 
-	// $this->mock_customer_service
-	// ->expects( $this->never() )
-	// ->method( 'create_customer_for_user' );
+		$this->mock_customer_service
+			->expects($this->once())
+			->method('get_customer_id_by_user_id')
+			->will($this->returnValue('cus_mock'));
 
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'create_setup_intention' )
-	// ->with( 'cus_mock', [ 'card' ] )
-	// ->willReturn(
-	// [
-	// 'id'            => 'seti_mock',
-	// 'client_secret' => 'client_secret_mock',
-	// ]
-	// );
+		$this->mock_customer_service
+			->expects($this->never())
+			->method('create_customer_for_user');
 
-	// $this->set_cart_contains_subscription_items( false );
+		$this->mock_api_client
+			->expects($this->once())
+			->method('create_setup_intention')
+			->with('cus_mock', ['card'])
+			->willReturn(
+				[
+					'id'            => 'seti_mock',
+					'client_secret' => 'client_secret_mock',
+				]
+			);
 
-	// $result = $this->mock_upe_gateway->create_setup_intent();
+		$this->set_cart_contains_subscription_items(false);
 
-	// $this->assertEquals( 'seti_mock', $result['id'] );
-	// $this->assertEquals( 'client_secret_mock', $result['client_secret'] );
-	// }
+		$result = $mock_payment_gateway->create_setup_intent();
 
-	// public function test_create_setup_intent_no_customer() {
-	// $_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+		$this->assertEquals('seti_mock', $result['id']);
+		$this->assertEquals('client_secret_mock', $result['client_secret']);
+	}
 
-	// $this->mock_customer_service
-	// ->expects( $this->once() )
-	// ->method( 'get_customer_id_by_user_id' )
-	// ->will( $this->returnValue( null ) );
+	public function test_create_setup_intent_no_customer()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_payment_gateway = $payment_gateways[Payment_Method::CARD];
 
-	// $this->mock_customer_service
-	// ->expects( $this->once() )
-	// ->method( 'create_customer_for_user' )
-	// ->will( $this->returnValue( 'cus_12346' ) );
+		$_POST = ['wcpay-payment-method' => 'pm_mock'];
 
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'create_setup_intention' )
-	// ->with( 'cus_12346', [ 'card' ] )
-	// ->willReturn(
-	// [
-	// 'id'            => 'seti_mock',
-	// 'client_secret' => 'client_secret_mock',
-	// ]
-	// );
+		$this->mock_customer_service
+			->expects($this->once())
+			->method('get_customer_id_by_user_id')
+			->will($this->returnValue(null));
 
-	// $this->set_cart_contains_subscription_items( false );
+		$this->mock_customer_service
+			->expects($this->once())
+			->method('create_customer_for_user')
+			->will($this->returnValue('cus_12346'));
 
-	// $result = $this->mock_upe_gateway->create_setup_intent();
+		$this->mock_api_client
+			->expects($this->once())
+			->method('create_setup_intention')
+			->with('cus_12346', ['card'])
+			->willReturn(
+				[
+					'id'            => 'seti_mock',
+					'client_secret' => 'client_secret_mock',
+				]
+			);
 
-	// $this->assertEquals( 'seti_mock', $result['id'] );
-	// $this->assertEquals( 'client_secret_mock', $result['client_secret'] );
-	// }
+		$this->set_cart_contains_subscription_items(false);
+
+		$result = $mock_payment_gateway->create_setup_intent();
+
+		$this->assertEquals('seti_mock', $result['id']);
+		$this->assertEquals('client_secret_mock', $result['client_secret']);
+	}
 
 	// public function test_process_payment_returns_correct_redirect_url() {
 	// $order                         = WC_Helper_Order::create_order();
