@@ -166,7 +166,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 			}
 
 			// Check if specified $plugin_name is in the process of being activated via the WP CLI.
-			if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			if ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) ) {
 				$expected_arguments = [
 					'plugin',
 					'activate',
