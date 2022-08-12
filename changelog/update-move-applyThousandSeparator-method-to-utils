@@ -1,5 +1,0 @@
-Significance: patch
-Type: update
-Comment: Code refactor to move the applyThousandSeparator method to the utils file
-
-
