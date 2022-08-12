@@ -41,7 +41,7 @@ class WC_Payments_DB_Test extends WCPAY_UnitTestCase {
 			$order->save();
 		}
 
-		$orders_with_charge_ids = $this->wcpay_db->orders_with_charge_id_from_charge_ids( array_merge( $existing_charge_ids, $non_existing_charge_ids ) );
+		$orders_with_charge_ids = $this->wcpay_db->orders_from_charge_ids( array_merge( $existing_charge_ids, $non_existing_charge_ids ) );
 
 		$this->assertCount( 2, $orders_with_charge_ids );
 		$this->assertIsArray( $orders_with_charge_ids[0] );

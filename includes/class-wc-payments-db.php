@@ -21,13 +21,8 @@ class WC_Payments_DB {
 	 *
 	 * @return boolean|WC_Order|WC_Order_Refund
 	 */
-	public function order_from_charge_id( $charge_id ) {
-		$order_id = $this->order_id_from_meta_key_value( self::META_KEY_CHARGE_ID, $charge_id );
-
-		if ( $order_id ) {
-			return $this->order_from_order_id( $order_id );
-		}
-		return false;
+	public function order_from_charge_id( string $charge_id ) {
+		return $this->order_from_meta_key_value( self::META_KEY_CHARGE_ID, $charge_id );
 	}
 
 	/**
@@ -35,31 +30,10 @@ class WC_Payments_DB {
 	 *
 	 * @param array $charge_ids List of charge IDs corresponding to an order ID.
 	 *
-	 * @return array[]
+	 * @return array|WC_Order[]|WC_Order_Refund[]
 	 */
-	public function orders_with_charge_id_from_charge_ids( array $charge_ids ): array {
-		global $wpdb;
-
-		$charge_id_placeholder = implode( ',', array_fill( 0, count( $charge_ids ), '%s' ) );
-
-		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
-				"SELECT DISTINCT ID as order_id, meta.meta_value as charge_id FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_key = '_charge_id' AND meta.meta_value IN ($charge_id_placeholder)",
-				$charge_ids
-			)
-		);
-
-		return array_map(
-			function ( stdClass $row ) : array {
-				return [
-					'order'     => $this->order_from_order_id( $row->order_id ),
-					'charge_id' => $row->charge_id,
-				];
-			},
-			$results
-		);
+	public function orders_from_charge_ids( array $charge_ids ): array {
+		return $this->orders_from_meta_key_values( self::META_KEY_CHARGE_ID, $charge_ids );
 	}
 
 	/**
@@ -70,34 +44,72 @@ class WC_Payments_DB {
 	 * @return boolean|WC_Order|WC_Order_Refund
 	 */
 	public function order_from_intent_id( $intent_id ) {
-		$order_id = $this->order_id_from_meta_key_value( self::META_KEY_INTENT_ID, $intent_id );
-
-		if ( $order_id ) {
-			return $this->order_from_order_id( $order_id );
-		}
-		return false;
+		return $this->order_from_meta_key_value( self::META_KEY_INTENT_ID, $intent_id );
 	}
 
 	/**
-	 * Retrieve an order ID from the DB using a meta key value pair.
+	 * Retrieve an order using a meta key value pair.
 	 *
 	 * @param string $meta_key   Either '_intent_id' or '_charge_id'.
 	 * @param string $meta_value Value for the meta key.
 	 *
-	 * @return null|string
+	 * @return boolean|WC_Order|WC_Order_Refund
 	 */
-	private function order_id_from_meta_key_value( $meta_key, $meta_value ) {
-		global $wpdb;
+	private function order_from_meta_key_value( string $meta_key, string $meta_value ) {
+		$custom_query_var_handler = function( $query, $query_vars ) use ( $meta_key ) {
+			if ( ! empty( $query_vars[ $meta_key ] ) ) {
+				$query['meta_query'][] = [
+					'key'   => $meta_key,
+					'value' => esc_attr( $query_vars[ $meta_key ] ),
+				];
+			}
 
-		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
-		$order_id = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT DISTINCT MAX(ID) FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_key = %s AND meta.meta_value = %s",
-				$meta_key,
-				$meta_value
-			)
+			return $query;
+		};
+
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10, 2 );
+		$orders = wc_get_orders(
+			[
+				'limit'   => 1,
+				$meta_key => $meta_value,
+			]
 		);
-		return $order_id;
+		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10 );
+
+		return $orders[0] ?? false;
+	}
+
+	/**
+	 * Retrieve orders using a meta key value pair for each value provided.
+	 *
+	 * @param string $meta_key   Either '_intent_id' or '_charge_id'.
+	 * @param array  $meta_value Value for the meta key.
+	 *
+	 * @return array|WC_Order[]|WC_Order_Refund[]
+	 */
+	private function orders_from_meta_key_values( string $meta_key, array $meta_value ): array {
+		$custom_query_var_handler = function( $query, $query_vars ) use ( $meta_key ) {
+			if ( ! empty( $query_vars[ $meta_key ] ) ) {
+				$query['meta_query'][] = [
+					'key'     => $meta_key,
+					'value'   => $query_vars[ $meta_key ],
+					'compare' => 'IN',
+				];
+			}
+
+			return $query;
+		};
+
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10, 2 );
+		$orders = wc_get_orders(
+			[
+				'limit'   => -1,
+				$meta_key => $meta_value,
+			]
+		);
+		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10 );
+
+		return $orders ?? [];
 	}
 
 	/**
