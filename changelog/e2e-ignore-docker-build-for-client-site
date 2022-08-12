@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+E2E setup tests: Ignore Docker build ./wordpress-xdebug
