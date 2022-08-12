@@ -21,7 +21,7 @@ interface Column extends TableCardColumn {
 	key:
 		| 'authorization_id'
 		| 'authorized_on'
-		| 'captured_by'
+		| 'capture_by'
 		| 'order'
 		| 'risk_level'
 		| 'amount'
@@ -51,9 +51,9 @@ const getColumns = (): Column[] =>
 			defaultSort: true,
 		},
 		{
-			key: 'captured_by',
-			label: __( 'Captured by', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Captured by', 'woocommerce-payments' ),
+			key: 'capture_by',
+			label: __( 'Capture by', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Capture by', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',
@@ -137,9 +137,9 @@ export const AuthorizationsList = (): JSX.Element => {
 				value: auth.authorized_on,
 				display: auth.authorized_on,
 			},
-			captured_by: {
-				value: auth.captured_by,
-				display: auth.captured_by,
+			capture_by: {
+				value: auth.capture_by,
+				display: auth.capture_by,
 			},
 			order: {
 				value: auth.order.number,

@@ -49,7 +49,7 @@ export function* getAuthorizations( query: Query ): any {
 			const authorization: Authorization = {
 				authorization_id: '123',
 				authorized_on: randomDate,
-				captured_by: randomCaptureDate,
+				capture_by: randomCaptureDate,
 				order: {
 					number: 24,
 					customer_url: 'https://doggo.com',

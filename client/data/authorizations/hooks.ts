@@ -15,7 +15,7 @@ import { RiskLevel } from 'wcpay/types/authorizations';
 export interface Authorization {
 	authorization_id: string;
 	authorized_on: string;
-	captured_by: string;
+	capture_by: string;
 	order: OrderDetails;
 	risk_level: RiskLevel;
 	amount: number;
