@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Replaced the direct DB queries to wp_posts and wp_postmeta with the appropriate WC APIs for Custom Order Tables compatibility
