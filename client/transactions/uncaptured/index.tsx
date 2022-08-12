@@ -175,24 +175,34 @@ export const AuthorizationsList = (): JSX.Element => {
 		);
 	} );
 
-	const summary = [];
+	let summary;
 
-	summary.push( {
-		value: String( authorizationsSummary.count ),
-		label: 'authorizations',
-	} );
+	const isAuthorizationsSummaryLoaded =
+		authorizationsSummary.count !== undefined &&
+		authorizationsSummary.total !== undefined &&
+		authorizationsSummary.totalAmount !== undefined &&
+		false === isSummaryLoading;
 
-	summary.push( {
-		value: String( authorizationsSummary.total ),
-		label: 'total',
-	} );
+	if ( isAuthorizationsSummaryLoaded ) {
+		summary = [
+			{
+				value: String( authorizationsSummary.count ),
+				label: 'authorizations',
+			},
+		];
 
-	summary.push( {
-		value: getFormatedAmountFromString(
-			String( authorizationsSummary.totalAmount )
-		),
-		label: 'Pending',
-	} );
+		summary.push( {
+			value: String( authorizationsSummary.total ),
+			label: 'total',
+		} );
+
+		summary.push( {
+			value: getFormatedAmountFromString(
+				String( authorizationsSummary.totalAmount )
+			),
+			label: 'Pending',
+		} );
+	}
 
 	return (
 		<Page>
