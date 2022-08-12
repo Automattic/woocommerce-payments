@@ -617,6 +617,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $is_in_supported_countries && $has_domain_association_file_permissions ) {
 			return;
 		}
+
 		if ( ! $is_in_supported_countries ) {
 			?>
 			<div id="wcpay-applepay-error" class="notice notice-error">
