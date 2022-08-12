@@ -1093,205 +1093,210 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 		$this->assertEquals(1, count($result_order->get_payment_tokens()));
 	}
 
-	// public function test_correct_payment_method_title_for_order() {
-	// $order = WC_Helper_Order::create_order();
+	public function test_correct_payment_method_title_for_order()
+	{
+		$order = WC_Helper_Order::create_order();
 
-	// $visa_credit_details       = [
-	// 'type' => 'card',
-	// 'card' => [
-	// 'network' => 'visa',
-	// 'funding' => 'credit',
-	// ],
-	// ];
-	// $visa_debit_details        = [
-	// 'type' => 'card',
-	// 'card' => [
-	// 'network' => 'visa',
-	// 'funding' => 'debit',
-	// ],
-	// ];
-	// $mastercard_credit_details = [
-	// 'type' => 'card',
-	// 'card' => [
-	// 'network' => 'mastercard',
-	// 'funding' => 'credit',
-	// ],
-	// ];
-	// $eps_details               = [
-	// 'type' => 'eps',
-	// ];
-	// $giropay_details           = [
-	// 'type' => 'giropay',
-	// ];
-	// $p24_details               = [
-	// 'type' => 'p24',
-	// ];
-	// $sofort_details            = [
-	// 'type' => 'sofort',
-	// ];
-	// $bancontact_details        = [
-	// 'type' => 'bancontact',
-	// ];
-	// $sepa_details              = [
-	// 'type' => 'sepa_debit',
-	// ];
-	// $ideal_details             = [
-	// 'type' => 'ideal',
-	// ];
-	// $becs_details              = [
-	// 'type' => 'au_becs_debit',
-	// ];
+		$visa_credit_details       = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'credit',
+			],
+		];
+		$visa_debit_details        = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'debit',
+			],
+		];
+		$mastercard_credit_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'mastercard',
+				'funding' => 'credit',
+			],
+		];
+		$eps_details               = [
+			'type' => 'eps',
+		];
+		$giropay_details           = [
+			'type' => 'giropay',
+		];
+		$p24_details               = [
+			'type' => 'p24',
+		];
+		$sofort_details            = [
+			'type' => 'sofort',
+		];
+		$bancontact_details        = [
+			'type' => 'bancontact',
+		];
+		$sepa_details              = [
+			'type' => 'sepa_debit',
+		];
+		$ideal_details             = [
+			'type' => 'ideal',
+		];
+		$becs_details              = [
+			'type' => 'au_becs_debit',
+		];
 
-	// $charge_payment_method_details = [
-	// $visa_credit_details,
-	// $visa_debit_details,
-	// $mastercard_credit_details,
-	// $giropay_details,
-	// $sofort_details,
-	// $bancontact_details,
-	// $eps_details,
-	// $p24_details,
-	// $ideal_details,
-	// $sepa_details,
-	// $becs_details,
-	// ];
+		$charge_payment_method_details = [
+			$visa_credit_details,
+			$visa_debit_details,
+			$mastercard_credit_details,
+			$giropay_details,
+			$sofort_details,
+			$bancontact_details,
+			$eps_details,
+			$p24_details,
+			$ideal_details,
+			$sepa_details,
+			$becs_details,
+		];
 
-	// $expected_payment_method_titles = [
-	// 'Visa credit card',
-	// 'Visa debit card',
-	// 'Mastercard credit card',
-	// 'giropay',
-	// 'Sofort',
-	// 'Bancontact',
-	// 'EPS',
-	// 'Przelewy24 (P24)',
-	// 'iDEAL',
-	// 'SEPA Direct Debit',
-	// 'BECS Direct Debit',
-	// ];
+		$expected_payment_method_titles = [
+			'Visa credit card',
+			'Visa debit card',
+			'Mastercard credit card',
+			'giropay',
+			'Sofort',
+			'Bancontact',
+			'EPS',
+			'Przelewy24 (P24)',
+			'iDEAL',
+			'SEPA Direct Debit',
+			'BECS Direct Debit',
+		];
 
-	// foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
-	// $this->mock_upe_gateway->set_payment_method_title_for_order( $order, $payment_method_details['type'], $payment_method_details );
-	// $this->assertEquals( $expected_payment_method_titles[ $i ], $order->get_payment_method_title() );
-	// }
-	// }
+		$payment_gateways = $this->setup_payment_gateways();
+		foreach ($charge_payment_method_details as $i => $payment_method_details) {
+			$payment_method_id = $payment_method_details['type'];
+			$mock_upe_gateway = $payment_gateways[$payment_method_id];
+			$mock_upe_gateway->set_payment_method_title_for_order($order, $payment_method_id, $payment_method_details);
+			$this->assertEquals($expected_payment_method_titles[$i], $order->get_payment_method_title());
+		}
+	}
 
-	// public function test_payment_methods_show_correct_default_outputs() {
-	// $mock_token = WC_Helper_Token::create_token( 'pm_mock' );
-	// $this->mock_token_service->expects( $this->any() )
-	// ->method( 'add_payment_method_to_user' )
-	// ->will(
-	// $this->returnValue( $mock_token )
-	// );
+	// public function test_payment_methods_show_correct_default_outputs()
+	// {
+	// 	$mock_token = WC_Helper_Token::create_token('pm_mock');
+	// 	$this->mock_token_service->expects($this->any())
+	// 		->method('add_payment_method_to_user')
+	// 		->will(
+	// 			$this->returnValue($mock_token)
+	// 		);
 
-	// $mock_user              = 'mock_user';
-	// $mock_payment_method_id = 'pm_mock';
+	// 	$mock_user              = 'mock_user';
+	// 	$mock_payment_method_id = 'pm_mock';
 
-	// $mock_visa_details       = [
-	// 'type' => 'card',
-	// 'card' => [
-	// 'network' => 'visa',
-	// 'funding' => 'debit',
-	// ],
-	// ];
-	// $mock_mastercard_details = [
-	// 'type' => 'card',
-	// 'card' => [
-	// 'network' => 'mastercard',
-	// 'funding' => 'credit',
-	// ],
-	// ];
-	// $mock_giropay_details    = [
-	// 'type' => 'giropay',
-	// ];
-	// $mock_p24_details        = [
-	// 'type' => 'p24',
-	// ];
-	// $mock_sofort_details     = [
-	// 'type' => 'sofort',
-	// ];
-	// $mock_bancontact_details = [
-	// 'type' => 'bancontact',
-	// ];
-	// $mock_eps_details        = [
-	// 'type' => 'eps',
-	// ];
-	// $mock_sepa_details       = [
-	// 'type' => 'sepa_debit',
-	// ];
-	// $mock_ideal_details      = [
-	// 'type' => 'ideal',
-	// ];
-	// $mock_becs_details       = [
-	// 'type' => 'au_becs_debit',
-	// ];
+	// 	$mock_visa_details       = [
+	// 		'type' => 'card',
+	// 		'card' => [
+	// 			'network' => 'visa',
+	// 			'funding' => 'debit',
+	// 		],
+	// 	];
+	// 	$mock_mastercard_details = [
+	// 		'type' => 'card',
+	// 		'card' => [
+	// 			'network' => 'mastercard',
+	// 			'funding' => 'credit',
+	// 		],
+	// 	];
+	// 	$mock_giropay_details    = [
+	// 		'type' => 'giropay',
+	// 	];
+	// 	$mock_p24_details        = [
+	// 		'type' => 'p24',
+	// 	];
+	// 	$mock_sofort_details     = [
+	// 		'type' => 'sofort',
+	// 	];
+	// 	$mock_bancontact_details = [
+	// 		'type' => 'bancontact',
+	// 	];
+	// 	$mock_eps_details        = [
+	// 		'type' => 'eps',
+	// 	];
+	// 	$mock_sepa_details       = [
+	// 		'type' => 'sepa_debit',
+	// 	];
+	// 	$mock_ideal_details      = [
+	// 		'type' => 'ideal',
+	// 	];
+	// 	$mock_becs_details       = [
+	// 		'type' => 'au_becs_debit',
+	// 	];
 
-	// $this->set_cart_contains_subscription_items( false );
-	// $card_method       = $this->mock_payment_methods['card'];
-	// $giropay_method    = $this->mock_payment_methods['giropay'];
-	// $p24_method        = $this->mock_payment_methods['p24'];
-	// $sofort_method     = $this->mock_payment_methods['sofort'];
-	// $bancontact_method = $this->mock_payment_methods['bancontact'];
-	// $eps_method        = $this->mock_payment_methods['eps'];
-	// $sepa_method       = $this->mock_payment_methods['sepa_debit'];
-	// $ideal_method      = $this->mock_payment_methods['ideal'];
-	// $becs_method       = $this->mock_payment_methods['au_becs_debit'];
+	// 	$this->set_cart_contains_subscription_items(false);
+	// 	$card_method       = $this->mock_payment_methods['card'];
+	// 	$giropay_method    = $this->mock_payment_methods['giropay'];
+	// 	$p24_method        = $this->mock_payment_methods['p24'];
+	// 	$sofort_method     = $this->mock_payment_methods['sofort'];
+	// 	$bancontact_method = $this->mock_payment_methods['bancontact'];
+	// 	$eps_method        = $this->mock_payment_methods['eps'];
+	// 	$sepa_method       = $this->mock_payment_methods['sepa_debit'];
+	// 	$ideal_method      = $this->mock_payment_methods['ideal'];
+	// 	$becs_method       = $this->mock_payment_methods['au_becs_debit'];
 
-	// $this->assertEquals( 'card', $card_method->get_id() );
-	// $this->assertEquals( 'Credit card / debit card', $card_method->get_title() );
-	// $this->assertEquals( 'Visa debit card', $card_method->get_title( $mock_visa_details ) );
-	// $this->assertEquals( 'Mastercard credit card', $card_method->get_title( $mock_mastercard_details ) );
-	// $this->assertTrue( $card_method->is_enabled_at_checkout() );
-	// $this->assertTrue( $card_method->is_reusable() );
-	// $this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
+	// 	$this->assertEquals('card', $card_method->get_id());
+	// 	$this->assertEquals('Credit card / debit card', $card_method->get_title());
+	// 	$this->assertEquals('Visa debit card', $card_method->get_title($mock_visa_details));
+	// 	$this->assertEquals('Mastercard credit card', $card_method->get_title($mock_mastercard_details));
+	// 	$this->assertTrue($card_method->is_enabled_at_checkout());
+	// 	$this->assertTrue($card_method->is_reusable());
+	// 	$this->assertEquals($mock_token, $card_method->get_payment_token_for_user($mock_user, $mock_payment_method_id));
 
-	// $this->assertEquals( 'giropay', $giropay_method->get_id() );
-	// $this->assertEquals( 'giropay', $giropay_method->get_title() );
-	// $this->assertEquals( 'giropay', $giropay_method->get_title( $mock_giropay_details ) );
-	// $this->assertTrue( $giropay_method->is_enabled_at_checkout() );
-	// $this->assertFalse( $giropay_method->is_reusable() );
+	// 	$this->assertEquals('giropay', $giropay_method->get_id());
+	// 	$this->assertEquals('giropay', $giropay_method->get_title());
+	// 	$this->assertEquals('giropay', $giropay_method->get_title($mock_giropay_details));
+	// 	$this->assertTrue($giropay_method->is_enabled_at_checkout());
+	// 	$this->assertFalse($giropay_method->is_reusable());
 
-	// $this->assertEquals( 'p24', $p24_method->get_id() );
-	// $this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title() );
-	// $this->assertEquals( 'Przelewy24 (P24)', $p24_method->get_title( $mock_p24_details ) );
-	// $this->assertTrue( $p24_method->is_enabled_at_checkout() );
-	// $this->assertFalse( $p24_method->is_reusable() );
+	// 	$this->assertEquals('p24', $p24_method->get_id());
+	// 	$this->assertEquals('Przelewy24 (P24)', $p24_method->get_title());
+	// 	$this->assertEquals('Przelewy24 (P24)', $p24_method->get_title($mock_p24_details));
+	// 	$this->assertTrue($p24_method->is_enabled_at_checkout());
+	// 	$this->assertFalse($p24_method->is_reusable());
 
-	// $this->assertEquals( 'sofort', $sofort_method->get_id() );
-	// $this->assertEquals( 'Sofort', $sofort_method->get_title() );
-	// $this->assertEquals( 'Sofort', $sofort_method->get_title( $mock_sofort_details ) );
-	// $this->assertTrue( $sofort_method->is_enabled_at_checkout() );
-	// $this->assertFalse( $sofort_method->is_reusable() );
+	// 	$this->assertEquals('sofort', $sofort_method->get_id());
+	// 	$this->assertEquals('Sofort', $sofort_method->get_title());
+	// 	$this->assertEquals('Sofort', $sofort_method->get_title($mock_sofort_details));
+	// 	$this->assertTrue($sofort_method->is_enabled_at_checkout());
+	// 	$this->assertFalse($sofort_method->is_reusable());
 
-	// $this->assertEquals( 'bancontact', $bancontact_method->get_id() );
-	// $this->assertEquals( 'Bancontact', $bancontact_method->get_title() );
-	// $this->assertEquals( 'Bancontact', $bancontact_method->get_title( $mock_bancontact_details ) );
-	// $this->assertTrue( $bancontact_method->is_enabled_at_checkout() );
-	// $this->assertFalse( $bancontact_method->is_reusable() );
+	// 	$this->assertEquals('bancontact', $bancontact_method->get_id());
+	// 	$this->assertEquals('Bancontact', $bancontact_method->get_title());
+	// 	$this->assertEquals('Bancontact', $bancontact_method->get_title($mock_bancontact_details));
+	// 	$this->assertTrue($bancontact_method->is_enabled_at_checkout());
+	// 	$this->assertFalse($bancontact_method->is_reusable());
 
-	// $this->assertEquals( 'eps', $eps_method->get_id() );
-	// $this->assertEquals( 'EPS', $eps_method->get_title() );
-	// $this->assertEquals( 'EPS', $eps_method->get_title( $mock_eps_details ) );
-	// $this->assertTrue( $eps_method->is_enabled_at_checkout() );
-	// $this->assertFalse( $eps_method->is_reusable() );
+	// 	$this->assertEquals('eps', $eps_method->get_id());
+	// 	$this->assertEquals('EPS', $eps_method->get_title());
+	// 	$this->assertEquals('EPS', $eps_method->get_title($mock_eps_details));
+	// 	$this->assertTrue($eps_method->is_enabled_at_checkout());
+	// 	$this->assertFalse($eps_method->is_reusable());
 
-	// $this->assertEquals( 'sepa_debit', $sepa_method->get_id() );
-	// $this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title() );
-	// $this->assertEquals( 'SEPA Direct Debit', $sepa_method->get_title( $mock_sepa_details ) );
-	// $this->assertTrue( $sepa_method->is_enabled_at_checkout() );
-	// $this->assertTrue( $sepa_method->is_reusable() );
+	// 	$this->assertEquals('sepa_debit', $sepa_method->get_id());
+	// 	$this->assertEquals('SEPA Direct Debit', $sepa_method->get_title());
+	// 	$this->assertEquals('SEPA Direct Debit', $sepa_method->get_title($mock_sepa_details));
+	// 	$this->assertTrue($sepa_method->is_enabled_at_checkout());
+	// 	$this->assertTrue($sepa_method->is_reusable());
 
-	// $this->assertEquals( 'ideal', $ideal_method->get_id() );
-	// $this->assertEquals( 'iDEAL', $ideal_method->get_title() );
-	// $this->assertEquals( 'iDEAL', $ideal_method->get_title( $mock_ideal_details ) );
-	// $this->assertTrue( $ideal_method->is_enabled_at_checkout() );
-	// $this->assertFalse( $ideal_method->is_reusable() );
+	// 	$this->assertEquals('ideal', $ideal_method->get_id());
+	// 	$this->assertEquals('iDEAL', $ideal_method->get_title());
+	// 	$this->assertEquals('iDEAL', $ideal_method->get_title($mock_ideal_details));
+	// 	$this->assertTrue($ideal_method->is_enabled_at_checkout());
+	// 	$this->assertFalse($ideal_method->is_reusable());
 
-	// $this->assertEquals( 'au_becs_debit', $becs_method->get_id() );
-	// $this->assertEquals( 'BECS Direct Debit', $becs_method->get_title() );
-	// $this->assertEquals( 'BECS Direct Debit', $becs_method->get_title( $mock_becs_details ) );
-	// $this->assertTrue( $becs_method->is_enabled_at_checkout() );
-	// $this->assertFalse( $becs_method->is_reusable() );
+	// 	$this->assertEquals('au_becs_debit', $becs_method->get_id());
+	// 	$this->assertEquals('BECS Direct Debit', $becs_method->get_title());
+	// 	$this->assertEquals('BECS Direct Debit', $becs_method->get_title($mock_becs_details));
+	// 	$this->assertTrue($becs_method->is_enabled_at_checkout());
+	// 	$this->assertFalse($becs_method->is_reusable());
 	// }
 
 	// public function test_only_reusabled_payment_methods_enabled_with_subscription_item_present() {
