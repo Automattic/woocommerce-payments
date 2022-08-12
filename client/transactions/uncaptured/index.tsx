@@ -15,6 +15,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
 import autocompleter from 'transactions/autocompleter';
+import { RiskLevel } from 'wcpay/types/authorizations';
 
 interface Column extends TableCardColumn {
 	key:
@@ -113,7 +114,7 @@ export const AuthorizationsList = (): JSX.Element => {
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
-	const getRiskColor = ( risk: string ) => {
+	const getRiskColor = ( risk: RiskLevel ) => {
 		switch ( risk ) {
 			case 'high':
 				return 'crimson';

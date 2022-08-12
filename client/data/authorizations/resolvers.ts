@@ -12,9 +12,7 @@ import moment from 'moment';
 import { updateAuthorizations, updateAuthorizationsSummary } from './actions';
 import { Authorization } from './hooks';
 import { Query } from '@woocommerce/navigation';
-
-type RiskLevel = 'high' | 'elevated' | 'normal';
-
+import { RiskLevel } from 'wcpay/types/authorizations';
 /**
  * Retrieves the transactions summary from the summary API.
  *

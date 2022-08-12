@@ -9,6 +9,7 @@ import type { Query } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import { RiskLevel } from 'wcpay/types/authorizations';
 
 // TODO: refine this type with more detailed information.
 export interface Authorization {
@@ -16,7 +17,7 @@ export interface Authorization {
 	authorized_on: string;
 	captured_by: string;
 	order: OrderDetails;
-	risk_level: 'normal' | 'high' | 'elevated';
+	risk_level: RiskLevel;
 	amount: number;
 	customer_name: string;
 	customer_email: string;
