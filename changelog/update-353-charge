@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Remove Charge request from Transactions Details page. The Charge data will be retrieved from the Payment Intent request.

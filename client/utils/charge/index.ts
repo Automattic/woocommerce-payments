@@ -15,8 +15,9 @@ import { Charge, ChargeAmounts } from 'types/charges';
 const failedOutcomeTypes = [ 'issuer_declined', 'invalid' ];
 const blockedOutcomeTypes = [ 'blocked' ];
 
-export const getDisputeStatus = ( dispute: Dispute = <Dispute>{} ): string =>
-	dispute.status || '';
+export const getDisputeStatus = (
+	dispute: null | Dispute = <Dispute>{}
+): string => dispute?.status || '';
 
 export const getChargeOutcomeType = ( charge: Charge = <Charge>{} ): string =>
 	charge.outcome ? charge.outcome.type : '';
@@ -103,15 +104,15 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	if ( isChargeRefunded( charge ) ) {
 		// Refund balance_transactions have negative amount.
 		balance.refunded -= sumBy(
-			charge.refunds.data,
+			charge.refunds?.data,
 			'balance_transaction.amount'
 		);
 	}
 
 	if ( isChargeDisputed( charge ) && typeof charge.dispute !== 'undefined' ) {
-		balance.fee += sumBy( charge.dispute.balance_transactions, 'fee' );
+		balance.fee += sumBy( charge.dispute?.balance_transactions, 'fee' );
 		balance.refunded -= sumBy(
-			charge.dispute.balance_transactions,
+			charge.dispute?.balance_transactions,
 			'amount'
 		);
 	}
