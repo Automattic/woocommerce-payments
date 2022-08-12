@@ -182,7 +182,8 @@ class WC_Payments_Account {
 
 		if ( ! isset( $account['status'] )
 			|| ! isset( $account['payments_enabled'] )
-			|| ! isset( $account['deposits_status'] ) ) {
+			|| ! isset( $account['deposits'] )
+			|| ! isset( $account['deposits']['schedule'] ) ) {
 			// return an error if any of the account data is missing.
 			return [
 				'error' => true,
@@ -194,7 +195,7 @@ class WC_Payments_Account {
 			'country'             => $account['country'] ?? 'US',
 			'status'              => $account['status'],
 			'paymentsEnabled'     => $account['payments_enabled'],
-			'depositsStatus'      => $account['deposits_status'],
+			'depositsStatus'      => $account['deposits']['schedule'],
 			'currentDeadline'     => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
 			'pastDue'             => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
 			'accountLink'         => $this->get_login_url(),
