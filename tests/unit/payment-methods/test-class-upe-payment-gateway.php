@@ -788,35 +788,51 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 		unset($_POST['wc_payment_intent_id']); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 	}
 
-	// public function test_process_subscription_payment_passes_save_payment_method() {
-	// $order                         = WC_Helper_Order::create_order();
-	// $order_id                      = $order->get_id();
-	// $_POST['wc_payment_intent_id'] = 'pi_mock';
+	public function test_process_subscription_payment_passes_save_payment_method()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_card_payment_gateway = $payment_gateways[Payment_Method::CARD];
+		$mock_sepa_payment_gateway = $payment_gateways[Payment_Method::SEPA];
 
-	// $payment_intent = WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] );
+		$order                         = WC_Helper_Order::create_order();
+		$order_id                      = $order->get_id();
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'update_intention' )
-	// ->willReturn(
-	// $payment_intent
-	// );
+		$payment_intent = WC_Helper_Intention::create_intention(['status' => 'processing']);
 
-	// $this->mock_upe_gateway
-	// ->expects( $this->once() )
-	// ->method( 'is_payment_recurring' )
-	// ->willReturn( true );
+		$this->mock_api_client
+			->expects($this->exactly(2))
+			->method('update_intention')
+			->willReturn(
+				$payment_intent
+			);
 
-	// $result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+		// Test card
+		$mock_card_payment_gateway
+			->expects($this->once())
+			->method('is_payment_recurring')
+			->willReturn(true);
+		$result = $mock_card_payment_gateway->process_payment($order->get_id());
+		$this->assertEquals('success', $result['result']);
+		$this->assertEquals(true, $result['payment_needed']);
+		$this->assertMatchesRegularExpression("/order_id=$order_id/", $result['redirect_url']);
+		$this->assertMatchesRegularExpression('/wc_payment_method=woocommerce_payments/', $result['redirect_url']);
+		$this->assertMatchesRegularExpression('/save_payment_method=yes/', $result['redirect_url']);
 
-	// unset( $_POST['wc_payment_intent_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// Test SEPA
+		$mock_sepa_payment_gateway
+			->expects($this->once())
+			->method('is_payment_recurring')
+			->willReturn(true);
+		$result = $mock_sepa_payment_gateway->process_payment($order->get_id());
+		$this->assertEquals('success', $result['result']);
+		$this->assertEquals(true, $result['payment_needed']);
+		$this->assertMatchesRegularExpression("/order_id=$order_id/", $result['redirect_url']);
+		$this->assertMatchesRegularExpression('/wc_payment_method=woocommerce_payments/', $result['redirect_url']);
+		$this->assertMatchesRegularExpression('/save_payment_method=yes/', $result['redirect_url']);
 
-	// $this->assertEquals( 'success', $result['result'] );
-	// $this->assertEquals( true, $result['payment_needed'] );
-	// $this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
-	// $this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
-	// $this->assertMatchesRegularExpression( '/save_payment_method=yes/', $result['redirect_url'] );
-	// }
+		unset($_POST['wc_payment_intent_id']); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	}
 
 	public function test_process_payment_returns_correct_redirect_when_using_saved_payment()
 	{
