@@ -777,7 +777,9 @@ class WC_Payments_API_Client {
 			return $charge;
 		}
 
-		return $this->add_order_info_to_object( $charge['id'], $charge );
+		$charge = $this->add_additional_info_to_charge( $charge );
+
+		return $charge;
 	}
 
 	/**
@@ -2241,6 +2243,47 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Adds additional info to charge object.
+	 *
+	 * @param array $charge - Charge object.
+	 *
+	 * @return array
+	 */
+	private function add_additional_info_to_charge( array $charge ) : array {
+		$charge = $this->add_order_info_to_object( $charge['id'], $charge );
+		$charge = $this->add_formatted_address_to_charge_object( $charge );
+
+		return $charge;
+	}
+
+	/**
+	 * Adds the formatted address to the Charge object
+	 *
+	 * @param array $charge - Charge object.
+	 *
+	 * @return array
+	 */
+	private function add_formatted_address_to_charge_object( array $charge ) : array {
+		$has_billing_details = isset( $charge['billing_details'] );
+
+		if ( $has_billing_details ) {
+			$raw_details     = $charge['billing_details']['address'];
+			$billing_details = [];
+
+			$billing_details['city']      = ( ! empty( $raw_details['city'] ) ) ? $raw_details['city'] : '';
+			$billing_details['country']   = ( ! empty( $raw_details['country'] ) ) ? $raw_details['country'] : '';
+			$billing_details['address_1'] = ( ! empty( $raw_details['line1'] ) ) ? $raw_details['line1'] : '';
+			$billing_details['address_2'] = ( ! empty( $raw_details['line2'] ) ) ? $raw_details['line2'] : '';
+			$billing_details['postcode']  = ( ! empty( $raw_details['postal_code'] ) ) ? $raw_details['postal_code'] : '';
+			$billing_details['state']     = ( ! empty( $raw_details['state'] ) ) ? $raw_details['state'] : '';
+
+			$charge['billing_details']['formatted_address'] = WC()->countries->get_formatted_address( $billing_details );
+		}
+
+		return $charge;
+	}
+
+	/**
 	 * Returns a transaction with order information when it exists.
 	 *
 	 * @param  string $charge_id related charge id.
@@ -2324,11 +2367,30 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $charge_array['created'] );
 
+		$charge_array = $this->add_additional_info_to_charge( $charge_array );
+
 		$charge = new WC_Payments_API_Charge(
 			$charge_array['id'],
 			$charge_array['amount'],
 			$created,
-			$charge_array['payment_method_details'] ?? []
+			$charge_array['payment_method_details'] ?? null,
+			$charge_array['payment_method'] ?? null,
+			$charge_array['amount_captured'] ?? null,
+			$charge_array['amount_refunded'] ?? null,
+			$charge_array['application_fee_amount'] ?? null,
+			$charge_array['balance_transaction'] ?? null,
+			$charge_array['billing_details'] ?? null,
+			$charge_array['currency'] ?? null,
+			$charge_array['dispute'] ?? null,
+			$charge_array['disputed'] ?? null,
+			$charge_array['order'] ?? null,
+			$charge_array['outcome'] ?? null,
+			$charge_array['paid'] ?? null,
+			$charge_array['paydown'] ?? null,
+			$charge_array['payment_intent'] ?? null,
+			$charge_array['refunded'] ?? null,
+			$charge_array['refunds'] ?? null,
+			$charge_array['status'] ?? null
 		);
 
 		if ( isset( $charge_array['captured'] ) ) {

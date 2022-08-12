@@ -385,7 +385,7 @@ export const TransactionsList = (
 				value: txn.source,
 				display: ! isFinancingType ? (
 					clickable(
-						<span className="payment-method-details">
+						<span className="payment-method-details-list-item">
 							<span
 								className={ `payment-method__brand payment-method__brand--${ txn.source }` }
 							/>
