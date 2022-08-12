@@ -872,210 +872,226 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 		$this->assertMatchesRegularExpression('/key=mock_order_key/', $result['redirect']);
 	}
 
-	// public function test_process_redirect_payment_intent_processing() {
-	// $order               = WC_Helper_Order::create_order();
-	// $order_id            = $order->get_id();
-	// $save_payment_method = false;
-	// $user                = wp_get_current_user();
-	// $intent_status       = 'processing';
-	// $charge_id           = 'ch_mock';
-	// $customer_id         = 'cus_mock';
-	// $intent_id           = 'pi_mock';
-	// $payment_method_id   = 'pm_mock';
+	public function test_process_redirect_payment_intent_processing()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_upe_gateway = $payment_gateways[Payment_Method::CARD];
+		$order               = WC_Helper_Order::create_order();
 
-	// $payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$order_id            = $order->get_id();
+		$save_payment_method = false;
+		$user                = wp_get_current_user();
+		$intent_status       = 'processing';
+		$charge_id           = 'ch_mock';
+		$customer_id         = 'cus_mock';
+		$intent_id           = 'pi_mock';
+		$payment_method_id   = 'pm_mock';
 
-	// $this->mock_upe_gateway->expects( $this->once() )
-	// ->method( 'manage_customer_details_for_order' )
-	// ->will(
-	// $this->returnValue( [ $user, $customer_id ] )
-	// );
+		$payment_intent = WC_Helper_Intention::create_intention(['status' => $intent_status]);
 
-	// $this->mock_api_client->expects( $this->once() )
-	// ->method( 'get_intent' )
-	// ->with( $intent_id )
-	// ->will(
-	// $this->returnValue( $payment_intent )
-	// );
+		$mock_upe_gateway->expects($this->once())
+			->method('manage_customer_details_for_order')
+			->will(
+				$this->returnValue([$user, $customer_id])
+			);
 
-	// $this->set_cart_contains_subscription_items( false );
+		$this->mock_api_client->expects($this->once())
+			->method('get_intent')
+			->with($intent_id)
+			->will(
+				$this->returnValue($payment_intent)
+			);
 
-	// $this->mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+		$this->set_cart_contains_subscription_items(false);
 
-	// $result_order = wc_get_order( $order_id );
-	// $note         = wc_get_order_notes(
-	// [
-	// 'order_id' => $order_id,
-	// 'limit'    => 1,
-	// ]
-	// )[0];
+		$mock_upe_gateway->process_redirect_payment($order_id, $intent_id, $save_payment_method);
 
-	// $this->assertStringContainsString( 'authorized', $note->content );
-	// $this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
-	// $this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
-	// $this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
-	// $this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
-	// $this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
-	// $this->assertEquals( 'on-hold', $result_order->get_status() );
-	// }
+		$result_order = wc_get_order($order_id);
+		$note         = wc_get_order_notes(
+			[
+				'order_id' => $order_id,
+				'limit'    => 1,
+			]
+		)[0];
 
-	// public function test_process_redirect_payment_intent_succeded() {
-	// $order               = WC_Helper_Order::create_order();
-	// $order_id            = $order->get_id();
-	// $save_payment_method = false;
-	// $user                = wp_get_current_user();
-	// $intent_status       = 'succeeded';
-	// $charge_id           = 'ch_mock';
-	// $customer_id         = 'cus_mock';
-	// $intent_id           = 'pi_mock';
-	// $payment_method_id   = 'pm_mock';
+		$this->assertStringContainsString('authorized', $note->content);
+		$this->assertEquals($intent_id, $result_order->get_meta('_intent_id', true));
+		$this->assertEquals($charge_id, $result_order->get_meta('_charge_id', true));
+		$this->assertEquals($intent_status, $result_order->get_meta('_intention_status', true));
+		$this->assertEquals($payment_method_id, $result_order->get_meta('_payment_method_id', true));
+		$this->assertEquals($customer_id, $result_order->get_meta('_stripe_customer_id', true));
+		$this->assertEquals('on-hold', $result_order->get_status());
+	}
 
-	// $payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+	public function test_process_redirect_payment_intent_succeded()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_upe_gateway = $payment_gateways[Payment_Method::CARD];
+		$order               = WC_Helper_Order::create_order();
 
-	// $this->mock_upe_gateway->expects( $this->once() )
-	// ->method( 'manage_customer_details_for_order' )
-	// ->will(
-	// $this->returnValue( [ $user, $customer_id ] )
-	// );
+		$order_id            = $order->get_id();
+		$save_payment_method = false;
+		$user                = wp_get_current_user();
+		$intent_status       = 'succeeded';
+		$charge_id           = 'ch_mock';
+		$customer_id         = 'cus_mock';
+		$intent_id           = 'pi_mock';
+		$payment_method_id   = 'pm_mock';
 
-	// $this->mock_api_client->expects( $this->once() )
-	// ->method( 'get_intent' )
-	// ->with( $intent_id )
-	// ->will(
-	// $this->returnValue( $payment_intent )
-	// );
+		$payment_intent = WC_Helper_Intention::create_intention(['status' => $intent_status]);
 
-	// $this->set_cart_contains_subscription_items( false );
+		$mock_upe_gateway->expects($this->once())
+			->method('manage_customer_details_for_order')
+			->will(
+				$this->returnValue([$user, $customer_id])
+			);
 
-	// $this->mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+		$this->mock_api_client->expects($this->once())
+			->method('get_intent')
+			->with($intent_id)
+			->will(
+				$this->returnValue($payment_intent)
+			);
 
-	// $result_order = wc_get_order( $order_id );
+		$this->set_cart_contains_subscription_items(false);
 
-	// $this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
-	// $this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
-	// $this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
-	// $this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
-	// $this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
-	// $this->assertEquals( 'processing', $result_order->get_status() );
-	// }
+		$mock_upe_gateway->process_redirect_payment($order_id, $intent_id, $save_payment_method);
 
-	// public function test_process_redirect_setup_intent_succeded() {
-	// $order               = WC_Helper_Order::create_order();
-	// $order_id            = $order->get_id();
-	// $save_payment_method = true;
-	// $user                = wp_get_current_user();
-	// $intent_status       = 'succeeded';
-	// $client_secret       = 'cs_mock';
-	// $customer_id         = 'cus_mock';
-	// $intent_id           = 'si_mock';
-	// $payment_method_id   = 'pm_mock';
-	// $token               = WC_Helper_Token::create_token( $payment_method_id );
+		$result_order = wc_get_order($order_id);
 
-	// $order->set_shipping_total( 0 );
-	// $order->set_shipping_tax( 0 );
-	// $order->set_cart_tax( 0 );
-	// $order->set_total( 0 );
-	// $order->save();
+		$this->assertEquals($intent_id, $result_order->get_meta('_intent_id', true));
+		$this->assertEquals($charge_id, $result_order->get_meta('_charge_id', true));
+		$this->assertEquals($intent_status, $result_order->get_meta('_intention_status', true));
+		$this->assertEquals($payment_method_id, $result_order->get_meta('_payment_method_id', true));
+		$this->assertEquals($customer_id, $result_order->get_meta('_stripe_customer_id', true));
+		$this->assertEquals('processing', $result_order->get_status());
+	}
 
-	// $setup_intent = [
-	// 'client_secret'          => $client_secret,
-	// 'status'                 => $intent_status,
-	// 'payment_method'         => $payment_method_id,
-	// 'payment_method_options' => [
-	// 'card' => [
-	// 'request_three_d_secure' => 'automatic',
-	// ],
-	// ],
-	// 'last_setup_error'       => [],
-	// ];
+	public function test_process_redirect_setup_intent_succeded()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$order               = WC_Helper_Order::create_order();
+		$mock_upe_gateway = $payment_gateways[Payment_Method::CARD];
 
-	// $this->mock_upe_gateway->expects( $this->once() )
-	// ->method( 'manage_customer_details_for_order' )
-	// ->will(
-	// $this->returnValue( [ $user, $customer_id ] )
-	// );
+		$order_id            = $order->get_id();
+		$save_payment_method = true;
+		$user                = wp_get_current_user();
+		$intent_status       = 'succeeded';
+		$client_secret       = 'cs_mock';
+		$customer_id         = 'cus_mock';
+		$intent_id           = 'si_mock';
+		$payment_method_id   = 'pm_mock';
+		$token               = WC_Helper_Token::create_token($payment_method_id);
 
-	// $this->mock_api_client->expects( $this->once() )
-	// ->method( 'get_setup_intent' )
-	// ->with( $intent_id )
-	// ->will(
-	// $this->returnValue( $setup_intent )
-	// );
+		$order->set_shipping_total(0);
+		$order->set_shipping_tax(0);
+		$order->set_cart_tax(0);
+		$order->set_total(0);
+		$order->save();
 
-	// $this->mock_token_service->expects( $this->once() )
-	// ->method( 'add_payment_method_to_user' )
-	// ->will(
-	// $this->returnValue( $token )
-	// );
+		$setup_intent = [
+			'client_secret'          => $client_secret,
+			'status'                 => $intent_status,
+			'payment_method'         => $payment_method_id,
+			'payment_method_options' => [
+				'card' => [
+					'request_three_d_secure' => 'automatic',
+				],
+			],
+			'last_setup_error'       => [],
+		];
 
-	// $this->set_cart_contains_subscription_items( true );
+		$mock_upe_gateway->expects($this->once())
+			->method('manage_customer_details_for_order')
+			->will(
+				$this->returnValue([$user, $customer_id])
+			);
 
-	// $this->mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+		$this->mock_api_client->expects($this->once())
+			->method('get_setup_intent')
+			->with($intent_id)
+			->will(
+				$this->returnValue($setup_intent)
+			);
 
-	// $result_order = wc_get_order( $order_id );
+		$this->mock_token_service->expects($this->once())
+			->method('add_payment_method_to_user')
+			->will(
+				$this->returnValue($token)
+			);
 
-	// $this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
-	// $this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
-	// $this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
-	// $this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
-	// $this->assertEquals( 'processing', $result_order->get_status() );
-	// $this->assertEquals( 1, count( $result_order->get_payment_tokens() ) );
-	// }
+		$this->set_cart_contains_subscription_items(true);
 
-	// public function test_process_redirect_payment_save_payment_token() {
-	// $order               = WC_Helper_Order::create_order();
-	// $order_id            = $order->get_id();
-	// $save_payment_method = true;
-	// $user                = wp_get_current_user();
-	// $intent_status       = 'processing';
-	// $charge_id           = 'ch_mock';
-	// $customer_id         = 'cus_mock';
-	// $intent_id           = 'pi_mock';
-	// $payment_method_id   = 'pm_mock';
-	// $token               = WC_Helper_Token::create_token( $payment_method_id );
+		$mock_upe_gateway->process_redirect_payment($order_id, $intent_id, $save_payment_method);
 
-	// $payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
+		$result_order = wc_get_order($order_id);
 
-	// $this->mock_upe_gateway->expects( $this->once() )
-	// ->method( 'manage_customer_details_for_order' )
-	// ->will(
-	// $this->returnValue( [ $user, $customer_id ] )
-	// );
+		$this->assertEquals($intent_id, $result_order->get_meta('_intent_id', true));
+		$this->assertEquals($intent_status, $result_order->get_meta('_intention_status', true));
+		$this->assertEquals($payment_method_id, $result_order->get_meta('_payment_method_id', true));
+		$this->assertEquals($customer_id, $result_order->get_meta('_stripe_customer_id', true));
+		$this->assertEquals('processing', $result_order->get_status());
+		$this->assertEquals(1, count($result_order->get_payment_tokens()));
+	}
 
-	// $this->mock_api_client->expects( $this->once() )
-	// ->method( 'get_intent' )
-	// ->with( $intent_id )
-	// ->will(
-	// $this->returnValue( $payment_intent )
-	// );
+	public function test_process_redirect_payment_save_payment_token()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_upe_gateway = $payment_gateways[Payment_Method::CARD];
 
-	// $this->mock_token_service->expects( $this->once() )
-	// ->method( 'add_payment_method_to_user' )
-	// ->will(
-	// $this->returnValue( $token )
-	// );
+		$order               = WC_Helper_Order::create_order();
+		$order_id            = $order->get_id();
+		$save_payment_method = true;
+		$user                = wp_get_current_user();
+		$intent_status       = 'processing';
+		$charge_id           = 'ch_mock';
+		$customer_id         = 'cus_mock';
+		$intent_id           = 'pi_mock';
+		$payment_method_id   = 'pm_mock';
+		$token               = WC_Helper_Token::create_token($payment_method_id);
 
-	// $this->set_cart_contains_subscription_items( false );
+		$payment_intent = WC_Helper_Intention::create_intention(['status' => $intent_status]);
 
-	// $this->mock_upe_gateway->process_redirect_payment( $order_id, $intent_id, $save_payment_method );
+		$mock_upe_gateway->expects($this->once())
+			->method('manage_customer_details_for_order')
+			->will(
+				$this->returnValue([$user, $customer_id])
+			);
 
-	// $result_order = wc_get_order( $order_id );
-	// $note         = wc_get_order_notes(
-	// [
-	// 'order_id' => $order_id,
-	// 'limit'    => 1,
-	// ]
-	// )[0];
+		$this->mock_api_client->expects($this->once())
+			->method('get_intent')
+			->with($intent_id)
+			->will(
+				$this->returnValue($payment_intent)
+			);
 
-	// $this->assertStringContainsString( 'authorized', $note->content );
-	// $this->assertEquals( $intent_id, $result_order->get_meta( '_intent_id', true ) );
-	// $this->assertEquals( $charge_id, $result_order->get_meta( '_charge_id', true ) );
-	// $this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
-	// $this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
-	// $this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
-	// $this->assertEquals( 'on-hold', $result_order->get_status() );
-	// $this->assertEquals( 1, count( $result_order->get_payment_tokens() ) );
-	// }
+		$this->mock_token_service->expects($this->once())
+			->method('add_payment_method_to_user')
+			->will(
+				$this->returnValue($token)
+			);
+
+		$this->set_cart_contains_subscription_items(false);
+
+		$mock_upe_gateway->process_redirect_payment($order_id, $intent_id, $save_payment_method);
+
+		$result_order = wc_get_order($order_id);
+		$note         = wc_get_order_notes(
+			[
+				'order_id' => $order_id,
+				'limit'    => 1,
+			]
+		)[0];
+
+		$this->assertStringContainsString('authorized', $note->content);
+		$this->assertEquals($intent_id, $result_order->get_meta('_intent_id', true));
+		$this->assertEquals($charge_id, $result_order->get_meta('_charge_id', true));
+		$this->assertEquals($intent_status, $result_order->get_meta('_intention_status', true));
+		$this->assertEquals($payment_method_id, $result_order->get_meta('_payment_method_id', true));
+		$this->assertEquals($customer_id, $result_order->get_meta('_stripe_customer_id', true));
+		$this->assertEquals('on-hold', $result_order->get_status());
+		$this->assertEquals(1, count($result_order->get_payment_tokens()));
+	}
 
 	// public function test_correct_payment_method_title_for_order() {
 	// $order = WC_Helper_Order::create_order();
