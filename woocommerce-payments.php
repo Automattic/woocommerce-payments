@@ -160,14 +160,24 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 		$is_plugin_active = function( $plugin_name ) {
 			$plugin_slug = "$plugin_name/$plugin_name.php";
 
+			// Check if specified $plugin_name is in the process of being activated via the Admin > Plugins screen.
 			if ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $plugin_slug === $_GET['plugin'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				return true;
 			}
 
-			if ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) && 4 >= count( $GLOBALS['argv'] ) && 'plugin' === $GLOBALS['argv'][1] && 'activate' === $GLOBALS['argv'][2] && $plugin_name === $GLOBALS['argv'][3] ) {
-				return true;
+			// Check if specified $plugin_name is in the process of being activated via the WP CLI.
+			if ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) ) {
+				$expected_arguments = [
+					'plugin',
+					'activate',
+					$plugin_name,
+				];
+				if ( array_intersect( $expected_arguments, $GLOBALS['argv'] ) === $expected_arguments ) {
+					return true;
+				}
 			}
 
+			// Check if specified $plugin_name is active on a multisite installation via site wide plugins.
 			if ( is_multisite() ) {
 				$plugins = get_site_option( 'active_sitewide_plugins' );
 				if ( isset( $plugins[ $plugin_slug ] ) ) {
@@ -175,6 +185,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 				}
 			}
 
+			// Finally check if specified $plugin_name is active.
 			if ( class_exists( 'Automattic\WooCommerce\Admin\PluginsHelper' ) ) {
 				return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
 			} else {
