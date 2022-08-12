@@ -6,7 +6,7 @@
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
 import { Query } from '@woocommerce/navigation';
-import { Authorization } from './hooks';
+import { Authorization } from 'wcpay/types/authorizations';
 
 const defaultState = { summary: {} };
 

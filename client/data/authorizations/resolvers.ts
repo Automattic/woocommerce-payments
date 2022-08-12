@@ -10,14 +10,9 @@ import moment from 'moment';
  * Internal dependencies
  */
 import { updateAuthorizations, updateAuthorizationsSummary } from './actions';
-import { Authorization } from './hooks';
+import { Authorization, RiskLevel } from 'wcpay/types/authorizations';
 import { Query } from '@woocommerce/navigation';
-import { RiskLevel } from 'wcpay/types/authorizations';
-/**
- * Retrieves the transactions summary from the summary API.
- *
- * @param {string} query Data on which to parameterize the selection.
- */
+
 export function* getAuthorizations( query: Query ): any {
 	const getMockedRows = () => {
 		const randomAmount = () => {

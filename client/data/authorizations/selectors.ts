@@ -1,6 +1,9 @@
 /** @format */
 
-import { Authorization, AuthorizationsSummary } from './hooks';
+import {
+	AuthorizationsSummary,
+	Authorization,
+} from 'wcpay/types/authorizations';
 
 /**
  * Internal dependencies

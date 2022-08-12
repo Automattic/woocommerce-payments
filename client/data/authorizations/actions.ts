@@ -5,7 +5,10 @@
  */
 import { Query } from '@woocommerce/navigation';
 import TYPES from './action-types';
-import { Authorization, AuthorizationsSummary } from './hooks';
+import {
+	AuthorizationsSummary,
+	Authorization,
+} from 'wcpay/types/authorizations';
 
 export function updateAuthorizations(
 	query: Query,
