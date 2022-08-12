@@ -5,8 +5,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { TableCard, TableCardColumn, Search } from '@woocommerce/components';
-import { Button } from '@wordpress/components';
+import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 
 /**
@@ -14,7 +13,6 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
  */
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
-import autocompleter from 'transactions/autocompleter';
 import { RiskLevel } from 'wcpay/types/authorizations';
 
 interface Column extends TableCardColumn {
@@ -212,30 +210,6 @@ export const AuthorizationsList = (): JSX.Element => {
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
-				actions={ [
-					<Button
-						isPrimary
-						isBusy={ false }
-						disabled={ false }
-						key="capture-button"
-					>
-						{ __( 'Capture payments', 'woocommerce-payments' ) }
-					</Button>,
-
-					<Search
-						allowFreeTextSearch={ true }
-						inlineTags
-						key="search"
-						placeholder={ __( 'Search', 'woocommerce-payments' ) }
-						showClearButton={ true }
-						type={
-							wcpaySettings.featureFlags.customSearch
-								? 'custom'
-								: 'customers'
-						}
-						autocompleter={ autocompleter }
-					/>,
-				] }
 			/>
 		</Page>
 	);
