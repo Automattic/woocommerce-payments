@@ -52,6 +52,7 @@ import wcpayTracks from 'tracks';
 import DownloadButton from 'components/download-button';
 import { getTransactionsCSV } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
+import { applyThousandSeparator } from '../../utils/index.js';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -613,7 +614,9 @@ export const TransactionsList = (
 					transactionsSummary.count as number,
 					'woocommerce-payments'
 				),
-				value: `${ transactionsSummary.count as number }`,
+				value: `${ applyThousandSeparator(
+					transactionsSummary.count as number
+				) }`,
 			},
 		];
 
