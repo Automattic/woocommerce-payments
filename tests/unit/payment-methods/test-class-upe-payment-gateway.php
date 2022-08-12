@@ -716,62 +716,77 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 		$this->assertEquals('client_secret_mock', $result['client_secret']);
 	}
 
-	// public function test_process_payment_returns_correct_redirect_url() {
-	// $order                         = WC_Helper_Order::create_order();
-	// $order_id                      = $order->get_id();
-	// $_POST['wc_payment_intent_id'] = 'pi_mock';
+	public function test_process_payment_returns_correct_redirect_url()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$order                         = WC_Helper_Order::create_order();
+		$order_id                      = $order->get_id();
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-	// $payment_intent = WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] );
+		$payment_intent = WC_Helper_Intention::create_intention(['status' => 'processing']);
 
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'update_intention' )
-	// ->willReturn(
-	// $payment_intent
-	// );
+		$this->mock_api_client
+			->expects($this->exactly(count($payment_gateways)))
+			->method('update_intention')
+			->willReturn(
+				$payment_intent
+			);
 
-	// $this->set_cart_contains_subscription_items( false );
+		$this->set_cart_contains_subscription_items(false);
 
-	// $result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+		foreach ($payment_gateways as $mock_payment_gateway) {
+			$result = $mock_payment_gateway->process_payment($order->get_id());
+			$this->assertEquals('success', $result['result']);
+			$this->assertEquals(true, $result['payment_needed']);
+			$this->assertMatchesRegularExpression("/order_id=$order_id/", $result['redirect_url']);
+			$this->assertMatchesRegularExpression('/wc_payment_method=woocommerce_payments/', $result['redirect_url']);
+			$this->assertMatchesRegularExpression('/save_payment_method=no/', $result['redirect_url']);
+		}
 
-	// unset( $_POST['wc_payment_intent_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		unset($_POST['wc_payment_intent_id']); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	}
 
-	// $this->assertEquals( 'success', $result['result'] );
-	// $this->assertEquals( true, $result['payment_needed'] );
-	// $this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
-	// $this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
-	// $this->assertMatchesRegularExpression( '/save_payment_method=no/', $result['redirect_url'] );
-	// }
+	public function test_process_payment_passes_save_payment_method_to_store()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_card_payment_gateway = $payment_gateways[Payment_Method::CARD];
+		$mock_sepa_payment_gateway = $payment_gateways[Payment_Method::SEPA];
 
-	// public function test_process_payment_passes_save_payment_method_to_store() {
-	// $order                         = WC_Helper_Order::create_order();
-	// $order_id                      = $order->get_id();
-	// $gateway_id                    = UPE_Payment_Gateway::GATEWAY_ID;
-	// $save_payment_param            = "wc-$gateway_id-new-payment-method";
-	// $_POST[ $save_payment_param ]  = 'yes';
-	// $_POST['wc_payment_intent_id'] = 'pi_mock';
+		$order                         = WC_Helper_Order::create_order();
+		$order_id                      = $order->get_id();
+		$gateway_id                    = UPE_Payment_Gateway::GATEWAY_ID;
+		$save_payment_param            = "wc-$gateway_id-new-payment-method";
+		$_POST[$save_payment_param]  = 'yes';
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-	// $payment_intent = WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] );
+		$payment_intent = WC_Helper_Intention::create_intention(['status' => 'processing']);
 
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'update_intention' )
-	// ->willReturn(
-	// $payment_intent
-	// );
+		$this->mock_api_client
+			->expects($this->exactly(2))
+			->method('update_intention')
+			->willReturn(
+				$payment_intent
+			);
 
-	// $this->set_cart_contains_subscription_items( false );
+		$this->set_cart_contains_subscription_items(false);
 
-	// $result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+		// Test saving with cards
+		$result = $mock_card_payment_gateway->process_payment($order->get_id());
+		$this->assertEquals('success', $result['result']);
+		$this->assertMatchesRegularExpression("/order_id=$order_id/", $result['redirect_url']);
+		$this->assertMatchesRegularExpression('/wc_payment_method=woocommerce_payments/', $result['redirect_url']);
+		$this->assertMatchesRegularExpression('/save_payment_method=yes/', $result['redirect_url']);
 
-	// unset( $_POST[ $save_payment_param ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-	// unset( $_POST['wc_payment_intent_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// Test saving with SEPA
+		$result = $mock_sepa_payment_gateway->process_payment($order->get_id());
+		$this->assertEquals('success', $result['result']);
+		$this->assertMatchesRegularExpression("/order_id=$order_id/", $result['redirect_url']);
+		$this->assertMatchesRegularExpression('/wc_payment_method=woocommerce_payments/', $result['redirect_url']);
+		$this->assertMatchesRegularExpression('/save_payment_method=yes/', $result['redirect_url']);
 
-	// $this->assertEquals( 'success', $result['result'] );
-	// $this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
-	// $this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
-	// $this->assertMatchesRegularExpression( '/save_payment_method=yes/', $result['redirect_url'] );
-	// }
+		unset($_POST[$save_payment_param]); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		unset($_POST['wc_payment_intent_id']); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	}
 
 	// public function test_process_subscription_payment_passes_save_payment_method() {
 	// $order                         = WC_Helper_Order::create_order();
@@ -803,35 +818,43 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 	// $this->assertMatchesRegularExpression( '/save_payment_method=yes/', $result['redirect_url'] );
 	// }
 
-	// public function test_process_payment_returns_correct_redirect_when_using_saved_payment() {
-	// $order = WC_Helper_Order::create_order();
-	// $_POST = $this->setup_saved_payment_method();
+	public function test_process_payment_returns_correct_redirect_when_using_saved_payment()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_card_payment_gateway = $payment_gateways[Payment_Method::CARD];
 
-	// $this->set_cart_contains_subscription_items( false );
+		$order = WC_Helper_Order::create_order();
+		$_POST = $this->setup_saved_payment_method();
 
-	// $result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+		$this->set_cart_contains_subscription_items(false);
 
-	// $this->mock_upe_gateway
-	// ->expects( $this->never() )
-	// ->method( 'manage_customer_details_for_order' );
-	// $this->assertEquals( 'success', $result['result'] );
-	// $this->assertMatchesRegularExpression( '/key=mock_order_key/', $result['redirect'] );
-	// }
+		$result = $mock_card_payment_gateway->process_payment($order->get_id());
 
-	// public function test_process_payment_returns_correct_redirect_when_using_payment_request() {
-	// $order                         = WC_Helper_Order::create_order();
-	// $_POST['payment_request_type'] = 'google_pay';
+		$mock_card_payment_gateway
+			->expects($this->never())
+			->method('manage_customer_details_for_order');
+		$this->assertEquals('success', $result['result']);
+		$this->assertMatchesRegularExpression('/key=mock_order_key/', $result['redirect']);
+	}
 
-	// $this->set_cart_contains_subscription_items( false );
+	public function test_process_payment_returns_correct_redirect_when_using_payment_request()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$mock_card_payment_gateway = $payment_gateways[Payment_Method::CARD];
 
-	// $result = $this->mock_upe_gateway->process_payment( $order->get_id() );
+		$order                         = WC_Helper_Order::create_order();
+		$_POST['payment_request_type'] = 'google_pay';
 
-	// $this->mock_upe_gateway
-	// ->expects( $this->never() )
-	// ->method( 'manage_customer_details_for_order' );
-	// $this->assertEquals( 'success', $result['result'] );
-	// $this->assertMatchesRegularExpression( '/key=mock_order_key/', $result['redirect'] );
-	// }
+		$this->set_cart_contains_subscription_items(false);
+
+		$result = $mock_card_payment_gateway->process_payment($order->get_id());
+
+		$mock_card_payment_gateway
+			->expects($this->never())
+			->method('manage_customer_details_for_order');
+		$this->assertEquals('success', $result['result']);
+		$this->assertMatchesRegularExpression('/key=mock_order_key/', $result['redirect']);
+	}
 
 	// public function test_process_redirect_payment_intent_processing() {
 	// $order               = WC_Helper_Order::create_order();
@@ -1402,48 +1425,57 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 		$this->assertsame('cs_mock', $result['client_secret']);
 	}
 
-	// public function test_process_payment_rejects_with_cached_minimum_acount() {
-	// $order = WC_Helper_Order::create_order();
-	// $order->set_currency( 'USD' );
-	// $order->set_total( 0.45 );
-	// $order->save();
+	public function test_process_payment_rejects_with_cached_minimum_acount()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency('USD');
+		$order->set_total(0.45);
+		$order->save();
 
-	// set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
-	// $_POST['wc_payment_intent_id'] = 'pi_mock';
+		set_transient('wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS);
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-	// Make sure that the payment was not actually processed.
-	// $price   = wp_strip_all_tags( html_entity_decode( wc_price( 0.5, [ 'currency' => 'USD' ] ) ) );
-	// $message = 'The selected payment method requires a total amount of at least ' . $price . '.';
-	// $this->expectException( Exception::class );
-	// $this->expectExceptionMessage( $message );
-	// $this->mock_upe_gateway->process_payment( $order->get_id() );
-	// }
+		// Make sure that the payment was not actually processed.
+		$price   = wp_strip_all_tags(html_entity_decode(wc_price(0.5, ['currency' => 'USD'])));
+		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';
 
-	// public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
-	// $order = WC_Helper_Order::create_order();
-	// $order->set_total( 0.45 );
-	// $order->save();
+		foreach ($payment_gateways as $mock_payment_gateway) {
+			$this->expectException(Exception::class);
+			$this->expectExceptionMessage($message);
+			$mock_payment_gateway->process_payment($order->get_id());
+		}
+	}
 
-	// delete_transient( 'wcpay_minimum_amount_usd' );
-	// $_POST['wc_payment_intent_id'] = 'pi_mock';
+	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception()
+	{
+		$payment_gateways = $this->setup_payment_gateways();
+		$order = WC_Helper_Order::create_order();
+		$order->set_total(0.45);
+		$order->save();
 
-	// $this->mock_api_client
-	// ->expects( $this->once() )
-	// ->method( 'update_intention' )
-	// ->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
+		delete_transient('wcpay_minimum_amount_usd');
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
-	// $price   = wp_strip_all_tags( html_entity_decode( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
-	// $message = 'The selected payment method requires a total amount of at least ' . $price . '.';
-	// $this->expectException( Exception::class );
-	// $this->expectExceptionMessage( $message );
+		$this->mock_api_client
+			->expects($this->once())
+			->method('update_intention')
+			->will($this->throwException(new Amount_Too_Small_Exception('Error: Amount must be at least $60 usd', 6000, 'usd', 400)));
 
-	// try {
-	// $this->mock_upe_gateway->process_payment( $order->get_id() );
-	// } catch ( Exception $e ) {
-	// $this->assertEquals( '6000', get_transient( 'wcpay_minimum_amount_usd' ) );
-	// throw $e;
-	// }
-	// }
+		$price   = wp_strip_all_tags(html_entity_decode(wc_price(60, ['currency' => 'USD'])));
+		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';
+		$this->expectException(Exception::class);
+		$this->expectExceptionMessage($message);
+
+		try {
+			foreach ($payment_gateways as $mock_payment_gateway) {
+				$mock_payment_gateway->process_payment($order->get_id());
+			}
+		} catch (Exception $e) {
+			$this->assertEquals('6000', get_transient('wcpay_minimum_amount_usd'));
+			throw $e;
+		}
+	}
 
 	// /**
 	// * @dataProvider maybe_filter_gateway_title_data_provider
