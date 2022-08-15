@@ -1092,6 +1092,53 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'success', $result['result'] );
 	}
 
+	public function test_process_payment_for_subscription_in_woopay_adds_subscription_flag_to_request() {
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// This meta is added to the order by WooPay.
+		$order->add_meta_data( '_woopay_has_subscription', '1' );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		// Arrange: Return a successful response from create_and_confirm_intention().
+		$intent = WC_Helper_Intention::create_intention();
+
+		// Assert: API is called with additional flag.
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->with(
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->callback(
+					function( $additional_api_parameters ) {
+						return 'true' === $additional_api_parameters['woopay_has_subscription'];
+					}
+				)
+			)
+			->will(
+				$this->returnValue( $intent )
+			);
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		// Act: process a successful payment.
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+	}
+
 	private function setup_saved_payment_method() {
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 
