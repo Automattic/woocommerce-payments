@@ -1139,6 +1139,58 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'success', $result['result'] );
 	}
 
+	public function test_process_payment_from_woopay_adds_meta_to_oder() {
+		// Arrange: Set request value to mimic a payment through WooPay.
+		$_POST['is_woopay'] = true;
+
+		// Arrange: Create an order to test with.
+		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for the order's data store.
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		// Arrange: Set a good return value for order ID.
+		$mock_order
+			->method( 'get_id' )
+			->willReturn( 123 );
+
+		// Arrange: Set a good return value for order total.
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( 100 );
+
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		// Assert: Order gets the 'is_woopay' meta data added.
+		$mock_order
+			->expects( $this->any() )
+			->method( 'add_meta_data' )
+			->with( 'is_woopay', true );
+
+		// Arrange: Return a successful response from create_and_confirm_intention().
+		$intent = WC_Helper_Intention::create_intention();
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->returnValue( $intent ) );
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		// Act: process a successful payment.
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+	}
+
 	private function setup_saved_payment_method() {
 		$token = WC_Helper_Token::create_token( 'pm_mock' );
 
