@@ -626,7 +626,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					<?php
 					echo sprintf(
 						/* translators: 1: supported country list */
-						__( 'Apple Pay isn’t currently supported in your country. Learn more about <a href="%1$s">the countries and regions where Apple Pay is supported (Apple Support)</a>', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						__( 'Apple Pay isn’t currently supported in your country. <a href="%1$s">Countries and regions that support Apple Pay (Apple Support)</a>', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						'https://support.apple.com/en-us/HT207957'
 					);
 					?>
@@ -640,18 +640,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		<div id="wcpay-applepay-error" class="notice notice-error">
 			<p>
 				<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
-				<?php esc_html_e( 'Domain association file is not readable, please check its access permissions.', 'woocommerce-payments' ); ?>
 				<?php
-				echo esc_html(
-					sprintf(
-						/* translators: 1: well known dir, 2: full path */
-						__( 'The recommended access permissions for %1$s is 0755 and for %2$s 0644.', 'woocommerce-payments' ),
-						$well_known_dir,
-						$full_path
-					)
+				echo sprintf(
+					/* translators: 1: apple pay support */
+					__( 'We were not able to verify your domain. <a href="%1$s">This help documentation</a> will walk you through the process to verify with Apple that you control your domain.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'https://woocommerce.com/document/payments/apple-pay/#apple-pay-button-does-not-appear'
 				);
 				?>
-				<?php esc_html_e( 'Please re-enable Apple Pay after applying the new access permissions.', 'woocommerce-payments' ); ?>
 			</p>
 		</div>
 			<?php
