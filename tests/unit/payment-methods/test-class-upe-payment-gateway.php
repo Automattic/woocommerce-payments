@@ -1529,100 +1529,119 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase
 		}
 	}
 
-	// public function test_remove_link_payment_method_if_card_disabled() {
+	public function test_remove_link_payment_method_if_card_disabled()
+	{
+		$this->setup_payment_gateways();
+		$mock_upe_gateway = $this->getMockBuilder(UPE_Payment_Gateway::class)
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_payment_methods[Payment_Method::LINK],
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethods(
+				[
+					'get_upe_enabled_payment_method_statuses',
+					'get_upe_enabled_payment_method_ids',
+					'wc_payments_get_payment_method_by_id'
+				]
+			)
+			->getMock();
 
-	// $mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
-	// ->setConstructorArgs(
-	// [
-	// $this->mock_api_client,
-	// $this->mock_wcpay_account,
-	// $this->mock_customer_service,
-	// $this->mock_token_service,
-	// $this->mock_action_scheduler_service,
-	// $this->mock_payment_methods,
-	// $this->mock_rate_limiter,
-	// $this->order_service,
-	// ]
-	// )
-	// ->setMethods(
-	// [
-	// 'get_upe_enabled_payment_method_statuses',
-	// 'get_upe_enabled_payment_method_ids',
-	// ]
-	// )
-	// ->getMock();
+		$mock_upe_gateway
+			->expects($this->once())
+			->method('get_upe_enabled_payment_method_ids')
+			->will(
+				$this->returnValue(['link'])
+			);
+		$mock_upe_gateway
+			->expects($this->once())
+			->method('get_upe_enabled_payment_method_statuses')
+			->will(
+				$this->returnValue(['link_payments' => ['status' => 'active']])
+			);
+		$mock_upe_gateway
+			->method('wc_payments_get_payment_method_by_id')
+			->with(Payment_Method::LINK)
+			->willReturn($this->mock_payment_methods[Payment_Method::LINK]);
 
-	// $mock_upe_gateway
-	// ->expects( $this->once() )
-	// ->method( 'get_upe_enabled_payment_method_ids' )
-	// ->will(
-	// $this->returnValue( [ 'link' ] )
-	// );
-	// $mock_upe_gateway
-	// ->expects( $this->once() )
-	// ->method( 'get_upe_enabled_payment_method_statuses' )
-	// ->will(
-	// $this->returnValue( [ 'link_payments' => [ 'status' => 'active' ] ] )
-	// );
+		$this->assertSame($mock_upe_gateway->get_payment_fields_js_config()['paymentMethodsConfig'], []);
+	}
 
-	// $this->assertSame( $mock_upe_gateway->get_payment_fields_js_config()['paymentMethodsConfig'], [] );
-	// }
+	public function test_link_payment_method_if_card_enabled()
+	{
+		$this->setup_payment_gateways();
+		self::$mock_site_currency = 'USD';
 
-	// public function test_link_payment_method_if_card_enabled() {
-	// self::$mock_site_currency = 'USD';
+		$mock_upe_gateway = $this->getMockBuilder(UPE_Payment_Gateway::class)
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_payment_methods[Payment_Method::LINK],
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethods(
+				[
+					'get_upe_enabled_payment_method_statuses',
+					'get_upe_enabled_payment_method_ids',
+					'wc_payments_get_payment_method_by_id'
+				]
+			)
+			->getMock();
+		$mock_upe_gateway
+			->expects($this->once())
+			->method('get_upe_enabled_payment_method_ids')
+			->will(
+				$this->returnValue(['card', 'link'])
+			);
+		$mock_upe_gateway
+			->expects($this->once())
+			->method('get_upe_enabled_payment_method_statuses')
+			->will(
+				$this->returnValue(
+					[
+						'link_payments' => ['status' => 'active'],
+						'card_payments' => ['status' => 'active'],
+					]
+				)
+			);
+		$mock_upe_gateway
+			->method('wc_payments_get_payment_method_by_id')
+			->willReturnMap([
+				[Payment_Method::CARD, $this->mock_payment_methods[Payment_Method::CARD]],
+				[Payment_Method::LINK, $this->mock_payment_methods[Payment_Method::LINK]]
+			]);
 
-	// $mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
-	// ->setConstructorArgs(
-	// [
-	// $this->mock_api_client,
-	// $this->mock_wcpay_account,
-	// $this->mock_customer_service,
-	// $this->mock_token_service,
-	// $this->mock_action_scheduler_service,
-	// $this->mock_payment_methods,
-	// $this->mock_rate_limiter,
-	// $this->order_service,
-	// ]
-	// )
-	// ->setMethods(
-	// [
-	// 'get_upe_enabled_payment_method_statuses',
-	// 'get_upe_enabled_payment_method_ids',
-	// ]
-	// )
-	// ->getMock();
-	// $mock_upe_gateway
-	// ->expects( $this->once() )
-	// ->method( 'get_upe_enabled_payment_method_ids' )
-	// ->will(
-	// $this->returnValue( [ 'card', 'link' ] )
-	// );
-	// $mock_upe_gateway
-	// ->expects( $this->once() )
-	// ->method( 'get_upe_enabled_payment_method_statuses' )
-	// ->will(
-	// $this->returnValue(
-	// [
-	// 'link_payments' => [ 'status' => 'active' ],
-	// 'card_payments' => [ 'status' => 'active' ],
-	// ]
-	// )
-	// );
-
-	// $this->assertSame(
-	// $mock_upe_gateway->get_payment_fields_js_config()['paymentMethodsConfig'],
-	// [
-	// 'card' => [
-	// 'isReusable' => true,
-	// 'title'      => 'Credit card / debit card',
-	// ],
-	// 'link' => [
-	// 'isReusable' => true,
-	// 'title'      => 'Link',
-	// ],
-	// ]
-	// );
-	// }
+		$this->assertSame(
+			$mock_upe_gateway->get_payment_fields_js_config()['paymentMethodsConfig'],
+			[
+				'card' => [
+					'isReusable' => true,
+					'title'      => 'Credit card / debit card',
+					'upePaymentIntentData' => null,
+					'upeSetupIntentData' => null
+				],
+				'link' => [
+					'isReusable' => true,
+					'title'      => 'Link',
+					'upePaymentIntentData' => null,
+					'upeSetupIntentData' => null
+				],
+			]
+		);
+	}
 
 	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
