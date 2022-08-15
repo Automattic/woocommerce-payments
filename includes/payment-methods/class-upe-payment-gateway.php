@@ -1066,21 +1066,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
-	 * Sets the title on checkout correctly before the title is displayed.
-	 *
-	 * @param string $title The title of the gateway being filtered.
-	 * @param string $id    The id of the gateway being filtered.
-	 *
-	 * @return string Filtered gateway title.
-	 */
-	public function maybe_filter_gateway_title( $title, $id ) {
-		if ( self::GATEWAY_ID === $id && $this->title === $title ) {
-			$title = $this->method_title;
-		}
-		return $title;
-	}
-
-	/**
 	 * Gets payment method settings to pass to client scripts
 	 *
 	 * @return array
