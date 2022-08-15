@@ -59,15 +59,7 @@ const SepaDetails = ( { charge = {}, isLoading } ) => {
 			? formatPaymentMethodDetails( charge )
 			: paymentMethodPlaceholders;
 
-	const {
-		last4,
-		fingerprint,
-		id,
-		name,
-		email,
-		country,
-		formattedAddress,
-	} = details;
+	const { last4, id, name, email, country, formattedAddress } = details;
 
 	// Shorthand for more readable code.
 	const Detail = PaymentDetailsPaymentMethodDetail;
@@ -80,13 +72,6 @@ const SepaDetails = ( { charge = {}, isLoading } ) => {
 					label={ __( 'IBAN', 'woocommerce-payments' ) }
 				>
 					&bull;&bull;&bull;&bull;&nbsp;{ last4 }
-				</Detail>
-
-				<Detail
-					isLoading={ isLoading }
-					label={ __( 'Fingerprint', 'woocommerce-payments' ) }
-				>
-					{ fingerprint }
 				</Detail>
 
 				<Detail

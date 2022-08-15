@@ -13,9 +13,10 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * A class for caching data as an option in the database.
  */
 class Database_Cache {
-	const ACCOUNT_KEY        = 'wcpay_account_data';
-	const BUSINESS_TYPES_KEY = 'wcpay_business_types_data';
-	const CURRENCIES_KEY     = 'wcpay_multi_currency_cached_currencies';
+	const ACCOUNT_KEY             = 'wcpay_account_data';
+	const BUSINESS_TYPES_KEY      = 'wcpay_business_types_data';
+	const CURRENCIES_KEY          = 'wcpay_multi_currency_cached_currencies';
+	const CUSTOMER_CURRENCIES_KEY = 'wcpay_multi_currency_customer_currencies';
 
 	/**
 	 * Payment methods cache key prefix. Used in conjunction with the customer_id to cache a customer's payment methods.
