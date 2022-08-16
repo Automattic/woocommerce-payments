@@ -1308,7 +1308,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_method_id = is_array( $intent ) ? $payment_information->get_payment_method() : $intent->get_payment_method_id();
 
 					// Handle orders that are paid via WooPay and contain subscriptions.
-					if ( $order->get_meta( 'is_woopay' ) && wcs_order_contains_subscription( $order ) ) {
+					if ( $order->get_meta( 'is_woopay' ) && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
 
 						$customer_tokens = WC_Payment_Tokens::get_customer_tokens( $order->get_user_id(), self::GATEWAY_ID );
 
