@@ -24,6 +24,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
@@ -803,7 +804,7 @@ class WC_Payments {
 	 * Returns payment method instance by Stripe ID.
 	 *
 	 * @param string $payment_method_id Stripe payment method type ID.
-	 * @return UPE_Payment_Method Matching UPE Payment Method instance.
+	 * @return false|UPE_Payment_Method Matching UPE Payment Method instance.
 	 */
 	public static function get_payment_method_by_id( $payment_method_id ) {
 		if ( ! isset( self::$upe_payment_method_map[ $payment_method_id ] ) ) {
@@ -816,7 +817,7 @@ class WC_Payments {
 	 * Returns payment gateway instance by Stripe ID.
 	 *
 	 * @param string $payment_method_id Stripe payment method type ID.
-	 * @return UPE_Payment_Gateway Matching UPE Payment Gateway instance.
+	 * @return false|UPE_Payment_Gateway Matching UPE Payment Gateway instance.
 	 */
 	public static function get_payment_gateway_by_id( $payment_method_id ) {
 		if ( ! isset( self::$upe_payment_gateway_map[ $payment_method_id ] ) ) {

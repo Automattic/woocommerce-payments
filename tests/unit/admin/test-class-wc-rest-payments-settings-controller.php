@@ -7,6 +7,7 @@
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\RestApi;
+use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -46,20 +47,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	private $gateway;
 
 	/**
-	 * UPE Gateway.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $upe_gateway;
-
-	/**
-	 * UPE Controller.
-	 *
-	 * @var WC_REST_Payments_Settings_Controller
-	 */
-	private $upe_controller;
-
-	/**
 	 * @var WC_Payments_API_Client
 	 */
 	private $mock_api_client;
@@ -70,6 +57,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_wcpay_account;
+
+	/**
+	 * An array of mocked payment gateways mapped to payment method ID.
+	 *
+	 * @var array
+	 */
+	private $mock_payment_gateways;
 
 	/**
 	 * Pre-test setup
@@ -110,15 +104,15 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$mock_payment_methods   = [];
 		$payment_method_classes = [
-			Becs_Payment_Method::class,
-			CC_Payment_Method::class,
-			Bancontact_Payment_Method::class,
-			Eps_Payment_Method::class,
-			Giropay_Payment_Method::class,
-			Sofort_Payment_Method::class,
-			Sepa_Payment_Method::class,
-			P24_Payment_Method::class,
-			Ideal_Payment_Method::class,
+			Payment_Method::CARD       => CC_Payment_Method::class,
+			Payment_Method::GIROPAY    => Giropay_Payment_Method::class,
+			Payment_Method::SOFORT     => Sofort_Payment_Method::class,
+			Payment_Method::BANCONTACT => Bancontact_Payment_Method::class,
+			Payment_Method::EPS        => EPS_Payment_Method::class,
+			Payment_Method::P24        => P24_Payment_Method::class,
+			Payment_Method::IDEAL      => Ideal_Payment_Method::class,
+			Payment_Method::SEPA       => Sepa_Payment_Method::class,
+			Payment_Method::BECS       => Becs_Payment_Method::class,
 		];
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
@@ -130,19 +124,18 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				->will( $this->returnValue( false ) );
 
 			$mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
-		}
 
-		$this->upe_gateway    = new UPE_Payment_Gateway(
-			$this->mock_api_client,
-			$this->mock_wcpay_account,
-			$customer_service,
-			$token_service,
-			$action_scheduler_service,
-			$mock_payment_methods,
-			$mock_rate_limiter,
-			$order_service
-		);
-		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
+			$this->mock_payment_gateways[ $mock_payment_method->get_id() ] = new UPE_Payment_Gateway(
+				$this->mock_api_client,
+				$this->mock_wcpay_account,
+				$customer_service,
+				$token_service,
+				$action_scheduler_service,
+				$mock_payment_method,
+				$mock_rate_limiter,
+				$order_service
+			);
+		}
 
 		$this->mock_api_client
 			->method( 'is_server_connected' )
@@ -189,13 +182,17 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_returns_available_payment_method_ids() {
-		$response           = $this->upe_controller->get_settings();
-		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
+		foreach ( $this->mock_payment_gateways as $mock_upe_payment_gateway ) {
+			$upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $mock_upe_payment_gateway );
 
-		$this->assertEquals(
-			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24', 'link' ],
-			$enabled_method_ids
-		);
+			$response           = $upe_controller->get_settings();
+			$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
+
+			$this->assertEquals(
+				[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24', 'link' ],
+				$enabled_method_ids
+			);
+		}
 	}
 
 	public function test_get_settings_request_returns_test_mode_flag() {
@@ -296,14 +293,17 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_settings_saves_enabled_payment_methods() {
-		$this->upe_gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
+		foreach ( $this->mock_payment_gateways as $mock_upe_payment_gateway ) {
+			$upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $mock_upe_payment_gateway );
+			$mock_upe_payment_gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
 
-		$request = new WP_REST_Request();
-		$request->set_param( 'enabled_payment_method_ids', [ 'card', 'giropay' ] );
+			$request = new WP_REST_Request();
+			$request->set_param( 'enabled_payment_method_ids', [ 'card', 'giropay' ] );
 
-		$this->upe_controller->update_settings( $request );
+			$upe_controller->update_settings( $request );
 
-		$this->assertEquals( [ 'card', 'giropay' ], $this->upe_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
+			$this->assertEquals( [ 'card', 'giropay' ], $mock_upe_payment_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
+		}
 	}
 
 	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
@@ -548,10 +548,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_card_eligible_flag() {
-		$response = $this->upe_controller->get_settings();
+		foreach ( $this->mock_payment_gateways as $mock_upe_payment_gateway ) {
+			$upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $mock_upe_payment_gateway );
+			$response       = $upe_controller->get_settings();
 
-		$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
-		$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
+			$this->assertArrayHasKey( 'is_card_present_eligible', $response->get_data() );
+			$this->assertTrue( $response->get_data()['is_card_present_eligible'] );
+		}
 	}
 
 	/**
