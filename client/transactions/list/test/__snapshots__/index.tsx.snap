@@ -587,7 +587,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--visa"
@@ -728,7 +728,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--mastercard"
@@ -856,7 +856,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--visa"
@@ -1468,7 +1468,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--visa"
@@ -1609,7 +1609,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--mastercard"
@@ -1737,7 +1737,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--visa"
@@ -2353,7 +2353,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--mastercard"
@@ -3030,7 +3030,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--visa"
@@ -3174,7 +3174,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--mastercard"
@@ -3305,7 +3305,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--visa"
@@ -3959,7 +3959,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--visa"
@@ -4100,7 +4100,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--mastercard"
@@ -4228,7 +4228,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--visa"
@@ -4882,7 +4882,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--visa"
@@ -5023,7 +5023,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--mastercard"
@@ -5151,7 +5151,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method-details"
+                      class="payment-method-details-list-item"
                     >
                       <span
                         class="payment-method__brand payment-method__brand--visa"

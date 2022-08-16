@@ -42,14 +42,8 @@ export const usePaymentIntentWithChargeFallback = (
 
 			const paymentIntent: PaymentIntent = getPaymentIntent( id );
 
-			if ( paymentIntent?.charge?.id ) {
-				const { id: chargeId } = paymentIntent.charge;
-
-				return getChargeData( chargeId, selectors );
-			}
-
 			return {
-				data: {} as Charge,
+				data: paymentIntent?.charge || ( {} as Charge ),
 				error: getPaymentIntentError( id ),
 				isLoading: isResolving( 'getPaymentIntent', [ id ] ),
 			};
