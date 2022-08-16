@@ -59,4 +59,16 @@ class Utils {
 	public static function is_admin_api_request(): bool {
 		return 0 === stripos( wp_get_referer(), admin_url() ) && WC()->is_rest_api_request();
 	}
+
+
+	/**
+	 * Writes the session into the client cookie.
+	 *
+	 * @param bool $set Should the session cookie be set.
+	 *
+	 * @return void
+	 */
+	public static function set_customer_session_cookie( bool $set ) {
+		WC()->session->set_customer_session_cookie( $set );
+	}
 }

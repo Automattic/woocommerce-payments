@@ -393,7 +393,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 						window.location = response.url;
 					} else {
 						showErrorMessage();
-						closeIframe();
+						closeIframe( false );
 					}
 				} );
 				break;
