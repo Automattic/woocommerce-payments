@@ -56,32 +56,20 @@ class WC_Payments_DB {
 	 * @return boolean|WC_Order
 	 */
 	private function order_from_meta_key_value( string $meta_key, string $meta_value ) {
-		$custom_query_var_handler = function( $query, $query_vars ) use ( $meta_key ) {
-			if ( ! empty( $query_vars[ $meta_key ] ) ) {
-				$query['meta_query'][] = [
-					'key'   => $meta_key,
-					'value' => esc_attr( $query_vars[ $meta_key ] ),
-				];
-			}
-
-			return $query;
-		};
-
-		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10, 2 );
-		$orders = wc_get_orders(
+		$order_ids = wc_get_orders(
 			[
-				'limit'   => 1,
-				$meta_key => $meta_value,
+				'limit'      => 1,
+				'return'     => 'ids',
+				'meta_query' => [
+					[
+						'key'   => $meta_key,
+						'value' => $meta_value,
+					],
+				],
 			]
 		);
-		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10 );
 
-		/**
-		 * Suppress psalm error
-		 *
-		 * @psalm-suppress UndefinedMethod
-		 */
-		return $orders[0] ?? false;
+		return $order_ids[0] ?? false;
 	}
 
 	/**
@@ -93,33 +81,18 @@ class WC_Payments_DB {
 	 * @return stdClass|WC_Order[]
 	 */
 	private function orders_from_meta_key_values( string $meta_key, array $meta_value ): array {
-		$custom_query_var_handler = function( $query, $query_vars ) use ( $meta_key ) {
-			if ( ! empty( $query_vars[ $meta_key ] ) ) {
-				$query['meta_query'][] = [
-					'key'     => $meta_key,
-					'value'   => $query_vars[ $meta_key ],
-					'compare' => 'IN',
-				];
-			}
-
-			return $query;
-		};
-
-		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10, 2 );
-		$orders = wc_get_orders(
+		return wc_get_orders(
 			[
-				'limit'   => -1,
-				$meta_key => $meta_value,
+				'limit'      => -1,
+				'meta_query' => [
+					[
+						'key'     => $meta_key,
+						'value'   => $meta_value,
+						'compare' => 'IN',
+					],
+				],
 			]
 		);
-		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10 );
-
-		/**
-		 * Suppress psalm error
-		 *
-		 * @psalm-suppress InvalidReturnStatement
-		 */
-		return $orders ?? [];
 	}
 
 	/**
