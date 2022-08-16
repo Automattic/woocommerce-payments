@@ -925,7 +925,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Returns the Stripe payment type of the selected payment method.
 	 *
-	 * @return string[]
+	 * @return string
 	 */
 	public function get_selected_stripe_payment_type_id() {
 		return $this->stripe_id;
@@ -1195,7 +1195,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Returns session key for UPE SEPA payment intents.
 	 *
-	 * @param string $payment_method Stripe payment method.
+	 * @param false|string $payment_method Stripe payment method.
 	 * @return string
 	 */
 	public function get_payment_intent_session_key( $payment_method = false ) {
@@ -1208,7 +1208,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Returns session key for UPE SEPA setup intents.
 	 *
-	 * @param string $payment_method Stripe payment method.
+	 * @param false|string $payment_method Stripe payment method.
 	 * @return string
 	 */
 	public function get_setup_intent_session_key( $payment_method = false ) {
@@ -1221,8 +1221,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Returns payment intent session data.
 	 *
-	 * @param string $payment_method Stripe payment method.
-	 * @return string
+	 * @param false|string $payment_method Stripe payment method.
+	 * @return array|string value of session variable
 	 */
 	public function get_payment_intent_data_from_session( $payment_method = false ) {
 		return WC()->session->get( $this->get_payment_intent_session_key( $payment_method ) );
@@ -1231,8 +1231,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Returns setup intent session data.
 	 *
-	 * @param string $payment_method Stripe payment method.
-	 * @return string
+	 * @param false|string $payment_method Stripe payment method.
+	 * @return array|string value of session variable
 	 */
 	public function get_setup_intent_data_from_session( $payment_method = false ) {
 		return WC()->session->get( $this->get_setup_intent_session_key( $payment_method ) );
@@ -1242,10 +1242,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * This function wraps WC_Payments::get_payment_method_by_id, useful for unit testing.
 	 *
 	 * @param string $payment_method_id Stripe payment method type ID.
-	 * @return UPE_Payment_Method Matching UPE Payment Method instance.
+	 * @return false|UPE_Payment_Method Matching UPE Payment Method instance.
 	 */
 	public function wc_payments_get_payment_method_by_id( $payment_method_id ) {
 		return WC_Payments::get_payment_method_by_id( $payment_method_id );
 	}
-
 }
