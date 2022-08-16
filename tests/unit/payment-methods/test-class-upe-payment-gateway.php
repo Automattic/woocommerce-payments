@@ -7,14 +7,8 @@
 
 namespace WCPay\Payment_Methods;
 
-use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Connection_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
-use WCPay\Logger;
-use WCPay\MultiCurrency\Currency;
 use WCPay\Session_Rate_Limiter;
 
 use WC_Payment_Gateway_WCPay;
@@ -24,18 +18,11 @@ use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
 use WC_Payments_Order_Service;
-use WC_Payments;
-use WC_Customer;
 use WC_Helper_Order;
 use WC_Helper_Intention;
 use WC_Helper_Token;
-use WC_Payments_Utils;
-use WC_Subscriptions;
-use WC_Subscriptions_Cart;
 use WCPAY_UnitTestCase;
-use WP_User;
 use Exception;
-use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
 
 /**
