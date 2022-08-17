@@ -96,6 +96,11 @@ class WC_Payments_DB {
 			]
 		);
 		if ( $orders && ! empty( $orders ) ) {
+			/**
+			 * As wc_get_orders may also return stdClass, Psalm infers error.
+			 *
+			 * @psalm-suppress UndefinedMethod
+			 */
 			return $orders[0];
 		}
 		return null;
