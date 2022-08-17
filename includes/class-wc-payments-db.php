@@ -95,7 +95,7 @@ class WC_Payments_DB {
 				'meta_value' => $meta_value, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			]
 		);
-		if ( $orders && ! empty( $orders ) ) {
+		if ( ! empty( $orders ) ) {
 			return $orders[0];
 		}
 		return null;
