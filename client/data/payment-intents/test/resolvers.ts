@@ -11,23 +11,38 @@ import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { updatePaymentIntent, updateErrorForPaymentIntent } from '../actions';
 import { getPaymentIntent } from '../resolvers';
 import { PaymentIntent } from '../../../types/payment-intents';
-import { paymentIntentId, paymentIntentMock } from './hooks';
 
 const errorResponse = { code: 'error' };
 
 const paymentIntentResponse: { data: PaymentIntent } = {
-	data: paymentIntentMock,
+	data: {
+		id: 'pi_test_1',
+		amount: 8903,
+		currency: 'USD',
+		charge: {
+			id: 'ch_test_1',
+			amount: 8903,
+			created: 1656701170,
+			payment_method_details: {
+				card: {},
+				type: 'card',
+			},
+		},
+		created: 1656701169,
+		customer: 'cus_test',
+		metadata: {},
+		payment_method: 'pm_test',
+		status: 'requires_capture',
+	},
 };
 
 describe( 'getPaymentIntent resolver', () => {
 	let generator: Generator< unknown >;
 
 	beforeEach( () => {
-		generator = getPaymentIntent( paymentIntentId );
+		generator = getPaymentIntent( 'pi_test_1' );
 		expect( generator.next().value ).toEqual(
-			apiFetch( {
-				path: `/wc/v3/payments/payment_intents/${ paymentIntentId }`,
-			} )
+			apiFetch( { path: '/wc/v3/payments/payment_intents/pi_test_1' } )
 		);
 	} );
 
@@ -58,7 +73,7 @@ describe( 'getPaymentIntent resolver', () => {
 				)
 			);
 			expect( generator.next().value ).toEqual(
-				updateErrorForPaymentIntent( paymentIntentId, errorResponse )
+				updateErrorForPaymentIntent( 'pi_test_1', errorResponse )
 			);
 		} );
 	} );

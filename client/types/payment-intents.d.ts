@@ -1,12 +1,19 @@
 /**
  * Internal dependencies
  */
-import { Charge } from './charges';
+import { PaymentMethodDetails } from './charges';
+
+export interface PaymentIntentCharge {
+	id: string;
+	amount: number;
+	created: number;
+	payment_method_details: PaymentMethodDetails;
+}
 
 export interface PaymentIntent {
 	id: string;
 	amount: number;
-	charge: Charge;
+	charge: PaymentIntentCharge;
 	created: number;
 	currency: string;
 	customer: string;

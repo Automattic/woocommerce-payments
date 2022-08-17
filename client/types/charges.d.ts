@@ -16,7 +16,6 @@ interface ChargeBillingDetails {
 		postal_code: null | string;
 		state: null | string;
 	};
-	formatted_address?: string;
 }
 
 interface ChargeRefund {
@@ -42,13 +41,6 @@ export interface PaymentMethodDetails {
 		| 'sofort';
 }
 
-export type OutcomeRiskLevel =
-	| 'normal'
-	| 'elevated'
-	| 'highest'
-	| 'not_assessed'
-	| 'unknown';
-
 export interface Charge {
 	id: string;
 	amount: number;
@@ -57,30 +49,34 @@ export interface Charge {
 	application_fee_amount: number;
 	balance_transaction: BalanceTransaction;
 	billing_details: ChargeBillingDetails;
-	captured?: boolean;
+	captured: boolean;
 	created: number;
 	currency: string;
-	dispute?: null | Dispute;
+	dispute?: Dispute;
 	disputed: boolean;
 	order: null | OrderDetails;
 	outcome: null | {
 		network_status: string;
-		reason: null | string;
-		risk_level: OutcomeRiskLevel;
+		reason: string;
+		risk_level:
+			| 'normal'
+			| 'elevated'
+			| 'highest'
+			| 'not_assessed'
+			| 'unknown';
 		risk_score: number;
-		rule?: string;
+		rule: string;
 		seller_message: string;
 		type: string;
 	};
 	paid: boolean;
-	paydown: null | {
+	paydown: {
 		amount: number;
 	};
 	payment_intent: null | string;
-	payment_method: string;
 	payment_method_details: PaymentMethodDetails;
 	refunded: boolean;
-	refunds: null | ChargeRefunds;
+	refunds: ChargeRefunds;
 	status: string;
 }
 
