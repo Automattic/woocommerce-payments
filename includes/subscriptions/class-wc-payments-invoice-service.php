@@ -103,28 +103,17 @@ class WC_Payments_Invoice_Service {
 	 * @return int The order ID.
 	 */
 	public static function get_order_id_by_invoice_id( string $invoice_id ) {
-		$custom_query_var_handler = function( $query, $query_vars ) {
-			if ( ! empty( $query_vars[ self::ORDER_INVOICE_ID_KEY ] ) ) {
-				$query['meta_query'][] = [
-					'key'   => self::ORDER_INVOICE_ID_KEY,
-					'value' => esc_attr( $query_vars[ self::ORDER_INVOICE_ID_KEY ] ),
-				];
-			}
-
-			return $query;
-		};
-
-		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10, 2 );
 
 		$orders = wc_get_orders(
 			[
-				'limit'                    => 1,
-				'return'                   => 'ids',
-				self::ORDER_INVOICE_ID_KEY => $invoice_id,
+				'limit'      => 1,
+				'return'     => 'ids',
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key'   => self::ORDER_INVOICE_ID_KEY,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_value' => $invoice_id,
 			]
 		);
-
-		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $custom_query_var_handler, 10 );
 
 		return $orders[0] ?? false;
 	}
