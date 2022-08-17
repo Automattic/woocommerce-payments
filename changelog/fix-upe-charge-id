@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix an issue that was added in 4.5.0 as the Transaction Detail Page was invalidating py_ charge ids.
