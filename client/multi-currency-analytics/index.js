@@ -122,3 +122,85 @@ addFilter(
 		return tableData;
 	}
 );
+
+const addCurrencyFilters = ( filters ) => {
+	return [
+		{
+			label: __( 'Currency', 'customer currency' ),
+			staticParams: [],
+			param: 'currency',
+			showFilters: () => true,
+			defaultValue: 'USD',
+			filters: [ ...getCustomerCurrencies() ],
+		},
+		...filters,
+	];
+};
+
+addFilter(
+	'woocommerce_admin_orders_report_filters',
+	'woocommerce-payments',
+	addCurrencyFilters
+);
+addFilter(
+	'woocommerce_admin_revenue_report_filters',
+	'woocommerce-payments',
+	addCurrencyFilters
+);
+addFilter(
+	'woocommerce_admin_products_report_filters',
+	'woocommerce-payments',
+	addCurrencyFilters
+);
+addFilter(
+	'woocommerce_admin_variations_report_filters',
+	'woocommerce-payments',
+	addCurrencyFilters
+);
+addFilter(
+	'woocommerce_admin_categories_report_filters',
+	'woocommerce-payments',
+	addCurrencyFilters
+);
+addFilter(
+	'woocommerce_admin_coupons_report_filters',
+	'woocommerce-payments',
+	addCurrencyFilters
+);
+addFilter(
+	'woocommerce_admin_taxes_report_filters',
+	'woocommerce-payments',
+	addCurrencyFilters
+);
+
+const currencies = {
+	USD: {
+		code: 'USD',
+		symbol: '$', // For the sake of the example.
+		symbolPosition: 'left',
+		thousandSeparator: ',',
+		decimalSeparator: '.',
+		precision: 2,
+	},
+	GBP: {
+		code: 'GBP',
+		symbol: '£',
+		symbolPosition: 'left',
+		thousandSeparator: ',',
+		decimalSeparator: '.',
+		precision: 2,
+	},
+};
+
+const updateReportCurrencies = ( config, { currency } ) => {
+	if ( currency && currencies[ currency ] ) {
+		return currencies[ currency ];
+	}
+	return config;
+};
+
+addFilter(
+	'woocommerce_admin_report_currency',
+	'woocommerce-payments',
+	updateReportCurrencies
+);
