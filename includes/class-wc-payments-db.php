@@ -91,12 +91,8 @@ class WC_Payments_DB {
 			[
 				'limit'      => 1,
 				'return'     => 'ids',
-				'meta_query' => [ /* phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query */
-					[
-						'key'   => $meta_key,
-						'value' => $meta_value,
-					],
-				],
+				'meta_key'   => $meta_key, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value' => $meta_value, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			]
 		);
 		return $orders[0];
