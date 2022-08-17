@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix an issue that was added in 4.5.0 as the Transaction Detail Page was invalidating py_ charge ids.
+Fix an issue while loading the Transaction Detail Page with py_ charge ids.
