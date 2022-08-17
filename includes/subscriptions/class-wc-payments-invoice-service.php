@@ -103,8 +103,7 @@ class WC_Payments_Invoice_Service {
 	 * @return int The order ID.
 	 */
 	public static function get_order_id_by_invoice_id( string $invoice_id ) {
-
-		$orders = wc_get_orders(
+		$order_ids = wc_get_orders(
 			[
 				'limit'      => 1,
 				'return'     => 'ids',
@@ -115,7 +114,7 @@ class WC_Payments_Invoice_Service {
 			]
 		);
 
-		return $orders[0] ?? false;
+		return $order_ids[0] ?? false;
 	}
 
 	/**
