@@ -612,6 +612,14 @@ export default class WCPayAPI {
 		);
 	}
 
+	paymentRequestPayForOrder( order, paymentData ) {
+		return this.request( getPaymentRequestAjaxURL( 'pay_for_order' ), {
+			_wpnonce: getPaymentRequestData( 'nonce' )?.pay_for_order,
+			order,
+			...paymentData,
+		} );
+	}
+
 	/**
 	 * Log Payment Errors via Ajax.
 	 *
