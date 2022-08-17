@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.5.1 - 2022-08-08 =
+* Update - Security update.
+
 = 4.5.0 - 2022-07-27 =
 * Add - Add "Things to do" task list to the Payments Overview screen
 * Add - Add a task to the WooCommerce > Home screen notifying merchants of disputed payments that need a response.
