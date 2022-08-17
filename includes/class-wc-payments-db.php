@@ -87,11 +87,11 @@ class WC_Payments_DB {
 	 * @return null|string
 	 */
 	private function order_id_from_meta_key_value( $meta_key, $meta_value ) {
-		$order = wc_get_orders(
+		$orders = wc_get_orders(
 			[
 				'limit'      => 1,
 				'return'     => 'ids',
-				'meta_query' => [
+				'meta_query' => [ /* phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query */
 					[
 						'key'   => $meta_key,
 						'value' => $meta_value,
@@ -99,7 +99,7 @@ class WC_Payments_DB {
 				],
 			]
 		);
-		return $order[0];
+		return $orders[0];
 	}
 
 	/**
