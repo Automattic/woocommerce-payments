@@ -100,7 +100,7 @@ class WC_Payments_DB {
 			 *
 			 * @psalm-suppress UndefinedMethod
 			 */
-			return $orders[0]->get_id();
+			return (string) $orders[0]->get_id();
 		}
 		return null;
 	}
