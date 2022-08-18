@@ -287,45 +287,19 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </span>
                 </th>
                 <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
-                  <button
-                    aria-describedby="header-13-2"
-                    class="components-button"
-                    type="button"
+                  <span
+                    aria-hidden="true"
                   >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Amount
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Amount
-                    </span>
-                  </button>
+                    Channel
+                  </span>
                   <span
                     class="screen-reader-text"
-                    id="header-13-2"
                   >
-                    Sort by Amount in descending order
+                    Channel
                   </span>
                 </th>
                 <th
@@ -355,19 +329,19 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     <span
                       aria-hidden="true"
                     >
-                      Fees
+                      Amount
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Fees
+                      Amount
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-13-3"
                   >
-                    Sort by Fees in descending order
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -397,6 +371,48 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     <span
                       aria-hidden="true"
                     >
+                      Fees
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Fees
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-13-4"
+                  >
+                    Sort by Fees in descending order
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable is-numeric"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-13-5"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
                       Net
                     </span>
                     <span
@@ -407,7 +423,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-13-4"
+                    id="header-13-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -504,6 +520,18 @@ exports[`Transactions list renders correctly when can filter by several currenci
                   </a>
                 </td>
                 <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
+                    tabindex="-1"
+                  >
+                    Online
+                  </a>
+                </td>
+                <td
                   class="woocommerce-table__item is-numeric"
                 >
                   <a
@@ -559,8 +587,15 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -601,6 +636,18 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     Charge
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Online
                   </a>
                 </td>
                 <td
@@ -681,8 +728,15 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -707,6 +761,125 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     Jan 7, 2020
                   </a>
                 </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  scope="row"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Jan 2, 2020 / 2:55PM
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Charge
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    In-Person
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $20.00
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $-0.75
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $19.25
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://example.com/order/335"
+                  >
+                    335
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-center-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="https://example.com/customer/my-name"
+                  >
+                    Best customer
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item deposit is-left-aligned"
+                />
               </tr>
             </tbody>
           </table>
@@ -995,45 +1168,19 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </span>
                 </th>
                 <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
-                  <button
-                    aria-describedby="header-14-2"
-                    class="components-button"
-                    type="button"
+                  <span
+                    aria-hidden="true"
                   >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Amount
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Amount
-                    </span>
-                  </button>
+                    Channel
+                  </span>
                   <span
                     class="screen-reader-text"
-                    id="header-14-2"
                   >
-                    Sort by Amount in descending order
+                    Channel
                   </span>
                 </th>
                 <th
@@ -1063,19 +1210,19 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Fees
+                      Amount
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Fees
+                      Amount
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-14-3"
                   >
-                    Sort by Fees in descending order
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -1105,6 +1252,48 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     <span
                       aria-hidden="true"
                     >
+                      Fees
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Fees
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-14-4"
+                  >
+                    Sort by Fees in descending order
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable is-numeric"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-14-5"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
                       Net
                     </span>
                     <span
@@ -1115,7 +1304,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-14-4"
+                    id="header-14-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -1212,6 +1401,18 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                   </a>
                 </td>
                 <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
+                    tabindex="-1"
+                  >
+                    Online
+                  </a>
+                </td>
+                <td
                   class="woocommerce-table__item is-numeric"
                 >
                   <a
@@ -1267,8 +1468,15 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -1309,6 +1517,18 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     Charge
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Online
                   </a>
                 </td>
                 <td
@@ -1389,8 +1609,15 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -1415,6 +1642,125 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     Jan 7, 2020
                   </a>
                 </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  scope="row"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Jan 2, 2020 / 2:55PM
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Charge
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    In-Person
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $20.00
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $-0.75
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $19.25
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://example.com/order/335"
+                  >
+                    335
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-center-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="https://example.com/customer/my-name"
+                  >
+                    Best customer
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item deposit is-left-aligned"
+                />
               </tr>
             </tbody>
           </table>
@@ -1701,45 +2047,19 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   </span>
                 </th>
                 <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
-                  <button
-                    aria-describedby="header-0-2"
-                    class="components-button"
-                    type="button"
+                  <span
+                    aria-hidden="true"
                   >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Amount
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Amount
-                    </span>
-                  </button>
+                    Channel
+                  </span>
                   <span
                     class="screen-reader-text"
-                    id="header-0-2"
                   >
-                    Sort by Amount in descending order
+                    Channel
                   </span>
                 </th>
                 <th
@@ -1769,19 +2089,19 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Fees
+                      Amount
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Fees
+                      Amount
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-0-3"
                   >
-                    Sort by Fees in descending order
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -1811,6 +2131,48 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                     <span
                       aria-hidden="true"
                     >
+                      Fees
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Fees
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-4"
+                  >
+                    Sort by Fees in descending order
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable is-numeric"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-0-5"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
                       Net
                     </span>
                     <span
@@ -1821,7 +2183,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-0-4"
+                    id="header-0-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -1902,6 +2264,18 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                   </a>
                 </td>
                 <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Online
+                  </a>
+                </td>
+                <td
                   class="woocommerce-table__item is-numeric"
                 >
                   <a
@@ -1979,8 +2353,15 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -2323,45 +2704,19 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </span>
                 </th>
                 <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
-                  <button
-                    aria-describedby="header-12-2"
-                    class="components-button"
-                    type="button"
+                  <span
+                    aria-hidden="true"
                   >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Amount
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Amount
-                    </span>
-                  </button>
+                    Channel
+                  </span>
                   <span
                     class="screen-reader-text"
-                    id="header-12-2"
                   >
-                    Sort by Amount in descending order
+                    Channel
                   </span>
                 </th>
                 <th
@@ -2391,19 +2746,19 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Fees
+                      Amount
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Fees
+                      Amount
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-12-3"
                   >
-                    Sort by Fees in descending order
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -2433,6 +2788,48 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     <span
                       aria-hidden="true"
                     >
+                      Fees
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Fees
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-12-4"
+                  >
+                    Sort by Fees in descending order
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable is-numeric"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-12-5"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
                       Net
                     </span>
                     <span
@@ -2443,7 +2840,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-12-4"
+                    id="header-12-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -2556,6 +2953,18 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                   </a>
                 </td>
                 <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
+                    tabindex="-1"
+                  >
+                    Online
+                  </a>
+                </td>
+                <td
                   class="woocommerce-table__item is-numeric"
                 >
                   <a
@@ -2621,8 +3030,15 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -2663,6 +3079,18 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     Charge
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Online
                   </a>
                 </td>
                 <td
@@ -2746,8 +3174,15 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -2772,6 +3207,128 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     Jan 7, 2020
                   </a>
                 </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  scope="row"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Jan 2, 2020 / 2:55PM
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Charge
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    In-Person
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $20.00
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $-0.75
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $19.25
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://example.com/order/335"
+                  >
+                    335
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                />
+                <td
+                  class="woocommerce-table__item is-center-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="https://example.com/customer/my-name"
+                  >
+                    Best customer
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item deposit is-left-aligned"
+                />
               </tr>
             </tbody>
           </table>
@@ -3102,45 +3659,19 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </span>
                 </th>
                 <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
-                  <button
-                    aria-describedby="header-1-2"
-                    class="components-button"
-                    type="button"
+                  <span
+                    aria-hidden="true"
                   >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Amount
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Amount
-                    </span>
-                  </button>
+                    Channel
+                  </span>
                   <span
                     class="screen-reader-text"
-                    id="header-1-2"
                   >
-                    Sort by Amount in descending order
+                    Channel
                   </span>
                 </th>
                 <th
@@ -3170,19 +3701,19 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     <span
                       aria-hidden="true"
                     >
-                      Fees
+                      Amount
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Fees
+                      Amount
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-1-3"
                   >
-                    Sort by Fees in descending order
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -3212,6 +3743,48 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     <span
                       aria-hidden="true"
                     >
+                      Fees
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Fees
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-1-4"
+                  >
+                    Sort by Fees in descending order
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable is-numeric"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-1-5"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
                       Net
                     </span>
                     <span
@@ -3222,7 +3795,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-1-4"
+                    id="header-1-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -3319,6 +3892,18 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                   </a>
                 </td>
                 <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
+                    tabindex="-1"
+                  >
+                    Online
+                  </a>
+                </td>
+                <td
                   class="woocommerce-table__item is-numeric"
                 >
                   <a
@@ -3374,8 +3959,15 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -3416,6 +4008,18 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     Charge
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Online
                   </a>
                 </td>
                 <td
@@ -3496,8 +4100,15 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -3522,6 +4133,125 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     Jan 7, 2020
                   </a>
                 </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  scope="row"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Jan 2, 2020 / 2:55PM
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Charge
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    In-Person
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $20.00
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $-0.75
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $19.25
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://example.com/order/335"
+                  >
+                    335
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-center-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="https://example.com/customer/my-name"
+                  >
+                    Best customer
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item deposit is-left-aligned"
+                />
               </tr>
             </tbody>
           </table>
@@ -3852,45 +4582,19 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </span>
                 </th>
                 <th
-                  aria-sort="none"
-                  class="woocommerce-table__header is-sortable is-numeric"
+                  class="woocommerce-table__header is-left-aligned"
                   role="columnheader"
                   scope="col"
                 >
-                  <button
-                    aria-describedby="header-11-2"
-                    class="components-button"
-                    type="button"
+                  <span
+                    aria-hidden="true"
                   >
-                    <svg
-                      aria-hidden="true"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                      />
-                    </svg>
-                    <span
-                      aria-hidden="true"
-                    >
-                      Amount
-                    </span>
-                    <span
-                      class="screen-reader-text"
-                    >
-                      Amount
-                    </span>
-                  </button>
+                    Channel
+                  </span>
                   <span
                     class="screen-reader-text"
-                    id="header-11-2"
                   >
-                    Sort by Amount in descending order
+                    Channel
                   </span>
                 </th>
                 <th
@@ -3920,19 +4624,19 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     <span
                       aria-hidden="true"
                     >
-                      Fees
+                      Amount
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Fees
+                      Amount
                     </span>
                   </button>
                   <span
                     class="screen-reader-text"
                     id="header-11-3"
                   >
-                    Sort by Fees in descending order
+                    Sort by Amount in descending order
                   </span>
                 </th>
                 <th
@@ -3962,6 +4666,48 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     <span
                       aria-hidden="true"
                     >
+                      Fees
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Fees
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-11-4"
+                  >
+                    Sort by Fees in descending order
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable is-numeric"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-11-5"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
                       Net
                     </span>
                     <span
@@ -3972,7 +4718,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </button>
                   <span
                     class="screen-reader-text"
-                    id="header-11-4"
+                    id="header-11-5"
                   >
                     Sort by Net in descending order
                   </span>
@@ -4069,6 +4815,18 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                   </a>
                 </td>
                 <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
+                    tabindex="-1"
+                  >
+                    Online
+                  </a>
+                </td>
+                <td
                   class="woocommerce-table__item is-numeric"
                 >
                   <a
@@ -4124,8 +4882,15 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--visa"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -4166,6 +4931,18 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     Charge
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Online
                   </a>
                 </td>
                 <td
@@ -4246,8 +5023,15 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     <span
-                      class="payment-method__brand payment-method__brand--mastercard"
-                    />
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--mastercard"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
                   </a>
                 </td>
                 <td
@@ -4272,6 +5056,125 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     Jan 7, 2020
                   </a>
                 </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  scope="row"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Jan 2, 2020 / 2:55PM
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    Charge
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    In-Person
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $20.00
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $-0.75
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    $19.25
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://example.com/order/335"
+                  >
+                    335
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-center-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
+                    tabindex="-1"
+                  >
+                    <span
+                      class="payment-method-details-list-item"
+                    >
+                      <span
+                        class="payment-method__brand payment-method__brand--visa"
+                      />
+                       •••• 
+                       
+                      1234
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="https://example.com/customer/my-name"
+                  >
+                    Best customer
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item deposit is-left-aligned"
+                />
               </tr>
             </tbody>
           </table>

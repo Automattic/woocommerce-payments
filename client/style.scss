@@ -121,6 +121,10 @@
 	&__column {
 		flex: 0 0 50%;
 	}
+
+	&-list-item {
+		display: inline-flex;
+	}
 }
 
 .payment-method-detail {
@@ -143,6 +147,7 @@
 		color: $studio-gray-80;
 		line-height: 20px;
 		padding: 4px 0;
+		word-break: break-word;
 	}
 }
 

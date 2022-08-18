@@ -66,6 +66,7 @@
     "@stripe/react-stripe-js": "1.4.1",
     "@stripe/stripe-js": "1.15.1",
     "@woocommerce/explat": "^1.0.1",
+    "@woocommerce/number": "^2.4.0",
     "debug": "^4.1.1",
     "interpolate-components": "^1.1.1",
     "intl-tel-input": "^17.0.15",
