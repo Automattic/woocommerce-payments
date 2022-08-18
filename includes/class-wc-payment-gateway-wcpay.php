@@ -1110,9 +1110,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WCPay\Payment_Information $payment_information Payment info.
 	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
 	 *
-	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
-	 * @throws API_Exception                Error processing the payment.
-	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
+	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
+	 * @throws API_Exception                   Error processing the payment.
+	 * @throws Add_Payment_Method_Exception    When $0 order processing failed.
+	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
 		$order                                       = $payment_information->get_order();
@@ -1219,10 +1220,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
 
+			// Initializing the intent variable here to ensure we don't try to use an undeclared
+			// variable later.
+			$intent = null;
 			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the intent is included in the request use that intent.
-				$intent = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
-			} else {
+				$intent                   = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
+				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
+				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+				if ( $intent_meta_order_id !== $order_id ) {
+					throw new Intent_Authentication_Exception(
+						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						'order_id_mismatch'
+					);
+				}
+			}
+
+			if ( empty( $intent ) ) {
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 				$intent = $this->payments_api_client->create_and_confirm_intention(
 					$converted_amount,
@@ -1267,20 +1282,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
 				$intent = $this->payments_api_client->get_setup_intent( $platform_checkout_intent_id );
+
+				$intent_meta_order_id_raw = ! empty( $intent['metadata'] ) ? $intent['metadata']['order_id'] ?? '' : '';
+				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+				if ( $intent_meta_order_id !== $order_id ) {
+					throw new Intent_Authentication_Exception(
+						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						'order_id_mismatch'
+					);
+				}
 			} else {
 				$save_user_in_platform_checkout = false;
-				$metadata                       = [];
 
 				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 				if ( ! empty( $_POST['save_user_in_platform_checkout'] ) && filter_var( $_POST['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ) {
 					$save_user_in_platform_checkout = true;
-					$metadata                       = apply_filters(
+					$metadata_from_order            = apply_filters(
 						'wcpay_metadata_from_order',
 						[
 							'customer_email' => $order->get_billing_email(),
 						],
 						$order
 					);
+					$metadata                       = array_merge( (array) $metadata_from_order, (array) $metadata ); // prioritize metadata from mobile app.
 
 					do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
 				}
@@ -1310,12 +1335,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $save_payment_method_to_store && ! $intent_failed ) {
 				try {
+					$token = null;
+
 					// Setup intents are currently not deserialized as payment intents are, so check if it's an array first.
 					// For payment intents, we may provide a platform payment method from `$payment_information`, but we need
 					// to return a connected payment method. So we should always retrieve the payment method from the intent.
 					$payment_method_id = is_array( $intent ) ? $payment_information->get_payment_method() : $intent->get_payment_method_id();
 
-					$token = $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
+					// Handle orders that are paid via WooPay and contain subscriptions.
+					if ( $order->get_meta( 'is_woopay' ) && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
+
+						$customer_tokens = WC_Payment_Tokens::get_customer_tokens( $order->get_user_id(), self::GATEWAY_ID );
+
+						// Use the existing token if we already have one for the incoming payment method.
+						foreach ( $customer_tokens as $saved_token ) {
+							if ( $saved_token->get_token() === $payment_method_id ) {
+								$token = $saved_token;
+								break;
+							}
+						}
+					}
+
+					// Store a new token if we're not paying for a subscription in WooPay,
+					// or if we are, but we didn't find a stored token for the selected payment method.
+					if ( empty( $token ) ) {
+						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
+					}
 					$payment_information->set_token( $token );
 				} catch ( Exception $e ) {
 					// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.

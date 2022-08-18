@@ -111,7 +111,7 @@
 }
 
 .payment-method-details {
-	display: inline-flex;
+	display: flex;
 	align-items: flex-start;
 
 	@media screen and ( max-width: 1023px ) {
@@ -120,6 +120,10 @@
 
 	&__column {
 		flex: 0 0 50%;
+	}
+
+	&-list-item {
+		display: inline-flex;
 	}
 }
 

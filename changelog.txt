@@ -1,5 +1,30 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.6.0 - 2022-08-18 =
+* Add - Adding support for payment request buttons (Apple Pay and Google Pay) to the Pay for Order page.
+* Add - Add transactions channel (In-Person or Online).
+* Add - Pass a parameter when creating an intention when the request comes from the platform checkout and it has a subscription.
+* Fix - Ask for login when buying a subscription with WooPay.
+* Fix - Avoid saving a session cookie when the currency is changed because of geolocation.
+* Fix - Check payment method before updating payment method title.
+* Fix - Fatal error when activating WooCommerce Subscriptions via WP-CLI when WooCommerce Payments is active.
+* Fix - Fix an issue while loading the Transaction Detail Page with py_ charge ids.
+* Fix - Fix compatibility issues with the new WooCommerce Blocks.
+* Fix - Fix error when changing subscription payment method via UPE checkout more than once in a session.
+* Fix - Not focusing email field when showing error message to prevent the autocompletion box from covering the error message.
+* Fix - Update currencies modal height.
+* Update - Make updating existing customer details during checkout async.
+* Update - Remove Charge request from Transactions Details page. The Charge data will be retrieved from the Payment Intent request.
+* Update - Update public WooPay link in registration copy.
+* Dev - Avoid execution context errors during E2E tests.
+* Dev - Bump minimum required version of WooCommerce from 6.0 to 6.2.
+* Dev - E2E GitHub Workflow: Re-run Failed Test Files.
+* Dev - Fixes E2E dispute test flow.
+* Dev - Force jest to use en_US.UTF-8 LANG.
+
+= 4.5.1 - 2022-08-08 =
+* Update - Security update.
+
 = 4.5.0 - 2022-07-27 =
 * Add - Add "Things to do" task list to the Payments Overview screen
 * Add - Add a task to the WooCommerce > Home screen notifying merchants of disputed payments that need a response.
