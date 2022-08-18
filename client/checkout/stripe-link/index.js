@@ -59,7 +59,9 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 				options.shipping_fields.country,
 				'country'
 			);
-			jQuery( 'select' ).trigger( 'change' );
+			jQuery(
+				'#billing_country, #billing_state, #shipping_country, #shipping_state'
+			).trigger( 'change' );
 			fillWith( shippingAddress, options.shipping_fields.state, 'state' );
 			fillWith(
 				shippingAddress,
@@ -76,7 +78,9 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 				options.billing_fields.country,
 				'country'
 			);
-			jQuery( 'select' ).trigger( 'change' );
+			jQuery(
+				'#billing_country, #billing_state, #shipping_country, #shipping_state'
+			).trigger( 'change' );
 			fillWith( billingAddress, options.billing_fields.state, 'state' );
 			fillWith(
 				billingAddress,
@@ -84,7 +88,9 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 				'postal_code'
 			);
 		}
-		jQuery( 'select' ).trigger( 'change' );
+		jQuery(
+			'#billing_country, #billing_state, #shipping_country, #shipping_state'
+		).trigger( 'change' );
 	} );
 };
 
