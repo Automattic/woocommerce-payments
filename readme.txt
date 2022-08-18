@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.5.1
+Stable tag: 4.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.6.0 - 2022-xx-xx =
+= 4.6.0 - 2022-08-18 =
 * Add - Adding support for payment request buttons (Apple Pay and Google Pay) to the Pay for Order page.
 * Add - Add transactions channel (In-Person or Online).
 * Add - Pass a parameter when creating an intention when the request comes from the platform checkout and it has a subscription.

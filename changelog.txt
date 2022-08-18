@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 4.6.0 - 2022-xx-xx =
+= 4.6.0 - 2022-08-18 =
 * Add - Adding support for payment request buttons (Apple Pay and Google Pay) to the Pay for Order page.
 * Add - Add transactions channel (In-Person or Online).
 * Add - Pass a parameter when creating an intention when the request comes from the platform checkout and it has a subscription.
