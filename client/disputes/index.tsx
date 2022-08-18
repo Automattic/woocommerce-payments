@@ -37,6 +37,7 @@ import DownloadButton from 'components/download-button';
 import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { DisputesTableHeader } from 'wcpay/types/disputes';
 import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
+import { applyThousandSeparator } from '../utils/index.js';
 
 import './style.scss';
 
@@ -395,7 +396,9 @@ export const DisputesList = (): JSX.Element => {
 					disputesSummary.count ?? 0,
 					'woocommerce-payments'
 				),
-				value: `${ disputesSummary.count }`,
+				value: `${ applyThousandSeparator(
+					disputesSummary.count as number
+				) }`,
 			},
 		];
 	}

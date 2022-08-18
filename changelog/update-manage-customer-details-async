@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Make updating existing customer details during checkout async.

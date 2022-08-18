@@ -1320,12 +1320,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $save_payment_method_to_store && ! $intent_failed ) {
 				try {
+					$token = null;
+
 					// Setup intents are currently not deserialized as payment intents are, so check if it's an array first.
 					// For payment intents, we may provide a platform payment method from `$payment_information`, but we need
 					// to return a connected payment method. So we should always retrieve the payment method from the intent.
 					$payment_method_id = is_array( $intent ) ? $payment_information->get_payment_method() : $intent->get_payment_method_id();
 
-					$token = $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
+					// Handle orders that are paid via WooPay and contain subscriptions.
+					if ( $order->get_meta( 'is_woopay' ) && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
+
+						$customer_tokens = WC_Payment_Tokens::get_customer_tokens( $order->get_user_id(), self::GATEWAY_ID );
+
+						// Use the existing token if we already have one for the incoming payment method.
+						foreach ( $customer_tokens as $saved_token ) {
+							if ( $saved_token->get_token() === $payment_method_id ) {
+								$token = $saved_token;
+								break;
+							}
+						}
+					}
+
+					// Store a new token if we're not paying for a subscription in WooPay,
+					// or if we are, but we didn't find a stored token for the selected payment method.
+					if ( empty( $token ) ) {
+						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
+					}
 					$payment_information->set_token( $token );
 				} catch ( Exception $e ) {
 					// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
