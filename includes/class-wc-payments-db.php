@@ -90,7 +90,6 @@ class WC_Payments_DB {
 		$orders = wc_get_orders(
 			[
 				'limit'      => 1,
-				'return'     => 'ids',
 				'meta_key'   => $meta_key, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_value' => $meta_value, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			]
@@ -101,7 +100,7 @@ class WC_Payments_DB {
 			 *
 			 * @psalm-suppress UndefinedMethod
 			 */
-			return $orders[0];
+			return $orders[0]->get_order_number();
 		}
 		return null;
 	}
