@@ -51,7 +51,7 @@ class WC_Payments_DB {
 		return array_map(
 			function ( WC_Order $order ) : array {
 				return [
-					'order'     => $this->order_from_order_id( $order->get_order_number() ),
+					'order'     => $this->order_from_order_id( (string) $order->get_id() ),
 					'charge_id' => $order->get_meta( self::META_KEY_CHARGE_ID ),
 				];
 			},
