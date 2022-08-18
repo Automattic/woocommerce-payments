@@ -62,7 +62,7 @@ class WC_Payments_Token_Service {
 
 		if ( Payment_Method::SEPA === $payment_method['type'] ) {
 			$token = new WC_Payment_Token_WCPay_SEPA();
-			$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+			$token->set_gateway_id( 'woocommerce_payments_sepa_debit' );
 			$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
 		} else {
 			$token = new WC_Payment_Token_CC();
@@ -100,7 +100,7 @@ class WC_Payments_Token_Service {
 	 * @return array
 	 */
 	public function woocommerce_get_customer_payment_tokens( $tokens, $user_id, $gateway_id ) {
-		if ( ( ! empty( $gateway_id ) && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $gateway_id ) || ! is_user_logged_in() ) {
+		if ( ( ! empty( $gateway_id ) ) || ! is_user_logged_in() ) {
 			return $tokens;
 		}
 
@@ -120,9 +120,7 @@ class WC_Payments_Token_Service {
 			$stored_tokens = [];
 
 			foreach ( $tokens as $token ) {
-				if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
-					$stored_tokens[ $token->get_token() ] = $token;
-				}
+				$stored_tokens[ $token->get_token() ] = $token;
 			}
 
 			$payment_methods = [ [] ];
@@ -169,14 +167,12 @@ class WC_Payments_Token_Service {
 	 * @param WC_Payment_Token $token    Token object.
 	 */
 	public function woocommerce_payment_token_deleted( $token_id, $token ) {
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
-			try {
-				$this->payments_api_client->detach_payment_method( $token->get_token() );
-				// Clear cached payment methods.
-				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
-			} catch ( Exception $e ) {
-				Logger::log( 'Error detaching payment method:' . $e->getMessage() );
-			}
+		try {
+			$this->payments_api_client->detach_payment_method( $token->get_token() );
+			// Clear cached payment methods.
+			$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
+		} catch ( Exception $e ) {
+			Logger::log( 'Error detaching payment method:' . $e->getMessage() );
 		}
 	}
 
