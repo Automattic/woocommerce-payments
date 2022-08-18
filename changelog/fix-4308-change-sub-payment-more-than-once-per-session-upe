@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix error when changing subscription payment method via UPE checkout more than once in a session.

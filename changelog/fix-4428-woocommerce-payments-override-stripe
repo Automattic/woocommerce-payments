@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Check payment method before updating payment method title

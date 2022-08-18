@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Analytics: Ensure the store default currency always displays in list
