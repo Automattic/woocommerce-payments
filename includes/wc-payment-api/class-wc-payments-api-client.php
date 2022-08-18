@@ -1418,6 +1418,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch an invoice.
+	 *
+	 * @param string $invoice_id ID of the invoice to get.
+	 *
+	 * @return array The invoice.
+	 *
+	 * @throws API_Exception If fetching the invoice fails.
+	 */
+	public function get_invoice( string $invoice_id ) {
+		return $this->request(
+			[],
+			self::INVOICES_API . '/' . $invoice_id,
+			self::GET
+		);
+	}
+
+	/**
 	 * Charges an invoice.
 	 *
 	 * Calling this function charges the customer. Pass the param 'paid_out_of_band' => true to mark the invoice as paid without charging the customer.
