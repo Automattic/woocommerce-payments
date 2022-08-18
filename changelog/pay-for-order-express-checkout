@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Adding support for payment request buttons (Apple Pay and Google Pay) to the Pay for Order page.
