@@ -103,10 +103,9 @@ class WC_Payments_Invoice_Service {
 	 * @return int The order ID.
 	 */
 	public static function get_order_id_by_invoice_id( string $invoice_id ) {
-		$order_ids = wc_get_orders(
+		$orders = wc_get_orders(
 			[
 				'limit'      => 1,
-				'return'     => 'ids',
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_key'   => self::ORDER_INVOICE_ID_KEY,
 				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
@@ -114,7 +113,10 @@ class WC_Payments_Invoice_Service {
 			]
 		);
 
-		return $order_ids[0] ?? false;
+		if ( $orders && ! empty( $orders ) ) {
+			return $orders[0]->get_id();
+		}
+		return false;
 	}
 
 	/**
