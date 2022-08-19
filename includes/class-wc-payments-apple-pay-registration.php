@@ -254,29 +254,14 @@ class WC_Payments_Apple_Pay_Registration {
 		return 'live';
 	}
 
-	/**
-	 * Check if merchant can register domain with Apple Pay.
-	 *
-	 * @return bool
-	 */
-	private function can_merchant_register_domain_with_applepay(): bool {
-		$is_in_supported_countries               = in_array( $this->account->get_account_country(), WC_Payments_Utils::supported_applepay_country_codes(), true );
-		$well_known_dir                          = untrailingslashit( ABSPATH ) . '/' . self::DOMAIN_ASSOCIATION_FILE_DIR;
-		$full_path                               = $well_known_dir . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
-		$has_domain_association_file_permissions = is_dir( $well_known_dir ) &&
-			is_writable( $well_known_dir ) &&
-			file_exists( $full_path ) &&
-			is_readable( $full_path );
 
-		return $is_in_supported_countries && $has_domain_association_file_permissions;
-	}
 
 	/**
 	 * Processes the Apple Pay domain verification.
 	 */
 	public function register_domain_with_apple() {
 		$error = null;
-		if ( ! $this->can_merchant_register_domain_with_applepay() ) {
+		if ( ! WC_Payments_Utils::can_merchant_register_domain_with_applepay( $this->account->get_account_country() ) ) {
 			Logger::log( 'Error registering domain with Apple: merchant isn\'t in the supported countries or domain association file does not have the correct permissions' );
 			return;
 		}

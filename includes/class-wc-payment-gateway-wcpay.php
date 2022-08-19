@@ -606,19 +606,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$is_in_supported_countries               = in_array( $this->account->get_account_country(), WC_Payments_Utils::supported_applepay_country_codes(), true );
-		$well_known_dir                          = untrailingslashit( ABSPATH ) . '/' . WC_Payments_Apple_Pay_Registration::DOMAIN_ASSOCIATION_FILE_DIR;
-		$full_path                               = $well_known_dir . '/' . WC_Payments_Apple_Pay_Registration::DOMAIN_ASSOCIATION_FILE_NAME;
-		$has_domain_association_file_permissions = is_dir( $well_known_dir ) &&
-			is_writable( $well_known_dir ) &&
-			file_exists( $full_path ) &&
-			is_readable( $full_path );
-
-		if ( $is_in_supported_countries && $has_domain_association_file_permissions ) {
+		if ( WC_Payments_Utils::can_merchant_register_domain_with_applepay( $this->account->get_account_country() ) ) {
 			return;
 		}
 
-		if ( ! $is_in_supported_countries ) {
+		if ( ! WC_Payments_Utils::is_account_in_supported_applepay_countries( $this->account->get_account_country() ) ) {
 			?>
 			<div id="wcpay-applepay-error" class="notice notice-error">
 				<p>
@@ -635,7 +627,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<?php
 		}
 
-		if ( ! $has_domain_association_file_permissions ) {
+		if ( ! WC_Payments_Utils::has_domain_association_file_permissions() ) {
 			?>
 		<div id="wcpay-applepay-error" class="notice notice-error">
 			<p>
