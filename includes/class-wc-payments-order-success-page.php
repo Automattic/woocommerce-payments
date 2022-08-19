@@ -14,9 +14,31 @@ class WC_Payments_Order_Success_Page {
 	 * Constructor.
 	 */
 	public function __construct() {
+		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'update_order_meta' ] );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'show_woopay_thankyou_notice' ], 10, 2 );
 		add_action( 'woocommerce_thankyou_woocommerce_payments', [ $this, 'show_woopay_payment_method_name' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+	}
+
+	public function update_order_meta( $order_id ) {
+		if ( $order_id <= 0 ) {
+			return $order_id;
+		}
+
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			return $order_id;
+		}
+
+		if ( ! empty( $_SERVER['HTTP_REFERER'] ) && wp_unslash( $_SERVER['HTTP_REFERER'] ) ?? '' !== 'http://woopay.test' ) {
+			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+			$order->add_meta_data( 'is_woopay', true, true );
+			$order->set_status( 'pending' );
+			$order->save();
+		}
+
+		return $order_id;
 	}
 
 
