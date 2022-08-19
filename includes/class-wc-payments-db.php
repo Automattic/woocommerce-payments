@@ -85,17 +85,22 @@ class WC_Payments_DB {
 	 * @return null|string
 	 */
 	private function order_id_from_meta_key_value( $meta_key, $meta_value ) {
-		global $wpdb;
-
-		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
-		$order_id = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT DISTINCT MAX(ID) FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_key = %s AND meta.meta_value = %s",
-				$meta_key,
-				$meta_value
-			)
+		$orders = wc_get_orders(
+			[
+				'limit'      => 1,
+				'meta_key'   => $meta_key, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value' => $meta_value, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			]
 		);
-		return $order_id;
+		if ( $orders && ! empty( $orders ) ) {
+			/**
+			 * As wc_get_orders may also return stdClass, Psalm infers error.
+			 *
+			 * @psalm-suppress UndefinedMethod
+			 */
+			return (string) $orders[0]->get_id();
+		}
+		return null;
 	}
 
 	/**
