@@ -1,6 +1,7 @@
 name: Compressed Size
 
-on: [push]
+on:
+    push:
 
 jobs:
     bundle-size:
@@ -10,3 +11,6 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - uses: preactjs/compressed-size-action@v2
+              with:
+                  repo-token: '${{ secrets.GITHUB_TOKEN }}'
+                  pattern: '{build/**/*.js,build/**/*.css,assets/css/**/*.css}'
