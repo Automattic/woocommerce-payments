@@ -372,6 +372,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
 		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
+		$metadata      = $this->read_webhook_property( $event_object, 'metadata' );
+		$customer_id   = $this->read_webhook_property( $event_object, 'customer' );
 
 		$payment_method_id = $charges_data[0]['payment_method'] ?? null;
 		if ( ! $order ) {
@@ -410,6 +412,67 @@ class WC_Payments_Webhook_Processing_Service {
 				],
 			];
 			$this->receipt_service->send_customer_ipp_receipt_email( $order, $merchant_settings, $charges_data[0] );
+		}
+
+		$was_paid_on_woopay = filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOL );
+		if ( $was_paid_on_woopay ) {
+			$order->add_meta_data( 'is_woopay', true, true );
+
+			// attach_intent_info_to_order.
+			$order->set_transaction_id( $intent_id );
+			$order->update_meta_data( '_intent_id', $intent_id );
+			$order->update_meta_data( '_charge_id', $charge_id );
+			$order->update_meta_data( '_intention_status', $intent_status );
+			$order->update_meta_data( '_payment_method_id', $payment_method );
+			$order->update_meta_data( '_stripe_customer_id', $customer_id );
+			WC_Payments_Utils::set_order_intent_currency( $order, $currency );
+			$order->save();
+
+			// attach_exchange_info_to_order.
+			if ( empty( $charge_id ) ) {
+				return;
+			}
+
+			$currency_store   = strtolower( get_option( 'woocommerce_currency' ) );
+			$currency_order   = strtolower( $order->get_currency() );
+			$currency_account = strtolower( $this->account->get_account_default_currency() );
+
+			// If the default currency for the store is different from the currency for the merchant's Stripe account,
+			// the conversion rate provided by Stripe won't make sense, so we should not attach it to the order meta data
+			// and instead we'll rely on the _wcpay_multi_currency_order_exchange_rate meta key for analytics.
+			if ( $currency_store !== $currency_account ) {
+				return;
+			}
+
+			if ( $currency_order !== $currency_account ) {
+				// We check that the currency used in the order is different than the one set in the WC Payments account
+				// to avoid requesting the charge if not needed.
+				$charge        = $this->payments_api_client->get_charge( $charge_id );
+				$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
+				if ( isset( $exchange_rate ) ) {
+					$exchange_rate = WC_Payments_Utils::interpret_string_exchange_rate( $exchange_rate, $currency_order, $currency_account );
+					$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
+					$order->save_meta_data();
+				}
+			}
+
+			// update_order_status_from_intent.
+			switch ( $intent_status ) {
+				case 'succeeded':
+					$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
+					break;
+				case 'processing':
+				case 'requires_capture':
+					$this->order_service->mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id );
+					break;
+				case 'requires_action':
+				case 'requires_payment_method':
+					$this->order_service->mark_payment_started( $order, $intent_id, $intent_status, $charge_id );
+					break;
+				default:
+					Logger::error( 'Uncaught payment intent status of ' . $intent_status . ' passed for order id: ' . $order->get_id() );
+					break;
+			}
 		}
 	}
 
