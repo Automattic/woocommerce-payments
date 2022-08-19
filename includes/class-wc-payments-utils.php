@@ -255,6 +255,39 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Check if merchant can register domain with Apple Pay.
+	 *
+	 * @param string $account_country - Account country.
+	 * @return bool
+	 */
+	public static function can_merchant_register_domain_with_applepay( string $account_country ): bool {
+		return self::is_account_in_supported_applepay_countries( $account_country ) && self::has_domain_association_file_permissions();
+	}
+
+	/**
+	 * Check if domain association file has the proper permissions.
+	 *
+	 * @return bool
+	 */
+	public static function has_domain_association_file_permissions(): bool {
+		$well_known_dir = untrailingslashit( ABSPATH ) . '/' . WC_Payments_Apple_Pay_Registration::DOMAIN_ASSOCIATION_FILE_DIR;
+		$full_path      = $well_known_dir . '/' . WC_Payments_Apple_Pay_Registration::DOMAIN_ASSOCIATION_FILE_NAME;
+
+		return is_dir( $well_known_dir ) && is_writable( $well_known_dir ) && file_exists( $full_path ) && is_readable( $full_path );
+	}
+
+	/**
+	 * Check if merchant is in supported countries by ApplePay.
+	 *
+	 * @param string $account_country - Account country.
+	 *
+	 * @return bool
+	 */
+	public static function is_account_in_supported_applepay_countries( string $account_country ): bool {
+		return in_array( $account_country, self::supported_applepay_country_codes(), true );
+	}
+
+	/**
 	 * Verifies whether a certain ZIP code is valid for the US, incl. 4-digit extensions.
 	 *
 	 * @param string $zip The ZIP code to verify.
