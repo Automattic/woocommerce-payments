@@ -10,7 +10,7 @@ import { ChargeResponse } from '../charges/types';
 import { STORE_NAME } from '../constants';
 
 export const getIsChargeId = ( id: string ): boolean =>
-	-1 !== id.indexOf( 'ch_' );
+	-1 !== id.indexOf( 'ch_' ) || -1 !== id.indexOf( 'py_' );
 
 export const usePaymentIntentWithChargeFallback = (
 	id: string

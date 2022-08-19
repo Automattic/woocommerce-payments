@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix an issue while loading the Transaction Detail Page with py_ charge ids.
