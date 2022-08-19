@@ -1,7 +1,6 @@
 name: Compressed Size
 
-on:
-    push:
+on: push
 
 jobs:
     bundle-size:
