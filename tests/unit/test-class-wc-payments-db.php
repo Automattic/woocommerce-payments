@@ -45,9 +45,9 @@ class WC_Payments_DB_Test extends WCPAY_UnitTestCase {
 
 		$this->assertCount( 2, $orders_with_charge_ids );
 		$this->assertIsArray( $orders_with_charge_ids[0] );
-		$this->assertSame( 'ch_1', $orders_with_charge_ids[0]['charge_id'] );
+		$this->assertTrue( in_array( $orders_with_charge_ids[0]['charge_id'], $existing_charge_ids ), true );
 		$this->assertIsArray( $orders_with_charge_ids[1] );
-		$this->assertSame( 'ch_2', $orders_with_charge_ids[1]['charge_id'] );
+		$this->assertTrue( in_array( $orders_with_charge_ids[1]['charge_id'], $existing_charge_ids ), true );
 	}
 
 }
