@@ -1,0 +1,49 @@
+# Sync the WCPay plugin to the WooCommerce Platform Checkout test site.
+
+name: WooCommerce Platform Checkout Test Site Auto-Sync
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events for the develop branch.
+  push:
+    branches:
+      - develop
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build-and-upload"
+  build-and-upload:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout develop branch
+        uses: actions/checkout@v2
+        with:
+          ref: 'develop'
+
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+          cache: 'npm'
+
+      # Runs a set of commands using the runners shell
+      - name: Build WC Payments plugin ZIP
+        run: |
+          npm install
+          npm run build
+          git checkout package-lock.json
+          unzip woocommerce-payments.zip
+          mkdir -p htdocs/wp-content/plugins
+          cp -R woocommerce-payments htdocs/wp-content/plugins
+      
+      - name: FTP-Deploy-Action
+        uses: Automattic/FTP-Deploy-Action@3.0.1
+        with:
+          ftp-server: ${{ secrets.TEST_SITE_FTP_SERVER }}
+          ftp-username: ${{ secrets.TEST_SITE_FTP_USERNAME }}
+          ftp-password: ${{ secrets.TEST_SITE_FTP_PASS }}
+          git-ftp-args: --insecure
+          local-dir: htdocs/
