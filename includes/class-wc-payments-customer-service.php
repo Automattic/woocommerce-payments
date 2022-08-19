@@ -447,7 +447,10 @@ class WC_Payments_Customer_Service {
 	 */
 	public function add_customer_id_to_user( $user_id ) {
 		// Not processing a checkout, bail.
-		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) || ! WOOCOMMERCE_CHECKOUT ) {
+		if (
+			! ( defined( 'WOOCOMMERCE_CHECKOUT' ) && WOOCOMMERCE_CHECKOUT ) &&
+			! ( function_exists( 'wcs_is_checkout_blocks_api_request' ) && wcs_is_checkout_blocks_api_request( 'v1/checkout' ) )
+		) {
 			return;
 		}
 
