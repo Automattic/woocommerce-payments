@@ -122,6 +122,12 @@ class Analytics {
 		$available_currencies = $this->multi_currency->get_available_currencies();
 		$currency_options     = [];
 
+		$default_currency = $this->multi_currency->get_default_currency();
+		// Add default currency to the list if it does not exist.
+		if ( ! in_array( $default_currency->get_code(), $currencies, true ) ) {
+			$currencies[] = $default_currency->get_code();
+		}
+
 		foreach ( $currencies as $currency ) {
 			if ( ! isset( $available_currencies[ $currency ] ) ) {
 				continue;
