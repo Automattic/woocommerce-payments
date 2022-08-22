@@ -373,12 +373,6 @@ exports[`Deposits information renders instant deposit button only where applicab
           Automatic, every week on Thursday
         </p>
       </div>
-      <button
-        class="components-button is-secondary"
-        type="button"
-      >
-        Instant deposit
-      </button>
     </div>
     <div
       class="components-flex wcpay-deposits-information-row css-bz4r5k-Flex eboqfv50"
@@ -478,7 +472,14 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__extra"
           data-testid="extra"
-        />
+        >
+          <button
+            class="components-button is-secondary"
+            type="button"
+          >
+            Instant deposit
+          </button>
+        </div>
       </div>
     </div>
   </div>
