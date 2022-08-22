@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Force jest to use en_US.UTF-8 LANG

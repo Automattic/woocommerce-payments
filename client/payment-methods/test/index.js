@@ -6,7 +6,6 @@
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
-import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 
 /**
  * Internal dependencies
@@ -18,6 +17,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useManualCapture,
 } from 'wcpay/data';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
 import WcPayUpeContext from '../../settings/wcpay-upe-toggle/context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
@@ -29,6 +29,12 @@ jest.mock( '../../data', () => ( {
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 	useManualCapture: jest.fn(),
+} ) );
+
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest
+		.fn()
+		.mockReturnValue( { updateAvailablePaymentMethodIds: jest.fn() } ),
 } ) );
 
 describe( 'PaymentMethods', () => {
