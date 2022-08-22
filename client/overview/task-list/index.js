@@ -191,7 +191,11 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 							showActionButton={ task.showActionButton }
 							expandable={ task.expandable }
 							expanded={ task.expanded }
-							action={ task.action }
+							action={
+								task.action !== undefined
+									? task.action
+									: task.onClick
+							}
 							onClick={ task.onClick }
 							time={ task.time }
 							level={ task.level }
