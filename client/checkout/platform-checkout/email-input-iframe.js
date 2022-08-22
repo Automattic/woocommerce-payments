@@ -7,10 +7,31 @@ import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 
-export const handlePlatformCheckoutEmailInput = ( field, api ) => {
+// Waits for the email field to exist as in the Blocks checkout, sometimes the email field is not immediately available.
+const waitForEmailField = ( selector ) => {
+	return new Promise( ( resolve ) => {
+		if ( document.querySelector( selector ) ) {
+			return resolve( document.querySelector( selector ) );
+		}
+
+		const observer = new MutationObserver( () => {
+			if ( document.querySelector( selector ) ) {
+				resolve( document.querySelector( selector ) );
+				observer.disconnect();
+			}
+		} );
+
+		observer.observe( document.body, {
+			childList: true,
+			subtree: true,
+		} );
+	} );
+};
+
+export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = document.querySelector( field );
+	const platformCheckoutEmailInput = await waitForEmailField( field );
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
