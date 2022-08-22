@@ -1375,9 +1375,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$token = null;
 
 					// Setup intents are currently not deserialized as payment intents are, so check if it's an array first.
-					// For payment intents, we may provide a platform payment method from `$payment_information`, but we need
+					// For WooPay checkouts, we may provide a platform payment method from `$payment_information`, but we need
 					// to return a connected payment method. So we should always retrieve the payment method from the intent.
-					$payment_method_id = is_array( $intent ) ? $payment_information->get_payment_method() : $intent->get_payment_method_id();
+					$payment_method_id = is_array( $intent ) ? $intent['payment_method'] : $intent->get_payment_method_id();
 
 					// Handle orders that are paid via WooPay and contain subscriptions.
 					if ( $order->get_meta( 'is_woopay' ) && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
