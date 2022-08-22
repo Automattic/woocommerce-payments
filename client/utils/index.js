@@ -2,10 +2,11 @@
  * External dependencies
  */
 import { addQueryArgs } from '@wordpress/url';
-import { capitalize } from 'lodash';
+import { capitalize, partial } from 'lodash';
 import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
 import { NAMESPACE } from 'wcpay/data/constants';
+import { numberFormat } from '@woocommerce/number';
 
 /**
  * Returns true if WooCommerce Payments is in test mode, false otherwise.
@@ -114,4 +115,32 @@ export const formatDateValue = ( date, upperBound = false ) => {
 			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 		)
 	);
+};
+
+/**
+ * Applies country-specific thousand separator to the transactions number
+ *
+ * @param {number} trxCount The number of transactions.
+ * @return {number} Number of transactions with the country-specific thousand separator.
+ */
+export const applyThousandSeparator = ( trxCount ) => {
+	const siteLang = document.documentElement.lang;
+	const siteNumberOptions = {
+		thousandSeparator: ',',
+	};
+
+	if ( [ 'fr', 'pl' ].some( ( lang ) => siteLang.startsWith( lang ) ) ) {
+		siteNumberOptions.thousandSeparator = ' ';
+	} else if ( 'de-CH' === siteLang ) {
+		siteNumberOptions.thousandSeparator = "'";
+	} else if (
+		[ 'de', 'nl', 'it', 'es', 'pt' ].some( ( lang ) =>
+			siteLang.startsWith( lang )
+		)
+	) {
+		siteNumberOptions.thousandSeparator = '.';
+	}
+
+	const formattedNumber = partial( numberFormat, siteNumberOptions );
+	return formattedNumber( trxCount );
 };
