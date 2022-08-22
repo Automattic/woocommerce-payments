@@ -12,13 +12,13 @@ jobs:
       max-parallel: 10
       matrix:
         # Minimum support version, ..., Latest version, `beta`.
-        woocommerce: [ '6.2.2', '6.3.1', '6.4.1', '6.5.1', '6.6.1', '6.7.0', 'latest', 'beta' ]
+        woocommerce: [ '6.4.1', '6.5.1', '6.6.1', '6.7.0', 'latest', 'beta' ]
         wordpress:   [ 'latest' ]
         gutenberg:   [ 'latest' ]
         php:         [ '7.4' ]
         include:
           # Edge case: oldest dependencies compatibility
-          - woocommerce: '6.2.2'
+          - woocommerce: '6.4.1'
             wordpress:   '5.8'
             gutenberg:   '11.4.0' # The latest version supporting WP 5.6.
             php:         '7.1' # Minimum supported PHP version
