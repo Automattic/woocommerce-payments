@@ -1198,7 +1198,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			$selected_payment_method_type = [ WC_Payments::get_gateway()->get_selected_stripe_payment_type_id() ];
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 
 			// Make sure the payment method being charged was created in the platform.
 			if (
@@ -1241,7 +1241,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$this->get_level3_data_from_order( $order ),
 					$payment_information->is_merchant_initiated(),
 					$additional_api_parameters,
-					$selected_payment_method_type,
+					$payment_methods,
 					$payment_information->get_cvc_confirmation()
 				);
 			}
@@ -2624,7 +2624,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Create a payment intent without confirming the intent.
 	 *
 	 * @param WC_Order    $order                        - Order based on which to create intent.
-	 * @param array       $selected_payment_method_type - A list of allowed payment methods. Eg. card, card_present.
+	 * @param array       $payment_methods - A list of allowed payment methods. Eg. card, card_present.
 	 * @param string      $capture_method               - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
 	 *  It must be "manual" for in-person (terminal) payments.
 	 *
@@ -2635,7 +2635,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @throws Exception - When an error occurs in intent creation.
 	 */
-	public function create_intent( WC_Order $order, array $selected_payment_method_type, string $capture_method = 'automatic', array $metadata = [], string $customer_id = null ) {
+	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic', array $metadata = [], string $customer_id = null ) {
 		$currency         = strtolower( $order->get_currency() );
 		$converted_amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
 
@@ -2643,7 +2643,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = $this->payments_api_client->create_intention(
 				$converted_amount,
 				$currency,
-				$selected_payment_method_type,
+				$payment_methods,
 				$order->get_order_number(),
 				$capture_method,
 				$metadata,
