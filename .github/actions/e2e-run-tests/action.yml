@@ -1,10 +1,12 @@
 name: 'Run E2E Tests'
+description: ''
 
 runs:
   using: "composite"
   steps:
     # Log workflow configuration
     - name: Workflow Configuration
+      shell: bash
       run: |
         echo "WordPress version: ${{ matrix.wordpress }}"
         echo "WooCommerce version: ${{ matrix.woocommerce }}"
@@ -23,6 +25,7 @@ runs:
 
     # Composer setup
     - name: Composer Setup
+      shell: bash
       run: composer self-update 2.0.6
 
     # Use node version from .nvmrc
@@ -50,19 +53,23 @@ runs:
     # Install composer dependencies if not present on cache
     - name: Install composer dependencies
       if: ${{ steps.composer-cache.outputs.cache-hit == false }}
+      shell: bash
       run: composer install --no-progress
 
     # Install node dependencies if not present on cache
     - name: Install node dependencies
       if: ${{ steps.node-cache.outputs.cache-hit == false }}
+      shell: bash
       run: npm ci
 
     # Build WCPay client
     - name: Build WCPay Client
+      shell: bash
       run: npm run build:client
 
     # Prepare test environment
     - name: Prepare test environment
+      shell: bash
       run: npm run test:e2e-setup
 
     - name: First Run E2E Tests
@@ -83,6 +90,7 @@ runs:
 
     - name: Re-try Failed E2E Files
       if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
+      shell: bash
       # Filter failed E2E files from the result JSON file, and re-run them.
       run: |
         cat "$E2E_FIRST_RUN_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e
