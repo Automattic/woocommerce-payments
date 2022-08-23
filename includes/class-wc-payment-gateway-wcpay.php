@@ -1426,7 +1426,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->add_token_to_order( $order, $token );
 
 				if ( $order->get_meta( '_woopay_has_subscription' ) ) {
-					$token->update_meta_data( 'is_attached_to_subscription', true );
+					$token->update_meta_data( 'is_attached_to_subscription', '1' );
 					$token->save_meta_data();
 				}
 			}
