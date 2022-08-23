@@ -19,41 +19,47 @@ describe( 'DepositsStatus', () => {
 	} );
 
 	test( 'renders disabled status', () => {
-		const { container: depositsStatus } = renderDepositsStatus(
-			'disabled',
-			20
-		);
+		const { container: depositsStatus } = renderDepositsStatus( {
+			status: 'disabled',
+			iconSize: 20,
+		} );
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
 	test( 'renders daily status', () => {
-		const { container: depositsStatus } = renderDepositsStatus(
-			'daily',
-			20
-		);
+		const { container: depositsStatus } = renderDepositsStatus( {
+			status: 'enabled',
+			interval: 'daily',
+			iconSize: 20,
+		} );
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
 	test( 'renders weekly status', () => {
-		const { container: depositsStatus } = renderDepositsStatus(
-			'weekly',
-			20
-		);
+		const { container: depositsStatus } = renderDepositsStatus( {
+			status: 'enabled',
+			interval: 'weekly',
+			iconSize: 20,
+		} );
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
 	test( 'renders monthly status', () => {
-		const { container: depositsStatus } = renderDepositsStatus(
-			'monthly',
-			20
-		);
+		const { container: depositsStatus } = renderDepositsStatus( {
+			status: 'enabled',
+			interval: 'monthly',
+			iconSize: 20,
+		} );
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
 	test( 'renders manual status', async () => {
 		const { container: depositsStatus, findByText } = renderDepositsStatus(
-			'manual',
-			20
+			{
+				status: 'enabled',
+				interval: 'manual',
+				iconSize: 20,
+			}
 		);
 		expect( await findByText( /Temporarily suspended/i ) ).toBeVisible();
 		expect( depositsStatus ).toMatchSnapshot();
@@ -61,8 +67,11 @@ describe( 'DepositsStatus', () => {
 
 	test( 'renders blocked status', async () => {
 		const { container: depositsStatus, findByText } = renderDepositsStatus(
-			'blocked',
-			20
+			{
+				status: 'blocked',
+				interval: 'daily',
+				iconSize: 20,
+			}
 		);
 
 		expect( await findByText( /Temporarily suspended/i ) ).toBeVisible();
@@ -74,8 +83,11 @@ describe( 'DepositsStatus', () => {
 		global.wcpaySettings.featureFlags.customDepositSchedules = true;
 
 		const { container: depositsStatus, findByText } = renderDepositsStatus(
-			'blocked',
-			20
+			{
+				status: 'blocked',
+				interval: 'daily',
+				iconSize: 20,
+			}
 		);
 
 		expect( await findByText( /Temporarily suspended/i ) ).toBeVisible();
@@ -87,8 +99,11 @@ describe( 'DepositsStatus', () => {
 		global.wcpaySettings.featureFlags.customDepositSchedules = true;
 
 		const { container: depositsStatus, findByText } = renderDepositsStatus(
-			'manual',
-			20
+			{
+				status: 'enabled',
+				interval: 'manual',
+				iconSize: 20,
+			}
 		);
 
 		expect( await findByText( /Manual/i ) ).toBeVisible();
@@ -96,17 +111,19 @@ describe( 'DepositsStatus', () => {
 	} );
 
 	test( 'renders unknown status', () => {
-		const { container: depositsStatus } = renderDepositsStatus(
-			'foobar',
-			20
-		);
+		const { container: depositsStatus } = renderDepositsStatus( {
+			status: 'foobar',
+			interval: 'foobar',
+			iconSize: 20,
+		} );
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
-	function renderDepositsStatus( depositsStatus, iconSize ) {
+	function renderDepositsStatus( { status, interval, iconSize } ) {
 		return render(
 			<DepositsStatus
-				depositsStatus={ depositsStatus }
+				status={ status }
+				interval={ interval }
 				iconSize={ iconSize }
 			/>
 		);

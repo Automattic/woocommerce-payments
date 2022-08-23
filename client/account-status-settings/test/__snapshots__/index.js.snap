@@ -130,6 +130,67 @@ exports[`AccountStatus renders manual (suspended) deposits 1`] = `
 </div>
 `;
 
+exports[`AccountStatus renders manual deposits (with custom deposits feature flag enabled) 1`] = `
+<div>
+  <div>
+    <div>
+      <span
+        class="chip chip-primary is-compact"
+      >
+        Complete
+      </span>
+      <span
+        class="account-status__info"
+      >
+        Payments:
+        <span
+          class="account-status__info__green"
+        >
+          <svg
+            class="gridicon gridicons-checkmark-circle"
+            height="18"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+              />
+            </g>
+          </svg>
+          Enabled
+        </span>
+      </span>
+      <span
+        class="account-status__info"
+      >
+        Deposits:
+        <span
+          class="account-status__info__green"
+        >
+          <svg
+            class="gridicon gridicons-checkmark-circle"
+            height="18"
+            viewBox="0 0 24 24"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M11 17.768l-4.884-4.884 1.768-1.768L11 14.232l8.658-8.658C17.823 3.39 15.075 2 12 2 6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-1.528-.353-2.97-.966-4.266L11 17.768z"
+              />
+            </g>
+          </svg>
+          Manual
+        </span>
+      </span>
+    </div>
+    
+  </div>
+</div>
+`;
+
 exports[`AccountStatus renders partially restricted account 1`] = `
 Object {
   "asFragment": [Function],

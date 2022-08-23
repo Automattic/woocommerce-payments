@@ -13,33 +13,22 @@ import { createInterpolateElement } from '@wordpress/element';
  */
 import 'components/account-status/shared.scss';
 
-const DepositsStatus = ( props ) => {
-	const { depositsStatus, iconSize } = props;
+const DepositsStatus = ( { status, interval, iconSize } ) => {
 	const isCustomDepositSchedulesEnabled =
 		window.wcpaySettings?.featureFlags?.customDepositSchedules;
 	let className = 'account-status__info__green';
 	let description;
 	let icon = <GridiconCheckmarkCircle size={ iconSize } />;
 
-	if ( 'disabled' === depositsStatus ) {
+	const showSuspendedNotice =
+		( ! isCustomDepositSchedulesEnabled && 'manual' === interval ) ||
+		'blocked' === status;
+
+	if ( 'disabled' === status ) {
 		description = __( 'Disabled', 'woocommerce-payments' );
 		className = 'account-status__info__red';
 		icon = <GridiconNotice size={ iconSize } />;
-	} else if ( 'daily' === depositsStatus ) {
-		description = __( 'Daily', 'woocommerce-payments' );
-	} else if ( 'weekly' === depositsStatus ) {
-		description = __( 'Weekly', 'woocommerce-payments' );
-	} else if ( 'monthly' === depositsStatus ) {
-		description = __( 'Monthly', 'woocommerce-payments' );
-	} else if (
-		isCustomDepositSchedulesEnabled &&
-		'manual' === depositsStatus
-	) {
-		description = __( 'Manual', 'woocommerce-payments' );
-	} else if (
-		( ! isCustomDepositSchedulesEnabled && 'manual' === depositsStatus ) ||
-		'blocked' === depositsStatus
-	) {
+	} else if ( showSuspendedNotice ) {
 		const learnMoreHref =
 			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
 		description = createInterpolateElement(
@@ -61,6 +50,14 @@ const DepositsStatus = ( props ) => {
 		);
 		className = 'account-status__info__yellow';
 		icon = <GridiconNotice size={ iconSize } />;
+	} else if ( 'daily' === interval ) {
+		description = __( 'Daily', 'woocommerce-payments' );
+	} else if ( 'weekly' === interval ) {
+		description = __( 'Weekly', 'woocommerce-payments' );
+	} else if ( 'monthly' === interval ) {
+		description = __( 'Monthly', 'woocommerce-payments' );
+	} else if ( isCustomDepositSchedulesEnabled && 'manual' === interval ) {
+		description = __( 'Manual', 'woocommerce-payments' );
 	} else {
 		description = __( 'Unknown', 'woocommerce-payments' );
 	}

@@ -27,11 +27,15 @@ const renderPaymentsStatus = ( paymentsEnabled ) => {
 	);
 };
 
-const renderDepositsStatus = ( depositsStatus ) => {
+const renderDepositsStatus = ( { deposits } ) => {
 	return (
 		<span className="account-status__info">
 			{ __( 'Deposits:', 'woocommerce-payments' ) }
-			<DepositsStatus iconSize={ 18 } depositsStatus={ depositsStatus } />
+			<DepositsStatus
+				iconSize={ 18 }
+				status={ deposits?.status }
+				interval={ deposits?.interval }
+			/>
 		</span>
 	);
 };
@@ -121,7 +125,7 @@ const AccountStatus = ( props ) => {
 			<div>
 				<StatusChip accountStatus={ accountStatus.status } />
 				{ renderPaymentsStatus( accountStatus.paymentsEnabled ) }
-				{ renderDepositsStatus( accountStatus.depositsStatus ) }
+				{ renderDepositsStatus( { deposits: accountStatus.deposits } ) }
 			</div>
 			{ renderAccountStatusDescription( accountStatus ) }
 		</div>
