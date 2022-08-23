@@ -4,6 +4,11 @@ description: Install dependencies, build WCPay client & setup the test environme
 runs:
   using: "composite"
   steps:
+    # Add GH token for authentication
+    - name: Add GH token for authentication
+      shell: bash
+      run: echo -e "machine github.com\n  login $E2E_GH_TOKEN" > ~/.netrc
+
     # PHP setup
     - name: PHP Setup
       uses: shivammathur/setup-php@v2
