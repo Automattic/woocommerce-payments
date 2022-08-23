@@ -1,4 +1,3 @@
-/* eslint-disable */
 name: Compressed Size
 
 on: [pull_request]
@@ -13,8 +12,8 @@ jobs:
             - name: Use desired version of NodeJS
               uses: actions/setup-node@v2
               with:
-                node-version: '12'
-                cache: npm
+                  node-version: '12'
+                  cache: npm
             - uses: preactjs/compressed-size-action@v2
               with:
-                pattern: '{release/**/*.js,release/**/*.tsx,release/**/*.css}'
+                  pattern: '{release/**/*.js,release/**/*.tsx,release/**/*.css}'
