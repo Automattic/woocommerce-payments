@@ -22,61 +22,40 @@ env:
   E2E_BLOG_ID:           ${{ secrets.E2E_BLOG_ID }}
   E2E_BLOG_TOKEN:        ${{ secrets.E2E_BLOG_TOKEN }}
   E2E_USER_TOKEN:        ${{ secrets.E2E_USER_TOKEN }}
-  E2E_RETEST:            1
   WC_E2E_SCREENSHOTS:    1
   E2E_SLACK_CHANNEL:     ${{ secrets.E2E_SLACK_CHANNEL }}
   E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_USE_LOCAL_SERVER:  false
+  E2E_RESULT_FILEPATH:   'tests/e2e/results.json'
+
 
 jobs:
   wcpay-e2e-tests:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast:     false
       matrix:
-        # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce:   [ '6.2.2', '6.6.1', 'latest', 'beta' ]
-        wordpress:     [ 'latest', 'nightly' ]
-        php:           [ '7.4' ]
+        woocommerce:   [ 'latest' ]
+        wordpress:     [ 'latest' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
-        exclude:
-          - test_groups: 'blocks'
-            test_branches: 'merchant'
-          - woocommerce: '6.2.2'
-            test_groups: 'blocks'
-            test_branches: 'shopper'
-          - wordpress: 'nightly'
-            woocommerce: '6.2.2'
-          - wordpress: 'nightly'
-            woocommerce: 'beta'
 
-    name: WC - ${{ matrix.woocommerce }} | WP - ${{ matrix.wordpress }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
       E2E_WP_VERSION: ${{ matrix.wordpress }}
       E2E_WC_VERSION: ${{ matrix.woocommerce }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
-      E2E_FIRST_RUN_RESULT_FILEPATH: 'tests/e2e/results.json'
 
     steps:
-      # Conditionally skip WC Blocks tests. Remove/update based on min supported WC version by the blocks checkout plugin.
-      - name: Conditionally skip WC Blocks tests
-        run: |
-          SKIP_WC_VERSIONS=('6.2.2')
-          if [[ " ${SKIP_WC_VERSIONS[@]} " =~ " ${E2E_WC_VERSION} " ]]; then
-            echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
-          fi
-
       # Clone Repo
       - name: Clone WCPay Repository
         uses: actions/checkout@v2
 
-      # Add GH token for authentication
-      - name: Add GH token for authentication
-        run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
+      - name: Setup E2E environment
+        uses: ./github/actions/e2e/setup-env
 
-      - uses: ./.github/actions/e2e-run-tests
-
+      - name: Run tests & upload screenshots & logs
+        uses: ./github/actions/e2e/run-log-tests

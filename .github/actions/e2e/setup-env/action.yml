@@ -1,0 +1,62 @@
+name: Setup E2E Environment
+description: Install dependencies, build WCPay client & setup the test environment
+
+runs:
+  using: "composite"
+  steps:
+    # PHP setup
+    - name: PHP Setup
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        tools: composer
+        coverage: none
+
+    # Composer setup
+    - name: Setup Composer
+      shell: bash
+      run: composer self-update 2.0.6
+
+    # Use node version from .nvmrc
+    - name: Setup NodeJS
+      uses: actions/setup-node@v2
+      with:
+        node-version-file: '.nvmrc'
+
+    # Cache composer dependencies
+    - name: Cache composer dependencies
+      id: composer-cache
+      uses: actions/cache@v2
+      with:
+        path: ./vendor
+        key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
+
+    # Cache node dependencies
+    - name: Cache node dependencies
+      id: node-cache
+      uses: actions/cache@v2
+      with:
+        path: ./node_modules
+        key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+
+    # Install composer dependencies if not present on cache
+    - name: Install composer dependencies
+      if: ${{ steps.composer-cache.outputs.cache-hit == false }}
+      shell: bash
+      run: composer install --no-progress
+
+    # Install node dependencies if not present on cache
+    - name: Install node dependencies
+      if: ${{ steps.node-cache.outputs.cache-hit == false }}
+      shell: bash
+      run: npm ci
+
+    # Build WCPay client
+    - name: Build WCPay Client
+      shell: bash
+      run: npm run build:client
+
+    # Prepare test environment
+    - name: Prepare test environment
+      shell: bash
+      run: npm run test:e2e-setup
