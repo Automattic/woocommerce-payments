@@ -756,10 +756,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! is_wc_endpoint_url( 'order-pay' ) &&
 			! WC()->cart->is_empty()
 		) {
-			$cart_total = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), get_woocommerce_currency() );
-			// We currently can't support setup intents, so free trial subscriptions
-			// or pre-orders with charge upon release are not supported.
-			return $cart_total > 0;
+			return true;
 		}
 
 		return false;
@@ -1296,11 +1293,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					);
 				}
 			} else {
+				$save_user_in_platform_checkout = false;
+
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+				if ( ! empty( $_POST['save_user_in_platform_checkout'] ) && filter_var( $_POST['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ) {
+					$save_user_in_platform_checkout = true;
+					$metadata_from_order            = apply_filters(
+						'wcpay_metadata_from_order',
+						[
+							'customer_email' => $order->get_billing_email(),
+						],
+						$order
+					);
+					$metadata                       = array_merge( (array) $metadata_from_order, (array) $metadata ); // prioritize metadata from mobile app.
+
+					do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
+				}
+
 				// For $0 orders, we need to save the payment method using a setup intent.
 				$intent = $this->payments_api_client->create_and_confirm_setup_intent(
 					$payment_information->get_payment_method(),
 					$customer_id,
 					false,
+					$save_user_in_platform_checkout,
 					$metadata
 				);
 			}
@@ -1323,9 +1338,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$token = null;
 
 					// Setup intents are currently not deserialized as payment intents are, so check if it's an array first.
-					// For payment intents, we may provide a platform payment method from `$payment_information`, but we need
+					// For WooPay checkouts, we may provide a platform payment method from `$payment_information`, but we need
 					// to return a connected payment method. So we should always retrieve the payment method from the intent.
-					$payment_method_id = is_array( $intent ) ? $payment_information->get_payment_method() : $intent->get_payment_method_id();
+					$payment_method_id = is_array( $intent ) ? $intent['payment_method'] : $intent->get_payment_method_id();
 
 					// Handle orders that are paid via WooPay and contain subscriptions.
 					if ( $order->get_meta( 'is_woopay' ) && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {

@@ -71,6 +71,9 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 			{ getDepositDate( lastPaid ) }
 		</Link>
 	);
+	const depositButton = instant && (
+		<InstantDepositButton instantBalance={ instant } />
+	);
 
 	const availableAmount = available ? available.amount : 0;
 
@@ -104,10 +107,6 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 						{ scheduleDescriptor }
 					</p>
 				</div>
-
-				{ instant && (
-					<InstantDepositButton instantBalance={ instant } />
-				) }
 			</CardHeader>
 
 			<Flex className="wcpay-deposits-information-row" align="normal">
@@ -131,6 +130,7 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 				<DepositsInformationBlock
 					title={ __( 'Available balance', 'woocommerce-payments' ) }
 					value={ formatCurrency( availableAmount, currency ) }
+					children={ depositButton }
 				/>
 			</Flex>
 		</Card>
