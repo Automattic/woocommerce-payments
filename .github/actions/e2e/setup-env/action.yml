@@ -61,10 +61,10 @@ runs:
       shell: bash
       run: npm run build:client
 
-    # Check port availability
-    - name: Check active services
+    # Kill process running on port 8084
+    - name: Kill process on 8084
       shell: bash
-      run : sudo systemctl list-units --all --type=service --no-pager
+      run : sudo fuser -k -n tcp 8084
 
     # Prepare test environment
     - name: Prepare test environment
