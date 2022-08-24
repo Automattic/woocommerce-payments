@@ -64,7 +64,9 @@ runs:
     # Check port availability
     - name: Check port availability
       shell: bash
-      run : netstat -nlp | grep 8084
+      run : |
+        lsof -t -i:8084
+        kill -9 $(lsof -t -i:8084)
 
     # Prepare test environment
     - name: Prepare test environment
