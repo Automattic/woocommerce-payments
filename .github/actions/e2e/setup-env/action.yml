@@ -61,6 +61,11 @@ runs:
       shell: bash
       run: npm run build:client
 
+    # Check port availability
+    - name: Check port availability
+      shell: bash
+      run : netstat -nlp | grep 8084
+
     # Prepare test environment
     - name: Prepare test environment
       shell: bash
