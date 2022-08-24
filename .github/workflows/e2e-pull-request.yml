@@ -33,6 +33,9 @@ jobs:
         wordpress:     [ 'latest' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
+        exclude:
+          - test_groups: 'blocks'
+            test_branches: 'merchant'
 
     name: WP(${{ matrix.wordpress }}) - WC(${{ matrix.woocommerce }}) | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
