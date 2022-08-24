@@ -1104,6 +1104,60 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Process the payment for a given order that was paid for via platform checkout.
+	 *
+	 * @param string                    $platform_checkout_intent_id The payment intent ID used to pay during the platform checkout process.
+	 * @param WC_Cart|null              $cart Cart.
+	 * @param WCPay\Payment_Information $payment_information Payment info.
+	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
+	 *
+	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
+	 * @throws API_Exception                   Error processing the payment.
+	 * @throws Add_Payment_Method_Exception    When $0 order processing failed.
+	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
+	 */
+	private function process_payment_for_platform_checkout_order( $platform_checkout_intent_id, $cart, Payment_Information $payment_information, $additional_api_parameters = [] ) {
+		$order = $payment_information->get_order();
+
+		// If the intent is included in the request use that intent.
+		$intent                   = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
+		$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
+		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+		if ( $intent_meta_order_id !== $order->get_id() ) {
+			throw new Intent_Authentication_Exception(
+				__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+				'order_id_mismatch'
+			);
+		}
+
+		$intent_id     = $intent->get_id();
+		$status        = $intent->get_status();
+		$charge        = $intent->get_charge();
+		$charge_id     = $charge ? $charge->get_id() : null;
+		$client_secret = $intent->get_client_secret();
+		$currency      = $intent->get_currency();
+		$next_action   = $intent->get_next_action();
+		// We update the payment method ID server side when it's necessary to clone payment methods,
+		// for example when saving a payment method to a platform customer account. When this happens
+		// we need to make sure the payment method on the order matches the one on the merchant account
+		// not the one on the platform account. The payment method ID is updated on the order further
+		// down.
+		$payment_method = $intent->get_payment_method_id() ?? $payment_information->get_payment_method();
+
+		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+
+		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->attach_exchange_info_to_order( $order, $charge_id );
+		$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
+
+		return [
+			'result'   => 'success',
+			'redirect' => $this->get_return_url( $order ),
+		];
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param WC_Cart|null              $cart Cart.
@@ -1116,6 +1170,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
+		// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
+		// for a string that will only contain latin alphanumeric characters and underscores.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
+
+		// Initializing the intent variable here to ensure we don't try to use an undeclared
+		// variable later.
+		if ( ! empty( $platform_checkout_intent_id ) ) {
+			return $this->process_payment_for_platform_checkout_order( $platform_checkout_intent_id, $cart, $payment_information, $additional_api_parameters );
+		}
+
 		$order                                       = $payment_information->get_order();
 		$save_payment_method_to_store                = $payment_information->should_save_payment_method_to_store();
 		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();
