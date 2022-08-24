@@ -8,7 +8,6 @@ on:
 
 env:
   E2E_GH_TOKEN:          ${{ secrets.E2E_GH_TOKEN }}
-  CI_USER_TOKEN:         ${{ secrets.CI_USER_TOKEN }}
   WCP_DEV_TOOLS_REPO:    ${{ secrets.WCP_DEV_TOOLS_REPO }}
   WCP_DEV_TOOLS_BRANCH:  'trunk'
   WCP_SERVER_REPO:       ${{ secrets.WCP_SERVER_REPO }}
@@ -35,7 +34,7 @@ jobs:
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
 
-    name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WP(${{ matrix.wordpress }}) - WC(${{ matrix.woocommerce }}) | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
       E2E_WP_VERSION: ${{ matrix.wordpress }}
@@ -44,97 +43,11 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
-      # Clone Repo
-      - name: Clone WCPay Repository
+      - name: Checkout WCPay repository
         uses: actions/checkout@v2
 
-      # Add GH token for authentication
-      - name: Add GH token for authentication
-        run: echo -e "machine github.com\n  login $E2E_GH_TOKEN" > ~/.netrc
+      - name: Setup E2E environment
+        uses: ./.github/actions/e2e/env-setup
 
-      # PHP setup
-      - name: PHP Setup
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          tools:       composer
-          coverage:    none
-
-      # Composer setup
-      - name: Composer Setup
-        run: composer self-update 2.0.6
-
-      # Use node version from .nvmrc
-      - name: Setup NodeJS
-        uses: actions/setup-node@v2
-        with:
-          node-version-file: '.nvmrc'
-
-      # Cache composer dependencies
-      - name: Cache composer dependencies
-        id: composer-cache
-        uses: actions/cache@v2
-        with:
-          path: ./vendor
-          key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
-
-      # Cache node dependencies
-      - name: Cache node dependencies
-        id: node-cache
-        uses: actions/cache@v2
-        with:
-          path: ./node_modules
-          key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-
-      # Install composer dependencies if not present on cache
-      - name: Install composer dependencies
-        if: ${{ steps.composer-cache.outputs.cache-hit == false }}
-        run: composer install --no-progress
-
-      # Install node dependencies if not present on cache
-      - name: Install node dependencies
-        if: ${{ steps.node-cache.outputs.cache-hit == false }}
-        run: npm ci
-
-      # Build WCPay client
-      - name: Build WCPay Client
-        run: npm run build:client
-
-      # Prepare test environment
-      - name: Prepare test environment
-        run: npm run test:e2e-setup
-
-      - name: First Run E2E Tests
-        id: first_run_e2e_tests
-        # Use +e to trap errors when running E2E tests.
-        shell: /bin/bash +e {0}
-        run: |
-          npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH"
-
-          E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
-
-          echo "::set-output name=FIRST_RUN_FAILED_TEST_SUITES::$(echo $E2E_NUM_FAILED_TEST_SUITES)"
-
-          if [[ ${E2E_NUM_FAILED_TEST_SUITES} -gt 0 ]]; then
-            echo "::notice::${E2E_NUM_FAILED_TEST_SUITES} E2E test(s) failed in the first run but we will try (it) them again in the second run."
-            exit 0
-          fi
-
-      - name: Re-try Failed E2E Files
-        if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
-        # Filter failed E2E files from the result JSON file, and re-run them.
-        run: |
-          cat "$E2E_RESULT_FILEPATH" | jq '.testResults[] | select(.status == "failed") | .name' | xargs npm run test:e2e
-
-      # Archive screenshots if any
-      - name: Archive e2e test screenshots & logs
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
-        with:
-            name: WP(${{ matrix.woocommerce }})-WC(${{ matrix.woocommerce }})-${{ matrix.test_groups }}-${{ matrix.test_branches }}
-            path: |
-              tests/e2e/screenshots
-              tests/e2e/docker/wordpress/wp-content/debug.log
-              ${{ env.E2E_RESULT_FILEPATH }}
-            if-no-files-found: ignore
-            retention-days: 13
+      - name: Run tests, upload screenshots & logs
+        uses: ./.github/actions/e2e/run-log-tests
