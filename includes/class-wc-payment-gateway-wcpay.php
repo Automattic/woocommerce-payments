@@ -806,7 +806,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			is_checkout() &&
 			! has_block( 'woocommerce/checkout' ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
-			! WC()->cart->is_empty()
+			! WC()->cart->is_empty() &&
+			WC()->cart->needs_payment()
 		) {
 			return true;
 		}
