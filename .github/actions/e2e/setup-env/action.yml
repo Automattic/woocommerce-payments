@@ -64,9 +64,7 @@ runs:
     # Check port availability
     - name: Check port availability
       shell: bash
-      run : |
-        su -
-        netstat -nlp | grep 0.0.0.0
+      run : sudo netstat -nlp | grep 0.0.0.0
 
     # Prepare test environment
     - name: Prepare test environment
