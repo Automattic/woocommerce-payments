@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fatal error when activating WooCommerce Subscriptions via WP-CLI when WooCommerce Payments is active.

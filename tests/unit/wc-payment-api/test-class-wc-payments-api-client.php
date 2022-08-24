@@ -1634,6 +1634,26 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful fetch of a single invoice.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_invoice_success() {
+		$invoice_id = 'in_test_invoice';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'     => $invoice_id,
+				'object' => 'invoice',
+			]
+		);
+
+		$invoice = $this->payments_api_client->get_invoice( $invoice_id );
+		$this->assertEquals( $invoice_id, $invoice['id'] );
+	}
+
+	/**
 	 * Test a successful call to cancel subscription.
 	 *
 	 * @throws Exception - In the event of test failure.
