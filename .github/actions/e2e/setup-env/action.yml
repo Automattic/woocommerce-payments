@@ -62,9 +62,9 @@ runs:
       run: npm run build:client
 
     # Check port availability
-    - name: Disable mono-xsp4.service
+    - name: Check active services
       shell: bash
-      run : sudo systemctl stop mono-xsp4.service
+      run : sudo systemctl list-units --all --type=service --no-pager
 
     # Prepare test environment
     - name: Prepare test environment
