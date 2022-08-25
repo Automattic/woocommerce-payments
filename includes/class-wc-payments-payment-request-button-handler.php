@@ -508,7 +508,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( $this->is_product() ) {
 			$is_product_supported = $this->is_product_supported();
 
-			if ( $is_product_supported ) {
+			if ( ! $is_product_supported ) {
 				Logger::log( 'Product page has unsupported product type ( Payment Request button disabled )' );
 				return false;
 			}
