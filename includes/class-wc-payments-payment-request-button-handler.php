@@ -516,6 +516,13 @@ class WC_Payments_Payment_Request_Button_Handler {
 			return false;
 		}
 
+		// Make sure to prevent displaying products when price is not set.
+		$product_price = $this->get_product_price( $this->get_product() );
+
+		if ( ! is_numeric( $product_price ) ) {
+			return false;
+		}
+
 		return true;
 	}
 
