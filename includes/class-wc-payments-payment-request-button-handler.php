@@ -239,11 +239,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		/** @var WC_Product_Variable $product */ // phpcs:ignore
 		$product  = $this->get_product();
-
-		$product_price = $this->get_product_price( $product );
-		if ( ! is_numeric( $product_price ) ) {
-			return false;
-		}
 		$currency = get_woocommerce_currency();
 
 		if ( 'variable' === $product->get_type() || 'variable-subscription' === $product->get_type() ) {
@@ -269,6 +264,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$data          = [];
 		$items         = [];
+		$product_price = $this->get_product_price( $product );
 
 		$items[] = [
 			'label'  => $product->get_name(),
@@ -342,7 +338,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		if ( $order->get_shipping_total() ) {
 			$shipping_label = sprintf(
-			// Translators: %s is the name of the shipping method.
+				// Translators: %s is the name of the shipping method.
 				__( 'Shipping (%s)', 'woocommerce-payments' ),
 				$order->get_shipping_method()
 			);
@@ -517,6 +513,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 		// Cart has unsupported product type.
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart have unsupported product type ( Payment Request button disabled )' );
+			return false;
+		}
+		$product_price = $this->get_product_price( $this->get_product() );
+
+		if ( ! is_numeric( $product_price ) ) {
 			return false;
 		}
 
@@ -1345,7 +1346,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if ( ! $is_supported ) {
 			wc_add_notice(
 				sprintf(
-				/* translators: %s: country. */
+					/* translators: %s: country. */
 					__( 'The payment request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
 					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
 				),
