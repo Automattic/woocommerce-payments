@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed issue with payment request button when product doesn't have price.
