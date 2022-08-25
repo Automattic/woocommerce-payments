@@ -794,6 +794,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$is_supported = false;
 		}
 
+		// Products with an empty price.
+		if ( '' === $product->get_price() ) {
+			$is_supported = false;
+		}
+
 		// Pre Orders charge upon release not supported.
 		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
 			$is_supported = false;
