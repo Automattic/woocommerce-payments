@@ -64,6 +64,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPDATE_CUSTOMER_WITH_ORDER_DATA = 'wcpay_update_customer_with_order_data';
 
 	/**
+	 * Limit on number of tokens to parse, and unlink that from the default posts_per_page, set in core code.
+	 *
+	 * @type int
+	 */
+
+	const TOKENS_LIMIT = 100;
+
+	/**
 	 * Set of parameters to build the URL to the gateway's settings page.
 	 *
 	 * @var string[]
@@ -2817,8 +2825,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			[
 				'user_id'    => $user_id,
 				'gateway_id' => self::GATEWAY_ID,
+				'limit'      => self::TOKENS_LIMIT,
 			]
 		);
+
 		return array_map(
 			static function ( WC_Payment_Token $token ): array {
 				return [
