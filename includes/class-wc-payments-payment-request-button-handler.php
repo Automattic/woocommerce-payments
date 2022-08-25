@@ -220,7 +220,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Add subscription sign-up fees to product price.
-		if ( 'subscription' === $product->get_type() && class_exists( 'WC_Subscriptions_Product' ) ) {
+		if ( 'subscription' === $product->get_type() && class_exists( 'WC_Subscriptions_Product' ) && is_numeric( $product_price ) ) {
 			$product_price = $product_price + WC_Subscriptions_Product::get_sign_up_fee( $product );
 		}
 
@@ -794,8 +794,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$is_supported = false;
 		}
 
-		// Products with an empty price.
-		if ( '' === $product->get_price() ) {
+		// Products with an empty price are not supported.
+		if ( ! is_numeric( $this->get_product_price( $product ) ) ) {
 			$is_supported = false;
 		}
 
