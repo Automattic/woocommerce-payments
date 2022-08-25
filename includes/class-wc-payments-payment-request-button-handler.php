@@ -264,7 +264,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 		$data          = [];
 		$items         = [];
-		$product_price = $this->get_product_price( $product );
+		$product_price = (float) $this->get_product_price( $product );
 
 		$items[] = [
 			'label'  => $product->get_name(),
