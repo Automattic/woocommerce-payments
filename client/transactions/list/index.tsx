@@ -704,4 +704,96 @@ export const TransactionsList = (
 	);
 };
 
+// Test code for size change starts
+/* eslint-disable */
+
+interface IDimension3D {
+	width: number;
+	height: number;
+	depth: number;
+}
+function getVolume( dimension: IDimension3D ): number; // Definition 1
+function getVolume( width: number ): number; // Definition 2
+function getVolume( width: number, height: number, depth: number ): number; // Definition 3
+function getVolume( ...args: any[] ): number {
+	if ( args.length == 1 ) {
+		if ( typeof args[ 0 ] == 'number' ) {
+			// Use Definition 1
+			return args[ 0 ] * args[ 0 ] * args[ 0 ];
+		} else {
+			// Use Definition 2
+			var dim = args[ 0 ] as IDimension3D;
+			return dim.width * dim.height * dim.depth;
+		}
+	} else if ( args.length == 3 ) {
+		// Use definition 3
+		return args[ 0 ] * args[ 1 ] * args[ 2 ];
+	} else {
+		throw Error( 'Argument invalid!' );
+	}
+}
+function function_overload_ex1_test() {
+	var volume1 = getVolume( 10 ); // 1000
+	var volume2 = getVolume( { width: 10, height: 20, depth: 30 } ); // 6000
+	var volume3 = getVolume( 5, 10, 15 ); // 750
+
+	console.log( `volume1 = ${ volume1 }` );
+	console.log( `volume2 = ${ volume2 }` );
+	console.log( `volume3 = ${ volume3 }` );
+}
+function_overload_ex1_test(); // Call the function.
+
+interface IStudent {
+	studentId: number;
+	studentName: string;
+}
+interface IWorker {
+	workerId: number;
+	workerName: string;
+}
+function getName( person: IStudent | IWorker ): string {
+	// Union Type Arg
+	var p = person as IStudent;
+	if ( p.studentName ) {
+		return p.studentName;
+	}
+	return ( person as IWorker ).workerName;
+}
+function function_union_type_args_ex1_test() {
+	var student = { studentId: 1, studentName: 'Tom' };
+	var worker = { workerId: 2, workerName: 'Jerry' };
+
+	var name1 = getName( student );
+	var name2 = getName( worker );
+	console.log( `name1: ${ name1 }` );
+	console.log( `name2: ${ name2 }` );
+}
+function_union_type_args_ex1_test(); // Call the function.
+
+function concat( s1: string, s2: string, s3?: string ): string {
+	if ( s3 ) {
+		return s1 + s2 + s3;
+	}
+	return s1 + s2;
+}
+function sum( v1: number, v2: number, v3?: number, v4?: number ): number {
+	return v1 + v2 + ( v3 ?? 0 ) + ( v4 ?? 0 );
+}
+function function_optional_args_ex1_test() {
+	var result1 = concat( 'One', 'Two' );
+	console.log( `result1: ${ result1 }` );
+	var result2 = concat( 'One', 'Two', 'Three' );
+	console.log( `result2: ${ result2 }` );
+
+	var value1 = sum( 1, 2, 3, 4 );
+	console.log( `value1: ${ value1 }` );
+	var value2 = sum( 1, 2, 3 );
+	console.log( `value2: ${ value2 }` );
+	var value3 = sum( 1, 2 );
+	console.log( `value3: ${ value3 }` );
+}
+function_optional_args_ex1_test(); // Call the function.
+
+// Test code for size change ends
+
 export default TransactionsList;
