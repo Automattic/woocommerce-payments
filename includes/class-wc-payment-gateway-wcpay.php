@@ -1184,13 +1184,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 		}
 
-		$intent_id     = $intent->get_id();
-		$status        = $intent->get_status();
-		$charge        = $intent->get_charge();
-		$charge_id     = $charge ? $charge->get_id() : null;
-		$client_secret = $intent->get_client_secret();
-		$currency      = $intent->get_currency();
-		$next_action   = $intent->get_next_action();
+		$intent_id = $intent->get_id();
+		$status    = $intent->get_status();
+		$charge    = $intent->get_charge();
+		$charge_id = $charge ? $charge->get_id() : null;
+		$currency  = $intent->get_currency();
 		// We update the payment method ID server side when it's necessary to clone payment methods,
 		// for example when saving a payment method to a platform customer account. When this happens
 		// we need to make sure the payment method on the order matches the one on the merchant account
