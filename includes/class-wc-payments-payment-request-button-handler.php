@@ -505,25 +505,25 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Product page, but has unsupported product type.
-		if ( $this->is_product() && ! $this->is_product_supported() ) {
-			Logger::log( 'Product page has unsupported product type ( Payment Request button disabled )' );
-			return false;
+		if ( $this->is_product() ) {
+			$is_product_supported = $this->is_product_supported();
+
+			if ( $is_product_supported ) {
+				Logger::log( 'Product page has unsupported product type ( Payment Request button disabled )' );
+				return false;
+			}
+
+			$product_price = $this->get_product_price( $this->get_product() );
+
+			if ( ! is_numeric( $product_price ) ) {
+				Logger::log( 'Product does not have valid price ( Payment Request button disabled )' );
+				return false;
+			}
 		}
 
 		// Cart has unsupported product type.
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
 			Logger::log( 'Items in the cart have unsupported product type ( Payment Request button disabled )' );
-			return false;
-		}
-
-		// Make sure to prevent displaying products when price is not set.
-		$product = $this->get_product();
-		if ( ! is_a( $product, 'WC_Product' ) ) {
-			return false;
-		}
-		$product_price = $this->get_product_price( $product );
-
-		if ( ! is_numeric( $product_price ) ) {
 			return false;
 		}
 
