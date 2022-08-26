@@ -24,22 +24,7 @@ let orderId;
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Purchase subscription without signup fee (free trial)',
 	() => {
-		beforeAll( async () => {
-			await merchant.login();
-
-			// Create subscription product without signup fee
-			await merchantWCP.createSubscriptionProduct(
-				productName,
-				'month',
-				false
-			);
-
-			await merchant.logout();
-		} );
-
 		afterAll( async () => {
-			await merchant.logout();
-
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
@@ -68,7 +53,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 		} );
 
-		it( 'should have a charge for subscription cost without fee', async () => {
+		it( 'should have a charge for subscription cost without fee & an active subscription', async () => {
 			await merchant.login();
 
 			await merchant.goToOrder( orderId );
@@ -91,10 +76,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 					text: 'A payment of $9.99 was successfully charged.',
 				}
 			);
-		} );
-
-		it( 'should have an active subscription', async () => {
-			await merchant.login();
 
 			await merchantWCP.openSubscriptions();
 
@@ -108,6 +89,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await expect( page ).toMatchElement( '.recurring_total', {
 				text: '$9.99 / month',
 			} );
+
+			await merchant.logout();
 		} );
 	}
 );
