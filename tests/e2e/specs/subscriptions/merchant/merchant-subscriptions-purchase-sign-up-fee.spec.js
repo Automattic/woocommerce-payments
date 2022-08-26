@@ -24,18 +24,12 @@ let orderId;
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Purchase subscription with signup fee',
 	() => {
-		beforeAll( async () => {
-			await merchant.login();
+		afterAll( async () => {
+			// Delete the user created with the subscription
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
+		} );
 
-			// Create subscription product with signup fee
-			await merchantWCP.createSubscriptionProduct(
-				productName,
-				'month',
-				true
-			);
-
-			await merchant.logout();
-
+		it( 'should be able to purchase a subscription with signup fee', async () => {
 			// Open the subscription product we created in the store
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 				waitUntil: 'networkidle0',
@@ -59,14 +53,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			orderId = await orderIdField.evaluate( ( el ) => el.innerText );
 		} );
 
-		afterAll( async () => {
-			await merchant.logout();
-
-			// Delete the user created with the subscription
-			await withRestApi.deleteCustomerByEmail( customerBilling.email );
-		} );
-
-		it( 'should have a charge for subscription cost with fee', async () => {
+		it( 'should have a charge for subscription cost with fee & an active subscription', async () => {
 			await merchant.login();
 
 			await merchant.goToOrder( orderId );
@@ -89,10 +76,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 					text: 'A payment of $11.98 was successfully charged.',
 				}
 			);
-		} );
-
-		it( 'should have an active subscription', async () => {
-			await merchant.login();
 
 			await merchantWCP.openSubscriptions();
 
@@ -106,6 +89,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await expect( page ).toMatchElement( '.recurring_total', {
 				text: '$9.99 / month',
 			} );
+
+			await merchant.logout();
 		} );
 	}
 );
