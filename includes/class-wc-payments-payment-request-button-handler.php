@@ -9,13 +9,13 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Payment_Information;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
+use WCPay\Payment_Information;
 
 /**
  * WC_Payments_Payment_Request_Button_Handler class.
@@ -210,21 +210,29 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * @param object $product WC_Product_* object.
 	 * @return mixed Total price.
+	 *
+	 * @throws Invalid_Price_Exception Whenever a product has no price.
 	 */
 	public function get_product_price( $product ) {
-		$product_price = $product->get_price();
-
 		// If prices should include tax, using tax inclusive price.
 		if ( ! $this->prices_exclude_tax() ) {
-			$product_price = wc_get_price_including_tax( $product );
+			$base_price = wc_get_price_including_tax( $product );
+		} else {
+			$base_price = $product->get_price();
 		}
 
 		// Add subscription sign-up fees to product price.
+		$sign_up_fee = 0;
 		if ( 'subscription' === $product->get_type() && class_exists( 'WC_Subscriptions_Product' ) ) {
-			$product_price = $product_price + WC_Subscriptions_Product::get_sign_up_fee( $product );
+			// When there is no sign-up fee, `get_sign_up_fee` falls back to an int 0.
+			$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
 		}
 
-		return $product_price;
+		if ( ! is_numeric( $base_price ) || ! is_numeric( $sign_up_fee ) ) {
+			throw new Invalid_Price_Exception( __( 'Express checkout does not support products without prices! ', 'woocommerce-payments' ) );
+		}
+
+		return $base_price + $sign_up_fee;
 	}
 
 	/**
@@ -262,16 +270,22 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 		}
 
-		$data          = [];
-		$items         = [];
-		$product_price = $this->get_product_price( $product );
+		try {
+			$price = $this->get_product_price( $product );
+		} catch ( Invalid_Price_Exception $e ) {
+			Logger::log( $e->getMessage() );
+			return false;
+		}
+
+		$data  = [];
+		$items = [];
 
 		$items[] = [
 			'label'  => $product->get_name(),
-			'amount' => WC_Payments_Utils::prepare_amount( $product_price, $currency ),
+			'amount' => WC_Payments_Utils::prepare_amount( $price, $currency ),
 		];
 
-		$tax = $this->prices_exclude_tax() ? wc_format_decimal( wc_get_price_including_tax( $product ) - $product_price ) : 0;
+		$tax = $this->prices_exclude_tax() ? wc_format_decimal( wc_get_price_including_tax( $product ) - $price ) : 0;
 		if ( wc_tax_enabled() ) {
 			$items[] = [
 				'label'   => __( 'Tax', 'woocommerce-payments' ),
@@ -298,7 +312,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems'] = $items;
 		$data['total']        = [
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $product_price + $tax, $currency ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $price + $tax, $currency ),
 			'pending' => true,
 		];
 
@@ -1029,7 +1043,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
 			}
 
-			$total = $qty * $this->get_product_price( $product ) + $addon_value;
+			$price = $this->get_product_price( $product );
+			$total = $qty * $price + $addon_value;
 
 			$quantity_label = 1 < $qty ? ' (x' . $qty . ')' : '';
 
@@ -1077,7 +1092,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			wp_send_json( $data );
 		} catch ( Exception $e ) {
-			wp_send_json( [ 'error' => wp_strip_all_tags( $e->getMessage() ) ] );
+			if ( is_a( $e, Invalid_Price_Exception::class ) ) {
+				Logger::log( $e->getMessage() );
+			}
+			wp_send_json( [ 'error' => wp_strip_all_tags( $e->getMessage() ) ], 500 );
 		}
 	}
 
