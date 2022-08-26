@@ -10,7 +10,7 @@ import { ChargeResponse } from '../charges/types';
 import { STORE_NAME } from '../constants';
 
 export const getIsChargeId = ( id: string ): boolean =>
-	-1 !== id.indexOf( 'ch_' );
+	-1 !== id.indexOf( 'ch_' ) || -1 !== id.indexOf( 'py_' );
 
 export const usePaymentIntentWithChargeFallback = (
 	id: string
@@ -42,14 +42,8 @@ export const usePaymentIntentWithChargeFallback = (
 
 			const paymentIntent: PaymentIntent = getPaymentIntent( id );
 
-			if ( paymentIntent?.charge?.id ) {
-				const { id: chargeId } = paymentIntent.charge;
-
-				return getChargeData( chargeId, selectors );
-			}
-
 			return {
-				data: {} as Charge,
+				data: paymentIntent?.charge || ( {} as Charge ),
 				error: getPaymentIntentError( id ),
 				isLoading: isResolving( 'getPaymentIntent', [ id ] ),
 			};

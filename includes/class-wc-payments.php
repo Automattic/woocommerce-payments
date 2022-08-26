@@ -712,6 +712,10 @@ class WC_Payments {
 		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
 		$onboarding_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-user-exists-controller.php';
+		$user_exists_controller = new WC_REST_User_Exists_Controller();
+		$user_exists_controller->register_routes();
+
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
@@ -1047,17 +1051,18 @@ class WC_Payments {
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
-				'store_name'        => get_bloginfo( 'name' ),
-				'store_logo'        => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
-				'custom_message'    => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
-				'blog_id'           => Jetpack_Options::get_option( 'id' ),
-				'blog_url'          => get_site_url(),
-				'blog_checkout_url' => wc_get_checkout_url(),
-				'blog_shop_url'     => get_permalink( wc_get_page_id( 'shop' ) ),
-				'store_api_url'     => self::get_store_api_url(),
-				'account_id'        => $account_id,
-				'test_mode'         => self::get_gateway()->is_in_test_mode(),
-				'capture_method'    => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
+				'store_name'                     => get_bloginfo( 'name' ),
+				'store_logo'                     => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
+				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
+				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
+				'blog_url'                       => get_site_url(),
+				'blog_checkout_url'              => wc_get_checkout_url(),
+				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
+				'store_api_url'                  => self::get_store_api_url(),
+				'account_id'                     => $account_id,
+				'test_mode'                      => self::get_gateway()->is_in_test_mode(),
+				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
+				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];

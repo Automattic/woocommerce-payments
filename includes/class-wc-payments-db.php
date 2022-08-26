@@ -38,28 +38,26 @@ class WC_Payments_DB {
 	 * @return array[]
 	 */
 	public function orders_with_charge_id_from_charge_ids( array $charge_ids ): array {
-		global $wpdb;
-
-		$charge_id_placeholder = implode( ',', array_fill( 0, count( $charge_ids ), '%s' ) );
 
 		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
-				"SELECT DISTINCT ID as order_id, meta.meta_value as charge_id FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_key = '_charge_id' AND meta.meta_value IN ($charge_id_placeholder)",
-				$charge_ids
-			)
+		$orders = wc_get_orders(
+			[
+				'meta_key'     => self::META_KEY_CHARGE_ID, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value'   => $charge_ids, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_compare' => 'IN',
+			]
 		);
 
 		return array_map(
-			function ( stdClass $row ) : array {
+			function ( WC_Order $order ) : array {
 				return [
-					'order'     => $this->order_from_order_id( $row->order_id ),
-					'charge_id' => $row->charge_id,
+					'order'     => $order,
+					'charge_id' => $order->get_meta( self::META_KEY_CHARGE_ID ),
 				];
 			},
-			$results
+			$orders
 		);
+
 	}
 
 	/**
@@ -87,17 +85,22 @@ class WC_Payments_DB {
 	 * @return null|string
 	 */
 	private function order_id_from_meta_key_value( $meta_key, $meta_value ) {
-		global $wpdb;
-
-		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
-		$order_id = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT DISTINCT MAX(ID) FROM $wpdb->posts as posts LEFT JOIN $wpdb->postmeta as meta ON posts.ID = meta.post_id WHERE meta.meta_key = %s AND meta.meta_value = %s",
-				$meta_key,
-				$meta_value
-			)
+		$orders = wc_get_orders(
+			[
+				'limit'      => 1,
+				'meta_key'   => $meta_key, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value' => $meta_value, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			]
 		);
-		return $order_id;
+		if ( $orders && ! empty( $orders ) ) {
+			/**
+			 * As wc_get_orders may also return stdClass, Psalm infers error.
+			 *
+			 * @psalm-suppress UndefinedMethod
+			 */
+			return (string) $orders[0]->get_id();
+		}
+		return null;
 	}
 
 	/**
