@@ -285,13 +285,23 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'amount' => WC_Payments_Utils::prepare_amount( $price, $currency ),
 		];
 
-		$tax = $this->prices_exclude_tax() ? wc_format_decimal( wc_get_price_including_tax( $product ) - $price ) : 0;
-		if ( wc_tax_enabled() ) {
-			$items[] = [
-				'label'   => __( 'Tax', 'woocommerce-payments' ),
-				'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
-				'pending' => ( 0 === $tax ? true : false ),
-			];
+		$total_tax = 0;
+		if ( wc_tax_enabled() && $this->prices_exclude_tax() ) { // Only enter when taxes are enabled, but not included.
+			// Follows the way `WC_Cart_Totals::get_item_tax_rates()` works.
+			$tax_class = $product->get_tax_class();
+			$rates     = WC_Tax::get_rates( $tax_class );
+			// No cart item, `woocommerce_cart_totals_get_item_tax_rates` can't be applied here.
+
+			// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
+			foreach ( WC_Tax::calc_tax( $price, $rates, false ) as $tax ) {
+				$total_tax += $tax;
+
+				$items[] = [
+					'label'   => __( 'Tax', 'woocommerce-payments' ),
+					'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
+					'pending' => ( 0 === $tax ? true : false ),
+				];
+			}
 		}
 
 		if ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() ) {
@@ -312,7 +322,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems'] = $items;
 		$data['total']        = [
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $price + $tax, $currency ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
 			'pending' => true,
 		];
 
