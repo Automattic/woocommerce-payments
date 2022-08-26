@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 6.4.1 - 2022-xx-xx =
+* Fix - Prevent errors on PHP 8 when a product price is empty and PRB is enabled
+
 = 4.6.0 - 2022-08-18 =
 * Add - Adding support for payment request buttons (Apple Pay and Google Pay) to the Pay for Order page.
 * Add - Add transactions channel (In-Person or Online).

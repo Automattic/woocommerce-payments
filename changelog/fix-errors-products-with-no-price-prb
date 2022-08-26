@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent errors on PHP 8 when a product price is empty and PRB is enabled
