@@ -222,8 +222,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Add subscription sign-up fees to product price.
-		$sign_up_fee = 0;
-		if ( 'subscription' === $product->get_type() && class_exists( 'WC_Subscriptions_Product' ) ) {
+		$sign_up_fee        = 0;
+		$subscription_types = [
+			'subscription',
+			'variable-subscription',
+		];
+		if ( in_array( $product->get_type(), $subscription_types, true ) && class_exists( 'WC_Subscriptions_Product' ) ) {
 			// When there is no sign-up fee, `get_sign_up_fee` falls back to an int 0.
 			$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
 		}
