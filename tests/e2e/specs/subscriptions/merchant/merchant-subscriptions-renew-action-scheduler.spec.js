@@ -19,8 +19,7 @@ import {
 
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
-const productName = 'Subscription for systems renewal';
-const productSlug = 'subscription-for-systems-renewal';
+const productSlug = 'subscription-signup-fee-product';
 const actionSchedulerHook = 'woocommerce_scheduled_subscription_payment';
 const customerBilling = config.get( 'addresses.customer.billing' );
 
@@ -34,17 +33,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS ).skip(
 	'Subscriptions > Renew a subscription via Action Scheduler',
 	() => {
 		beforeAll( async () => {
-			await merchant.login();
-
-			// Create subscription product with signup fee
-			await merchantWCP.createSubscriptionProduct(
-				productName,
-				'month',
-				true
-			);
-
-			await merchant.logout();
-
 			// Open the subscription product we created in the store
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 				waitUntil: 'networkidle0',
