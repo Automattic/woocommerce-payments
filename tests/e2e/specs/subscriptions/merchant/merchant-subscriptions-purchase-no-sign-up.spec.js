@@ -14,8 +14,8 @@ import {
 
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
-const productName = 'Subscription free trial product';
-const productSlug = 'subscription-free-trial-product';
+const productName = 'Subscription no signup fee product';
+const productSlug = 'subscription-no-signup-fee-product';
 
 const customerBilling = config.get( 'addresses.customer.billing' );
 
