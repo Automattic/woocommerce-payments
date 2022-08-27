@@ -59,7 +59,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			subscriptionNextPaymentDate = await subscriptionNextPaymentDateField.evaluate(
 				( el ) => el.innerText
 			);
-			console.log( subscriptionNextPaymentDate );
+
+			await shopper.logout();
 		} );
 
 		it( 'should have an active subscription with trial end date', async () => {

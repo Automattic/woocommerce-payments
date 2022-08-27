@@ -51,6 +51,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				'.woocommerce-order-overview__order.order > strong'
 			);
 			orderId = await orderIdField.evaluate( ( el ) => el.innerText );
+
+			await shopper.logout();
 		} );
 
 		it( 'should have a charge for subscription cost without fee & an active subscription', async () => {
