@@ -47,16 +47,17 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS ).skip(
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
 
-			await merchant.login();
+			await shopper.logout();
 		} );
 
 		afterAll( async () => {
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
-			await merchant.logout();
 		} );
 
 		it( 'should be able to renew a subscription via Action Scheduler', async () => {
+			await merchant.login();
+
 			// Go to Action Scheduler
 			await merchantWCP.openActionScheduler();
 
@@ -81,9 +82,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS ).skip(
 					text: actionSchedulerHook,
 				}
 			);
-		} );
 
-		it( 'should verify that the subscription has been renewed', async () => {
 			// Go to Subscriptions and verify the subscription renewal
 			await merchantWCP.openSubscriptions();
 			await expect(
@@ -92,6 +91,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS ).skip(
 				'tbody#the-list > tr > td.orders.column-orders > a',
 				{ text: '2' }
 			);
+
+			await merchant.logout();
 		} );
 	}
 );

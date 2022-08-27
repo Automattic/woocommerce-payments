@@ -57,16 +57,17 @@ describeif( RUN_SUBSCRIPTIONS_TESTS ).skip(
 				( el ) => el.innerText
 			);
 
-			await merchant.login();
+			await shopper.logout();
 		} );
 
 		afterAll( async () => {
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
-			await merchant.logout();
 		} );
 
 		it( 'should be able to renew a subscription as a merchant', async () => {
+			await merchant.login();
+
 			// Open the specific subscription detail page
 			await merchantWCP.openSubscriptions();
 			await expect( page ).toClick( 'div.tips > a', {
@@ -97,6 +98,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS ).skip(
 				'div.woocommerce_subscriptions_related_orders > table > tbody > tr > td',
 				{ text: 'Renewal Order' }
 			);
+
+			await merchant.logout();
 		} );
 	}
 );
