@@ -512,16 +512,21 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', 'invalid_value' );
 	}
 
-	public function test_render_custom_payment_meta_input_many_tokens() {
+	public function test_render_custom_payment_meta_input_multiple_tokens() {
 		$subscription = WC_Helper_Order::create_order( self::USER_ID );
-		$tokens       = [];
-
-		// Create 11 tokens and make it available to the subscription.
-
-		for ( $i = 1; $i <= 11; $i++ ) {
-			$token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_' . $i, self::USER_ID );
-			array_push( $tokens, $token );
-		}
+		$tokens       = [
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_1', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_2', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_3', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_4', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_5', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_6', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_7', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_8', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_9', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_10', self::USER_ID ),
+			WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID . '_11', self::USER_ID ),
+		];
 
 		foreach ( $tokens as $token ) {
 			$subscription->add_payment_token( $token );
