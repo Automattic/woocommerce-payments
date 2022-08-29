@@ -2,48 +2,28 @@
  * External dependencies
  */
 import config from 'config';
-
-const { merchant, shopper, withRestApi } = require( '@woocommerce/e2e-utils' );
-
+const { shopper, withRestApi } = require( '@woocommerce/e2e-utils' );
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
-	merchantWCP,
 	shopperWCP,
 } from '../../../utils';
-
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
-const productName = 'Subscription for renewal testing';
-const productSlug = 'subscription-for-renewal-testing';
-
+const productSlug = 'subscription-signup-fee-product';
 const customerBilling = config.get( 'addresses.customer.billing' );
-
 let subscriptionId;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Renew a subscription in my account',
 	() => {
-		beforeAll( async () => {
-			await merchant.login();
-
-			// Create subscription product with signup fee
-			await merchantWCP.createSubscriptionProduct(
-				productName,
-				'month',
-				true
-			);
-
-			await merchant.logout();
-		} );
-
 		afterAll( async () => {
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
 
 		it( 'should be able to renew a subscription in my account', async () => {
-			// Open the subscription product we created in the store
+			// Open the subscription product
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 				waitUntil: 'networkidle0',
 			} );
