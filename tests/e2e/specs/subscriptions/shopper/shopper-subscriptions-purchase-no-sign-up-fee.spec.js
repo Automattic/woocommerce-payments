@@ -19,6 +19,10 @@ let orderId;
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Purchase subscription without signup fee (free trial)',
 	() => {
+		beforeAll( async () => {
+			// Delete the user, if present
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
+		} );
 		afterAll( async () => {
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );

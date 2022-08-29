@@ -21,6 +21,10 @@ let subscriptionId;
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Shopper > Subscriptions > Manage Payment Methods',
 	() => {
+		beforeAll( async () => {
+			// Delete the user, if present
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
+		} );
 		afterAll( async () => {
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
@@ -118,6 +122,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				'.subscription-payment-method',
 				{ text: 'Visa ending in 4242 (expires 02/24)' }
 			);
+
+			await shopper.logout();
 		} );
 	}
 );

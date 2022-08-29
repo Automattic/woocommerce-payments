@@ -20,6 +20,10 @@ const card = config.get( 'cards.basic' );
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Purchase multiple subscriptions',
 	() => {
+		beforeAll( async () => {
+			// Delete the user, if present
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
+		} );
 		afterAll( async () => {
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
@@ -83,6 +87,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await expect( page ).toMatchElement( 'td.order-total', {
 				text: '$21.97 for 2 items',
 			} );
+
+			await shopper.logout();
 		} );
 	}
 );

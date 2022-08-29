@@ -17,6 +17,10 @@ let subscriptionId;
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Renew a subscription in my account',
 	() => {
+		beforeAll( async () => {
+			// Delete the user, if present
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
+		} );
 		afterAll( async () => {
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
@@ -71,6 +75,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
+
+			await shopper.logout();
 		} );
 	}
 );
