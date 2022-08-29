@@ -347,7 +347,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 409, $data['status'] );
+		$this->assertSame( 409, $data['status'] );
 		$this->assertFalse( $order->has_status( 'completed' ) );
 	}
 
