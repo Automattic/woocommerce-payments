@@ -5,7 +5,6 @@ import config from 'config';
 const customerBilling = config.get( 'addresses.customer.billing' );
 const {
 	shopper,
-	merchant,
 	withRestApi,
 	setCheckbox,
 } = require( '@woocommerce/e2e-utils' );
@@ -17,29 +16,16 @@ import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
 	shopperWCP,
-	merchantWCP,
 } from '../../../utils';
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
-const productName = 'Subscription for manage payments';
-const productSlug = 'subscription-for-manage-payments';
+const productSlug = 'subscription-no-signup-fee-product';
 
 let subscriptionId;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Shopper > Subscriptions > Manage Payment Methods',
 	() => {
-		beforeAll( async () => {
-			// Create subscription product
-			await merchant.login();
-			await merchantWCP.createSubscriptionProduct(
-				productName,
-				'month',
-				false
-			);
-			await merchant.logout();
-		} );
-
 		afterAll( async () => {
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
