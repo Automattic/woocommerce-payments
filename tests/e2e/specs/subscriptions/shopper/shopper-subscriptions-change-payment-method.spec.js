@@ -2,24 +2,19 @@
  * External dependencies
  */
 import config from 'config';
-
 const {
-	merchant,
 	shopper,
 	withRestApi,
 	setCheckbox,
 } = require( '@woocommerce/e2e-utils' );
-
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
-	merchantWCP,
 	shopperWCP,
 } from '../../../utils';
-
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
-const productName = `Subscription product ${ Date.now() }`;
+const productSlug = 'subscription-no-signup-fee-product';
 const customerBilling = config.get( 'addresses.customer.billing' );
 const cardAtCheckout = config.get( 'cards.basic' );
 const newCard = config.get( 'cards.basic2' );
@@ -43,24 +38,16 @@ const dataTable = [
 	[ 'saved', savedCard, selectSavedCard ],
 ];
 
-let productId;
 let subscriptionUrl;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Change payment method',
 	() => {
-		// Setup the subscription product.
-		// Take note of the the product ID.
 		beforeAll( async () => {
-			await merchant.login();
-			productId = await merchantWCP.createSubscriptionProduct(
-				productName,
-				'month'
-			);
-			await merchant.logout();
-
-			// As a Shopper purchase the product.
-			await shopper.goToProduct( productId );
+			// Open the subscription product
+			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
+				waitUntil: 'networkidle0',
+			} );
 			await shopper.addToCart();
 			await setupCheckout( customerBilling );
 			await fillCardDetails( page, cardAtCheckout );
@@ -75,7 +62,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 
 			// As a Shopper, navigate to 'My account -> Subscriptions' and open the newly created subscription entry.
 			await page.goto( subscriptionUrl, { waitUntil: 'networkidle0' } );
-		}, 200000 );
+		} );
 
 		afterAll( async () => {
 			// Delete the user created with the subscription
