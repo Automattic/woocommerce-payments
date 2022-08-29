@@ -18,17 +18,14 @@ const DepositsStatus = ( props ) => {
 	let className = 'account-status__info__green';
 	let description;
 	let icon = <GridiconCheckmarkCircle size={ iconSize } />;
+	const automaticStatuses = [ 'daily', 'weekly', 'monthly' ];
 
-	if ( 'disabled' === depositsStatus ) {
+	if ( automaticStatuses.includes( depositsStatus ) ) {
+		description = __( 'Automatic', 'woocommerce-payments' );
+	} else if ( 'disabled' === depositsStatus ) {
 		description = __( 'Disabled', 'woocommerce-payments' );
 		className = 'account-status__info__red';
 		icon = <GridiconNotice size={ iconSize } />;
-	} else if ( 'daily' === depositsStatus ) {
-		description = __( 'Daily', 'woocommerce-payments' );
-	} else if ( 'weekly' === depositsStatus ) {
-		description = __( 'Weekly', 'woocommerce-payments' );
-	} else if ( 'monthly' === depositsStatus ) {
-		description = __( 'Monthly', 'woocommerce-payments' );
 	} else if ( 'manual' === depositsStatus ) {
 		const learnMoreHref =
 			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
