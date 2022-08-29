@@ -116,56 +116,54 @@ class Tracking {
 	 */
 	private function get_mc_order_count(): array {
 		global $wpdb;
+		$query_on_orders = "
+			SELECT
+				gateway, currency, SUM(total) AS totals, COUNT(order_id) AS counts
+			FROM (
+				SELECT
+					orders.id AS order_id, orders.payment_method as gateway, orders.total_amount as total, orders.currency as currency
+				FROM
+					{$wpdb->prefix}wc_orders orders
+				LEFT JOIN
+					{$wpdb->prefix}wc_orders_meta order_meta ON order_meta.order_id = orders.id
+				INNER JOIN
+					{$wpdb->prefix}wc_orders_meta mc_meta ON mc_meta.order_id = orders.id
+					AND mc_meta.meta_key = '_wcpay_multi_currency_order_exchange_rate'
+				WHERE orders.type = 'shop_order'
+					AND orders.status in ( 'wc-completed', 'wc-processing', 'wc-refunded' )
+				GROUP BY orders.id
+			) order_gateways
+			GROUP BY currency, gateway
+		";
+		$query_on_posts  = "
+			SELECT
+				gateway, currency, SUM(total) AS totals, COUNT(order_id) AS counts
+			FROM (
+				SELECT
+					orders.id AS order_id,
+					MAX(CASE WHEN order_meta.meta_key = '_payment_method' THEN order_meta.meta_value END) gateway,
+					MAX(CASE WHEN order_meta.meta_key = '_order_total' THEN order_meta.meta_value END) total,
+					MAX(CASE WHEN order_meta.meta_key = '_order_currency' THEN order_meta.meta_value END) currency
+				FROM
+					{$wpdb->prefix}posts orders
+				LEFT JOIN
+					{$wpdb->prefix}postmeta order_meta ON order_meta.post_id = orders.id
+				INNER JOIN
+					{$wpdb->prefix}postmeta mc_meta ON mc_meta.post_id = orders.id
+					AND mc_meta.meta_key = '_wcpay_multi_currency_order_exchange_rate'
+				WHERE orders.post_type = 'shop_order'
+					AND orders.post_status in ( 'wc-completed', 'wc-processing', 'wc-refunded' )
+					AND order_meta.meta_key in ( '_payment_method', '_order_total', '_order_currency' )
+				GROUP BY orders.id
+			) order_gateways
+			GROUP BY currency, gateway
+		";
 
 		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
 				\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-			$orders_by_currency = $wpdb->get_results(
-				"
-				SELECT
-					gateway, currency, SUM(total) AS totals, COUNT(order_id) AS counts
-				FROM (
-					SELECT
-						  orders.id AS order_id, orders.payment_method as gateway, orders.total_amount as total, orders.currency as currency
-					   FROM
-						{$wpdb->prefix}wc_orders orders
-					LEFT JOIN
-						{$wpdb->prefix}wc_orders_meta order_meta ON order_meta.order_id = orders.id
-					INNER JOIN
-						{$wpdb->prefix}wc_orders_meta mc_meta ON mc_meta.order_id = orders.id
-						AND mc_meta.meta_key = '_wcpay_multi_currency_order_exchange_rate'
-					WHERE orders.type = 'shop_order'
-						  AND orders.status in ( 'wc-completed', 'wc-processing', 'wc-refunded' )
-					GROUP BY orders.id
-				) order_gateways
-				GROUP BY currency, gateway
-				"
-			);
+			$orders_by_currency = $wpdb->get_results( $query_on_orders );
 		} else {
-			$orders_by_currency = $wpdb->get_results(
-				"
-				SELECT
-					gateway, currency, SUM(total) AS totals, COUNT(order_id) AS counts
-				FROM (
-					SELECT
-						orders.id AS order_id,
-						MAX(CASE WHEN order_meta.meta_key = '_payment_method' THEN order_meta.meta_value END) gateway,
-						MAX(CASE WHEN order_meta.meta_key = '_order_total' THEN order_meta.meta_value END) total,
-						MAX(CASE WHEN order_meta.meta_key = '_order_currency' THEN order_meta.meta_value END) currency
-					FROM
-						{$wpdb->prefix}posts orders
-					LEFT JOIN
-						{$wpdb->prefix}postmeta order_meta ON order_meta.post_id = orders.id
-					INNER JOIN
-						{$wpdb->prefix}postmeta mc_meta ON mc_meta.post_id = orders.id
-						AND mc_meta.meta_key = '_wcpay_multi_currency_order_exchange_rate'
-					WHERE orders.post_type = 'shop_order'
-						AND orders.post_status in ( 'wc-completed', 'wc-processing', 'wc-refunded' )
-						AND order_meta.meta_key in ( '_payment_method', '_order_total', '_order_currency' )
-					GROUP BY orders.id
-				) order_gateways
-				GROUP BY currency, gateway
-				"
-			);
+			$orders_by_currency = $wpdb->get_results( $query_on_posts );
 		}
 
 		$currencies  = [];
