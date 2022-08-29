@@ -2,45 +2,24 @@
  * External dependencies
  */
 import config from 'config';
-
-const { merchant, shopper, withRestApi } = require( '@woocommerce/e2e-utils' );
-
+const { shopper, withRestApi } = require( '@woocommerce/e2e-utils' );
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
-	merchantWCP,
 	shopperWCP,
 } from '../../../utils';
-
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
-const productNames = [
-	`Multi sub 1 ${ Date.now() }`,
-	`Multi sub 2 ${ Date.now() }`,
-];
+const products = {
+	'Subscription no signup fee product': 'subscription-no-signup-fee-product',
+	'Subscription signup fee product': 'subscription-signup-fee-product',
+};
 const customerBilling = config.get( 'addresses.customer.billing' );
 const card = config.get( 'cards.basic' );
-const productIds = [];
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Purchase multiple subscriptions',
 	() => {
-		// Setup 2 subscription products.
-		// Remember their product id's.
-		beforeAll( async () => {
-			await merchant.login();
-
-			for ( const productName of productNames ) {
-				const productId = await merchantWCP.createSubscriptionProduct(
-					productName,
-					'month'
-				);
-				productIds.push( productId );
-			}
-
-			await merchant.logout();
-		} );
-
 		afterAll( async () => {
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
@@ -48,8 +27,14 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 
 		it( 'should be able to purchase multiple subscriptions', async () => {
 			// As a Shopper, purchase the subscription products.
-			for ( const productId of productIds ) {
-				await shopper.goToProduct( productId );
+			const productSlugs = Object.values( products );
+			for ( const productSlug of productSlugs ) {
+				await page.goto(
+					config.get( 'url' ) + `product/${ productSlug }`,
+					{
+						waitUntil: 'networkidle0',
+					}
+				);
 				await shopper.addToCart();
 			}
 
@@ -74,19 +59,29 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			// Ensure 'Subscription totals' section lists the subscription products with the correct price.
-			const subTotalsRows = await page.$$( 'tr.order_item' );
+			const subTotalsRows = await page.$$(
+				'.shop_table order_details tbody tr.order_item'
+			);
 			for ( let i = 0; i < subTotalsRows.length; i++ ) {
 				const row = subTotalsRows[ i ];
 
 				await expect( row ).toMatchElement( '.product-name', {
-					text: productNames[ i ],
+					text: Object.keys( products )[ i ],
 				} );
 				await expect( row ).toMatchElement( '.product-total', {
 					text: '$9.99 / month',
 				} );
 			}
+			await expect( page ).toMatchElement(
+				'.shop_table tfoot tr:last-child td',
+				{
+					text: '$19.98 / month',
+				}
+			);
+
+			// Confirm related order total matches payment
 			await expect( page ).toMatchElement( 'td.order-total', {
-				text: '$19.98 for 2 items',
+				text: '$21.97 for 2 items',
 			} );
 		} );
 	}
