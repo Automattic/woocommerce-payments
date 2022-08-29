@@ -2,23 +2,18 @@
  * External dependencies
  */
 import config from 'config';
-
 const { merchant, shopper, withRestApi } = require( '@woocommerce/e2e-utils' );
-
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
 	merchantWCP,
 	uiLoaded,
 } from '../../../utils';
-
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
 const productName = 'Subscription no signup fee product';
 const productSlug = 'subscription-no-signup-fee-product';
-
 const customerBilling = config.get( 'addresses.customer.billing' );
-
 let orderId;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
@@ -30,7 +25,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 		} );
 
 		it( 'should be able to purchase a subscription with signup fee', async () => {
-			// Open the subscription product we created in the store
+			// Open the subscription product
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 				waitUntil: 'networkidle0',
 			} );
