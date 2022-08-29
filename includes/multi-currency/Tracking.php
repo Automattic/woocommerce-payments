@@ -161,9 +161,9 @@ class Tracking {
 
 		if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
 				\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-			$orders_by_currency = $wpdb->get_results( $query_on_orders );
+			$orders_by_currency = $wpdb->get_results( $query_on_orders ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		} else {
-			$orders_by_currency = $wpdb->get_results( $query_on_posts );
+			$orders_by_currency = $wpdb->get_results( $query_on_posts ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		}
 
 		$currencies  = [];
