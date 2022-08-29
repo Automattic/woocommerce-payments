@@ -303,7 +303,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				$items[] = [
 					'label'   => __( 'Tax', 'woocommerce-payments' ),
 					'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
-					'pending' => ( 0 === $tax ? true : false ),
+					'pending' => 0 === $tax,
 				];
 			}
 		}
