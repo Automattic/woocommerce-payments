@@ -8,10 +8,6 @@ const {
 	withRestApi,
 	setCheckbox,
 } = require( '@woocommerce/e2e-utils' );
-
-/**
- * Internal dependencies
- */
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
@@ -20,7 +16,6 @@ import {
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
 const productSlug = 'subscription-no-signup-fee-product';
-
 let subscriptionId;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
