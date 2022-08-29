@@ -2,15 +2,12 @@
  * External dependencies
  */
 import config from 'config';
-
 const { merchant, shopper, withRestApi } = require( '@woocommerce/e2e-utils' );
-
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
 	merchantWCP,
 } from '../../../utils';
-
 import {
 	fillCardDetails,
 	setupCheckout,
@@ -28,40 +25,22 @@ const formatter = new Intl.DateTimeFormat( 'en-US', {
 } );
 const renewalDate = nowUTC.setDate( nowUTC.getDate() + 14 );
 const renewalDateFormatted = formatter.format( renewalDate );
-const productName = `Simple subscription with free trial ${ nowLocal.getTime() }`;
-const productSlug = `simple-subscription-with-free-trial-${ nowLocal.getTime() }`;
-
+const productName = 'Subscription free trial product';
+const productSlug = 'subscription-free-trial-product';
 const customerBilling = config.get( 'addresses.customer.billing' );
-
 let orderId;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Purchase subscription with free trial',
 	() => {
-		beforeAll( async () => {
-			await merchant.login();
-
-			// Create subscription product without signup fee
-			await merchantWCP.createSubscriptionProduct(
-				productName,
-				'month',
-				false,
-				true
-			);
-
-			await merchant.logout();
-		} );
-
 		afterAll( async () => {
-			await merchant.logout();
-
 			// Delete the user created with the subscription
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
 
 		it( 'should be able to purchase a subscription with free trial', async () => {
-			// Open the subscription product we created in the store,
-			// and verify that the 14-day free trial is shown in the product description
+			// Open the subscription product, and verify that the
+			// 14-day free trial is shown in the product description
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 				waitUntil: 'networkidle0',
 			} );
@@ -112,22 +91,21 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				'.woocommerce-order-overview__order.order > strong'
 			);
 			orderId = await orderIdField.evaluate( ( el ) => el.innerText );
+
+			await shopper.logout();
 		} );
 
 		it( 'should create an order with "Setup Intent"', async () => {
 			await merchant.login();
 
 			await merchant.goToOrder( orderId );
-
 			await expect( page ).toMatchElement(
 				'.woocommerce-order-data__meta',
 				{
 					text: /\(seti_.*\)/,
 				}
 			);
-		} );
 
-		it( 'should have an active subscription with the correct trial end date', async () => {
 			await merchantWCP.openSubscriptions();
 
 			// Verify we have an active subscription for the product
