@@ -124,10 +124,10 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Do not process intents that can't be captured.
-			$intent               = $this->api_client->get_intent( $intent_id );
-			$intent_meta_order_id = $intent->get_metadata()['order_id'] ?? '';
-			$intent_meta_order_id = is_numeric( $intent_meta_order_id ) ? (int) $intent_meta_order_id : 0;
-
+			$intent                   = $this->api_client->get_intent( $intent_id );
+			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
+			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
+			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 			if ( $intent_meta_order_id !== $order->get_id() ) {
 				Logger::error( 'Payment capture rejected due to failed validation: order id on intent is incorrect or missing.' );
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
