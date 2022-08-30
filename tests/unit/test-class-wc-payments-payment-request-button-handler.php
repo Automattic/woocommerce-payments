@@ -308,6 +308,11 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_get_product_price_throws_exception_for_products_without_prices() {
+		if ( version_compare( WC_VERSION, '6.9.0', '>=' ) ) {
+			$this->markTestSkipped( 'This test is useless starting with WooCommerce 6.9.0' );
+			return;
+		}
+
 		$this->simple_product->set_price( 'a' );
 
 		$this->expectException( WCPay\Exceptions\Invalid_Price_Exception::class );
