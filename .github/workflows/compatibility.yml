@@ -21,7 +21,7 @@ jobs:
           - woocommerce: '6.4.1'
             wordpress:   '5.8'
             gutenberg:   '11.4.0' # The latest version supporting WP 5.6.
-            php:         '7.1' # Minimum supported PHP version
+            php:         '7.4' # Minimum supported PHP version
     env:
       WP_VERSION:        ${{ matrix.wordpress }}
       WC_VERSION:        ${{ matrix.woocommerce }}
