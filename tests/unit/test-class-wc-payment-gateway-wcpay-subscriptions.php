@@ -533,7 +533,20 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		}
 
 		$this->expectOutputString(
-			'<select name="field_id" id="field_id"><option value="" selected disabled>Please select a payment method</option><option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option><option value="' . $tokens[2]->get_id() . '" >' . $tokens[2]->get_display_name() . '</option><option value="' . $tokens[3]->get_id() . '" >' . $tokens[3]->get_display_name() . '</option><option value="' . $tokens[4]->get_id() . '" >' . $tokens[4]->get_display_name() . '</option><option value="' . $tokens[5]->get_id() . '" >' . $tokens[5]->get_display_name() . '</option><option value="' . $tokens[6]->get_id() . '" >' . $tokens[6]->get_display_name() . '</option><option value="' . $tokens[7]->get_id() . '" >' . $tokens[7]->get_display_name() . '</option><option value="' . $tokens[8]->get_id() . '" >' . $tokens[8]->get_display_name() . '</option><option value="' . $tokens[9]->get_id() . '" >' . $tokens[9]->get_display_name() . '</option><option value="' . $tokens[10]->get_id() . '" >' . $tokens[10]->get_display_name() . '</option></select>'
+			'<select name="field_id" id="field_id">' .
+				'<option value="" selected disabled>Please select a payment method</option>' .
+				'<option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[2]->get_id() . '" >' . $tokens[2]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[3]->get_id() . '" >' . $tokens[3]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[4]->get_id() . '" >' . $tokens[4]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[5]->get_id() . '" >' . $tokens[5]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[6]->get_id() . '" >' . $tokens[6]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[7]->get_id() . '" >' . $tokens[7]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[8]->get_id() . '" >' . $tokens[8]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[9]->get_id() . '" >' . $tokens[9]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[10]->get_id() . '" >' . $tokens[10]->get_display_name() . '</option>' .
+			'</select>'
 		);
 
 		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', '' );
