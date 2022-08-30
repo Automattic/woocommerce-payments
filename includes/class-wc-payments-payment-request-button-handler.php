@@ -225,7 +225,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$sign_up_fee        = 0;
 		$subscription_types = [
 			'subscription',
-			'variable-subscription',
+			'subscription_variation',
 		];
 		if ( in_array( $product->get_type(), $subscription_types, true ) && class_exists( 'WC_Subscriptions_Product' ) ) {
 			// When there is no sign-up fee, `get_sign_up_fee` falls back to an int 0.
@@ -290,22 +290,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 		];
 
 		$total_tax = 0;
-		if ( wc_tax_enabled() && $this->prices_exclude_tax() ) { // Only enter when taxes are enabled, but not included.
-			// Follows the way `WC_Cart_Totals::get_item_tax_rates()` works.
-			$tax_class = $product->get_tax_class();
-			$rates     = WC_Tax::get_rates( $tax_class );
-			// No cart item, `woocommerce_cart_totals_get_item_tax_rates` can't be applied here.
+		foreach ( $this->get_taxes( $product, $price ) as $tax ) {
+			$total_tax += $tax;
 
-			// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
-			foreach ( WC_Tax::calc_tax( $price, $rates, false ) as $tax ) {
-				$total_tax += $tax;
-
-				$items[] = [
-					'label'   => __( 'Tax', 'woocommerce-payments' ),
-					'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
-					'pending' => 0 === $tax,
-				];
-			}
+			$items[] = [
+				'label'   => __( 'Tax', 'woocommerce-payments' ),
+				'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
+				'pending' => 0 === $tax,
+			];
 		}
 
 		if ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() ) {
@@ -1070,11 +1062,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'amount' => WC_Payments_Utils::prepare_amount( $total, $currency ),
 			];
 
-			if ( wc_tax_enabled() ) {
+			$total_tax = 0;
+			foreach ( $this->get_taxes( $product, $price ) as $tax ) {
+				$total_tax += $tax;
+
 				$items[] = [
 					'label'   => __( 'Tax', 'woocommerce-payments' ),
-					'amount'  => 0,
-					'pending' => true,
+					'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
+					'pending' => 0 === $tax,
 				];
 			}
 
@@ -1096,7 +1091,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$data['displayItems'] = $items;
 			$data['total']        = [
 				'label'   => $this->get_total_label(),
-				'amount'  => WC_Payments_Utils::prepare_amount( $total, $currency ),
+				'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
 				'pending' => true,
 			];
 
@@ -1661,5 +1656,27 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'message'      => $message,
 			'redirect_url' => $redirect_url,
 		];
+	}
+
+	/**
+	 * Calculates taxes, based on a product and a particular price.
+	 *
+	 * @param WC_Product $product The product, for retrieval of tax classes.
+	 * @param float      $price   The price, which to calculate taxes for.
+	 * @return array              An array of final taxes.
+	 */
+	private function get_taxes( $product, $price ) {
+		if ( ! wc_tax_enabled() || ! $this->prices_exclude_tax() ) {
+			// Only proceed when taxes are enabled, but not included.
+			return [];
+		}
+
+		// Follows the way `WC_Cart_Totals::get_item_tax_rates()` works.
+		$tax_class = $product->get_tax_class();
+		$rates     = WC_Tax::get_rates( $tax_class );
+		// No cart item, `woocommerce_cart_totals_get_item_tax_rates` can't be applied here.
+
+		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
+		return WC_Tax::calc_tax( $price, $rates, false );
 	}
 }
