@@ -51,6 +51,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		'account_branding_icon'            => 'branding_icon',
 		'account_branding_primary_color'   => 'branding_primary_color',
 		'account_branding_secondary_color' => 'branding_secondary_color',
+
+		'deposit_schedule_interval'        => 'deposit_schedule_interval',
+		'deposit_schedule_weekly_anchor'   => 'deposit_schedule_weekly_anchor',
+		'deposit_schedule_monthly_anchor'  => 'deposit_schedule_monthly_anchor',
 	];
 
 	/**
@@ -1792,6 +1796,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_branding_primary_color();
 			case 'account_branding_secondary_color':
 				return $this->get_account_branding_secondary_color();
+			case 'deposit_schedule_interval':
+				return $this->get_deposit_schedule_interval();
+			case 'deposit_schedule_weekly_anchor':
+				return $this->get_deposit_schedule_weekly_anchor();
+			case 'deposit_schedule_monthly_anchor':
+				return $this->get_deposit_schedule_monthly_anchor();
+			case 'deposit_delay_days':
+				return $this->get_deposit_delay_days();
+			case 'deposit_status':
+				return $this->get_deposit_status();
+			case 'deposit_completed_waiting_period':
+				return $this->get_deposit_completed_waiting_period();
+
 			default:
 				return parent::get_option( $key, $empty_value );
 		}
@@ -2063,6 +2080,114 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $default_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule interval.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule.
+	 *
+	 * @return string Interval or default value.
+	 */
+	protected function get_deposit_schedule_interval( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_schedule_interval();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule interval.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule weekly anchor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule weekly anchor.
+	 *
+	 * @return string Weekly anchor or default value.
+	 */
+	protected function get_deposit_schedule_weekly_anchor( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_schedule_weekly_anchor();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule weekly anchor.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule monthly anchor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule monthly anchor.
+	 *
+	 * @return string Monthly anchor or default value.
+	 */
+	protected function get_deposit_schedule_monthly_anchor( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_schedule_monthly_anchor();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit delay days.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit delay days.
+	 *
+	 * @return string number of days.
+	 */
+	protected function get_deposit_delay_days( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_delay_days();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit status.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit status.
+	 *
+	 * @return string deposit status or default value.
+	 */
+	protected function get_deposit_status( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_status();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit status.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit status.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch completed_waiting_period.
+	 *
+	 * @return string deposit status or default value.
+	 */
+	protected function get_deposit_completed_waiting_period( string $empty_value = '' ): bool {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_completed_waiting_period();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit status.' . $e );
+		}
+		return $empty_value;
 	}
 
 	/**

@@ -429,16 +429,19 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			->with(
 				$this->equalTo(
 					[
-						'statement_descriptor'     => 'test statement descriptor',
-						'business_name'            => 'test business_name',
-						'business_url'             => 'test business_url',
-						'business_support_address' => 'test business_support_address',
-						'business_support_email'   => 'test business_support_email',
-						'business_support_phone'   => 'test business_support_phone',
-						'branding_logo'            => 'test branding_logo',
-						'branding_icon'            => 'test branding_icon',
-						'branding_primary_color'   => 'test branding_primary_color',
-						'branding_secondary_color' => 'test branding_secondary_color',
+						'statement_descriptor'            => 'test statement descriptor',
+						'business_name'                   => 'test business_name',
+						'business_url'                    => 'test business_url',
+						'business_support_address'        => 'test business_support_address',
+						'business_support_email'          => 'test business_support_email',
+						'business_support_phone'          => 'test business_support_phone',
+						'branding_logo'                   => 'test branding_logo',
+						'branding_icon'                   => 'test branding_icon',
+						'branding_primary_color'          => 'test branding_primary_color',
+						'branding_secondary_color'        => 'test branding_secondary_color',
+						'deposit_schedule_interval'       => 'test deposit_schedule_interval',
+						'deposit_schedule_weekly_anchor'  => 'test deposit_schedule_weekly_anchor',
+						'deposit_schedule_monthly_anchor' => 'test deposit_schedule_monthly_anchor',
 					]
 				)
 			);
@@ -454,6 +457,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'account_branding_icon', 'test branding_icon' );
 		$request->set_param( 'account_branding_primary_color', 'test branding_primary_color' );
 		$request->set_param( 'account_branding_secondary_color', 'test branding_secondary_color' );
+		$request->set_param( 'account_branding_primary_color', 'test branding_primary_color' );
+		$request->set_param( 'deposit_schedule_interval', 'test deposit_schedule_interval' );
+		$request->set_param( 'deposit_weekly_anchor', 'test deposit_schedule_weekly_anchor' );
+		$request->set_param( 'deposit_monthly_anchor', 'test deposit_schedule_monthly_anchor' );
 
 		$this->controller->update_settings( $request );
 	}
