@@ -1,0 +1,372 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Authorizations list renders correctly 1`] = `
+<div>
+  <div
+    class=" woocommerce-payments-page"
+  >
+    <div
+      class="woocommerce-card woocommerce-table woocommerce-analytics__card authorizations-list woocommerce-report-table has-search has-menu"
+    >
+      <div
+        class="woocommerce-card__header"
+      >
+        <div
+          class="woocommerce-card__title-wrapper"
+        >
+          <h2
+            class="woocommerce-card__title woocommerce-card__header-item"
+          >
+            Uncaptured transactions
+          </h2>
+        </div>
+        <div
+          class="woocommerce-card__menu woocommerce-card__header-item"
+        >
+          <div
+            class="woocommerce-ellipsis-menu"
+          >
+            <div
+              class="components-dropdown"
+            >
+              <button
+                aria-expanded="false"
+                class="components-button woocommerce-ellipsis-menu__toggle has-text has-icon"
+                title="Choose which values to display"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="dashicon dashicons-ellipsis"
+                  focusable="false"
+                  height="20"
+                  role="img"
+                  viewBox="0 0 20 20"
+                  width="20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M5 10c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-7 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                  />
+                </svg>
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  role="img"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="woocommerce-card__body"
+      >
+        <div
+          aria-hidden="false"
+          aria-labelledby="caption-0"
+          class="woocommerce-table__table"
+          role="group"
+        >
+          <table>
+            <caption
+              class="woocommerce-table__caption screen-reader-text"
+              id="caption-0"
+            >
+              Uncaptured transactions
+            </caption>
+            <tbody>
+              <tr>
+                <th
+                  aria-sort="descending"
+                  class="woocommerce-table__header date-time is-left-aligned is-sortable is-sorted"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-0-0"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Authorized on
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Authorized on
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-0"
+                  >
+                    Sort by Authorized on in ascending order
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header date-time is-left-aligned is-sortable"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-0-1"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Capture by
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Capture by
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-1"
+                  >
+                    Sort by Capture by in descending order
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    Order
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Order number
+                  </span>
+                </th>
+                <th
+                  class="woocommerce-table__header is-left-aligned"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    Risk level
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Risk level of transaction
+                  </span>
+                </th>
+                <th
+                  aria-sort="none"
+                  class="woocommerce-table__header is-sortable is-numeric"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <button
+                    aria-describedby="header-0-4"
+                    class="components-button"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      focusable="false"
+                      height="24"
+                      role="img"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                      />
+                    </svg>
+                    <span
+                      aria-hidden="true"
+                    >
+                      Amount
+                    </span>
+                    <span
+                      class="screen-reader-text"
+                    >
+                      Amount
+                    </span>
+                  </button>
+                  <span
+                    class="screen-reader-text"
+                    id="header-0-4"
+                  >
+                    Sort by Amount in descending order
+                  </span>
+                </th>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  scope="row"
+                >
+                  2020-01-02 17:46:02
+                </th>
+                <td
+                  class="woocommerce-table__item date-time is-left-aligned"
+                >
+                  2020-01-09 17:46:02
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    href="https://doggo.com"
+                  >
+                    #24 from Good boy
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <span
+                    style="color: crimson;"
+                  >
+                    High
+                  </span>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  14.55$
+                </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  scope="row"
+                >
+                  2020-01-03 17:46:02
+                </th>
+                <td
+                  class="woocommerce-table__item date-time is-left-aligned"
+                >
+                  2020-01-10 17:46:02
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    href="https://doggo.com"
+                  >
+                    #25 from Good boy
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <span
+                    style="color: green;"
+                  >
+                    Normal
+                  </span>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  20.10$
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ul
+          class="woocommerce-table__summary"
+        >
+          <li
+            class="woocommerce-table__summary-item"
+          >
+            <span
+              class="woocommerce-table__summary-value"
+            >
+              3
+            </span>
+            <span
+              class="woocommerce-table__summary-label"
+            >
+              authorizations
+            </span>
+          </li>
+          <li
+            class="woocommerce-table__summary-item"
+          >
+            <span
+              class="woocommerce-table__summary-value"
+            >
+              300
+            </span>
+            <span
+              class="woocommerce-table__summary-label"
+            >
+              total
+            </span>
+          </li>
+          <li
+            class="woocommerce-table__summary-item"
+          >
+            <span
+              class="woocommerce-table__summary-value"
+            >
+              150.00$
+            </span>
+            <span
+              class="woocommerce-table__summary-label"
+            >
+              Pending
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+`;
