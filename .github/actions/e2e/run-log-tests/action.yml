@@ -27,7 +27,7 @@ runs:
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs
-      if: ${{ failure() }}
+      if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
           name: wp(${{ matrix.wordpress }})-wc(${{ matrix.woocommerce }})-${{ matrix.test_groups }}-${{ matrix.test_branches }}
