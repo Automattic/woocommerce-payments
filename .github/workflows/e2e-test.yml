@@ -1,4 +1,4 @@
-name: E2E Tests - Full
+name: E2E Tests - All
 
 on:
   schedule:
