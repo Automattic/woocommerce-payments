@@ -11,6 +11,7 @@ export interface Authorization {
 	customer_name: string;
 	customer_email: string;
 	customer_country: string;
+	payment_intent_id: string;
 }
 
 interface Authorizations {

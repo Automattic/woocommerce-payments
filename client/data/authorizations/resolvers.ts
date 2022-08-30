@@ -9,7 +9,11 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import { updateAuthorizations, updateAuthorizationsSummary } from './actions';
+import {
+	updateAuthorizations,
+	updateAuthorization,
+	updateAuthorizationsSummary,
+} from './actions';
 import { Authorization, RiskLevel } from 'wcpay/types/authorizations';
 import { Query } from '@woocommerce/navigation';
 
@@ -42,11 +46,13 @@ export function* getAuthorizations( query: Query ): any {
 			const dataRisk = randomRisk();
 
 			const authorization: Authorization = {
-				authorization_id: '123',
+				authorization_id: `id_${ Date.now() }_${ Math.floor(
+					Math.random() * 1000
+				) }`,
 				authorized_on: randomDate,
 				capture_by: randomCaptureDate,
 				order: {
-					number: 24,
+					number: 252,
 					customer_url: 'https://doggo.com',
 					url: 'https://doggo.com',
 				},
@@ -55,6 +61,7 @@ export function* getAuthorizations( query: Query ): any {
 				customer_email: 'good_boy@doge.com',
 				customer_country: 'Kingdom of Dogs',
 				customer_name: 'Good boy',
+				payment_intent_id: 'pi_3LcS0tQsDOQXPzI11TFgmsxN',
 			};
 
 			return authorization;
@@ -62,6 +69,48 @@ export function* getAuthorizations( query: Query ): any {
 	};
 
 	yield updateAuthorizations( query, getMockedRows() );
+}
+
+export function* getAuthorization( id: string ): Generator< unknown > {
+	// TODO replace mocked implementation when server is ready
+	const randomAmount = () => {
+		return 1400 + Math.floor( Math.random() * 5000 );
+	};
+
+	const randomDate = dateI18n(
+		'M j, Y / g:iA',
+		moment.utc( new Date() ).local().toISOString()
+	);
+
+	const randomCaptureDate = dateI18n(
+		'M j, Y / g:iA',
+		moment.utc( new Date() ).add( '7', 'days' ).local().toISOString()
+	);
+
+	const randomRisk = (): RiskLevel => {
+		const risks: Array< RiskLevel > = [ 'elevated', 'normal', 'high' ];
+
+		return risks[ Math.floor( Math.random() * risks.length ) ];
+	};
+
+	const authorization = {
+		authorization_id: id,
+		authorized_on: randomDate,
+		capture_by: randomCaptureDate,
+		order: {
+			number: 252,
+			customer_url: 'https://doggo.com',
+			url: 'https://doggo.com',
+		},
+		risk_level: randomRisk(),
+		amount: randomAmount(),
+		customer_email: 'good_boy@doge.com',
+		customer_country: 'Kingdom of Dogs',
+		customer_name: 'Good boy',
+		payment_intent_id: 'pi_3LcS0tQsDOQXPzI11TFgmsxN',
+	};
+
+	yield updateAuthorization( [ authorization ] );
 }
 
 export function* getAuthorizationsSummary( query: Query ): any {

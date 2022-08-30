@@ -79,6 +79,7 @@ const getMockAuthorizations: () => Authorization[] = () => [
 		customer_email: 'good_boy@doge.com',
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
+		payment_intent_id: 'pi_4242',
 	},
 	{
 		authorization_id: '456',
@@ -94,6 +95,7 @@ const getMockAuthorizations: () => Authorization[] = () => [
 		customer_email: 'good_boy@doge.com',
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
+		payment_intent_id: 'pi_4243',
 	},
 ];
 

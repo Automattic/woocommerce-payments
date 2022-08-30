@@ -28,6 +28,22 @@ export const getAuthorizations = (
 	return state.authorizations?.authorizations || [];
 };
 
+const getAuthorizationsState = ( state: Record< string, any > ) => {
+	if ( ! state ) {
+		return {};
+	}
+
+	return state.authorizations || {};
+};
+
+export const getAuthorization = (
+	state: Record< string, any >,
+	id: string
+): Record< string, any > => {
+	const authorizationById = getAuthorizationsState( state ).byId || {};
+	return authorizationById[ id ];
+};
+
 export const getAuthorizationsError = (
 	state: Record< string, any >
 ): Error => {

@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import type { Query } from '@woocommerce/navigation';
 
 /**
@@ -45,3 +45,27 @@ export const useAuthorizationsSummary = ( {}: Query ): {
 			isLoading: isResolving( 'getAuthorizationsSummary', [ query ] ),
 		};
 	} );
+
+export const useAuthorization = (
+	id: string,
+	orderId: number,
+	paymentIntentId: string
+): {
+	isLoading: boolean;
+	doCaptureAuthorization: () => void;
+	authorization: unknown;
+} => {
+	const { authorization, isLoading } = useSelect( ( select ) => {
+		const { getAuthorization, isResolving } = select( STORE_NAME );
+		return {
+			authorization: getAuthorization( id ),
+			isLoading: isResolving( 'getAuthorization', [ id ] ),
+		};
+	} );
+
+	const { submitCaptureAuthorization } = useDispatch( STORE_NAME );
+	const doCaptureAuthorization = () =>
+		submitCaptureAuthorization( id, orderId, paymentIntentId );
+
+	return { authorization, isLoading, doCaptureAuthorization };
+};

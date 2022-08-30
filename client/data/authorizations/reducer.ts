@@ -8,7 +8,7 @@ import { getResourceId } from 'utils/data';
 import { Query } from '@woocommerce/navigation';
 import { Authorization } from 'wcpay/types/authorizations';
 
-const defaultState = { summary: {} };
+const defaultState = { summary: {}, byId: {} };
 
 const receiveAuthorizations = (
 	state = defaultState,
@@ -27,6 +27,14 @@ const receiveAuthorizations = (
 	const index = getResourceId( query );
 
 	switch ( type ) {
+		case TYPES.SET_AUTHORIZATION:
+			return {
+				...state,
+				byId: {
+					...state.byId,
+					[ data[ 0 ].authorization_id ]: data[ 0 ],
+				},
+			};
 		case TYPES.SET_AUTHORIZATIONS:
 			return {
 				...state,

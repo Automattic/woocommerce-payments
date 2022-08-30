@@ -14,6 +14,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
 import { RiskLevel } from 'wcpay/types/authorizations';
+import CaptureAuthorizationButton from './capture-authorization-button';
 
 interface Column extends TableCardColumn {
 	key:
@@ -95,6 +96,13 @@ const getColumns = (): Column[] =>
 			visible: false,
 			isLeftAligned: true,
 		},
+		{
+			key: 'action',
+			label: __( 'Action', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Action', 'woocommerce-payments' ),
+			visible: true,
+			required: true,
+		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
 const getFormatedAmountFromString = ( string: string ) => {
@@ -167,6 +175,15 @@ export const AuthorizationsList = (): JSX.Element => {
 			customer_country: {
 				value: auth.customer_country,
 				display: auth.customer_country,
+			},
+			action: {
+				display: (
+					<CaptureAuthorizationButton
+						id={ auth.authorization_id }
+						orderId={ auth.order.number }
+						paymentIntentId={ auth.payment_intent_id }
+					/>
+				),
 			},
 		};
 
