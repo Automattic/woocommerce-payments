@@ -1,11 +1,10 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Card,
-	RadioControl,
 	SelectControl,
 	ExternalLink,
 	Notice,
@@ -84,44 +83,13 @@ const CustomizeDepositSchedule = () => {
 		{ label: __( 'last day', 'woocommerce-payments' ), value: 31 },
 	];
 
-	const [ scheduleType, setScheduleType ] = useState(
-		'manual' === getDepositScheduleInterval ? 'manual' : 'automatic'
-	);
-
-	const [ scheduleInterval, setScheduleInterval ] = useState(
-		'manual' === getDepositScheduleInterval
-			? 'daily'
-			: getDepositScheduleInterval
-	);
-
-	useEffect( () => {
-		if ( 'manual' === scheduleType ) {
-			setDepositScheduleInterval( scheduleType );
-		} else {
-			setDepositScheduleInterval( scheduleInterval );
-		}
-	}, [ scheduleType, scheduleInterval, setDepositScheduleInterval ] );
-
 	return (
 		<>
-			<RadioControl
-				selected={ scheduleType }
-				onChange={ setScheduleType }
-				options={ [
-					{
-						label: __(
-							'Automatic Deposits',
-							'woocommerce-payments'
-						),
-						value: 'automatic',
-					},
-				] }
-			/>
-			{ 'automatic' === scheduleType && (
+			<div className="schedule-controls">
 				<SelectControl
 					label={ __( 'Frequency', 'woocommerce-payments' ) }
-					value={ scheduleInterval }
-					onChange={ setScheduleInterval }
+					value={ getDepositScheduleInterval }
+					onChange={ setDepositScheduleInterval }
 					options={ [
 						{
 							value: 'daily',
@@ -137,43 +105,40 @@ const CustomizeDepositSchedule = () => {
 						},
 					] }
 				/>
-			) }
-			{ 'monthly' === getDepositScheduleInterval && (
-				<SelectControl
-					label={ __( 'Date', 'woocommerce-payments' ) }
-					value={ getDepositScheduleMonthlyAnchor }
-					onChange={ setDepositScheduleMonthlyAnchor }
-					options={ monthlyAnchors }
-				/>
-			) }
-			{ 'weekly' === getDepositScheduleInterval && (
-				<SelectControl
-					label={ __( 'Date', 'woocommerce-payments' ) }
-					value={ getDepositScheduleWeeklyAnchor }
-					onChange={ setDepositScheduleWeeklyAnchor }
-					options={ daysOfWeek }
-				/>
-			) }
-			<p className="deposits__schedule-automatic-help">
-				{ __(
-					'Deposits scheduled on a weekend will be sent on the next business day.',
-					'woocommerce-payments'
+				{ 'monthly' === getDepositScheduleInterval && (
+					<SelectControl
+						label={ __( 'Date', 'woocommerce-payments' ) }
+						value={ getDepositScheduleMonthlyAnchor }
+						onChange={ setDepositScheduleMonthlyAnchor }
+						options={ monthlyAnchors }
+					/>
 				) }
+				{ 'weekly' === getDepositScheduleInterval && (
+					<SelectControl
+						label={ __( 'Day', 'woocommerce-payments' ) }
+						value={ getDepositScheduleWeeklyAnchor }
+						onChange={ setDepositScheduleWeeklyAnchor }
+						options={ daysOfWeek }
+					/>
+				) }
+			</div>
+			<p className="help-text">
+				{ 'monthly' === getDepositScheduleInterval &&
+					__(
+						'Deposits scheduled on a weekend will be sent on the next business day.',
+						'woocommerce-payments'
+					) }
+				{ 'weekly' === getDepositScheduleInterval &&
+					__(
+						'Deposits that fall on a holiday will initiate on the next business day.',
+						'woocommerce-payments'
+					) }
+				{ 'daily' === getDepositScheduleInterval &&
+					__(
+						'Deposits will occur every business day.',
+						'woocommerce-payments'
+					) }
 			</p>
-			<RadioControl
-				selected={ scheduleType }
-				onChange={ setScheduleType }
-				options={ [
-					{
-						label: __( 'Manual Deposits', 'woocommerce-payments' ),
-						value: 'manual',
-					},
-				] }
-				help={ __(
-					'Initiate a deposit at any time from the Payments dashboard.',
-					'woocommerce-payments'
-				) }
-			/>
 		</>
 	);
 };
