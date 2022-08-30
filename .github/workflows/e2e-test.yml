@@ -70,7 +70,7 @@ jobs:
         test_groups:   [ 'blocks' ]
         test_branches: [ 'shopper' ]
 
-    name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WC - latest | blocks - shopper
 
     env:
       E2E_WP_VERSION: ${{ matrix.wordpress }}
@@ -105,7 +105,7 @@ jobs:
           - test_groups: 'blocks'
             test_branches: 'merchant'
 
-    name: WP ${{ matrix.wordpress }} | WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
       E2E_WP_VERSION: ${{ matrix.wordpress }}

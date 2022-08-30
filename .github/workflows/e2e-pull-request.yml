@@ -38,7 +38,7 @@ jobs:
           - test_groups: 'blocks'
             test_branches: 'merchant'
 
-    name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
       E2E_WP_VERSION: ${{ matrix.wordpress }}
