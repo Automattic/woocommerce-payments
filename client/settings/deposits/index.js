@@ -40,7 +40,6 @@ const CustomizeDepositSchedule = () => {
 	] = useDepositScheduleMonthlyAnchor();
 
 	const daysOfWeek = [
-		{ label: __( 'Sunday', 'woocommerce-payments' ), value: 'sunday' },
 		{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
 		{ label: __( 'Tuesday', 'woocommerce-payments' ), value: 'tuesday' },
 		{
@@ -49,7 +48,6 @@ const CustomizeDepositSchedule = () => {
 		},
 		{ label: __( 'Thursday', 'woocommerce-payments' ), value: 'thursday' },
 		{ label: __( 'Friday', 'woocommerce-payments' ), value: 'friday' },
-		{ label: __( 'Saturday', 'woocommerce-payments' ), value: 'saturday' },
 	];
 	const monthlyAnchors = [
 		{ label: __( '1st', 'woocommerce-payments' ), value: 1 },
