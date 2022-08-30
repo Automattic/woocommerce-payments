@@ -12,7 +12,11 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import Authorizations, { AuthorizationsList } from '../';
-import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
+import {
+	useAuthorizations,
+	useAuthorizationsSummary,
+	useAuthorization,
+} from 'data/index';
 import { Authorization } from 'wcpay/types/authorizations';
 
 // Workaround for mocking @wordpress/data.
@@ -30,6 +34,9 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useAuthorizations: jest.fn(),
 	useAuthorizationsSummary: jest.fn(),
+	useAuthorization: jest.fn( () => ( {
+		doCaptureAuthorization: jest.fn(),
+	} ) ),
 } ) );
 
 const mockUseAuthorizations = useAuthorizations as jest.MockedFunction<

@@ -243,6 +243,22 @@ exports[`Authorizations list renders correctly 1`] = `
                     Sort by Amount in descending order
                   </span>
                 </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    Action
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Action
+                  </span>
+                </th>
               </tr>
               <tr>
                 <th
@@ -279,6 +295,16 @@ exports[`Authorizations list renders correctly 1`] = `
                 >
                   14.55$
                 </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <button
+                    class="components-button is-secondary is-small"
+                    type="button"
+                  >
+                    Capture
+                  </button>
+                </td>
               </tr>
               <tr>
                 <th
@@ -314,6 +340,16 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item is-numeric"
                 >
                   20.10$
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <button
+                    class="components-button is-secondary is-small"
+                    type="button"
+                  >
+                    Capture
+                  </button>
                 </td>
               </tr>
             </tbody>
