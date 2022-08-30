@@ -27,7 +27,9 @@ const renewalDate = nowUTC.setDate( nowUTC.getDate() + 14 );
 const renewalDateFormatted = formatter.format( renewalDate );
 const productName = 'Subscription free trial product';
 const productSlug = 'subscription-free-trial-product';
-const customerBilling = config.get( 'addresses.customer.billing' );
+const customerBilling = config.get(
+	'addresses.subscriptions-customer.billing'
+);
 let orderId;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(

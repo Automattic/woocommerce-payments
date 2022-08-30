@@ -13,7 +13,9 @@ import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
 const productName = 'Subscription no signup fee product';
 const productSlug = 'subscription-no-signup-fee-product';
-const customerBilling = config.get( 'addresses.customer.billing' );
+const customerBilling = config.get(
+	'addresses.subscriptions-customer.billing'
+);
 let orderId;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(

@@ -2,26 +2,25 @@
  * External dependencies
  */
 import config from 'config';
-
 const {
 	merchant,
 	shopper,
 	withRestApi,
 	evalAndClick,
 } = require( '@woocommerce/e2e-utils' );
-
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	RUN_ACTION_SCHEDULER_TESTS,
 	describeif,
 	merchantWCP,
 } from '../../../utils';
-
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
 const productSlug = 'subscription-signup-fee-product';
 const actionSchedulerHook = 'woocommerce_scheduled_subscription_payment';
-const customerBilling = config.get( 'addresses.customer.billing' );
+const customerBilling = config.get(
+	'addresses.subscriptions-customer.billing'
+);
 
 /*
  * This test has dependencies on components like Action Scheduler and there is

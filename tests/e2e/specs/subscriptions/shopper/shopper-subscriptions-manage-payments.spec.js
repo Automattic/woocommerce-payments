@@ -2,7 +2,6 @@
  * External dependencies
  */
 import config from 'config';
-const customerBilling = config.get( 'addresses.customer.billing' );
 const {
 	shopper,
 	withRestApi,
@@ -15,6 +14,9 @@ import {
 } from '../../../utils';
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
+const customerBilling = config.get(
+	'addresses.subscriptions-customer.billing'
+);
 const productSlug = 'subscription-no-signup-fee-product';
 let subscriptionId;
 

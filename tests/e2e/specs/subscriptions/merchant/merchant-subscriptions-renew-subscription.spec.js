@@ -2,7 +2,6 @@
  * External dependencies
  */
 import config from 'config';
-
 const {
 	merchant,
 	shopper,
@@ -10,19 +9,17 @@ const {
 	evalAndClick,
 	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
-
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
 	merchantWCP,
 } from '../../../utils';
-
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
 const productSlug = 'subscription-signup-fee-product';
-
-const customerBilling = config.get( 'addresses.customer.billing' );
-
+const customerBilling = config.get(
+	'addresses.subscriptions-customer.billing'
+);
 let subscriptionId;
 
 /*

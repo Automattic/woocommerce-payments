@@ -14,7 +14,9 @@ const products = {
 	'Subscription no signup fee product': 'subscription-no-signup-fee-product',
 	'Subscription signup fee product': 'subscription-signup-fee-product',
 };
-const customerBilling = config.get( 'addresses.customer.billing' );
+const customerBilling = config.get(
+	'addresses.subscriptions-customer.billing'
+);
 const card = config.get( 'cards.basic' );
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(

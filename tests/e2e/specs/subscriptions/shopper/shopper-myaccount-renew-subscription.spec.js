@@ -11,7 +11,9 @@ import {
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
 const productSlug = 'subscription-signup-fee-product';
-const customerBilling = config.get( 'addresses.customer.billing' );
+const customerBilling = config.get(
+	'addresses.subscriptions-customer.billing'
+);
 let subscriptionId;
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
