@@ -78,7 +78,10 @@ const CustomizeDepositSchedule = () => {
 		{ label: __( '26th', 'woocommerce-payments' ), value: 26 },
 		{ label: __( '27th', 'woocommerce-payments' ), value: 27 },
 		{ label: __( '28th', 'woocommerce-payments' ), value: 28 },
-		{ label: __( 'last day', 'woocommerce-payments' ), value: 31 },
+		{
+			label: __( 'Last day of the month', 'woocommerce-payments' ),
+			value: 31,
+		},
 	];
 
 	return (
