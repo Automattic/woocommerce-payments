@@ -296,7 +296,7 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_get_product_price_includes_variable_subscription_sign_up_fee() {
-		$mock_product = $this->create_mock_subscription( 'variable-subscription' );
+		$mock_product = $this->create_mock_subscription( 'subscription_variation' );
 
 		// We have a helper because we are not loading subscriptions.
 		WC_Subscriptions_Product::set_sign_up_fee( 10 );
