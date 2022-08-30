@@ -459,8 +459,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'account_branding_secondary_color', 'test branding_secondary_color' );
 		$request->set_param( 'account_branding_primary_color', 'test branding_primary_color' );
 		$request->set_param( 'deposit_schedule_interval', 'test deposit_schedule_interval' );
-		$request->set_param( 'deposit_weekly_anchor', 'test deposit_schedule_weekly_anchor' );
-		$request->set_param( 'deposit_monthly_anchor', 'test deposit_schedule_monthly_anchor' );
+		$request->set_param( 'deposit_schedule_weekly_anchor', 'test deposit_schedule_weekly_anchor' );
+		$request->set_param( 'deposit_schedule_monthly_anchor', 'test deposit_schedule_monthly_anchor' );
 
 		$this->controller->update_settings( $request );
 	}
