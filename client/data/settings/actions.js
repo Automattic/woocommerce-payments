@@ -61,6 +61,12 @@ export function updateEnabledPaymentMethodIds( methodIds ) {
 	} );
 }
 
+export function updateAvailablePaymentMethodIds( methodIds ) {
+	return updateSettingsValues( {
+		available_payment_method_ids: [ ...methodIds ],
+	} );
+}
+
 export function updateIsSavingSettings( isSaving, error ) {
 	return {
 		type: ACTION_TYPES.SET_IS_SAVING_SETTINGS,

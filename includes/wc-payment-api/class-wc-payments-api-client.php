@@ -497,18 +497,28 @@ class WC_Payments_API_Client {
 	/**
 	 * Create a setup intent.
 	 *
-	 * @param string $payment_method_id      - ID of payment method to be saved.
-	 * @param string $customer_id            - ID of the customer.
+	 * @param string $payment_method_id              - ID of payment method to be saved.
+	 * @param string $customer_id                    - ID of the customer.
+	 * @param bool   $save_in_platform_account       - Indicate whether payment method should be stored in platform store.
+	 * @param bool   $save_user_in_platform_checkout - Indicate whether is creating a platform checkout user.
+	 * @param array  $metadata                 - Meta data values to be sent along with setup intent creation.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
+	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id, $save_in_platform_account = false, $save_user_in_platform_checkout = false, $metadata = [] ) {
 		$request = [
-			'payment_method' => $payment_method_id,
-			'customer'       => $customer_id,
-			'confirm'        => 'true',
+			'payment_method'           => $payment_method_id,
+			'customer'                 => $customer_id,
+			'save_in_platform_account' => $save_in_platform_account,
+			'metadata'                 => $metadata,
+			'confirm'                  => 'true',
 		];
+
+		if ( $save_user_in_platform_checkout ) {
+			$request['is_platform_payment_method']      = 'true';
+			$request['save_payment_method_to_platform'] = 'true';
+		}
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}
@@ -1410,6 +1420,23 @@ class WC_Payments_API_Client {
 			$price_data,
 			self::PRICES_API . '/' . $price_id,
 			self::POST
+		);
+	}
+
+	/**
+	 * Fetch an invoice.
+	 *
+	 * @param string $invoice_id ID of the invoice to get.
+	 *
+	 * @return array The invoice.
+	 *
+	 * @throws API_Exception If fetching the invoice fails.
+	 */
+	public function get_invoice( string $invoice_id ) {
+		return $this->request(
+			[],
+			self::INVOICES_API . '/' . $invoice_id,
+			self::GET
 		);
 	}
 
