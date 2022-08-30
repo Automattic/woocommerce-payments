@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-The Payments > Overview "Temporarily Suspended" notice will only appear when deposits are "blocked", behind a feature flag.
+The Payments > Overview "Temporarily Suspended" notice will only appear when deposits are "blocked".

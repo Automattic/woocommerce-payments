@@ -125,7 +125,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_custom_deposit_schedules_enabled() {
-		return '1' === get_option( '_wcpay_feature_custom_deposit_schedules', '0' );
+		return '1' === get_option( '_wcpay_feature_custom_deposit_schedules', '1' );
 	}
 
 	/**
