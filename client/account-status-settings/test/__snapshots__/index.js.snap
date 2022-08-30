@@ -52,7 +52,7 @@ exports[`AccountStatus renders connected account 1`] = `
               />
             </g>
           </svg>
-          Daily
+          Automatic
         </span>
       </span>
     </div>
@@ -987,7 +987,7 @@ exports[`AccountStatus renders restricted soon account 1`] = `
               />
             </g>
           </svg>
-          Daily
+          Automatic
         </span>
       </span>
     </div>

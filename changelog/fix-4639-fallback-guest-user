@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add handling for guest user while updating customer with order data

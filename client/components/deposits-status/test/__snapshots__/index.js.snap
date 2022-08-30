@@ -80,7 +80,7 @@ exports[`DepositsStatus renders daily status 1`] = `
         />
       </g>
     </svg>
-    Daily
+    Automatic
   </span>
 </div>
 `;
@@ -180,7 +180,7 @@ exports[`DepositsStatus renders monthly status 1`] = `
         />
       </g>
     </svg>
-    Monthly
+    Automatic
   </span>
 </div>
 `;
@@ -226,7 +226,7 @@ exports[`DepositsStatus renders weekly status 1`] = `
         />
       </g>
     </svg>
-    Weekly
+    Automatic
   </span>
 </div>
 `;

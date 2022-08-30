@@ -19,7 +19,7 @@ const DepositsStatus = ( { status, interval, iconSize } ) => {
 	let className = 'account-status__info__green';
 	let description;
 	let icon = <GridiconCheckmarkCircle size={ iconSize } />;
-
+	const automaticStatuses = [ 'daily', 'weekly', 'monthly' ];
 	const showSuspendedNotice =
 		( ! isCustomDepositSchedulesEnabled && 'manual' === interval ) ||
 		'blocked' === status;
@@ -50,12 +50,8 @@ const DepositsStatus = ( { status, interval, iconSize } ) => {
 		);
 		className = 'account-status__info__yellow';
 		icon = <GridiconNotice size={ iconSize } />;
-	} else if ( 'daily' === interval ) {
-		description = __( 'Daily', 'woocommerce-payments' );
-	} else if ( 'weekly' === interval ) {
-		description = __( 'Weekly', 'woocommerce-payments' );
-	} else if ( 'monthly' === interval ) {
-		description = __( 'Monthly', 'woocommerce-payments' );
+	} else if ( automaticStatuses.includes( interval ) ) {
+		description = __( 'Automatic', 'woocommerce-payments' );
 	} else if ( isCustomDepositSchedulesEnabled && 'manual' === interval ) {
 		description = __( 'Manual', 'woocommerce-payments' );
 	} else {
