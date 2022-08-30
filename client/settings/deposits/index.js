@@ -25,6 +25,52 @@ import {
 } from '../../data';
 import './style.scss';
 
+const daysOfWeek = [
+	{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
+	{ label: __( 'Tuesday', 'woocommerce-payments' ), value: 'tuesday' },
+	{
+		label: __( 'Wednesday', 'woocommerce-payments' ),
+		value: 'wednesday',
+	},
+	{ label: __( 'Thursday', 'woocommerce-payments' ), value: 'thursday' },
+	{ label: __( 'Friday', 'woocommerce-payments' ), value: 'friday' },
+];
+
+const monthlyAnchors = [
+	{ label: __( '1st', 'woocommerce-payments' ), value: 1 },
+	{ label: __( '2nd', 'woocommerce-payments' ), value: 2 },
+	{ label: __( '3rd', 'woocommerce-payments' ), value: 3 },
+	{ label: __( '4th', 'woocommerce-payments' ), value: 4 },
+	{ label: __( '5th', 'woocommerce-payments' ), value: 5 },
+	{ label: __( '6th', 'woocommerce-payments' ), value: 6 },
+	{ label: __( '7th', 'woocommerce-payments' ), value: 7 },
+	{ label: __( '8th', 'woocommerce-payments' ), value: 8 },
+	{ label: __( '9th', 'woocommerce-payments' ), value: 9 },
+	{ label: __( '10th', 'woocommerce-payments' ), value: 10 },
+	{ label: __( '11th', 'woocommerce-payments' ), value: 11 },
+	{ label: __( '12th', 'woocommerce-payments' ), value: 12 },
+	{ label: __( '13th', 'woocommerce-payments' ), value: 13 },
+	{ label: __( '14th', 'woocommerce-payments' ), value: 14 },
+	{ label: __( '15th', 'woocommerce-payments' ), value: 15 },
+	{ label: __( '16th', 'woocommerce-payments' ), value: 16 },
+	{ label: __( '17th', 'woocommerce-payments' ), value: 17 },
+	{ label: __( '18th', 'woocommerce-payments' ), value: 18 },
+	{ label: __( '19th', 'woocommerce-payments' ), value: 19 },
+	{ label: __( '20th', 'woocommerce-payments' ), value: 20 },
+	{ label: __( '21st', 'woocommerce-payments' ), value: 21 },
+	{ label: __( '22nd', 'woocommerce-payments' ), value: 22 },
+	{ label: __( '23rd', 'woocommerce-payments' ), value: 23 },
+	{ label: __( '24th', 'woocommerce-payments' ), value: 24 },
+	{ label: __( '25th', 'woocommerce-payments' ), value: 25 },
+	{ label: __( '26th', 'woocommerce-payments' ), value: 26 },
+	{ label: __( '27th', 'woocommerce-payments' ), value: 27 },
+	{ label: __( '28th', 'woocommerce-payments' ), value: 28 },
+	{
+		label: __( 'Last day of the month', 'woocommerce-payments' ),
+		value: 31,
+	},
+];
+
 const CustomizeDepositSchedule = () => {
 	const [
 		getDepositScheduleInterval,
@@ -38,51 +84,6 @@ const CustomizeDepositSchedule = () => {
 		getDepositScheduleMonthlyAnchor,
 		setDepositScheduleMonthlyAnchor,
 	] = useDepositScheduleMonthlyAnchor();
-
-	const daysOfWeek = [
-		{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },
-		{ label: __( 'Tuesday', 'woocommerce-payments' ), value: 'tuesday' },
-		{
-			label: __( 'Wednesday', 'woocommerce-payments' ),
-			value: 'wednesday',
-		},
-		{ label: __( 'Thursday', 'woocommerce-payments' ), value: 'thursday' },
-		{ label: __( 'Friday', 'woocommerce-payments' ), value: 'friday' },
-	];
-	const monthlyAnchors = [
-		{ label: __( '1st', 'woocommerce-payments' ), value: 1 },
-		{ label: __( '2nd', 'woocommerce-payments' ), value: 2 },
-		{ label: __( '3rd', 'woocommerce-payments' ), value: 3 },
-		{ label: __( '4th', 'woocommerce-payments' ), value: 4 },
-		{ label: __( '5th', 'woocommerce-payments' ), value: 5 },
-		{ label: __( '6th', 'woocommerce-payments' ), value: 6 },
-		{ label: __( '7th', 'woocommerce-payments' ), value: 7 },
-		{ label: __( '8th', 'woocommerce-payments' ), value: 8 },
-		{ label: __( '9th', 'woocommerce-payments' ), value: 9 },
-		{ label: __( '10th', 'woocommerce-payments' ), value: 10 },
-		{ label: __( '11th', 'woocommerce-payments' ), value: 11 },
-		{ label: __( '12th', 'woocommerce-payments' ), value: 12 },
-		{ label: __( '13th', 'woocommerce-payments' ), value: 13 },
-		{ label: __( '14th', 'woocommerce-payments' ), value: 14 },
-		{ label: __( '15th', 'woocommerce-payments' ), value: 15 },
-		{ label: __( '16th', 'woocommerce-payments' ), value: 16 },
-		{ label: __( '17th', 'woocommerce-payments' ), value: 17 },
-		{ label: __( '18th', 'woocommerce-payments' ), value: 18 },
-		{ label: __( '19th', 'woocommerce-payments' ), value: 19 },
-		{ label: __( '20th', 'woocommerce-payments' ), value: 20 },
-		{ label: __( '21st', 'woocommerce-payments' ), value: 21 },
-		{ label: __( '22nd', 'woocommerce-payments' ), value: 22 },
-		{ label: __( '23rd', 'woocommerce-payments' ), value: 23 },
-		{ label: __( '24th', 'woocommerce-payments' ), value: 24 },
-		{ label: __( '25th', 'woocommerce-payments' ), value: 25 },
-		{ label: __( '26th', 'woocommerce-payments' ), value: 26 },
-		{ label: __( '27th', 'woocommerce-payments' ), value: 27 },
-		{ label: __( '28th', 'woocommerce-payments' ), value: 28 },
-		{
-			label: __( 'Last day of the month', 'woocommerce-payments' ),
-			value: 31,
-		},
-	];
 
 	return (
 		<>
