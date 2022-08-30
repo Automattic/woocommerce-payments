@@ -186,9 +186,7 @@ const Deposits = () => {
 	return (
 		<Card className="deposits">
 			<CardBody>
-				<h4>
-					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
-				</h4>
+				<h4>{ __( 'Deposit schedule', 'woocommerce-payments' ) }</h4>
 
 				<DepositsSchedule />
 
