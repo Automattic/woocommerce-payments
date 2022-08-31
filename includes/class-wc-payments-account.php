@@ -353,7 +353,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Gets the whether the account has completed waiting period
+	 * Gets whether the account has completed the deposit waiting period.
 	 *
 	 * @return bool
 	 */
