@@ -55,6 +55,7 @@ class WC_Payments_API_Client {
 	const PRODUCTS_API                 = 'products';
 	const PRICES_API                   = 'products/prices';
 	const INVOICES_API                 = 'invoices';
+	const SOURCES_API                  = 'sources';
 	const SUBSCRIPTIONS_API            = 'subscriptions';
 	const SUBSCRIPTION_ITEMS_API       = 'subscriptions/items';
 	const READERS_CHARGE_SUMMARY       = 'reader-charges/summary';
@@ -1556,9 +1557,16 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If payment method does not exist.
 	 */
 	public function get_payment_method( $payment_method_id ) {
+		if ( preg_match( '/^src_\w+$/i', $payment_method_id ) ) {
+			// A fallback for sites, which migrated from Stripe to WCPay.
+			$api = self::SOURCES_API;
+		} else {
+			$api = self::PAYMENT_METHODS_API;
+		}
+
 		return $this->request(
 			[],
-			self::PAYMENT_METHODS_API . '/' . $payment_method_id,
+			$api . '/' . $payment_method_id,
 			self::GET
 		);
 	}
