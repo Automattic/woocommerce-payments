@@ -10,6 +10,14 @@ import { render } from '@testing-library/react';
 import AccountStatus from '../';
 
 describe( 'AccountStatus', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			featureFlags: {
+				customDepositSchedules: false,
+			},
+		};
+	} );
+
 	const renderAccountStatus = ( accountStatus ) => {
 		return render( <AccountStatus accountStatus={ accountStatus } /> );
 	};
@@ -18,7 +26,10 @@ describe( 'AccountStatus', () => {
 		const { container: accountStatus } = renderAccountStatus( {
 			status: 'complete',
 			paymentsEnabled: true,
-			depositsStatus: 'daily',
+			deposits: {
+				status: 'enabled',
+				interval: 'daily',
+			},
 			currentDeadline: 0,
 			accountLink: '',
 		} );
@@ -29,7 +40,10 @@ describe( 'AccountStatus', () => {
 		const { container: accountStatus } = renderAccountStatus( {
 			status: 'restricted_soon',
 			paymentsEnabled: true,
-			depositsStatus: 'daily',
+			deposits: {
+				status: 'enabled',
+				interval: 'daily',
+			},
 			currentDeadline: 1583844589,
 			accountLink:
 				'/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-login=1',
@@ -41,7 +55,10 @@ describe( 'AccountStatus', () => {
 		const accountStatus = renderAccountStatus( {
 			status: 'restricted',
 			paymentsEnabled: false,
-			depositsStatus: 'disabled',
+			deposits: {
+				status: 'disabled',
+				interval: '',
+			},
 			currentDeadline: 1583844589,
 			pastDue: true,
 			accountLink:
@@ -54,7 +71,10 @@ describe( 'AccountStatus', () => {
 		const accountStatus = renderAccountStatus( {
 			status: 'restricted',
 			paymentsEnabled: false,
-			depositsStatus: 'disabled',
+			deposits: {
+				status: 'disabled',
+				interval: 'daily',
+			},
 			currentDeadline: 1583844589,
 			pastDue: false,
 			accountLink: '',
@@ -66,7 +86,10 @@ describe( 'AccountStatus', () => {
 		const accountStatus = renderAccountStatus( {
 			status: 'partially_restricted',
 			paymentsEnabled: false,
-			depositsStatus: 'disabled',
+			deposits: {
+				status: 'disabled',
+				interval: 'daily',
+			},
 			currentDeadline: 1583844589,
 			pastDue: false,
 			accountLink: '',
@@ -78,7 +101,10 @@ describe( 'AccountStatus', () => {
 		const { container: accountStatus } = renderAccountStatus( {
 			status: 'rejected.other',
 			paymentsEnabled: false,
-			depositsStatus: 'disabled',
+			deposits: {
+				status: 'disabled',
+				interval: 'monthly',
+			},
 			currentDeadline: 0,
 			accountLink: '',
 		} );
@@ -89,7 +115,10 @@ describe( 'AccountStatus', () => {
 		const { container: accountStatus } = renderAccountStatus( {
 			status: 'rejected.fraud',
 			paymentsEnabled: false,
-			depositsStatus: 'disabled',
+			deposits: {
+				status: 'disabled',
+				interval: 'daily',
+			},
 			currentDeadline: 0,
 			accountLink: '',
 		} );
@@ -100,7 +129,10 @@ describe( 'AccountStatus', () => {
 		const { container: accountStatus } = renderAccountStatus( {
 			status: 'rejected.terms_of_service',
 			paymentsEnabled: false,
-			depositsStatus: 'disabled',
+			deposits: {
+				status: 'disabled',
+				interval: 'daily',
+			},
 			currentDeadline: 0,
 			accountLink: '',
 		} );
@@ -111,7 +143,27 @@ describe( 'AccountStatus', () => {
 		const { container: accountStatus } = renderAccountStatus( {
 			status: 'complete',
 			paymentsEnabled: true,
-			depositsStatus: 'manual',
+			deposits: {
+				status: 'enabled',
+				interval: 'manual',
+			},
+			currentDeadline: 0,
+			accountLink: '',
+		} );
+		expect( accountStatus ).toMatchSnapshot();
+	} );
+
+	test( 'renders manual deposits (with custom deposits feature flag enabled)', () => {
+		// Enable custom deposit schedules feature flag.
+		global.wcpaySettings.featureFlags.customDepositSchedules = true;
+
+		const { container: accountStatus } = renderAccountStatus( {
+			status: 'complete',
+			paymentsEnabled: true,
+			deposits: {
+				status: 'enabled',
+				interval: 'manual',
+			},
 			currentDeadline: 0,
 			accountLink: '',
 		} );

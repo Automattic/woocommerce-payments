@@ -64,6 +64,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const UPDATE_CUSTOMER_WITH_ORDER_DATA = 'wcpay_update_customer_with_order_data';
 
 	/**
+	 * Set a large limit argument for retrieving user tokens.
+	 *
+	 * @type int
+	 */
+
+	const USER_FORMATTED_TOKENS_LIMIT = 100;
+
+	/**
 	 * Set of parameters to build the URL to the gateway's settings page.
 	 *
 	 * @var string[]
@@ -379,6 +387,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
+
+		add_action( 'woocommerce_woocommerce_payments_admin_applepay_notice', [ $this, 'display_not_supported_apple_pay' ] );
 	}
 
 	/**
@@ -595,6 +605,55 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Add notices explaining how to enable Apple Pay.
+	 *
+	 * @return void
+	 */
+	public function display_not_supported_apple_pay() {
+		if ( 'yes' !== $this->get_option( 'payment_request' ) ) {
+			return;
+		}
+
+		if ( WC_Payments_Utils::can_merchant_register_domain_with_applepay( $this->account->get_account_country() ) ) {
+			return;
+		}
+
+		if ( ! WC_Payments_Utils::is_account_in_supported_applepay_countries( $this->account->get_account_country() ) ) {
+			?>
+			<div id="wcpay-applepay-error" class="notice notice-error">
+				<p>
+					<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
+					<?php
+					echo sprintf(
+						/* translators: 1: supported country list */
+						__( 'Apple Pay isn’t currently supported in your country. <a href="%1$s">Countries and regions that support Apple Pay (Apple Support)</a>', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						'https://support.apple.com/en-us/HT207957'
+					);
+					?>
+				</p>
+			</div>
+			<?php
+		}
+
+		if ( ! WC_Payments_Utils::has_domain_association_file_permissions() ) {
+			?>
+		<div id="wcpay-applepay-error" class="notice notice-error">
+			<p>
+				<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
+				<?php
+				echo sprintf(
+					/* translators: 1: apple pay support */
+					__( 'We were not able to verify your domain. <a href="%1$s">This help documentation</a> will walk you through the process to verify with Apple that you control your domain.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					'https://woocommerce.com/document/payments/apple-pay/#apple-pay-button-does-not-appear'
+				);
+				?>
+			</p>
+		</div>
+			<?php
+		}
+	}
+
+	/**
 	 * Add notice explaining that the selected currency is not available.
 	 */
 	public function display_not_supported_currency_notice() {
@@ -623,6 +682,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function admin_options() {
 		// Add notices to the WooCommerce Payments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
+		do_action( 'woocommerce_woocommerce_payments_admin_applepay_notice' );
 
 		$this->output_payments_settings_screen();
 	}
@@ -754,7 +814,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			is_checkout() &&
 			! has_block( 'woocommerce/checkout' ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
-			! WC()->cart->is_empty()
+			! WC()->cart->is_empty() &&
+			WC()->cart->needs_payment()
 		) {
 			return true;
 		}
@@ -1045,6 +1106,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_customer_with_order_data( $order_id, $customer_id ) {
 		$order = wc_get_order( $order_id );
 		$user  = $order->get_user();
+		if ( false === $user ) {
+			$user = wp_get_current_user();
+		}
 
 		// Update the existing customer with the current order details.
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
@@ -1371,6 +1435,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $payment_information->is_using_saved_payment_method() ) {
 				$token = $payment_information->get_payment_token();
 				$this->add_token_to_order( $order, $token );
+
+				if ( $order->get_meta( '_woopay_has_subscription' ) ) {
+					$token->update_meta_data( 'is_attached_to_subscription', '1' );
+					$token->save_meta_data();
+				}
 			}
 
 			if ( 'requires_action' === $status ) {
@@ -2817,8 +2886,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			[
 				'user_id'    => $user_id,
 				'gateway_id' => self::GATEWAY_ID,
+				'limit'      => self::USER_FORMATTED_TOKENS_LIMIT,
 			]
 		);
+
 		return array_map(
 			static function ( WC_Payment_Token $token ): array {
 				return [
