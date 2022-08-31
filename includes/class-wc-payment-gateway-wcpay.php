@@ -2255,19 +2255,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Gets connected account deposit delay days.
 	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit delay days.
+	 * @param int $default_value Value to return when not connected or fails to fetch deposit delay days. Default is 7 days.
 	 *
-	 * @return string number of days.
+	 * @return int number of days.
 	 */
-	protected function get_deposit_delay_days( string $empty_value = '' ): string {
+	protected function get_deposit_delay_days( int $default_value = 7 ): int {
 		try {
 			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_delay_days();
+				return $this->account->get_deposit_delay_days() ?? $default_value;
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
+			Logger::error( 'Failed to get deposit delay days.' . $e );
 		}
-		return $empty_value;
+		return $default_value;
 	}
 
 	/**

@@ -104,7 +104,7 @@ export const getDepositScheduleMonthlyAnchor = ( state ) => {
 };
 
 export const getDepositDelayDays = ( state ) => {
-	return getSettings( state ).deposit_delay_days || '7';
+	return getSettings( state ).deposit_delay_days || '7'; // default to 7 days
 };
 
 export const getCompletedWaitingPeriod = ( state ) => {

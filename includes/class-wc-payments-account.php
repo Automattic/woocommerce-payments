@@ -335,11 +335,11 @@ class WC_Payments_Account {
 	/**
 	 * Gets the number of days payments are delayed for.
 	 *
-	 * @return string  e.g. 2, 7.
+	 * @return int|null e.g. 2, 7.
 	 */
-	public function get_deposit_delay_days(): string {
+	public function get_deposit_delay_days() {
 		$account = $this->get_cached_account_data();
-		return $account['deposits']['delay_days'] ?? '';
+		return $account['deposits']['delay_days'] ?? null;
 	}
 
 	/**

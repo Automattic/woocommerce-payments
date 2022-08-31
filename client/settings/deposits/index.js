@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import {
 	Card,
 	SelectControl,
@@ -19,7 +19,6 @@ import {
 	useDepositScheduleInterval,
 	useDepositScheduleWeeklyAnchor,
 	useDepositScheduleMonthlyAnchor,
-	useDepositDelayDays,
 	useDepositStatus,
 	useCompletedWaitingPeriod,
 } from '../../data';
@@ -147,7 +146,6 @@ const CustomizeDepositSchedule = () => {
 const DepositsSchedule = () => {
 	const getDepositStatus = useDepositStatus();
 	const getCompletedWaitingPeriod = useCompletedWaitingPeriod();
-	const getDepositDelayDays = useDepositDelayDays();
 
 	if ( 'enabled' !== getDepositStatus ) {
 		return (
@@ -165,12 +163,9 @@ const DepositsSchedule = () => {
 		return (
 			<Notice status="warning" isDismissible={ false }>
 				<span>
-					{ sprintf(
-						__(
-							'Your first deposit will be held for %s business days. Deposit scheduling will be available after this period.',
-							'woocommerce-payments'
-						),
-						getDepositDelayDays
+					{ __(
+						'Your first deposit will be held for 7 days. Deposit scheduling will be available after this period.',
+						'woocommerce-payments'
 					) }
 				</span>
 			</Notice>
