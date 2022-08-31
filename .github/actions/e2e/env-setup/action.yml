@@ -1,0 +1,81 @@
+name: Setup E2E Environment
+description: Install dependencies, build WCPay client & setup the test environment
+
+runs:
+  using: "composite"
+  steps:
+    # Add GH token for authentication
+    - name: Add GH token for authentication
+      shell: bash
+      run: echo -e "machine github.com\n  login $E2E_GH_TOKEN" > ~/.netrc
+
+    # PHP setup
+    - name: PHP Setup
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        tools: composer
+        coverage: none
+
+    # Composer setup
+    - name: Setup Composer
+      shell: bash
+      run: composer self-update 2.0.6
+
+    # Use node version from .nvmrc
+    - name: Setup NodeJS
+      uses: actions/setup-node@v2
+      with:
+        node-version-file: '.nvmrc'
+
+    # Cache composer dependencies
+    - name: Cache composer dependencies
+      id: composer-cache
+      uses: actions/cache@v2
+      with:
+        path: ./vendor
+        key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
+
+    # Cache node dependencies
+    - name: Cache node dependencies
+      id: node-cache
+      uses: actions/cache@v2
+      with:
+        path: ./node_modules
+        key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+
+    # Install composer dependencies if not present on cache
+    - name: Install composer dependencies
+      if: ${{ steps.composer-cache.outputs.cache-hit == false }}
+      shell: bash
+      run: composer install --no-progress
+
+    # Install node dependencies if not present on cache
+    - name: Install node dependencies
+      if: ${{ steps.node-cache.outputs.cache-hit == false }}
+      shell: bash
+      run: npm ci
+
+    # Build WCPay client
+    - name: Build WCPay Client
+      shell: bash
+      run: |
+        echo "::group::Build WCPay client"
+        npm run build:client
+        echo "::endgroup::"
+
+    # Kill process running on port 8084
+    - name: Kill mono-xsp4.service
+      shell: bash
+      run : |
+        echo "::group::Kill webserver running on port 8084"
+        sudo fuser -k -n tcp 8084
+        echo "::endgroup::"
+
+    # Prepare test environment
+    - name: Prepare test environment
+      shell: bash
+      run: |
+        echo "::group::Setup E2E test environment"
+        npm run test:e2e-setup
+        echo "::endgroup::"
