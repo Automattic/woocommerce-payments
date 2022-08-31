@@ -100,7 +100,9 @@ class WC_Payments_Token_Service {
 	 * @return array
 	 */
 	public function woocommerce_get_customer_payment_tokens( $tokens, $user_id, $gateway_id ) {
-		if ( ( ! empty( $gateway_id ) ) || ! is_user_logged_in() ) {
+		$gateway_ids = [ WC_Payment_Gateway_WCPay::GATEWAY_ID, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA ];
+
+		if ( ( ! empty( $gateway_id ) && ! in_array( $gateway_id, $gateway_ids, true ) ) || ! is_user_logged_in() ) {
 			return $tokens;
 		}
 
@@ -135,12 +137,13 @@ class WC_Payments_Token_Service {
 
 		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
 		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+
 		foreach ( $payment_methods as $payment_method ) {
 			if ( ! isset( $payment_method['type'] ) ) {
 				continue;
 			}
 
-			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) ) {
+			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) && ( 'card' === $payment_method['type'] && WC_Payment_Gateway_WCPay::GATEWAY_ID === $gateway_id || 'sepa_debit' === $payment_method['type'] && WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA === $gateway_id ) || empty( $gateway_id ) ) {
 				$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
 				$tokens[ $token->get_id() ] = $token;
 			} else {
