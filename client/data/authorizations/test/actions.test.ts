@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { RiskLevel } from 'wcpay/types/authorizations';
 
 /**
  * Internal dependencies
@@ -20,8 +21,8 @@ describe( 'submitCaptureAuthorization', () => {
 			customer_url: 'https://example.com',
 			url: 'https://example.com',
 		},
-		risk_level: 'risk_level',
-		amount: 'amount',
+		risk_level: 'risk_level' as RiskLevel,
+		amount: 42,
 		customer_email: 'customer_email',
 		customer_country: 'customer_country',
 		customer_name: 'customer_name',
@@ -48,7 +49,7 @@ describe( 'submitCaptureAuthorization', () => {
 		);
 
 		expect( generator.next( mockAuthorization ).value ).toEqual(
-			updateAuthorization( [ mockAuthorization ] )
+			updateAuthorization( mockAuthorization )
 		);
 
 		expect( generator.next().value ).toEqual(

@@ -5,60 +5,59 @@
  */
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
-import { Query } from '@woocommerce/navigation';
+import {
+	UpdateAuthorizationAction,
+	UpdateAuthorizationsAction,
+	UpdateAuthorizationsSummaryAction,
+} from './types';
 import { Authorization } from 'wcpay/types/authorizations';
 
 const defaultState = { summary: {}, byId: {} };
+// TODO remove any(s).
 
 const receiveAuthorizations = (
 	state = defaultState,
-	{
-		type,
-		query = {},
-		data = [],
-		error,
-	}: {
-		type: string;
-		query: Query;
-		data: Authorization[];
-		error: string;
-	}
-): Record< string, any > => {
-	const index = getResourceId( query );
-
-	switch ( type ) {
+	action:
+		| UpdateAuthorizationAction
+		| UpdateAuthorizationsAction
+		| UpdateAuthorizationsSummaryAction
+): any => {
+	switch ( action.type ) {
 		case TYPES.SET_AUTHORIZATION:
+			const authorization = action.data as Authorization;
 			return {
 				...state,
 				byId: {
 					...state.byId,
-					[ data[ 0 ].authorization_id ]: data[ 0 ],
+					[ authorization.authorization_id ]: authorization,
 				},
 			};
 		case TYPES.SET_AUTHORIZATIONS:
 			return {
 				...state,
-				authorizations: data,
+				[ getResourceId( action.query ) ]: {
+					data: action.data,
+				},
 			};
 		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS:
 			return {
 				...state,
-				[ index ]: {
-					error: error,
+				[ getResourceId( action.query ) ]: {
+					error: action.error,
 				},
 			};
 		case TYPES.SET_AUTHORIZATIONS_SUMMARY:
 			return {
 				...state,
-				summary: Object.assign( {}, state.summary, data ),
+				summary: Object.assign( {}, state.summary, action.data ),
 			};
 		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS_SUMMARY:
 			return {
 				...state,
 				summary: {
 					...state.summary,
-					[ index ]: {
-						error: error,
+					[ getResourceId( action.query ) ]: {
+						error: action.error,
 					},
 				},
 			};

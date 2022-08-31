@@ -110,7 +110,7 @@ export function* getAuthorization( id: string ): Generator< unknown > {
 		payment_intent_id: 'pi_3Lcm2iQsDOQXPzI102uKS0FD',
 	};
 
-	yield updateAuthorization( [ authorization ] );
+	yield updateAuthorization( authorization );
 }
 
 export function* getAuthorizationsSummary( query: Query ): any {

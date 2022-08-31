@@ -33,8 +33,8 @@ export function updateAuthorizations(
 }
 
 export function updateAuthorization(
-	data: any[]
-): { type: string; data: Array< Authorization > } {
+	data: Authorization
+): { type: string; data: Authorization } {
 	return {
 		type: TYPES.SET_AUTHORIZATION,
 		data,
@@ -60,7 +60,7 @@ export function* submitCaptureAuthorization(
 	id: string,
 	orderId: number,
 	paymentIntentId: string
-): Generator< unknown > {
+): any {
 	try {
 		yield dispatch( STORE_NAME, 'startResolution', 'getAuthorization', [
 			id,
@@ -74,7 +74,7 @@ export function* submitCaptureAuthorization(
 			},
 		} );
 
-		yield updateAuthorization( [ authorization ] );
+		yield updateAuthorization( authorization );
 
 		// Need to invalidate the resolution so that the components will render again.
 		yield dispatch(
