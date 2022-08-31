@@ -117,7 +117,7 @@ exports[`AccountStatus renders normal status 1`] = `
                 />
               </g>
             </svg>
-            Weekly
+            Automatic
           </span>
         </div>
       </div>

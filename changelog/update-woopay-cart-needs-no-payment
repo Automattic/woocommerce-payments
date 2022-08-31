@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Only offer WooPay when cart needs payment. Fix for an issue introduced by an earlier PR in this release cycle.
+
+
