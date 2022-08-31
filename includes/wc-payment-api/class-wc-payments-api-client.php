@@ -1571,9 +1571,17 @@ class WC_Payments_API_Client {
 			self::GET
 		);
 
-		if ( $is_source && 'three_d_secure' === $response['type'] ) {
-			// This was how 3DS was handled initially.
-			$response['type'] = 'card';
+		if ( $is_source ) {
+			if ( 'three_d_secure' === $response['type'] ) {
+				// This was how 3DS was handled initially.
+				$response['type'] = 'card';
+			} elseif ( 'multibanco' === $response['type'] ) {
+				throw new API_Exception(
+					__( 'The fallback to use source objects as payment methods does not work with multibanco sources.', 'woocommerce-payments' ),
+					'wcpay_multibanco_source_fallback',
+					400
+				);
+			}
 		}
 
 		return $response;
