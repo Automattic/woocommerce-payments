@@ -52,7 +52,7 @@ export function* getAuthorizations( query: Query ): any {
 				authorized_on: randomDate,
 				capture_by: randomCaptureDate,
 				order: {
-					number: 252,
+					number: 254,
 					customer_url: 'https://doggo.com',
 					url: 'https://doggo.com',
 				},
@@ -61,7 +61,7 @@ export function* getAuthorizations( query: Query ): any {
 				customer_email: 'good_boy@doge.com',
 				customer_country: 'Kingdom of Dogs',
 				customer_name: 'Good boy',
-				payment_intent_id: 'pi_3LcS0tQsDOQXPzI11TFgmsxN',
+				payment_intent_id: 'pi_3Lcm2iQsDOQXPzI102uKS0FD',
 			};
 
 			return authorization;
@@ -98,7 +98,7 @@ export function* getAuthorization( id: string ): Generator< unknown > {
 		authorized_on: randomDate,
 		capture_by: randomCaptureDate,
 		order: {
-			number: 252,
+			number: 254,
 			customer_url: 'https://doggo.com',
 			url: 'https://doggo.com',
 		},
@@ -107,7 +107,7 @@ export function* getAuthorization( id: string ): Generator< unknown > {
 		customer_email: 'good_boy@doge.com',
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
-		payment_intent_id: 'pi_3LcS0tQsDOQXPzI11TFgmsxN',
+		payment_intent_id: 'pi_3Lcm2iQsDOQXPzI102uKS0FD',
 	};
 
 	yield updateAuthorization( [ authorization ] );

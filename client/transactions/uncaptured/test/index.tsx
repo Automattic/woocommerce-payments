@@ -12,11 +12,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import Authorizations, { AuthorizationsList } from '../';
-import {
-	useAuthorizations,
-	useAuthorizationsSummary,
-	useAuthorization,
-} from 'data/index';
+import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import { Authorization } from 'wcpay/types/authorizations';
 
 // Workaround for mocking @wordpress/data.
