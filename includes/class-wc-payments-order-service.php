@@ -292,10 +292,10 @@ class WC_Payments_Order_Service {
 		} else {
 			// TODO: This should revert to the status the order was in before the dispute was created.
 			$this->update_order_status( $order, self::STATUS_COMPLETED );
+			$order->save();
 		}
 
 		$order->add_order_note( $note );
-		$order->save();
 	}
 
 	/**
