@@ -345,7 +345,7 @@ class WC_Payments_Account {
 	/**
 	 * Gets the deposit status
 	 *
-	 * @return string  e.g. disblaed, blocked, enabled.
+	 * @return string  e.g. disabled, blocked, enabled.
 	 */
 	public function get_deposit_status(): string {
 		$account = $this->get_cached_account_data();
@@ -353,7 +353,7 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Gets the whether the account has completed waiting period
+	 * Gets whether the account has completed the deposit waiting period.
 	 *
 	 * @return bool
 	 */
