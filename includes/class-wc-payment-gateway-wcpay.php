@@ -2289,19 +2289,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Gets connected account deposit status.
+	 * Gets the completed deposit waiting period value.
 	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch completed_waiting_period.
+	 * @param bool $empty_value Empty value to return when not connected or fails to fetch the completed deposit waiting period value.
 	 *
-	 * @return string deposit status or default value.
+	 * @return bool The completed deposit waiting period value or default value.
 	 */
-	protected function get_deposit_completed_waiting_period( string $empty_value = '' ): bool {
+	protected function get_deposit_completed_waiting_period( bool $empty_value = false ): bool {
 		try {
 			if ( $this->is_connected() ) {
 				return $this->account->get_deposit_completed_waiting_period();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit status.' . $e );
+			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
 		}
 		return $empty_value;
 	}
