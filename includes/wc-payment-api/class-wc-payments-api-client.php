@@ -1557,18 +1557,26 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If payment method does not exist.
 	 */
 	public function get_payment_method( $payment_method_id ) {
-		if ( preg_match( '/^src_\w+$/i', $payment_method_id ) ) {
-			// A fallback for sites, which migrated from Stripe to WCPay.
+		// A fallback for sites, which migrated from Stripe to WCPay.
+		$is_source = preg_match( '/^src_\w+$/i', $payment_method_id );
+		if ( $is_source ) {
 			$api = self::SOURCES_API;
 		} else {
 			$api = self::PAYMENT_METHODS_API;
 		}
 
-		return $this->request(
+		$response = $this->request(
 			[],
 			$api . '/' . $payment_method_id,
 			self::GET
 		);
+
+		if ( $is_source && 'three_d_secure' === $response['type'] ) {
+			// This was how 3DS was handled initially.
+			$response['type'] = 'card';
+		}
+
+		return $response;
 	}
 
 	/**
