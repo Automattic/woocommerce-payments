@@ -35,14 +35,13 @@ jobs:
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
         woocommerce:   [ '6.4.1', '6.6.1', 'latest', 'beta' ]
-        wordpress:     [ 'latest' ]
         test_groups:   [ 'wcpay', 'subscriptions' ]
         test_branches: [ 'merchant', 'shopper' ]
 
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
-      E2E_WP_VERSION: ${{ matrix.wordpress }}
+      E2E_WP_VERSION: 'latest'
       E2E_WC_VERSION: ${{ matrix.woocommerce }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
@@ -61,22 +60,13 @@ jobs:
   # Run tests against WC Checkout blocks & WC latest
   blocks-tests:
     runs-on: ubuntu-20.04
-
-    strategy:
-      fail-fast:     false
-      matrix:
-        woocommerce:   [ 'latest' ]
-        wordpress:     [ 'latest' ]
-        test_groups:   [ 'blocks' ]
-        test_branches: [ 'shopper' ]
-
     name: WC - latest | blocks - shopper
 
     env:
-      E2E_WP_VERSION: ${{ matrix.wordpress }}
-      E2E_WC_VERSION: ${{ matrix.woocommerce }}
-      E2E_GROUP:  ${{ matrix.test_groups }}
-      E2E_BRANCH: ${{ matrix.test_branches }}
+      E2E_WP_VERSION: 'latest'
+      E2E_WC_VERSION: 'latest'
+      E2E_GROUP:  'blocks'
+      E2E_BRANCH: 'shopper'
       SKIP_WC_SUBSCRIPTIONS_TESTS: 1 #skip installing & running subscriptions tests
       SKIP_WC_ACTION_SCHEDULER_TESTS: 1 #skip installing & running action scheduler tests
 
@@ -97,8 +87,6 @@ jobs:
     strategy:
       fail-fast:     false
       matrix:
-        woocommerce:   [ 'latest' ]
-        wordpress:     [ 'nightly' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
         exclude:
@@ -108,8 +96,8 @@ jobs:
     name: WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
-      E2E_WP_VERSION: ${{ matrix.wordpress }}
-      E2E_WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_WP_VERSION: 'nightly'
+      E2E_WC_VERSION: 'latest'
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
 

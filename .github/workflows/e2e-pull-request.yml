@@ -30,8 +30,6 @@ jobs:
     strategy:
       fail-fast:     false
       matrix:
-        woocommerce:   [ 'latest' ]
-        wordpress:     [ 'latest' ]
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
         exclude:
@@ -41,8 +39,8 @@ jobs:
     name: WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
-      E2E_WP_VERSION: ${{ matrix.wordpress }}
-      E2E_WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_WP_VERSION: 'latest'
+      E2E_WC_VERSION: 'latest'
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
 
