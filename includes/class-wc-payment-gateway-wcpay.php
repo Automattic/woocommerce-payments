@@ -1884,9 +1884,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * Overrides parent method to retrieve some options from connected account.
 	 *
-	 * @param  string $key         Option key.
-	 * @param  mixed  $empty_value Value when empty.
-	 * @return string|array        The value specified for the option or a default value for the option.
+	 * @param  string $key           Option key.
+	 * @param  mixed  $empty_value   Value when empty.
+	 * @return string|array|int|bool The value specified for the option or a default value for the option.
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		switch ( $key ) {
