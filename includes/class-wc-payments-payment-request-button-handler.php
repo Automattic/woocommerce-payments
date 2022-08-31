@@ -9,6 +9,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Payment_Information;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -80,12 +82,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
+		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
+		add_action( 'before_woocommerce_pay_form', [ $this, 'display_payment_request_button_separator_html' ], 2 );
+
 		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
 		add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
 		add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
 		add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
+		add_action( 'wc_ajax_wcpay_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
 
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
@@ -207,9 +213,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 */
 	public function get_product_price( $product ) {
 		$product_price = $product->get_price();
+
+		// If prices should include tax, using tax inclusive price.
+		if ( ! $this->prices_exclude_tax() ) {
+			$product_price = wc_get_price_including_tax( $product );
+		}
+
 		// Add subscription sign-up fees to product price.
 		if ( 'subscription' === $product->get_type() && class_exists( 'WC_Subscriptions_Product' ) ) {
-			$product_price = $product->get_price() + WC_Subscriptions_Product::get_sign_up_fee( $product );
+			$product_price = $product_price + WC_Subscriptions_Product::get_sign_up_fee( $product );
 		}
 
 		return $product_price;
@@ -250,19 +262,21 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 		}
 
-		$data  = [];
-		$items = [];
+		$data          = [];
+		$items         = [];
+		$product_price = $this->get_product_price( $product );
 
 		$items[] = [
 			'label'  => $product->get_name(),
-			'amount' => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ), $currency ),
+			'amount' => WC_Payments_Utils::prepare_amount( $product_price, $currency ),
 		];
 
+		$tax = $this->prices_exclude_tax() ? wc_format_decimal( wc_get_price_including_tax( $product ) - $product_price ) : 0;
 		if ( wc_tax_enabled() ) {
 			$items[] = [
 				'label'   => __( 'Tax', 'woocommerce-payments' ),
-				'amount'  => 0,
-				'pending' => true,
+				'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
+				'pending' => ( 0 === $tax ? true : false ),
 			];
 		}
 
@@ -284,7 +298,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems'] = $items;
 		$data['total']        = [
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $this->get_product_price( $product ), $currency ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $product_price + $tax, $currency ),
 			'pending' => true,
 		];
 
@@ -293,6 +307,67 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
+	}
+
+	/**
+	 * Displays the necessary HTML for the Pay for Order page.
+	 *
+	 * @param WC_Order $order The order that needs payment.
+	 */
+	public function display_pay_for_order_page_html( $order ) {
+		$currency = get_woocommerce_currency();
+
+		$data  = [];
+		$items = [];
+
+		foreach ( $order->get_items() as $item ) {
+			if ( method_exists( $item, 'get_total' ) ) {
+				$items[] = [
+					'label'  => $item->get_name(),
+					'amount' => WC_Payments_Utils::prepare_amount( $item->get_total(), $currency ),
+				];
+			}
+		}
+
+		if ( $order->get_total_tax() ) {
+			$items[] = [
+				'label'  => __( 'Tax', 'woocommerce-payments' ),
+				'amount' => WC_Payments_Utils::prepare_amount( $order->get_total_tax(), $currency ),
+			];
+		}
+
+		if ( $order->get_shipping_total() ) {
+			$shipping_label = sprintf(
+				// Translators: %s is the name of the shipping method.
+				__( 'Shipping (%s)', 'woocommerce-payments' ),
+				$order->get_shipping_method()
+			);
+
+			$items[] = [
+				'label'  => $shipping_label,
+				'amount' => WC_Payments_Utils::prepare_amount( $order->get_shipping_total(), $currency ),
+			];
+		}
+
+		foreach ( $order->get_fees() as $fee ) {
+			$items[] = [
+				'label'  => $fee->get_name(),
+				'amount' => WC_Payments_Utils::prepare_amount( $fee->get_amount(), $currency ),
+			];
+		}
+
+		$data['order']          = $order->get_id();
+		$data['displayItems']   = $items;
+		$data['needs_shipping'] = false; // This should be already entered/prepared.
+		$data['total']          = [
+			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ),
+			'pending' => true,
+		];
+
+		wp_localize_script( 'WCPAY_PAYMENT_REQUEST', 'wcpayPaymentRequestPayForOrderParams', $data );
+
+		$this->display_payment_request_button_html();
 	}
 
 	/**
@@ -365,12 +440,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 * Add needed order meta
 	 *
 	 * @param integer $order_id    The order ID.
-	 * @param array   $posted_data The posted data from checkout form.
 	 *
 	 * @return  void
 	 */
-	public function add_order_meta( $order_id, $posted_data ) {
-		if ( empty( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+	public function add_order_meta( $order_id ) {
+		if ( empty( $_POST['payment_request_type'] ) || ! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method'] ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
 
@@ -411,7 +485,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// Page not supported.
-		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() && ! isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
 		}
 
@@ -538,6 +612,15 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Checks if this is the Pay for Order page.
+	 *
+	 * @return boolean
+	 */
+	public function is_pay_for_order_page() {
+		return is_checkout() && isset( $_GET['pay_for_order'] ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
+
+	/**
 	 * Checks if this is the cart page or content contains a cart block.
 	 *
 	 * @return boolean
@@ -633,6 +716,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'add_to_cart'               => wp_create_nonce( 'wcpay-add-to-cart' ),
 				'get_selected_product_data' => wp_create_nonce( 'wcpay-get-selected-product-data' ),
 				'platform_tracker'          => wp_create_nonce( 'platform_tracks_nonce' ),
+				'pay_for_order'             => wp_create_nonce( 'pay_for_order' ),
 			],
 			'checkout'           => [
 				'currency_code'     => strtolower( get_woocommerce_currency() ),
@@ -644,6 +728,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'button'             => $this->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
 			'is_product_page'    => $this->is_product(),
+			'is_pay_for_order'   => $this->is_pay_for_order_page(),
 			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 			'product'            => $this->get_product_data(),
 			'total_label'        => $this->get_total_label(),
@@ -1039,6 +1124,71 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Handles payment requests on the Pay for Order page.
+	 *
+	 * @throws Exception All exceptions are handled within the method.
+	 */
+	public function ajax_pay_for_order() {
+		check_ajax_referer( 'pay_for_order' );
+
+		if (
+			! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method']
+			|| ! isset( $_POST['order'] ) || ! intval( $_POST['order'] )
+			|| ! isset( $_POST['wcpay-payment-method'] ) || empty( $_POST['wcpay-payment-method'] )
+		) {
+			// Incomplete request.
+			$response = [
+				'result'   => 'error',
+				'messages' => __( 'Invalid request', 'woocommerce-payments' ),
+			];
+			wp_send_json( $response, 400 );
+			return;
+		}
+
+		try {
+			// Set up an environment, similar to core checkout.
+			wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+			wc_set_time_limit( 0 );
+
+			// Load the order.
+			$order_id = intval( $_POST['order'] );
+			$order    = wc_get_order( $order_id );
+
+			if ( ! is_a( $order, WC_Order::class ) ) {
+				throw new Exception( __( 'Invalid order!', 'woocommerce-payments' ) );
+			}
+
+			if ( ! $order->needs_payment() ) {
+				throw new Exception( __( 'This order does not require payment!', 'woocommerce-payments' ) );
+			}
+
+			$this->add_order_meta( $order_id );
+
+			// Load the gateway.
+			$all_gateways = WC()->payment_gateways->get_available_payment_gateways();
+			$gateway      = $all_gateways['woocommerce_payments'];
+			$result       = $gateway->process_payment( $order_id );
+
+			// process_payment() should only return `success` or throw an exception.
+			if ( ! is_array( $result ) || ! isset( $result['result'] ) || 'success' !== $result['result'] || ! isset( $result['redirect'] ) ) {
+				throw new Exception( __( 'Unable to determine payment success.', 'woocommerce-payments' ) );
+			}
+
+			// Include the order ID in the result.
+			$result['order_id'] = $order_id;
+
+			$result = apply_filters( 'woocommerce_payment_successful_result', $result, $order_id );
+		} catch ( Exception $e ) {
+			$result = [
+				'result'   => 'error',
+				'messages' => $e->getMessage(),
+			];
+		}
+
+		wp_send_json( $result );
+	}
+
+	/**
 	 * Normalizes billing and shipping state fields.
 	 */
 	public function normalize_state() {
@@ -1285,6 +1435,16 @@ class WC_Payments_Payment_Request_Button_Handler {
 	}
 
 	/**
+	 * Whether tax should be displayed on seperate line.
+	 * returns true if tax is enabled & display of tax in checkout is set to exclusive.
+	 *
+	 * @return boolean
+	 */
+	private function prices_exclude_tax() {
+		return wc_tax_enabled() && 'incl' !== get_option( 'woocommerce_tax_display_cart' );
+	}
+
+	/**
 	 * Builds the shipping methods to pass to Payment Request
 	 *
 	 * @param array $shipping_methods Shipping methods.
@@ -1332,9 +1492,11 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 				$product_name = $cart_item['data']->get_name();
 
+				$item_tax = $this->prices_exclude_tax() ? 0 : ( $cart_item['line_subtotal_tax'] ?? 0 );
+
 				$item = [
 					'label'  => $product_name . $quantity_label,
-					'amount' => WC_Payments_Utils::prepare_amount( $amount, $currency ),
+					'amount' => WC_Payments_Utils::prepare_amount( $amount + $item_tax, $currency ),
 				];
 
 				$items[] = $item;
@@ -1357,7 +1519,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$items_total = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
 		$order_total = version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $items_total + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( '' );
 
-		if ( wc_tax_enabled() ) {
+		if ( $this->prices_exclude_tax() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Tax', 'woocommerce-payments' ) ),
 				'amount' => WC_Payments_Utils::prepare_amount( $tax, $currency ),
@@ -1365,9 +1527,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		if ( WC()->cart->needs_shipping() ) {
-			$items[] = [
+			$shipping_tax = $this->prices_exclude_tax() ? 0 : WC()->cart->shipping_tax_total;
+			$items[]      = [
 				'label'  => esc_html( __( 'Shipping', 'woocommerce-payments' ) ),
-				'amount' => WC_Payments_Utils::prepare_amount( $shipping, $currency ),
+				'amount' => WC_Payments_Utils::prepare_amount( $shipping + $shipping_tax, $currency ),
 			];
 		}
 

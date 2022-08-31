@@ -4,6 +4,8 @@
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
+import request from '../utils/request';
+import showErrorCheckout from '../utils/show-error-checkout';
 
 export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
@@ -164,13 +166,23 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	iframeWrapper.insertBefore( iframeArrow, null );
 	iframeWrapper.insertBefore( iframe, null );
 
-	const closeIframe = () => {
+	// Error message to display when there's an error contacting WooPay.
+	const errorMessage = document.createElement( 'div' );
+	errorMessage.textContent = __(
+		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
+		'woocommerce-payments'
+	);
+
+	const closeIframe = ( focus = true ) => {
 		window.removeEventListener( 'resize', getWindowSize );
 		window.removeEventListener( 'resize', setPopoverPosition );
 
 		iframeWrapper.remove();
 		iframe.classList.remove( 'open' );
-		platformCheckoutEmailInput.focus();
+
+		if ( focus ) {
+			platformCheckoutEmailInput.focus();
+		}
 
 		document.body.style.overflow = '';
 	};
@@ -199,14 +211,62 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		iframe.focus();
 	};
 
+	const showErrorMessage = () => {
+		parentDiv.insertBefore(
+			errorMessage,
+			platformCheckoutEmailInput.nextSibling
+		);
+	};
+
 	document.addEventListener( 'keyup', ( event ) => {
 		if ( 'Escape' === event.key && closeIframe() ) {
 			event.stopPropagation();
 		}
 	} );
 
-	const platformCheckoutLocateUser = ( email ) => {
+	// Store if the subscription login error is being shown
+	// to remove it when change the e-mail address.
+	let hasPlatformCheckoutSubscriptionLoginError = false;
+
+	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
+
+		if ( parentDiv.contains( errorMessage ) ) {
+			parentDiv.removeChild( errorMessage );
+		}
+
+		if ( hasPlatformCheckoutSubscriptionLoginError ) {
+			document
+				.querySelector( '#platform-checkout-subscriptions-login-error' )
+				.remove();
+			hasPlatformCheckoutSubscriptionLoginError = false;
+		}
+
+		if ( getConfig( 'platformCheckoutNeedLogin' ) ) {
+			try {
+				const userExistsData = await request(
+					getConfig( 'userExistsEndpoint' ),
+					{
+						email,
+					}
+				);
+
+				if ( userExistsData[ 'user-exists' ] ) {
+					hasPlatformCheckoutSubscriptionLoginError = true;
+					showErrorCheckout(
+						userExistsData.message,
+						false,
+						false,
+						'platform-checkout-subscriptions-login-error'
+					);
+					spinner.remove();
+					return;
+				}
+			} catch {
+				showErrorMessage();
+				spinner.remove();
+			}
+		}
 
 		const emailExistsQuery = new URLSearchParams();
 		emailExistsQuery.append( 'email', email );
@@ -221,7 +281,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				'platformCheckoutHost'
 			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`
 		)
-			.then( ( response ) => response.json() )
+			.then( ( response ) => {
+				if ( 200 !== response.status ) {
+					showErrorMessage();
+				}
+
+				return response.json();
+			} )
 			.then( ( data ) => {
 				// Dispatch an event after we get the response.
 				const PlatformCheckoutUserCheckEvent = new CustomEvent(
@@ -242,6 +308,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					);
 				}
 			} )
+			.catch( () => {
+				showErrorMessage();
+			} )
 			.finally( () => {
 				spinner.remove();
 			} );
@@ -259,24 +328,39 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	// Prevent show platform checkout iframe if the page comes from
 	// the back button on platform checkout itself.
-	const searchParams = new URLSearchParams( window.location.search );
+	window.addEventListener( 'pageshow', function ( event ) {
+		// Detect browser back button.
+		const historyTraversal =
+			event.persisted ||
+			( 'undefined' !== typeof performance &&
+				'back_forward' ===
+					performance.getEntriesByType( 'navigation' )[ 0 ].type );
 
-	if ( 'true' !== searchParams.get( 'skip_platform_checkout' ) ) {
-		// Check the initial value of the email input and trigger input validation.
-		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
-			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+		const searchParams = new URLSearchParams( window.location.search );
+
+		if (
+			! historyTraversal &&
+			'true' !== searchParams.get( 'skip_platform_checkout' )
+		) {
+			// Check the initial value of the email input and trigger input validation.
+			if ( validateEmail( platformCheckoutEmailInput.value ) ) {
+				platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+			}
+		} else {
+			searchParams.delete( 'skip_platform_checkout' );
+
+			let { pathname } = window.location;
+
+			if ( '' !== searchParams.toString() ) {
+				pathname += '?' + searchParams.toString();
+			}
+
+			history.replaceState( null, null, pathname );
+
+			// Safari needs to close iframe with this.
+			closeIframe( false );
 		}
-	} else {
-		searchParams.delete( 'skip_platform_checkout' );
-
-		let { pathname } = window.location;
-
-		if ( '' !== searchParams.toString() ) {
-			pathname += '?' + searchParams.toString();
-		}
-
-		history.replaceState( null, null, pathname );
-	}
+	} );
 
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
 		const email = e.currentTarget.value;
@@ -308,7 +392,8 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					if ( 'success' === response.result ) {
 						window.location = response.url;
 					} else {
-						closeIframe();
+						showErrorMessage();
+						closeIframe( false );
 					}
 				} );
 				break;

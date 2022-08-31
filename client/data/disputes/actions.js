@@ -4,7 +4,6 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import { getHistory } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
@@ -51,10 +50,11 @@ export function* acceptDispute( id ) {
 		yield dispatch( STORE_NAME, 'finishResolution', 'getDispute', [ id ] );
 
 		// Redirect to Disputes list.
-		getHistory().push(
+		window.location.replace(
 			getAdminUrl( {
 				page: 'wc-admin',
 				path: '/payments/disputes',
+				filter: 'awaiting_response',
 			} )
 		);
 

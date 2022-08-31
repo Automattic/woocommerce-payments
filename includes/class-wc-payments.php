@@ -26,6 +26,7 @@ use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
@@ -274,6 +275,7 @@ class WC_Payments {
 		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
+		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -328,7 +330,7 @@ class WC_Payments {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
 
-		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::$card_gateway, self::$customer_service );
+		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::$card_gateway, self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		self::maybe_register_platform_checkout_hooks();
@@ -365,7 +367,7 @@ class WC_Payments {
 		// Add admin screens.
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
-			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account );
+			new WC_Payments_Admin( self::$api_client, self::$card_gateway, self::$account, self::$database_cache );
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
@@ -710,6 +712,10 @@ class WC_Payments {
 		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
 		$onboarding_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-user-exists-controller.php';
+		$user_exists_controller = new WC_REST_User_Exists_Controller();
+		$user_exists_controller->register_routes();
+
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
@@ -729,6 +735,10 @@ class WC_Payments {
 			$vat_controller = new WC_REST_Payments_VAT_Controller( self::$api_client );
 			$vat_controller->register_routes();
 		}
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
+		$payment_intents_controller->register_routes();
 	}
 
 	/**
@@ -805,6 +815,15 @@ class WC_Payments {
 	 */
 	public static function get_localization_service() {
 		return self::$localization_service;
+	}
+
+	/**
+	 * Returns the WC_Payments_Action_Scheduler_Service
+	 *
+	 * @return WC_Payments_Action_Scheduler_Service Action Scheduler Service instance
+	 */
+	public static function get_action_scheduler_service() {
+		return self::$action_scheduler_service;
 	}
 
 	/**
@@ -985,6 +1004,8 @@ class WC_Payments {
 				add_action( 'woocommerce_cleanup_draft_orders', [ $draft_orders, 'delete_expired_draft_orders' ] );
 				add_action( 'admin_init', [ $draft_orders, 'install' ] );
 			}
+
+			new Platform_Checkout_Order_Status_Sync( self::$api_client );
 		}
 	}
 
@@ -1030,17 +1051,18 @@ class WC_Payments {
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
-				'store_name'        => get_bloginfo( 'name' ),
-				'store_logo'        => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
-				'custom_message'    => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
-				'blog_id'           => Jetpack_Options::get_option( 'id' ),
-				'blog_url'          => get_site_url(),
-				'blog_checkout_url' => wc_get_checkout_url(),
-				'blog_shop_url'     => get_permalink( wc_get_page_id( 'shop' ) ),
-				'store_api_url'     => self::get_store_api_url(),
-				'account_id'        => $account_id,
-				'test_mode'         => self::get_gateway()->is_in_test_mode(),
-				'capture_method'    => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
+				'store_name'                     => get_bloginfo( 'name' ),
+				'store_logo'                     => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
+				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
+				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
+				'blog_url'                       => get_site_url(),
+				'blog_checkout_url'              => wc_get_checkout_url(),
+				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
+				'store_api_url'                  => self::get_store_api_url(),
+				'account_id'                     => $account_id,
+				'test_mode'                      => self::get_gateway()->is_in_test_mode(),
+				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
+				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];

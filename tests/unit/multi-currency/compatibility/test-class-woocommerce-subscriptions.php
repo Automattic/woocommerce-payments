@@ -98,8 +98,8 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	// Test should not convert the product price due to all checks return true.
 	public function test_get_subscription_product_price_does_not_convert_price() {
 		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( true );
-		$this->mock_wcs_cart_contains_renewal( true );
-		$this->mock_wcs_cart_contains_resubscribe( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
+		$this->mock_wcs_cart_contains_resubscribe( 42 );
 		$this->assertSame( 10.0, $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product ) );
 	}
 
@@ -129,7 +129,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	// Test should convert product price due to the backtrace check returns false after the cart contains renewal check returns true.
 	public function test_get_subscription_product_price_converts_price_if_only_renewal_in_cart() {
 		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
-		$this->mock_wcs_cart_contains_renewal( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'product' )->willReturn( 25.0 );
 		$this->assertSame( 25.0, $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product ) );
@@ -139,7 +139,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	public function test_get_subscription_product_price_converts_price_if_only_resubscribe_in_cart() {
 		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
 		$this->mock_wcs_cart_contains_renewal( false );
-		$this->mock_wcs_cart_contains_resubscribe( true );
+		$this->mock_wcs_cart_contains_resubscribe( 42 );
 		$this->mock_multi_currency->method( 'get_price' )->with( 10.0, 'product' )->willReturn( 25.0 );
 		$this->assertSame( 25.0, $this->woocommerce_subscriptions->get_subscription_product_price( 10.0, $this->mock_product ) );
 	}
@@ -151,7 +151,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->method( 'is_call_in_backtrace' )
 			->with( [ 'WC_Subscriptions_Cart::set_subscription_prices_for_calculation' ] )
 			->willReturn( true );
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->assertSame( 10.0, $this->woocommerce_subscriptions->get_subscription_product_signup_fee( 10.0, $this->mock_product ) );
 	}
 
@@ -167,7 +167,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 				[ [ 'WCS_Switch_Totals_Calculator->apportion_sign_up_fees' ] ]
 			)
 			->willReturn( false, true, true, false );
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->woocommerce_subscriptions->switch_cart_item = 'abc123';
 		$this->assertSame( 10.0, $this->woocommerce_subscriptions->get_subscription_product_signup_fee( 10.0, $this->mock_product ) );
 	}
@@ -178,7 +178,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->expects( $this->any() )
 			->method( 'is_call_in_backtrace' )
 			->willReturn( false );
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->woocommerce_subscriptions->switch_cart_item = 'abc123';
 
 		$this->mock_meta_data
@@ -201,7 +201,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->expects( $this->any() )
 			->method( 'is_call_in_backtrace' )
 			->willReturn( false );
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->woocommerce_subscriptions->switch_cart_item = 'abc123';
 
 		$this->mock_meta_data
@@ -225,7 +225,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->expects( $this->any() )
 			->method( 'is_call_in_backtrace' )
 			->willReturn( false );
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->woocommerce_subscriptions->switch_cart_item = 'def456';
 
 		$this->mock_product
@@ -237,7 +237,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	}
 
 	public function test_maybe_disable_mixed_cart_return_no() {
-		$this->mock_wcs_get_order_type_cart_items( true );
+		$this->mock_wcs_get_order_type_cart_items( 42 );
 		$this->assertSame( 'no', $this->woocommerce_subscriptions->maybe_disable_mixed_cart( 'yes' ) );
 	}
 
@@ -249,7 +249,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	// Returns code due to code was passed.
 	public function test_override_selected_currency_return_currency_code_when_code_passed() {
 		// Conditions added to return EUR, but CAD should be returned at the beginning of the method.
-		$this->mock_wcs_cart_contains_renewal( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		update_post_meta( 42, '_order_currency', 'EUR', true );
 		$this->mock_wcs_get_order_type_cart_items( false );
@@ -267,47 +267,92 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 
 	// Returns code due to cart contains a subscription renewal.
 	public function test_override_selected_currency_return_currency_code_when_renewal_in_cart() {
-		$this->mock_wcs_cart_contains_renewal( true );
-		$this->mock_wcs_cart_contains_resubscribe( false );
-		update_post_meta( 42, '_order_currency', 'CAD', true );
-		$this->mock_wcs_get_order_type_cart_items( false );
-		$this->assertSame( 'CAD', $this->woocommerce_subscriptions->override_selected_currency( false ) );
+		// Set up an order with a non-default currency.
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'JPY' );
+		$order->save();
+
+		// Mock that order as the renewal in the cart.
+		$this->mock_wcs_cart_contains_renewal( 42, $order->get_id() );
+
+		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
 
-	// Returns code due to GET states there is a subscription switch like on the product page after clicking upgrade/downgrade button.
-	public function test_override_selected_currency_return_currency_code_when_switch_initiated() {
+	// Test correct currency when shopper clicks upgrade/downgrade button in My Account – "switch".
+	public function test_override_selected_currency_return_currency_code_for_switch_request() {
+		// Reset/clear any previous mocked state.
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( false );
-		$_GET['switch-subscription'] = 42;
-		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
-		update_post_meta( 42, '_order_currency', 'CAD', true );
 		$this->mock_wcs_get_order_type_cart_items( false );
-		$this->assertSame( 'CAD', $this->woocommerce_subscriptions->override_selected_currency( false ) );
+
+		// Set up an order with a non-default currency.
+		// This might need to be a subscription object, not an order.
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'JPY' );
+		$order->save();
+
+		// Blatantly hack mock request params for the test.
+		$_GET['switch-subscription'] = $order->get_id();
+		$_GET['_wcsnonce']           = wp_create_nonce( 'wcs_switch_request' );
+
+		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
 
 	// Returns code due to cart contains a subscription switch.
 	public function test_override_selected_currency_return_currency_code_when_switch_in_cart() {
+		// Reset/clear any previous mocked state.
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->mock_wcs_cart_contains_resubscribe( false );
-		update_post_meta( 42, '_order_currency', 'CAD', true );
-		$this->mock_wcs_get_order_type_cart_items( true );
-		$this->assertSame( 'CAD', $this->woocommerce_subscriptions->override_selected_currency( false ) );
+
+		// Mock order with custom currency for switch cart item.
+		// Note we're using a WC_Order as a stand-in for a true WC_Subscription.
+		$mock_subscription = WC_Helper_Order::create_order();
+		$mock_subscription->set_currency( 'JPY' );
+		$mock_subscription->save();
+
+		// Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Mock cart to simulate a switch cart item referencing our subscription.
+		$this->mock_wcs_get_order_type_cart_items( $mock_subscription->get_id() );
+
+		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
 
 	// Returns code due to cart contains a subscription resubscribe.
 	public function test_override_selected_currency_return_currency_code_when_resubscribe_in_cart() {
+		// Reset/clear any previous mocked state.
 		$this->mock_wcs_cart_contains_renewal( false );
-		$this->mock_wcs_cart_contains_resubscribe( true );
-		update_post_meta( 42, '_order_currency', 'CAD', true );
 		$this->mock_wcs_get_order_type_cart_items( false );
-		$this->assertSame( 'CAD', $this->woocommerce_subscriptions->override_selected_currency( false ) );
+
+		// Mock order with custom currency for switch cart item.
+		// Note we're using a WC_Order as a stand-in for a true WC_Subscription.
+		$mock_subscription = WC_Helper_Order::create_order();
+		$mock_subscription->set_currency( 'JPY' );
+		$mock_subscription->save();
+
+		// Mock wcs_get_subscription to return our mock subscription.
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
+		// Mock cart to simulate a resubscribe cart item referencing our subscription.
+		$this->mock_wcs_cart_contains_resubscribe( $mock_subscription->get_id() );
+
+		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
 
 	public function test_should_convert_product_price_return_false_when_false_passed() {
 		// Conditions added to return true, but it should return false if passed.
 		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
-		$this->mock_wcs_cart_contains_renewal( true );
-		$this->mock_wcs_cart_contains_resubscribe( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
+		$this->mock_wcs_cart_contains_resubscribe( 42 );
 
 		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_product_price( false, $this->mock_product ) );
 	}
@@ -324,7 +369,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 				]
 			)
 			->willReturn( true );
-		$this->mock_wcs_cart_contains_renewal( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
 	}
@@ -342,14 +387,14 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			)
 			->willReturn( true );
 		$this->mock_wcs_cart_contains_renewal( false );
-		$this->mock_wcs_cart_contains_resubscribe( true );
+		$this->mock_wcs_cart_contains_resubscribe( 42 );
 		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
 	}
 
 	public function test_should_convert_product_price_return_true_when_backtrace_does_not_match() {
 		$this->mock_utils->method( 'is_call_in_backtrace' )->willReturn( false );
-		$this->mock_wcs_cart_contains_renewal( true );
-		$this->mock_wcs_cart_contains_resubscribe( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
+		$this->mock_wcs_cart_contains_resubscribe( 42 );
 		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_product_price( true, $this->mock_product ) );
 	}
 
@@ -405,7 +450,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->method( 'get_discount_type' )
 			->willReturn( 'recurring_fee' );
 
-		$this->mock_wcs_cart_contains_renewal( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
 		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_coupon_amount( true, $this->mock_coupon ) );
 	}
 
@@ -429,7 +474,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->method( 'get_discount_type' )
 			->willReturn( 'recurring_fee' );
 
-		$this->mock_wcs_cart_contains_renewal( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
 		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_coupon_amount( true, $this->mock_coupon ) );
 	}
 
@@ -447,7 +492,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->method( 'get_discount_type' )
 			->willReturn( 'recurring_fee' );
 
-		$this->mock_wcs_cart_contains_renewal( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
 		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_coupon_amount( true, $this->mock_coupon ) );
 	}
 
@@ -465,7 +510,7 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 			->method( 'get_discount_type' )
 			->willReturn( 'failing_fee' );
 
-		$this->mock_wcs_cart_contains_renewal( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
 		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_coupon_amount( true, $this->mock_coupon ) );
 	}
 
@@ -500,14 +545,14 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	}
 
 	public function test_should_hide_widgets_return_true_when_renewal_in_cart() {
-		$this->mock_wcs_cart_contains_renewal( true );
+		$this->mock_wcs_cart_contains_renewal( 42, 43 );
 		$this->mock_wcs_cart_contains_resubscribe( false );
 		$this->assertTrue( $this->woocommerce_subscriptions->should_hide_widgets( false ) );
 	}
 
 	public function test_should_hide_widgets_return_true_when_resubscribe_in_cart() {
 		$this->mock_wcs_cart_contains_renewal( false );
-		$this->mock_wcs_cart_contains_resubscribe( true );
+		$this->mock_wcs_cart_contains_resubscribe( 42 );
 		$this->assertTrue( $this->woocommerce_subscriptions->should_hide_widgets( false ) );
 	}
 
@@ -528,14 +573,16 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		$this->assertTrue( $this->woocommerce_subscriptions->should_hide_widgets( false ) );
 	}
 
-	private function mock_wcs_cart_contains_renewal( $value ) {
+	// Simulate (mock) a renewal in the cart.
+	// Pass 0 / no args to unmock.
+	private function mock_wcs_cart_contains_renewal( $product_id = 0, $renewal_order_id = 0 ) {
 		WC_Subscriptions::wcs_cart_contains_renewal(
-			function () use ( $value ) {
-				if ( $value ) {
+			function () use ( $product_id, $renewal_order_id ) {
+				if ( $product_id && $renewal_order_id ) {
 					return [
-						'product_id'           => 42,
+						'product_id'           => $product_id,
 						'subscription_renewal' => [
-							'renewal_order_id' => 42,
+							'renewal_order_id' => $renewal_order_id,
 						],
 					];
 				}
@@ -545,16 +592,16 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		);
 	}
 
-	private function mock_wcs_get_order_type_cart_items( $value ) {
+	private function mock_wcs_get_order_type_cart_items( $switch_id = 0 ) {
 		WC_Subscriptions::wcs_get_order_type_cart_items(
-			function () use ( $value ) {
-				if ( $value ) {
+			function () use ( $switch_id ) {
+				if ( $switch_id ) {
 					return [
 						[
 							'product_id'          => 42,
 							'key'                 => 'abc123',
 							'subscription_switch' => [
-								'subscription_id' => 42,
+								'subscription_id' => $switch_id,
 							],
 						],
 					];
@@ -565,14 +612,14 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		);
 	}
 
-	private function mock_wcs_cart_contains_resubscribe( $value ) {
+	private function mock_wcs_cart_contains_resubscribe( $subscription_id = 0 ) {
 		WC_Subscriptions::wcs_cart_contains_resubscribe(
-			function () use ( $value ) {
-				if ( $value ) {
+			function () use ( $subscription_id ) {
+				if ( $subscription_id ) {
 					return [
 						'product_id'               => 42,
 						'subscription_resubscribe' => [
-							'subscription_id' => 42,
+							'subscription_id' => $subscription_id,
 						],
 					];
 				}

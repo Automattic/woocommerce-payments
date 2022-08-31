@@ -6,6 +6,7 @@
  */
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+use WCPay\Database_Cache;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -20,6 +21,20 @@ class WC_Payments_Admin {
 	 * @var string
 	 */
 	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1"><span class="plugin-count">1</span></span>';
+
+	/**
+	 * Dispute notification badge HTML format (with placeholder for the number of disputes).
+	 *
+	 * @var string
+	 */
+	const DISPUTE_NOTIFICATION_BADGE_FORMAT = ' <span class="wcpay-menu-badge awaiting-mod count-%1$s"><span class="plugin-count">%1$d</span></span>';
+
+	/**
+	 * WC Payments WordPress Admin menu slug.
+	 *
+	 * @var string
+	 */
+	const PAYMENTS_SUBMENU_SLUG = 'wc-admin&path=/payments/overview';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API.
@@ -50,20 +65,30 @@ class WC_Payments_Admin {
 	private $admin_child_pages;
 
 	/**
+	 * Database_Cache instance.
+	 *
+	 * @var Database_Cache
+	 */
+	private $database_cache;
+
+	/**
 	 * Hook in admin menu items.
 	 *
 	 * @param WC_Payments_API_Client   $payments_api_client WooCommerce Payments API client.
 	 * @param WC_Payment_Gateway_WCPay $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 * @param WC_Payments_Account      $account             Account instance.
+	 * @param Database_Cache           $database_cache      Database Cache instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payment_Gateway_WCPay $gateway,
-		WC_Payments_Account $account
+		WC_Payments_Account $account,
+		Database_Cache $database_cache
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->wcpay_gateway       = $gateway;
 		$this->account             = $account;
+		$this->database_cache      = $database_cache;
 
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
@@ -369,6 +394,7 @@ class WC_Payments_Admin {
 
 		$this->add_menu_notification_badge();
 		$this->add_update_business_details_task();
+		$this->add_disputes_notification_badge();
 	}
 
 	/**
@@ -406,13 +432,16 @@ class WC_Payments_Admin {
 			$path = WC()->plugin_path() . '/i18n/locale-info.php';
 		}
 
-		$locale_info   = include $path;
+		$locale_info = include $path;
+		// Get symbols for those currencies without a short one.
+		$symbols       = get_woocommerce_currency_symbols();
 		$currency_data = [];
 
 		foreach ( $locale_info as $key => $value ) {
+			$currency_code         = $value['currency_code'] ?? '';
 			$currency_data[ $key ] = [
-				'code'              => $value['currency_code'] ?? '',
-				'symbol'            => $value['short_symbol'] ?? '',
+				'code'              => $currency_code,
+				'symbol'            => $value['short_symbol'] ?? $symbols[ $currency_code ] ?? '',
 				'symbolPosition'    => $value['currency_pos'] ?? '',
 				'thousandSeparator' => $value['thousand_sep'] ?? '',
 				'decimalSeparator'  => $value['decimal_sep'] ?? '',
@@ -421,45 +450,47 @@ class WC_Payments_Admin {
 		}
 
 		$wcpay_settings = [
-			'connectUrl'              => WC_Payments_Account::get_connect_url(),
-			'connect'                 => [
+			'connectUrl'                 => WC_Payments_Account::get_connect_url(),
+			'connect'                    => [
 				'country'            => WC()->countries->get_base_country(),
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 				'availableStates'    => WC()->countries->get_states(),
 			],
-			'testMode'                => $this->wcpay_gateway->is_in_test_mode(),
+			'testMode'                   => $this->wcpay_gateway->is_in_test_mode(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
-			'onBoardingDisabled'      => WC_Payments_Account::is_on_boarding_disabled(),
-			'errorMessage'            => $error_message,
-			'featureFlags'            => $this->get_frontend_feature_flags(),
-			'isSubscriptionsActive'   => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
+			'onBoardingDisabled'         => WC_Payments_Account::is_on_boarding_disabled(),
+			'errorMessage'               => $error_message,
+			'featureFlags'               => $this->get_frontend_feature_flags(),
+			'isSubscriptionsActive'      => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
 			// used in the settings page by the AccountFees component.
-			'zeroDecimalCurrencies'   => WC_Payments_Utils::zero_decimal_currencies(),
-			'fraudServices'           => $this->account->get_fraud_services_config(),
-			'isJetpackConnected'      => $this->payments_api_client->is_server_connected(),
-			'isJetpackIdcActive'      => Jetpack_Identity_Crisis::has_identity_crisis(),
-			'accountStatus'           => $this->account->get_account_status_data(),
-			'accountFees'             => $this->account->get_fees(),
-			'accountLoans'            => $this->account->get_capital(),
-			'accountEmail'            => $this->account->get_account_email(),
-			'showUpdateDetailsTask'   => get_option( 'wcpay_show_update_business_details_task', 'no' ),
-			'wpcomReconnectUrl'       => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
-			'additionalMethodsSetup'  => [
+			'zeroDecimalCurrencies'      => WC_Payments_Utils::zero_decimal_currencies(),
+			'fraudServices'              => $this->account->get_fraud_services_config(),
+			'isJetpackConnected'         => $this->payments_api_client->is_server_connected(),
+			'isJetpackIdcActive'         => Jetpack_Identity_Crisis::has_identity_crisis(),
+			'accountStatus'              => $this->account->get_account_status_data(),
+			'accountFees'                => $this->account->get_fees(),
+			'accountLoans'               => $this->account->get_capital(),
+			'accountEmail'               => $this->account->get_account_email(),
+			'showUpdateDetailsTask'      => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+			'wpcomReconnectUrl'          => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
+			'additionalMethodsSetup'     => [
 				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
 			],
-			'multiCurrencySetup'      => [
+			'multiCurrencySetup'         => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
-			'needsHttpsSetup'         => $this->wcpay_gateway->needs_https_setup(),
-			'isMultiCurrencyEnabled'  => WC_Payments_Features::is_customer_multi_currency_enabled(),
-			'overviewTasksVisibility' => [
+			'needsHttpsSetup'            => $this->wcpay_gateway->needs_https_setup(),
+			'isMultiCurrencyEnabled'     => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'shouldUseExplicitPrice'     => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
+			'overviewTasksVisibility'    => [
 				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
 				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
 				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
 			],
-			'currentUserEmail'        => $current_user_email,
-			'currencyData'            => $currency_data,
-			'restUrl'                 => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
+			'currentUserEmail'           => $current_user_email,
+			'currencyData'               => $currency_data,
+			'restUrl'                    => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
+			'numDisputesNeedingResponse' => $this->get_disputes_awaiting_response_count(),
 		];
 
 		wp_localize_script(
@@ -862,5 +893,55 @@ class WC_Payments_Admin {
 		</div>
 
 		<?php
+	}
+
+	/**
+	 * Adds a notification badge to the Payments > Disputes admin menu item to
+	 * indicate the number of disputes that need a response.
+	 */
+	public function add_disputes_notification_badge() {
+		global $submenu;
+
+		if ( ! isset( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] ) ) {
+			return;
+		}
+
+		$disputes_needing_response = $this->get_disputes_awaiting_response_count();
+
+		if ( $disputes_needing_response <= 0 ) {
+			return;
+		}
+
+		foreach ( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] as $index => $menu_item ) {
+			if ( 'wc-admin&path=/payments/disputes' === $menu_item[2] ) {
+				// Direct the user to the disputes which need a response by default.
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][2] = admin_url( add_query_arg( [ 'filter' => 'awaiting_response' ], 'admin.php?page=' . $menu_item[2] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+				// Append the dispute notification badge to indicate the number of disputes needing a response.
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( self::DISPUTE_NOTIFICATION_BADGE_FORMAT, esc_html( $disputes_needing_response ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Gets the number of disputes which need a response. ie have a 'needs_response' or 'warning_needs_response' status.
+	 *
+	 * @return int The number of disputes which need a response.
+	 */
+	private function get_disputes_awaiting_response_count() {
+		$disputes_status_counts = $this->database_cache->get_or_add(
+			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
+			[ $this->payments_api_client, 'get_dispute_status_counts' ],
+			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
+			'is_array'
+		);
+
+		if ( empty( $disputes_status_counts ) ) {
+			return 0;
+		}
+
+		$needs_response_statuses = [ 'needs_response', 'warning_needs_response' ];
+		return (int) array_sum( array_intersect_key( $disputes_status_counts, array_flip( $needs_response_statuses ) ) );
 	}
 }

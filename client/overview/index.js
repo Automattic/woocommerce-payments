@@ -20,7 +20,6 @@ import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
-import { useDisputes } from 'data';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 
 import './style.scss';
@@ -35,7 +34,8 @@ const OverviewPage = () => {
 		featureFlags: { accountOverviewTaskList },
 		needsHttpsSetup,
 	} = wcpaySettings;
-	const { disputes, isLoading } = useDisputes( getQuery() );
+	const numDisputesNeedingResponse =
+		parseInt( wcpaySettings.numDisputesNeedingResponse, 10 ) || 0;
 	const { isLoading: settingsIsLoading, settings } = useSettings();
 
 	const tasksUnsorted = getTasks( {
@@ -43,7 +43,7 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		needsHttpsSetup,
-		disputes,
+		numDisputesNeedingResponse,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -54,6 +54,8 @@ const OverviewPage = () => {
 
 	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
 	const showLoanOfferError = '1' === queryParams[ 'wcpay-loan-offer-error' ];
+	const showServerLinkError =
+		'1' === queryParams[ 'wcpay-server-link-error' ];
 	const accountRejected =
 		accountStatus.status && accountStatus.status.startsWith( 'rejected' );
 
@@ -117,6 +119,15 @@ const OverviewPage = () => {
 				</Notice>
 			) }
 
+			{ showServerLinkError && (
+				<Notice status="error" isDismissible={ false }>
+					{ __(
+						'There was a problem redirecting you to the requested link. Please check that it is valid and try again.',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
+
 			<TestModeNotice topic={ topics.overview } />
 
 			{ ! accountRejected && (
@@ -124,6 +135,17 @@ const OverviewPage = () => {
 					<DepositsInformation />
 				</ErrorBoundary>
 			) }
+
+			{ !! accountOverviewTaskList &&
+				0 < tasks.length &&
+				! accountRejected && (
+					<ErrorBoundary>
+						<TaskList
+							tasks={ tasks }
+							overviewTasksVisibility={ overviewTasksVisibility }
+						/>
+					</ErrorBoundary>
+				) }
 
 			<ErrorBoundary>
 				<AccountStatus
@@ -137,18 +159,6 @@ const OverviewPage = () => {
 					<ActiveLoanSummary />
 				</ErrorBoundary>
 			) }
-
-			{ !! accountOverviewTaskList &&
-				0 < tasks.length &&
-				! isLoading &&
-				! accountRejected && (
-					<ErrorBoundary>
-						<TaskList
-							tasks={ tasks }
-							overviewTasksVisibility={ overviewTasksVisibility }
-						/>
-					</ErrorBoundary>
-				) }
 
 			{ ! accountRejected && (
 				<ErrorBoundary>

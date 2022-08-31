@@ -13,33 +13,20 @@ import moment from 'moment';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 
-const getDisputesToResolve = ( disputes ) => {
-	if ( ! disputes ) {
-		return 0;
-	}
-	const incompleteDisputes = disputes.filter( ( { status } ) => {
-		return [ 'warning_needs_response', 'needs_response' ].includes(
-			status
-		);
-	} );
-	return incompleteDisputes.length;
-};
-
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
 	needsHttpsSetup,
-	disputes = [],
+	numDisputesNeedingResponse = 0,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	let accountDetailsTaskDescription;
 
-	const isDisputeTaskVisible = 0 < disputes.length;
-	const disputesToResolve = getDisputesToResolve( disputes );
+	const isDisputeTaskVisible = 0 < numDisputesNeedingResponse;
 
 	if ( accountRestrictedSoon ) {
 		accountDetailsTaskDescription = sprintf(
@@ -134,16 +121,14 @@ export const getTasks = ( {
 			title: sprintf(
 				_n(
 					'1 disputed payment needs your response',
-					'%s disputed payments needs your response',
-					disputesToResolve,
+					'%s disputed payments need your response',
+					numDisputesNeedingResponse,
 					'woocommerce-payments'
 				),
-				disputesToResolve ? disputesToResolve : disputes.length
+				numDisputesNeedingResponse
 			),
-			additionalInfo: disputesToResolve
-				? __( 'View and respond', 'woocommerce-payments' )
-				: '',
-			completed: 0 === disputesToResolve,
+			additionalInfo: __( 'View and respond', 'woocommerce-payments' ),
+			completed: false,
 			isDeletable: true,
 			isDismissable: true,
 			allowSnooze: true,
@@ -154,6 +139,7 @@ export const getTasks = ( {
 				window.location.href = getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/disputes',
+					filter: 'awaiting_response',
 				} );
 			},
 		},

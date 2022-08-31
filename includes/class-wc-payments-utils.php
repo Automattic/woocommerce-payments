@@ -241,6 +241,53 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Apple Pay supported country codes.
+	 *
+	 * @return string[]
+	 */
+	public static function supported_applepay_country_codes(): array {
+		return [
+			'ZA', 'AU', 'CN', 'HK', 'JP', 'MO', 'NZ', 'SG', 'TW', 'AM', 'AT', 'AZ', 'BY', 'BE', 'BG', 'HR', 'CY', 'CZ', // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
+			'DK', 'EE', 'FO', 'FI', 'FR', 'GE', 'DE', 'GR', 'GL', 'GG', 'HU', 'IS', 'IE', 'IM', 'IT', 'KZ', 'JE', 'LV', // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
+			'LI', 'LT', 'LU', 'MT', 'MD', 'MC', 'ME', 'NL', 'NO', 'PL', 'PT', 'RO', 'SM', 'RS', 'SK', 'SI', 'ES', 'SE', // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
+			'CH', 'UA', 'GB', 'VA', 'AR', 'CO', 'CR', 'BR', 'MX', 'PE', 'BH', 'IL', 'PS', 'QA', 'SA', 'AE', 'CA', 'US',  // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
+		];
+	}
+
+	/**
+	 * Check if merchant can register domain with Apple Pay.
+	 *
+	 * @param string $account_country - Account country.
+	 * @return bool
+	 */
+	public static function can_merchant_register_domain_with_applepay( string $account_country ): bool {
+		return self::is_account_in_supported_applepay_countries( $account_country ) && self::has_domain_association_file_permissions();
+	}
+
+	/**
+	 * Check if domain association file has the proper permissions.
+	 *
+	 * @return bool
+	 */
+	public static function has_domain_association_file_permissions(): bool {
+		$well_known_dir = untrailingslashit( ABSPATH ) . '/' . WC_Payments_Apple_Pay_Registration::DOMAIN_ASSOCIATION_FILE_DIR;
+		$full_path      = $well_known_dir . '/' . WC_Payments_Apple_Pay_Registration::DOMAIN_ASSOCIATION_FILE_NAME;
+
+		return is_dir( $well_known_dir ) && is_writable( $well_known_dir ) && file_exists( $full_path ) && is_readable( $full_path );
+	}
+
+	/**
+	 * Check if merchant is in supported countries by ApplePay.
+	 *
+	 * @param string $account_country - Account country.
+	 *
+	 * @return bool
+	 */
+	public static function is_account_in_supported_applepay_countries( string $account_country ): bool {
+		return in_array( $account_country, self::supported_applepay_country_codes(), true );
+	}
+
+	/**
 	 * Verifies whether a certain ZIP code is valid for the US, incl. 4-digit extensions.
 	 *
 	 * @param string $zip The ZIP code to verify.
@@ -600,13 +647,28 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the correct id to be used on the transaction URL
+	 * The Payment Intent ID is prioritized and it fallbacks to the charge ID
+	 *
+	 * @param string $intent_id Payment intent ID.
+	 * @param string $charge_id Charge ID.
+	 *
+	 * @return string
+	 */
+	public static function get_transaction_url_id( $intent_id, $charge_id ) {
+		return ! empty( $intent_id ) ? $intent_id : $charge_id;
+	}
+
+	/**
 	 * Composes url for transaction details page.
 	 *
-	 * @param  string $charge_id Charge id.
-	 * @return string            Transaction details page url.
+	 * @param string $intent_id Payment Intent ID.
+	 * @param string $charge_id Charge ID.
+	 *
+	 * @return string Transaction details page url.
 	 */
-	public static function compose_transaction_url( $charge_id ) {
-		if ( empty( $charge_id ) ) {
+	public static function compose_transaction_url( $intent_id, $charge_id ) {
+		if ( empty( $charge_id ) && empty( $intent_id ) ) {
 			return '';
 		}
 
@@ -614,7 +676,7 @@ class WC_Payments_Utils {
 			[
 				'page' => 'wc-admin',
 				'path' => '/payments/transactions/details',
-				'id'   => $charge_id,
+				'id'   => self::get_transaction_url_id( $intent_id, $charge_id ),
 			],
 			admin_url( 'admin.php' )
 		);

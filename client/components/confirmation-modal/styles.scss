@@ -6,6 +6,8 @@
 
 	// to ensure that the separator extends all the way, even with different versions of Gutenberg
 	.components-modal__content {
+		display: flex;
+		flex-direction: column;
 		padding: 0 $grid-unit-30 $grid-unit-30;
 	}
 

@@ -15,6 +15,7 @@ import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
+import showErrorCheckout from '../utils/show-error-checkout';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -108,48 +109,6 @@ jQuery( function ( $ ) {
 	 */
 	const unblockUI = ( $form ) => {
 		$form.removeClass( 'processing' ).unblock();
-	};
-
-	// Show error notice at top of checkout form.
-	const showError = ( errorMessage ) => {
-		let messageWrapper = '';
-		if ( errorMessage.includes( 'woocommerce-error' ) ) {
-			messageWrapper = errorMessage;
-		} else {
-			messageWrapper =
-				'<ul class="woocommerce-error" role="alert">' +
-				errorMessage +
-				'</ul>';
-		}
-		const $container = $(
-			'.woocommerce-notices-wrapper, form.checkout'
-		).first();
-
-		if ( ! $container.length ) {
-			return;
-		}
-
-		// Adapted from WooCommerce core @ ea9aa8c, assets/js/frontend/checkout.js#L514-L529
-		$(
-			'.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message'
-		).remove();
-		$container.prepend(
-			'<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' +
-				messageWrapper +
-				'</div>'
-		);
-		$container
-			.find( '.input-text, select, input:checkbox' )
-			.trigger( 'validate' )
-			.blur();
-
-		let scrollElement = $( '.woocommerce-NoticeGroup-checkout' );
-		if ( ! scrollElement.length ) {
-			scrollElement = $container;
-		}
-
-		$.scroll_to_notices( scrollElement );
-		$( document.body ).trigger( 'checkout_error' );
 	};
 
 	// Show or hide save payment information checkbox
@@ -251,7 +210,7 @@ jQuery( function ( $ ) {
 				clientSecret = newIntent.client_secret;
 			} catch ( error ) {
 				unblockUI( $upeContainer );
-				showError( error.message );
+				showErrorCheckout( error.message );
 				const gatewayErrorMessage =
 					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
 				$( '.payment_box.payment_method_woocommerce_payments' ).html(
@@ -287,11 +246,18 @@ jQuery( function ( $ ) {
 				api: api,
 				elements: elements,
 				emailId: 'billing_email',
-				complete_billing: true,
+				complete_billing: () => {
+					return true;
+				},
 				complete_shipping: () => {
-					return ! document.getElementById(
-						'ship-to-different-address-checkbox'
-					).checked;
+					return (
+						document.getElementById(
+							'ship-to-different-address-checkbox'
+						) &&
+						document.getElementById(
+							'ship-to-different-address-checkbox'
+						).checked
+					);
 				},
 				shipping_fields: {
 					line1: 'shipping_address_1',
@@ -404,7 +370,7 @@ jQuery( function ( $ ) {
 	 */
 	const checkUPEForm = async ( $form, returnUrl = '#' ) => {
 		if ( ! upeElement ) {
-			showError( 'Your payment information is incomplete.' );
+			showErrorCheckout( 'Your payment information is incomplete.' );
 			return false;
 		}
 		if ( ! isUPEComplete ) {
@@ -416,7 +382,7 @@ jQuery( function ( $ ) {
 				},
 			} );
 			$form.removeClass( 'processing' ).unblock();
-			showError( error.message );
+			showErrorCheckout( error.message );
 			return false;
 		}
 		return true;
@@ -470,7 +436,7 @@ jQuery( function ( $ ) {
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
-			showError( error.message );
+			showErrorCheckout( error.message );
 		}
 	};
 
@@ -503,7 +469,7 @@ jQuery( function ( $ ) {
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
-			showError( error.message );
+			showErrorCheckout( error.message );
 		}
 	};
 
@@ -558,7 +524,7 @@ jQuery( function ( $ ) {
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
-			showError( error.message );
+			showErrorCheckout( error.message );
 		}
 	};
 
@@ -613,7 +579,7 @@ jQuery( function ( $ ) {
 					errorMessage = getConfig( 'genericErrorMessage' );
 				}
 
-				showError( errorMessage );
+				showErrorCheckout( errorMessage );
 			} );
 	};
 

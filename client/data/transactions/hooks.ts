@@ -37,13 +37,42 @@ export interface Transaction {
 	transaction_id: string;
 	date: string;
 	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
-	source: string;
+	channel: 'in_person' | 'online';
+	// A field to identify the payment's source.
+	// Usually last 4 digits for card payments, bank name for bank transfers...
+	source_identifier: string;
+	source:
+		| 'ach_credit_transfer'
+		| 'ach_debit'
+		| 'acss_debit'
+		| 'alipay'
+		| 'au_becs_debit'
+		| 'bancontact'
+		| 'eps'
+		| 'giropay'
+		| 'sepa_debit'
+		| 'ideal'
+		| 'klarna'
+		| 'multibanco'
+		| 'p24'
+		| 'sofort'
+		| 'stripe_account'
+		| 'wechat'
+		| 'amex'
+		| 'diners'
+		| 'discover'
+		| 'jcb'
+		| 'mastercard'
+		| 'unionpay'
+		| 'visa'
+		| 'link';
 	loan_id?: string;
 	metadata?: {
 		charge_type: 'card_reader_fee';
 		interval_from: string;
 		interval_to: string;
 	};
+	payment_intent_id?: string;
 }
 
 interface Transactions {
@@ -59,6 +88,7 @@ interface TransactionsSummary {
 		net?: number;
 		currency?: string;
 		store_currencies?: string[];
+		customer_currencies?: string[];
 	};
 	isLoading: boolean;
 }
@@ -76,6 +106,8 @@ export const useTransactions = (
 		type_is: typeIs,
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
+		customer_currency_is: customerCurrencyIs,
+		customer_currency_is_not: customerCurrencyIsNot,
 		loan_id_is: loanIdIs,
 		search,
 	}: Query,
@@ -109,6 +141,8 @@ export const useTransactions = (
 				typeIs,
 				typeIsNot,
 				storeCurrencyIs,
+				customerCurrencyIs,
+				customerCurrencyIsNot,
 				loanIdIs,
 				depositId,
 				search,
@@ -132,6 +166,8 @@ export const useTransactions = (
 			typeIs,
 			typeIsNot,
 			storeCurrencyIs,
+			customerCurrencyIs,
+			customerCurrencyIsNot,
 			loanIdIs,
 			depositId,
 			JSON.stringify( search ),
@@ -147,6 +183,8 @@ export const useTransactionsSummary = (
 		type_is: typeIs,
 		type_is_not: typeIsNot,
 		store_currency_is: storeCurrencyIs,
+		customer_currency_is: customerCurrencyIs,
+		customer_currency_is_not: customerCurrencyIsNot,
 		loan_id_is: loanIdIs,
 		search,
 	}: Query,
@@ -166,6 +204,8 @@ export const useTransactionsSummary = (
 				typeIs,
 				typeIsNot,
 				storeCurrencyIs,
+				customerCurrencyIs,
+				customerCurrencyIsNot,
 				loanIdIs,
 				depositId,
 				search,
@@ -184,6 +224,8 @@ export const useTransactionsSummary = (
 			typeIs,
 			typeIsNot,
 			storeCurrencyIs,
+			customerCurrencyIs,
+			customerCurrencyIsNot,
 			loanIdIs,
 			depositId,
 			JSON.stringify( search ),
