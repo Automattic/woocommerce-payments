@@ -34,8 +34,6 @@ describe( 'Deposits', () => {
 		accountStatus: { accountLink: '/account-link' },
 	};
 
-	// const ignoreA11yElements = { ignore:'[class*="a11y"]'}, // ignore hidden a11y elements
-
 	beforeEach( () => {
 		useDepositStatus.mockReturnValue( 'enabled' );
 		useCompletedWaitingPeriod.mockReturnValue( true );
