@@ -72,25 +72,43 @@ const monthlyAnchors = [
 
 const CustomizeDepositSchedule = () => {
 	const [
-		getDepositScheduleInterval,
+		depositScheduleInterval,
 		setDepositScheduleInterval,
 	] = useDepositScheduleInterval();
 	const [
-		getDepositScheduleWeeklyAnchor,
+		depositScheduleWeeklyAnchor,
 		setDepositScheduleWeeklyAnchor,
 	] = useDepositScheduleWeeklyAnchor();
 	const [
-		getDepositScheduleMonthlyAnchor,
+		depositScheduleMonthlyAnchor,
 		setDepositScheduleMonthlyAnchor,
 	] = useDepositScheduleMonthlyAnchor();
+
+	const handleIntervalChange = ( newInterval ) => {
+		switch ( newInterval ) {
+			case 'weekly':
+				setDepositScheduleWeeklyAnchor(
+					depositScheduleWeeklyAnchor || 'monday'
+				);
+				break;
+
+			case 'monthly':
+				setDepositScheduleMonthlyAnchor(
+					depositScheduleMonthlyAnchor || '1'
+				);
+				break;
+		}
+
+		setDepositScheduleInterval( newInterval );
+	};
 
 	return (
 		<>
 			<div className="schedule-controls">
 				<SelectControl
 					label={ __( 'Frequency', 'woocommerce-payments' ) }
-					value={ getDepositScheduleInterval }
-					onChange={ setDepositScheduleInterval }
+					value={ depositScheduleInterval }
+					onChange={ handleIntervalChange }
 					options={ [
 						{
 							value: 'daily',
@@ -106,35 +124,35 @@ const CustomizeDepositSchedule = () => {
 						},
 					] }
 				/>
-				{ 'monthly' === getDepositScheduleInterval && (
+				{ 'monthly' === depositScheduleInterval && (
 					<SelectControl
 						label={ __( 'Date', 'woocommerce-payments' ) }
-						value={ getDepositScheduleMonthlyAnchor }
+						value={ depositScheduleMonthlyAnchor }
 						onChange={ setDepositScheduleMonthlyAnchor }
 						options={ monthlyAnchors }
 					/>
 				) }
-				{ 'weekly' === getDepositScheduleInterval && (
+				{ 'weekly' === depositScheduleInterval && (
 					<SelectControl
 						label={ __( 'Day', 'woocommerce-payments' ) }
-						value={ getDepositScheduleWeeklyAnchor }
+						value={ depositScheduleWeeklyAnchor }
 						onChange={ setDepositScheduleWeeklyAnchor }
 						options={ daysOfWeek }
 					/>
 				) }
 			</div>
 			<p className="help-text">
-				{ 'monthly' === getDepositScheduleInterval &&
+				{ 'monthly' === depositScheduleInterval &&
 					__(
 						'Deposits scheduled on a weekend will be sent on the next business day.',
 						'woocommerce-payments'
 					) }
-				{ 'weekly' === getDepositScheduleInterval &&
+				{ 'weekly' === depositScheduleInterval &&
 					__(
 						'Deposits that fall on a holiday will initiate on the next business day.',
 						'woocommerce-payments'
 					) }
-				{ 'daily' === getDepositScheduleInterval &&
+				{ 'daily' === depositScheduleInterval &&
 					__(
 						'Deposits will occur every business day.',
 						'woocommerce-payments'
@@ -144,10 +162,10 @@ const CustomizeDepositSchedule = () => {
 	);
 };
 const DepositsSchedule = () => {
-	const getDepositStatus = useDepositStatus();
-	const getCompletedWaitingPeriod = useCompletedWaitingPeriod();
+	const depositStatus = useDepositStatus();
+	const completedWaitingPeriod = useCompletedWaitingPeriod();
 
-	if ( 'enabled' !== getDepositStatus ) {
+	if ( 'enabled' !== depositStatus ) {
 		return (
 			<Notice status="warning" isDismissible={ false }>
 				<span>
@@ -159,7 +177,7 @@ const DepositsSchedule = () => {
 			</Notice>
 		);
 	}
-	if ( true !== getCompletedWaitingPeriod ) {
+	if ( true !== completedWaitingPeriod ) {
 		return (
 			<Notice status="warning" isDismissible={ false }>
 				<span>
