@@ -1354,14 +1354,11 @@ class MultiCurrency {
 			Database_Cache::CUSTOMER_CURRENCIES_KEY,
 			function() {
 				global $wpdb;
-				$query_currencies_posts  = "SELECT DISTINCT(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = '_order_currency'";
-				$query_currencies_orders = "SELECT DISTINCT(currency) FROM {$wpdb->prefix}wc_orders";
-
 				if ( class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) &&
 						\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled() ) {
-					$currencies = $wpdb->get_col( $query_currencies_orders ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					$currencies = $wpdb->get_col( "SELECT DISTINCT(currency) FROM {$wpdb->prefix}wc_orders" );
 				} else {
-					$currencies = $wpdb->get_col( $query_currencies_posts ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+					$currencies = $wpdb->get_col( "SELECT DISTINCT(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = '_order_currency'" );
 				}
 
 				return [
