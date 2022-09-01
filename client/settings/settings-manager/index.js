@@ -84,7 +84,7 @@ const TransactionsDescription = () => (
 );
 
 const DepositsDescription = () => {
-	const getDepositDelayDays = useDepositDelayDays();
+	const depositDelayDays = useDepositDelayDays();
 
 	return (
 		<>
@@ -95,7 +95,7 @@ const DepositsDescription = () => {
 						'Funds are available for deposit %s business days after they’re received.',
 						'woocommerce-payments'
 					),
-					getDepositDelayDays
+					depositDelayDays
 				) }
 			</p>
 			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
