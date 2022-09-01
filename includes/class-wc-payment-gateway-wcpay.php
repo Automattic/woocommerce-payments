@@ -621,10 +621,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( WC_Payments_Utils::can_merchant_register_domain_with_applepay( $this->account->get_account_country() ) ) {
 			return;
 		}
-
-		if ( ! WC_Payments_Utils::is_account_in_supported_applepay_countries( $this->account->get_account_country() ) ) {
+		if ( ! WC_Payments_Utils::is_account_in_supported_applepay_countries( $this->account->get_account_country() ) &&
+			'1' !== get_user_meta( get_current_user_id(), 'dismissed_applepay_not_in_supported_countries_notice', true ) ) {
 			?>
-			<div id="wcpay-applepay-error" class="notice notice-error">
+			<div id="wcpay-applepay-error" class="notice notice-error woocommerce-message">
+				<a class="woocommerce-message-close notice-dismiss" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'wc-hide-notice', 'applepay_not_in_supported_countries' ), 'woocommerce_hide_notices_nonce', '_wc_notice_nonce' ) ); ?>"><?php esc_html_e( 'Dismiss', 'woocommerce-payments' ); ?></a>
 				<p>
 					<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
 					<?php
