@@ -9,6 +9,7 @@ namespace WCPay\MultiCurrency;
 
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use WC_Order;
 use WC_Order_Refund;
 use WC_Payments;
@@ -296,12 +297,21 @@ class Analytics {
 		$exchange_rate_tbl        = $prefix . 'exchange_rate_postmeta';
 		$stripe_exchange_rate_tbl = $prefix . 'stripe_exchange_rate_postmeta';
 
+		// Allow this to work with custom order tables as well.
+		if ( class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$meta_table = $wpdb->prefix . 'wc_orders_meta';
+			$id_field   = 'order_id';
+		} else {
+			$meta_table = $wpdb->postmeta;
+			$id_field   = 'post_id';
+		}
+
 		// If this is a supported context, add the joins. If this is an unsupported context, see if we can add the joins.
 		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
-			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.post_id AND {$currency_tbl}.meta_key = '_order_currency'";
-			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.post_id AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
-			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.post_id AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
-			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.post_id AND ${stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
+			$clauses[] = "LEFT JOIN {$meta_table} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.{$id_field} AND {$currency_tbl}.meta_key = '_order_currency'";
+			$clauses[] = "LEFT JOIN {$meta_table} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.{$id_field} AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
+			$clauses[] = "LEFT JOIN {$meta_table} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.{$id_field} AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
+			$clauses[] = "LEFT JOIN {$meta_table} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.{$id_field} AND ${stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
 		}
 
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_join_clauses', $clauses );
@@ -432,20 +442,22 @@ class Analytics {
 	private function has_multi_currency_orders() {
 		global $wpdb;
 
-		$orders = intval(
-			$wpdb->get_var(
-				"
-				SELECT
-					COUNT(post_id)
-				FROM
-					{$wpdb->postmeta}
-				WHERE
-					meta_key = '_wcpay_multi_currency_order_exchange_rate';
-				"
-			)
-		);
+		// Using full SQL instad of variables to keep WPCS happy.
+		if ( class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			$result = $wpdb->get_var(
+				"SELECT COUNT(order_id)
+				FROM {$wpdb->prefix}wc_orders_meta
+				WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'"
+			);
+		} else {
+			$result = $wpdb->get_var(
+				"SELECT COUNT(post_id)
+				FROM {$wpdb->postmeta}
+				WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'"
+			);
+		}
 
-		return $orders > 0;
+		return intval( $result ) > 0;
 	}
 
 	/**
