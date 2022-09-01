@@ -264,10 +264,10 @@ class Analytics {
 		}
 
 		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
-			$new_clauses[] = ', wcpay_multicurrency_currency_postmeta.meta_value AS order_currency';
-			$new_clauses[] = ', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency';
-			$new_clauses[] = ', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate';
-			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value AS stripe_exchange_rate';
+			$new_clauses[] = ', wcpay_multicurrency_currency_meta.meta_value AS order_currency';
+			$new_clauses[] = ', wcpay_multicurrency_default_currency_meta.meta_value AS order_default_currency';
+			$new_clauses[] = ', wcpay_multicurrency_exchange_rate_meta.meta_value AS exchange_rate';
+			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_meta.meta_value AS stripe_exchange_rate';
 		}
 
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_select_clauses', $new_clauses );
@@ -292,10 +292,10 @@ class Analytics {
 		$context_page  = $context_parts[0] ?? 'generic';
 
 		$prefix                   = 'wcpay_multicurrency_';
-		$currency_tbl             = $prefix . 'currency_postmeta';
-		$default_currency_tbl     = $prefix . 'default_currency_postmeta';
-		$exchange_rate_tbl        = $prefix . 'exchange_rate_postmeta';
-		$stripe_exchange_rate_tbl = $prefix . 'stripe_exchange_rate_postmeta';
+		$currency_tbl             = $prefix . 'currency_meta';
+		$default_currency_tbl     = $prefix . 'default_currency_meta';
+		$exchange_rate_tbl        = $prefix . 'exchange_rate_meta';
+		$stripe_exchange_rate_tbl = $prefix . 'stripe_exchange_rate_meta';
 
 		// Allow this to work with custom order tables as well.
 		if ( class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
@@ -330,7 +330,7 @@ class Analytics {
 		}
 
 		$prefix       = 'wcpay_multicurrency_';
-		$currency_tbl = $prefix . 'currency_postmeta';
+		$currency_tbl = $prefix . 'currency_meta';
 
 		$currency_args = $this->get_customer_currency_args_from_request();
 		if ( ! empty( $currency_args['currency_is'] ) ) {
@@ -501,9 +501,9 @@ class Analytics {
 	 * @return void
 	 */
 	private function set_sql_replacements() {
-		$default_currency     = 'wcpay_multicurrency_default_currency_postmeta.meta_value';
-		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_postmeta.meta_value';
-		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value';
+		$default_currency     = 'wcpay_multicurrency_default_currency_meta.meta_value';
+		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_meta.meta_value';
+		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_meta.meta_value';
 
 		$discount_amount       = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(discount_amount * {$stripe_exchange_rate}, 2)", "ROUND(discount_amount * (1 / {$exchange_rate} ), 2)" ), 'discount_amount' );
 		$product_net_revenue   = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(product_net_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_net_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_net_revenue' );
