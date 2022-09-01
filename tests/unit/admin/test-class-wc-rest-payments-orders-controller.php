@@ -534,6 +534,410 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 404, $data['status'] );
 	}
 
+	public function test_capture_authorization_success() {
+		$order = $this->create_mock_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_payment_method_title( 'WooCommerce Payments' );
+		$order->save();
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => 'requires_capture',
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+			]
+		);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->with( $this->isInstanceOf( WC_Order::class ) )
+			->willReturn(
+				[
+					'status' => 'succeeded',
+					'id'     => $this->mock_intent_id,
+				]
+			);
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'update_order_status_from_intent' )
+			->with(
+				$this->isInstanceOf( WC_Order::class ),
+				$this->mock_intent_id,
+				'requires_capture',
+				'ch_mock'
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response      = $this->controller->capture_authorization( $request );
+		$response_data = $response->get_data();
+
+		$this->assertEquals( 200, $response->status );
+		$this->assertEquals(
+			[
+				'status' => 'succeeded',
+				'id'     => $this->mock_intent_id,
+			],
+			$response_data
+		);
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertEquals( 'woocommerce_payments', $result_order->get_payment_method() );
+		$this->assertEquals( 'WooCommerce Payments', $result_order->get_payment_method_title() );
+		$this->assertEquals( 'processing', $result_order->get_status() );
+		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/' . $this->mock_intent_id;
+		$this->assertStringEndsWith( $url, $result_order->get_meta( 'receipt_url' ) );
+	}
+
+	public function test_capture_authorization_succeeded_intent() {
+		$order = $this->create_mock_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_payment_method_title( 'WooCommerce Payments' );
+		$order->save();
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+			]
+		);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+
+			$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'update_order_status_from_intent' )
+			->with(
+				$this->isInstanceOf( WC_Order::class ),
+				$this->mock_intent_id,
+				'succeeded',
+				'ch_mock'
+			);
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'capture_charge' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response      = $this->controller->capture_authorization( $request );
+		$response_data = $response->get_data();
+
+		$this->assertSame( 200, $response->status );
+		$this->assertEquals(
+			[
+				'status' => 'succeeded',
+				'id'     => $this->mock_intent_id,
+			],
+			$response_data
+		);
+
+		$result_order = wc_get_order( $order->get_id() );
+		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
+		$this->assertSame( 'WooCommerce Payments', $result_order->get_payment_method_title() );
+		$this->assertSame( 'processing', $result_order->get_status() );
+		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/';
+		$this->assertStringEndsWith( $url . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
+	}
+
+	public function test_capture_authorization_intent_non_capturable() {
+		$order = $this->create_mock_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$order->set_payment_method_title( 'WooCommerce Payments' );
+		$order->save();
+
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'capture_charge' );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'update_order_status_from_intent' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_authorization( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 409, $data['status'] );
+	}
+
+	public function test_capture_authorization_succeeded_payment_intent_missing_order_id() {
+		$order = $this->create_mock_order();
+
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'succeeded' ] );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'capture_charge' );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_authorization( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 409, $data['status'] );
+		$this->assertFalse( $order->has_status( 'completed' ) );
+	}
+
+	public function test_capture_authorization_refunded_order() {
+		$order = $this->create_mock_order();
+
+		wc_create_refund(
+			[
+				'order_id'   => $order->get_id(),
+				'amount'     => 10.0,
+				'line_items' => [],
+			]
+		);
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_intent' );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'capture_charge' );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_authorization( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 400, $data['status'] );
+	}
+
+	public function test_capture_authorization_error_when_capturing() {
+		$order = $this->create_mock_order();
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => 'requires_capture',
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+			]
+		);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'update_order_status_from_intent' );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->willReturn(
+				[
+					'status'  => 'failed',
+					'message' => 'Test error',
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_authorization( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 502, $data['status'] );
+		$this->assertEquals( 'Payment capture failed to complete with the following message: Test error', $response->get_error_message() );
+	}
+
+	public function test_capture_authorization_error_invalid_arguments() {
+		$order = $this->create_mock_order();
+
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'   => 'requires_capture',
+				'metadata' => [
+					'order_id' => $order->get_id(),
+				],
+			]
+		);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
+
+		$this->mock_gateway
+			->expects( $this->never() )
+			->method( 'attach_intent_info_to_order' );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'update_order_status_from_intent' );
+
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->willReturn(
+				// See https://stripe.com/docs/error-codes#amount-too-large.
+				[
+					'status'    => 'failed',
+					'message'   => 'Error: The payment could not be captured because the requested capture amount is greater than the authorized amount.',
+					'http_code' => 400,
+				]
+			);
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_authorization( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertSame( 400, $data['status'] );
+		$this->assertSame( 'wcpay_capture_error', $response->get_error_code() );
+		$this->assertEquals(
+			'Payment capture failed to complete with the following message: ' .
+			'Error: The payment could not be captured because the requested capture amount is greater than the authorized amount.',
+			$response->get_error_message()
+		);
+	}
+
+	public function test_capture_authorization_handles_exceptions() {
+		$order = $this->create_mock_order();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willThrowException( new Exception( 'test error' ) );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => $order->get_id(),
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_authorization( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 500, $data['status'] );
+	}
+
+	public function test_capture_authorization_not_found() {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'order_id'          => 'not_an_id',
+				'payment_intent_id' => $this->mock_intent_id,
+			]
+		);
+
+		$response = $this->controller->capture_authorization( $request );
+
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 404, $data['status'] );
+	}
+
 	/**
 	 * @expectedDeprecated create_customer
 	 */
