@@ -81,6 +81,24 @@ describe( 'Deposits', () => {
 		expect( depositsMessage ).toBeInTheDocument();
 	} );
 
+	it( 'renders the deposits blocked message for an unkown deposit status', () => {
+		useDepositStatus.mockReturnValue( 'asdf' );
+
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		const depositsMessage = screen.getByText(
+			/Deposit scheduling is currently unavailable for your store/,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
+		expect( depositsMessage ).toBeInTheDocument();
+	} );
+
 	it( 'renders the deposits within waiting period message', () => {
 		useDepositStatus.mockReturnValue( 'enabled' );
 		useCompletedWaitingPeriod.mockReturnValue( false );
