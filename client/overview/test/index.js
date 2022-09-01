@@ -39,7 +39,10 @@ describe( 'Overview page', () => {
 			accountStatus: {
 				status: 'complete',
 				paymentsEnabled: 1,
-				depositsStatus: 'weekly',
+				deposits: {
+					status: 'enabled',
+					interval: 'weekly',
+				},
 			},
 			accountFees: {
 				base: {

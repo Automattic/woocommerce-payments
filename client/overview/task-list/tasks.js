@@ -60,7 +60,7 @@ export const getTasks = ( {
 				),
 				content: accountDetailsTaskDescription,
 				completed: 'complete' === status,
-				action:
+				onClick:
 					'complete' === status
 						? undefined
 						: () => {
@@ -87,7 +87,7 @@ export const getTasks = ( {
 					'woocommerce-payments'
 				),
 				completed: false,
-				action: () => {
+				onClick: () => {
 					window.location.href = wpcomReconnectUrl;
 				},
 				actionLabel: __( 'Reconnect', 'woocommerce-payments' ),

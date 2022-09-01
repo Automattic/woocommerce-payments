@@ -1,6 +1,7 @@
 declare namespace AccountOverview {
 	interface Account {
 		default_currency: string;
+		deposits_blocked: boolean;
 		deposits_disabled: boolean;
 		deposits_schedule: {
 			delay_days: number;

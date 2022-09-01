@@ -87,7 +87,8 @@ const AccountStatusDetails = ( props ) => {
 				label={ __( 'Deposits:', 'woocommerce-payments' ) }
 			>
 				<DepositsStatus
-					depositsStatus={ accountStatus.depositsStatus }
+					status={ accountStatus.deposits?.status }
+					interval={ accountStatus.deposits?.interval }
 				/>
 			</AccountStatusItem>
 			{ 0 < accountFees.length && (
