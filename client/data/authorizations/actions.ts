@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /** @format */
 
 /**
@@ -9,12 +8,9 @@ import TYPES from './action-types';
 import {
 	AuthorizationsSummary,
 	Authorization,
-	RiskLevel,
 } from 'wcpay/types/authorizations';
 import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { STORE_NAME } from '../constants';
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
 import { __ } from '@wordpress/i18n';
 
 export function updateAuthorizations(
