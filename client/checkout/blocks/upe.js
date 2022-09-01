@@ -42,8 +42,8 @@ const api = new WCPayAPI(
 
 registerPaymentMethod( {
 	name: PAYMENT_METHOD_NAME_CARD,
-	content: <WCPayUPEFields api={ api } />,
-	edit: <WCPayUPEFields api={ api } />,
+	content: <WCPayUPEFields paymentMethodId={ 'card' } api={ api } />,
+	edit: <WCPayUPEFields paymentMethodId={ 'card' } api={ api } />,
 	savedTokenComponent: <SavedTokenHandler api={ api } />,
 	canMakePayment: () => !! api.getStripe(),
 	paymentMethodId: PAYMENT_METHOD_NAME_CARD,

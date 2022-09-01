@@ -376,9 +376,9 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 			return;
 		}
 
-		async function createIntent() {
+		async function createIntent( paymentMethodId ) {
 			try {
-				const response = await api.createIntent();
+				const response = await api.createIntent( paymentMethodId );
 				setPaymentIntentId( response.id );
 				setClientSecret( response.client_secret );
 			} catch ( error ) {
@@ -390,8 +390,15 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 			}
 		}
 		setHasRequestedIntent( true );
-		createIntent();
-	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage, appearance ] );
+		createIntent( props.paymentMethodId );
+	}, [
+		props.paymentMethodId,
+		paymentIntentId,
+		hasRequestedIntent,
+		api,
+		errorMessage,
+		appearance,
+	] );
 
 	if ( ! clientSecret ) {
 		if ( errorMessage ) {
