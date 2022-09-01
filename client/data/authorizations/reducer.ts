@@ -49,7 +49,12 @@ const receiveAuthorizations = (
 		case TYPES.SET_AUTHORIZATIONS_SUMMARY:
 			return {
 				...state,
-				summary: Object.assign( {}, state.summary, action.data ),
+				summary: {
+					...state.summary,
+					[ getResourceId( action.query ) ]: {
+						data: action.data,
+					},
+				},
 			};
 		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS_SUMMARY:
 			return {

@@ -107,7 +107,11 @@ describe( 'Authorizations reducer', () => {
 		const after = {
 			byId: {},
 			summary: {
-				count: 42,
+				[ getResourceId( mockQuery ) ]: {
+					data: {
+						count: 42,
+					},
+				},
 			},
 		};
 
@@ -118,7 +122,11 @@ describe( 'Authorizations reducer', () => {
 		const before = {
 			byId: {},
 			summary: {
-				count: 42,
+				[ getResourceId( mockQuery ) ]: {
+					data: {
+						count: 42,
+					},
+				},
 			},
 		};
 
@@ -133,7 +141,11 @@ describe( 'Authorizations reducer', () => {
 		const after = {
 			...before,
 			summary: {
-				count: 4242,
+				[ getResourceId( mockQuery ) ]: {
+					data: {
+						count: 4242,
+					},
+				},
 			},
 		};
 

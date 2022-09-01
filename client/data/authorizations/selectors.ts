@@ -36,6 +36,16 @@ const getAuthorizationsForQuery = (
 	return getAuthorizationsState( state )[ index ] || {};
 };
 
+const getAuthorizationsSummaryForQuery = (
+	state: Record< string, any >,
+	query: Query
+) => {
+	const index = getResourceId( query );
+	const summary = getAuthorizationsState( state ).summary || {};
+
+	return summary[ index ] || {};
+};
+
 export const getAuthorizations = (
 	state: Record< string, any >,
 	query: Query
@@ -59,7 +69,8 @@ export const getAuthorizationsError = (
 };
 
 export const getAuthorizationsSummary = (
-	state: Record< string, any >
+	state: Record< string, any >,
+	query: Query
 ): AuthorizationsSummary => {
-	return state.authorizations?.summary;
+	return getAuthorizationsSummaryForQuery( state, query ).data || {};
 };
