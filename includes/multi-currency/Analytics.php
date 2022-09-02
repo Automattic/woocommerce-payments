@@ -340,18 +340,22 @@ class Analytics {
 			return $clauses;
 		}
 
-		$prefix       = 'wcpay_multicurrency_';
-		$currency_tbl = $prefix . 'currency_meta';
+		$prefix = 'wcpay_multicurrency_';
+		if ( $this->is_cot_enabled() ) {
+			$currency_field = $prefix . 'order_currency.currency';
+		} else {
+			$currency_field = $prefix . 'currency_meta.meta_value';
+		}
 
 		$currency_args = $this->get_customer_currency_args_from_request();
 		if ( ! empty( $currency_args['currency_is'] ) ) {
 			$currency_is = sprintf( "'%s'", implode( "', '", $currency_args['currency_is'] ) );
-			$clauses[]   = "AND {$currency_tbl}.meta_value IN ({$currency_is})";
+			$clauses[]   = "AND {$currency_field} IN ({$currency_is})";
 		}
 
 		if ( ! empty( $currency_args['currency_is_not'] ) ) {
 			$currency_is_not = sprintf( "'%s'", implode( "', '", $currency_args['currency_is_not'] ) );
-			$clauses[]       = "AND {$currency_tbl}.meta_value NOT IN ({$currency_is_not})";
+			$clauses[]       = "AND {$currency_field} NOT IN ({$currency_is_not})";
 		}
 
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
