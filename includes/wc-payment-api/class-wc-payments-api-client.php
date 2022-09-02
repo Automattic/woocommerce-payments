@@ -1557,13 +1557,12 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception If payment method does not exist.
 	 */
 	public function get_payment_method( $payment_method_id ) {
-		// A fallback for sites, which migrated from Stripe to WCPay.
+		/**
+		 * Sites migrated from Stripe to WC Payments may have legacy source objects instead of payment methods,
+		 * so another API endpoint needs to be used for fetching payment method details.
+		 */
 		$is_source = preg_match( '/^src_\w+$/i', $payment_method_id );
-		if ( $is_source ) {
-			$api = self::SOURCES_API;
-		} else {
-			$api = self::PAYMENT_METHODS_API;
-		}
+		$api       = $is_source ? self::SOURCES_API : self::PAYMENT_METHODS_API;
 
 		$response = $this->request(
 			[],
@@ -1571,17 +1570,19 @@ class WC_Payments_API_Client {
 			self::GET
 		);
 
-		if ( $is_source ) {
-			if ( 'three_d_secure' === $response['type'] ) {
-				// This was how 3DS was handled initially.
-				$response['type'] = 'card';
-			} elseif ( 'multibanco' === $response['type'] ) {
-				throw new API_Exception(
-					__( 'The fallback to use source objects as payment methods does not work with multibanco sources.', 'woocommerce-payments' ),
-					'wcpay_multibanco_source_fallback',
-					400
-				);
-			}
+		if ( ! $is_source ) {
+			return $response;
+		}
+
+		if ( 'three_d_secure' === $response['type'] ) {
+			// This was how 3DS was handled initially.
+			$response['type'] = 'card';
+		} elseif ( 'multibanco' === $response['type'] ) {
+			throw new API_Exception(
+				__( 'The fallback to use source objects as payment methods does not work with multibanco sources.', 'woocommerce-payments' ),
+				'wcpay_multibanco_source_fallback',
+				400
+			);
 		}
 
 		return $response;
