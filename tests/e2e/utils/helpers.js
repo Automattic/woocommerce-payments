@@ -28,17 +28,8 @@ export const takeScreenshot = ( name ) => {
 };
 
 // Helper to run WP-CLI commands
-export const runWPCLI = ( command ) => {
-	return new Promise( ( resolve, reject ) => {
-		shell.exec(
-			`${ WP_CLI + ' ' + command } --allow-root`,
-			{ silent: true },
-			( err ) => {
-				if ( err ) {
-					reject( err );
-				}
-				resolve();
-			}
-		);
+export const runWPCLI = async ( command ) => {
+	await shell.exec( `${ WP_CLI + ' ' + command } --allow-root`, {
+		silent: true,
 	} );
 };
