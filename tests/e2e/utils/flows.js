@@ -8,6 +8,7 @@
 
 const {
 	merchant,
+	shopper,
 	evalAndClick,
 	uiUnblocked,
 	clearAndFillInput,
@@ -244,10 +245,7 @@ export const shopperWCP = {
 		await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 			waitUntil: 'networkidle0',
 		} );
-		await Promise.all( [
-			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			page.click( '.single_add_to_cart_button' ),
-		] );
+		await shopper.addToCart();
 	},
 };
 
