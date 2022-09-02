@@ -264,7 +264,11 @@ class Analytics {
 		}
 
 		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
-			$new_clauses[] = ', wcpay_multicurrency_currency_meta.meta_value AS order_currency';
+			if ( $this->is_cot_enabled() ) {
+				$new_clauses[] = ', wcpay_multicurrency_currency_meta.currency AS order_currency';
+			} else {
+				$new_clauses[] = ', wcpay_multicurrency_currency_meta.meta_value AS order_currency';
+			}
 			$new_clauses[] = ', wcpay_multicurrency_default_currency_meta.meta_value AS order_default_currency';
 			$new_clauses[] = ', wcpay_multicurrency_exchange_rate_meta.meta_value AS exchange_rate';
 			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_meta.meta_value AS stripe_exchange_rate';
@@ -298,7 +302,7 @@ class Analytics {
 		$stripe_exchange_rate_tbl = $prefix . 'stripe_exchange_rate_meta';
 
 		// Allow this to work with custom order tables as well.
-		if ( class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
+		if ( $this->is_cot_enabled() ) {
 			$meta_table = $wpdb->prefix . 'wc_orders_meta';
 			$id_field   = 'order_id';
 		} else {
@@ -308,7 +312,12 @@ class Analytics {
 
 		// If this is a supported context, add the joins. If this is an unsupported context, see if we can add the joins.
 		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
-			$clauses[] = "LEFT JOIN {$meta_table} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.{$id_field} AND {$currency_tbl}.meta_key = '_order_currency'";
+			if ( $this->is_cot_enabled() ) {
+				$clauses[] = "LEFT JOIN {$wpdb->prefix}wc_orders {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.id";
+			} else {
+				$clauses[] = "LEFT JOIN {$meta_table} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.{$id_field} AND {$currency_tbl}.meta_key = '_order_currency'";
+
+			}
 			$clauses[] = "LEFT JOIN {$meta_table} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.{$id_field} AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
 			$clauses[] = "LEFT JOIN {$meta_table} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.{$id_field} AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
 			$clauses[] = "LEFT JOIN {$meta_table} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.{$id_field} AND ${stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
@@ -443,7 +452,7 @@ class Analytics {
 		global $wpdb;
 
 		// Using full SQL instad of variables to keep WPCS happy.
-		if ( class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
+		if ( $this->is_cot_enabled() ) {
 			$result = $wpdb->get_var(
 				"SELECT COUNT(order_id)
 				FROM {$wpdb->prefix}wc_orders_meta
@@ -539,5 +548,14 @@ class Analytics {
 				'discount_amount' => $discount_amount,
 			],
 		];
+	}
+
+	/**
+	 * Checks whether Custom Order Tables are enabled.
+	 *
+	 * @return bool
+	 */
+	private function is_cot_enabled() {
+		return class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled();
 	}
 }
