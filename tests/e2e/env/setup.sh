@@ -275,6 +275,10 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	cli wp plugin activate woocommerce-subscriptions
 
 	rm -rf woocommerce-subscriptions-source
+
+	echo "Import WooCommerce Subscription products"
+	cli wp import wp-content/plugins/woocommerce-payments/tests/e2e/env/wc-subscription-products.xml --authors=skip
+
 else
 	echo "Skipping install of WooCommerce Subscriptions"
 fi
