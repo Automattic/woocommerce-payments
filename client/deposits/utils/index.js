@@ -133,7 +133,7 @@ export const getDepositScheduleDescriptor = ( {
 					'%s – your first deposit is held for seven days (<a>learn more</a>)',
 					'woocommerce-payments'
 				),
-				formatDepositSchedule( { interval: 'daily' } )
+				formatDepositSchedule( schedule )
 			),
 			{
 				a: (
