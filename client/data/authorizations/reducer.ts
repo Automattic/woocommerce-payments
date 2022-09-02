@@ -10,10 +10,13 @@ import {
 	UpdateAuthorizationsAction,
 	UpdateAuthorizationsSummaryAction,
 } from './types';
-import { Authorization, AuthorizationsState } from 'wcpay/types/authorizations';
+import {
+	Authorization,
+	AuthorizationsState,
+	AuthorizationsSummary,
+} from 'wcpay/types/authorizations';
 
 const defaultState = { summary: {}, byId: {} };
-// TODO remove any(s).
 
 const receiveAuthorizations = (
 	state: AuthorizationsState = defaultState,
@@ -21,7 +24,7 @@ const receiveAuthorizations = (
 		| UpdateAuthorizationAction
 		| UpdateAuthorizationsAction
 		| UpdateAuthorizationsSummaryAction
-): any => {
+): AuthorizationsState => {
 	switch ( action.type ) {
 		case TYPES.SET_AUTHORIZATION:
 			const authorization = action.data as Authorization;
@@ -51,12 +54,13 @@ const receiveAuthorizations = (
 				},
 			};
 		case TYPES.SET_AUTHORIZATIONS_SUMMARY:
+			const summary = action.data as AuthorizationsSummary;
 			return {
 				...state,
 				summary: {
 					...state.summary,
 					[ getResourceId( action.query ) ]: {
-						data: action.data,
+						data: summary || {},
 					},
 				},
 			};
@@ -66,7 +70,7 @@ const receiveAuthorizations = (
 				summary: {
 					...state.summary,
 					[ getResourceId( action.query ) ]: {
-						error: action.error,
+						error: action.error || '',
 					},
 				},
 			};

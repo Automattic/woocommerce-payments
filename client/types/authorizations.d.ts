@@ -31,6 +31,8 @@ export interface AuthorizationsSummary {
 }
 
 export interface AuthorizationsState {
-	summary: Record< string, Record< string, AuthorizationsSummary > >;
+	summary: {
+		[ x: string ]: { data?: AuthorizationsSummary; error?: string };
+	};
 	byId: Record< string, Authorization >;
 }
