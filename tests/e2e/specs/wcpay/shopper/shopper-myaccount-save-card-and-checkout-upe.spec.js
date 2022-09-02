@@ -3,7 +3,7 @@
  */
 import config from 'config';
 
-const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
+const { shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -19,22 +19,18 @@ const cards = [
 	[ '3DS2', config.get( 'cards.3ds2' ) ],
 ];
 
-describe.skip( 'Saved cards ', () => {
+describe( 'Saved cards ', () => {
 	describe.each( cards )(
 		'when using a %s card added through my account',
 		( cardType, card ) => {
 			beforeAll( async () => {
-				await merchant.login();
 				await merchantWCP.activateUpe();
-				await merchant.logout();
 				await shopper.login();
 			} );
 
 			afterAll( async () => {
 				await shopperWCP.logout();
-				await merchant.login();
 				await merchantWCP.deactivateUpe();
-				await merchant.logout();
 			} );
 
 			it( 'should save the card', async () => {
