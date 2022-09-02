@@ -32,6 +32,9 @@ describeif( RUN_SUBSCRIPTIONS_TESTS ).skip(
 	'Subscriptions > Renew a subscription as a merchant',
 	() => {
 		beforeAll( async () => {
+			// Delete the user created with the subscription
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
+
 			// Open the subscription product we created in the store
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 				waitUntil: 'networkidle0',
@@ -55,11 +58,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS ).skip(
 			);
 
 			await shopper.logout();
-		} );
-
-		afterAll( async () => {
-			// Delete the user created with the subscription
-			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
 
 		it( 'should be able to renew a subscription as a merchant', async () => {

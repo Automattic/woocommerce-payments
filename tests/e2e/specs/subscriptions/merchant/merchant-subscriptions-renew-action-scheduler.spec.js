@@ -32,6 +32,9 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS ).skip(
 	'Subscriptions > Renew a subscription via Action Scheduler',
 	() => {
 		beforeAll( async () => {
+			// Delete the user created with the subscription
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
+
 			// Open the subscription product we created in the store
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
 				waitUntil: 'networkidle0',
@@ -47,11 +50,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS ).skip(
 			await expect( page ).toMatch( 'Order received' );
 
 			await shopper.logout();
-		} );
-
-		afterAll( async () => {
-			// Delete the user created with the subscription
-			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
 
 		it( 'should be able to renew a subscription via Action Scheduler', async () => {

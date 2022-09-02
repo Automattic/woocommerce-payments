@@ -39,10 +39,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			// Delete the user, if present
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
-		afterAll( async () => {
-			// Delete the user created with the subscription
-			await withRestApi.deleteCustomerByEmail( customerBilling.email );
-		} );
 
 		it( 'should be able to purchase a subscription with free trial', async () => {
 			// Open the subscription product, and verify that the
