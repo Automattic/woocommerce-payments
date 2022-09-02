@@ -265,7 +265,7 @@ class Analytics {
 
 		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
 			if ( $this->is_cot_enabled() ) {
-				$new_clauses[] = ', wcpay_multicurrency_currency_meta.currency AS order_currency';
+				$new_clauses[] = ', wcpay_multicurrency_order_currency.currency AS order_currency';
 			} else {
 				$new_clauses[] = ', wcpay_multicurrency_currency_meta.meta_value AS order_currency';
 			}
@@ -305,6 +305,8 @@ class Analytics {
 		if ( $this->is_cot_enabled() ) {
 			$meta_table = $wpdb->prefix . 'wc_orders_meta';
 			$id_field   = 'order_id';
+
+			$currency_tbl = $prefix . 'order_currency';
 		} else {
 			$meta_table = $wpdb->postmeta;
 			$id_field   = 'post_id';
