@@ -92,6 +92,12 @@ class Analytics {
 		add_filter( 'woocommerce_analytics_clauses_where_orders_subquery', [ $this, 'filter_where_clauses' ] );
 		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_total', [ $this, 'filter_where_clauses' ] );
 		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_interval', [ $this, 'filter_where_clauses' ] );
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( ! empty( $_GET['currency'] ) ) {
+			add_filter( 'woocommerce_analytics_clauses_select_orders_subquery', [ $this, 'filter_select_orders' ] );
+			add_filter( 'woocommerce_analytics_clauses_select_orders_stats_total', [ $this, 'filter_select_orders' ] );
+		}
 	}
 
 	/**
@@ -358,7 +364,38 @@ class Analytics {
 			$clauses[]       = "AND {$currency_field} NOT IN ({$currency_is_not})";
 		}
 
+		if ( ! empty( $currency_args['currency'] ) ) {
+			$clauses[] = "AND {$currency_field} = '{$currency_args['currency']}'";
+		}
+
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
+	}
+
+	public function filter_select_orders( array $clauses ) {
+		global $wpdb;
+		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_meta.meta_value';
+		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_meta.meta_value';
+		$net_total            = "{$wpdb->prefix}wc_order_stats.net_total";
+
+		foreach ( $clauses as $k => $clause ) {
+			if ( strpos( $clause, $net_total ) !== false ) {
+				$is_orders_subquery = strpos( $clause, $net_total . ',' ) !== false;
+				$variable           = $is_orders_subquery ? "$net_total," : $net_total;
+				$alias              = $is_orders_subquery ? ' as net_total,' : '';
+
+				$clauses[ $k ] = str_replace(
+					$variable,
+					$this->generate_case_when(
+						$stripe_exchange_rate,
+						"$net_total / $stripe_exchange_rate",
+						"$net_total * $exchange_rate"
+					) . $alias,
+					$clause
+				);
+			}
+		}
+
+		return $clauses;
 	}
 
 	/**
@@ -495,6 +532,7 @@ class Analytics {
 		$args = [
 			'currency_is'     => [],
 			'currency_is_not' => [],
+			'currency'        => null,
 		];
 
 		/* phpcs:disable WordPress.Security.NonceVerification */
@@ -504,6 +542,10 @@ class Analytics {
 
 		if ( isset( $_GET['currency_is_not'] ) ) {
 			$args['currency_is_not'] = array_map( 'sanitize_text_field', wp_unslash( $_GET['currency_is_not'] ) );
+		}
+
+		if ( isset( $_GET['currency'] ) ) {
+			$args['currency'] = sanitize_text_field( wp_unslash( $_GET['currency'] ) );
 		}
 		/* phpcs:enable WordPress.Security.NonceVerification */
 

@@ -122,3 +122,41 @@ addFilter(
 		return tableData;
 	}
 );
+
+addFilter(
+	'woocommerce_admin_orders_report_filters',
+	'woocommerce-payments',
+	( filters ) => [
+		{
+			label: __( 'Currency', 'woocommerce-payments' ),
+			param: 'currency',
+			staticParams: [],
+			showFilters: () => true,
+			defaultValue: wcSettings.currency.code,
+			filters: getCustomerCurrencies(),
+		},
+		...filters,
+	]
+);
+
+const currencySymbols = Object.values( wcpaySettings.currencyData ).reduce(
+	( symbols, currency ) => {
+		symbols[ currency.code ] = currency.symbol;
+		return symbols;
+	},
+	{}
+);
+
+addFilter(
+	'woocommerce_admin_report_currency',
+	'woocommerce-payments',
+	( config, { currency } ) => {
+		if ( currency && currencySymbols[ currency ] ) {
+			return {
+				...config,
+				symbol: currencySymbols[ currency ],
+			};
+		}
+		return config;
+	}
+);
