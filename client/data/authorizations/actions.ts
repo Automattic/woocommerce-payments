@@ -92,6 +92,12 @@ export function* submitCaptureAuthorization(
 			'invalidateResolutionForStoreSelector',
 			'getAuthorizationsSummary'
 		);
+
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getTimeline'
+		);
 		// Create success notice.
 		yield dispatch(
 			'core/notices',

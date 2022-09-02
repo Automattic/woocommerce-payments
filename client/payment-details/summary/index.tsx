@@ -5,7 +5,14 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Card, CardBody, CardFooter } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardFooter,
+	CardDivider,
+	Flex,
+	FlexItem,
+} from '@wordpress/components';
 import moment from 'moment';
 import React from 'react';
 
@@ -25,6 +32,8 @@ import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
+import { useAuthorization } from 'wcpay/data';
+import CaptureAuthorizationButton from 'transactions/uncaptured/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
 
@@ -102,6 +111,11 @@ const PaymentDetailsSummary = ( {
 		: placeholderValues;
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
+	const { authorization } = useAuthorization(
+		'auth_1234',
+		charge.order?.number || 0,
+		charge.payment_intent || ''
+	);
 
 	return (
 		<Card>
@@ -218,13 +232,34 @@ const PaymentDetailsSummary = ( {
 					</div>
 				</div>
 			</CardBody>
-			<CardFooter>
+			<CardDivider />
+			<CardBody>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
 						items={ composePaymentSummaryItems( { charge } ) }
 					/>
 				</LoadableBlock>
-			</CardFooter>
+			</CardBody>
+			{ authorization && ! authorization.captured && (
+				<CardFooter isShady>
+					<Flex>
+						<FlexItem>
+							{ `${ __(
+								'You need to capture this charge before',
+								'woocommerce-payments'
+							) } ${ authorization.capture_by } ` }
+						</FlexItem>
+						<FlexItem>
+							<CaptureAuthorizationButton
+								id="auth_1234"
+								orderId={ charge.order?.number || 0 }
+								paymentIntentId={ charge.payment_intent || '' }
+								buttonIsPrimary={ true }
+							/>
+						</FlexItem>
+					</Flex>
+				</CardFooter>
+			) }
 		</Card>
 	);
 };
