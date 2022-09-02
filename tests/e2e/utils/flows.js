@@ -18,6 +18,7 @@ const {
 	fillCardDetails,
 	confirmCardAuthentication,
 } = require( '../utils/payments' );
+const { runWPCLI } = require( '../utils/helpers' );
 
 const config = require( 'config' );
 const baseUrl = config.get( 'url' );
@@ -246,57 +247,17 @@ export const shopperWCP = {
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 export const merchantWCP = {
 	activateUpe: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if ( ! ( await page.$( '#_wcpay_feature_upe:checked' ) ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout',
-			} );
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
+		await runWPCLI( 'wp option update _wcpay_feature_upe 1' );
+		await runWPCLI(
+			'wp option update _wcpay_feature_upe_additional_payment_methods 1'
 		);
-
-		if ( ! isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
 	},
 
 	deactivateUpe: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if ( await page.$( '#_wcpay_feature_upe:checked' ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout',
-			} );
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
+		await runWPCLI( 'wp option update _wcpay_feature_upe 0' );
+		await runWPCLI(
+			'wp option update _wcpay_feature_upe_additional_payment_methods 0'
 		);
-
-		if ( isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
 	},
 
 	openDisputeDetails: async ( disputeDetailsLink ) => {
