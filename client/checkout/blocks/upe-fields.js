@@ -174,12 +174,17 @@ const WCPayUPEFields = ( {
 						}
 					);
 				},
-				complete_shipping: true,
+				complete_shipping: () => {
+					return (
+						null !== document.getElementById( 'shipping-address_1' )
+					);
+				},
 				shipping_fields: shippingAddressFields,
 				billing_fields: billingAddressFields,
 				complete_billing: () => {
-					return ! document.getElementById( 'checkbox-control-0' )
-						.checked;
+					return (
+						null !== document.getElementById( 'billing-address_1' )
+					);
 				},
 			} );
 		}
