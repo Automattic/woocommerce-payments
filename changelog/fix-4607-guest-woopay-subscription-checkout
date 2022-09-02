@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add customer ID to WP user during Store API checkout
