@@ -3,7 +3,7 @@
  */
 import shell from 'shelljs';
 const WP_CONTAINER = 'wcp_e2e_wordpress';
-const WP_CLI = `docker run --rm --user xfs --volumes-from ${ WP_CONTAINER } --network container:${ WP_CONTAINER } wordpress:cli`;
+const WP_CLI = `docker exec ${ WP_CONTAINER }`;
 
 /**
  * Wait for UI placeholders to finish and UI content is loaded.
@@ -31,7 +31,7 @@ export const takeScreenshot = ( name ) => {
 export const runWPCLI = ( command ) => {
 	return new Promise( ( resolve, reject ) => {
 		shell.exec(
-			`${ WP_CLI + ' ' + command }`,
+			`${ WP_CLI + ' ' + command } --allow-root`,
 			{ silent: true },
 			( err ) => {
 				if ( err ) {
