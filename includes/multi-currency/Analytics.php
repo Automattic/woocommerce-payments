@@ -557,7 +557,7 @@ class Analytics {
 	 *
 	 * @return bool
 	 */
-	private function is_cot_enabled() {
+	private function is_cot_enabled(): bool {
 		return class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled();
 	}
 }
