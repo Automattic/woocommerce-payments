@@ -2,7 +2,6 @@
  * External dependencies
  */
 import config from 'config';
-const { merchant } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -48,9 +47,7 @@ describe( 'Checkout page performance', () => {
 	describe( 'UPE', () => {
 		beforeEach( async () => {
 			// Activate UPE
-			await merchant.login();
 			await merchantWCP.activateUpe();
-			await merchant.logout();
 
 			// Setup cart
 			await setupProductCheckout(
@@ -63,9 +60,7 @@ describe( 'Checkout page performance', () => {
 			await shopperWCP.emptyCart();
 
 			// Deactivate UPE
-			await merchant.login();
 			await merchantWCP.deactivateUpe();
-			await merchant.logout();
 		} );
 
 		it( 'measures averaged page load metrics', async () => {
@@ -82,9 +77,7 @@ describe( 'Checkout page performance', () => {
 	describe( 'WooPay without UPE', () => {
 		beforeEach( async () => {
 			// Activate UPE
-			await merchant.login();
 			await merchantWCP.activateWooPay();
-			await merchant.logout();
 
 			// Setup cart
 			await setupProductCheckout(
@@ -97,9 +90,7 @@ describe( 'Checkout page performance', () => {
 			await shopperWCP.emptyCart();
 
 			// Deactivate UPE
-			await merchant.login();
 			await merchantWCP.deactivateWooPay();
-			await merchant.logout();
 		} );
 
 		it( 'measures averaged page load metrics', async () => {
