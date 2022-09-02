@@ -2246,7 +2246,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Gets connected account deposit schedule monthly anchor.
 	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule monthly anchor.
+	 * @param int|null $empty_value Empty value to return when not connected or fails to fetch deposit schedule monthly anchor.
 	 *
 	 * @return int|null Monthly anchor or default value.
 	 */
@@ -2258,7 +2258,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
 		}
-		return $empty_value;
+		return null === $empty_value ? null : (int) $empty_value;
 	}
 
 	/**
