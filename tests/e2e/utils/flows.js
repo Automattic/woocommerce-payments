@@ -239,6 +239,16 @@ export const shopperWCP = {
 			text: 'Your cart is currently empty.',
 		} );
 	},
+
+	addToCartBySlug: async ( productSlug ) => {
+		await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
+			waitUntil: 'networkidle0',
+		} );
+		await Promise.all( [
+			page.waitForNavigation( { waitUntil: 'networkidle0' } ),
+			page.click( '.single_add_to_cart_button' ),
+		] );
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
