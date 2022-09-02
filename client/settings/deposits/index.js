@@ -9,6 +9,7 @@ import {
 	ExternalLink,
 	Notice,
 } from '@wordpress/components';
+import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies
@@ -167,25 +168,55 @@ const DepositsSchedule = () => {
 
 	if ( 'enabled' !== depositStatus ) {
 		return (
-			<Notice status="warning" isDismissible={ false }>
+			<Notice
+				status="warning"
+				isDismissible={ false }
+				className="deposits__notice"
+			>
 				<span>
 					{ __(
 						'Deposit scheduling is currently unavailable for your store.',
 						'woocommerce-payments'
 					) }
 				</span>
+				<a
+					aria-label={ __(
+						'Learn more about deposit scheduling.',
+						'woocommerce-payments'
+					) }
+					href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+					target="_blank"
+					rel="external noreferrer noopener"
+				>
+					<Gridicon icon="help-outline" size={ 18 } />
+				</a>
 			</Notice>
 		);
 	}
 	if ( true !== completedWaitingPeriod ) {
 		return (
-			<Notice status="warning" isDismissible={ false }>
+			<Notice
+				status="warning"
+				isDismissible={ false }
+				className="deposits__notice"
+			>
 				<span>
 					{ __(
 						'Your first deposit will be held for 7 days. Deposit scheduling will be available after this period.',
 						'woocommerce-payments'
 					) }
 				</span>
+				<a
+					aria-label={ __(
+						'Learn more about deposit scheduling.',
+						'woocommerce-payments'
+					) }
+					href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+					target="_blank"
+					rel="external noreferrer noopener"
+				>
+					<Gridicon icon="help-outline" size={ 18 } />
+				</a>
 			</Notice>
 		);
 	}

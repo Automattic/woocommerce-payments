@@ -22,4 +22,19 @@
 		margin-top: 0;
 		margin-bottom: 1em;
 	}
+	&__notice > div {
+		align-items: center;
+		display: flex;
+		gap: 15px;
+		justify-content: space-between;
+		margin: 4px 4px 4px 0;
+
+		> a {
+			line-height: 0;
+
+			svg {
+				fill: $studio-blue-50;
+			}
+		}
+	}
 }
