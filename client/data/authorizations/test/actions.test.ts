@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import { RiskLevel } from 'wcpay/types/authorizations';
+import { Authorization, RiskLevel } from 'wcpay/types/authorizations';
 
 /**
  * Internal dependencies
@@ -50,7 +50,10 @@ describe( 'submitCaptureAuthorization', () => {
 		);
 
 		expect( generator.next( mockAuthorization ).value ).toEqual(
-			updateAuthorization( mockAuthorization )
+			updateAuthorization( {
+				authorization_id: mockAuthorization.authorization_id,
+				captured: true,
+			} as Authorization )
 		);
 
 		expect( generator.next().value ).toEqual(
