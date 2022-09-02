@@ -16,6 +16,7 @@ describe( 'submitCaptureAuthorization', () => {
 		authorization_id: '42',
 		authorized_on: 'Aug 31, 2022 / 3:41AM',
 		capture_by: 'capture_by',
+		captured: false,
 		order: {
 			number: 52,
 			customer_url: 'https://example.com',

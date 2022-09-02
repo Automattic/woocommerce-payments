@@ -15,6 +15,7 @@ describe( 'Authorizations reducer', () => {
 			authorization_id: 'id_1661935621753_995',
 			authorized_on: 'Aug 31, 2022 / 8:47AM',
 			capture_by: 'Sep 7, 2022 / 8:47AM',
+			captured: false,
 			order: {
 				number: 254,
 				customer_url: 'https://doggo.com',
@@ -31,6 +32,7 @@ describe( 'Authorizations reducer', () => {
 			authorization_id: 'id_1661935621753_107',
 			authorized_on: 'Aug 31, 2022 / 8:47AM',
 			capture_by: 'Sep 7, 2022 / 8:47AM',
+			captured: false,
 			order: {
 				number: 254,
 				customer_url: 'https://doggo.com',
