@@ -325,11 +325,11 @@ class WC_Payments_Account {
 	/**
 	 * Gets the deposit schedule monthly anchor.
 	 *
-	 * @return string monthly anchor e.g. 1, 2.
+	 * @return int|null monthly anchor e.g. 1, 2.
 	 */
-	public function get_deposit_schedule_monthly_anchor(): string {
+	public function get_deposit_schedule_monthly_anchor() {
 		$account = $this->get_cached_account_data();
-		return $account['deposits']['monthly_anchor'] ?? '';
+		return $account['deposits']['monthly_anchor'] ?? null;
 	}
 
 	/**

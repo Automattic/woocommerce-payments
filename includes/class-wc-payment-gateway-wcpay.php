@@ -2248,9 +2248,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule monthly anchor.
 	 *
-	 * @return string Monthly anchor or default value.
+	 * @return int|null Monthly anchor or default value.
 	 */
-	protected function get_deposit_schedule_monthly_anchor( string $empty_value = '' ): string {
+	protected function get_deposit_schedule_monthly_anchor( $empty_value = null ) {
 		try {
 			if ( $this->is_connected() ) {
 				return $this->account->get_deposit_schedule_monthly_anchor();

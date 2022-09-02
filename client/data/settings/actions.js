@@ -161,7 +161,10 @@ export function updateDepositScheduleMonthlyAnchor(
 	depositScheduleMonthlyAnchor
 ) {
 	return updateSettingsValues( {
-		deposit_schedule_monthly_anchor: depositScheduleMonthlyAnchor,
+		deposit_schedule_monthly_anchor:
+			'' === depositScheduleMonthlyAnchor
+				? null
+				: parseInt( depositScheduleMonthlyAnchor, 10 ),
 	} );
 }
 

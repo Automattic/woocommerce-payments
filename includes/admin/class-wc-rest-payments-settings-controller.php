@@ -170,7 +170,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					],
 					'deposit_schedule_monthly_anchor'   => [
 						'description' => __( 'Monthly anchor for deposit scheduling when interval is set to monthly', 'woocommerce-payments' ),
-						'type'        => 'string',
+						'type'        => [ 'integer', 'null' ],
 					],
 					'is_payment_request_enabled'        => [
 						'description'       => __( 'If WooCommerce Payments express checkouts should be enabled.', 'woocommerce-payments' ),
