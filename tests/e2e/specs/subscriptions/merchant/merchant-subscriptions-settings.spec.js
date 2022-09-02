@@ -14,7 +14,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			} );
 			await merchant.login();
 		} );
-
 		afterAll( async () => {
 			await merchant.logout();
 		} );

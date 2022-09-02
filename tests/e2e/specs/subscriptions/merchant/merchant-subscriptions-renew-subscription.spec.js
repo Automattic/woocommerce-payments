@@ -59,6 +59,9 @@ describeif( RUN_SUBSCRIPTIONS_TESTS ).skip(
 
 			await shopper.logout();
 		} );
+		afterAll( async () => {
+			await merchant.logout();
+		} );
 
 		it( 'should be able to renew a subscription as a merchant', async () => {
 			await merchant.login();
@@ -93,8 +96,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS ).skip(
 				'div.woocommerce_subscriptions_related_orders > table > tbody > tr > td',
 				{ text: 'Renewal Order' }
 			);
-
-			await merchant.logout();
 		} );
 	}
 );
