@@ -16,6 +16,12 @@ const customerBilling = config.get(
 );
 let subscriptionId;
 
+const testSelectors = {
+	subscriptionIdField: '.woocommerce-orders-table__cell-subscription-id > a',
+	subscriptionRenewButton: 'a.button.subscription_renewal_early',
+	wcNotice: '.woocommerce .woocommerce-notices-wrapper .woocommerce-message',
+};
+
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Renew a subscription in my account',
 	() => {
@@ -24,19 +30,14 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
 		afterAll( async () => {
-			// Delete the user created with the subscription
-			await withRestApi.deleteCustomerByEmail( customerBilling.email );
+			await shopper.logout();
 		} );
 
-		it( 'should be able to renew a subscription in my account', async () => {
-			// Open the subscription product
-			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
-				waitUntil: 'networkidle0',
-			} );
+		it( 'should be able to purchase a subscription', async () => {
+			// Open the subscription product & add to cart
+			await shopperWCP.addToCartBySlug( productSlug );
 
-			// Add it to the cart and proceed to check out
-			await expect( page ).toClick( '.single_add_to_cart_button' );
-			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+			// Checkout
 			await setupCheckout( customerBilling );
 			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
@@ -45,40 +46,33 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 
 			// Get the subscription ID
 			const subscriptionIdField = await page.$(
-				'.woocommerce-orders-table__cell-subscription-id > a'
+				testSelectors.subscriptionIdField
 			);
 			subscriptionId = await subscriptionIdField.evaluate(
 				( el ) => el.innerText
 			);
+		} );
 
+		it( 'should be able to renew a subscription in my account', async () => {
 			// Go to my account and click to renew a subscription
 			await shopperWCP.goToSubscriptions();
-			await expect( page ).toClick(
-				'.woocommerce-orders-table__cell-subscription-id > a',
-				{
-					text: subscriptionId,
-				}
-			);
+			await expect( page ).toClick( testSelectors.subscriptionIdField, {
+				text: subscriptionId,
+			} );
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 			await expect( page ).toClick(
-				'a.button.subscription_renewal_early'
+				testSelectors.subscriptionRenewButton
 			);
 
 			// Place an order to renew a subscription
-			await page.waitForSelector(
-				'.woocommerce > div.woocommerce-notices-wrapper > div.woocommerce-message'
-			);
-			await expect( page ).toMatchElement(
-				'.woocommerce > div.woocommerce-notices-wrapper > div.woocommerce-message',
-				{
-					text: 'Complete checkout to renew now.',
-				}
-			);
+			await page.waitForSelector( testSelectors.wcNotice );
+			await expect( page ).toMatchElement( testSelectors.wcNotice, {
+				text: 'Complete checkout to renew now.',
+			} );
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
-
-			await shopper.logout();
 		} );
 	}
 );
