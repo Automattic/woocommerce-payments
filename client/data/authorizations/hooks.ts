@@ -12,6 +12,7 @@ import { STORE_NAME } from '../constants';
 import {
 	AuthorizationsSummary,
 	Authorizations,
+	Authorization,
 } from 'wcpay/types/authorizations';
 
 export const useAuthorizations = ( {}: Query ): Authorizations =>
@@ -53,7 +54,7 @@ export const useAuthorization = (
 ): {
 	isLoading: boolean;
 	doCaptureAuthorization: () => void;
-	authorization: unknown;
+	authorization: Authorization;
 } => {
 	const { authorization, isLoading } = useSelect( ( select ) => {
 		const { getAuthorization, isResolving } = select( STORE_NAME );

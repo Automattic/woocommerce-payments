@@ -5,6 +5,7 @@ export interface Authorization {
 	authorization_id: string;
 	authorized_on: string;
 	capture_by: string;
+	captured?: boolean;
 	order: OrderDetails;
 	risk_level: RiskLevel;
 	amount: number;

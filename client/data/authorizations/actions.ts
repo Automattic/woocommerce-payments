@@ -70,6 +70,10 @@ export function* submitCaptureAuthorization(
 			},
 		} );
 
+		// TODO: Remove once backend changes are ready.
+		authorization.authorization_id = id;
+		authorization.captured = true;
+
 		yield updateAuthorization( authorization );
 
 		// Need to invalidate the resolution so that the components will render again.
@@ -83,6 +87,12 @@ export function* submitCaptureAuthorization(
 			STORE_NAME,
 			'invalidateResolutionForStoreSelector',
 			'getAuthorizationsSummary'
+		);
+
+		yield dispatch(
+			STORE_NAME,
+			'invalidateResolutionForStoreSelector',
+			'getTimeline'
 		);
 		// Create success notice.
 		yield dispatch(
