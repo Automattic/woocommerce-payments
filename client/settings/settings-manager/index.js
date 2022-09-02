@@ -4,7 +4,7 @@
  */
 import React, { useContext } from 'react';
 import { ExternalLink } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -16,11 +16,13 @@ import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
-import TransactionsAndDeposits from '../transactions-and-deposits';
+import Transactions from '../transactions';
+import Deposits from '../deposits';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
+import { useDepositDelayDays } from '../../data';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -66,9 +68,9 @@ const GeneralSettingsDescription = () => (
 	</>
 );
 
-const TransactionsAndDepositsDescription = () => (
+const TransactionsDescription = () => (
 	<>
-		<h2>{ __( 'Transactions and deposits', 'woocommerce-payments' ) }</h2>
+		<h2>{ __( 'Transactions', 'woocommerce-payments' ) }</h2>
 		<p>
 			{ __(
 				"Update your store's configuration to ensure smooth transactions.",
@@ -80,6 +82,31 @@ const TransactionsAndDepositsDescription = () => (
 		</ExternalLink>
 	</>
 );
+
+const DepositsDescription = () => {
+	const depositDelayDays = useDepositDelayDays();
+
+	return (
+		<>
+			<h2>{ __( 'Deposits', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ sprintf(
+					__(
+						'Funds are available for deposit %s business days after they’re received.',
+						'woocommerce-payments'
+					),
+					depositDelayDays
+				) }
+			</p>
+			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
+				{ __(
+					'Learn more about pending schedules',
+					'woocommerce-payments'
+				) }
+			</ExternalLink>
+		</>
+	);
+};
 
 const SettingsManager = () => {
 	const {
@@ -118,14 +145,21 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SettingsSection description={ TransactionsAndDepositsDescription }>
+			<SettingsSection description={ TransactionsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<WcPayUpeContextProvider
 							defaultIsUpeEnabled={ isUpeEnabled }
 						>
-							<TransactionsAndDeposits />
+							<Transactions />
 						</WcPayUpeContextProvider>
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection description={ DepositsDescription }>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<Deposits />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>

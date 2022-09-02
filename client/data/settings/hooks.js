@@ -236,6 +236,72 @@ export const useAccountBrandingLogo = () => {
 	);
 };
 
+export const useDepositScheduleInterval = () => {
+	const { updateDepositScheduleInterval } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getDepositScheduleInterval } = select( STORE_NAME );
+
+			return [
+				getDepositScheduleInterval(),
+				updateDepositScheduleInterval,
+			];
+		},
+		[ updateDepositScheduleInterval ]
+	);
+};
+export const useDepositScheduleWeeklyAnchor = () => {
+	const { updateDepositScheduleWeeklyAnchor } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getDepositScheduleWeeklyAnchor } = select( STORE_NAME );
+
+			return [
+				getDepositScheduleWeeklyAnchor(),
+				updateDepositScheduleWeeklyAnchor,
+			];
+		},
+		[ updateDepositScheduleWeeklyAnchor ]
+	);
+};
+export const useDepositScheduleMonthlyAnchor = () => {
+	const { updateDepositScheduleMonthlyAnchor } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getDepositScheduleMonthlyAnchor } = select( STORE_NAME );
+
+			return [
+				getDepositScheduleMonthlyAnchor(),
+				updateDepositScheduleMonthlyAnchor,
+			];
+		},
+		[ updateDepositScheduleMonthlyAnchor ]
+	);
+};
+export const useDepositDelayDays = () => {
+	return useSelect( ( select ) => {
+		const { getDepositDelayDays } = select( STORE_NAME );
+
+		return getDepositDelayDays();
+	}, [] );
+};
+export const useCompletedWaitingPeriod = () => {
+	return useSelect( ( select ) => {
+		const { getCompletedWaitingPeriod } = select( STORE_NAME );
+
+		return getCompletedWaitingPeriod();
+	}, [] );
+};
+export const useDepositStatus = () => {
+	return useSelect( ( select ) => {
+		const { getDepositStatus } = select( STORE_NAME );
+
+		return getDepositStatus();
+	}, [] );
+};
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 

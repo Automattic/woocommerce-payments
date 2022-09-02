@@ -1,0 +1,40 @@
+.deposits {
+	.components-notice {
+		margin-left: 0;
+		margin-right: 0;
+		margin-bottom: 1em;
+	}
+
+	&__bank-information-help {
+		font-style: italic;
+	}
+	.schedule-controls {
+		display: flex;
+		flex-wrap: wrap;
+		margin-bottom: 0;
+		.components-select-control {
+			padding-right: 16px;
+			margin-bottom: 0;
+		}
+	}
+	.help-text {
+		color: #757575;
+		margin-top: 0;
+		margin-bottom: 1em;
+	}
+	&__notice > div {
+		align-items: center;
+		display: flex;
+		gap: 15px;
+		justify-content: space-between;
+		margin: 4px 4px 4px 0;
+
+		> a {
+			line-height: 0;
+
+			svg {
+				fill: $studio-blue-50;
+			}
+		}
+	}
+}

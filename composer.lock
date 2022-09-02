@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ebb82dc4dc08e3b0492156b7c989da79",
+    "content-hash": "0736b15e02fc8de5449d6f28bfae3df7",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -45,6 +45,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Used to record internal usage stats for Automattic. Not visible to site owners.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-a8c-mc-stats/tree/v1.4.15"
+            },
             "time": "2022-07-26T13:41:05+00:00"
         },
         {
@@ -91,6 +94,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Generic Jetpack wp-admin UI elements",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-admin-ui/tree/v0.2.11"
+            },
             "time": "2022-07-26T13:41:31+00:00"
         },
         {
@@ -141,6 +147,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Asset management utilities for Jetpack ecosystem packages",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-assets/tree/v1.17.21"
+            },
             "time": "2022-08-25T22:28:59+00:00"
         },
         {
@@ -341,6 +350,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "A wrapper for defining constants in a more testable way.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-constants/tree/v1.6.18"
+            },
             "time": "2022-07-26T13:41:20+00:00"
         },
         {
@@ -386,6 +398,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "This adds a cronjob that sends a batch of internal automattic stats to wp.com once a day",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-heartbeat/tree/v1.4.1"
+            },
             "abandoned": "automattic/jetpack-connection",
             "time": "2022-04-12T16:12:15+00:00"
         },
@@ -486,6 +501,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "A logo for Jetpack",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-logo/tree/v1.5.17"
+            },
             "time": "2022-07-26T13:41:07+00:00"
         },
         {
@@ -530,6 +548,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "A wrapper for wp-options to manage specific Jetpack options.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-options/tree/v1.15.2"
+            },
             "abandoned": "automattic/jetpack-connection",
             "time": "2022-04-26T14:33:49+00:00"
         },
@@ -574,6 +595,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Password Checker.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-password-checker/tree/v0.2.6"
+            },
             "time": "2022-07-26T13:41:29+00:00"
         },
         {
@@ -619,6 +643,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Utilities to build URLs to the jetpack.com/redirect/ service",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-redirect/tree/v1.7.18"
+            },
             "time": "2022-07-26T13:41:44+00:00"
         },
         {
@@ -661,6 +688,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Utilities, related with user roles and capabilities.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-roles/tree/v1.4.17"
+            },
             "time": "2022-07-26T13:41:22+00:00"
         },
         {
@@ -706,6 +736,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Used to retrieve information about the current status of Jetpack and the site overall.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-status/tree/v1.14.3"
+            },
             "time": "2022-07-26T13:41:42+00:00"
         },
         {
@@ -1030,22 +1063,17 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "2.1.0",
+            "version": "2.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "7eab8aec595c2f511fc9dfdd35d48ac965ae1a37"
+                "reference": "c4debb6c3150b0732eb29b2b897bcbaef8cc6f97"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/7eab8aec595c2f511fc9dfdd35d48ac965ae1a37",
-                "reference": "7eab8aec595c2f511fc9dfdd35d48ac965ae1a37",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/c4debb6c3150b0732eb29b2b897bcbaef8cc6f97",
+                "reference": "c4debb6c3150b0732eb29b2b897bcbaef8cc6f97",
                 "shasum": ""
-            },
-            "archive": {
-                "exclude": [
-                    "!/build"
-                ]
             },
             "require": {
                 "composer/installers": "~1.2",
@@ -1060,6 +1088,11 @@
             "type": "wordpress-plugin",
             "extra": {
                 "phpcodesniffer-search-depth": 2
+            },
+            "archive": {
+                "exclude": [
+                    "!/build"
+                ]
             },
             "scripts": {
                 "phpcs": [
@@ -1078,10 +1111,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/2.1.0",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/2.2.1",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2022-06-06T23:53:47+00:00"
+            "time": "2022-08-25T22:15:47+00:00"
         }
     ],
     "packages-dev": [
@@ -1303,6 +1336,9 @@
                 "GPL-2.0-or-later"
             ],
             "description": "Jetpack Changelogger tool. Allows for managing changelogs by dropping change files into a changelog directory with each PR.",
+            "support": {
+                "source": "https://github.com/Automattic/jetpack-changelogger/tree/v3.2.1"
+            },
             "time": "2022-08-26T18:35:48+00:00"
         },
         {
@@ -1948,6 +1984,7 @@
                 "phpunit/phpunit": "^6.5",
                 "rregeer/phpunit-coverage-check": "^0.1"
             },
+            "default-branch": true,
             "type": "composer-plugin",
             "extra": {
                 "class": "Kalessil\\Composer\\Plugins\\ProductionDependenciesGuard\\Guard"
@@ -2138,6 +2175,10 @@
                 "parser",
                 "php"
             ],
+            "support": {
+                "issues": "https://github.com/nikic/PHP-Parser/issues",
+                "source": "https://github.com/nikic/PHP-Parser/tree/v4.14.0"
+            },
             "time": "2022-05-31T20:59:12+00:00"
         },
         {
@@ -2342,6 +2383,10 @@
                 "woocommerce",
                 "wordpress"
             ],
+            "support": {
+                "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v6.8.0"
+            },
             "time": "2022-08-09T05:06:14+00:00"
         },
         {
@@ -2852,6 +2897,10 @@
                 "testing",
                 "xunit"
             ],
+            "support": {
+                "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.17"
+            },
             "funding": [
                 {
                     "url": "https://github.com/sebastianbergmann",
@@ -4361,6 +4410,11 @@
                 "phpcs",
                 "standards"
             ],
+            "support": {
+                "issues": "https://github.com/squizlabs/PHP_CodeSniffer/issues",
+                "source": "https://github.com/squizlabs/PHP_CodeSniffer",
+                "wiki": "https://github.com/squizlabs/PHP_CodeSniffer/wiki"
+            },
             "time": "2022-06-18T07:21:10+00:00"
         },
         {
@@ -4443,6 +4497,9 @@
                 "console",
                 "terminal"
             ],
+            "support": {
+                "source": "https://github.com/symfony/console/tree/v5.4.12"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4507,6 +4564,9 @@
             ],
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v2.5.2"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4586,6 +4646,9 @@
                 "polyfill",
                 "portable"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.26.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4664,6 +4727,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.26.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4745,6 +4811,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.26.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4825,6 +4894,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.26.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4901,6 +4973,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php73/tree/v1.26.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4981,6 +5056,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.26.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -5040,6 +5118,9 @@
             ],
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/process/tree/v5.4.11"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -5120,6 +5201,9 @@
                 "interoperability",
                 "standards"
             ],
+            "support": {
+                "source": "https://github.com/symfony/service-contracts/tree/v2.5.2"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -5203,6 +5287,9 @@
                 "utf-8",
                 "utf8"
             ],
+            "support": {
+                "source": "https://github.com/symfony/string/tree/v5.4.12"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -5427,6 +5514,10 @@
                 "check",
                 "validate"
             ],
+            "support": {
+                "issues": "https://github.com/webmozarts/assert/issues",
+                "source": "https://github.com/webmozarts/assert/tree/1.11.0"
+            },
             "time": "2022-06-03T18:03:27+00:00"
         },
         {
@@ -5746,5 +5837,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.3.0"
 }
