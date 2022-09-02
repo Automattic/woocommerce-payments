@@ -640,8 +640,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 				'ch_mock'
 			);
 		$this->mock_gateway
-			->expects( $this->never() )
-			->method( 'capture_charge' );
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->with( $this->isInstanceOf( WC_Order::class ) );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
@@ -651,24 +652,12 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$response      = $this->controller->capture_authorization( $request );
-		$response_data = $response->get_data();
+		$response = $this->controller->capture_authorization( $request );
 
-		$this->assertSame( 200, $response->status );
-		$this->assertEquals(
-			[
-				'status' => 'succeeded',
-				'id'     => $this->mock_intent_id,
-			],
-			$response_data
-		);
-
-		$result_order = wc_get_order( $order->get_id() );
-		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
-		$this->assertSame( 'WooCommerce Payments', $result_order->get_payment_method_title() );
-		$this->assertSame( 'processing', $result_order->get_status() );
-		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/';
-		$this->assertStringEndsWith( $url . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
+		$this->assertInstanceOf( 'WP_Error', $response );
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'status', $data );
+		$this->assertEquals( 502, $data['status'] );
 	}
 
 	public function test_capture_authorization_intent_non_capturable() {
