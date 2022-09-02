@@ -40,7 +40,6 @@ const WC_SUBSCRIPTIONS_PAGE =
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
 const WP_ADMIN_PAGES = baseUrl + 'wp-admin/edit.php?post_type=page';
 const WCB_CHECKOUT = baseUrl + 'checkout-wcb/';
-const WCPAY_DEV_TOOLS = baseUrl + 'wp-admin/admin.php?page=wcpaydev';
 const SHOP_CART_PAGE = baseUrl + 'cart/';
 
 export const RUN_SUBSCRIPTIONS_TESTS =
@@ -457,60 +456,20 @@ export const merchantWCP = {
 	},
 
 	activateWooPay: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if (
-			! ( await page.$( '#override_platform_checkout_eligible:checked' ) )
-		) {
-			await expect( page ).toClick( 'label', {
-				text:
-					'Override the platform_checkout_eligible flag in the account cache',
-			} );
-		}
-
-		if (
-			! ( await page.$(
-				'#override_platform_checkout_eligible_value:checked'
-			) )
-		) {
-			await expect( page ).toClick( 'label', {
-				text:
-					'Set platform_checkout_eligible flag to true, false otherwise',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		await runWPCLI(
+			'wp option update override_platform_checkout_eligible 1'
+		);
+		await runWPCLI(
+			'wp option update override_platform_checkout_eligible_value 1'
+		);
 	},
 
 	deactivateWooPay: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if ( await page.$( '#override_platform_checkout_eligible:checked' ) ) {
-			await expect( page ).toClick( 'label', {
-				text:
-					'Override the platform_checkout_eligible flag in the account cache',
-			} );
-		}
-
-		if (
-			await page.$( '#override_platform_checkout_eligible_value:checked' )
-		) {
-			await expect( page ).toClick( 'label', {
-				text:
-					'Set platform_checkout_eligible flag to true, false otherwise',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		await runWPCLI(
+			'wp option update override_platform_checkout_eligible 0'
+		);
+		await runWPCLI(
+			'wp option update override_platform_checkout_eligible_value 0'
+		);
 	},
 };
