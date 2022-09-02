@@ -20,17 +20,22 @@ const cards = [
 ];
 
 describe( 'Saved cards ', () => {
+	beforeAll( async () => {
+		await merchantWCP.activateUpe();
+	} );
+
+	afterAll( async () => {
+		await merchantWCP.deactivateUpe();
+	} );
 	describe.each( cards )(
 		'when using a %s card added through my account',
 		( cardType, card ) => {
 			beforeAll( async () => {
-				await merchantWCP.activateUpe();
 				await shopper.login();
 			} );
 
 			afterAll( async () => {
 				await shopperWCP.logout();
-				await merchantWCP.deactivateUpe();
 			} );
 
 			it( 'should save the card', async () => {
