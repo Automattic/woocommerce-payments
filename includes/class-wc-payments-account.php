@@ -329,7 +329,7 @@ class WC_Payments_Account {
 	 */
 	public function get_deposit_schedule_monthly_anchor() {
 		$account = $this->get_cached_account_data();
-		return $account['deposits']['monthly_anchor'] ?? null;
+		return ! empty( $account['deposits']['monthly_anchor'] ) ? $account['deposits']['monthly_anchor'] : null;
 	}
 
 	/**
