@@ -657,7 +657,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 502, $data['status'] );
+		$this->assertEquals( 500, $data['status'] );
 	}
 
 	public function test_capture_authorization_intent_non_capturable() {
