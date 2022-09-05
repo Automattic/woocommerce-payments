@@ -117,18 +117,18 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
-	public function capture_terminal_payment( $request ) {
+	public function capture_terminal_payment( WP_REST_Request $request ): WP_REST_Response {
 		return $this->handle_payment_capture( $request, true );
 	}
 
 	/**
-	 * TODO handle_payment_capture.
+	 * Handles payment capture.
 	 *
-	 * @param  mixed $request TODO.
-	 * @param  mixed $is_terminal_payment TODO.
+	 * @param  WP_REST_Request $request Full data about the request.
+	 * @param  bool            $is_terminal_payment Marks if the request is for a Terminal payment (In Person Payment or Interac at the moment).
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
-	private function handle_payment_capture( $request, $is_terminal_payment ) {
+	private function handle_payment_capture( WP_REST_Request $request, bool $is_terminal_payment ): WP_REST_Response {
 		try {
 			$intent_id = $request['payment_intent_id'];
 			$order_id  = $request['order_id'];
@@ -236,12 +236,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * TODO.
+	 * Captures an authorization.
+	 * Use-cases: Merchants manually capturing a payment when they enable "capture later" option.
 	 *
-	 * @param  WP_REST_Request $request TODO.
-	 * @return WP_REST_Response|WP_Error TODO
+	 * @param  WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response
 	 */
-	public function capture_authorization( $request ) {
+	public function capture_authorization( WP_REST_Request $request ): WP_REST_Response {
 		return $this->handle_payment_capture( $request, false );
 	}
 
