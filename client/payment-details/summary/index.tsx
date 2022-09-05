@@ -241,26 +241,30 @@ const PaymentDetailsSummary = ( {
 				</LoadableBlock>
 			</CardBody>
 			{ authorization && ! authorization.captured && (
-				<CardFooter className="payment-details-capture-notice">
-					<Flex>
-						<FlexItem>
-							{ `${ __(
-								'You need to capture this charge before',
-								'woocommerce-payments'
-							) } ` }
-							<b>{ authorization.capture_by }</b>
-						</FlexItem>
-						<FlexItem>
-							<CaptureAuthorizationButton
-								id="auth_1234"
-								orderId={ charge.order?.number || 0 }
-								paymentIntentId={ charge.payment_intent || '' }
-								buttonIsPrimary={ true }
-								buttonIsSmall={ false }
-							/>
-						</FlexItem>
-					</Flex>
-				</CardFooter>
+				<Loadable isLoading={ isLoading } placeholder="">
+					<CardFooter className="payment-details-capture-notice">
+						<Flex>
+							<FlexItem>
+								{ `${ __(
+									'You need to capture this charge before',
+									'woocommerce-payments'
+								) } ` }
+								<b>{ authorization.capture_by }</b>
+							</FlexItem>
+							<FlexItem>
+								<CaptureAuthorizationButton
+									id="auth_1234"
+									orderId={ charge.order?.number || 0 }
+									paymentIntentId={
+										charge.payment_intent || ''
+									}
+									buttonIsPrimary={ true }
+									buttonIsSmall={ false }
+								/>
+							</FlexItem>
+						</Flex>
+					</CardFooter>
+				</Loadable>
 			) }
 		</Card>
 	);
