@@ -5,7 +5,7 @@ export interface Authorization {
 	authorization_id: string;
 	authorized_on: string;
 	capture_by: string;
-	captured?: boolean;
+	captured: boolean;
 	order: OrderDetails;
 	risk_level: RiskLevel;
 	amount: number;
@@ -28,4 +28,11 @@ export interface AuthorizationsSummary {
 	currency?: string;
 	store_currencies?: string[];
 	customer_currencies?: string[];
+}
+
+export interface AuthorizationsState {
+	summary: {
+		[ x: string ]: { data?: AuthorizationsSummary; error?: string };
+	};
+	byId: Record< string, Authorization >;
 }

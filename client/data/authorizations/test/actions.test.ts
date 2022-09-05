@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import { RiskLevel } from 'wcpay/types/authorizations';
+import { Authorization, RiskLevel } from 'wcpay/types/authorizations';
 
 /**
  * Internal dependencies
@@ -16,6 +16,7 @@ describe( 'submitCaptureAuthorization', () => {
 		authorization_id: '42',
 		authorized_on: 'Aug 31, 2022 / 3:41AM',
 		capture_by: 'capture_by',
+		captured: false,
 		order: {
 			number: 52,
 			customer_url: 'https://example.com',
@@ -49,7 +50,10 @@ describe( 'submitCaptureAuthorization', () => {
 		);
 
 		expect( generator.next( mockAuthorization ).value ).toEqual(
-			updateAuthorization( mockAuthorization )
+			updateAuthorization( {
+				authorization_id: mockAuthorization.authorization_id,
+				captured: true,
+			} as Authorization )
 		);
 
 		expect( generator.next().value ).toEqual(

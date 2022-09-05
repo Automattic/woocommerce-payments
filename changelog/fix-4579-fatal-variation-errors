@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improvements to express checkout functionality: prevent errors on PHP 8 with empty product prices, and more percise taxes.

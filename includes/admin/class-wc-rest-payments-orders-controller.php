@@ -118,6 +118,17 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function capture_terminal_payment( $request ) {
+		return $this->handle_payment_capture( $request, true );
+	}
+
+	/**
+	 * TODO handle_payment_capture.
+	 *
+	 * @param  mixed $request TODO.
+	 * @param  mixed $is_terminal_payment TODO.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	private function handle_payment_capture( $request, $is_terminal_payment ) {
 		try {
 			$intent_id = $request['payment_intent_id'];
 			$order_id  = $request['order_id'];
@@ -151,21 +162,26 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Update the order: set the payment method and attach intent attributes.
-			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
-			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
+			if ( $is_terminal_payment ) {
+				$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+				$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
+			}
 			$intent_id     = $intent->get_id();
 			$intent_status = $intent->get_status();
 			$charge        = $intent->get_charge();
 			$charge_id     = $charge ? $charge->get_id() : null;
-			$this->gateway->attach_intent_info_to_order(
-				$order,
-				$intent_id,
-				$intent_status,
-				$intent->get_payment_method_id(),
-				$intent->get_customer_id(),
-				$charge_id,
-				$intent->get_currency()
-			);
+			if ( $is_terminal_payment ) {
+				$this->gateway->attach_intent_info_to_order(
+					$order,
+					$intent_id,
+					$intent_status,
+					$intent->get_payment_method_id(),
+					$intent->get_customer_id(),
+					$charge_id,
+					$intent->get_currency()
+				);
+			}
+
 			$this->gateway->update_order_status_from_intent(
 				$order,
 				$intent_id,
@@ -182,7 +198,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				'id'     => $intent->get_id(),
 			];
 
-			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false );
+			$result = ( $is_intent_captured && $is_terminal_payment ) ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false );
 
 			if ( 'succeeded' !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
@@ -198,8 +214,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 			// Store receipt generation URL for mobile applications in order meta-data.
 			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
+
 			// Actualize order status.
-			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'] );
+			if ( $is_terminal_payment ) {
+				$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'] );
+			} else {
+				$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge_id );
+			}
 
 			return rest_ensure_response(
 				[
@@ -208,7 +229,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				]
 			);
 		} catch ( \Throwable $e ) {
-			Logger::error( 'Failed to capture a terminal payment via REST API: ' . $e );
+			$message = $is_terminal_payment ? 'Failed to capture a terminal payment via REST API: ' : 'Failed to capture an authorization via REST API: ';
+			Logger::error( $message . $e );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
@@ -220,66 +242,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response|WP_Error TODO
 	 */
 	public function capture_authorization( $request ) {
-		try {
-			$intent_id = $request['payment_intent_id'];
-			$order_id  = $request['order_id'];
-
-			// Do not process non-existing orders.
-			$order = wc_get_order( $order_id );
-			if ( false === $order ) {
-				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
-			}
-
-			// Do not process intents that can't be captured.
-			$intent = $this->api_client->get_intent( $intent_id );
-			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture', 'succeeded' ], true ) ) {
-				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
-			}
-
-			// Update the order.
-			$intent_id     = $intent->get_id();
-			$intent_status = $intent->get_status();
-			$charge        = $intent->get_charge();
-			$charge_id     = $charge ? $charge->get_id() : null;
-
-			$this->gateway->update_order_status_from_intent(
-				$order,
-				$intent_id,
-				$intent_status,
-				$charge_id
-			);
-
-			// Capture the charge.
-			$result = $this->gateway->capture_charge( $order, false );
-
-			if ( 'succeeded' !== $result['status'] ) {
-				$http_code = $result['http_code'] ?? 502;
-				return new WP_Error(
-					'wcpay_capture_error',
-					sprintf(
-					// translators: %s: the error message.
-						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
-						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
-					),
-					[ 'status' => $http_code ]
-				);
-			}
-
-			// Store receipt generation URL for mobile applications in order meta-data.
-			$order->add_meta_data( 'receipt_url', get_rest_url( null, sprintf( '%s/payments/readers/receipts/%s', $this->namespace, $intent->get_id() ) ) );
-			// Actualize order status.
-			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge_id );
-
-			return rest_ensure_response(
-				[
-					'status' => $result['status'],
-					'id'     => $result['id'],
-				]
-			);
-		} catch ( \Throwable $e ) {
-			Logger::error( 'Failed to capture an authorization via REST API: ' . $e );
-			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
-		}
+		return $this->handle_payment_capture( $request, false );
 	}
 
 	/**

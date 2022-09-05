@@ -72,6 +72,7 @@ const getMockAuthorizations: () => Authorization[] = () => [
 		authorization_id: '123',
 		authorized_on: '2020-01-02 17:46:02',
 		capture_by: '2020-01-09 17:46:02',
+		captured: false,
 		order: {
 			number: 24,
 			customer_url: 'https://doggo.com',
@@ -88,6 +89,7 @@ const getMockAuthorizations: () => Authorization[] = () => [
 		authorization_id: '456',
 		authorized_on: '2020-01-03 17:46:02',
 		capture_by: '2020-01-10 17:46:02',
+		captured: false,
 		order: {
 			number: 25,
 			customer_url: 'https://doggo.com',

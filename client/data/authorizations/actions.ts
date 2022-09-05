@@ -62,7 +62,7 @@ export function* submitCaptureAuthorization(
 			id,
 		] );
 
-		const authorization = yield apiFetch( {
+		let authorization = yield apiFetch( {
 			path: `/wc/v3/payments/orders/${ orderId }/capture_authorization`,
 			method: 'post',
 			data: {
@@ -70,9 +70,10 @@ export function* submitCaptureAuthorization(
 			},
 		} );
 
-		// TODO: Remove once backend changes are ready.
-		authorization.authorization_id = id;
-		authorization.captured = true;
+		authorization = {
+			authorization_id: id,
+			captured: true,
+		};
 
 		yield updateAuthorization( authorization );
 

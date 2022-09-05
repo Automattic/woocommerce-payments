@@ -51,6 +51,7 @@ export function* getAuthorizations( query: Query ): any {
 				) }`,
 				authorized_on: randomDate,
 				capture_by: randomCaptureDate,
+				captured: false,
 				order: {
 					number: 254,
 					customer_url: 'https://doggo.com',
@@ -97,6 +98,7 @@ export function* getAuthorization( id: string ): Generator< unknown > {
 		authorization_id: id,
 		authorized_on: randomDate,
 		capture_by: randomCaptureDate,
+		captured: false,
 		order: {
 			number: 254,
 			customer_url: 'https://doggo.com',
