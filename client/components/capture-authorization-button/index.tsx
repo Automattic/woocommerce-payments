@@ -17,11 +17,13 @@ const CaptureAuthorizationButton = ( {
 	orderId,
 	paymentIntentId,
 	buttonIsPrimary = false,
+	buttonIsSmall = true,
 }: {
 	id: string;
 	orderId: number;
 	paymentIntentId: string;
 	buttonIsPrimary?: boolean;
+	buttonIsSmall?: boolean;
 } ): JSX.Element => {
 	const { doCaptureAuthorization, isLoading } = useAuthorization(
 		id,
@@ -33,7 +35,7 @@ const CaptureAuthorizationButton = ( {
 		<Button
 			isPrimary={ buttonIsPrimary }
 			isSecondary={ ! buttonIsPrimary }
-			isSmall
+			isSmall={ buttonIsSmall }
 			onClick={ doCaptureAuthorization }
 			isBusy={ isLoading }
 		>
