@@ -56,7 +56,7 @@ export function* submitCaptureAuthorization(
 	id: string,
 	orderId: number,
 	paymentIntentId: string
-): any {
+): Generator< unknown | Authorization > {
 	try {
 		yield dispatch( STORE_NAME, 'startResolution', 'getAuthorization', [
 			id,
@@ -75,7 +75,7 @@ export function* submitCaptureAuthorization(
 			captured: true,
 		};
 
-		yield updateAuthorization( authorization );
+		yield updateAuthorization( authorization as Authorization );
 
 		// Need to invalidate the resolution so that the components will render again.
 		yield dispatch(
