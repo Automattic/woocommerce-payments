@@ -1,5 +1,4 @@
-Significance: patch
-Type: fix
-Comment: Minor readability change in tests.
+Significance: minor
+Type: dev
 
-
+Minor readability change in tests
