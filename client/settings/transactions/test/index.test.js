@@ -6,8 +6,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import TransactionsAndDeposits from '..';
-import WCPaySettingsContext from '../../wcpay-settings-context';
+import Transactions from '..';
 import {
 	useGetSavingError,
 	useAccountStatementDescriptor,
@@ -33,25 +32,6 @@ describe( 'TransactionsAndDeposits', () => {
 		useCardPresentEligible.mockReturnValue( [ false ] );
 	} );
 
-	it( 'renders', () => {
-		const settingsContext = {
-			accountStatus: { accountLink: '/account-link' },
-		};
-
-		render(
-			<WCPaySettingsContext.Provider value={ settingsContext }>
-				<TransactionsAndDeposits />
-			</WCPaySettingsContext.Provider>
-		);
-
-		const manageLink = screen.queryByText( 'Manage in Stripe' );
-		expect( manageLink ).toBeInTheDocument();
-		expect( manageLink ).toHaveTextContent(
-			'Manage in Stripe(opens in a new tab)'
-		);
-		expect( manageLink.href ).toContain( '/account-link' );
-	} );
-
 	it( 'displays the length of the bank statement input', async () => {
 		const updateAccountStatementDescriptor = jest.fn();
 		useAccountStatementDescriptor.mockReturnValue( [
@@ -59,7 +39,7 @@ describe( 'TransactionsAndDeposits', () => {
 			updateAccountStatementDescriptor,
 		] );
 
-		render( <TransactionsAndDeposits /> );
+		render( <Transactions /> );
 
 		expect( screen.getByText( '14 / 22' ) ).toBeInTheDocument();
 
@@ -94,7 +74,7 @@ describe( 'TransactionsAndDeposits', () => {
 			},
 		} );
 
-		render( <TransactionsAndDeposits /> );
+		render( <Transactions /> );
 
 		expect( screen.getByText( '3 / 22' ) ).toBeInTheDocument();
 		expect(
@@ -107,7 +87,7 @@ describe( 'TransactionsAndDeposits', () => {
 	it( 'display ipp payment notice', async () => {
 		useCardPresentEligible.mockReturnValue( [ true ] );
 
-		render( <TransactionsAndDeposits /> );
+		render( <Transactions /> );
 
 		expect(
 			screen.getByText(

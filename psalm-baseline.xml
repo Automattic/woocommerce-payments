@@ -12,6 +12,12 @@
     <UndefinedMethod occurrences="1">
       <code>$intent</code>
     </UndefinedMethod>
+    <InvalidNullableReturnType occurrences="1">
+        <code>string|array|int|bool</code>
+    </InvalidNullableReturnType>
+    <NullableReturnStatement occurrences="1">
+        <code>$this->get_deposit_schedule_monthly_anchor()</code>
+    </NullableReturnStatement>
   </file>
   <file src="includes/class-wc-payments-payment-request-button-handler.php">
     <UndefinedClass occurrences="3">
