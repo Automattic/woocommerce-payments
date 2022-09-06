@@ -105,6 +105,7 @@ const chargeMock = {
 			getPaymentIntentError: jest.fn().mockReturnValue( null ),
 			getTimeline: jest.fn().mockReturnValue( {} ),
 			getTimelineError: jest.fn().mockReturnValue( null ),
+			getAuthorization: jest.fn().mockReturnValue( {} ),
 		} )
 	)
 );

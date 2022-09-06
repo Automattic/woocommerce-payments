@@ -67,8 +67,12 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
           </div>
         </div>
       </div>
+      <hr
+        class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
+        role="separator"
+      />
       <div
-        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+        class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
       >
         <span
           aria-busy="true"
@@ -81,6 +85,10 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
           </p>
         </span>
       </div>
+      <span
+        aria-busy="true"
+        class="is-loadable-placeholder"
+      />
     </div>
     <div
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
@@ -447,8 +455,12 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
           </div>
         </div>
       </div>
+      <hr
+        class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
+        role="separator"
+      />
       <div
-        class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+        class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
       >
         <ul
           class="woocommerce-list woocommerce-list--horizontal"
@@ -604,6 +616,30 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
             </div>
           </li>
         </ul>
+      </div>
+      <div
+        class="components-flex components-card__footer is-size-medium payment-details-capture-notice e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
+      >
+        <div
+          class="payment-details-capture-notice__section"
+        >
+          <div
+            class="payment-details-capture-notice__text"
+          >
+            You need to capture this charge before 
+            <b />
+          </div>
+          <div
+            class="payment-details-capture-notice__button"
+          >
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Capture
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     <div

@@ -72,7 +72,10 @@ export function* getAuthorizations( query: Query ): any {
 	yield updateAuthorizations( query, getMockedRows() );
 }
 
-export function* getAuthorization( id: string ): Generator< unknown > {
+export function* getAuthorization(
+	id: string,
+	isCaptured: boolean // TODO: remove when getAuthorization switches to live data.
+): Generator< unknown > {
 	// TODO replace mocked implementation when server is ready
 	const randomAmount = () => {
 		return 1400 + Math.floor( Math.random() * 5000 );
@@ -98,7 +101,7 @@ export function* getAuthorization( id: string ): Generator< unknown > {
 		authorization_id: id,
 		authorized_on: randomDate,
 		capture_by: randomCaptureDate,
-		captured: false,
+		captured: isCaptured,
 		order: {
 			number: 254,
 			customer_url: 'https://doggo.com',
