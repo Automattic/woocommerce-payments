@@ -160,5 +160,8 @@
     "webpack": "5.53.0",
     "webpack-cli": "4.8.0",
     "yarnhook": "0.5.1"
+  },
+  "overrides": {
+    "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils#update/babel-deps"
   }
 }
