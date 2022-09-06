@@ -91,6 +91,30 @@ export const getAccountBrandingLogo = ( state ) => {
 	return getSettings( state ).account_branding_logo || '';
 };
 
+export const getDepositScheduleInterval = ( state ) => {
+	return getSettings( state ).deposit_schedule_interval || '';
+};
+
+export const getDepositScheduleWeeklyAnchor = ( state ) => {
+	return getSettings( state ).deposit_schedule_weekly_anchor || '';
+};
+
+export const getDepositScheduleMonthlyAnchor = ( state ) => {
+	return getSettings( state ).deposit_schedule_monthly_anchor || '';
+};
+
+export const getDepositDelayDays = ( state ) => {
+	return getSettings( state ).deposit_delay_days || '7'; // default to 7 days
+};
+
+export const getCompletedWaitingPeriod = ( state ) => {
+	return getSettings( state ).deposit_completed_waiting_period || false;
+};
+
+export const getDepositStatus = ( state ) => {
+	return getSettings( state ).deposit_status || '';
+};
+
 export const getIsManualCaptureEnabled = ( state ) => {
 	return getSettings( state ).is_manual_capture_enabled || false;
 };
