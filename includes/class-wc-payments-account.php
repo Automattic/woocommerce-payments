@@ -193,6 +193,7 @@ class WC_Payments_Account {
 			'status'              => $account['status'],
 			'paymentsEnabled'     => $account['payments_enabled'],
 			'deposits'            => $account['deposits'] ?? [],
+			'depositsStatus'      => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
 			'currentDeadline'     => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
 			'pastDue'             => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
 			'accountLink'         => $this->get_login_url(),
