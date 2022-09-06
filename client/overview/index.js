@@ -42,6 +42,7 @@ const OverviewPage = () => {
 		accountStatus,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
+		isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		needsHttpsSetup,
 		numDisputesNeedingResponse,
 	} );
