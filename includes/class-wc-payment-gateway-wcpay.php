@@ -3227,11 +3227,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Add extra `wcpay-checkout-email-field` class.
 			$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
 
-			// Append StripeLink modal trigger button for logged in users.
-			$fields['billing_email']['label'] = $fields['billing_email']['label']
-				. ' <button class="wcpay-stripelink-modal-trigger"></button>';
+			/**
+			 * Append the Stripe Link modal button.
+			 *
+			 * @return void
+			 */
+			function wcpay_append_stripelink_modal_button() {
+				echo '<button class="wcpay-stripelink-modal-trigger"></button>';
+			}
+			add_action( 'woocommerce_before_checkout_billing_form', 'wcpay_append_stripelink_modal_button' );
 		}
-
 		return $fields;
 	}
 }
