@@ -984,7 +984,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+
+		$capability_key_map      = $this->get_payment_method_capability_key_map();
+		$payment_method_statuses = $this->get_upe_enabled_payment_method_statuses();
+
+		if (
+			'US' === $this->account->get_account_country() &&
+			! empty( $capability_key_map[ Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] ) &&
+			'inactive' !== $payment_method_statuses[ $capability_key_map[ Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] ]['status']
+		) {
+			$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		}
 
 		$methods = array_values(
 			apply_filters(
@@ -993,11 +1003,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			)
 		);
 
-		$methods_with_fees = array_values( array_intersect( $methods, array_keys( $fees ) ) );
-
-		$methods_with_fees[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-
-		return $methods_with_fees;
+		return array_values( array_intersect( $methods, array_keys( $fees ) ) );
 	}
 
 	/**
