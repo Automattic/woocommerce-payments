@@ -5,14 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import {
-	Card,
-	CardBody,
-	CardFooter,
-	CardDivider,
-	Flex,
-	FlexItem,
-} from '@wordpress/components';
+import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
 import moment from 'moment';
 import React from 'react';
 
@@ -243,15 +236,15 @@ const PaymentDetailsSummary = ( {
 			{ authorization && ! authorization.captured && (
 				<Loadable isLoading={ isLoading } placeholder="">
 					<CardFooter className="payment-details-capture-notice">
-						<Flex>
-							<FlexItem>
+						<div className="payment-details-capture-notice__section">
+							<div className="payment-details-capture-notice__text">
 								{ `${ __(
 									'You need to capture this charge before',
 									'woocommerce-payments'
 								) } ` }
 								<b>{ authorization.capture_by }</b>
-							</FlexItem>
-							<FlexItem>
+							</div>
+							<div className="payment-details-capture-notice__button">
 								<CaptureAuthorizationButton
 									id="auth_1234"
 									orderId={ charge.order?.number || 0 }
@@ -261,8 +254,8 @@ const PaymentDetailsSummary = ( {
 									buttonIsPrimary={ true }
 									buttonIsSmall={ false }
 								/>
-							</FlexItem>
-						</Flex>
+							</div>
+						</div>
 					</CardFooter>
 				</Loadable>
 			) }
