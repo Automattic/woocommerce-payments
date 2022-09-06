@@ -67,6 +67,14 @@ describe( 'submitCaptureAuthorization', () => {
 
 		expect( generator.next().value ).toEqual(
 			dispatch(
+				'wc/payments',
+				'invalidateResolutionForStoreSelector',
+				'getTimeline'
+			)
+		);
+
+		expect( generator.next().value ).toEqual(
+			dispatch(
 				'core/notices',
 				'createSuccessNotice',
 				'You have captured the payment.'

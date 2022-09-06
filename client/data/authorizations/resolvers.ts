@@ -20,8 +20,14 @@ export function* getAuthorizations( query: Query ): Generator< unknown > {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function* getAuthorization( id: string ): Generator< unknown > {
-	yield updateAuthorization( {} as Authorization );
+export function* getAuthorization(
+	id: string,
+	isCaptured: boolean // TODO: remove when getAuthorization switches to live data.
+): Generator< unknown > {
+	yield updateAuthorization( {
+		authorization_id: id,
+		captured: isCaptured,
+	} as Authorization );
 }
 
 export function* getAuthorizationsSummary(

@@ -104,10 +104,16 @@ const PaymentDetailsSummary = ( {
 		: placeholderValues;
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
+	// TODO: remove when getAuthorization switches to live data.
+	let isCaptured = charge.captured;
+	if ( isCaptured === undefined ) {
+		isCaptured = charge.amount_captured >= charge.amount;
+	}
 	const { authorization } = useAuthorization(
 		'auth_1234',
 		charge.order?.number || 0,
-		charge.payment_intent || ''
+		charge.payment_intent || '',
+		isCaptured
 	);
 
 	return (
@@ -253,6 +259,7 @@ const PaymentDetailsSummary = ( {
 									}
 									buttonIsPrimary={ true }
 									buttonIsSmall={ false }
+									paymentIsCaptured={ isCaptured }
 								/>
 							</div>
 						</div>
