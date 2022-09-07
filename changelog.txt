@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 4.7.0 - 2022-xx-xx =
+= 4.7.0 - 2022-09-07 =
 * Add - Added meta to payment tokens used in subscriptions.
 * Add - Adding an authorization page part of the transactions view. Currently behind a flag and using mocked data.
 * Add - Adding support for WCA's Analytics and Multi-Currency when using custom order tables.

@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.6.0
+Stable tag: 4.7.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.7.0 - 2022-xx-xx =
+= 4.7.0 - 2022-09-07 =
 * Add - Added meta to payment tokens used in subscriptions.
 * Add - Adding an authorization page part of the transactions view. Currently behind a flag and using mocked data.
 * Add - Adding support for WCA's Analytics and Multi-Currency when using custom order tables.
