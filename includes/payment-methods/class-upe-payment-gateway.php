@@ -988,12 +988,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$capability_key_map      = $this->get_payment_method_capability_key_map();
 		$payment_method_statuses = $this->get_upe_enabled_payment_method_statuses();
 
-		if (
-			'US' === $this->account->get_account_country() &&
-			! empty( $capability_key_map[ Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] ) &&
-			'inactive' !== $payment_method_statuses[ $capability_key_map[ Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] ]['status']
-		) {
-			$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$capabilities = $this->get_payment_method_capability_key_map();
+		if ( isset( $capabilities[ Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] ) ) {
+			$payment_methods_statuses = $this->get_upe_enabled_payment_method_statuses();
+			$link_status              = $payment_methods_statuses[ $capabilities[ Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] ]['status'];
+			if ( 'inactive' !== $link_status ) {
+				$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+			}
 		}
 
 		$methods = array_values(
