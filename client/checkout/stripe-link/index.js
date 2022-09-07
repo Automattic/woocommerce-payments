@@ -56,9 +56,10 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 				'string' === typeof shippingAddress.name &&
 				shippingAddress.name.length
 			) {
-				const shippingNames = shippingAddress.name.split( ' ' );
+				const shippingNames = shippingAddress.name.split( / (.*)/s, 2 );
+
 				shippingAddress.address.last_name = shippingNames.splice( -1 );
-				shippingAddress.address.first_name = shippingNames.join( ' ' );
+				shippingAddress.address.first_name = shippingNames;
 			}
 
 			fillWith( shippingAddress, options.shipping_fields.line1, 'line1' );
@@ -96,9 +97,10 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 				'string' === typeof billingAddress.name &&
 				billingAddress.name.length
 			) {
-				const billingNames = billingAddress.name.split( ' ' );
+				const billingNames = billingAddress.name.split( / (.*)/s, 2 );
+
 				billingAddress.address.last_name = billingNames.splice( -1 );
-				billingAddress.address.first_name = billingNames.join( ' ' );
+				billingAddress.address.first_name = billingNames;
 			}
 
 			fillWith( billingAddress, options.billing_fields.line1, 'line1' );
