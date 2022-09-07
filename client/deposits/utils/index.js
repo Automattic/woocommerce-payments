@@ -45,6 +45,8 @@ export const getNextDepositLabelFormatted = ( deposit ) => {
 
 const formatDepositSchedule = ( schedule ) => {
 	switch ( schedule.interval ) {
+		case 'manual':
+			return __( 'Manual', 'woocommerce-payments' );
 		case 'daily':
 			return __(
 				'Automatic, every business day',
@@ -85,10 +87,21 @@ const formatDepositSchedule = ( schedule ) => {
 };
 
 export const getDepositScheduleDescriptor = ( {
-	account: { deposits_schedule: schedule, deposits_disabled: disabled },
+	account: {
+		deposits_schedule: schedule,
+		deposits_disabled: disabled,
+		deposits_blocked: blocked,
+	},
 	last_deposit: last,
 } ) => {
-	if ( disabled || 'manual' === schedule.interval ) {
+	const isCustomDepositSchedulesEnabled =
+		window.wcpaySettings?.featureFlags?.customDepositSchedules;
+
+	if (
+		disabled ||
+		blocked ||
+		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval )
+	) {
 		const learnMoreHref =
 			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
 		return createInterpolateElement(
@@ -120,7 +133,7 @@ export const getDepositScheduleDescriptor = ( {
 					'%s – your first deposit is held for seven days (<a>learn more</a>)',
 					'woocommerce-payments'
 				),
-				formatDepositSchedule( { interval: 'daily' } )
+				formatDepositSchedule( schedule )
 			),
 			{
 				a: (
