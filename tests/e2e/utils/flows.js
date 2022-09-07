@@ -34,6 +34,8 @@ const WCPAY_DEPOSITS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/deposits';
 const WCPAY_TRANSACTIONS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
+const WCPAY_MULTI_CURRENCY =
+	baseUrl + 'wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency';
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
@@ -410,6 +412,13 @@ export const merchantWCP = {
 
 	openTransactions: async () => {
 		await page.goto( WCPAY_TRANSACTIONS, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+	},
+
+	openMultiCurrency: async () => {
+		await page.goto( WCPAY_MULTI_CURRENCY, {
 			waitUntil: 'networkidle0',
 		} );
 		await uiLoaded();
