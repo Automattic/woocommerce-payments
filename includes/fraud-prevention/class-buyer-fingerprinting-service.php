@@ -55,13 +55,31 @@ class Buyer_Fingerprinting_Service {
 	}
 
 	/**
+	 * Returns the 3 octet format from an IP address.
+	 *
+	 * @param string $ip_address Raw IP address.
+	 *
+	 * @return string 3 octet IP address (192.192.192).
+	 */
+	public function get_3_octet_from_ip( string $ip_address ): string {
+		$ip_address_octets = explode( '.', $ip_address );
+		array_pop( $ip_address_octets );
+
+		return implode( '.', $ip_address_octets );
+	}
+
+	/**
 	 * Returns fraud prevention data for an order.
 	 *
 	 * @return string[] An array of hashed data for an order.
 	 */
 	public function get_hashed_data_for_customer(): array {
+		$ip_address         = WC_Geolocation::get_ip_address();
+		$ip_address_3_octet = $this->get_3_octet_from_ip( $ip_address );
+
 		return [
-			'fraud_prevention_data_shopper_ip_hash' => $this->hash_data_for_fraud_prevention( WC_Geolocation::get_ip_address() ),
+			'fraud_prevention_data_shopper_3_octet_ip_hash' => $this->hash_data_for_fraud_prevention( $ip_address_3_octet ),
+			'fraud_prevention_data_shopper_ip_hash' => $this->hash_data_for_fraud_prevention( $ip_address ),
 			'fraud_prevention_data_shopper_ua_hash' => $this->hash_data_for_fraud_prevention( strtolower( wc_get_user_agent() ) ),
 		];
 	}
