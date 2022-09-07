@@ -945,7 +945,14 @@ class WC_Payments {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			require_once __DIR__ . '/class-wc-payments-upe-blocks-payment-method.php';
-			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Payment_Method() );
+			require_once __DIR__ . '/class-wc-payments-upe-blocks-card-payment-method.php';
+			require_once __DIR__ . '/class-wc-payments-upe-blocks-bancontact-payment-method.php';
+			require_once __DIR__ . '/class-wc-payments-upe-blocks-sepa-payment-method.php';
+			require_once __DIR__ . '/class-wc-payments-upe-blocks-giropay-payment-method.php';
+			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Card_Payment_Method() );
+			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Bancontact_Payment_Method() );
+			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Sepa_Payment_Method() );
+			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Giropay_Payment_Method() );
 		} else {
 			$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 		}

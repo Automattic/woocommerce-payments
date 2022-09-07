@@ -246,7 +246,6 @@ class WC_Payments_API_Client {
 		if ( ! empty( $cvc_confirmation ) ) {
 			$request['cvc_confirmation'] = $cvc_confirmation;
 		}
-
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
@@ -2109,6 +2108,7 @@ class WC_Payments_API_Client {
 	 */
 	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
 		// If level3 data is not present for some reason, simply proceed normally.
+		Logger::error('harris debug' . json_encode($params));
 		if ( empty( $params['level3'] ) || ! is_array( $params['level3'] ) ) {
 			return $this->request( $params, $api, $method, $is_site_specific );
 		}
