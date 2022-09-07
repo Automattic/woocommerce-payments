@@ -168,7 +168,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 *
 	 * @return string|null The formatted transaction date as per timezone.
 	 */
-	private function format_transaction_date_with_timestamp( ?string $transaction_date = null ) {
+	private function format_transaction_date_with_timestamp( $transaction_date = null ) {
 		if ( is_null( $transaction_date ) ) {
 			return $transaction_date;
 		}
