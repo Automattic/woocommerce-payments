@@ -1829,19 +1829,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order $order The order to get the payment method type for.
 	 * @return string
+	 * @throws API_Exception If payment method does not exist.
 	 */
 	private function get_payment_method_type_for_order( $order ): string {
-		if ( $order->meta_exists( '_payment_method_id' ) && '' !== $order->get_meta( '_payment_method_id', true ) ) {
-			$payment_method_id      = $order->get_meta( '_payment_method_id', true );
-			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
-		} elseif ( $order->meta_exists( '_intent_id' ) ) {
-			$payment_intent_id      = $order->get_meta( '_intent_id', true );
-			$payment_intent         = $this->payments_api_client->get_intent( $payment_intent_id );
-			$charge                 = $payment_intent ? $payment_intent->get_charge() : null;
-			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-		}
+		try {
+			if ( $order->meta_exists( '_payment_method_id' ) && '' !== $order->get_meta( '_payment_method_id', true ) ) {
+				$payment_method_id      = $order->get_meta( '_payment_method_id', true );
+				$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+			} elseif ( $order->meta_exists( '_intent_id' ) ) {
+				$payment_intent_id      = $order->get_meta( '_intent_id', true );
+				$payment_intent         = $this->payments_api_client->get_intent( $payment_intent_id );
+				$charge                 = $payment_intent ? $payment_intent->get_charge() : null;
+				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
+			}
 
-		return $payment_method_details['type'] ?? 'unknown';
+			return $payment_method_details['type'] ?? 'unknown';
+		} catch ( API_Exception $e ) {
+			if ( 'wcpay_multibanco_source_fallback' === $e->get_error_code() ) {
+				return 'unknown';
+			}
+
+			// Re-throw the exception if it was not caught.
+			throw $e;
+		}
 	}
 
 	/**
