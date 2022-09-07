@@ -60,7 +60,7 @@ describe( 'Authorizations selector', () => {
 		},
 	};
 
-	test( 'Returns empty disputes list when disputes list is empty', () => {
+	test( 'Returns empty authorizations list when authorizations list is empty', () => {
 		expect( getAuthorizations( emptyState, mockQuery ) ).toStrictEqual(
 			[]
 		);
@@ -76,7 +76,7 @@ describe( 'Authorizations selector', () => {
 
 describe( 'Authorizations summary selector', () => {
 	const mockQuery = { paged: '2', perPage: '50' };
-	const mockDisputesSummary = {
+	const mockAuthorizationsSummary = {
 		count: 42,
 	};
 
@@ -102,7 +102,7 @@ describe( 'Authorizations summary selector', () => {
 	test( 'Returns Authorizations summary from state', () => {
 		expect(
 			getAuthorizationsSummary( filledSuccessState, mockQuery )
-		).toStrictEqual( mockDisputesSummary );
+		).toStrictEqual( mockAuthorizationsSummary );
 	} );
 } );
 
