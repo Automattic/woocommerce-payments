@@ -135,12 +135,18 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	private function get_transactions_filters( $request ) {
+		$date_between_filter = $request->get_param( 'date_between' );
+
+		if ( ! is_null( $date_between_filter ) ) {
+			$date_between_filter = array_map( [ $this, 'format_transaction_date_with_timestamp' ], $date_between_filter );
+		}
+
 		return array_filter(
 			[
 				'match'                    => $request->get_param( 'match' ),
-				'date_before'              => $request->get_param( 'date_before' ),
-				'date_after'               => $request->get_param( 'date_after' ),
-				'date_between'             => $request->get_param( 'date_between' ),
+				'date_before'              => $this->format_transaction_date_with_timestamp( $request->get_param( 'date_before' ) ),
+				'date_after'               => $this->format_transaction_date_with_timestamp( $request->get_param( 'date_after' ) ),
+				'date_between'             => $date_between_filter,
 				'type_is'                  => $request->get_param( 'type_is' ),
 				'type_is_not'              => $request->get_param( 'type_is_not' ),
 				'store_currency_is'        => $request->get_param( 'store_currency_is' ),
@@ -153,5 +159,23 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				return null !== $filter;
 			}
 		);
+	}
+
+	/**
+	 * Formats the incoming transaction date as per the blog's timezone.
+	 *
+	 * @param string|null $transaction_date Transaction date to format.
+	 *
+	 * @return string|null The formatted transaction date as per timezone.
+	 */
+	private function format_transaction_date_with_timestamp( ?string $transaction_date = null ) {
+		if ( is_null( $transaction_date ) ) {
+			return $transaction_date;
+		}
+
+		$formatted_date = new DateTime( $transaction_date );
+		$formatted_date->setTimezone( new DateTimeZone( wp_timezone_string() ) );
+
+		return $formatted_date->format( 'Y-m-d H:i:s' );
 	}
 }
