@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Upon losing a dispute, orders will no longer appear as processing, but as refunded instead.
