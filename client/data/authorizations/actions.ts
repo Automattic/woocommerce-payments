@@ -1,17 +1,20 @@
 /** @format */
+/**
+ * External Dependencies
+ */
+import { Query } from '@woocommerce/navigation';
+import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal Dependencies
  */
-import { Query } from '@woocommerce/navigation';
 import TYPES from './action-types';
 import {
 	AuthorizationsSummary,
 	Authorization,
 } from 'wcpay/types/authorizations';
-import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { STORE_NAME } from '../constants';
-import { __ } from '@wordpress/i18n';
 
 export function updateAuthorizations(
 	query: Query,

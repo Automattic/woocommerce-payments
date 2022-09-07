@@ -120,7 +120,7 @@ export const AuthorizationsList = (): JSX.Element => {
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
-	const getRiskColor = ( risk: RiskLevel ) => {
+	const getRiskColor = ( risk: RiskLevel | string ) => {
 		switch ( risk ) {
 			case 'high':
 				return 'crimson';
