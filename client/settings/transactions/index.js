@@ -1,12 +1,10 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
 	CheckboxControl,
-	ExternalLink,
 	Notice,
 	TextControl,
 } from '@wordpress/components';
@@ -14,7 +12,6 @@ import {
 /**
  * Internal dependencies
  */
-import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
 import {
 	useAccountStatementDescriptor,
@@ -22,14 +19,11 @@ import {
 	useSavedCards,
 } from '../../data';
 import './style.scss';
-import ManualCaptureControl from 'wcpay/settings/transactions-and-deposits/manual-capture-control';
+import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
-const TransactionsAndDeposits = () => {
-	const {
-		accountStatus: { accountLink },
-	} = useContext( WCPaySettingsContext );
+const Transactions = () => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
 	const [
 		accountStatementDescriptor,
@@ -39,7 +33,7 @@ const TransactionsAndDeposits = () => {
 		?.account_statement_descriptor?.message;
 
 	return (
-		<Card className="transactions-and-deposits">
+		<Card className="transactions">
 			<CardBody>
 				<h4>
 					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
@@ -67,9 +61,9 @@ const TransactionsAndDeposits = () => {
 						/>
 					</Notice>
 				) }
-				<div className="transactions-and-deposits__account-statement-wrapper">
+				<div className="transactions__account-statement-wrapper">
 					<TextControl
-						className="transactions-and-deposits__account-statement-input"
+						className="transactions__account-statement-input"
 						help={ __(
 							"Edit the way your store name appears on your customers' bank statements.",
 							'woocommerce-payments'
@@ -87,26 +81,9 @@ const TransactionsAndDeposits = () => {
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
 					</span>
 				</div>
-				<div className="transactions-and-deposits__bank-information">
-					<h4>
-						{ __(
-							'Bank account information',
-							'woocommerce-payments'
-						) }
-					</h4>
-					<p className="transactions-and-deposits__bank-information-help">
-						{ __(
-							'Manage and update your deposit account information to receive payments and payouts.',
-							'woocommerce-payments'
-						) }{ ' ' }
-						<ExternalLink href={ accountLink }>
-							{ __( 'Manage in Stripe', 'woocommerce-payments' ) }
-						</ExternalLink>
-					</p>
-				</div>
 			</CardBody>
 		</Card>
 	);
 };
 
-export default TransactionsAndDeposits;
+export default Transactions;
