@@ -10,6 +10,7 @@ import {
 } from '../selectors';
 import { getResourceId } from 'utils/data';
 import authorizationsFixture from './authorizations.fixture.json';
+import authorizationsSummaryFixture from './authorizations-summary.fixture.json';
 
 const emptyState = { authorizations: {} };
 
@@ -43,18 +44,14 @@ describe( 'Authorizations selector', () => {
 
 describe( 'Authorizations summary selector', () => {
 	const mockQuery = { paged: '2', perPage: '50' };
-	const mockAuthorizationsSummary = {
-		count: 42,
-	};
+	const mockAuthorizationsSummary = authorizationsSummaryFixture;
 
 	// State is populated.
 	const filledSuccessState = {
 		authorizations: {
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
-					data: {
-						count: 42,
-					},
+					data: mockAuthorizationsSummary,
 				},
 			},
 		},

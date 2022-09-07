@@ -5,9 +5,9 @@
  */
 import reducer from '../reducer';
 import types from '../action-types';
-import { RiskLevel } from 'wcpay/types/authorizations';
 import { getResourceId } from 'utils/data';
 import authorizationsFixture from './authorizations.fixture.json';
+import authorizationsSummaryFixture from './authorizations-summary.fixture.json';
 
 describe( 'Authorizations reducer', () => {
 	const mockQuery = { paged: '1', perPage: '50' };
@@ -67,18 +67,14 @@ describe( 'Authorizations reducer', () => {
 		const reduced = reducer( undefined, {
 			type: types.SET_AUTHORIZATIONS_SUMMARY,
 			query: mockQuery,
-			data: {
-				count: 42,
-			},
+			data: authorizationsSummaryFixture,
 		} );
 
 		const after = {
 			byId: {},
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
-					data: {
-						count: 42,
-					},
+					data: authorizationsSummaryFixture,
 				},
 			},
 		};
@@ -101,18 +97,14 @@ describe( 'Authorizations reducer', () => {
 		const reduced = reducer( before, {
 			type: types.SET_AUTHORIZATIONS_SUMMARY,
 			query: mockQuery,
-			data: {
-				count: 4242,
-			},
+			data: authorizationsSummaryFixture,
 		} );
 
 		const after = {
 			...before,
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
-					data: {
-						count: 4242,
-					},
+					data: authorizationsSummaryFixture,
 				},
 			},
 		};
