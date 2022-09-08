@@ -994,7 +994,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'schedule_job' )
 			->with(
 				time(),
-				'wcpay_update_saved_payment_method',
+				WC_Payment_Gateway_WCPay::UPDATE_SAVED_PAYMENT_METHOD,
 				[
 					'payment_method' => 'pm_mock',
 					'order_id'       => $order_id,
