@@ -15,6 +15,7 @@
     "translate_project": "woocommerce/woocommerce-payments"
   },
   "scripts": {
+    "postinstall": "composer install",
     "prepare": "is-ci || husky install",
     "build": "npm run build:deps && npm run build:release",
     "build:client": "NODE_ENV=production webpack",
