@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CaptureAuthorizationButton should render busy status 1`] = `
+<div>
+  <button
+    class="components-button is-secondary is-small is-busy"
+    type="button"
+  >
+    Capture
+  </button>
+</div>
+`;
+
+exports[`CaptureAuthorizationButton should render normal status 1`] = `
+<div>
+  <button
+    class="components-button is-secondary is-small"
+    type="button"
+  >
+    Capture
+  </button>
+</div>
+`;

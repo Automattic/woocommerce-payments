@@ -14,7 +14,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
 import { RiskLevel } from 'wcpay/types/authorizations';
-import CaptureAuthorizationButton from './capture-authorization-button';
+import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 
 interface Column extends TableCardColumn {
 	key:
