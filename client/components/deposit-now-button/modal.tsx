@@ -9,6 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { formatExplicitCurrency } from 'utils/currency';
+import './style.scss';
 
 interface DepositNowModalProps {
 	availableBalance: AccountOverview.Balance;
@@ -47,7 +48,7 @@ const DepositNowModal = ( {
 		>
 			<p>{ description }</p>
 
-			<div className="wcpay-instant-deposits-modal__footer">
+			<div className="wcpay-deposit-now-modal__footer">
 				<Button
 					isPrimary
 					onClick={ onSubmit }
@@ -60,7 +61,7 @@ const DepositNowModal = ( {
 						depositAmount
 					) }
 				</Button>
-				<Button isSecondary onClick={ onClose }>
+				<Button isTertiary onClick={ onClose }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
 			</div>
