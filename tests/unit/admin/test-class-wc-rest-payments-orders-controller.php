@@ -352,7 +352,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_capture_terminal_payment_refunded_order() {
-		$order = $this->create_mock_order();
+		$order       = $this->create_mock_order();
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'succeeded' ] );
 
 		wc_create_refund(
 			[
@@ -363,8 +364,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_intent' );
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
 
 		$this->mock_gateway
 			->expects( $this->never() )
@@ -590,8 +592,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$response      = $this->controller->capture_authorization( $request );
 		$response_data = $response->get_data();
 
-		$this->assertEquals( 200, $response->status );
-		$this->assertEquals(
+		$this->assertSame( 200, $response->status );
+		$this->assertSame(
 			[
 				'status' => 'succeeded',
 				'id'     => $this->mock_intent_id,
@@ -600,9 +602,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		);
 
 		$result_order = wc_get_order( $order->get_id() );
-		$this->assertEquals( 'woocommerce_payments', $result_order->get_payment_method() );
-		$this->assertEquals( 'WooCommerce Payments', $result_order->get_payment_method_title() );
-		$this->assertEquals( 'processing', $result_order->get_status() );
+		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
+		$this->assertSame( 'WooCommerce Payments', $result_order->get_payment_method_title() );
+		$this->assertSame( 'processing', $result_order->get_status() );
 		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/' . $this->mock_intent_id;
 		$this->assertStringEndsWith( $url, $result_order->get_meta( 'receipt_url' ) );
 	}
@@ -657,7 +659,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 502, $data['status'] );
+		$this->assertSame( 502, $data['status'] );
 	}
 
 	public function test_capture_authorization_intent_non_capturable() {
@@ -698,7 +700,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 409, $data['status'] );
+		$this->assertSame( 409, $data['status'] );
 	}
 
 	public function test_capture_authorization_succeeded_payment_intent_missing_order_id() {
@@ -737,7 +739,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_capture_authorization_refunded_order() {
-		$order = $this->create_mock_order();
+		$order       = $this->create_mock_order();
+		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'succeeded' ] );
 
 		wc_create_refund(
 			[
@@ -748,8 +751,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_intent' );
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
 
 		$this->mock_gateway
 			->expects( $this->never() )
@@ -772,7 +776,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 400, $data['status'] );
+		$this->assertSame( 400, $data['status'] );
 	}
 
 	public function test_capture_authorization_error_when_capturing() {
@@ -823,8 +827,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 502, $data['status'] );
-		$this->assertEquals( 'Payment capture failed to complete with the following message: Test error', $response->get_error_message() );
+		$this->assertSame( 502, $data['status'] );
+		$this->assertSame( 'Payment capture failed to complete with the following message: Test error', $response->get_error_message() );
 	}
 
 	public function test_capture_authorization_error_invalid_arguments() {
@@ -879,7 +883,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertSame( 400, $data['status'] );
 		$this->assertSame( 'wcpay_capture_error', $response->get_error_code() );
-		$this->assertEquals(
+		$this->assertSame(
 			'Payment capture failed to complete with the following message: ' .
 			'Error: The payment could not be captured because the requested capture amount is greater than the authorized amount.',
 			$response->get_error_message()
@@ -907,7 +911,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 500, $data['status'] );
+		$this->assertSame( 500, $data['status'] );
 	}
 
 	public function test_capture_authorization_not_found() {
@@ -924,7 +928,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( 'WP_Error', $response );
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
-		$this->assertEquals( 404, $data['status'] );
+		$this->assertSame( 404, $data['status'] );
 	}
 
 	/**
