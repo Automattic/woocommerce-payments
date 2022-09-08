@@ -244,7 +244,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @param  string                    $order_id the order id.
 	 * @param  WC_Payments_API_Intention $intent the intent.
 	 * @param  bool                      $is_terminal_payment Wether the request is for a Terminal payment.
-	 * @return WC_Order | WP_Error
+	 * @return WC_Order | WC_Order_Refund | WP_Error | bool
 	 */
 	private function prepare_order_for_capture( string $order_id, WC_Payments_API_Intention $intent, bool $is_terminal_payment = false ) {
 		// Do not process non-existing orders.
