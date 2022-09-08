@@ -2,7 +2,6 @@
  * External dependencies
  */
 import config from 'config';
-
 const {
 	merchant,
 	shopper,
@@ -10,20 +9,17 @@ const {
 	evalAndClick,
 	uiUnblocked,
 } = require( '@woocommerce/e2e-utils' );
-
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
 	merchantWCP,
 } from '../../../utils';
-
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
-const productName = 'Subscription for merchant renewal';
-const productSlug = 'subscription-for-merchant-renewal';
-
-const customerBilling = config.get( 'addresses.customer.billing' );
-
+const productSlug = 'subscription-signup-fee-product';
+const customerBilling = config.get(
+	'addresses.subscriptions-customer.billing'
+);
 let subscriptionId;
 
 /*
@@ -36,16 +32,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Renew a subscription as a merchant',
 	() => {
 		beforeAll( async () => {
-			await merchant.login();
-
-			// Create subscription product with signup fee
-			await merchantWCP.createSubscriptionProduct(
-				productName,
-				'month',
-				true
-			);
-
-			await merchant.logout();
+			// Delete the user created with the subscription
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 
 			// Open the subscription product we created in the store
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
@@ -69,16 +57,15 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 				( el ) => el.innerText
 			);
 
-			await merchant.login();
+			await shopper.logout();
 		} );
-
 		afterAll( async () => {
-			// Delete the user created with the subscription
-			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 			await merchant.logout();
 		} );
 
 		it( 'should be able to renew a subscription as a merchant', async () => {
+			await merchant.login();
+
 			// Open the specific subscription detail page
 			await merchantWCP.openSubscriptions();
 			await expect( page ).toClick( 'div.tips > a', {

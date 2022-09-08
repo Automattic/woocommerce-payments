@@ -2,27 +2,25 @@
  * External dependencies
  */
 import config from 'config';
-
 const {
 	merchant,
 	shopper,
 	withRestApi,
 	evalAndClick,
 } = require( '@woocommerce/e2e-utils' );
-
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	RUN_ACTION_SCHEDULER_TESTS,
 	describeif,
 	merchantWCP,
 } from '../../../utils';
-
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
-const productName = 'Subscription for systems renewal';
-const productSlug = 'subscription-for-systems-renewal';
+const productSlug = 'subscription-signup-fee-product';
 const actionSchedulerHook = 'woocommerce_scheduled_subscription_payment';
-const customerBilling = config.get( 'addresses.customer.billing' );
+const customerBilling = config.get(
+	'addresses.subscriptions-customer.billing'
+);
 
 /*
  * This test has dependencies on components like Action Scheduler and there is
@@ -34,16 +32,8 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 	'Subscriptions > Renew a subscription via Action Scheduler',
 	() => {
 		beforeAll( async () => {
-			await merchant.login();
-
-			// Create subscription product with signup fee
-			await merchantWCP.createSubscriptionProduct(
-				productName,
-				'month',
-				true
-			);
-
-			await merchant.logout();
+			// Delete the user created with the subscription
+			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 
 			// Open the subscription product we created in the store
 			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
@@ -59,16 +49,15 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
 
-			await merchant.login();
+			await shopper.logout();
 		} );
-
 		afterAll( async () => {
-			// Delete the user created with the subscription
-			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 			await merchant.logout();
 		} );
 
 		it( 'should be able to renew a subscription via Action Scheduler', async () => {
+			await merchant.login();
+
 			// Go to Action Scheduler
 			await merchantWCP.openActionScheduler();
 
@@ -93,9 +82,7 @@ describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 					text: actionSchedulerHook,
 				}
 			);
-		} );
 
-		it( 'should verify that the subscription has been renewed', async () => {
 			// Go to Subscriptions and verify the subscription renewal
 			await merchantWCP.openSubscriptions();
 			await expect(

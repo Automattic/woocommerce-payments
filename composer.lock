@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "caff02c88ca8cf32136b53b1a87ebf01",
+    "content-hash": "0736b15e02fc8de5449d6f28bfae3df7",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1072,6 +1072,11 @@
                 "reference": "c4debb6c3150b0732eb29b2b897bcbaef8cc6f97",
                 "shasum": ""
             },
+            "archive": {
+                "exclude": [
+                    "!/build"
+                ]
+            },
             "require": {
                 "composer/installers": "~1.2",
                 "php": "^7.1"
@@ -1085,11 +1090,6 @@
             "type": "wordpress-plugin",
             "extra": {
                 "phpcodesniffer-search-depth": 2
-            },
-            "archive": {
-                "exclude": [
-                    "!/build"
-                ]
             },
             "scripts": {
                 "phpcs": [
@@ -2344,24 +2344,24 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v5.9.0",
+            "version": "v6.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "a7204cfbb5fa90720773122cb68530087de5bc78"
+                "reference": "aa70197bc38607e0f25a4de0b39422ab379defd3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/a7204cfbb5fa90720773122cb68530087de5bc78",
-                "reference": "a7204cfbb5fa90720773122cb68530087de5bc78",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/aa70197bc38607e0f25a4de0b39422ab379defd3",
+                "reference": "aa70197bc38607e0f25a4de0b39422ab379defd3",
                 "shasum": ""
             },
             "require": {
-                "php-stubs/wordpress-stubs": "^5.3.0"
+                "php-stubs/wordpress-stubs": "^5.3 || ^6.0"
             },
             "require-dev": {
-                "giacocorsiglia/stubs-generator": "^0.5.0",
-                "php": "~7.1"
+                "php": "~7.1 || ~8.0",
+                "php-stubs/generator": "^0.8.0"
             },
             "suggest": {
                 "symfony/polyfill-php73": "Symfony polyfill backporting some PHP 7.3+ features to lower PHP versions",
@@ -2382,9 +2382,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v5.9.0"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v6.8.0"
             },
-            "time": "2021-11-05T10:02:27+00:00"
+            "time": "2022-08-09T05:06:14+00:00"
         },
         {
             "name": "php-stubs/wordpress-stubs",
@@ -5834,5 +5834,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.0.0"
 }
