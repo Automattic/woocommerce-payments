@@ -195,39 +195,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_returns_available_payment_method_ids() {
-
-		$this->mock_wcpay_account
-			->expects( $this->any() )
-			->method( 'get_cached_account_data' )
-			->willReturn( [ 'capabilities' => [ 'link_payments' => 'active' ] ] );
-
-		$this->mock_wcpay_account
-			->expects( $this->any() )
-			->method( 'get_account_country' )
-			->willReturn( 'US' );
-
 		$response           = $this->upe_controller->get_settings();
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
 			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24', 'link' ],
-			$enabled_method_ids
-		);
-	}
-
-
-	public function test_get_settings_link_inactive_returns_available_payment_method_ids() {
-
-		$this->mock_wcpay_account
-			->expects( $this->any() )
-			->method( 'get_cached_account_data' )
-			->willReturn( [ 'capabilities' => [ 'link_payments' => 'inactive' ] ] );
-
-		$response           = $this->upe_controller->get_settings();
-		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
-
-		$this->assertEquals(
-			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24' ],
 			$enabled_method_ids
 		);
 	}
