@@ -186,3 +186,22 @@ export const useInstantDeposit = (
 
 	return { deposit, inProgress, submit };
 };
+
+export const useStandardDeposit = (
+	transactionIds: string[]
+): {
+	inProgress: boolean;
+	submit: () => void;
+} => {
+	const { inProgress } = useSelect( ( select ) => {
+		const { isResolving } = select( STORE_NAME );
+		return {
+			inProgress: isResolving( 'getStandardDeposit', [ transactionIds ] ),
+		};
+	} );
+
+	const { submitStandardDeposit } = useDispatch( STORE_NAME );
+	const submit = () => submitStandardDeposit( transactionIds );
+
+	return { inProgress, submit };
+};

@@ -9,6 +9,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { useStandardDeposit } from 'wcpay/data';
 import StandardDepositModal from './modal';
 
 interface StandardDepositButtonProps {
@@ -24,13 +25,14 @@ const StandardDepositButton = ( {
 	const buttonDisabled = availableBalance.amount > 0 ? false : true;
 
 	// TODO: handle manual deposit request
-	const inProgress = false;
+	const transactionIds = [ 'ch_1Hh9j2JUe3JUe3JUe3JUe3JUe3' ];
+	const { inProgress, submit } = useStandardDeposit( transactionIds );
 	const onClose = () => {
 		setModalOpen( false );
 	};
 	const onSubmit = () => {
 		setModalOpen( false );
-		// submit();
+		submit();
 	};
 
 	return (

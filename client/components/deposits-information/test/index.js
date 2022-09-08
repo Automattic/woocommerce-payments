@@ -9,11 +9,16 @@ import { merge } from 'lodash';
  * Internal dependencies
  */
 import DepositsInformation from '..';
-import { useAllDepositsOverviews, useInstantDeposit } from 'wcpay/data';
+import {
+	useAllDepositsOverviews,
+	useInstantDeposit,
+	useStandardDeposit,
+} from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	useAllDepositsOverviews: jest.fn(),
 	useInstantDeposit: jest.fn(),
+	useStandardDeposit: jest.fn(),
 } ) );
 
 const createMockAccount = ( account = {} ) =>
@@ -67,7 +72,13 @@ const mockOverviews = ( currencies = null, account = null ) => {
 
 useInstantDeposit.mockReturnValue( {
 	deposit: undefined,
-	isLoading: false,
+	inProgress: false,
+	submit: () => {},
+} );
+
+useStandardDeposit.mockReturnValue( {
+	deposit: undefined,
+	inProgress: false,
 	submit: () => {},
 } );
 
