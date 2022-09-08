@@ -6,6 +6,7 @@
 import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
+import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -19,15 +20,8 @@ import {
 } from './actions';
 import { formatDateValue } from 'utils';
 
-function getTimeZone() {
-	const offset = new Date().getTimezoneOffset(),
-		o = Math.abs( offset );
-	return (
-		( 0 > offset ? '+' : '-' ) +
-		( '00' + Math.floor( o / 60 ) ).slice( -2 ) +
-		':' +
-		( '00' + ( o % 60 ) ).slice( -2 )
-	);
+function getUserTimeZone() {
+	moment( new Date() ).format( 'Z' );
 }
 
 export const formatQueryFilters = ( query ) => ( {
@@ -47,7 +41,7 @@ export const formatQueryFilters = ( query ) => ( {
 	customer_currency_is: query.customerCurrencyIs,
 	customer_currency_is_not: query.customerCurrencyIsNot,
 	search: query.search,
-	user_timezone: getTimeZone(),
+	user_timezone: getUserTimeZone(),
 } );
 
 /**
