@@ -21,7 +21,7 @@ import {
 import { formatDateValue } from 'utils';
 
 function getUserTimeZone() {
-	moment( new Date() ).format( 'Z' );
+	return moment( new Date() ).format( 'Z' );
 }
 
 export const formatQueryFilters = ( query ) => ( {
