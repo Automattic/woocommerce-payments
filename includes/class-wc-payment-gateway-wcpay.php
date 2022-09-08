@@ -1106,16 +1106,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Update the customer details with the incoming order data, in a CRON job.
 	 *
-	 * @param int    $order_id       WC order id.
-	 * @param string $customer_id    The customer id to update details for.
-	 * @param array  $options        Additional options to apply.
+	 * @param int    $order_id     WC order id.
+	 * @param string $customer_id  The customer id to update details for.
+	 * @param bool   $is_test_mode Whether to run the CRON job in test mode.
+	 * @param bool   $is_woopay    Whether CRON job was queued from WooPay.
 	 */
-	public function update_customer_with_order_data( $order_id, $customer_id, $options = [] ) {
+	public function update_customer_with_order_data( $order_id, $customer_id, $is_test_mode = false, $is_woopay = false ) {
 		// Since this CRON job may have been created in test_mode, when the CRON job runs, it
 		// may lose the test_mode context. So, instead, we pass that context when creating
 		// the CRON job and apply the context here.
-		$apply_test_mode_context = function () use ( $options ) {
-			return $options['is_test_mode'] ?? false;
+		$apply_test_mode_context = function () use ( $is_test_mode ) {
+			return $is_test_mode;
 		};
 		add_filter( 'wcpay_test_mode', $apply_test_mode_context );
 
@@ -1128,8 +1129,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Since this function will run in a CRON job, "wp_get_current_user()" will default
 		// to user with ID of 0. So, instead, we replace it with the user from the $order,
 		// when updating a WooPay user.
-		$apply_order_user_email = function ( $params ) use ( $user, $options ) {
-			if ( filter_var( $options['is_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ) ) {
+		$apply_order_user_email = function ( $params ) use ( $user, $is_woopay ) {
+			if ( $is_woopay ) {
 				$params['email'] = $user->user_email;
 			}
 
@@ -1169,12 +1170,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				time(),
 				self::UPDATE_CUSTOMER_WITH_ORDER_DATA,
 				[
-					'order_id'    => $order->get_id(),
-					'customer_id' => $customer_id,
-					'options'     => [
-						'is_test_mode' => $this->is_in_test_mode(),
-						'is_woopay'    => $options['is_woopay'] ?? false,
-					],
+					'order_id'     => $order->get_id(),
+					'customer_id'  => $customer_id,
+					'is_test_mode' => $this->is_in_test_mode(),
+					'is_woopay'    => $options['is_woopay'] ?? false,
 				]
 			);
 		}
