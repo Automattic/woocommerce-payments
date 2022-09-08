@@ -984,16 +984,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-
-		$capabilities             = $this->get_payment_method_capability_key_map();
-		$payment_methods_statuses = $this->get_upe_enabled_payment_method_statuses();
-
-		if ( isset( $payment_methods_statuses[ $capabilities[ Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] ] ) ) {
-			$link_status = $payment_methods_statuses[ $capabilities[ Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID ] ]['status'];
-			if ( 'inactive' !== $link_status ) {
-				$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-			}
-		}
+		$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		$methods = array_values(
 			apply_filters(
