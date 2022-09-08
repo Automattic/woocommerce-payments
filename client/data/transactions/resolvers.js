@@ -19,6 +19,17 @@ import {
 } from './actions';
 import { formatDateValue } from 'utils';
 
+function getTimeZone() {
+	const offset = new Date().getTimezoneOffset(),
+		o = Math.abs( offset );
+	return (
+		( 0 > offset ? '+' : '-' ) +
+		( '00' + Math.floor( o / 60 ) ).slice( -2 ) +
+		':' +
+		( '00' + ( o % 60 ) ).slice( -2 )
+	);
+}
+
 export const formatQueryFilters = ( query ) => ( {
 	user_email: query.userEmail,
 	match: query.match,
@@ -36,6 +47,7 @@ export const formatQueryFilters = ( query ) => ( {
 	customer_currency_is: query.customerCurrencyIs,
 	customer_currency_is_not: query.customerCurrencyIsNot,
 	search: query.search,
+	user_timezone: getTimeZone(),
 } );
 
 /**
