@@ -722,6 +722,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_fields_js_config() {
 		$platform_checkout_util = new Platform_Checkout_Utilities();
+		$wc_checkout            = WC_Checkout::instance();
 
 		return [
 			'publishableKey'                 => $this->account->get_publishable_key( $this->is_in_test_mode() ),
@@ -745,7 +746,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,
-			'platformCheckoutNeedLogin'      => ! is_user_logged_in() && $platform_checkout_util->is_subscription_item_in_cart(),
+			'platformCheckoutNeedLogin'      => ! is_user_logged_in() && $wc_checkout->is_registration_required(),
 			'userExistsEndpoint'             => get_rest_url( null, '/wc/v3/users/exists' ),
 		];
 	}

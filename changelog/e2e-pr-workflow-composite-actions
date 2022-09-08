@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Add new E2E workflow for pull requests & split existing tests into 3 jobs
