@@ -154,3 +154,61 @@ export function* submitInstantDeposit( transactionIds ) {
 		] );
 	}
 }
+
+export function updateStandardDeposit( data ) {
+	return {
+		type: TYPES.SET_STANDARD_DEPOSIT,
+		data,
+	};
+}
+
+export function* submitStandardDeposit( transactionIds ) {
+	try {
+		yield dispatch( STORE_NAME ).startResolution( 'getStandardDeposit' );
+
+		// TODO: connect this up to the API.
+		// const deposit = yield apiFetch( {
+		// 	path: '/wc/v3/payments/deposits',
+		// 	method: 'POST',
+		// 	data: {
+		// 		type: 'standard',
+		// 		transaction_ids: transactionIds,
+		// 	},
+		// } );
+
+		const deposit = {
+			id: transactionIds,
+			amount: 123,
+			currency: 'aud',
+		};
+
+		yield updateStandardDeposit( deposit );
+
+		// Need to invalidate the resolution so that the components will render again.
+		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
+			'getDeposits'
+		);
+		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
+			'getDepositsOverview'
+		);
+		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
+			'getAllDepositsOverviews'
+		);
+
+		yield dispatch( 'core/notices' ).createSuccessNotice(
+			sprintf(
+				__(
+					'Standard deposit for %s requested.',
+					'woocommerce-payments'
+				),
+				formatCurrency( deposit.amount, deposit.currency )
+			)
+		);
+	} catch {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Error creating standard deposit.', 'woocommerce-payments' )
+		);
+	} finally {
+		yield dispatch( STORE_NAME ).finishResolution( 'getStandardDeposit' );
+	}
+}
