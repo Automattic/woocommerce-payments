@@ -386,8 +386,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
-		add_action( self::UPDATE_CUSTOMER_WITH_ORDER_DATA, [ $this, 'update_customer_with_order_data' ], 10, 2 );
 		add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 3 );
+		add_action( self::UPDATE_CUSTOMER_WITH_ORDER_DATA, [ $this, 'update_customer_with_order_data' ], 10, 3 );
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
@@ -1103,12 +1103,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Update the customer details with the incoming order data.
+	 * Update the customer details with the incoming order data, in a CRON job.
 	 *
 	 * @param int    $order_id       WC order id.
 	 * @param string $customer_id    The customer id to update details for.
+	 * @param array  $options        Additional options to apply.
 	 */
-	public function update_customer_with_order_data( $order_id, $customer_id ) {
+	public function update_customer_with_order_data( $order_id, $customer_id, $options = [] ) {
+		// Since this CRON job may have been created in test_mode, when the CRON job runs, it
+		// may lose the test_mode context. So, instead, we pass that context when creating
+		// the CRON job and apply the context here.
+		$apply_test_mode_context = function () use ( $options ) {
+			return $options['is_test_mode'] ?? false;
+		};
+		add_filter( 'wcpay_test_mode', $apply_test_mode_context );
+
 		$order = wc_get_order( $order_id );
 		$user  = $order->get_user();
 		if ( false === $user ) {
@@ -1148,6 +1157,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[
 					'order_id'    => $order->get_id(),
 					'customer_id' => $customer_id,
+					'options'     => [
+						'is_test_mode' => $this->is_in_test_mode(),
+					],
 				]
 			);
 		}
