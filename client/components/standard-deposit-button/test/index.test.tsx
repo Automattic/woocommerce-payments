@@ -8,7 +8,7 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import ManualDepositButton from '..';
+import StandardDepositButton from '..';
 import { formatCurrency } from 'wcpay/utils/currency';
 
 declare const global: {
@@ -21,7 +21,7 @@ declare const global: {
 	};
 };
 
-describe( 'ManualDepositButton', () => {
+describe( 'StandardDepositButton', () => {
 	beforeAll( () => {
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
@@ -49,7 +49,7 @@ describe( 'ManualDepositButton', () => {
 		} as AccountOverview.Balance;
 
 		const { getByRole } = render(
-			<ManualDepositButton
+			<StandardDepositButton
 				availableBalance={ availableBalance }
 				depositDelayDays={ depositDelayDays }
 			/>
@@ -66,7 +66,7 @@ describe( 'ManualDepositButton', () => {
 		} as AccountOverview.Balance;
 
 		const { getByRole } = render(
-			<ManualDepositButton
+			<StandardDepositButton
 				availableBalance={ availableBalance }
 				depositDelayDays={ depositDelayDays }
 			/>
@@ -83,7 +83,7 @@ describe( 'ManualDepositButton', () => {
 		} as AccountOverview.Balance;
 
 		const { getByRole } = render(
-			<ManualDepositButton
+			<StandardDepositButton
 				availableBalance={ availableBalance }
 				depositDelayDays={ depositDelayDays }
 			/>
@@ -92,7 +92,7 @@ describe( 'ManualDepositButton', () => {
 		expect( button ).toHaveAttribute( 'disabled' );
 	} );
 
-	test( 'displays manual deposit modal when clicked', async () => {
+	test( 'displays modal when clicked', async () => {
 		const depositDelayDays = 7;
 		const availableBalance = {
 			amount: 123,
@@ -105,7 +105,7 @@ describe( 'ManualDepositButton', () => {
 		);
 
 		const { getByRole } = render(
-			<ManualDepositButton
+			<StandardDepositButton
 				availableBalance={ availableBalance }
 				depositDelayDays={ depositDelayDays }
 			/>

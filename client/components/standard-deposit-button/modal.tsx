@@ -11,7 +11,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 
-interface ManualDepositModalProps {
+interface StandardDepositModalProps {
 	availableBalance: AccountOverview.Balance;
 	depositDelayDays: number;
 	onClose: () => void;
@@ -19,13 +19,13 @@ interface ManualDepositModalProps {
 	inProgress: boolean;
 }
 
-const ManualDepositModal = ( {
+const StandardDepositModal = ( {
 	availableBalance,
 	depositDelayDays,
 	onClose,
 	onSubmit,
 	inProgress,
-}: ManualDepositModalProps ): JSX.Element => {
+}: StandardDepositModalProps ): JSX.Element => {
 	/* translators: %s: amount representing the available monetary balance, %s: number of business days */
 	const description = sprintf(
 		__(
@@ -43,11 +43,11 @@ const ManualDepositModal = ( {
 		<Modal
 			title={ __( 'Deposit now', 'woocommerce-payments' ) }
 			onRequestClose={ onClose }
-			className="wcpay-manual-deposit-modal"
+			className="wcpay-standard-deposit-modal"
 		>
 			<p>{ description }</p>
 
-			<div className="wcpay-manual-deposit-modal__footer">
+			<div className="wcpay-standard-deposit-modal__footer">
 				<Button
 					isPrimary
 					onClick={ onSubmit }
@@ -71,4 +71,4 @@ const ManualDepositModal = ( {
 	);
 };
 
-export default ManualDepositModal;
+export default StandardDepositModal;
