@@ -40,6 +40,8 @@ const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
 const WP_ADMIN_PAGES = baseUrl + 'wp-admin/edit.php?post_type=page';
+const WC_ORDER_ANALYTICS =
+	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=%2Fanalytics%2Forders';
 const WCB_CHECKOUT = baseUrl + 'checkout-wcb/';
 const WCPAY_DEV_TOOLS = baseUrl + 'wp-admin/admin.php?page=wcpaydev';
 const SHOP_CART_PAGE = baseUrl + 'cart/';
@@ -419,6 +421,13 @@ export const merchantWCP = {
 
 	openMultiCurrency: async () => {
 		await page.goto( WCPAY_MULTI_CURRENCY, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+	},
+
+	openOrderAnalytics: async () => {
+		await page.goto( WC_ORDER_ANALYTICS, {
 			waitUntil: 'networkidle0',
 		} );
 		await uiLoaded();
