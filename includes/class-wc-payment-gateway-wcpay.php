@@ -1124,6 +1124,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$user = wp_get_current_user();
 		}
 
+		// Since this function will run in a CRON job, "wp_get_current_user()" will default
+		// to user with ID of 0. So, instead, we replace it with the user from the $order,
+		// when updating a WooPay user.
+		$apply_order_user_email = function ( $params ) use ( $user, $options ) {
+			if ( filter_var( $options['is_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ) ) {
+				$params['email'] = $user->user_email;
+			}
+
+			return $params;
+		};
+		add_filter( 'wcpay_api_request_params', $apply_order_user_email, 20, 1 );
+
 		// Update the existing customer with the current order details.
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 		$this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
@@ -1132,11 +1144,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Manages customer details held on WCPay server for WordPress user associated with an order.
 	 *
-	 * @param WC_Order $order WC Order object.
+	 * @param WC_Order $order   WC Order object.
+	 * @param array    $options Additional options to apply.
 	 *
 	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
 	 */
-	protected function manage_customer_details_for_order( $order ) {
+	protected function manage_customer_details_for_order( $order, $options = [] ) {
 		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
@@ -1159,6 +1172,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'customer_id' => $customer_id,
 					'options'     => [
 						'is_test_mode' => $this->is_in_test_mode(),
+						'is_woopay'    => $options['is_woopay'] ?? false,
 					],
 				]
 			);
@@ -1214,7 +1228,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount   = $order->get_total();
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
-		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+		$customer_details_options   = [
+			'is_woopay' => $metadata['paid_on_woopay'] ?? false,
+		];
+		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
 
 		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
