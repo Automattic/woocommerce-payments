@@ -6,8 +6,8 @@
   "license": "GPL-3.0-or-later",
   "repository": "github:Automattic/woocommerce-payments",
   "engines": {
-    "node": ">=12.16.0",
-    "npm": ">=6.13.0"
+    "npm": ">=8.15.0",
+    "node": ">=16.17.0"
   },
   "config": {
     "wp_org_slug": "woocommerce-payments",
