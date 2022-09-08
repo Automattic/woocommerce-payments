@@ -57,7 +57,10 @@ const DepositNowModal = ( {
 					{ sprintf(
 						/* translators: %s: Monetary amount to deposit */
 						__( 'Deposit %s', 'woocommerce-payments' ),
-						formatCurrency( availableBalance.amount )
+						formatCurrency(
+							availableBalance.amount,
+							availableBalance.currency
+						)
 					) }
 				</Button>
 				<Button isTertiary onClick={ onClose }>
