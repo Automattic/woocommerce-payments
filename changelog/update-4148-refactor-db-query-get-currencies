@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Modified query to get customer currencies when COT enabled.
