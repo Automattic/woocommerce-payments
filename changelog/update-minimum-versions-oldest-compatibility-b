@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix deprecation notice for Automattic\WooCommerce\Blocks\StoreApi\RoutesController
