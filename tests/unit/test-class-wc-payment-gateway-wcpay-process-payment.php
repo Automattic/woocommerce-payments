@@ -998,6 +998,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				[
 					'payment_method' => 'pm_mock',
 					'order_id'       => $order_id,
+					'is_test_mode'   => false,
 				]
 			);
 
