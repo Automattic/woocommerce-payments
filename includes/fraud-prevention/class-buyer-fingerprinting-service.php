@@ -78,9 +78,9 @@ class Buyer_Fingerprinting_Service {
 		$ip_address_3_octet = $this->get_3_octet_from_ip( $ip_address );
 
 		return [
-			'fraud_prevention_data_shopper_3_octet_ip_hash' => $this->hash_data_for_fraud_prevention( $ip_address_3_octet ),
-			'fraud_prevention_data_shopper_ip_hash' => $this->hash_data_for_fraud_prevention( $ip_address ),
-			'fraud_prevention_data_shopper_ua_hash' => $this->hash_data_for_fraud_prevention( strtolower( wc_get_user_agent() ) ),
+			'fraud_prevention_data_shopper_3_oct_hash' => $this->hash_data_for_fraud_prevention( $ip_address_3_octet ),
+			'fraud_prevention_data_shopper_ip_hash'    => $this->hash_data_for_fraud_prevention( $ip_address ),
+			'fraud_prevention_data_shopper_ua_hash'    => $this->hash_data_for_fraud_prevention( strtolower( wc_get_user_agent() ) ),
 		];
 	}
 }
