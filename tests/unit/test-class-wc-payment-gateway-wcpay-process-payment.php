@@ -1005,6 +1005,57 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_gateway->process_payment( $order_id );
 	}
 
+	public function test_updates_customer_with_order_data() {
+		$customer_id = 'cus_mock';
+
+		// Arrange: Create an order to test with.
+		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for order ID.
+		$mock_order
+			->method( 'get_id' )
+			->willReturn( 123 );
+
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
+
+		// Arrange: Set a good return value for order total.
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( 0 );
+
+		// Arrange: WC_Payments_Customer_Service returns a valid customer ID.
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( $customer_id );
+
+		// Assert: UPDATE_CUSTOMER_WITH_ORDER_DATA job scheduled correctly.
+		$this->mock_action_scheduler_service
+			->expects( $this->once() )
+			->method( 'schedule_job' )
+			->with(
+				$this->anything(),
+				WC_Payment_Gateway_WCPay::UPDATE_CUSTOMER_WITH_ORDER_DATA,
+				[
+					'order_id'     => $mock_order->get_id(),
+					'customer_id'  => $customer_id,
+					'is_test_mode' => false,
+					'is_woopay'    => false,
+				]
+			);
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		// Act: process a successful payment.
+		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+	}
+
 	public function test_save_payment_method_to_platform() {
 		$order = WC_Helper_Order::create_order();
 
