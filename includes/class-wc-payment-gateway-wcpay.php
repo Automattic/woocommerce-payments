@@ -618,7 +618,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		if ( WC_Payments_Utils::can_merchant_register_domain_with_applepay( $this->account->get_account_country() ) ) {
+		if ( WC_Payments_Utils::can_merchant_register_domain_with_applepay( $this->account->get_account_country() ) || get_class( $this ) !== 'WCPay\Payment_Methods\CC_Payment_Gateway' ) {
 			return;
 		}
 		if ( ! WC_Payments_Utils::is_account_in_supported_applepay_countries( $this->account->get_account_country() ) &&
@@ -666,7 +666,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		if ( ! $this->is_available_for_current_currency() ) {
+		if ( ! $this->is_available_for_current_currency() && get_class( $this ) === 'WCPay\Payment_Methods\CC_Payment_Gateway' ) {
 			?>
 			<div id="wcpay-unsupported-currency-notice" class="notice notice-warning">
 				<p>
