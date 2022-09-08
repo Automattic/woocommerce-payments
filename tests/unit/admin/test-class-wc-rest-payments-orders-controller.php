@@ -605,8 +605,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertSame( 'WooCommerce Payments', $result_order->get_payment_method_title() );
 		$this->assertSame( 'processing', $result_order->get_status() );
-		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/' . $this->mock_intent_id;
-		$this->assertStringEndsWith( $url, $result_order->get_meta( 'receipt_url' ) );
 	}
 
 	public function test_capture_authorization_succeeded_intent() {
