@@ -180,18 +180,18 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 			return $transaction_date;
 		}
 
-		// Get blog timezone
+		// Get blog timezone.
 		$blog_time = new DateTime( $transaction_date );
 		$blog_time->setTimezone( new DateTimeZone( wp_timezone_string() ) );
 
-		// Get local timezone
+		// Get local timezone.
 		$local_time = new DateTime( $transaction_date );
 		$local_time->setTimezone( new DateTimeZone( $user_timezone ) );
 
-		// Compute time difference in minutes
+		// Compute time difference in minutes.
 		$time_difference = ( strtotime( $blog_time->format( 'Y-m-d H:i:s' ) ) - strtotime( $local_time->format( 'Y-m-d H:i:s' ) ) ) / 60;
 
-		// Shift date by time difference
+		// Shift date by time difference.
 		$formatted_date = new DateTime( $transaction_date );
 		date_modify( $formatted_date, '+' . $time_difference . 'minutes' );
 
