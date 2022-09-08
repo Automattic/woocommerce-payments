@@ -19,6 +19,7 @@ import {
 	getNextDepositLabelFormatted,
 } from 'deposits/utils';
 import InstantDepositButton from 'deposits/instant-deposits';
+import DepositNowButton from 'components/deposit-now-button';
 import DepositsInformationBlock from './block';
 import { formatCurrency, formatCurrencyName } from 'utils/currency';
 import { useAllDepositsOverviews } from 'wcpay/data';
@@ -71,9 +72,22 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 			{ getDepositDate( lastPaid ) }
 		</Link>
 	);
-	const depositButton = instant && (
+
+	let depositButton = instant && (
 		<InstantDepositButton instantBalance={ instant } />
 	);
+
+	const isDepositNowEnabled =
+		! account.deposits_blocked &&
+		account.deposits_schedule.interval === 'manual';
+	if ( ! depositButton && isDepositNowEnabled ) {
+		depositButton = (
+			<DepositNowButton
+				availableBalance={ available }
+				depositDelayDays={ account.deposits_schedule.delay_days }
+			/>
+		);
+	}
 
 	const availableAmount = available ? available.amount : 0;
 

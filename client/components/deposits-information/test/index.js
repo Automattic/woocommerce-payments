@@ -153,4 +153,74 @@ describe( 'Deposits information', () => {
 		expect( await findByText( 'Instant deposit' ) ).toBeVisible();
 		expect( container ).toMatchSnapshot();
 	} );
+
+	test( 'renders instant deposit button when eligible and schedule is manual', async () => {
+		const currencyWithInstantDeposit = createMockCurrency( 'usd', {
+			instant: {
+				amount: 12345,
+			},
+		} );
+
+		const accountWithDepositNow = createMockAccount( {
+			deposits_schedule: {
+				delay_days: 4,
+				interval: 'manual',
+			},
+		} );
+
+		mockOverviews( [ currencyWithInstantDeposit ], accountWithDepositNow );
+
+		const { container, getByRole, queryByRole } = render(
+			<DepositsInformation />
+		);
+		const instantDepositButton = getByRole( 'button', {
+			name: 'Instant deposit',
+		} );
+		expect( instantDepositButton ).toBeVisible();
+		const depositNowButton = queryByRole( 'button', {
+			name: 'Deposit now',
+		} );
+		expect( depositNowButton ).not.toBeInTheDocument();
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders deposit now button enabled when deposits schedule is manual', async () => {
+		const accountWithDepositNow = createMockAccount( {
+			deposits_schedule: {
+				delay_days: 4,
+				interval: 'manual',
+			},
+		} );
+
+		mockOverviews( [ createMockCurrency( 'aud' ) ], accountWithDepositNow );
+
+		const { container, getByRole } = render( <DepositsInformation /> );
+		const depositNowButton = getByRole( 'button', { name: 'Deposit now' } );
+		expect( depositNowButton ).toBeVisible();
+		expect( depositNowButton ).not.toHaveAttribute( 'disabled' );
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders deposit now button disabled when no available balance', async () => {
+		const accountWithDepositNow = createMockAccount( {
+			deposits_schedule: {
+				delay_days: 4,
+				interval: 'manual',
+			},
+		} );
+
+		const currency = createMockCurrency( 'aud', {
+			available: {
+				amount: 0,
+			},
+		} );
+
+		mockOverviews( [ currency ], accountWithDepositNow );
+
+		const { container, getByRole } = render( <DepositsInformation /> );
+		const depositNowButton = getByRole( 'button', { name: 'Deposit now' } );
+		expect( depositNowButton ).toBeVisible();
+		expect( depositNowButton ).toHaveAttribute( 'disabled' );
+		expect( container ).toMatchSnapshot();
+	} );
 } );
