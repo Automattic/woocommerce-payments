@@ -184,7 +184,7 @@ describe( 'Deposits information', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders deposit now button enabled when deposits schedule is manual', async () => {
+	test( 'renders manual deposit button enabled when deposits schedule is manual', async () => {
 		const accountWithDepositNow = createMockAccount( {
 			deposits_schedule: {
 				delay_days: 4,
@@ -201,7 +201,7 @@ describe( 'Deposits information', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders deposit now button disabled when no available balance', async () => {
+	test( 'renders manual deposit button disabled when no available balance', async () => {
 		const accountWithDepositNow = createMockAccount( {
 			deposits_schedule: {
 				delay_days: 4,

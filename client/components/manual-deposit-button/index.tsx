@@ -9,21 +9,21 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import DepositNowModal from './modal';
+import ManualDepositModal from './modal';
 
-interface DepositNowButtonProps {
+interface ManualDepositButtonProps {
 	availableBalance: AccountOverview.Balance;
 	depositDelayDays: number;
 }
 
-const DepositNowButton = ( {
+const ManualDepositButton = ( {
 	availableBalance,
 	depositDelayDays,
-}: DepositNowButtonProps ): JSX.Element => {
+}: ManualDepositButtonProps ): JSX.Element => {
 	const [ isModalOpen, setModalOpen ] = useState< boolean >( false );
 	const buttonDisabled = availableBalance.amount > 0 ? false : true;
 
-	// TODO: handle deposit now event
+	// TODO: handle manual deposit request
 	const inProgress = false;
 	const onClose = () => {
 		setModalOpen( false );
@@ -43,7 +43,7 @@ const DepositNowButton = ( {
 				{ __( 'Deposit now', 'woocommerce-payments' ) }
 			</Button>
 			{ ( isModalOpen || inProgress ) && (
-				<DepositNowModal
+				<ManualDepositModal
 					availableBalance={ availableBalance }
 					depositDelayDays={ depositDelayDays }
 					onSubmit={ onSubmit }
@@ -55,4 +55,4 @@ const DepositNowButton = ( {
 	);
 };
 
-export default DepositNowButton;
+export default ManualDepositButton;
