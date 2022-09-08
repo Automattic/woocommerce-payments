@@ -189,11 +189,11 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		$local_time->setTimezone( new DateTimeZone( $user_timezone ) );
 
 		// Compute time difference in minutes.
-		$time_difference = ( strtotime( $blog_time->format( 'Y-m-d H:i:s' ) ) - strtotime( $local_time->format( 'Y-m-d H:i:s' ) ) ) / 60;
+		$time_difference = ( strtotime( $local_time->format( 'Y-m-d H:i:s' ) ) - strtotime( $blog_time->format( 'Y-m-d H:i:s' ) ) ) / 60;
 
 		// Shift date by time difference.
 		$formatted_date = new DateTime( $transaction_date );
-		date_modify( $formatted_date, '+' . $time_difference . 'minutes' );
+		date_modify( $formatted_date, $time_difference . 'minutes' );
 
 		return $formatted_date->format( 'Y-m-d H:i:s' );
 	}
