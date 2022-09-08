@@ -642,7 +642,14 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'capture_charge' )
-			->with( $this->isInstanceOf( WC_Order::class ) );
+			->with( $this->isInstanceOf( WC_Order::class ) )
+			->willReturn(
+				[
+					'status'    => 'failed',
+					'message'   => 'Test error',
+					'http_code' => 502,
+				]
+			);
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
