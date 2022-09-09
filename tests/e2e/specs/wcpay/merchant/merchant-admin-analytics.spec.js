@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-const { merchant, shopper, evalAndClick } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -9,8 +9,6 @@ const { merchant, shopper, evalAndClick } = require( '@woocommerce/e2e-utils' );
 import config from 'config';
 import { merchantWCP, takeScreenshot } from '../../../utils';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
-
-const actionSchedulerHook = 'wc-admin_import_orders';
 
 describe( 'Admin Order Analytics', () => {
 	beforeAll( async () => {
@@ -26,22 +24,22 @@ describe( 'Admin Order Analytics', () => {
 		// Login
 		await merchant.login();
 
-		// Go to Action Scheduler
-		await merchantWCP.openActionScheduler();
+		// // Go to Action Scheduler
+		// await merchantWCP.openActionScheduler();
 
-		// Filter results by pending
-		await page.click( 'ul.subsubsub > .pending > a' );
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		// // Filter results by pending
+		// await page.click( 'ul.subsubsub > .pending > a' );
+		// await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
-		// Run the Action Scheduler task to update the order stats
-		await evalAndClick( 'div.row-actions > span.run > a' );
-		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
-		await expect( page ).toMatchElement(
-			'div#message.updated > p > strong',
-			{
-				text: actionSchedulerHook,
-			}
-		);
+		// // Run the Action Scheduler task to update the order stats
+		// await evalAndClick( 'div.row-actions > span.run > a' );
+		// await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		// await expect( page ).toMatchElement(
+		// 	'div#message.updated > p > strong',
+		// 	{
+		// 		text: actionSchedulerHook,
+		// 	}
+		// );
 	} );
 
 	afterAll( async () => {
