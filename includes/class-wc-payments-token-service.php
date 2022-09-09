@@ -100,6 +100,7 @@ class WC_Payments_Token_Service {
 	 * @return array
 	 */
 	public function woocommerce_get_customer_payment_tokens( $tokens, $user_id, $gateway_id ) {
+
 		$gateway_ids = [ WC_Payment_Gateway_WCPay::GATEWAY_ID, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA ];
 
 		if ( ( ! empty( $gateway_id ) && ! in_array( $gateway_id, $gateway_ids, true ) ) || ! is_user_logged_in() ) {
@@ -122,7 +123,9 @@ class WC_Payments_Token_Service {
 			$stored_tokens = [];
 
 			foreach ( $tokens as $token ) {
-				$stored_tokens[ $token->get_token() ] = $token;
+				if ( in_array( $token->get_gateway_id(), $gateway_ids, true ) ) {
+					$stored_tokens[ $token->get_token() ] = $token;
+				}
 			}
 
 			$payment_methods = [ [] ];
@@ -170,12 +173,14 @@ class WC_Payments_Token_Service {
 	 * @param WC_Payment_Token $token    Token object.
 	 */
 	public function woocommerce_payment_token_deleted( $token_id, $token ) {
-		try {
-			$this->payments_api_client->detach_payment_method( $token->get_token() );
-			// Clear cached payment methods.
-			$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
-		} catch ( Exception $e ) {
-			Logger::log( 'Error detaching payment method:' . $e->getMessage() );
+		if ( in_array( $token->get_gateway_id(), $gateway_ids, true ) === $token->get_gateway_id() ) {
+			try {
+				$this->payments_api_client->detach_payment_method( $token->get_token() );
+				// Clear cached payment methods.
+				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
+			} catch ( Exception $e ) {
+				Logger::log( 'Error detaching payment method:' . $e->getMessage() );
+			}
 		}
 	}
 
