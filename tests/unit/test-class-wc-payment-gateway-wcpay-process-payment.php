@@ -993,7 +993,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'schedule_job' )
 			->with(
-				time(),
+				$this->anything(),
 				WC_Payment_Gateway_WCPay::UPDATE_SAVED_PAYMENT_METHOD,
 				[
 					'payment_method' => 'pm_mock',
