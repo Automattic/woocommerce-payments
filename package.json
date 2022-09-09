@@ -90,7 +90,7 @@
     "@woocommerce/components": "5.1.2",
     "@woocommerce/currency": "3.0.0",
     "@woocommerce/date": "2.1.0",
-    "@woocommerce/e2e-environment": "0.3.0",
+    "@woocommerce/e2e-environment": "0.2.3",
     "@woocommerce/e2e-utils": "0.2.0",
     "@woocommerce/eslint-plugin": "1.1.0",
     "@woocommerce/experimental": "2.1.0",
