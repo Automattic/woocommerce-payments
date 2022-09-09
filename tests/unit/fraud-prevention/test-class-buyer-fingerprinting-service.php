@@ -53,7 +53,7 @@ class Buyer_Fingerprinting_Service_Test extends WCPAY_UnitTestCase {
 	public function test_it_hashes_order_info() {
 		$order_hashes          = $this->buyer_fingerprinting_service->get_hashed_data_for_customer();
 		$expected_hashed_array = [
-			'fraud_prevention_data_shopper_3_oct_hash' => hash( 'sha512', '127.0.0', false ),
+			'fraud_prevention_data_shopper_range_hash' => hash( 'sha512', '127.0.0.0..127.0.15.255', false ),
 			'fraud_prevention_data_shopper_ip_hash'    => hash( 'sha512', '127.0.0.1', false ),
 			'fraud_prevention_data_shopper_ua_hash'    => hash( 'sha512', '', false ),
 		];

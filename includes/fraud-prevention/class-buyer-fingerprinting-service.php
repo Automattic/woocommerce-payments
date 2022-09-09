@@ -8,6 +8,7 @@
 namespace WCPay\Fraud_Prevention;
 
 use WC_Geolocation;
+use WCPay\CIDR_Range;
 
 /**
  * Class Buyer_Fingerprinting_Service
@@ -74,11 +75,11 @@ class Buyer_Fingerprinting_Service {
 	 * @return string[] An array of hashed data for an order.
 	 */
 	public function get_hashed_data_for_customer(): array {
-		$ip_address         = WC_Geolocation::get_ip_address();
-		$ip_address_3_octet = $this->get_3_octet_from_ip( $ip_address );
+		$ip_address       = WC_Geolocation::get_ip_address();
+		$ip_address_range = implode( '..', CIDR_Range::from_ip( $ip_address ) );
 
 		return [
-			'fraud_prevention_data_shopper_3_oct_hash' => $this->hash_data_for_fraud_prevention( $ip_address_3_octet ),
+			'fraud_prevention_data_shopper_range_hash' => $this->hash_data_for_fraud_prevention( $ip_address_range ),
 			'fraud_prevention_data_shopper_ip_hash'    => $this->hash_data_for_fraud_prevention( $ip_address ),
 			'fraud_prevention_data_shopper_ua_hash'    => $this->hash_data_for_fraud_prevention( strtolower( wc_get_user_agent() ) ),
 		];
