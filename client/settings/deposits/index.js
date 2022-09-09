@@ -120,7 +120,7 @@ const CustomizeDepositSchedule = () => {
 				options={ [
 					{
 						label: __(
-							'Automatic Deposits',
+							'Automatic deposits',
 							'woocommerce-payments'
 						),
 						value: '',
@@ -200,7 +200,7 @@ const CustomizeDepositSchedule = () => {
 				onChange={ handleIntervalChange }
 				options={ [
 					{
-						label: __( 'Manual Deposits', 'woocommerce-payments' ),
+						label: __( 'Manual deposits', 'woocommerce-payments' ),
 						value: 'manual',
 					},
 				] }
