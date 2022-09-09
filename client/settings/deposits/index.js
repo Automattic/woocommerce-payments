@@ -128,7 +128,7 @@ const CustomizeDepositSchedule = () => {
 				] }
 			/>
 			{ 'manual' !== depositScheduleInterval && (
-				<>
+				<div className="schedule-sub-radio">
 					<div className="schedule-controls">
 						<SelectControl
 							label={ __( 'Frequency', 'woocommerce-payments' ) }
@@ -192,9 +192,10 @@ const CustomizeDepositSchedule = () => {
 								'woocommerce-payments'
 							) }
 					</p>
-				</>
+				</div>
 			) }
 			<RadioControl
+				className="schedule-manual-radio"
 				selected={ depositScheduleInterval }
 				onChange={ handleIntervalChange }
 				options={ [
