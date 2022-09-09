@@ -173,7 +173,10 @@ class WC_Payments_Token_Service {
 	 * @param WC_Payment_Token $token    Token object.
 	 */
 	public function woocommerce_payment_token_deleted( $token_id, $token ) {
-		if ( in_array( $token->get_gateway_id(), $gateway_ids, true ) === $token->get_gateway_id() ) {
+
+		$gateway_ids = [ WC_Payment_Gateway_WCPay::GATEWAY_ID, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA ];
+
+		if ( in_array( $token->get_gateway_id(), $gateway_ids, true ) ) {
 			try {
 				$this->payments_api_client->detach_payment_method( $token->get_token() );
 				// Clear cached payment methods.
@@ -191,7 +194,10 @@ class WC_Payments_Token_Service {
 	 * @param WC_Payment_Token $token    Token object.
 	 */
 	public function woocommerce_payment_token_set_default( $token_id, $token ) {
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+
+		$gateway_ids = [ WC_Payment_Gateway_WCPay::GATEWAY_ID, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA ];
+
+		if ( in_array( $token->get_gateway_id(), $gateway_ids, true ) ) {
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
 			if ( $customer_id ) {
 				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );

@@ -157,7 +157,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_woocommerce_payment_token_deleted_other_gateway() {
 		$this->mock_api_client
-			->expects( $this->once() )
+			->expects( $this->never() )
 			->method( 'detach_payment_method' );
 
 		$token = new WC_Payment_Token_CC();
