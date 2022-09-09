@@ -131,6 +131,11 @@ describe( 'Deposits', () => {
 		within( frequencySelect ).getByRole( 'option', { name: /Daily/ } );
 		within( frequencySelect ).getByRole( 'option', { name: /Weekly/ } );
 		within( frequencySelect ).getByRole( 'option', { name: /Monthly/ } );
+
+		const automaticDepositsRadio = screen.getByLabelText(
+			/Automatic deposits/
+		);
+		expect( automaticDepositsRadio ).toBeChecked();
 	} );
 
 	it( 'renders the weekly offset select', () => {
@@ -165,6 +170,11 @@ describe( 'Deposits', () => {
 				name: anchor,
 			} );
 		}
+
+		const automaticDepositsRadio = screen.getByLabelText(
+			/Automatic deposits/
+		);
+		expect( automaticDepositsRadio ).toBeChecked();
 	} );
 
 	it( 'renders the monthly offset select', () => {
@@ -189,5 +199,40 @@ describe( 'Deposits', () => {
 				name: anchor,
 			} );
 		}
+
+		const automaticDepositsRadio = screen.getByLabelText(
+			/Automatic deposits/
+		);
+		expect( automaticDepositsRadio ).toBeChecked();
+	} );
+
+	it( 'renders automatic and manual radios', () => {
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		const automaticRadio = screen.getByLabelText( /Automatic deposits/ );
+		expect( automaticRadio ).toBeInTheDocument();
+
+		const manualRadio = screen.getByLabelText( /Manual deposits/ );
+		expect( manualRadio ).toBeInTheDocument();
+	} );
+
+	it( 'renders correctly when manual deposit is selected', () => {
+		useDepositScheduleInterval.mockReturnValue( [ 'manual', jest.fn() ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ settingsContext }>
+				<Deposits />
+			</WCPaySettingsContext.Provider>
+		);
+
+		const manualDepositsRadio = screen.getByLabelText( /Manual deposits/ );
+		expect( manualDepositsRadio ).toBeChecked();
+
+		const frequencySelect = screen.queryByLabelText( /Frequency/ );
+		expect( frequencySelect ).not.toBeInTheDocument();
 	} );
 } );
