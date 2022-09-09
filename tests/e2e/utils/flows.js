@@ -404,8 +404,18 @@ export const merchantWCP = {
 		await uiLoaded();
 	},
 
-	openActionScheduler: async () => {
-		await page.goto( ACTION_SCHEDULER, {
+	openActionScheduler: async ( status, search ) => {
+		let pageUrl = ACTION_SCHEDULER;
+
+		if ( 'undefined' !== typeof status ) {
+			pageUrl += '&status=' + status;
+		}
+
+		if ( 'undefined' !== typeof search ) {
+			pageUrl += '&s=' + search;
+		}
+
+		await page.goto( pageUrl, {
 			waitUntil: 'networkidle0',
 		} );
 	},
