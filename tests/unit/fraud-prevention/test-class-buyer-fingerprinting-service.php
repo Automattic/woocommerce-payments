@@ -43,13 +43,6 @@ class Buyer_Fingerprinting_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $result, $expected_hashed_string );
 	}
 
-	public function test_it_returns_3_octet_ip() {
-		$result          = $this->buyer_fingerprinting_service->get_3_octet_from_ip( '127.0.0.1' );
-		$expected_string = '127.0.0';
-
-		$this->assertSame( $result, $expected_string );
-	}
-
 	public function test_it_hashes_order_info() {
 		$order_hashes          = $this->buyer_fingerprinting_service->get_hashed_data_for_customer();
 		$expected_hashed_array = [

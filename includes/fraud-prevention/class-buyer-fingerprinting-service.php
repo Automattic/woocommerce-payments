@@ -56,20 +56,6 @@ class Buyer_Fingerprinting_Service {
 	}
 
 	/**
-	 * Returns the 3 octet format from an IP address.
-	 *
-	 * @param string $ip_address Raw IP address.
-	 *
-	 * @return string 3 octet IP address (192.192.192).
-	 */
-	public function get_3_octet_from_ip( string $ip_address ): string {
-		$ip_address_octets = explode( '.', $ip_address );
-		array_pop( $ip_address_octets );
-
-		return implode( '.', $ip_address_octets );
-	}
-
-	/**
 	 * Returns fraud prevention data for an order.
 	 *
 	 * @return string[] An array of hashed data for an order.
