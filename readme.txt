@@ -98,6 +98,10 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 4.7.1 - 2022-xx-xx =
+* Fix - Fix Apple Pay domain verify file missing error notice constantly displayed
+* Fix - Retain test mode context in CRON jobs queued up while checking out.
+
 = 4.7.0 - 2022-09-07 =
 * Add - Added meta to payment tokens used in subscriptions.
 * Add - Adding an authorization page part of the transactions view. Currently behind a flag and using mocked data.
