@@ -1,5 +1,46 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.7.0 - 2022-09-07 =
+* Add - Added meta to payment tokens used in subscriptions.
+* Add - Adding an authorization page part of the transactions view. Currently behind a flag and using mocked data.
+* Add - Adding support for WCA's Analytics and Multi-Currency when using custom order tables.
+* Add - Add support for getting a Stripe invoice.
+* Add - indicate setup-intent use in the request.
+* Add - Merchants can change their deposit schedule via the settings page.
+* Fix - Actualize FAQ link for 'Set up refund policy' inbox note.
+* Fix - Add customer ID to WP user during Store API checkout.
+* Fix - Add handling for guest user while updating customer with order data.
+* Fix - Analytics: Ensure the store default currency always displays in list.
+* Fix - Create WooPay user from trial subscription.
+* Fix - Dismissible country error message for Apple Pay.
+* Fix - Fix - Fatal Error caused in rare cases where quantity is zero during renewal, builds upon fix released in WC Pay 4.3.0.
+* Fix - Fix adding payment tokens for platform-created setup intents.
+* Fix - Fix deprecation notice for Automattic\WooCommerce\Blocks\StoreApi\RoutesController.
+* Fix - Fix error in updating subscription when saved cards are more than posts per page setting.
+* Fix - Fix file permission and merchant country errors for apple pay registration.
+* Fix - Fix Link errors after blocks plugin update.
+* Fix - Improvements to express checkout functionality: prevent errors on PHP 8 with empty product prices, and more percise taxes.
+* Fix - Remove duplication of deposit schedule on overview page.
+* Fix - Update id card to available payment method after disabling UPE.
+* Fix - Update WooCommerce Payments business details via "Things to do" task list leading to a blank page.
+* Fix - Upon losing a dispute, orders will no longer appear as processing, but as refunded instead.
+* Update - Modified query to get customer currencies when COT enabled.
+* Update - Modified usage tracking queries when COT enabled.
+* Update - Move the "Instant deposit" button on the Payments > Overview screen to the "Available balance" block.
+* Update - Only store a new token when paying for a subscription via WooPay if it doesn't exist already.
+* Update - Replaced direct DB query in oorders_with_charge_id_from_charge_ids with wc_get_orders.
+* Update - Replaced direct DB query in order_id_from_meta_key_value with wc_get_orders.
+* Update - The Payments > Overview "Temporarily Suspended" notice will only appear when deposits are "blocked".
+* Dev - Add new E2E workflow for pull requests & split existing tests into 3 jobs.
+* Dev - Bump minimum required version of WooCommerce from 6.2 to 6.4.
+* Dev - Bump minimum required version of WooCommerce in GH compatibility workflow from 6.2.2 to 6.4.1.
+* Dev - Minor readability change in tests.
+* Dev - Update E2E flows for subscription tests.
+* Dev - Update php-stubs/woocommerce-stubs to 6.8.0.
+* Dev - Update subscriptions-core to 2.2.1.
+* Dev - Update WC and Gutenberg versions in GH's oldest compatibility test.
+* Dev - Upgraded NodeJS version to 14.
+
 = 4.6.0 - 2022-08-18 =
 * Add - Adding support for payment request buttons (Apple Pay and Google Pay) to the Pay for Order page.
 * Add - Add transactions channel (In-Person or Online).
