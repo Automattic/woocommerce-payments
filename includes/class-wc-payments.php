@@ -27,6 +27,7 @@ use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
+use WCPay\Platform_Checkout\Platform_Checkout_Order_Success_Page;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
@@ -132,6 +133,13 @@ class WC_Payments {
 	 * @var WC_Payments_Order_Success_Page
 	 */
 	private static $order_success_page;
+
+	/**
+	 * Instance of Platform_Checkout_Order_Success_Page, created in init function.
+	 *
+	 * @var Platform_Checkout_Order_Success_Page
+	 */
+	private static $platform_checkout_order_success_page;
 
 	/**
 	 * Instance of WC_Payments_Onboarding_Service, created in init function
@@ -277,6 +285,7 @@ class WC_Payments {
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
+		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-success-page.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -292,18 +301,19 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client );
-		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
-		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache );
-		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
-		self::$remote_note_service                 = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
-		self::$fraud_service                       = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
-		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
-		self::$localization_service                = new WC_Payments_Localization_Service();
-		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
-		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
-		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
-		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
+		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client );
+		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
+		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache );
+		self::$token_service                        = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
+		self::$remote_note_service                  = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
+		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account );
+		self::$in_person_payments_receipts_service  = new WC_Payments_In_Person_Payments_Receipts_Service();
+		self::$localization_service                 = new WC_Payments_Localization_Service();
+		self::$failed_transaction_rate_limiter      = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
+		self::$order_service                        = new WC_Payments_Order_Service( self::$api_client );
+		self::$order_success_page                   = new WC_Payments_Order_Success_Page();
+		self::$platform_checkout_order_success_page = new Platform_Checkout_Order_Success_Page();
+		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 
 		$card_class = CC_Payment_Gateway::class;
 		$upe_class  = UPE_Payment_Gateway::class;
