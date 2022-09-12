@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Apple Pay domain verify file missing error notice constantly displayed
