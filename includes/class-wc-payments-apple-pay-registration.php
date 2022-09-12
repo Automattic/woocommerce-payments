@@ -386,7 +386,7 @@ class WC_Payments_Apple_Pay_Registration {
 		$well_known_dir = untrailingslashit( ABSPATH ) . '/' . self::DOMAIN_ASSOCIATION_FILE_DIR;
 		$full_path      = $well_known_dir . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
 
-		return is_dir( $well_known_dir ) && is_writable( $well_known_dir ) && file_exists( $full_path ) && is_readable( $full_path );
+		return is_dir( $well_known_dir ) && is_writable( $well_known_dir ) && file_exists( $full_path ) && is_writable( $full_path );
 	}
 
 	/**
