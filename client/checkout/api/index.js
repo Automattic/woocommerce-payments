@@ -60,7 +60,11 @@ export default class WCPayAPI {
 			isStripeLinkEnabled,
 		} = this.options;
 
-		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
+		if (
+			forceNetworkSavedCards &&
+			! forceAccountRequest &&
+			! isUPEEnabled
+		) {
 			if ( ! this.stripePlatform ) {
 				this.stripePlatform = this.createStripe(
 					publishableKey,
