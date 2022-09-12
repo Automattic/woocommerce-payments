@@ -18,5 +18,6 @@ jobs:
                   cache: npm
             - uses: preactjs/compressed-size-action@v2
               with:
+                  repo-token: '${{ secrets.GITHUB_TOKEN }}'
                   pattern: '{release/**/*.js,release/**/*.css}'
                   exclude: '{release/vendor/**}'
