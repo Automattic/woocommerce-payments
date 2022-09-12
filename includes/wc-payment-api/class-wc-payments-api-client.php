@@ -221,7 +221,7 @@ class WC_Payments_API_Client {
 		$request['customer']       = $customer_id;
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
 		$request['metadata']       = $metadata;
-		$request['level3']         = $level3;
+		$request['level3']         = $this->replace_level3_product_code( $level3 );
 		$request['description']    = $this->get_intent_description( $metadata['order_number'] ?? 0 );
 
 		if ( ! empty( $payment_methods ) ) {
@@ -250,6 +250,29 @@ class WC_Payments_API_Client {
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
+	 * Ensure product_code for the Stripe Level 3 data is within 12 digits, by converting to base 36
+	 *
+	 * @param array $level3 - Level 3 data.
+	 * @return array
+	 */
+	protected function replace_level3_product_code( $level3 ) {
+
+		if ( empty( $level3['line_items'] ) ) {
+			return $level3;
+		}
+		$level3['line_items'] = array_map(
+			function( $line_item ) {
+				$line_item->product_code = base_convert( $line_item->product_code, 10, 36 );
+
+				return $line_item;
+			},
+			$level3['line_items']
+		);
+
+		return $level3;
 	}
 
 	/**

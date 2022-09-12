@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Restrict product code within 12 digits in level 3 data.
