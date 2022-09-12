@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Remove button HTML code seen in error notification, when email address is kept blank
+Correct empty email error when StripeLink is active on checkout page.
