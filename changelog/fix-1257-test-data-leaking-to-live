@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Retain test mode context in CRON jobs queued up while checking out.
