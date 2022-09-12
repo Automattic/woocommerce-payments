@@ -51,16 +51,9 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 			  };
 
 		if ( options.complete_shipping() ) {
-			if (
-				shippingAddress.hasOwnProperty( 'name' ) &&
-				'string' === typeof shippingAddress.name &&
-				shippingAddress.name.length
-			) {
-				const shippingNames = shippingAddress.name.split( / (.*)/s, 2 );
-
-				shippingAddress.address.last_name = shippingNames[ 1 ];
-				shippingAddress.address.first_name = shippingNames[ 0 ];
-			}
+			const shippingNames = shippingAddress.name.split( / (.*)/s, 2 );
+			shippingAddress.address.last_name = shippingNames[ 1 ];
+			shippingAddress.address.first_name = shippingNames[ 0 ];
 
 			fillWith( shippingAddress, options.shipping_fields.line1, 'line1' );
 			fillWith( shippingAddress, options.shipping_fields.line2, 'line2' );
@@ -92,15 +85,9 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 		}
 
 		if ( options.complete_billing() ) {
-			if (
-				billingAddress.hasOwnProperty( 'name' ) &&
-				'string' === typeof billingAddress.name &&
-				billingAddress.name.length
-			) {
-				const billingNames = billingAddress.name.split( / (.*)/s, 2 );
-				billingAddress.address.last_name = billingNames[ 1 ];
-				billingAddress.address.first_name = billingNames[ 0 ];
-			}
+			const billingNames = billingAddress.name.split( / (.*)/s, 2 );
+			billingAddress.address.last_name = billingNames[ 1 ];
+			billingAddress.address.first_name = billingNames[ 0 ];
 
 			fillWith( billingAddress, options.billing_fields.line1, 'line1' );
 			fillWith( billingAddress, options.billing_fields.line2, 'line2' );
