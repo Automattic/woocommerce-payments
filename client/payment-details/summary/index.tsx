@@ -26,7 +26,7 @@ import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
 import { useAuthorization } from 'wcpay/data';
-import CaptureAuthorizationButton from 'transactions/uncaptured/capture-authorization-button';
+import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
 
