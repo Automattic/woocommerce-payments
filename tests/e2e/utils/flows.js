@@ -8,7 +8,7 @@
 
 const {
 	merchant,
-	verifyAndPublish,
+	shopper,
 	evalAndClick,
 	uiUnblocked,
 	clearAndFillInput,
@@ -240,6 +240,13 @@ export const shopperWCP = {
 			text: 'Your cart is currently empty.',
 		} );
 	},
+
+	addToCartBySlug: async ( productSlug ) => {
+		await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
+			waitUntil: 'networkidle0',
+		} );
+		await shopper.addToCart();
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
@@ -321,38 +328,6 @@ export const merchantWCP = {
 	 * @return id of the created subscription product
 	 *
 	 */
-
-	createSubscriptionProduct: async (
-		productName,
-		periodTime,
-		includeSignupFee = false,
-		includeFreeTrial = false
-	) => {
-		// Go to "add product" page
-		await merchant.openNewProduct();
-
-		// Make sure we're on the add product page
-		await expect( page.title() ).resolves.toMatch( 'Add new product' );
-		await expect( page ).toFill( '#title', productName );
-		await expect( page ).toSelect( '#product-type', 'Simple subscription' );
-		await expect( page ).toFill( '#_subscription_price', '9.99' );
-		await expect( page ).toSelect( '#_subscription_period', periodTime );
-
-		if ( includeSignupFee ) {
-			await expect( page ).toFill( '#_subscription_sign_up_fee', '1.99' );
-		}
-
-		if ( includeFreeTrial ) {
-			await expect( page ).toFill( '#_subscription_trial_length', '14' );
-		}
-
-		await verifyAndPublish();
-
-		// Return the id of this subscription product
-		const postSubstring = page.url().match( /post=\d+/ )[ 0 ];
-		const productId = postSubstring.replace( 'post=', '' );
-		return productId;
-	},
 
 	openDisputes: async () => {
 		await page.goto( WCPAY_DISPUTES, {

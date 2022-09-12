@@ -386,8 +386,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
-		add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 2 );
-		add_action( self::UPDATE_CUSTOMER_WITH_ORDER_DATA, [ $this, 'update_customer_with_order_data' ], 10, 2 );
+		add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 3 );
+		add_action( self::UPDATE_CUSTOMER_WITH_ORDER_DATA, [ $this, 'update_customer_with_order_data' ], 10, 4 );
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
@@ -722,6 +722,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_fields_js_config() {
 		$platform_checkout_util = new Platform_Checkout_Utilities();
+		$wc_checkout            = WC_Checkout::instance();
 
 		return [
 			'publishableKey'                 => $this->account->get_publishable_key( $this->is_in_test_mode() ),
@@ -745,7 +746,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,
-			'platformCheckoutNeedLogin'      => ! is_user_logged_in() && $platform_checkout_util->is_subscription_item_in_cart(),
+			'platformCheckoutNeedLogin'      => ! is_user_logged_in() && $wc_checkout->is_registration_required(),
 			'userExistsEndpoint'             => get_rest_url( null, '/wc/v3/users/exists' ),
 		];
 	}
@@ -1103,17 +1104,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Update the customer details with the incoming order data.
+	 * Update the customer details with the incoming order data, in a CRON job.
 	 *
-	 * @param int    $order_id       WC order id.
-	 * @param string $customer_id    The customer id to update details for.
+	 * @param int    $order_id     WC order id.
+	 * @param string $customer_id  The customer id to update details for.
+	 * @param bool   $is_test_mode Whether to run the CRON job in test mode.
+	 * @param bool   $is_woopay    Whether CRON job was queued from WooPay.
 	 */
-	public function update_customer_with_order_data( $order_id, $customer_id ) {
+	public function update_customer_with_order_data( $order_id, $customer_id, $is_test_mode = false, $is_woopay = false ) {
+		// Since this CRON job may have been created in test_mode, when the CRON job runs, it
+		// may lose the test_mode context. So, instead, we pass that context when creating
+		// the CRON job and apply the context here.
+		$apply_test_mode_context = function () use ( $is_test_mode ) {
+			return $is_test_mode;
+		};
+		add_filter( 'wcpay_test_mode', $apply_test_mode_context );
+
 		$order = wc_get_order( $order_id );
 		$user  = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
 		}
+
+		// Since this function will run in a CRON job, "wp_get_current_user()" will default
+		// to user with ID of 0. So, instead, we replace it with the user from the $order,
+		// when updating a WooPay user.
+		$apply_order_user_email = function ( $params ) use ( $user, $is_woopay ) {
+			if ( $is_woopay ) {
+				$params['email'] = $user->user_email;
+			}
+
+			return $params;
+		};
+		add_filter( 'wcpay_api_request_params', $apply_order_user_email, 20, 1 );
 
 		// Update the existing customer with the current order details.
 		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
@@ -1123,11 +1146,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Manages customer details held on WCPay server for WordPress user associated with an order.
 	 *
-	 * @param WC_Order $order WC Order object.
+	 * @param WC_Order $order   WC Order object.
+	 * @param array    $options Additional options to apply.
 	 *
 	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
 	 */
-	protected function manage_customer_details_for_order( $order ) {
+	protected function manage_customer_details_for_order( $order, $options = [] ) {
 		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
@@ -1146,8 +1170,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				time(),
 				self::UPDATE_CUSTOMER_WITH_ORDER_DATA,
 				[
-					'order_id'    => $order->get_id(),
-					'customer_id' => $customer_id,
+					'order_id'     => $order->get_id(),
+					'customer_id'  => $customer_id,
+					'is_test_mode' => $this->is_in_test_mode(),
+					'is_woopay'    => $options['is_woopay'] ?? false,
 				]
 			);
 		}
@@ -1156,12 +1182,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Update the saved payment method information with checkout values.
+	 * Update the saved payment method information with checkout values, in a CRON job.
 	 *
 	 * @param string $payment_method The payment method to update.
 	 * @param int    $order_id       WC order id.
+	 * @param bool   $is_test_mode   Whether to run the CRON job in test mode.
 	 */
-	public function update_saved_payment_method( $payment_method, $order_id ) {
+	public function update_saved_payment_method( $payment_method, $order_id, $is_test_mode = false ) {
+		// Since this CRON job may have been created in test_mode, when the CRON job runs, it
+		// may lose the test_mode context. So, instead, we pass that context when creating
+		// the CRON job and apply the context here.
+		$apply_test_mode_context = function () use ( $is_test_mode ) {
+			return $is_test_mode;
+		};
+		add_filter( 'wcpay_test_mode', $apply_test_mode_context );
+
 		$order = wc_get_order( $order_id );
 
 		try {
@@ -1193,7 +1228,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount   = $order->get_total();
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
-		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+		$customer_details_options   = [
+			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+		];
+		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
 
 		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
@@ -1203,6 +1241,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[
 					'payment_method' => $payment_information->get_payment_method(),
 					'order_id'       => $order->get_id(),
+					'is_test_mode'   => $this->is_in_test_mode(),
 				]
 			);
 		}
