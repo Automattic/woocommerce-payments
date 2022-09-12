@@ -545,7 +545,7 @@ class WC_Payments_Apple_Pay_Registration {
 						<?php
 							echo sprintf(
 								/* translators: 1: apple pay support */
-								__( 'We were not able to access your domain verification file. WooCommerce Payments will keep on working, but we recommend using <a href="%1$s" target="_blank">this documentation</a> to walk you through the process to verify with Apple that you control your domain.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								__( 'We are not able to access your Apple Pay domain verification file. WooCommerce Payments will continue to work, but we suggest using <a href="%1$s" target="_blank">this document</a> to help you verify with Apple that you control this domain.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 								'https://woocommerce.com/document/payments/apple-pay/#apple-pay-button-does-not-appear'
 							);
 						?>
