@@ -89,7 +89,7 @@ describe( 'submitCaptureAuthorization', () => {
 	} );
 
 	test( 'should show notice on error', () => {
-		const generator = submitCaptureAuthorization( 'pi_4242', 52 );
+		const generator = submitCaptureAuthorization( 'pi_4242', 42 );
 		generator.next();
 
 		expect( generator.throw( { code: 'error' } ).value ).toEqual(
