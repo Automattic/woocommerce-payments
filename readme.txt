@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.7.0
+Stable tag: 4.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,10 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 4.7.1 - 2022-09-13 =
+* Fix - Fix Apple Pay domain verify file missing error notice constantly displayed
+* Fix - Retain test mode context in CRON jobs queued up while checking out.
 
 = 4.7.0 - 2022-09-07 =
 * Add - Added meta to payment tokens used in subscriptions.
