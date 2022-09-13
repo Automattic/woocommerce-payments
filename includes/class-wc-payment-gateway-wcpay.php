@@ -635,7 +635,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function admin_options() {
 		// Add notices to the WooCommerce Payments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
-		do_action( 'woocommerce_woocommerce_payments_admin_applepay_notice' );
 
 		$this->output_payments_settings_screen();
 	}
