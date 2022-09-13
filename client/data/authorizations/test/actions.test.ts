@@ -14,21 +14,19 @@ import authorizationsFixture from './authorizations.fixture.json';
 
 describe( 'submitCaptureAuthorization', () => {
 	const {
-		authorization_id: mockAuthorizationId,
 		order: mockOrder,
 		payment_intent_id: mockPaymentIntentId,
 	} = authorizationsFixture[ 0 ];
 
 	test( 'should capture authorization and show success notice.', () => {
 		const generator = submitCaptureAuthorization(
-			mockAuthorizationId,
-			mockOrder.number,
-			mockPaymentIntentId
+			mockPaymentIntentId,
+			mockOrder.number
 		);
 
 		expect( generator.next().value ).toEqual(
 			dispatch( 'wc/payments', 'startResolution', 'getAuthorization', [
-				mockAuthorizationId,
+				mockPaymentIntentId,
 			] )
 		);
 
@@ -44,7 +42,7 @@ describe( 'submitCaptureAuthorization', () => {
 
 		expect( generator.next( authorizationsFixture[ 0 ] ).value ).toEqual(
 			updateAuthorization( {
-				authorization_id: mockAuthorizationId,
+				payment_intent_id: mockPaymentIntentId,
 				captured: true,
 			} as Authorization )
 		);
@@ -83,7 +81,7 @@ describe( 'submitCaptureAuthorization', () => {
 
 		expect( generator.next().value ).toEqual(
 			dispatch( 'wc/payments', 'finishResolution', 'getAuthorization', [
-				mockAuthorizationId,
+				mockPaymentIntentId,
 			] )
 		);
 
@@ -91,7 +89,7 @@ describe( 'submitCaptureAuthorization', () => {
 	} );
 
 	test( 'should show notice on error', () => {
-		const generator = submitCaptureAuthorization( '42', 52, 'pi_4242' );
+		const generator = submitCaptureAuthorization( 'pi_4242', 52 );
 		generator.next();
 
 		expect( generator.throw( { code: 'error' } ).value ).toEqual(

@@ -22,13 +22,11 @@ const mockUseAuthorization = useAuthorization as jest.MockedFunction<
 >;
 
 function renderCaptureAuthorizationButton(
-	authorizationId: string,
 	orderId: number,
 	paymentIntentId: string
 ) {
 	return render(
 		<CaptureAuthorizationButton
-			id={ authorizationId }
 			orderId={ orderId }
 			paymentIntentId={ paymentIntentId }
 		/>
@@ -47,7 +45,6 @@ describe( 'CaptureAuthorizationButton', () => {
 			authorization: {} as Authorization,
 		} );
 		const { container } = renderCaptureAuthorizationButton(
-			'authorizationId',
 			42,
 			'paymentIntentId'
 		);
@@ -62,7 +59,6 @@ describe( 'CaptureAuthorizationButton', () => {
 			authorization: {} as Authorization,
 		} );
 		const { container } = renderCaptureAuthorizationButton(
-			'authorizationId',
 			42,
 			'paymentIntentId'
 		);
@@ -78,11 +74,7 @@ describe( 'CaptureAuthorizationButton', () => {
 			authorization: {} as Authorization,
 		} );
 
-		renderCaptureAuthorizationButton(
-			'authorizationId',
-			42,
-			'paymentIntentId'
-		);
+		renderCaptureAuthorizationButton( 42, 'paymentIntentId' );
 
 		expect( doCaptureAuthorizationMock.mock.calls.length ).toBe( 0 );
 

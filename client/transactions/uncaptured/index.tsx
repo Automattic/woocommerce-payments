@@ -179,7 +179,6 @@ export const AuthorizationsList = (): JSX.Element => {
 			action: {
 				display: (
 					<CaptureAuthorizationButton
-						id={ auth.authorization_id }
 						orderId={ auth.order.number }
 						paymentIntentId={ auth.payment_intent_id }
 					/>

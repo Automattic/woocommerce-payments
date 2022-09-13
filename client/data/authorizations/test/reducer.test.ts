@@ -120,7 +120,7 @@ describe( 'Authorizations reducer', () => {
 
 		expect( stateAfterOne ).toStrictEqual( {
 			byId: {
-				[ mockAuthorizations[ 0 ].authorization_id ]:
+				[ mockAuthorizations[ 0 ].payment_intent_id ]:
 					mockAuthorizations[ 0 ],
 			},
 			summary: {},
@@ -133,9 +133,9 @@ describe( 'Authorizations reducer', () => {
 
 		expect( stateAfterTwo ).toStrictEqual( {
 			byId: {
-				[ mockAuthorizations[ 0 ].authorization_id ]:
+				[ mockAuthorizations[ 0 ].payment_intent_id ]:
 					mockAuthorizations[ 0 ],
-				[ mockAuthorizations[ 1 ].authorization_id ]:
+				[ mockAuthorizations[ 1 ].payment_intent_id ]:
 					mockAuthorizations[ 1 ],
 			},
 			summary: {},

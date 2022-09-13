@@ -38,6 +38,8 @@ const placeholderValues = {
 	refunded: null,
 };
 
+const displayCaptureAuthorization = false;
+
 const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 	[
 		{
@@ -110,9 +112,8 @@ const PaymentDetailsSummary = ( {
 		isCaptured = charge.amount_captured >= charge.amount;
 	}
 	const { authorization } = useAuthorization(
-		'auth_1234',
-		charge.order?.number || 0,
 		charge.payment_intent || '',
+		charge.order?.number || 0,
 		isCaptured
 	);
 
@@ -239,33 +240,34 @@ const PaymentDetailsSummary = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
-			{ authorization && ! authorization.captured && (
-				<Loadable isLoading={ isLoading } placeholder="">
-					<CardFooter className="payment-details-capture-notice">
-						<div className="payment-details-capture-notice__section">
-							<div className="payment-details-capture-notice__text">
-								{ `${ __(
-									'You need to capture this charge before',
-									'woocommerce-payments'
-								) } ` }
-								<b>{ authorization.capture_by }</b>
+			{ displayCaptureAuthorization &&
+				authorization &&
+				! authorization.captured && (
+					<Loadable isLoading={ isLoading } placeholder="">
+						<CardFooter className="payment-details-capture-notice">
+							<div className="payment-details-capture-notice__section">
+								<div className="payment-details-capture-notice__text">
+									{ `${ __(
+										'You need to capture this charge before',
+										'woocommerce-payments'
+									) } ` }
+									<b>{ authorization.capture_by }</b>
+								</div>
+								<div className="payment-details-capture-notice__button">
+									<CaptureAuthorizationButton
+										orderId={ charge.order?.number || 0 }
+										paymentIntentId={
+											charge.payment_intent || ''
+										}
+										buttonIsPrimary={ true }
+										buttonIsSmall={ false }
+										paymentIsCaptured={ isCaptured }
+									/>
+								</div>
 							</div>
-							<div className="payment-details-capture-notice__button">
-								<CaptureAuthorizationButton
-									id="auth_1234"
-									orderId={ charge.order?.number || 0 }
-									paymentIntentId={
-										charge.payment_intent || ''
-									}
-									buttonIsPrimary={ true }
-									buttonIsSmall={ false }
-									paymentIsCaptured={ isCaptured }
-								/>
-							</div>
-						</div>
-					</CardFooter>
-				</Loadable>
-			) }
+						</CardFooter>
+					</Loadable>
+				) }
 		</Card>
 	);
 };

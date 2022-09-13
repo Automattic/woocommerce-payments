@@ -4,6 +4,7 @@ exports[`CaptureAuthorizationButton should render busy status 1`] = `
 <div>
   <button
     class="components-button is-secondary is-small is-busy"
+    disabled=""
     type="button"
   >
     Capture

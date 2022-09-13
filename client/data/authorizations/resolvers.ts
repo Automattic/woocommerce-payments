@@ -4,6 +4,8 @@
  * External dependencies
  */
 import { Query } from '@woocommerce/navigation';
+import moment from 'moment';
+import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies
@@ -21,12 +23,16 @@ export function* getAuthorizations( query: Query ): Generator< unknown > {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function* getAuthorization(
-	id: string,
+	paymentIntentId: string,
 	isCaptured: boolean // TODO: remove when getAuthorization switches to live data.
 ): Generator< unknown > {
 	yield updateAuthorization( {
-		authorization_id: id,
-		captured: isCaptured,
+		payment_intent_id: paymentIntentId,
+		captured: isCaptured, // TODO: remove when getAuthorization switches to live data.
+		capture_by: dateI18n(
+			'M j, Y / g:iA',
+			moment.utc( new Date() ).add( '7', 'days' ).local().toISOString() // TODO: remove when getAuthorization switches to live data.
+		),
 	} as Authorization );
 }
 
