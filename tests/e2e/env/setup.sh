@@ -169,8 +169,8 @@ fi
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
 
-echo "Installing and activating Gutenberg & WordPress Importer..."
-cli wp plugin install gutenberg wordpress-importer --activate
+echo "Installing and activating WordPress Importer..."
+cli wp plugin install wordpress-importer --activate
 
 # Install WooCommerce
 if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
@@ -275,6 +275,10 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	cli wp plugin activate woocommerce-subscriptions
 
 	rm -rf woocommerce-subscriptions-source
+
+	echo "Import WooCommerce Subscription products"
+	cli wp import wp-content/plugins/woocommerce-payments/tests/e2e/env/wc-subscription-products.xml --authors=skip
+
 else
 	echo "Skipping install of WooCommerce Subscriptions"
 fi

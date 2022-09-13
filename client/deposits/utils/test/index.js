@@ -128,7 +128,10 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 	} );
 
 	test( 'renders deposit delay notice prior to first deposit', () => {
-		const depositSchedule = getDepositSchedule( {}, false );
+		const depositSchedule = getDepositSchedule(
+			{ interval: 'daily' },
+			false
+		);
 		expect( depositSchedule ).toEqual(
 			'Automatic, every business day – your first deposit is held for seven days (learn more)'
 		);
