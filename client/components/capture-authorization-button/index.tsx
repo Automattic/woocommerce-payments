@@ -13,18 +13,15 @@ import { Button } from '@wordpress/components';
 import { useAuthorization } from 'wcpay/data';
 
 const CaptureAuthorizationButton = ( {
-	id,
 	orderId,
 	paymentIntentId,
 }: {
-	id: string;
 	orderId: number;
 	paymentIntentId: string;
 } ): JSX.Element => {
 	const { doCaptureAuthorization, isLoading } = useAuthorization(
-		id,
-		orderId,
-		paymentIntentId
+		paymentIntentId,
+		orderId
 	);
 
 	return (
@@ -33,6 +30,7 @@ const CaptureAuthorizationButton = ( {
 			isSmall
 			onClick={ doCaptureAuthorization }
 			isBusy={ isLoading }
+			disabled={ isLoading }
 		>
 			{ __( 'Capture', 'woocommerce-payments' ) }
 		</Button>

@@ -19,9 +19,12 @@ export function* getAuthorizations( query: Query ): Generator< unknown > {
 	yield updateAuthorizations( query, [] );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function* getAuthorization( id: string ): Generator< unknown > {
-	yield updateAuthorization( {} as Authorization );
+export function* getAuthorization(
+	paymentIntentId: string
+): Generator< unknown > {
+	yield updateAuthorization( {
+		payment_intent_id: paymentIntentId,
+	} as Authorization );
 }
 
 export function* getAuthorizationsSummary(

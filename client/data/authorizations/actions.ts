@@ -56,13 +56,12 @@ export function updateAuthorizationsSummary(
 }
 
 export function* submitCaptureAuthorization(
-	id: string,
-	orderId: number,
-	paymentIntentId: string
+	paymentIntentId: string,
+	orderId: number
 ): Generator< unknown | Authorization > {
 	try {
 		yield dispatch( STORE_NAME, 'startResolution', 'getAuthorization', [
-			id,
+			paymentIntentId,
 		] );
 
 		let authorization = yield apiFetch( {
@@ -74,7 +73,7 @@ export function* submitCaptureAuthorization(
 		} );
 
 		authorization = {
-			authorization_id: id,
+			payment_intent_id: paymentIntentId,
 			captured: true,
 		};
 
@@ -106,7 +105,7 @@ export function* submitCaptureAuthorization(
 		yield dispatch( 'core/notices', 'createErrorNotice', message );
 	} finally {
 		yield dispatch( STORE_NAME, 'finishResolution', 'getAuthorization', [
-			id,
+			paymentIntentId,
 		] );
 	}
 }
