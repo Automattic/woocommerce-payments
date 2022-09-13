@@ -18,6 +18,7 @@ import {
 import { Authorization } from 'wcpay/types/authorizations';
 
 export function* getAuthorizations( query: Query ): Generator< unknown > {
+	// TODO: fetch authorizations data from server endpoint.
 	yield updateAuthorizations( query, [] );
 }
 
@@ -26,6 +27,7 @@ export function* getAuthorization(
 	paymentIntentId: string,
 	isCaptured: boolean // TODO: remove when getAuthorization switches to live data.
 ): Generator< unknown > {
+	// TODO: fetch authorization data from server endpoint.
 	yield updateAuthorization( {
 		payment_intent_id: paymentIntentId,
 		captured: isCaptured, // TODO: remove when getAuthorization switches to live data.
@@ -39,5 +41,6 @@ export function* getAuthorization(
 export function* getAuthorizationsSummary(
 	query: Query
 ): Generator< unknown > {
+	// TODO: fetch authorizations summary data from server endpoint.
 	yield updateAuthorizationsSummary( query, {} );
 }
