@@ -968,36 +968,33 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Returns the list of available payment method types for UPE.
 	 * Filtering out those without configured fees, this will prevent a payment method not supported by the Stripe account's country from being returned.
+	 * Note that we are not taking into account capabilities, which are taken into account when managing payment methods in settings.
 	 * See https://stripe.com/docs/stripe-js/payment-element#web-create-payment-intent for a complete list.
 	 *
 	 * @return string[]
 	 */
 	public function get_upe_available_payment_methods() {
-		$methods = parent::get_upe_available_payment_methods();
-		$fees    = $this->account->get_fees();
+		$available_methods = parent::get_upe_available_payment_methods();
 
-		$methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
-		$methods = array_values(
+		$available_methods = array_values(
 			apply_filters(
 				'wcpay_upe_available_payment_methods',
-				$methods
+				$available_methods
 			)
 		);
+		$methods_with_fees = array_keys( $this->account->get_fees() );
 
-		$methods_with_fees = array_values( array_intersect( $methods, array_keys( $fees ) ) );
-
-		$methods_with_fees[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-
-		return $methods_with_fees;
+		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
 	}
 
 	/**
