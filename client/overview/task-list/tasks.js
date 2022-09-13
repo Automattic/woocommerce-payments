@@ -80,7 +80,7 @@ export const getTasks = ( {
 					'Reconnect WooCommerce Payments',
 					'woocommerce-payments'
 				),
-				content: __(
+				additionalInfo: __(
 					'WooCommerce Payments is missing a connected WordPress.com account. ' +
 						'Some functionality will be limited without a connected account.',
 					'woocommerce-payments'
