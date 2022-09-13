@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Apple Pay: corrections in domain association file permissions check
