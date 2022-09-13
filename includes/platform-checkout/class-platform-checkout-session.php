@@ -14,6 +14,8 @@ namespace WCPay\Platform_Checkout;
  */
 class Platform_Checkout_Session {
 
+	const PLATFORM_CHECKOUT_SESSION_COOKIE_NAME = 'platform_checkout_session';
+
 	/**
 	 * Init the hooks.
 	 *
@@ -52,7 +54,7 @@ class Platform_Checkout_Session {
 	 */
 	public static function determine_session_cookie_for_platform_checkout( $cookie_hash ) {
 		if ( isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) && 0 === (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) {
-			return 'platform_checkout_session';
+			return self::PLATFORM_CHECKOUT_SESSION_COOKIE_NAME;
 		}
 
 		return $cookie_hash;
