@@ -29,9 +29,9 @@ class Platform_Checkout_Session {
 	/**
 	 * Sets the current user as the user sent via the api from WooPay if present.
 	 *
-	 * @param WP_User|null|int $user user to be used during the request.
+	 * @param \WP_User|null|int $user user to be used during the request.
 	 *
-	 * @return int|WP_User|null
+	 * @return \WP_User|null|int
 	 */
 	public static function determine_current_user_for_platform_checkout( $user ) {
 		if ( $user ) {
