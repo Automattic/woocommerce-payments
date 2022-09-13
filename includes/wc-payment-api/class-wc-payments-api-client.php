@@ -469,6 +469,10 @@ class WC_Payments_API_Client {
 	public function get_intent( $intent_id ) {
 		$intent = $this->request( [], self::INTENTIONS_API . '/' . $intent_id, self::GET );
 
+		if ( array_key_exists( 'data', $intent ) ) {
+			$intent = $intent['data'];
+		}
+
 		return $this->deserialize_intention_object_from_array( $intent );
 	}
 
