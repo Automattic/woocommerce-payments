@@ -3265,9 +3265,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Add extra `wcpay-checkout-email-field` class.
 			$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
+
+			add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
 		}
 
-		add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
 		return $fields;
 	}
 
