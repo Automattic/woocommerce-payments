@@ -89,7 +89,6 @@ class WC_Payments_Apple_Pay_Registration {
 
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_error_notice' ] );
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_live_account_notice' ] );
-		add_action( 'woocommerce_woocommerce_payments_admin_applepay_notice', [ $this, 'display_not_supported_apple_pay' ] );
 		add_action( 'add_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
 		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
 	}
@@ -262,10 +261,6 @@ class WC_Payments_Apple_Pay_Registration {
 	 */
 	public function register_domain_with_apple() {
 		$error = null;
-		if ( ! $this->can_merchant_register_domain_with_applepay( $this->account->get_account_country() ) ) {
-			Logger::log( 'Error registering domain with Apple: merchant isn\'t in the supported countries or domain association file does not have the correct permissions' );
-			return;
-		}
 
 		try {
 			$registration_response = $this->payments_api_client->register_domain_with_apple( $this->domain_name );
@@ -353,54 +348,6 @@ class WC_Payments_Apple_Pay_Registration {
 	}
 
 	/**
-	 * Apple Pay supported country codes.
-	 *
-	 * @return string[]
-	 */
-	public static function supported_applepay_country_codes(): array {
-		return [
-			'ZA', 'AU', 'CN', 'HK', 'JP', 'MO', 'NZ', 'SG', 'TW', 'AM', 'AT', 'AZ', 'BY', 'BE', 'BG', 'HR', 'CY', 'CZ', // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
-			'DK', 'EE', 'FO', 'FI', 'FR', 'GE', 'DE', 'GR', 'GL', 'GG', 'HU', 'IS', 'IE', 'IM', 'IT', 'KZ', 'JE', 'LV', // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
-			'LI', 'LT', 'LU', 'MT', 'MD', 'MC', 'ME', 'NL', 'NO', 'PL', 'PT', 'RO', 'SM', 'RS', 'SK', 'SI', 'ES', 'SE', // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
-			'CH', 'UA', 'GB', 'VA', 'AR', 'CO', 'CR', 'BR', 'MX', 'PE', 'BH', 'IL', 'PS', 'QA', 'SA', 'AE', 'CA', 'US', // phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.ArrayItemNoNewLine
-		];
-	}
-
-	/**
-	 * Check if merchant can register domain with Apple Pay.
-	 *
-	 * @param string $account_country - Account country.
-	 *
-	 * @return bool
-	 */
-	public function can_merchant_register_domain_with_applepay( string $account_country ): bool {
-		return $this->is_account_in_supported_applepay_countries( $account_country ) && $this->has_domain_association_file_permissions();
-	}
-
-	/**
-	 * Check if domain association file has the proper permissions.
-	 *
-	 * @return bool
-	 */
-	public function has_domain_association_file_permissions(): bool {
-		$well_known_dir = untrailingslashit( ABSPATH ) . '/' . self::DOMAIN_ASSOCIATION_FILE_DIR;
-		$full_path      = $well_known_dir . '/' . self::DOMAIN_ASSOCIATION_FILE_NAME;
-
-		return ( file_exists( $full_path ) && is_writable( $full_path ) ) || ( is_dir( $well_known_dir ) && is_writable( $well_known_dir ) );
-	}
-
-	/**
-	 * Check if merchant is in Apple Pay supported countries list.
-	 *
-	 * @param string $account_country Account country.
-	 *
-	 * @return bool
-	 */
-	public function is_account_in_supported_applepay_countries( string $account_country ): bool {
-		return in_array( $account_country, self::supported_applepay_country_codes(), true );
-	}
-
-	/**
 	 * Display warning notice explaining that the domain can't be registered without a live account.
 	 */
 	public function display_live_account_notice() {
@@ -482,77 +429,5 @@ class WC_Payments_Apple_Pay_Registration {
 			<p><?php echo $check_log_text; /* @codingStandardsIgnoreLine */ ?></p>
 		</div>
 		<?php
-	}
-
-	/**
-	 * Add notices explaining how to enable Apple Pay.
-	 *
-	 * @return void
-	 */
-	public function display_not_supported_apple_pay() {
-		if ( 'yes' !== $this->gateway->get_option( 'payment_request' ) ) {
-			return;
-		}
-
-		if ( $this->can_merchant_register_domain_with_applepay( $this->account->get_account_country() ) ) {
-			return;
-		}
-
-		if ( ! $this->is_account_in_supported_applepay_countries( $this->account->get_account_country() ) &&
-			'1' !== get_user_meta( get_current_user_id(), 'dismissed_applepay_not_in_supported_countries_notice', true ) ) {
-			?>
-			<div id="wcpay-applepay-error" class="notice notice-error woocommerce-message">
-				<a class="woocommerce-message-close notice-dismiss" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'wc-hide-notice', 'applepay_not_in_supported_countries' ), 'woocommerce_hide_notices_nonce', '_wc_notice_nonce' ) ); ?>"><?php esc_html_e( 'Dismiss', 'woocommerce-payments' ); ?></a>
-				<p>
-					<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
-					<?php
-					echo sprintf(
-						/* translators: 1: supported country list */
-						__( 'Apple Pay is not currently supported in your country. <a href="%1$s">Countries and regions that support Apple Pay (Apple Support)</a>', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						'https://support.apple.com/en-us/HT207957'
-					);
-					?>
-				</p>
-			</div>
-			<?php
-		}
-
-		if ( ! $this->has_domain_association_file_permissions() ) {
-			/**
-			 * In case domain association file is missing or the DOMAIN_ASSOCIATION_FILE_DIR folder is inaccessible,
-			 * permalink structure should be checked to evaluate if error or warning message should be displayed.
-			 */
-			if ( '' === get_option( 'permalink_structure', '' ) ) {
-				?>
-				<div id="wcpay-applepay-error" class="notice notice-error">
-					<p>
-						<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
-						<?php
-							echo sprintf(
-								/* translators: 1: apple pay support */
-								__( 'We were not able to verify your domain. <a href="%1$s" target="_blank">This help documentation</a> will walk you through the process to verify with Apple that you control your domain.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								'https://woocommerce.com/document/payments/apple-pay/#apple-pay-button-does-not-appear'
-							);
-						?>
-					</p>
-				</div>
-				<?php
-			} else {
-				?>
-				<div id="wcpay-applepay-warning" class="notice notice-warning">
-					<p>
-						<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
-						<?php
-							echo sprintf(
-								/* translators: 1: apple pay support */
-								__( 'We are not able to access your Apple Pay domain verification file. WooCommerce Payments will continue to work, but we suggest using <a href="%1$s" target="_blank">this document</a> to help you verify with Apple that you control this domain.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								'https://woocommerce.com/document/payments/apple-pay/#apple-pay-button-does-not-appear'
-							);
-						?>
-					</p>
-				</div>
-				<?php
-			}
-		}
 	}
 }
