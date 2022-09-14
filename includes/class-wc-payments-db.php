@@ -38,7 +38,7 @@ class WC_Payments_DB {
 	 * @return array[]
 	 */
 	public function orders_with_charge_id_from_charge_ids( array $charge_ids ): array {
-		
+
 		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
 		$orders = wc_get_orders(
 			[
