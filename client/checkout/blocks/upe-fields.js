@@ -35,13 +35,21 @@ const useCustomerData = () => {
 			isInitialized: store.hasFinishedResolution( 'getCartData' ),
 		};
 	} );
-	const { setShippingAddress, setBillingData } = useDispatch( WC_STORE_CART );
+	const {
+		setShippingAddress,
+		setBillingData,
+		setBillingAddress,
+	} = useDispatch( WC_STORE_CART );
 
 	return {
 		isInitialized,
 		billingData: customerData.billingData,
+		// Backward compatibility billingData/billingAddress
+		billingAddress: customerData.billingAddress,
 		shippingAddress: customerData.shippingAddress,
 		setBillingData,
+		// Backward compatibility setBillingData/setBillingAddress
+		setBillingAddress,
 		setShippingAddress,
 	};
 };
@@ -92,6 +100,8 @@ const WCPayUPEFields = ( {
 				state: 'components-form-token-input-1',
 				postal_code: 'shipping-postcode',
 				country: 'components-form-token-input-0',
+				first_name: 'shipping-first_name',
+				last_name: 'shipping-last_name',
 			};
 			const billingAddressFields = {
 				line1: 'billing-address_1',
@@ -100,6 +110,8 @@ const WCPayUPEFields = ( {
 				state: 'components-form-token-input-3',
 				postal_code: 'billing-postcode',
 				country: 'components-form-token-input-2',
+				first_name: 'billing-first_name',
+				last_name: 'billing-last_name',
 			};
 
 			enableStripeLinkPaymentMethod( {
@@ -110,11 +122,13 @@ const WCPayUPEFields = ( {
 					const setAddress =
 						shippingAddressFields[ key ] === nodeId
 							? customerData.setShippingAddress
-							: customerData.setBillingData;
+							: customerData.setBillingData ||
+							  customerData.setBillingAddress;
 					const customerAddress =
 						shippingAddressFields[ key ] === nodeId
 							? customerData.shippingAddress
-							: customerData.billingData;
+							: customerData.billingData ||
+							  customerData.billingAddress;
 
 					if ( 'line1' === key ) {
 						customerAddress.address_1 = address.address[ key ];
@@ -132,8 +146,15 @@ const WCPayUPEFields = ( {
 						return document.getElementById( 'email' ).value;
 					}
 
-					customerData.billingData.email = getEmail();
-					customerData.setBillingData( customerData.billingData );
+					if ( customerData.billingData ) {
+						customerData.billingData.email = getEmail();
+						customerData.setBillingData( customerData.billingData );
+					} else {
+						customerData.billingAddress.email = getEmail();
+						customerData.setBillingAddress(
+							customerData.billingAddress
+						);
+					}
 				},
 				show_button: ( linkAutofill ) => {
 					jQuery( '#email' )
@@ -157,12 +178,17 @@ const WCPayUPEFields = ( {
 						}
 					);
 				},
-				complete_shipping: true,
+				complete_shipping: () => {
+					return (
+						null !== document.getElementById( 'shipping-address_1' )
+					);
+				},
 				shipping_fields: shippingAddressFields,
 				billing_fields: billingAddressFields,
 				complete_billing: () => {
-					return ! document.getElementById( 'checkbox-control-0' )
-						.checked;
+					return (
+						null !== document.getElementById( 'billing-address_1' )
+					);
 				},
 			} );
 		}

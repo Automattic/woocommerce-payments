@@ -366,18 +366,34 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_data    = $this->read_webhook_property( $event_body, 'data' );
 		$event_object  = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
+		$currency      = $this->read_webhook_property( $event_object, 'currency' );
 		$order         = $this->get_order_from_event_body_intent_id( $event_body );
 		$intent_status = $this->read_webhook_property( $event_object, 'status' );
 		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
 		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
 
+		$payment_method_id = $charges_data[0]['payment_method'] ?? null;
 		if ( ! $order ) {
 			return;
 		}
-		// update _charge_id meta if it doesn't exist - happens when maybe_process_upe_redirect fails sometimes.
-		if ( $charge_id && ! $order->get_meta( '_charge_id' ) ) {
-			$order->update_meta_data( '_charge_id', $charge_id );
+		// Update missing intents because webhook can be delivered before order is processed on the client.
+		$meta_data_to_update = [
+			'_intent_id'         => $intent_id,
+			'_charge_id'         => $charge_id,
+			'_payment_method_id' => $payment_method_id,
+			WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY => $currency,
+		];
+
+		$order_changed = false;
+		foreach ( $meta_data_to_update as $key => $value ) {
+			if ( $value && ! $order->get_meta( $key ) ) {
+				$order_changed = true;
+				$order->update_meta_data( $key, $value );
+			}
+		}
+		if ( true === $order_changed ) {
+			$order->save();
 		}
 
 		$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );

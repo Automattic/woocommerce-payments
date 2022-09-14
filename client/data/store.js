@@ -18,6 +18,8 @@ import * as multiCurrency from './multi-currency';
 import * as readers from './card-readers';
 import * as capital from './capital';
 import * as documents from './documents';
+import * as paymentIntents from './payment-intents';
+import * as authorizations from './authorizations';
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () =>
@@ -33,6 +35,8 @@ export const initStore = () =>
 			readers: readers.reducer,
 			capital: capital.reducer,
 			documents: documents.reducer,
+			paymentIntents: paymentIntents.reducer,
+			authorizations: authorizations.reducer,
 		} ),
 		actions: {
 			...deposits.actions,
@@ -45,6 +49,8 @@ export const initStore = () =>
 			...readers.actions,
 			...capital.actions,
 			...documents.actions,
+			...paymentIntents.actions,
+			...authorizations.actions,
 		},
 		controls,
 		selectors: {
@@ -58,6 +64,8 @@ export const initStore = () =>
 			...readers.selectors,
 			...capital.selectors,
 			...documents.selectors,
+			...paymentIntents.selectors,
+			...authorizations.selectors,
 		},
 		resolvers: {
 			...deposits.resolvers,
@@ -70,5 +78,7 @@ export const initStore = () =>
 			...readers.resolvers,
 			...capital.resolvers,
 			...documents.resolvers,
+			...paymentIntents.resolvers,
+			...authorizations.resolvers,
 		},
 	} );

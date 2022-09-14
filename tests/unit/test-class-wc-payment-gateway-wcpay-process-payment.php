@@ -980,6 +980,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$order = WC_Helper_Order::create_order();
 
+		$order_id = $order->get_id();
+
 		$intent = WC_Helper_Intention::create_intention();
 
 		$this->mock_api_client
@@ -987,19 +989,71 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'create_and_confirm_intention' )
 			->will( $this->returnValue( $intent ) );
 
-		$this->mock_customer_service
+		$this->mock_action_scheduler_service
 			->expects( $this->once() )
-			->method( 'update_payment_method_with_billing_details_from_order' )
+			->method( 'schedule_job' )
 			->with(
-				'pm_mock',
-				$this->callback(
-					function( $source_order ) use ( $order ) {
-						return $source_order->get_id() === $order->get_id();
-					}
-				)
+				$this->anything(),
+				WC_Payment_Gateway_WCPay::UPDATE_SAVED_PAYMENT_METHOD,
+				[
+					'payment_method' => 'pm_mock',
+					'order_id'       => $order_id,
+					'is_test_mode'   => false,
+				]
 			);
 
-		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$this->mock_wcpay_gateway->process_payment( $order_id );
+	}
+
+	public function test_updates_customer_with_order_data() {
+		$customer_id = 'cus_mock';
+
+		// Arrange: Create an order to test with.
+		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for order ID.
+		$mock_order
+			->method( 'get_id' )
+			->willReturn( 123 );
+
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
+
+		// Arrange: Set a good return value for order total.
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( 0 );
+
+		// Arrange: WC_Payments_Customer_Service returns a valid customer ID.
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( $customer_id );
+
+		// Assert: UPDATE_CUSTOMER_WITH_ORDER_DATA job scheduled correctly.
+		$this->mock_action_scheduler_service
+			->expects( $this->once() )
+			->method( 'schedule_job' )
+			->with(
+				$this->anything(),
+				WC_Payment_Gateway_WCPay::UPDATE_CUSTOMER_WITH_ORDER_DATA,
+				[
+					'order_id'     => $mock_order->get_id(),
+					'customer_id'  => $customer_id,
+					'is_test_mode' => false,
+					'is_woopay'    => false,
+				]
+			);
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		// Act: process a successful payment.
+		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 	}
 
 	public function test_save_payment_method_to_platform() {
@@ -1088,6 +1142,198 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	public function test_process_payment_for_subscription_in_woopay_adds_subscription_flag_to_request() {
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// This meta is added to the order by WooPay.
+		$order->add_meta_data( '_woopay_has_subscription', '1' );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		// Arrange: Return a successful response from create_and_confirm_intention().
+		$intent = WC_Helper_Intention::create_intention();
+
+		// Assert: API is called with additional flag.
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->with(
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->callback(
+					function( $additional_api_parameters ) {
+						return 'true' === $additional_api_parameters['woopay_has_subscription'];
+					}
+				)
+			)
+			->will(
+				$this->returnValue( $intent )
+			);
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		// Act: process a successful payment.
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	public function test_process_payment_from_woopay_adds_meta_to_oder() {
+		// Arrange: Set request value to mimic a payment through WooPay.
+		$_POST['is_woopay'] = true;
+
+		// Arrange: Create an order to test with.
+		$mock_order = $this->createMock( 'WC_Order' );
+
+		// Arrange: Set a good return value for the order's data store.
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		// Arrange: Set a good return value for order ID.
+		$mock_order
+			->method( 'get_id' )
+			->willReturn( 123 );
+
+		// Arrange: Set a good return value for order total.
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( 100 );
+
+		// Arrange: Set a WP_User object as a return value of order's get_user.
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		// Assert: Order gets the 'is_woopay' meta data added.
+		$mock_order
+			->expects( $this->any() )
+			->method( 'add_meta_data' )
+			->with( 'is_woopay', true );
+
+		// Arrange: Return a successful response from create_and_confirm_intention().
+		$intent = WC_Helper_Intention::create_intention();
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->returnValue( $intent ) );
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		// Act: process a successful payment.
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	public function test_process_payment_for_subscription_from_woopay_does_not_save_token_if_exists() {
+		$subscription_payment_method_id = 'pm_subscription_mock';
+
+		// Arrange: Set request value to mimic a payment through WooPay.
+		$_POST['is_woopay'] = true;
+
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// Arrange: Make the order contain a subscription.
+		$this->mock_wcs_order_contains_subscription( true );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		// Arrange: Add a payment method to the user.
+		$token = WC_Helper_Token::create_token( $subscription_payment_method_id, $order->get_user_id() );
+
+		// Arrange: Make the payment method selected in WooPay to be the same one the user has stored.
+		$intent = WC_Helper_Intention::create_intention( [ 'payment_method_id' => $subscription_payment_method_id ] );
+
+		// Arrange: Return a successful response from create_and_confirm_intention().
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->returnValue( $intent ) );
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information->must_save_payment_method_to_store();
+
+		// Assert: The payment method is not added to the user.
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		// Act: process a successful payment.
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	public function test_process_payment_for_subscription_from_woopay_save_token_if_does_not_exist() {
+
+		// Arrange: Set request value to mimic a payment through WooPay.
+		$_POST['is_woopay'] = true;
+
+		// Arrange: Create an order to test with.
+		$order = WC_Helper_Order::create_order();
+
+		// Arrange: Make the order contain a subscription.
+		$this->mock_wcs_order_contains_subscription( true );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		// Arrange: Add a payment method to the user.
+		$token = WC_Helper_Token::create_token( 'pm_existing_mock', $order->get_user_id() );
+
+		// Arrange: Make the payment method selected in WooPay to be different from the onethe user has stored.
+		$intent = WC_Helper_Intention::create_intention( [ 'payment_method_id' => 'pm_new_mock' ] );
+
+		// Arrange: Return a successful response from create_and_confirm_intention().
+		$this->mock_api_client
+			->expects( $this->any() )
+			->method( 'create_and_confirm_intention' )
+			->will( $this->returnValue( $intent ) );
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information->must_save_payment_method_to_store();
+
+		// Assert: The payment method is added to the user.
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->with( $intent->get_payment_method_id(), $order->get_user() )
+			->will( $this->returnValue( new WC_Payment_Token_CC() ) );
+
+		// Act: process a successful payment.
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		// Assert: Returning correct array.
+		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	private function mock_wcs_order_contains_subscription( $value ) {
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function ( $order ) use ( $value ) {
+				return $value;
+			}
+		);
 	}
 
 	private function setup_saved_payment_method() {

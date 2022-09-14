@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -11,20 +11,47 @@ import { __ } from '@wordpress/i18n';
 import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import AdditionalInformation from './additional-information';
-import PhoneNumberInput from './phone-number-input';
+import PhoneNumberInput from 'settings/phone-input';
 import Agreement from './agreement';
 import { getConfig } from 'utils/checkout';
-import './style.scss';
 
 const CheckoutPageSaveUser = () => {
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
 	// eslint-disable-next-line no-unused-vars
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
+	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const isRegisteredUser = usePlatformCheckoutUser();
 	const {
 		isWCPayChosen,
 		isNewPaymentTokenChosen,
 	} = useSelectedPaymentMethod();
+
+	useEffect( () => {
+		const formSubmitButton = document.querySelector(
+			'form.woocommerce-checkout button[type="submit"]'
+		);
+
+		if ( ! formSubmitButton ) {
+			return;
+		}
+
+		const updateFormSubmitButton = () => {
+			if ( isSaveDetailsChecked && isPhoneValid ) {
+				formSubmitButton.removeAttribute( 'disabled' );
+			}
+
+			if ( isSaveDetailsChecked && ! isPhoneValid ) {
+				formSubmitButton.setAttribute( 'disabled', 'disabled' );
+			}
+		};
+
+		updateFormSubmitButton();
+
+		return () => {
+			// Clean up
+			formSubmitButton.removeAttribute( 'disabled' );
+		};
+	}, [ isPhoneValid, isSaveDetailsChecked ] );
 
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
@@ -43,9 +70,10 @@ const CheckoutPageSaveUser = () => {
 					<input
 						type="checkbox"
 						checked={ isSaveDetailsChecked }
-						onChange={ () =>
-							setIsSaveDetailsChecked( ( v ) => ! v )
-						}
+						onChange={ () => {
+							setIsSaveDetailsChecked( ( v ) => ! v );
+							setPhoneNumber( null );
+						} }
 						name="save_user_in_platform_checkout"
 						id="save_user_in_platform_checkout"
 						value="true"
@@ -69,8 +97,27 @@ const CheckoutPageSaveUser = () => {
 						{ __( 'Mobile phone number', 'woocommerce-payments' ) }
 					</span>
 					<PhoneNumberInput
-						handlePhoneNumberChange={ setPhoneNumber }
+						value={
+							null === phoneNumber
+								? document.getElementById( 'billing_phone' )
+										?.value || ''
+								: phoneNumber
+						}
+						onValueChange={ setPhoneNumber }
+						onValidationChange={ onPhoneValidationChange }
+						inputProps={ {
+							name:
+								'platform_checkout_user_phone_field[no-country-code]',
+						} }
 					/>
+					{ ! isPhoneValid && (
+						<p className="error-text">
+							{ __(
+								'Please enter a valid mobile phone number.',
+								'woocommerce-payments'
+							) }
+						</p>
+					) }
 					<AdditionalInformation />
 					<Agreement />
 				</div>

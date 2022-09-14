@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\MultiCurrency\Analytics;
 use WCPay\MultiCurrency\Currency;
@@ -36,6 +38,20 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	private $mock_orders = [];
 
 	/**
+	 * Mock customer currencies
+	 *
+	 * @var array An array of customer currencies.
+	 */
+	private $mock_customer_currencies = [ 'EUR', 'USD', 'GBP', 'ISK' ];
+
+	/**
+	 * Mock available currencies.
+	 *
+	 * @var array An array of available currencies.
+	 */
+	private $mock_available_currencies = [];
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -55,7 +71,16 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
-		$this->analytics           = new Analytics( $this->mock_multi_currency );
+
+		$this->mock_multi_currency->expects( $this->any() )
+			->method( 'get_all_customer_currencies' )
+			->willReturn( $this->mock_customer_currencies );
+
+		$this->mock_multi_currency->expects( $this->any() )
+			->method( 'get_available_currencies' )
+			->willReturn( $this->get_mock_available_currencies() );
+
+		$this->analytics = new Analytics( $this->mock_multi_currency );
 
 		remove_filter( 'user_has_cap', $cb );
 	}
@@ -82,6 +107,50 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			'select clause filters added with late priority' => [ 'woocommerce_analytics_clauses_select', 'filter_select_clauses', 20 ],
 			'join clause filters added with late priority' => [ 'woocommerce_analytics_clauses_join', 'filter_join_clauses', 20 ],
 		];
+	}
+
+	public function test_register_customer_currencies() {
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_all_customer_currencies' )
+			->willReturn( $this->mock_customer_currencies );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_available_currencies' )
+			->willReturn( $this->get_mock_available_currencies() );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_default_currency' )
+			->willReturn( new Currency( 'USD', 1.0 ) );
+
+		$this->analytics->register_customer_currencies();
+
+		$data_registry = Package::container()->get(
+			AssetDataRegistry::class
+		);
+
+		$this->assertTrue( $data_registry->exists( 'customerCurrencies' ) );
+	}
+
+	public function test_register_customer_currencies_for_empty_customer_currencies() {
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_all_customer_currencies' )
+			->willReturn( [] );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_available_currencies' )
+			->willReturn( $this->get_mock_available_currencies() );
+
+		$this->mock_multi_currency->expects( $this->once() )
+			->method( 'get_default_currency' )
+			->willReturn( new Currency( 'USD', 1.0 ) );
+
+		$this->analytics->register_customer_currencies();
+
+		$data_registry = Package::container()->get(
+			AssetDataRegistry::class
+		);
+
+		$this->assertTrue( $data_registry->exists( 'customerCurrencies' ) );
 	}
 
 	public function test_update_order_stats_data_with_non_multi_currency_order() {
@@ -176,11 +245,11 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 					"{$wpdb->prefix}wc_order_stats.order_id",
 					", MAX({$wpdb->prefix}wc_order_stats.date_created) AS datetime_anchor",
 					", SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) as orders_count, COUNT( DISTINCT( {$wpdb->prefix}wc_order_stats.customer_id ) ) as total_customers, SUM({$wpdb->prefix}wc_order_stats.num_items_sold) as num_items_sold, COALESCE( coupons_count, 0 ) as coupons_count, SUM({$wpdb->prefix}wc_order_stats.net_total) AS net_revenue",
-					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value IS NOT NULL THEN ROUND(product_net_revenue * wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value, 2) ELSE ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) END ELSE product_net_revenue END, CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value IS NOT NULL THEN ROUND(product_gross_revenue * wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value, 2) ELSE ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) END ELSE product_gross_revenue END',
-					', wcpay_multicurrency_currency_postmeta.meta_value AS order_currency',
-					', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency',
-					', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate',
-					', wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value AS stripe_exchange_rate',
+					'CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND(product_net_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) END ELSE product_net_revenue END, CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND(product_gross_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) END ELSE product_gross_revenue END',
+					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
+					', wcpay_multicurrency_default_currency_meta.meta_value AS order_default_currency',
+					', wcpay_multicurrency_exchange_rate_meta.meta_value AS exchange_rate',
+					', wcpay_multicurrency_stripe_exchange_rate_meta.meta_value AS stripe_exchange_rate',
 				],
 			],
 			'null context should not modify query'     => [
@@ -196,11 +265,11 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 				],
 				[
 					", MAX({$wpdb->prefix}wc_order_stats.date_created) AS datetime_anchor",
-					'CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value IS NOT NULL THEN ROUND(product_net_revenue * wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value, 2) ELSE ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) END ELSE product_net_revenue END, CASE WHEN wcpay_multicurrency_default_currency_postmeta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value IS NOT NULL THEN ROUND(product_gross_revenue * wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value, 2) ELSE ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_postmeta.meta_value ), 2) END ELSE product_gross_revenue END',
-					', wcpay_multicurrency_currency_postmeta.meta_value AS order_currency',
-					', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency',
-					', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate',
-					', wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value AS stripe_exchange_rate',
+					'CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND(product_net_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND(product_net_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) END ELSE product_net_revenue END, CASE WHEN wcpay_multicurrency_default_currency_meta.meta_value IS NOT NULL THEN CASE WHEN wcpay_multicurrency_stripe_exchange_rate_meta.meta_value IS NOT NULL THEN ROUND(product_gross_revenue * wcpay_multicurrency_stripe_exchange_rate_meta.meta_value, 2) ELSE ROUND(product_gross_revenue * (1 / wcpay_multicurrency_exchange_rate_meta.meta_value ), 2) END ELSE product_gross_revenue END',
+					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
+					', wcpay_multicurrency_default_currency_meta.meta_value AS order_default_currency',
+					', wcpay_multicurrency_exchange_rate_meta.meta_value AS exchange_rate',
+					', wcpay_multicurrency_stripe_exchange_rate_meta.meta_value AS stripe_exchange_rate',
 				],
 			],
 			'coupons context should not modify query'  => [
@@ -227,6 +296,120 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			}
 		);
 		$this->assertEquals( $expected, $this->analytics->filter_select_clauses( $clauses, 'orders_stats' ) );
+	}
+
+	public function test_filter_where_clauses_when_no_currency_provided() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_currency_is() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_meta.meta_value IN ('USD')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is'] = [ 'USD' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_multiple_currency_is() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_meta.meta_value IN ('USD', 'EUR')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is'] = [ 'USD', 'EUR' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_currency_is_not() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_meta.meta_value NOT IN ('USD')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is_not'] = [ 'USD' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_multiple_currency_is_not() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_meta.meta_value NOT IN ('USD', 'EUR')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is_not'] = [ 'USD', 'EUR' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_with_multiple_currency_args() {
+		global $wpdb;
+
+		$clauses  = [ "WHERE {$wpdb->prefix}wc_order_stats.order_id = 123" ];
+		$expected = [
+			"WHERE {$wpdb->prefix}wc_order_stats.order_id = 123",
+			"AND wcpay_multicurrency_currency_meta.meta_value IN ('GBP')",
+			"AND wcpay_multicurrency_currency_meta.meta_value NOT IN ('USD', 'EUR')",
+		];
+
+		// Simulate a currency being passed in via GET request.
+		$_GET['currency_is']     = [ 'GBP' ];
+		$_GET['currency_is_not'] = [ 'USD', 'EUR' ];
+
+		$this->assertEquals(
+			$expected,
+			$this->analytics->filter_where_clauses( $clauses )
+		);
+	}
+
+	public function test_filter_where_clauses_disable_filter() {
+		$expected = [ 'Santa Claus', 'Mrs. Claus' ];
+		add_filter( 'wcpay_multi_currency_disable_filter_where_clauses', '__return_true' );
+
+		// Nothing should be appended to the clauses array, because the filter is disabled.
+		$_GET['currency_is'] = [ 'USD' ];
+
+		$this->assertEquals( $expected, $this->analytics->filter_where_clauses( $expected ) );
 	}
 
 	/**
@@ -258,10 +441,10 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 				],
 				[
 					"LEFT JOIN {$wpdb->prefix}wc_order_stats ON table1.order_id = {$wpdb->prefix}wc_order_stats.order_id",
-					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_currency_postmeta.post_id AND wcpay_multicurrency_currency_postmeta.meta_key = '_order_currency'",
-					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_default_currency_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_default_currency_postmeta.post_id AND wcpay_multicurrency_default_currency_postmeta.meta_key = '_wcpay_multi_currency_order_default_currency'",
-					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_exchange_rate_postmeta.post_id AND wcpay_multicurrency_exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_order_exchange_rate'",
-					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_stripe_exchange_rate_postmeta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_stripe_exchange_rate_postmeta.post_id AND wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'",
+					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_currency_meta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_currency_meta.post_id AND wcpay_multicurrency_currency_meta.meta_key = '_order_currency'",
+					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_default_currency_meta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_default_currency_meta.post_id AND wcpay_multicurrency_default_currency_meta.meta_key = '_wcpay_multi_currency_order_default_currency'",
+					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_exchange_rate_meta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_exchange_rate_meta.post_id AND wcpay_multicurrency_exchange_rate_meta.meta_key = '_wcpay_multi_currency_order_exchange_rate'",
+					"LEFT JOIN {$wpdb->postmeta} wcpay_multicurrency_stripe_exchange_rate_meta ON {$wpdb->prefix}wc_order_stats.order_id = wcpay_multicurrency_stripe_exchange_rate_meta.post_id AND wcpay_multicurrency_stripe_exchange_rate_meta.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'",
 				],
 			],
 		];
@@ -330,6 +513,20 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 
 			return $allcaps;
 		};
+	}
+
+	private function get_mock_available_currencies() {
+		if ( empty( $this->mock_available_currencies ) ) {
+			$this->mock_available_currencies = [
+				'GBP' => new Currency( 'GBP', 1.2 ),
+				'USD' => new Currency( 'USD', 1 ),
+				'EUR' => new Currency( 'EUR', 0.9 ),
+				'ISK' => new Currency( 'ISK', 30.52 ),
+				'NZD' => new Currency( 'NZD', 1.4 ),
+			];
+		}
+
+		return $this->mock_available_currencies;
 	}
 
 	/**

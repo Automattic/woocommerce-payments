@@ -15,6 +15,7 @@ use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Database_Cache;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -496,18 +497,28 @@ class WC_Payments_API_Client {
 	/**
 	 * Create a setup intent.
 	 *
-	 * @param string $payment_method_id      - ID of payment method to be saved.
-	 * @param string $customer_id            - ID of the customer.
+	 * @param string $payment_method_id              - ID of payment method to be saved.
+	 * @param string $customer_id                    - ID of the customer.
+	 * @param bool   $save_in_platform_account       - Indicate whether payment method should be stored in platform store.
+	 * @param bool   $save_user_in_platform_checkout - Indicate whether is creating a platform checkout user.
+	 * @param array  $metadata                 - Meta data values to be sent along with setup intent creation.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id ) {
+	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id, $save_in_platform_account = false, $save_user_in_platform_checkout = false, $metadata = [] ) {
 		$request = [
-			'payment_method' => $payment_method_id,
-			'customer'       => $customer_id,
-			'confirm'        => 'true',
+			'payment_method'           => $payment_method_id,
+			'customer'                 => $customer_id,
+			'save_in_platform_account' => $save_in_platform_account,
+			'metadata'                 => $metadata,
+			'confirm'                  => 'true',
 		];
+
+		if ( $save_user_in_platform_checkout ) {
+			$request['is_platform_payment_method']      = 'true';
+			$request['save_payment_method_to_platform'] = 'true';
+		}
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}
@@ -677,7 +688,9 @@ class WC_Payments_API_Client {
 			foreach ( $transactions['data'] as &$transaction ) {
 				foreach ( $orders_with_charge_ids as $order_with_charge_id ) {
 					if ( $order_with_charge_id['charge_id'] === $transaction['charge_id'] && ! empty( $transaction['charge_id'] ) ) {
-						$transaction['order'] = $this->build_order_info( $order_with_charge_id['order'] );
+						$order                            = $order_with_charge_id['order'];
+						$transaction['order']             = $this->build_order_info( $order );
+						$transaction['payment_intent_id'] = $order->get_meta( '_intent_id' );
 					}
 				}
 			}
@@ -774,7 +787,9 @@ class WC_Payments_API_Client {
 			return $charge;
 		}
 
-		return $this->add_order_info_to_object( $charge['id'], $charge );
+		$charge = $this->add_additional_info_to_charge( $charge );
+
+		return $charge;
 	}
 
 	/**
@@ -876,6 +891,8 @@ class WC_Payments_API_Client {
 		];
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
+		// Invalidate the dispute status cache.
+		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -893,6 +910,8 @@ class WC_Payments_API_Client {
 	 */
 	public function close_dispute( $dispute_id ) {
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
+		// Invalidate the dispute status cache.
+		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -1401,6 +1420,23 @@ class WC_Payments_API_Client {
 			$price_data,
 			self::PRICES_API . '/' . $price_id,
 			self::POST
+		);
+	}
+
+	/**
+	 * Fetch an invoice.
+	 *
+	 * @param string $invoice_id ID of the invoice to get.
+	 *
+	 * @return array The invoice.
+	 *
+	 * @throws API_Exception If fetching the invoice fails.
+	 */
+	public function get_invoice( string $invoice_id ) {
+		return $this->request(
+			[],
+			self::INVOICES_API . '/' . $invoice_id,
+			self::GET
 		);
 	}
 
@@ -2234,6 +2270,47 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Adds additional info to charge object.
+	 *
+	 * @param array $charge - Charge object.
+	 *
+	 * @return array
+	 */
+	private function add_additional_info_to_charge( array $charge ) : array {
+		$charge = $this->add_order_info_to_object( $charge['id'], $charge );
+		$charge = $this->add_formatted_address_to_charge_object( $charge );
+
+		return $charge;
+	}
+
+	/**
+	 * Adds the formatted address to the Charge object
+	 *
+	 * @param array $charge - Charge object.
+	 *
+	 * @return array
+	 */
+	private function add_formatted_address_to_charge_object( array $charge ) : array {
+		$has_billing_details = isset( $charge['billing_details'] );
+
+		if ( $has_billing_details ) {
+			$raw_details     = $charge['billing_details']['address'];
+			$billing_details = [];
+
+			$billing_details['city']      = ( ! empty( $raw_details['city'] ) ) ? $raw_details['city'] : '';
+			$billing_details['country']   = ( ! empty( $raw_details['country'] ) ) ? $raw_details['country'] : '';
+			$billing_details['address_1'] = ( ! empty( $raw_details['line1'] ) ) ? $raw_details['line1'] : '';
+			$billing_details['address_2'] = ( ! empty( $raw_details['line2'] ) ) ? $raw_details['line2'] : '';
+			$billing_details['postcode']  = ( ! empty( $raw_details['postal_code'] ) ) ? $raw_details['postal_code'] : '';
+			$billing_details['state']     = ( ! empty( $raw_details['state'] ) ) ? $raw_details['state'] : '';
+
+			$charge['billing_details']['formatted_address'] = WC()->countries->get_formatted_address( $billing_details );
+		}
+
+		return $charge;
+	}
+
+	/**
 	 * Returns a transaction with order information when it exists.
 	 *
 	 * @param  string $charge_id related charge id.
@@ -2317,11 +2394,30 @@ class WC_Payments_API_Client {
 		$created = new DateTime();
 		$created->setTimestamp( $charge_array['created'] );
 
+		$charge_array = $this->add_additional_info_to_charge( $charge_array );
+
 		$charge = new WC_Payments_API_Charge(
 			$charge_array['id'],
 			$charge_array['amount'],
 			$created,
-			$charge_array['payment_method_details'] ?? []
+			$charge_array['payment_method_details'] ?? null,
+			$charge_array['payment_method'] ?? null,
+			$charge_array['amount_captured'] ?? null,
+			$charge_array['amount_refunded'] ?? null,
+			$charge_array['application_fee_amount'] ?? null,
+			$charge_array['balance_transaction'] ?? null,
+			$charge_array['billing_details'] ?? null,
+			$charge_array['currency'] ?? null,
+			$charge_array['dispute'] ?? null,
+			$charge_array['disputed'] ?? null,
+			$charge_array['order'] ?? null,
+			$charge_array['outcome'] ?? null,
+			$charge_array['paid'] ?? null,
+			$charge_array['paydown'] ?? null,
+			$charge_array['payment_intent'] ?? null,
+			$charge_array['refunded'] ?? null,
+			$charge_array['refunds'] ?? null,
+			$charge_array['status'] ?? null
 		);
 
 		if ( isset( $charge_array['captured'] ) ) {

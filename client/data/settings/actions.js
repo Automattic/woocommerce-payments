@@ -61,6 +61,12 @@ export function updateEnabledPaymentMethodIds( methodIds ) {
 	} );
 }
 
+export function updateAvailablePaymentMethodIds( methodIds ) {
+	return updateSettingsValues( {
+		available_payment_method_ids: [ ...methodIds ],
+	} );
+}
+
 export function updateIsSavingSettings( isSaving, error ) {
 	return {
 		type: ACTION_TYPES.SET_IS_SAVING_SETTINGS,
@@ -136,6 +142,29 @@ export function updateAccountBusinessSupportPhone(
 export function updateAccountBrandingLogo( accountBrandingLogo ) {
 	return updateSettingsValues( {
 		account_branding_logo: accountBrandingLogo,
+	} );
+}
+
+export function updateDepositScheduleInterval( depositScheduleInterval ) {
+	return updateSettingsValues( {
+		deposit_schedule_interval: depositScheduleInterval,
+	} );
+}
+export function updateDepositScheduleWeeklyAnchor(
+	depositScheduleWeeklyAnchor
+) {
+	return updateSettingsValues( {
+		deposit_schedule_weekly_anchor: depositScheduleWeeklyAnchor,
+	} );
+}
+export function updateDepositScheduleMonthlyAnchor(
+	depositScheduleMonthlyAnchor
+) {
+	return updateSettingsValues( {
+		deposit_schedule_monthly_anchor:
+			'' === depositScheduleMonthlyAnchor
+				? null
+				: parseInt( depositScheduleMonthlyAnchor, 10 ),
 	} );
 }
 

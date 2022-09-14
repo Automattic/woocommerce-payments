@@ -1,11 +1,8 @@
-name: WCPay E2E Tests
+name: E2E Tests - All
 
 on:
   schedule:
     - cron: '0 */6 * * *'
-  pull_request:
-    branches:
-      - trunk
   push:
     branches:
       - develop
@@ -14,7 +11,6 @@ on:
 
 env:
   E2E_GH_TOKEN:          ${{ secrets.E2E_GH_TOKEN }}
-  CI_USER_TOKEN:         ${{ secrets.CI_USER_TOKEN }}
   WCP_DEV_TOOLS_REPO:    ${{ secrets.WCP_DEV_TOOLS_REPO }}
   WCP_DEV_TOOLS_BRANCH:  'trunk'
   WCP_SERVER_REPO:       ${{ secrets.WCP_SERVER_REPO }}
@@ -22,137 +18,95 @@ env:
   E2E_BLOG_ID:           ${{ secrets.E2E_BLOG_ID }}
   E2E_BLOG_TOKEN:        ${{ secrets.E2E_BLOG_TOKEN }}
   E2E_USER_TOKEN:        ${{ secrets.E2E_USER_TOKEN }}
-  E2E_RETEST:            1
   WC_E2E_SCREENSHOTS:    1
   E2E_SLACK_CHANNEL:     ${{ secrets.E2E_SLACK_CHANNEL }}
   E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_USE_LOCAL_SERVER:  false
+  E2E_RESULT_FILEPATH:   'tests/e2e/results.json'
+
 
 jobs:
-  wcpay-e2e-tests:
-    runs-on: ubuntu-18.04
+  # Run WCPay & subscriptions tests against specific WC versions
+  wcpay-subscriptions-tests:
+    runs-on: ubuntu-20.04
 
     strategy:
       fail-fast:     false
       matrix:
         # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce:   [ '5.8.1', '6.4.1', 'latest', 'beta' ]
-        wordpress:     [ 'latest', 'nightly' ]
-        php:           [ '7.4' ]
+        woocommerce:   [ '6.4.1', '6.6.1', 'latest', 'beta' ]
+        test_groups:   [ 'wcpay', 'subscriptions' ]
+        test_branches: [ 'merchant', 'shopper' ]
+
+    name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+
+    env:
+      E2E_WP_VERSION: 'latest'
+      E2E_WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_GROUP:  ${{ matrix.test_groups }}
+      E2E_BRANCH: ${{ matrix.test_branches }}
+      SKIP_WC_BLOCKS_TESTS: 1 #skip installing & running blocks tests
+
+    steps:
+      - name: Checkout WCPay repository
+        uses: actions/checkout@v2
+
+      - name: Setup E2E environment
+        uses: ./.github/actions/e2e/env-setup
+
+      - name: Run tests, upload screenshots & logs
+        uses: ./.github/actions/e2e/run-log-tests
+
+  # Run tests against WC Checkout blocks & WC latest
+  blocks-tests:
+    runs-on: ubuntu-20.04
+    name: WC - latest | blocks - shopper
+
+    env:
+      E2E_WP_VERSION: 'latest'
+      E2E_WC_VERSION: 'latest'
+      E2E_GROUP:  'blocks'
+      E2E_BRANCH: 'shopper'
+      SKIP_WC_SUBSCRIPTIONS_TESTS: 1 #skip installing & running subscriptions tests
+      SKIP_WC_ACTION_SCHEDULER_TESTS: 1 #skip installing & running action scheduler tests
+
+    steps:
+      - name: Checkout WCPay repository
+        uses: actions/checkout@v2
+
+      - name: Setup E2E environment
+        uses: ./.github/actions/e2e/env-setup
+
+      - name: Run tests, upload screenshots & logs
+        uses: ./.github/actions/e2e/run-log-tests
+
+  # Run tests against WP Nightly & WC latest
+  wp-nightly-tests:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      fail-fast:     false
+      matrix:
         test_groups:   [ 'wcpay', 'subscriptions', 'blocks' ]
         test_branches: [ 'merchant', 'shopper' ]
         exclude:
           - test_groups: 'blocks'
             test_branches: 'merchant'
-          - woocommerce: '5.8.1'
-            test_groups: 'blocks'
-            test_branches: 'shopper'
-          - wordpress: 'nightly'
-            woocommerce: '5.8.1' 
-          - wordpress: 'nightly'
-            woocommerce: '6.4.1'
-          - wordpress: 'nightly'
-            woocommerce: 'beta'   
 
-    name: WC - ${{ matrix.woocommerce }} | WP - ${{ matrix.wordpress }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
-      E2E_WP_VERSION: ${{ matrix.wordpress }}
-      E2E_WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_WP_VERSION: 'nightly'
+      E2E_WC_VERSION: 'latest'
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
-      # Conditionally skip WC Blocks tests. Remove/update based on min supported WC version by the blocks checkout plugin.
-      - name: Conditionally skip WC Blocks tests
-        run: |
-          SKIP_WC_VERSIONS=('5.8.1')
-          if [[ " ${SKIP_WC_VERSIONS[@]} " =~ " ${E2E_WC_VERSION} " ]]; then
-            echo "SKIP_WC_BLOCKS_TESTS=1" >> $GITHUB_ENV
-          fi
-
-      # Log workflow configuration
-      - name: Workflow Configuration
-        run: |
-          echo "WordPress version: ${{ matrix.wordpress }}"
-          echo "WooCommerce version: ${{ matrix.woocommerce }}"
-          echo "PHP version: ${{ matrix.php }}"
-          echo "Test Group: ${{ matrix.test_groups }}"
-          echo "Test Branch: ${{ matrix.test_branches }}"
-
-      # Clone Repo
-      - name: Clone WCPay Repository
+      - name: Checkout WCPay repository
         uses: actions/checkout@v2
 
-      # Add GH token for authentication
-      - name: Add GH token for authentication
-        run: echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
+      - name: Setup E2E environment
+        uses: ./.github/actions/e2e/env-setup
 
-      # PHP setup
-      - name: PHP Setup
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          tools:       composer
-          extensions:  mysql
-          coverage:    none
-
-      # Composer setup
-      - name: Composer Setup
-        run: composer self-update 2.0.6
-
-      # Use node version from .nvmrc
-      - name: Setup NodeJS
-        uses: actions/setup-node@v2
-        with:
-          node-version-file: '.nvmrc'
-
-      # Cache composer dependencies
-      - name: Cache composer dependencies
-        id: composer-cache
-        uses: actions/cache@v2
-        with:
-          path: ./vendor
-          key:  ${{ runner.os }}-vendor-${{ hashFiles('composer.lock') }}
-
-      # Cache node dependencies
-      - name: Cache node dependencies
-        id: node-cache
-        uses: actions/cache@v2
-        with:
-          path: ./node_modules
-          key:  ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
-
-      # Install composer dependencies if not present on cache
-      - name: Install composer dependencies
-        if: ${{ steps.composer-cache.outputs.cache-hit == false }}
-        run: composer install --no-progress
-
-      # Install node dependencies if not present on cache
-      - name: Install node dependencies
-        if: ${{ steps.node-cache.outputs.cache-hit == false }}
-        run: npm ci
-
-      # Build WCPay client
-      - name: Build WCPay Client
-        run: npm run build:client
-
-      # Prepare test environment
-      - name: Prepare test environment
-        run: npm run test:e2e-setup
-
-      # Run Tests
-      - name: Run E2E Tests
-        run: npm run test:e2e
-
-      # Archive screenshots if any
-      - name: Archive e2e test screenshots & logs
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v2
-        with:
-            name: e2e-screenshots-logs
-            path: |
-              tests/e2e/screenshots
-              tests/e2e/docker/wordpress/wp-content/debug.log
-            if-no-files-found: ignore
-            retention-days: 5
+      - name: Run tests, upload screenshots & logs
+        uses: ./.github/actions/e2e/run-log-tests

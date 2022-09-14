@@ -55,8 +55,8 @@ class FrontendPrices {
 			add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 50 );
 
 			// Shipping methods hooks.
-			add_filter( 'woocommerce_package_rates', [ $this, 'convert_package_rates_prices' ], 50 );
 			add_action( 'init', [ $this, 'register_free_shipping_filters' ], 50 );
+			add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'convert_shipping_method_rate_cost' ], 50 );
 
 			// Coupon hooks.
 			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 50, 2 );
@@ -128,33 +128,21 @@ class FrontendPrices {
 	}
 
 	/**
-	 * Returns the shipping rates with their prices converted.
-	 * Creates new rate objects to avoid issues with extensions that cache
-	 * them before this hook is called.
+	 * Returns the shipping add rate args with cost converted.
 	 *
-	 * @param array $rates Shipping rates.
+	 * @param array $args Shipping rate args.
 	 *
-	 * @return array Shipping rates with converted costs.
+	 * @return array Shipping rate args with converted cost.
 	 */
-	public function convert_package_rates_prices( $rates ) {
-		return array_map(
-			function ( $rate ) {
-				$rate = clone $rate;
-				if ( $rate->cost ) {
-					$rate->cost = $this->multi_currency->get_price( $rate->cost, 'shipping' );
-				}
-				if ( $rate->taxes ) {
-					$rate->taxes = array_map(
-						function ( $tax ) {
-							return $this->multi_currency->get_price( $tax, 'tax' );
-						},
-						$rate->taxes
-					);
-				}
-				return $rate;
-			},
-			$rates
+	public function convert_shipping_method_rate_cost( $args ) {
+		$cost = is_array( $args['cost'] ) ? array_sum( $args['cost'] ) : $args['cost'];
+		$args = wp_parse_args(
+			[
+				'cost' => $this->multi_currency->get_price( $cost, 'shipping' ),
+			],
+			$args
 		);
+		return $args;
 	}
 
 	/**

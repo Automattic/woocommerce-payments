@@ -5,10 +5,9 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Database_Cache;
-use WCPay\Exceptions\API_Exception;
-use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
+use WCPay\Database_Cache;
+use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Settings;
 use WCPay\MultiCurrency\SettingsOnboardCta;
 
@@ -87,6 +86,13 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	 * @var Database_Cache;
 	 */
 	private $mock_database_cache;
+
+	/**
+	 * Mock of Utils.
+	 *
+	 * @var Utils;
+	 */
+	private $mock_utils;
 
 	public function set_up() {
 		parent::set_up();
@@ -382,6 +388,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_update_selected_currency_by_geolocation_does_not_set_session_when_currency_not_enabled() {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->mock_localization_service->method( 'get_country_locale_data' )->with( 'CL' )->willReturn( [ 'currency_code' => 'CLP' ] );
 
 		add_filter(
 			'woocommerce_geolocate_ip',
@@ -393,6 +400,23 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->multi_currency->update_selected_currency_by_geolocation();
 
 		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+	}
+
+	public function test_update_selected_currency_by_geolocation_does_not_set_session_cookie() {
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->mock_localization_service->method( 'get_country_locale_data' )->with( 'CA' )->willReturn( [ 'currency_code' => 'CAD' ] );
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function() {
+				return 'CA';
+			}
+		);
+
+		$this->mock_utils
+			->expects( $this->never() )
+			->method( 'set_customer_session_cookie' );
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
 	}
 
 	public function test_update_selected_currency_by_geolocation_updates_session_when_currency_is_enabled() {
@@ -598,6 +622,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$mock_database_cache
 			->expects( $this->exactly( 2 ) )
 			->method( 'get_or_add' )
+			->with( Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() )
 			->willReturnCallback(
 				function ( $key, $generator, $validator ) use ( &$get_or_add_call_count ) {
 					if ( 1 === $get_or_add_call_count ) {
@@ -859,6 +884,60 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * @dataProvider get_has_additional_currencies_enabled_provider
+	 */
+	public function test_has_additional_currencies_enabled( $currencies, $expected ) {
+		update_option( self::ENABLED_CURRENCIES_OPTION, $currencies );
+		$this->init_multi_currency();
+
+		$this->assertSame( $expected, $this->multi_currency->has_additional_currencies_enabled() );
+	}
+
+	public function get_has_additional_currencies_enabled_provider() {
+		return [
+			[ [], false ],
+			[ [ 'USD' ], false ],
+			[ [ 'USD', 'EUR' ], true ],
+		];
+	}
+
+	public function test_get_all_customer_currencies() {
+		$mock_orders = [];
+
+		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'GBP' );
+		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'EUR' );
+		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'USD' );
+
+		$mock_database_cache = $this->createMock( Database_Cache::class );
+		$mock_database_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_or_add' )
+			->withConsecutive(
+				[ Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() ],
+				[ Database_Cache::CUSTOMER_CURRENCIES_KEY, $this->anything(), $this->anything() ]
+			)->willReturnCallback(
+				function( $key, $generator, $validator ) {
+					if ( Database_Cache::CURRENCIES_KEY === $key ) {
+						return $this->mock_cached_currencies;
+					} else {
+						// If calling the get all customer currencies function, run the callback function.
+						return $generator();
+					}
+				}
+			);
+
+		$this->init_multi_currency( null, true, null, $mock_database_cache );
+
+		$result = $this->multi_currency->get_all_customer_currencies();
+
+		$this->assertEquals( [ 'GBP', 'EUR', 'USD' ], $result );
+
+		foreach ( $mock_orders as $order_id ) {
+			wp_delete_post( $order_id, true );
+		}
+	}
+
 	private function mock_currency_settings( $currency_code, $settings ) {
 		foreach ( $settings as $setting => $value ) {
 			update_option( 'wcpay_multi_currency_' . $setting . '_' . strtolower( $currency_code ), $value );
@@ -893,17 +972,34 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 		$this->mock_database_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
 
+		$this->mock_utils = $this->createMock( Utils::class );
+
 		$this->multi_currency = new MultiCurrency(
 			$mock_api_client ?? $this->mock_api_client,
 			$this->mock_account,
 			$this->mock_localization_service,
-			$mock_database_cache ?? $this->mock_database_cache
+			$mock_database_cache ?? $this->mock_database_cache,
+			$this->mock_utils
 		);
 		$this->multi_currency->init_widgets();
 		$this->multi_currency->init();
 
 		// Fix an issue in WPCOM tests.
 		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->multi_currency );
+	}
+
+	private function add_mock_order_with_currency_meta( $currency ) {
+		// Insert a couple of orders into the database to verify the customer currencies get fetched correctly.
+		$order_id = wp_insert_post(
+			[
+				'post_type'   => 'shop_order',
+				'post_status' => 'wc-processing',
+			]
+		);
+
+		update_post_meta( $order_id, '_order_currency', $currency );
+
+		return $order_id;
 	}
 
 	private function mock_theme( $theme ) {

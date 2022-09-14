@@ -7,6 +7,9 @@
 
 namespace WCPay\MultiCurrency;
 
+use Automattic\WooCommerce\Blocks\Package;
+use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
+use Automattic\WooCommerce\Utilities\OrderUtil;
 use WC_Order;
 use WC_Order_Refund;
 use WC_Payments;
@@ -58,13 +61,19 @@ class Analytics {
 	public function init() {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_filter( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
+			$this->register_customer_currencies();
 		}
 
 		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
 			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 
+		// Add a filter when the order stats table is updated.
 		add_filter( 'woocommerce_analytics_update_order_stats_data', [ $this, 'update_order_stats_data' ], self::PRIORITY_LATEST, 2 );
+
+		// Add filters when the query args are updated.
+		add_filter( 'woocommerce_analytics_orders_query_args', [ $this, 'apply_customer_currency_args' ] );
+		add_filter( 'woocommerce_analytics_orders_stats_query_args', [ $this, 'apply_customer_currency_args' ] );
 
 		// If we aren't making a REST request, or no multi currency orders exist in the merchant's store,
 		// return before adding these filters.
@@ -75,8 +84,14 @@ class Analytics {
 
 		$this->set_sql_replacements();
 
+		// Add the filters that are applied in each analytics query.
 		add_filter( 'woocommerce_analytics_clauses_select', [ $this, 'filter_select_clauses' ], self::PRIORITY_LATE, 2 );
 		add_filter( 'woocommerce_analytics_clauses_join', [ $this, 'filter_join_clauses' ], self::PRIORITY_LATE, 2 );
+
+		// Add the WHERE clause filter which is applied only on Order related queries.
+		add_filter( 'woocommerce_analytics_clauses_where_orders_subquery', [ $this, 'filter_where_clauses' ] );
+		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_total', [ $this, 'filter_where_clauses' ] );
+		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_interval', [ $this, 'filter_where_clauses' ] );
 	}
 
 	/**
@@ -96,6 +111,40 @@ class Analytics {
 			\WC_Payments::get_file_version( 'dist/multi-currency-analytics.js' ),
 			true
 		);
+	}
+
+	/**
+	 * Add the list of currencies used on the store to the wcSettings to allow it to be accessed by the front-end JS script.
+	 *
+	 * @return void
+	 */
+	public function register_customer_currencies() {
+		$currencies           = $this->multi_currency->get_all_customer_currencies();
+		$available_currencies = $this->multi_currency->get_available_currencies();
+		$currency_options     = [];
+
+		$default_currency = $this->multi_currency->get_default_currency();
+		// Add default currency to the list if it does not exist.
+		if ( ! in_array( $default_currency->get_code(), $currencies, true ) ) {
+			$currencies[] = $default_currency->get_code();
+		}
+
+		foreach ( $currencies as $currency ) {
+			if ( ! isset( $available_currencies[ $currency ] ) ) {
+				continue;
+			}
+
+			$currency_details   = $available_currencies[ $currency ];
+			$currency_options[] = [
+				'label' => html_entity_decode( $currency_details->get_name() ),
+				'value' => $currency_details->get_code(),
+			];
+		}
+		$data_registry = Package::container()->get(
+			AssetDataRegistry::class
+		);
+
+		$data_registry->add( 'customerCurrencies', $currency_options, true );
 	}
 
 	/**
@@ -119,6 +168,19 @@ class Analytics {
 	 */
 	public function disable_report_caching( $args ): bool {
 		return false;
+	}
+
+	/**
+	 * If the customer currency is set, add it as a query parameter to requests to the data store.
+	 * This ensures that the cache is updated when this value is changed between requests.
+	 *
+	 * @param array $args The arguments passed in via the GET request.
+	 *
+	 * @return array
+	 */
+	public function apply_customer_currency_args( $args ): array {
+		$currency_args = $this->get_customer_currency_args_from_request();
+		return array_merge( $args, $currency_args );
 	}
 
 	/**
@@ -202,10 +264,14 @@ class Analytics {
 		}
 
 		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
-			$new_clauses[] = ', wcpay_multicurrency_currency_postmeta.meta_value AS order_currency';
-			$new_clauses[] = ', wcpay_multicurrency_default_currency_postmeta.meta_value AS order_default_currency';
-			$new_clauses[] = ', wcpay_multicurrency_exchange_rate_postmeta.meta_value AS exchange_rate';
-			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value AS stripe_exchange_rate';
+			if ( $this->is_cot_enabled() ) {
+				$new_clauses[] = ', wcpay_multicurrency_order_currency.currency AS order_currency';
+			} else {
+				$new_clauses[] = ', wcpay_multicurrency_currency_meta.meta_value AS order_currency';
+			}
+			$new_clauses[] = ', wcpay_multicurrency_default_currency_meta.meta_value AS order_default_currency';
+			$new_clauses[] = ', wcpay_multicurrency_exchange_rate_meta.meta_value AS exchange_rate';
+			$new_clauses[] = ', wcpay_multicurrency_stripe_exchange_rate_meta.meta_value AS stripe_exchange_rate';
 		}
 
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_select_clauses', $new_clauses );
@@ -230,20 +296,69 @@ class Analytics {
 		$context_page  = $context_parts[0] ?? 'generic';
 
 		$prefix                   = 'wcpay_multicurrency_';
-		$currency_tbl             = $prefix . 'currency_postmeta';
-		$default_currency_tbl     = $prefix . 'default_currency_postmeta';
-		$exchange_rate_tbl        = $prefix . 'exchange_rate_postmeta';
-		$stripe_exchange_rate_tbl = $prefix . 'stripe_exchange_rate_postmeta';
+		$currency_tbl             = $prefix . 'currency_meta';
+		$default_currency_tbl     = $prefix . 'default_currency_meta';
+		$exchange_rate_tbl        = $prefix . 'exchange_rate_meta';
+		$stripe_exchange_rate_tbl = $prefix . 'stripe_exchange_rate_meta';
+
+		// Allow this to work with custom order tables as well.
+		if ( $this->is_cot_enabled() ) {
+			$meta_table = $wpdb->prefix . 'wc_orders_meta';
+			$id_field   = 'order_id';
+
+			$currency_tbl = $prefix . 'order_currency';
+		} else {
+			$meta_table = $wpdb->postmeta;
+			$id_field   = 'post_id';
+		}
 
 		// If this is a supported context, add the joins. If this is an unsupported context, see if we can add the joins.
 		if ( $this->is_supported_context( $context ) && ( in_array( $context_page, self::SUPPORTED_CONTEXTS, true ) || $this->is_order_stats_table_used_in_clauses( $clauses ) ) ) {
-			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.post_id AND {$currency_tbl}.meta_key = '_order_currency'";
-			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.post_id AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
-			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.post_id AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
-			$clauses[] = "LEFT JOIN {$wpdb->postmeta} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.post_id AND ${stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
+			if ( $this->is_cot_enabled() ) {
+				$clauses[] = "LEFT JOIN {$wpdb->prefix}wc_orders {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.id";
+			} else {
+				$clauses[] = "LEFT JOIN {$meta_table} {$currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$currency_tbl}.{$id_field} AND {$currency_tbl}.meta_key = '_order_currency'";
+
+			}
+			$clauses[] = "LEFT JOIN {$meta_table} {$default_currency_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$default_currency_tbl}.{$id_field} AND ${default_currency_tbl}.meta_key = '_wcpay_multi_currency_order_default_currency'";
+			$clauses[] = "LEFT JOIN {$meta_table} {$exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$exchange_rate_tbl}.{$id_field} AND ${exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_order_exchange_rate'";
+			$clauses[] = "LEFT JOIN {$meta_table} {$stripe_exchange_rate_tbl} ON {$wpdb->prefix}wc_order_stats.order_id = {$stripe_exchange_rate_tbl}.{$id_field} AND ${stripe_exchange_rate_tbl}.meta_key = '_wcpay_multi_currency_stripe_exchange_rate'";
 		}
 
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_join_clauses', $clauses );
+	}
+
+	/**
+	 * Add the WHERE clauses (if a customer currency has been selected).
+	 *
+	 * @param string[] $clauses - An array containing the JOIN clauses to be applied.
+	 *
+	 * @return array
+	 */
+	public function filter_where_clauses( array $clauses ): array {
+		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_where_clauses', false ) ) {
+			return $clauses;
+		}
+
+		$prefix = 'wcpay_multicurrency_';
+		if ( $this->is_cot_enabled() ) {
+			$currency_field = $prefix . 'order_currency.currency';
+		} else {
+			$currency_field = $prefix . 'currency_meta.meta_value';
+		}
+
+		$currency_args = $this->get_customer_currency_args_from_request();
+		if ( ! empty( $currency_args['currency_is'] ) ) {
+			$currency_is = sprintf( "'%s'", implode( "', '", $currency_args['currency_is'] ) );
+			$clauses[]   = "AND {$currency_field} IN ({$currency_is})";
+		}
+
+		if ( ! empty( $currency_args['currency_is_not'] ) ) {
+			$currency_is_not = sprintf( "'%s'", implode( "', '", $currency_args['currency_is_not'] ) );
+			$clauses[]       = "AND {$currency_field} NOT IN ({$currency_is_not})";
+		}
+
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
 	}
 
 	/**
@@ -342,20 +457,22 @@ class Analytics {
 	private function has_multi_currency_orders() {
 		global $wpdb;
 
-		$orders = intval(
-			$wpdb->get_var(
-				"
-				SELECT
-					COUNT(post_id)
-				FROM
-					{$wpdb->postmeta}
-				WHERE
-					meta_key = '_wcpay_multi_currency_order_exchange_rate';
-				"
-			)
-		);
+		// Using full SQL instad of variables to keep WPCS happy.
+		if ( $this->is_cot_enabled() ) {
+			$result = $wpdb->get_var(
+				"SELECT COUNT(order_id)
+				FROM {$wpdb->prefix}wc_orders_meta
+				WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'"
+			);
+		} else {
+			$result = $wpdb->get_var(
+				"SELECT COUNT(post_id)
+				FROM {$wpdb->postmeta}
+				WHERE meta_key = '_wcpay_multi_currency_order_exchange_rate'"
+			);
+		}
 
-		return $orders > 0;
+		return intval( $result ) > 0;
 	}
 
 	/**
@@ -368,14 +485,40 @@ class Analytics {
 	}
 
 	/**
+	 * Check the passed in query params to see if currency has been passed in.
+	 * Will return null if no currency variable was passed in, otherwise will
+	 * return the currency.
+	 *
+	 * @return array
+	 */
+	private function get_customer_currency_args_from_request(): array {
+		$args = [
+			'currency_is'     => [],
+			'currency_is_not' => [],
+		];
+
+		/* phpcs:disable WordPress.Security.NonceVerification */
+		if ( isset( $_GET['currency_is'] ) && is_array( $_GET['currency_is'] ) ) {
+			$args['currency_is'] = array_map( 'sanitize_text_field', wp_unslash( $_GET['currency_is'] ) );
+		}
+
+		if ( isset( $_GET['currency_is_not'] ) ) {
+			$args['currency_is_not'] = array_map( 'sanitize_text_field', wp_unslash( $_GET['currency_is_not'] ) );
+		}
+		/* phpcs:enable WordPress.Security.NonceVerification */
+
+		return $args;
+	}
+
+	/**
 	 * Set the SQL replacements variable.
 	 *
 	 * @return void
 	 */
 	private function set_sql_replacements() {
-		$default_currency     = 'wcpay_multicurrency_default_currency_postmeta.meta_value';
-		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_postmeta.meta_value';
-		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_postmeta.meta_value';
+		$default_currency     = 'wcpay_multicurrency_default_currency_meta.meta_value';
+		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_meta.meta_value';
+		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_meta.meta_value';
 
 		$discount_amount       = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(discount_amount * {$stripe_exchange_rate}, 2)", "ROUND(discount_amount * (1 / {$exchange_rate} ), 2)" ), 'discount_amount' );
 		$product_net_revenue   = $this->generate_case_when( $default_currency, $this->generate_case_when( $stripe_exchange_rate, "ROUND(product_net_revenue * {$stripe_exchange_rate}, 2)", "ROUND(product_net_revenue * (1 / {$exchange_rate} ), 2)" ), 'product_net_revenue' );
@@ -411,5 +554,14 @@ class Analytics {
 				'discount_amount' => $discount_amount,
 			],
 		];
+	}
+
+	/**
+	 * Checks whether Custom Order Tables are enabled.
+	 *
+	 * @return bool
+	 */
+	private function is_cot_enabled(): bool {
+		return class_exists( OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled();
 	}
 }

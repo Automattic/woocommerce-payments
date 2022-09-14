@@ -3,6 +3,7 @@ declare const wcpaySettings: {
 	isSubscriptionsActive: boolean;
 	featureFlags: {
 		customSearch: boolean;
+		customDepositSchedules: boolean;
 	};
 	fraudServices: unknown[];
 	isJetpackConnected: boolean;
@@ -26,6 +27,8 @@ declare const wcpaySettings: {
 	currentUserEmail: string;
 	zeroDecimalCurrencies: string[];
 	restUrl: string;
+	shouldUseExplicitPrice: boolean;
+	numDisputesNeedingResponse: string;
 };
 
 declare const wcTracks: any;

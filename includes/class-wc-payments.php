@@ -9,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Automattic\WooCommerce\Blocks\Package;
-use Automattic\WooCommerce\Blocks\StoreApi\RoutesController;
+use Automattic\WooCommerce\StoreApi\StoreApi;
+use Automattic\WooCommerce\StoreApi\RoutesController;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -254,6 +254,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-webhook-data-exception.php';
+		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
 		include_once __DIR__ . '/compat/class-wc-payment-woo-compat-utils.php';
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
@@ -712,6 +713,10 @@ class WC_Payments {
 		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
 		$onboarding_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-user-exists-controller.php';
+		$user_exists_controller = new WC_REST_User_Exists_Controller();
+		$user_exists_controller->register_routes();
+
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
@@ -731,6 +736,10 @@ class WC_Payments {
 			$vat_controller = new WC_REST_Payments_VAT_Controller( self::$api_client );
 			$vat_controller->register_routes();
 		}
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
+		$payment_intents_controller->register_routes();
 	}
 
 	/**
@@ -807,6 +816,15 @@ class WC_Payments {
 	 */
 	public static function get_localization_service() {
 		return self::$localization_service;
+	}
+
+	/**
+	 * Returns the WC_Payments_Action_Scheduler_Service
+	 *
+	 * @return WC_Payments_Action_Scheduler_Service Action Scheduler Service instance
+	 */
+	public static function get_action_scheduler_service() {
+		return self::$action_scheduler_service;
 	}
 
 	/**
@@ -1034,17 +1052,18 @@ class WC_Payments {
 			'session_cookie_name'  => $session_cookie_name,
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
-				'store_name'        => get_bloginfo( 'name' ),
-				'store_logo'        => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
-				'custom_message'    => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
-				'blog_id'           => Jetpack_Options::get_option( 'id' ),
-				'blog_url'          => get_site_url(),
-				'blog_checkout_url' => wc_get_checkout_url(),
-				'blog_shop_url'     => get_permalink( wc_get_page_id( 'shop' ) ),
-				'store_api_url'     => self::get_store_api_url(),
-				'account_id'        => $account_id,
-				'test_mode'         => self::get_gateway()->is_in_test_mode(),
-				'capture_method'    => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
+				'store_name'                     => get_bloginfo( 'name' ),
+				'store_logo'                     => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
+				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
+				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
+				'blog_url'                       => get_site_url(),
+				'blog_checkout_url'              => wc_get_checkout_url(),
+				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
+				'store_api_url'                  => self::get_store_api_url(),
+				'account_id'                     => $account_id,
+				'test_mode'                      => self::get_gateway()->is_in_test_mode(),
+				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
+				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
@@ -1092,9 +1111,9 @@ class WC_Payments {
 	 * @return string
 	 */
 	public static function get_store_api_url() {
-		if ( class_exists( Package::class ) && class_exists( RoutesController::class ) ) {
+		if ( class_exists( StoreApi::class ) && class_exists( RoutesController::class ) ) {
 			try {
-				$cart          = Package::container()->get( RoutesController::class )->get( 'cart' );
+				$cart          = StoreApi::container()->get( RoutesController::class )->get( 'cart' );
 				$store_api_url = method_exists( $cart, 'get_namespace' ) ? $cart->get_namespace() : 'wc/store';
 			} catch ( Exception $e ) {
 				$store_api_url = 'wc/store';

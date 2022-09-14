@@ -58,7 +58,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_account_overview_task_list_enabled() {
-		return get_option( '_wcpay_feature_account_overview_task_list' );
+		return get_option( '_wcpay_feature_account_overview_task_list', '1' );
 	}
 
 	/**
@@ -100,6 +100,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the platform checkout is elegible for paying for subscriptions.
+	 *
+	 * @return boolean
+	 */
+	public static function is_platform_checkout_subscriptions_enabled() {
+		return '1' === get_option( '_wcpay_feature_platform_checkout_subscriptions_enabled', '0' );
+	}
+
+	/**
 	 * Checks whether documents section is enabled.
 	 *
 	 * @return bool
@@ -108,6 +117,15 @@ class WC_Payments_Features {
 		$account              = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
 		$is_documents_enabled = is_array( $account ) && ( $account['is_documents_enabled'] ?? false );
 		return '1' === get_option( '_wcpay_feature_documents', $is_documents_enabled ? '1' : '0' );
+	}
+
+	/**
+	 * Checks whether custom deposit schedules are enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_custom_deposit_schedules_enabled() {
+		return '1' === get_option( '_wcpay_feature_custom_deposit_schedules', '1' );
 	}
 
 	/**
@@ -124,6 +142,7 @@ class WC_Payments_Features {
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
 				'platformCheckout'        => self::is_platform_checkout_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
+				'customDepositSchedules'  => self::is_custom_deposit_schedules_enabled(),
 			]
 		);
 	}

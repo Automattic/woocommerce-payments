@@ -20,6 +20,7 @@ use WCPay\MultiCurrency\Compatibility\WooCommerceProductAddOns;
 use WCPay\MultiCurrency\Compatibility\WooCommerceSubscriptions;
 use WCPay\MultiCurrency\Compatibility\WooCommerceUPS;
 use WCPay\MultiCurrency\Compatibility\WooCommerceDeposits;
+use WCPay\MultiCurrency\Compatibility\WooCommercePointsAndRewards;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -63,6 +64,7 @@ class Compatibility extends BaseCompatibility {
 			$this->compatibility_classes[] = new WooCommerceSubscriptions( $this->multi_currency, $this->utils );
 			$this->compatibility_classes[] = new WooCommerceUPS( $this->multi_currency, $this->utils );
 			$this->compatibility_classes[] = new WooCommerceDeposits( $this->multi_currency, $this->utils );
+			$this->compatibility_classes[] = new WooCommercePointsAndRewards( $this->multi_currency, $this->utils );
 		}
 	}
 

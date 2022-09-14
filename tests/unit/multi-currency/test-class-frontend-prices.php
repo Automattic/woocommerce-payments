@@ -42,6 +42,14 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->frontend_prices = new WCPay\MultiCurrency\FrontendPrices( $this->mock_multi_currency, $this->mock_compatibility );
 	}
 
+	public function tear_down() {
+		remove_all_filters( 'wc_tax_enabled' );
+		remove_all_filters( 'woocommerce_find_rates' );
+		WC()->session->cleanup_sessions();
+
+		parent::tear_down();
+	}
+
 	/**
 	 * @dataProvider woocommerce_filter_provider
 	 */
@@ -63,7 +71,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 			[ 'woocommerce_product_variation_get_sale_price', 'get_product_price_string' ],
 			[ 'woocommerce_variation_prices', 'get_variation_price_range' ],
 			[ 'woocommerce_get_variation_prices_hash', 'add_exchange_rate_to_variation_prices_hash' ],
-			[ 'woocommerce_package_rates', 'convert_package_rates_prices' ],
+			[ 'woocommerce_shipping_method_add_rate_args', 'convert_shipping_method_rate_cost' ],
 			[ 'init', 'register_free_shipping_filters' ],
 			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
@@ -171,65 +179,92 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_convert_package_rates_prices_converts_rates() {
+	public function test_convert_shipping_method_rate_cost_for_string_cost() {
 		$this->mock_multi_currency
+			->expects( $this->once() )
 			->method( 'get_price' )
-			->withConsecutive( [ 10.0, 'shipping' ], [ 0.0, 'shipping' ] )
-			->willReturnOnConsecutiveCalls( 25.0, 0.0 );
+			->with( '10' )
+			->willReturn( 25.0 );
 
-		$flat_rate_method       = new WC_Shipping_Rate();
-		$free_method            = new WC_Shipping_Rate();
-		$flat_rate_method->cost = '10.0';
-		$free_method->cost      = '0.0';
+		add_filter( 'wc_tax_enabled', '__return_true' );
+		add_filter(
+			'woocommerce_find_rates',
+			function() {
+				return [
+					1 =>
+					[
+						'rate'     => 10.0,
+						'label'    => 'Tax',
+						'shipping' => 'yes',
+						'compound' => 'no',
+					],
+				];
+			},
+			50,
+			2
+		);
 
-		$base_shipping_rates = [
-			'shipping_rate_1' => $flat_rate_method,
-			'shipping_rate_2' => $free_method,
-		];
+		WC()->session->init();
+		WC()->customer->set_location( 'US', 'CA' );
 
-		$shipping_rates = $this->frontend_prices->convert_package_rates_prices( $base_shipping_rates );
+		$shipping_method             = new \WC_Shipping_Flat_Rate();
+		$shipping_method->tax_status = 'taxable';
+		$shipping_method->add_rate(
+			[
+				'cost'  => '10',
+				'id'    => 1,
+				'label' => 'label',
+			]
+		);
+		$shipping_rate = $shipping_method->rates[1];
 
-		$this->assertSame( 25.0, $shipping_rates['shipping_rate_1']->cost );
-		$this->assertSame( 0.0, $shipping_rates['shipping_rate_2']->cost );
+		// Cost gets converted and taxes properly calculated based on it.
+		$this->assertSame( '25.00', $shipping_rate->cost );
+		$this->assertSame( 2.5, $shipping_rate->taxes[1] );
 	}
 
-	public function test_convert_package_rates_prices_converts_taxes() {
+	public function test_convert_shipping_method_rate_cost_for_array_cost() {
 		$this->mock_multi_currency
+			->expects( $this->once() )
 			->method( 'get_price' )
-			->withConsecutive( [ 1.0, 'tax' ], [ 2.0, 'tax' ] )
-			->willReturnOnConsecutiveCalls( 2.5, 5.0 );
+			->with( '11' )
+			->willReturn( 25.0 );
 
-		$flat_rate_method        = new WC_Shipping_Rate();
-		$flat_rate_method->taxes = [ '1.0', '2.0' ];
+		add_filter( 'wc_tax_enabled', '__return_true' );
+		add_filter(
+			'woocommerce_find_rates',
+			function() {
+				return [
+					1 =>
+						[
+							'rate'     => 10.0,
+							'label'    => 'Tax',
+							'shipping' => 'yes',
+							'compound' => 'no',
+						],
+				];
+			},
+			50,
+			2
+		);
 
-		$shipping_rates = $this->frontend_prices->convert_package_rates_prices( [ 'shipping_rate_1' => $flat_rate_method ] );
+		WC()->session->init();
+		WC()->customer->set_location( 'US', 'CA' );
 
-		$this->assertSame( [ 2.5, 5.0 ], $shipping_rates['shipping_rate_1']->taxes );
-	}
+		$shipping_method             = new \WC_Shipping_Flat_Rate();
+		$shipping_method->tax_status = 'taxable';
+		$shipping_method->add_rate(
+			[
+				'cost'  => [ '10', '1' ],
+				'id'    => 1,
+				'label' => 'label',
+			]
+		);
+		$shipping_rate = $shipping_method->rates[1];
 
-	public function test_convert_package_rates_prices_does_not_modify_original_objects() {
-		$this->mock_multi_currency->method( 'get_price' )->willReturn( 15.0 );
-
-		$flat_rate_method        = new WC_Shipping_Rate();
-		$free_method             = new WC_Shipping_Rate();
-		$flat_rate_method->cost  = '10.0';
-		$flat_rate_method->taxes = [ '1.0', '2.0' ];
-		$free_method->cost       = '0.0';
-
-		$base_shipping_rates = [
-			'shipping_rate_1' => $flat_rate_method,
-			'shipping_rate_2' => $free_method,
-		];
-
-		$shipping_rates = $this->frontend_prices->convert_package_rates_prices( $base_shipping_rates );
-
-		$this->assertSame( '10.0', $flat_rate_method->cost );
-		$this->assertSame( [ '1.0', '2.0' ], $flat_rate_method->taxes );
-		$this->assertNotSame( $flat_rate_method, $shipping_rates['shipping_rate_1'] );
-		$this->assertNotSame( $flat_rate_method->taxes, $shipping_rates['shipping_rate_1']->taxes );
-
-		$this->assertSame( '0.0', $free_method->cost );
-		$this->assertNotSame( $free_method, $shipping_rates['shipping_rate_2'] );
+		// Cost gets converted and taxes properly calculated based on it.
+		$this->assertSame( '25.00', $shipping_rate->cost );
+		$this->assertSame( 2.5, $shipping_rate->taxes[1] );
 	}
 
 	public function test_get_coupon_amount_returns_empty_amount() {
