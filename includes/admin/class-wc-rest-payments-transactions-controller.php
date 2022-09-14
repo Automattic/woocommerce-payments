@@ -171,12 +171,12 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * Formats the incoming transaction date as per the blog's timezone.
 	 *
 	 * @param string|null $transaction_date Transaction date to format.
-	 * @param string      $user_timezone         User's timezone passed from client.
+	 * @param string|null $user_timezone         User's timezone passed from client.
 	 *
 	 * @return string|null The formatted transaction date as per timezone.
 	 */
 	private function format_transaction_date_with_timestamp( $transaction_date, $user_timezone ) {
-		if ( is_null( $transaction_date ) ) {
+		if ( is_null( $transaction_date ) || is_null( $user_timezone ) ) {
 			return $transaction_date;
 		}
 
