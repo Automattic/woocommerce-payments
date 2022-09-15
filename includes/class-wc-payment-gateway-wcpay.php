@@ -391,8 +391,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
-
-		add_action( 'woocommerce_woocommerce_payments_admin_applepay_notice', [ $this, 'display_not_supported_apple_pay' ] );
 	}
 
 	/**
@@ -609,56 +607,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Add notices explaining how to enable Apple Pay.
-	 *
-	 * @return void
-	 */
-	public function display_not_supported_apple_pay() {
-		if ( 'yes' !== $this->get_option( 'payment_request' ) ) {
-			return;
-		}
-
-		if ( WC_Payments_Utils::can_merchant_register_domain_with_applepay( $this->account->get_account_country() ) ) {
-			return;
-		}
-		if ( ! WC_Payments_Utils::is_account_in_supported_applepay_countries( $this->account->get_account_country() ) &&
-			'1' !== get_user_meta( get_current_user_id(), 'dismissed_applepay_not_in_supported_countries_notice', true ) ) {
-			?>
-			<div id="wcpay-applepay-error" class="notice notice-error woocommerce-message">
-				<a class="woocommerce-message-close notice-dismiss" href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'wc-hide-notice', 'applepay_not_in_supported_countries' ), 'woocommerce_hide_notices_nonce', '_wc_notice_nonce' ) ); ?>"><?php esc_html_e( 'Dismiss', 'woocommerce-payments' ); ?></a>
-				<p>
-					<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
-					<?php
-					echo sprintf(
-						/* translators: 1: supported country list */
-						__( 'Apple Pay isn’t currently supported in your country. <a href="%1$s">Countries and regions that support Apple Pay (Apple Support)</a>', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						'https://support.apple.com/en-us/HT207957'
-					);
-					?>
-				</p>
-			</div>
-			<?php
-		}
-
-		if ( ! WC_Payments_Utils::has_domain_association_file_permissions() ) {
-			?>
-		<div id="wcpay-applepay-error" class="notice notice-error">
-			<p>
-				<b><?php esc_html_e( 'Apple Pay: ', 'woocommerce-payments' ); ?></b>
-				<?php
-				echo sprintf(
-					/* translators: 1: apple pay support */
-					__( 'We were not able to verify your domain. <a href="%1$s">This help documentation</a> will walk you through the process to verify with Apple that you control your domain.', 'woocommerce-payments' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					'https://woocommerce.com/document/payments/apple-pay/#apple-pay-button-does-not-appear'
-				);
-				?>
-			</p>
-		</div>
-			<?php
-		}
-	}
-
-	/**
 	 * Add notice explaining that the selected currency is not available.
 	 */
 	public function display_not_supported_currency_notice() {
@@ -687,7 +635,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function admin_options() {
 		// Add notices to the WooCommerce Payments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
-		do_action( 'woocommerce_woocommerce_payments_admin_applepay_notice' );
 
 		$this->output_payments_settings_screen();
 	}
@@ -3265,9 +3212,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Add extra `wcpay-checkout-email-field` class.
 			$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
+
+			add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
 		}
 
-		add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
 		return $fields;
 	}
 
