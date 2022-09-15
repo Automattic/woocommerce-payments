@@ -2554,13 +2554,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$process_item  = static function( $item ) use ( $currency ) {
 			// Check to see if it is a WC_Order_Item_Product or a WC_Order_Item_Fee.
 			if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
-				$subtotal   = $item->get_subtotal();
-				$product_id = $item->get_variation_id()
+				$subtotal     = $item->get_subtotal();
+				$product_id   = $item->get_variation_id()
 					? $item->get_variation_id()
 					: $item->get_product_id();
+				$product_code = base_convert( $product_id, 10, 36 );
 			} else {
-				$subtotal   = $item->get_total();
-				$product_id = substr( sanitize_title( $item->get_name() ), 0, 12 );
+				$subtotal     = $item->get_total();
+				$product_code = substr( sanitize_title( $item->get_name() ), 0, 12 );
 			}
 
 			$description = substr( $item->get_name(), 0, 26 );
@@ -2576,7 +2577,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			return (object) [
-				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.
+				'product_code'        => (string) $product_code, // Up to 12 characters that uniquely identify the product.
 				'product_description' => $description, // Up to 26 characters long describing the product.
 				'unit_cost'           => $unit_cost, // Cost of the product, in cents, as a non-negative integer.
 				'quantity'            => $quantity, // The number of items of this type sold, as a non-negative integer.
