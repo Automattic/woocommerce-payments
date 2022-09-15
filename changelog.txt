@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 4.7.2 - 2022-xx-xx =
+= 4.7.2 - 2022-09-15 =
 * Fix - Fixes Order ID appearing as N/A in Payments > Transactions
 
 = 4.7.1 - 2022-09-13 =
