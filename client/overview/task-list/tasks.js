@@ -18,7 +18,6 @@ export const getTasks = ( {
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
 	isAccountOverviewTasksEnabled,
-	needsHttpsSetup,
 	numDisputesNeedingResponse = 0,
 } ) => {
 	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
@@ -81,7 +80,7 @@ export const getTasks = ( {
 					'Reconnect WooCommerce Payments',
 					'woocommerce-payments'
 				),
-				content: __(
+				additionalInfo: __(
 					'WooCommerce Payments is missing a connected WordPress.com account. ' +
 						'Some functionality will be limited without a connected account.',
 					'woocommerce-payments'
@@ -94,26 +93,6 @@ export const getTasks = ( {
 				expandable: true,
 				expanded: true,
 				showActionButton: true,
-			},
-		isAccountOverviewTasksEnabled &&
-			needsHttpsSetup && {
-				key: 'force-secure-checkout',
-				title: __( 'Force secure checkout', 'woocommerce-payments' ),
-				content: __(
-					'Protect your customers data and increase trustworthiness of your store by forcing HTTPS on checkout pages.',
-					'woocommerce-payments'
-				),
-				completed: false,
-				onClick: () => {
-					window.open(
-						'https://woocommerce.com/document/ssl-and-https/#section-7',
-						'_blank'
-					);
-				},
-				expanded: true,
-				isDeletable: true,
-				isDismissable: true,
-				allowSnooze: true,
 			},
 		isDisputeTaskVisible && {
 			key: 'dispute-resolution-task',
