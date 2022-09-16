@@ -28,20 +28,14 @@ class CIDR_Range {
 	 */
 	public static function from_ipv6( string $ip, int $prefix = self::IPV6_PREFIX ) {
 		try {
-			// Split in address and prefix length.
-			list( $address_string, $prefix_length ) = explode( '/', "$ip/$prefix" );
-
 			// Parse the address into a binary string.
-			$address_binary = inet_pton( $address_string );
+			$address_binary = inet_pton( $ip );
 
 			// Convert the binary string to a string with hexadecimal characters.
 			$address_hexa = bin2hex( $address_binary );
 
-			// Overwriting first address string to make sure notation is optimal.
-			$address_string = inet_ntop( $address_binary );
-
 			// Calculate the number of 'flexible' bits.
-			$flexbits = 128 - $prefix_length;
+			$flexbits = 128 - $prefix;
 
 			// Build the hexadecimal strings of the first and last addresses.
 			$address_hexa_first = $address_hexa;
@@ -99,10 +93,8 @@ class CIDR_Range {
 	 */
 	public static function from_ipv4( string $ip, int $prefix = self::IPV4_PREFIX ) {
 		try {
-			list( $ip, $mask ) = explode( '/', "$ip/$prefix" );
-
-			$first_ip = long2ip( ( ip2long( $ip ) ) & ( ( -1 << ( 32 - (int) $mask ) ) ) );
-			$last_ip  = long2ip( ( ip2long( $first_ip ) ) + pow( 2, ( 32 - (int) $mask ) ) - 1 );
+			$first_ip = long2ip( ( ip2long( $ip ) ) & ( ( -1 << ( 32 - (int) $prefix ) ) ) );
+			$last_ip  = long2ip( ( ip2long( $first_ip ) ) + pow( 2, ( 32 - (int) $prefix ) ) - 1 );
 
 			return [ $first_ip, $last_ip ];
 		} catch ( \Exception $e ) {
