@@ -30,7 +30,7 @@ runs:
       if: ${{ failure() }}
       uses: actions/upload-artifact@v2
       with:
-          name: wp(${{ matrix.wordpress }})-wc(${{ matrix.woocommerce }})-${{ matrix.test_groups }}-${{ matrix.test_branches }}
+          name: wp(${{ env.E2E_WP_VERSION }})-wc(${{ env.E2E_WC_VERSION }})-${{ env.E2E_GROUP }}-${{ env.E2E_BRANCH }}
           path: |
             tests/e2e/screenshots
             tests/e2e/docker/wordpress/wp-content/debug.log
