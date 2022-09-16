@@ -2558,7 +2558,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$product_id   = $item->get_variation_id()
 					? $item->get_variation_id()
 					: $item->get_product_id();
-				$product_code = substr( $product_id, 0, 10 );
+				$product_code = substr( $product_id, 0, 12 );
 			} else {
 				$subtotal     = $item->get_total();
 				$product_code = substr( sanitize_title( $item->get_name() ), 0, 12 );
