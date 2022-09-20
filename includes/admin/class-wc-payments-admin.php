@@ -479,7 +479,6 @@ class WC_Payments_Admin {
 			'multiCurrencySetup'         => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
-			'needsHttpsSetup'            => $this->wcpay_gateway->needs_https_setup(),
 			'isMultiCurrencyEnabled'     => WC_Payments_Features::is_customer_multi_currency_enabled(),
 			'shouldUseExplicitPrice'     => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
 			'overviewTasksVisibility'    => [
