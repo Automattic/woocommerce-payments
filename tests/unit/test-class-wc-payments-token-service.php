@@ -93,7 +93,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	 * Test add SEPA token to user.
 	 */
 	public function test_add_token_to_user_for_sepa() {
-		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [
 			'id'         => 'pm_mock',
 			'sepa_debit' => [
@@ -109,6 +108,27 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_SEPA::class, $token );
+	}
+
+	/**
+	 * Test add Link token to user.
+	 */
+	public function test_add_token_to_user_for_link() {
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
+			'link' => [
+				'email' => 'test@test.com',
+			],
+			'type' => Payment_Method::LINK,
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEquals( 'test@test.com', $token->get_email() );
+		$this->assertInstanceOf( WC_Payment_Token_WCPay_Link::class, $token );
 	}
 
 	public function test_add_payment_method_to_user() {
@@ -251,7 +271,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_woocommerce_get_customer_payment_tokens_multiple_tokens_multiple_types() {
 		$customer_id     = 'cus_12345';
-		$payment_methods = [ Payment_Method::CARD, Payment_Method::SEPA ];
+		$payment_methods = [ Payment_Method::CARD, Payment_Method::SEPA, Payment_Method::LINK ];
 
 		$gateway = WC_Payments::get_gateway();
 		$gateway->settings['upe_enabled_payment_method_ids'] = $payment_methods;
@@ -262,6 +282,8 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			2 => $this->generate_card_token( 'pm_222', 2 ),
 			3 => $this->generate_sepa_token( 'pm_333', 3 ),
 			4 => $this->generate_sepa_token( 'pm_444', 4 ),
+			5 => $this->generate_link_token( 'pm_555', 5 ),
+			6 => $this->generate_link_token( 'pm_666', 6 ),
 		];
 
 		$this->mock_customer_service
@@ -271,11 +293,12 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		// Expect a call for each payment method, and return an array with consecutive keys.
 		$this->mock_customer_service
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->exactly( 3 ) )
 			->method( 'get_payment_methods_for_customer' )
 			->withConsecutive(
 				[ $customer_id, Payment_Method::CARD ],
-				[ $customer_id, Payment_Method::SEPA ]
+				[ $customer_id, Payment_Method::SEPA ],
+				[ $customer_id, Payment_Method::LINK ]
 			)
 			->willReturnOnConsecutiveCalls(
 				[
@@ -285,6 +308,10 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 				[
 					$this->generate_sepa_pm_response( 'pm_333' ),
 					$this->generate_sepa_pm_response( 'pm_444' ),
+				],
+				[
+					$this->generate_link_pm_response( 'pm_555' ),
+					$this->generate_link_pm_response( 'pm_666' ),
 				]
 			);
 
@@ -366,6 +393,16 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	private function generate_link_pm_response( $stripe_id ) {
+		return [
+			'type' => Payment_Method::LINK,
+			'id'   => $stripe_id,
+			'link' => [
+				'email' => 'test@test.com',
+			],
+		];
+	}
+
 	private function generate_card_token( $stripe_id, $wp_id = 0 ) {
 		$token = new WC_Payment_Token_CC();
 		$token->set_id( $wp_id );
@@ -387,6 +424,16 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$token->set_gateway_id( 'woocommerce_payments' );
 		$token->set_token( $stripe_id );
 		$token->set_last4( '3000' );
+		$token->save();
+		return $token;
+	}
+
+	private function generate_link_token( $stripe_id, $wp_id = 0 ) {
+		$token = new WC_Payment_Token_WCPay_Link();
+		$token->set_id( $wp_id );
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( $stripe_id );
+		$token->set_email( 'test@test.com' );
 		$token->save();
 		return $token;
 	}

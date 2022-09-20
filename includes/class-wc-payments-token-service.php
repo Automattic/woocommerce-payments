@@ -64,6 +64,10 @@ class WC_Payments_Token_Service {
 			$token = new WC_Payment_Token_WCPay_SEPA();
 			$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
 			$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
+		} elseif ( Payment_Method::LINK === $payment_method['type'] ) {
+			$token = new WC_Payment_Token_WCPay_Link();
+			$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+			$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
 		} else {
 			$token = new WC_Payment_Token_CC();
 			$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
