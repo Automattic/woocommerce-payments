@@ -1251,7 +1251,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 
-			$additional_api_parameters['is_platform_payment_method'] = $this->is_platform_payment_method( $payment_information );
+			$additional_api_parameters['is_platform_payment_method'] = $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() );
 
 			// This meta is only set by WooPay.
 			// We want to handle the intention creation differently when there are subscriptions.
@@ -1360,7 +1360,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_information->get_payment_method(),
 					$customer_id,
 					false,
-					$this->is_platform_payment_method( $payment_information ),
+					$this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ),
 					$save_user_in_platform_checkout,
 					$metadata
 				);
@@ -2931,7 +2931,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information->get_payment_method(),
 			$customer_id,
 			$should_save_in_platform_account,
-			$this->is_platform_payment_method( $payment_information )
+			$this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() )
 		);
 	}
 
@@ -3231,14 +3231,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Determine if current payment method is a platform payment method.
 	 *
-	 * @param Payment_Information $payment_information The payment information.
+	 * @param boolean $is_using_saved_payment_method If it is using saved payment method.
 	 *
 	 * @return boolean True if it is a platform payment method.
 	 */
-	private function is_platform_payment_method( Payment_Information $payment_information ) {
+	private function is_platform_payment_method( bool $is_using_saved_payment_method ) {
 		// Make sure the payment method being charged was created in the platform.
 		if (
-			! $payment_information->is_using_saved_payment_method() &&
+			! $is_using_saved_payment_method &&
 			$this->should_use_stripe_platform_on_checkout_page() &&
 			// This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
 			! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
