@@ -114,14 +114,12 @@ describe( 'getTasks()', () => {
 			showUpdateDetailsTask: 'yes',
 			wpcomReconnectUrl: 'http://example.com',
 			accountStatus: {},
-			needsHttpsSetup: true,
 		} );
 
 		expect( tasks ).toEqual(
 			expect.arrayContaining( [
 				expect.objectContaining( { key: 'update-business-details' } ),
 				expect.objectContaining( { key: 'reconnect-wpcom-user' } ),
-				expect.objectContaining( { key: 'force-secure-checkout' } ),
 			] )
 		);
 	} );
@@ -131,14 +129,12 @@ describe( 'getTasks()', () => {
 			showUpdateDetailsTask: 'yes',
 			wpcomReconnectUrl: 'http://example.com',
 			accountStatus: {},
-			needsHttpsSetup: true,
 		} );
 
 		expect( tasks ).toEqual(
 			expect.not.arrayContaining( [
 				expect.objectContaining( { key: 'update-business-details' } ),
 				expect.objectContaining( { key: 'reconnect-wpcom-user' } ),
-				expect.objectContaining( { key: 'force-secure-checkout' } ),
 			] )
 		);
 	} );

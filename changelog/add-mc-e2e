@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update to add E2E tests for the Multi-Currency functionality.
