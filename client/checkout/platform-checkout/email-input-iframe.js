@@ -441,14 +441,14 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		switch ( e.data.action ) {
 			case 'auto_redirect_to_platform_checkout':
 				hasCheckedLoginSession = true;
-				loginSessionIframeWrapper.classList.add(
-					'platform-checkout-login-session-iframe-wrapper'
-				);
 				api.initPlatformCheckout(
 					'',
 					e.data.platformCheckoutUserSession
 				).then( ( response ) => {
 					if ( 'success' === response.result ) {
+						loginSessionIframeWrapper.classList.add(
+							'platform-checkout-login-session-iframe-wrapper'
+						);
 						loginSessionIframe.classList.add( 'open' );
 						wcpayTracks.recordUserEvent(
 							wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
