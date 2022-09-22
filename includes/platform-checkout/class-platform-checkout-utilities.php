@@ -29,4 +29,16 @@ class Platform_Checkout_Utilities {
 
 		return $is_platform_checkout_eligible && $is_platform_checkout_enabled && ! $disable_for_subscription;
 	}
+
+	/**
+	 * Generates a hash based on the store's blog token, merchant ID, and the time step window.
+	 *
+	 * @return string
+	 */
+	public function get_platform_checkout_request_signature() {
+		$store_blog_token = \Jetpack_Options::get_option( 'blog_token' );
+		$time_step_window = floor( time() / 30 );
+
+		return hash_hmac( 'sha512', $store_blog_token . \Jetpack_Options::get_option( 'id' ) . $time_step_window, $store_blog_token );
+	}
 }
