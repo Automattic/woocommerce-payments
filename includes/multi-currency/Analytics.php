@@ -382,13 +382,14 @@ class Analytics {
 				$is_orders_subquery = strpos( $clause, $net_total . ',' ) !== false;
 				$variable           = $is_orders_subquery ? "$net_total," : $net_total;
 				$alias              = $is_orders_subquery ? ' as net_total,' : '';
+				$dp                 = wc_get_price_decimals();
 
 				$clauses[ $k ] = str_replace(
 					$variable,
 					$this->generate_case_when(
 						$stripe_exchange_rate,
-						"$net_total / $stripe_exchange_rate",
-						"$net_total * $exchange_rate"
+						"ROUND($net_total / $stripe_exchange_rate, $dp)",
+						"ROUND($net_total * $exchange_rate, $dp)"
 					) . $alias,
 					$clause
 				);
