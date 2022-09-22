@@ -1440,6 +1440,24 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_upe_appearance_filter() {
+		$expected = [
+			'theme' => 'night',
+		];
+
+		add_filter(
+			'wcpay_upe_appearance',
+			function() use ( $expected ) {
+				return $expected;
+			}
+		);
+
+		$payment_fields = $this->mock_upe_gateway->get_payment_fields_js_config();
+		$this->assertSame( $expected, $payment_fields['upeAppearance'], );
+		$this->assertSame( $expected, $payment_fields['wcBlocksUPEAppearance'], );
+	}
+
+
 	public function maybe_filter_gateway_title_data_provider() {
 		$method_title   = 'WooCommerce Payments';
 		$checkout_title = 'Popular payment methods';
