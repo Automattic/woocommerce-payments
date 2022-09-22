@@ -94,7 +94,7 @@ class Analytics {
 		add_filter( 'woocommerce_analytics_clauses_where_orders_stats_interval', [ $this, 'filter_where_clauses' ] );
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		if ( ! empty( $_GET['currency'] ) ) {
+		if ( ! empty( $_GET['currency'] ) && $_GET['currency'] !== $this->multi_currency->get_default_currency()->get_code() ) {
 			add_filter( 'woocommerce_analytics_clauses_select_orders_subquery', [ $this, 'filter_select_orders_clauses' ] );
 			add_filter( 'woocommerce_analytics_clauses_select_orders_stats_total', [ $this, 'filter_select_orders_clauses' ] );
 		}
@@ -379,9 +379,7 @@ class Analytics {
 	 * @return array
 	 */
 	public function filter_select_orders_clauses( array $clauses ): array {
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotValidated
-		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_orders_clauses', false ) || $this->multi_currency->get_default_currency()->get_code() === $_GET['currency'] ) {
+		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_orders_clauses', false ) ) {
 			return $clauses;
 		}
 

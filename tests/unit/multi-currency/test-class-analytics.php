@@ -489,14 +489,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider select_orders_clause_provider
 	 */
-	public function test_filter_select_orders_clauses( $currency, $clauses, $expected ) {
-		// Simulate a currency being passed in via GET request.
-		$_GET['currency'] = $currency;
-
-		$this->mock_multi_currency->expects( $this->once() )
-			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
-
+	public function test_filter_select_orders_clauses( $clauses, $expected ) {
 		$this->assertEquals( $expected, $this->analytics->filter_select_orders_clauses( $clauses ) );
 	}
 
@@ -504,8 +497,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 		global $wpdb;
 
 		return [
-			'should filter subquery'             => [
-				'EUR',
+			'subquery'    => [
 				[
 					"DISTINCT {$wpdb->prefix}wc_order_stats.order_id, {$wpdb->prefix}wc_order_stats.parent_id, {$wpdb->prefix}wc_order_stats.date_created, {$wpdb->prefix}wc_order_stats.date_created_gmt, REPLACE({$wpdb->prefix}wc_order_stats.status, 'wc-', '') as status, {$wpdb->prefix}wc_order_stats.customer_id, {$wpdb->prefix}wc_order_stats.net_total, {$wpdb->prefix}wc_order_stats.total_sales, {$wpdb->prefix}wc_order_stats.num_items_sold, (CASE WHEN {$wpdb->prefix}wc_order_stats.returning_customer = 0 THEN 'new' ELSE 'returning' END) as customer_type",
 					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
@@ -515,8 +507,7 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
 				],
 			],
-			'should filter stats total'          => [
-				'EUR',
+			'stats total' => [
 				[
 					"SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) as orders_count, SUM({$wpdb->prefix}wc_order_stats.net_total) AS net_revenue, SUM( {$wpdb->prefix}wc_order_stats.net_total ) / SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) AS avg_order_value, SUM( {$wpdb->prefix}wc_order_stats.num_items_sold ) / SUM( CASE WHEN {$wpdb->prefix}wc_order_stats.parent_id = 0 THEN 1 ELSE 0 END ) AS avg_items_per_order",
 					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
@@ -526,33 +517,16 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
 				],
 			],
-			'should not filter default currency' => [
-				'USD',
-				[
-					"SUM({$wpdb->prefix}wc_order_stats.net_total) AS net_revenue",
-					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
-				],
-				[
-					"SUM({$wpdb->prefix}wc_order_stats.net_total) AS net_revenue",
-					', wcpay_multicurrency_currency_meta.meta_value AS order_currency',
-				],
-			],
 		];
 	}
 
 	public function test_filter_select_orders_clauses_disable_filter() {
-		// Simulate a currency being passed in via GET request.
-		$_GET['currency'] = 'USD';
-
 		$expected = [ 'Santa Claus', 'Mrs. Claus' ];
 		add_filter( 'wcpay_multi_currency_disable_filter_select_orders_clauses', '__return_true' );
 		$this->assertEquals( $expected, $this->analytics->filter_select_orders_clauses( $expected ) );
 	}
 
 	public function test_filter_select_orders_clauses_return_filter() {
-		// Simulate a currency being passed in via GET request.
-		$_GET['currency'] = 'USD';
-
 		$clauses  = [ 'Santa Claus', 'Mrs. Claus' ];
 		$expected = array_reverse( $clauses );
 		add_filter(
