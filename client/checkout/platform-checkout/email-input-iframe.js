@@ -348,6 +348,8 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	};
 
 	const closeLoginSessionIframe = () => {
+		hasCheckedLoginSession = true;
+
 		loginSessionIframeWrapper.remove();
 		loginSessionIframe.classList.remove( 'open' );
 		platformCheckoutEmailInput.focus();
@@ -365,8 +367,6 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( loginSessionIframeWrapper, null );
-
-		setPopoverPosition();
 
 		// Focus the iframe.
 		loginSessionIframe.focus();
@@ -440,7 +440,6 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 		switch ( e.data.action ) {
 			case 'auto_redirect_to_platform_checkout':
-				hasCheckedLoginSession = true;
 				api.initPlatformCheckout(
 					'',
 					e.data.platformCheckoutUserSession
@@ -460,7 +459,6 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				} );
 				break;
 			case 'close_auto_redirection_modal':
-				hasCheckedLoginSession = true;
 				closeLoginSessionIframe();
 				break;
 			case 'redirect_to_platform_checkout':
