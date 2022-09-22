@@ -132,8 +132,13 @@ addFilter(
 			param: 'currency',
 			staticParams: [],
 			showFilters: () => true,
-			defaultValue: wcSettings.currency.code,
-			filters: getCustomerCurrencies(),
+			filters: [
+				{
+					label: __( 'All currencies', 'woocommerce-payments' ),
+					value: 'all',
+				},
+				...getCustomerCurrencies(),
+			],
 		},
 		...filters,
 	]
