@@ -95,8 +95,8 @@ class Analytics {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( ! empty( $_GET['currency'] ) ) {
-			add_filter( 'woocommerce_analytics_clauses_select_orders_subquery', [ $this, 'filter_select_orders' ] );
-			add_filter( 'woocommerce_analytics_clauses_select_orders_stats_total', [ $this, 'filter_select_orders' ] );
+			add_filter( 'woocommerce_analytics_clauses_select_orders_subquery', [ $this, 'filter_select_orders_clauses' ] );
+			add_filter( 'woocommerce_analytics_clauses_select_orders_stats_total', [ $this, 'filter_select_orders_clauses' ] );
 		}
 	}
 
@@ -371,7 +371,13 @@ class Analytics {
 		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_where_clauses', $clauses );
 	}
 
-	public function filter_select_orders( array $clauses ) {
+	/**
+	 * Convert amounts back to order currency (if a currency has been selected).
+	 *
+	 * @param string[] $clauses - An array containing the SELECT orders clauses to be applied.
+	 * @return array
+	 */
+	public function filter_select_orders_clauses( array $clauses ): array {
 		global $wpdb;
 		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_meta.meta_value';
 		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_meta.meta_value';
@@ -396,7 +402,7 @@ class Analytics {
 			}
 		}
 
-		return $clauses;
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'filter_select_orders_clauses', $clauses );
 	}
 
 	/**

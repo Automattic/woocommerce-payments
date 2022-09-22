@@ -139,21 +139,20 @@ addFilter(
 	]
 );
 
+const currencySymbols = Object.values( wcpaySettings.currencyData ).reduce(
+	( symbols, { code, symbol } ) => {
+		symbols[ code ] = symbol;
+		return symbols;
+	},
+	{}
+);
+
 // Filter report currency formatter to display the selected currency symbol.
 addFilter(
 	'woocommerce_admin_report_currency',
 	'woocommerce-payments',
 	( config, { currency } ) => {
-		if ( ! currency ) return config;
-
-		const currencySymbols = Object.values(
-			wcpaySettings.currencyData
-		).reduce( ( symbols, { code, symbol } ) => {
-			symbols[ code ] = symbol;
-			return symbols;
-		}, {} );
-
-		if ( ! currencySymbols[ currency ] ) return config;
+		if ( ! currency && ! currencySymbols[ currency ] ) return config;
 
 		return {
 			...config,
