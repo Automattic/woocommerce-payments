@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 4.7.2 - 2022-09-15 =
+* Fix - Fixes Order ID appearing as N/A in Payments > Transactions
+
 = 4.7.1 - 2022-09-13 =
 * Fix - Fix Apple Pay domain verify file missing error notice constantly displayed
 * Fix - Retain test mode context in CRON jobs queued up while checking out.
