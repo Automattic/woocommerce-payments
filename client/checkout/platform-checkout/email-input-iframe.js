@@ -11,6 +11,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
 	const waitTime = 500;
 	const platformCheckoutEmailInput = document.querySelector( field );
+	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
 	if ( ! platformCheckoutEmailInput ) {
@@ -21,13 +22,33 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const parentDiv = platformCheckoutEmailInput.parentNode;
 	spinner.classList.add( 'wc-block-components-spinner' );
 
-	// Make the iframe wrapper.
+	// Make the login session iframe wrapper.
+	const loginSessionIframeWrapper = document.createElement( 'div' );
+	loginSessionIframeWrapper.setAttribute( 'role', 'dialog' );
+	loginSessionIframeWrapper.setAttribute( 'aria-modal', 'true' );
+
+	// Make the login session iframe.
+	const loginSessionIframe = document.createElement( 'iframe' );
+	loginSessionIframe.title = __(
+		'WooPay Login Session',
+		'woocommerce-payments'
+	);
+	loginSessionIframe.classList.add(
+		'platform-checkout-login-session-iframe'
+	);
+
+	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
+	loginSessionIframe.classList.add( 'intrinsic-ignore' );
+
+	loginSessionIframeWrapper.insertBefore( loginSessionIframe, null );
+
+	// Make the otp iframe wrapper.
 	const iframeWrapper = document.createElement( 'div' );
 	iframeWrapper.setAttribute( 'role', 'dialog' );
 	iframeWrapper.setAttribute( 'aria-modal', 'true' );
 	iframeWrapper.classList.add( 'platform-checkout-sms-otp-iframe-wrapper' );
 
-	// Make the iframe.
+	// Make the otp iframe.
 	const iframe = document.createElement( 'iframe' );
 	iframe.title = __( 'WooPay SMS code verification', 'woocommerce-payments' );
 	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
@@ -326,6 +347,39 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		return pattern.test( value );
 	};
 
+	const closeLoginSessionIframe = () => {
+		loginSessionIframeWrapper.remove();
+		loginSessionIframe.classList.remove( 'open' );
+		platformCheckoutEmailInput.focus();
+
+		// Check the initial value of the email input and trigger input validation.
+		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
+			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+		}
+	};
+
+	const openLoginSessionIframe = () => {
+		loginSessionIframe.src = `${ getConfig(
+			'platformCheckoutHost'
+		) }/login-session`;
+
+		// Insert the wrapper into the DOM.
+		parentDiv.insertBefore( loginSessionIframeWrapper, null );
+
+		setPopoverPosition();
+
+		// Focus the iframe.
+		loginSessionIframe.focus();
+
+		// fallback to close the login session iframe in case failed to receive event
+		// via postMessage.
+		setTimeout( () => {
+			if ( ! hasCheckedLoginSession ) {
+				closeLoginSessionIframe();
+			}
+		}, 15000 );
+	};
+
 	// Prevent show platform checkout iframe if the page comes from
 	// the back button on platform checkout itself.
 	window.addEventListener( 'pageshow', function ( event ) {
@@ -342,9 +396,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			! historyTraversal &&
 			'true' !== searchParams.get( 'skip_platform_checkout' )
 		) {
-			// Check the initial value of the email input and trigger input validation.
-			if ( validateEmail( platformCheckoutEmailInput.value ) ) {
-				platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+			// Check if user already has a WooPay login session.
+			if ( ! hasCheckedLoginSession ) {
+				openLoginSessionIframe();
 			}
 		} else {
 			searchParams.delete( 'skip_platform_checkout' );
@@ -363,6 +417,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	} );
 
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
+		if ( ! hasCheckedLoginSession ) {
+			return;
+		}
+
 		const email = e.currentTarget.value;
 
 		clearTimeout( timer );
@@ -381,6 +439,30 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}
 
 		switch ( e.data.action ) {
+			case 'auto_redirect_to_platform_checkout':
+				hasCheckedLoginSession = true;
+				api.initPlatformCheckout(
+					'',
+					e.data.platformCheckoutUserSession
+				).then( ( response ) => {
+					if ( 'success' === response.result ) {
+						loginSessionIframeWrapper.classList.add(
+							'platform-checkout-login-session-iframe-wrapper'
+						);
+						loginSessionIframe.classList.add( 'open' );
+						wcpayTracks.recordUserEvent(
+							wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
+						);
+						window.location = response.url;
+					} else {
+						closeLoginSessionIframe();
+					}
+				} );
+				break;
+			case 'close_auto_redirection_modal':
+				hasCheckedLoginSession = true;
+				closeLoginSessionIframe();
+				break;
 			case 'redirect_to_platform_checkout':
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
