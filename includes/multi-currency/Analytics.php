@@ -373,11 +373,18 @@ class Analytics {
 
 	/**
 	 * Convert amounts back to order currency (if a currency has been selected).
+	 * Skipping it for default currency.
 	 *
 	 * @param string[] $clauses - An array containing the SELECT orders clauses to be applied.
 	 * @return array
 	 */
 	public function filter_select_orders_clauses( array $clauses ): array {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+		if ( apply_filters( MultiCurrency::FILTER_PREFIX . 'disable_filter_select_orders_clauses', false ) || $this->multi_currency->get_default_currency()->get_code() === $_GET['currency'] ) {
+			return $clauses;
+		}
+
 		global $wpdb;
 		$exchange_rate        = 'wcpay_multicurrency_exchange_rate_meta.meta_value';
 		$stripe_exchange_rate = 'wcpay_multicurrency_stripe_exchange_rate_meta.meta_value';
