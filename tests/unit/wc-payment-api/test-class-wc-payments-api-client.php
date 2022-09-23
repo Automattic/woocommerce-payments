@@ -508,7 +508,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test a successful fetch of a single transaction.
+	 * Test a successful fetch of a list of transactions.
 	 *
 	 * @throws Exception In case of test failure.
 	 */
