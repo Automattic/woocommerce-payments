@@ -16,7 +16,7 @@ jobs:
               with:
                   node-version-file: '.nvmrc'
                   cache: npm
-            - uses: preactjs/compressed-size-action@v2
+            - uses: preactjs/compressed-size-action@b03ec15e1a93cb5c062d66a1c263f9ddbd2f81ef
               with:
                   repo-token: '${{ secrets.GITHUB_TOKEN }}'
                   pattern: '{release/**/*.js,release/**/*.css}'
