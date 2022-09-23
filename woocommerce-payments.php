@@ -8,11 +8,11 @@
  * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
- * WC requires at least: 6.4
+ * WC requires at least: 6.6
  * WC tested up to: 6.9.0
  * Requires at least: 5.8
  * Requires PHP: 7.0
- * Version: 4.7.0
+ * Version: 4.7.2
  *
  * @package WooCommerce\Payments
  */
@@ -26,6 +26,15 @@ define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscripti
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
+require_once __DIR__ . '/includes/platform-checkout/class-platform-checkout-session.php';
+
+use \WCPay\Platform_Checkout\Platform_Checkout_Session;
+
+/**
+ * Needs to be loaded as soon as possible
+ * Check https://github.com/Automattic/woocommerce-payments/issues/4759
+ */
+Platform_Checkout_Session::init();
 
 /**
  * Plugin activation hook.

@@ -28,7 +28,7 @@ const customerBilling = config.get(
  * tasks, e.g. image regeneration. Hence, it is better to skip test until we
  * can find a way to create a "pure" environment without any background tasks.
  */
-describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS ).skip(
+describeif( RUN_SUBSCRIPTIONS_TESTS, RUN_ACTION_SCHEDULER_TESTS )(
 	'Subscriptions > Renew a subscription via Action Scheduler',
 	() => {
 		beforeAll( async () => {
