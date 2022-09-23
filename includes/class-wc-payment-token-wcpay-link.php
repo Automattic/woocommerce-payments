@@ -50,7 +50,7 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 	public function get_display_name( $deprecated = '' ) {
 		$display = sprintf(
 			/* translators: customer email */
-			__( 'Link email %s', 'woocommerce-payments' ),
+			__( 'Stripe Link email %s', 'woocommerce-payments' ),
 			$this->get_email()
 		);
 
