@@ -39,6 +39,6 @@ class Platform_Checkout_Utilities {
 		$store_blog_token = \Jetpack_Options::get_option( 'blog_token' );
 		$time_step_window = floor( time() / 30 );
 
-		return hash_hmac( 'sha512', $store_blog_token . \Jetpack_Options::get_option( 'id' ) . $time_step_window, $store_blog_token );
+		return hash_hmac( 'sha512', \Jetpack_Options::get_option( 'id' ) . $time_step_window, $store_blog_token );
 	}
 }
