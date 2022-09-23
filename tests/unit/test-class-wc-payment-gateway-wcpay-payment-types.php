@@ -239,6 +239,14 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		);
 		$order->add_payment_token( $this->token );
 
+		$mock_subscription = new WC_Subscription();
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $id ) use ( $mock_subscription ) {
+				return [ '1' => $mock_subscription ];
+			}
+		);
+
 		$intent = WC_Helper_Intention::create_intention();
 		$this->mock_api_client
 			->expects( $this->once() )
