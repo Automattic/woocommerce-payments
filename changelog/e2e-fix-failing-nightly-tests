@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Removes gutenberg plugin installation from E2E environment setup
