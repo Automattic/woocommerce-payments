@@ -17,7 +17,7 @@ jobs:
                   node-version-file: '.nvmrc'
                   cache: npm
             - name: Checking for file changes
-            - uses: preactjs/compressed-size-action@b03ec15e1a93cb5c062d66a1c263f9ddbd2f81ef
+              uses: preactjs/compressed-size-action@b03ec15e1a93cb5c062d66a1c263f9ddbd2f81ef
               with:
                   repo-token: '${{ secrets.BUNDLE_SIZE_CHECK }}'
                   pattern: '{release/**/*.js,release/**/*.css}'
