@@ -1988,6 +1988,99 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful fetch of a single authorization.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_authorization_success() {
+		$payment_intent_id = 'pi_123smtm';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'payment_intent_id' => $payment_intent_id,
+			]
+		);
+
+		$authorization = $this->payments_api_client->get_authorization( $payment_intent_id );
+		$this->assertEquals( $payment_intent_id, $authorization['payment_intent_id'] );
+	}
+
+	/**
+	 * Test fetching of non existing authorization.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_authorization_not_found() {
+		$payment_intent_id = 'pi_123smtm';
+		$error_code        = 'authorization_missing';
+		$error_message     = 'The authorization you asked for does not exist';
+
+		$this->set_http_mock_response(
+			404,
+			[
+				'error' => [
+					'code'    => $error_code,
+					'message' => $error_message,
+				],
+			]
+		);
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( "Error: $error_message" );
+
+		$this->payments_api_client->get_authorization( $payment_intent_id );
+	}
+
+	/**
+	 * Test a successful fetch of a list of authorizations.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_list_authorizations_success() {
+		$payment_intent_id_1 = 'pi_123dytycd';
+		$payment_intent_id_2 = 'pi_123dbap';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					[
+						'payment_intent_id' => $payment_intent_id_1,
+					],
+					[
+						'payment_intent_id' => $payment_intent_id_2,
+					],
+				],
+			]
+		);
+
+		$authorizations = $this->payments_api_client->list_authorizations();
+
+		$this->assertSame( $payment_intent_id_1, $authorizations['data'][0]['payment_intent_id'] );
+		$this->assertSame( $payment_intent_id_2, $authorizations['data'][1]['payment_intent_id'] );
+	}
+
+	/**
+	 * Test a successful fetch of authorizations summary.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_authorizations_summary_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'count' => 123,
+				'total' => 1200,
+			]
+		);
+
+		$summary = $this->payments_api_client->get_authorizations_summary();
+
+		$this->assertSame( 123, $summary['count'] );
+		$this->assertSame( 1200, $summary['total'] );
+	}
+
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int $status_code status code for the mocked response.
