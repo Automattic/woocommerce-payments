@@ -1,0 +1,24 @@
+name: Compressed Size
+
+on:
+    pull_request:
+    workflow_dispatch:
+
+jobs:
+    build:
+        name: Bundle size check
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v2
+            - name: Use desired version of NodeJS
+              uses: actions/setup-node@v2
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: npm
+            - name: Checking for file changes
+              uses: preactjs/compressed-size-action@b03ec15e1a93cb5c062d66a1c263f9ddbd2f81ef
+              with:
+                  repo-token: '${{ secrets.BUNDLE_SIZE_CHECK }}'
+                  pattern: '{release/**/*.js,release/**/*.css}'
+                  exclude: '{release/vendor/**}'
