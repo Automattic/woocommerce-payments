@@ -32,7 +32,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		featureFlags: { accountOverviewTaskList },
-		needsHttpsSetup,
 	} = wcpaySettings;
 	const numDisputesNeedingResponse =
 		parseInt( wcpaySettings.numDisputesNeedingResponse, 10 ) || 0;
@@ -42,7 +41,7 @@ const OverviewPage = () => {
 		accountStatus,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		needsHttpsSetup,
+		isAccountOverviewTasksEnabled: Boolean( accountOverviewTaskList ),
 		numDisputesNeedingResponse,
 	} );
 	const tasks =

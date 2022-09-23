@@ -38,9 +38,12 @@ By default, the local E2E environment is configured to use WCPay local server in
 WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
 
 # Stripe account data. Need to support level 3 data to run tests successfully.
+# These values can be obtained from the Stripe Dashboard: https://dashboard.stripe.com/test/apikeys
 E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY=<stripe pk_test_xxx>
 E2E_WCPAY_STRIPE_TEST_SECRET_KEY=<stripe sk_test_xxx>
+# This value can be obtained by running `npm run listen` in your local server, which should print your webhook signature key.
 E2E_WCPAY_STRIPE_TEST_WEBHOOK_SIGNATURE_KEY=<stripe whsec_xxx>
+# This should be the Stripe Account ID of a connected merchant account. For example, after onboarding an account, you can obtain the ID from WCPay Dev Tools.
 E2E_WCPAY_STRIPE_ACCOUNT_ID=<stripe acct_id>
 ```
 

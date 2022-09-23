@@ -500,25 +500,23 @@ class WC_Payments_API_Client {
 	 * @param string $payment_method_id              - ID of payment method to be saved.
 	 * @param string $customer_id                    - ID of the customer.
 	 * @param bool   $save_in_platform_account       - Indicate whether payment method should be stored in platform store.
+	 * @param bool   $is_platform_payment_method     - Indicate whether is using platform payment method.
 	 * @param bool   $save_user_in_platform_checkout - Indicate whether is creating a platform checkout user.
 	 * @param array  $metadata                 - Meta data values to be sent along with setup intent creation.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id, $save_in_platform_account = false, $save_user_in_platform_checkout = false, $metadata = [] ) {
+	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id, $save_in_platform_account = false, $is_platform_payment_method = false, $save_user_in_platform_checkout = false, $metadata = [] ) {
 		$request = [
-			'payment_method'           => $payment_method_id,
-			'customer'                 => $customer_id,
-			'save_in_platform_account' => $save_in_platform_account,
-			'metadata'                 => $metadata,
-			'confirm'                  => 'true',
+			'payment_method'                  => $payment_method_id,
+			'customer'                        => $customer_id,
+			'save_in_platform_account'        => $save_in_platform_account,
+			'is_platform_payment_method'      => $is_platform_payment_method,
+			'save_payment_method_to_platform' => $save_user_in_platform_checkout,
+			'metadata'                        => $metadata,
+			'confirm'                         => 'true',
 		];
-
-		if ( $save_user_in_platform_checkout ) {
-			$request['is_platform_payment_method']      = 'true';
-			$request['save_payment_method_to_platform'] = 'true';
-		}
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
 	}

@@ -1127,7 +1127,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				$this->anything(),
 				$this->callback(
 					function( $additional_api_parameters ) {
-						return 'true' === $additional_api_parameters['is_platform_payment_method'];
+						return true === $additional_api_parameters['is_platform_payment_method'];
 					}
 				)
 			)
