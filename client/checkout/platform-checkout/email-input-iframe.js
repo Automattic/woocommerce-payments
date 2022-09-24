@@ -296,14 +296,6 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			'wcpay_version',
 			getConfig( 'wcpayVersionNumber' )
 		);
-		emailExistsQuery.append(
-			'blog_id',
-			getConfig( 'platformCheckoutMerchantId' )
-		);
-		emailExistsQuery.append(
-			'request_signature',
-			getConfig( 'platformCheckoutRequestSignature' )
-		);
 
 		fetch(
 			`${ getConfig(
