@@ -1547,8 +1547,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 					'line_items'         => [
 						[
 							'discount_amount'     => 0,
-							'product_code'        => 'no-cost-fee',
-							'product_description' => 'Zero cost fee',
+							'product_code'        => 'empty-order',
+							'product_description' => 'The order is empty',
 							'quantity'            => 1,
 							'tax_amount'          => 0,
 							'unit_cost'           => 0,
