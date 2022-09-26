@@ -15,6 +15,7 @@ services:
       - ${E2E_ROOT}/env/default.env
     volumes:
       - ${E2E_ROOT}/docker/wordpress:/var/www/html/
+      - ${E2E_ROOT}/docker/wordpress/wp-content/:/var/www/html/wp-content/
       - ${E2E_ROOT}/docker/logs/apache2/:/var/log/apache2
       - ${WCP_ROOT}:/var/www/html/wp-content/plugins/woocommerce-payments
       - ${E2E_ROOT}/deps/${DEV_TOOLS_DIR}:/var/www/html/wp-content/plugins/${DEV_TOOLS_DIR}

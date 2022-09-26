@@ -28,12 +28,12 @@ redirect_output() {
 # https://hub.docker.com/_/wordpress#running-as-an-arbitrary-user
 cli()
 {
-	redirect_output docker run -i --rm --user www-data:www-data --env-file ${E2E_ROOT}/env/default.env --volumes-from "$CLIENT_CONTAINER" --network container:"$CLIENT_CONTAINER" wordpress:cli "$@"
+	redirect_output docker run -i --rm --user www-data --env-file ${E2E_ROOT}/env/default.env --volumes-from "$CLIENT_CONTAINER" --network container:"$CLIENT_CONTAINER" wordpress:cli "$@"
 }
 
 # Function to log WP-CLI output without redirecting the output to /dev/null.
 # Works even when the DEBUG flag is unset or set to false
 cli_debug()
 {
-	docker run -i --rm --user www-data:www-data --env-file ${E2E_ROOT}/env/default.env --volumes-from "$CLIENT_CONTAINER" --network container:"$CLIENT_CONTAINER" wordpress:cli "$@"
+	docker run -i --rm --user www-data --env-file ${E2E_ROOT}/env/default.env --volumes-from "$CLIENT_CONTAINER" --network container:"$CLIENT_CONTAINER" wordpress:cli "$@"
 }
