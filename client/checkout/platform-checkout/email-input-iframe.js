@@ -14,6 +14,9 @@ const waitForEmailField = ( selector ) => {
 			return resolve( document.querySelector( selector ) );
 		}
 
+		const checkoutBlock = document.querySelector(
+			'[data-block-name="woocommerce/checkout"]'
+		);
 		const observer = new MutationObserver( () => {
 			if ( document.querySelector( selector ) ) {
 				resolve( document.querySelector( selector ) );
@@ -21,7 +24,7 @@ const waitForEmailField = ( selector ) => {
 			}
 		} );
 
-		observer.observe( document.body, {
+		observer.observe( checkoutBlock, {
 			childList: true,
 			subtree: true,
 		} );
