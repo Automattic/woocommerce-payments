@@ -25,8 +25,19 @@ class Platform_Checkout_Utilities {
 	public function should_enable_platform_checkout( $gateway ) {
 		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
 		$is_platform_checkout_enabled  = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
-		$disable_for_subscription      = ! WC_Payments_Features::is_platform_checkout_subscriptions_enabled() && $this->is_subscription_item_in_cart();
 
-		return $is_platform_checkout_eligible && $is_platform_checkout_enabled && ! $disable_for_subscription;
+		return $is_platform_checkout_eligible && $is_platform_checkout_enabled;
+	}
+
+	/**
+	 * Generates a hash based on the store's blog token, merchant ID, and the time step window.
+	 *
+	 * @return string
+	 */
+	public function get_platform_checkout_request_signature() {
+		$store_blog_token = \Jetpack_Options::get_option( 'blog_token' );
+		$time_step_window = floor( time() / 30 );
+
+		return hash_hmac( 'sha512', \Jetpack_Options::get_option( 'id' ) . $time_step_window, $store_blog_token );
 	}
 }
