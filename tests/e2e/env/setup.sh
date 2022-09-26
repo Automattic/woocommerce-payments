@@ -132,7 +132,7 @@ echo
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
-	redirect_output sudo chown www-data:www-data -R "$E2E_ROOT"/docker/wordpress/wp-content
+	redirect_output sudo chown www-data:www-data -R "$E2E_ROOT"/docker/wordpress
 	redirect_output ls -al "$E2E_ROOT"/docker/wordpress
 fi
 
