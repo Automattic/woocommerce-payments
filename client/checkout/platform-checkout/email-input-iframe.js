@@ -249,6 +249,22 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	// to remove it when change the e-mail address.
 	let hasPlatformCheckoutSubscriptionLoginError = false;
 
+	// Cancel platform checkout request and close iframe
+	// when user clicks Place Order before it loads.
+	const abortController = new AbortController();
+	const { signal } = abortController;
+
+	signal.addEventListener( 'abort', () => {
+		spinner.remove();
+		closeIframe( false );
+	} );
+
+	document
+		.querySelector( 'form[name="checkout"]' )
+		.addEventListener( 'submit', () => {
+			abortController.abort();
+		} );
+
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
@@ -269,7 +285,8 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					getConfig( 'userExistsEndpoint' ),
 					{
 						email,
-					}
+					},
+					{ signal }
 				);
 
 				if ( userExistsData[ 'user-exists' ] ) {
@@ -283,9 +300,11 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					spinner.remove();
 					return;
 				}
-			} catch {
-				showErrorMessage();
-				spinner.remove();
+			} catch ( err ) {
+				if ( 20 !== err.code ) {
+					showErrorMessage();
+					spinner.remove();
+				}
 			}
 		}
 
@@ -308,7 +327,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		fetch(
 			`${ getConfig(
 				'platformCheckoutHost'
-			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`
+			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
+			{
+				signal,
+			}
 		)
 			.then( ( response ) => {
 				if ( 200 !== response.status ) {
@@ -337,8 +359,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					);
 				}
 			} )
-			.catch( () => {
-				showErrorMessage();
+			.catch( ( err ) => {
+				// Only show the error if it's not a DOMException (20),
+				// for example, fetch being aborted because user
+				// clicked the Place Order button while loading.
+				if ( 20 !== err.code ) {
+					showErrorMessage();
+				}
 			} )
 			.finally( () => {
 				spinner.remove();
