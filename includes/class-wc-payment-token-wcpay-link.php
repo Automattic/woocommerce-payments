@@ -71,7 +71,7 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 	 *
 	 * @return string Customer email.
 	 */
-	public function get_email( string $context = 'view' ): string {
+	public function get_email( $context = 'view' ) {
 		return $this->get_prop( 'email', $context );
 	}
 
@@ -80,7 +80,7 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 	 *
 	 * @param string $email Customer email.
 	 */
-	public function set_email( string $email ) {
+	public function set_email( $email ) {
 		$this->set_prop( 'email', $email );
 	}
 }
