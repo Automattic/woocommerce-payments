@@ -9,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Automattic\WooCommerce\Blocks\Package;
-use Automattic\WooCommerce\Blocks\StoreApi\RoutesController;
+use Automattic\WooCommerce\StoreApi\StoreApi;
+use Automattic\WooCommerce\StoreApi\RoutesController;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -254,6 +254,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-webhook-data-exception.php';
+		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
 		include_once __DIR__ . '/compat/class-wc-payment-woo-compat-utils.php';
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
@@ -969,8 +970,6 @@ class WC_Payments {
 
 		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
-			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
-			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
 			// We should remove this once both features are available by default in the WC minimum supported version.
@@ -1112,9 +1111,9 @@ class WC_Payments {
 	 * @return string
 	 */
 	public static function get_store_api_url() {
-		if ( class_exists( Package::class ) && class_exists( RoutesController::class ) ) {
+		if ( class_exists( StoreApi::class ) && class_exists( RoutesController::class ) ) {
 			try {
-				$cart          = Package::container()->get( RoutesController::class )->get( 'cart' );
+				$cart          = StoreApi::container()->get( RoutesController::class )->get( 'cart' );
 				$store_api_url = method_exists( $cart, 'get_namespace' ) ? $cart->get_namespace() : 'wc/store';
 			} catch ( Exception $e ) {
 				$store_api_url = 'wc/store';
@@ -1122,37 +1121,6 @@ class WC_Payments {
 		}
 
 		return get_rest_url( null, $store_api_url ?? 'wc/store' );
-	}
-
-	/**
-	 * Tells WC to use platform checkout session cookie if the header is present.
-	 *
-	 * @param string $cookie_hash Default cookie hash.
-	 *
-	 * @return string
-	 */
-	public static function determine_session_cookie_for_platform_checkout( $cookie_hash ) {
-		if ( isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) && 0 === (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) {
-			return 'platform_checkout_session';
-		}
-		return $cookie_hash;
-	}
-
-	/**
-	 * Determine the current user
-	 *
-	 * @param WP_User|int $user The user to determine.
-	 */
-	public static function determine_current_user_for_platform_checkout( $user ) {
-		if ( $user ) {
-			return $user;
-		}
-
-		if ( ! isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) || ! is_numeric( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) ) {
-			return $user;
-		}
-
-		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
 	}
 
 	/**

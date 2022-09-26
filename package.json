@@ -1,13 +1,13 @@
 {
   "name": "woocommerce-payments",
-  "version": "4.5.0",
+  "version": "4.7.2",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
   "repository": "github:Automattic/woocommerce-payments",
   "engines": {
-    "node": ">=12.16.0",
-    "npm": ">=6.13.0"
+    "npm": ">=8.15.0",
+    "node": ">=16.17.0"
   },
   "config": {
     "wp_org_slug": "woocommerce-payments",
@@ -66,22 +66,21 @@
   "dependencies": {
     "@stripe/react-stripe-js": "1.4.1",
     "@stripe/stripe-js": "1.15.1",
-    "@woocommerce/explat": "^1.0.1",
-    "@woocommerce/number": "^2.4.0",
-    "debug": "^4.1.1",
-    "interpolate-components": "^1.1.1",
-    "intl-tel-input": "^17.0.15",
-    "lodash": "^4.17.14"
+    "@woocommerce/explat": "1.0.1",
+    "@woocommerce/number": "2.4.0",
+    "debug": "4.1.1",
+    "interpolate-components": "1.1.1",
+    "intl-tel-input": "17.0.15",
+    "lodash": "4.17.14"
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",
-    "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils",
     "@babel/plugin-proposal-object-rest-spread": "7.12.13",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.5",
     "@testing-library/user-event": "10.4.1",
-    "@types/intl-tel-input": "^17.0.4",
+    "@types/intl-tel-input": "17.0.4",
     "@types/lodash": "4.14.170",
     "@types/react": "16.14.5",
     "@types/wordpress__components": "9.8.6",
@@ -93,8 +92,8 @@
     "@woocommerce/components": "5.1.2",
     "@woocommerce/currency": "3.0.0",
     "@woocommerce/date": "2.1.0",
-    "@woocommerce/e2e-environment": "^0.2.3",
-    "@woocommerce/e2e-utils": "0.1.6",
+    "@woocommerce/e2e-environment": "0.2.3",
+    "@woocommerce/e2e-utils": "0.2.0",
     "@woocommerce/eslint-plugin": "1.1.0",
     "@woocommerce/experimental": "2.1.0",
     "@wordpress/api-fetch": "5.1.1",
@@ -105,19 +104,19 @@
     "@wordpress/blocks": "11.0.1",
     "@wordpress/browserslist-config": "3.0.1",
     "@wordpress/components": "11.1.5",
-    "@wordpress/data": "4.22.1",
+    "@wordpress/data": "4.23.1",
     "@wordpress/data-controls": "1.6.0",
     "@wordpress/date": "3.9.0",
     "@wordpress/dependency-extraction-webpack-plugin": "3.7.0",
     "@wordpress/e2e-test-utils": "4.11.0",
     "@wordpress/element": "2.20.3",
     "@wordpress/hooks": "3.2.0",
-    "@wordpress/html-entities": "^2.7.0",
+    "@wordpress/html-entities": "2.11.2",
     "@wordpress/i18n": "4.1.1",
     "@wordpress/icons": "2.10.3",
     "@wordpress/jest-preset-default": "4.0.0",
     "@wordpress/plugins": "4.0.6",
-    "@wordpress/scripts": "^12.6.0",
+    "@wordpress/scripts": "12.6.0",
     "archiver": "5.2.0",
     "babel-loader": "8.2.2",
     "chalk": "4.1.2",
@@ -166,5 +165,8 @@
     "webpack-dev-server": "4.9.3",
     "webpack-merge": "5.8.0",
     "yarnhook": "0.5.1"
+  },
+  "overrides": {
+    "@automattic/puppeteer-utils": "github:Automattic/puppeteer-utils#update/babel-deps"
   }
 }

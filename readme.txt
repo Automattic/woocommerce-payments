@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.5.1
+Stable tag: 4.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,8 +98,78 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 4.7.2 - 2022-09-15 =
+* Fix - Fixes Order ID appearing as N/A in Payments > Transactions
+
+= 4.7.1 - 2022-09-13 =
+* Fix - Fix Apple Pay domain verify file missing error notice constantly displayed
+* Fix - Retain test mode context in CRON jobs queued up while checking out.
+
+= 4.7.0 - 2022-09-07 =
+* Add - Added meta to payment tokens used in subscriptions.
+* Add - Adding an authorization page part of the transactions view. Currently behind a flag and using mocked data.
+* Add - Adding support for WCA's Analytics and Multi-Currency when using custom order tables.
+* Add - Add support for getting a Stripe invoice.
+* Add - indicate setup-intent use in the request.
+* Add - Merchants can change their deposit schedule via the settings page.
+* Fix - Actualize FAQ link for 'Set up refund policy' inbox note.
+* Fix - Add customer ID to WP user during Store API checkout.
+* Fix - Add handling for guest user while updating customer with order data.
+* Fix - Analytics: Ensure the store default currency always displays in list.
+* Fix - Create WooPay user from trial subscription.
+* Fix - Dismissible country error message for Apple Pay.
+* Fix - Fix - Fatal Error caused in rare cases where quantity is zero during renewal, builds upon fix released in WC Pay 4.3.0.
+* Fix - Fix adding payment tokens for platform-created setup intents.
+* Fix - Fix deprecation notice for Automattic\WooCommerce\Blocks\StoreApi\RoutesController.
+* Fix - Fix error in updating subscription when saved cards are more than posts per page setting.
+* Fix - Fix file permission and merchant country errors for apple pay registration.
+* Fix - Fix Link errors after blocks plugin update.
+* Fix - Improvements to express checkout functionality: prevent errors on PHP 8 with empty product prices, and more percise taxes.
+* Fix - Remove duplication of deposit schedule on overview page.
+* Fix - Update id card to available payment method after disabling UPE.
+* Fix - Update WooCommerce Payments business details via "Things to do" task list leading to a blank page.
+* Fix - Upon losing a dispute, orders will no longer appear as processing, but as refunded instead.
+* Update - Modified query to get customer currencies when COT enabled.
+* Update - Modified usage tracking queries when COT enabled.
+* Update - Move the "Instant deposit" button on the Payments > Overview screen to the "Available balance" block.
+* Update - Only store a new token when paying for a subscription via WooPay if it doesn't exist already.
+* Update - Replaced direct DB query in oorders_with_charge_id_from_charge_ids with wc_get_orders.
+* Update - Replaced direct DB query in order_id_from_meta_key_value with wc_get_orders.
+* Update - The Payments > Overview "Temporarily Suspended" notice will only appear when deposits are "blocked".
+* Dev - Add new E2E workflow for pull requests & split existing tests into 3 jobs.
+* Dev - Bump minimum required version of WooCommerce from 6.2 to 6.4.
+* Dev - Bump minimum required version of WooCommerce in GH compatibility workflow from 6.2.2 to 6.4.1.
+* Dev - Minor readability change in tests.
+* Dev - Update E2E flows for subscription tests.
+* Dev - Update php-stubs/woocommerce-stubs to 6.8.0.
+* Dev - Update subscriptions-core to 2.2.1.
+* Dev - Update WC and Gutenberg versions in GH's oldest compatibility test.
+* Dev - Upgraded NodeJS version to 14.
+
+= 4.6.0 - 2022-08-18 =
+* Add - Adding support for payment request buttons (Apple Pay and Google Pay) to the Pay for Order page.
+* Add - Add transactions channel (In-Person or Online).
+* Add - Pass a parameter when creating an intention when the request comes from the platform checkout and it has a subscription.
+* Fix - Ask for login when buying a subscription with WooPay.
+* Fix - Avoid saving a session cookie when the currency is changed because of geolocation.
+* Fix - Check payment method before updating payment method title.
+* Fix - Fatal error when activating WooCommerce Subscriptions via WP-CLI when WooCommerce Payments is active.
+* Fix - Fix an issue while loading the Transaction Detail Page with py_ charge ids.
+* Fix - Fix compatibility issues with the new WooCommerce Blocks.
+* Fix - Fix error when changing subscription payment method via UPE checkout more than once in a session.
+* Fix - Not focusing email field when showing error message to prevent the autocompletion box from covering the error message.
+* Fix - Update currencies modal height.
+* Update - Make updating existing customer details during checkout async.
+* Update - Remove Charge request from Transactions Details page. The Charge data will be retrieved from the Payment Intent request.
+* Update - Update public WooPay link in registration copy.
+* Dev - Avoid execution context errors during E2E tests.
+* Dev - Bump minimum required version of WooCommerce from 6.0 to 6.2.
+* Dev - E2E GitHub Workflow: Re-run Failed Test Files.
+* Dev - Fixes E2E dispute test flow.
+* Dev - Force jest to use en_US.UTF-8 LANG.
+
 = 4.5.1 - 2022-08-08 =
-* Security update.
+* Update - Security update.
 
 = 4.5.0 - 2022-07-27 =
 * Add - Add "Things to do" task list to the Payments Overview screen

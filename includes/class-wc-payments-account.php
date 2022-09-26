@@ -180,9 +180,7 @@ class WC_Payments_Account {
 			];
 		}
 
-		if ( ! isset( $account['status'] )
-			|| ! isset( $account['payments_enabled'] )
-			|| ! isset( $account['deposits_status'] ) ) {
+		if ( ! isset( $account['status'], $account['payments_enabled'] ) ) {
 			// return an error if any of the account data is missing.
 			return [
 				'error' => true,
@@ -194,7 +192,8 @@ class WC_Payments_Account {
 			'country'             => $account['country'] ?? 'US',
 			'status'              => $account['status'],
 			'paymentsEnabled'     => $account['payments_enabled'],
-			'depositsStatus'      => $account['deposits_status'],
+			'deposits'            => $account['deposits'] ?? [],
+			'depositsStatus'      => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
 			'currentDeadline'     => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
 			'pastDue'             => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
 			'accountLink'         => $this->get_login_url(),
@@ -300,6 +299,66 @@ class WC_Payments_Account {
 	public function get_branding_secondary_color() : string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['branding']['secondary_color'] ) ? $account['branding']['secondary_color'] : '';
+	}
+
+	/**
+	 * Gets the deposit schedule interval.
+	 *
+	 * @return string interval e.g. weekly, monthly.
+	 */
+	public function get_deposit_schedule_interval(): string {
+		$account = $this->get_cached_account_data();
+		return $account['deposits']['interval'] ?? '';
+	}
+
+	/**
+	 * Gets the deposit schedule weekly anchor.
+	 *
+	 * @return string weekly anchor e.g. monday, tuesday.
+	 */
+	public function get_deposit_schedule_weekly_anchor(): string {
+		$account = $this->get_cached_account_data();
+		return $account['deposits']['weekly_anchor'] ?? '';
+	}
+
+	/**
+	 * Gets the deposit schedule monthly anchor.
+	 *
+	 * @return int|null monthly anchor e.g. 1, 2.
+	 */
+	public function get_deposit_schedule_monthly_anchor() {
+		$account = $this->get_cached_account_data();
+		return ! empty( $account['deposits']['monthly_anchor'] ) ? $account['deposits']['monthly_anchor'] : null;
+	}
+
+	/**
+	 * Gets the number of days payments are delayed for.
+	 *
+	 * @return int|null e.g. 2, 7.
+	 */
+	public function get_deposit_delay_days() {
+		$account = $this->get_cached_account_data();
+		return $account['deposits']['delay_days'] ?? null;
+	}
+
+	/**
+	 * Gets the deposit status
+	 *
+	 * @return string  e.g. disabled, blocked, enabled.
+	 */
+	public function get_deposit_status(): string {
+		$account = $this->get_cached_account_data();
+		return $account['deposits']['status'] ?? '';
+	}
+
+	/**
+	 * Gets whether the account has completed the deposit waiting period.
+	 *
+	 * @return bool
+	 */
+	public function get_deposit_completed_waiting_period(): bool {
+		$account = $this->get_cached_account_data();
+		return $account['deposits']['completed_waiting_period'] ?? false;
 	}
 
 	/**

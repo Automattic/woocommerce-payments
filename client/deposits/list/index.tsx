@@ -33,6 +33,7 @@ import Page from '../../components/page';
 import DepositsFilters from '../filters';
 import DownloadButton from 'components/download-button';
 import { getDepositsCSV } from 'wcpay/data/deposits/resolvers';
+import { applyThousandSeparator } from '../../utils/index.js';
 
 import './style.scss';
 import { parseInt } from 'lodash';
@@ -170,7 +171,9 @@ export const DepositsList = (): JSX.Element => {
 					depositsSummary.count,
 					'woocommerce-payments'
 				),
-				value: `${ depositsSummary.count }`,
+				value: `${ applyThousandSeparator(
+					depositsSummary.count as number
+				) }`,
 			},
 		];
 

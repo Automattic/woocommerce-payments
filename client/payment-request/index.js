@@ -1,4 +1,4 @@
-/* global jQuery, wcpayPaymentRequestParams, wc_add_to_cart_variation_params */
+/* global jQuery, wcpayPaymentRequestParams, wcpayPaymentRequestPayForOrderParams, wc_add_to_cart_variation_params */
 /**
  * External dependencies
  */
@@ -12,6 +12,7 @@ import {
 	shippingAddressChangeHandler,
 	shippingOptionChangeHandler,
 	paymentMethodHandler,
+	payForOrderHandler,
 } from './event-handlers.js';
 
 import { getPaymentRequest, displayLoginConfirmation } from './utils';
@@ -226,14 +227,16 @@ jQuery( ( $ ) => {
 				shippingOptionChangeHandler( api, event )
 			);
 
-			paymentRequest.on( 'paymentmethod', ( event ) =>
-				paymentMethodHandler(
+			paymentRequest.on( 'paymentmethod', ( event ) => {
+				const handler = options.handler ?? paymentMethodHandler;
+
+				handler(
 					api,
 					wcpayPaymentRequest.completePayment,
 					wcpayPaymentRequest.abortPayment,
 					event
-				)
-			);
+				);
+			} );
 		},
 
 		getSelectedProductData: () => {
@@ -375,8 +378,8 @@ jQuery( ( $ ) => {
 			$( document.body ).on( 'woocommerce_variation_has_changed', () => {
 				wcpayPaymentRequest.blockPaymentRequestButton();
 
-				$.when( wcpayPaymentRequest.getSelectedProductData() ).then(
-					( response ) => {
+				$.when( wcpayPaymentRequest.getSelectedProductData() )
+					.then( ( response ) => {
 						$.when(
 							paymentRequest.update( {
 								total: response.total,
@@ -385,8 +388,10 @@ jQuery( ( $ ) => {
 						).then( () => {
 							wcpayPaymentRequest.unblockPaymentRequestButton();
 						} );
-					}
-				);
+					} )
+					.catch( () => {
+						wcpayPaymentRequest.hide();
+					} );
 			} );
 
 			// Block the payment request button as soon as an "input" event is fired, to avoid sync issues
@@ -433,11 +438,23 @@ jQuery( ( $ ) => {
 			} );
 		},
 
+		getElements: () => {
+			return $(
+				'#wcpay-payment-request-wrapper,#wcpay-payment-request-button-separator'
+			);
+		},
+
+		hide: () => {
+			wcpayPaymentRequest.getElements().hide();
+		},
+
+		show: () => {
+			wcpayPaymentRequest.getElements().show();
+		},
+
 		showPaymentRequestButton: ( prButton ) => {
 			if ( $( '#wcpay-payment-request-button' ).length ) {
-				$(
-					'#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator'
-				).show();
+				wcpayPaymentRequest.show();
 				prButton.mount( '#wcpay-payment-request-button' );
 			}
 		},
@@ -455,6 +472,7 @@ jQuery( ( $ ) => {
 		},
 
 		unblockPaymentRequestButton: () => {
+			wcpayPaymentRequest.show();
 			$( '#wcpay-payment-request-button' ).unblock();
 		},
 
@@ -462,7 +480,21 @@ jQuery( ( $ ) => {
 		 * Initialize event handlers and UI state
 		 */
 		init: () => {
-			if ( wcpayPaymentRequestParams.is_product_page ) {
+			if ( wcpayPaymentRequestParams.is_pay_for_order ) {
+				const {
+					total: { amount: total },
+					displayItems,
+					order,
+				} = wcpayPaymentRequestPayForOrderParams;
+
+				wcpayPaymentRequest.startPaymentRequest( {
+					stripe: api.getStripe(),
+					requestShipping: false,
+					total,
+					displayItems,
+					handler: payForOrderHandler( order ),
+				} );
+			} else if ( wcpayPaymentRequestParams.is_product_page ) {
 				wcpayPaymentRequest.startPaymentRequest( {
 					stripe: api.getStripe(),
 					total: wcpayPaymentRequestParams.product.total.amount,

@@ -23,6 +23,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		'account_branding_icon',
 		'account_branding_primary_color',
 		'account_branding_secondary_color',
+		'deposit_schedule_interval',
+		'deposit_schedule_monthly_anchor',
+		'deposit_schedule_weekly_anchor',
 	];
 
 	/**
@@ -156,6 +159,18 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					'account_branding_secondary_color'  => [
 						'description' => __( 'A CSS hex color value representing the secondary branding color for this account.', 'woocommerce-payments' ),
 						'type'        => 'string',
+					],
+					'deposit_schedule_interval'         => [
+						'description' => __( 'An interval for deposit scheduling.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'deposit_schedule_weekly_anchor'    => [
+						'description' => __( 'Weekly anchor for deposit scheduling when interval is set to weekly', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
+					'deposit_schedule_monthly_anchor'   => [
+						'description' => __( 'Monthly anchor for deposit scheduling when interval is set to monthly', 'woocommerce-payments' ),
+						'type'        => [ 'integer', 'null' ],
 					],
 					'is_payment_request_enabled'        => [
 						'description'       => __( 'If WooCommerce Payments express checkouts should be enabled.', 'woocommerce-payments' ),
@@ -363,6 +378,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_platform_checkout_enabled'      => 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
 				'platform_checkout_custom_message'  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'platform_checkout_store_logo'      => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
+				'deposit_schedule_interval'         => $this->wcpay_gateway->get_option( 'deposit_schedule_interval' ),
+				'deposit_schedule_monthly_anchor'   => $this->wcpay_gateway->get_option( 'deposit_schedule_monthly_anchor' ),
+				'deposit_schedule_weekly_anchor'    => $this->wcpay_gateway->get_option( 'deposit_schedule_weekly_anchor' ),
+				'deposit_delay_days'                => $this->wcpay_gateway->get_option( 'deposit_delay_days' ),
+				'deposit_status'                    => $this->wcpay_gateway->get_option( 'deposit_status' ),
+				'deposit_completed_waiting_period'  => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
 			]
 		);
 	}
@@ -560,7 +581,13 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return in_array( $key, static::ACCOUNT_FIELDS_TO_UPDATE, true ) &&
 				$this->wcpay_gateway->get_option( $key ) !== $value;
 		};
-		$updated_fields          = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
+		// Filter out fields that are unchanged or not in the list of fields to update.
+		$updated_fields = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
+
+		// If we are updating an anchor for the deposit schedule then we must also send through the interval.
+		if ( ! isset( $updated_fields['deposit_schedule_interval'] ) && array_intersect( array_keys( $updated_fields ), [ 'deposit_schedule_monthly_anchor', 'deposit_schedule_weekly_anchor' ] ) ) {
+			$updated_fields['deposit_schedule_interval'] = $this->wcpay_gateway->get_option( 'deposit_schedule_interval' );
+		}
 
 		$this->wcpay_gateway->update_account_settings( $updated_fields );
 	}

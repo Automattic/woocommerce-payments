@@ -179,7 +179,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_convert_shipping_method_rate_cost_converts() {
+	public function test_convert_shipping_method_rate_cost_for_string_cost() {
 		$this->mock_multi_currency
 			->expects( $this->once() )
 			->method( 'get_price' )
@@ -212,6 +212,50 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$shipping_method->add_rate(
 			[
 				'cost'  => '10',
+				'id'    => 1,
+				'label' => 'label',
+			]
+		);
+		$shipping_rate = $shipping_method->rates[1];
+
+		// Cost gets converted and taxes properly calculated based on it.
+		$this->assertSame( '25.00', $shipping_rate->cost );
+		$this->assertSame( 2.5, $shipping_rate->taxes[1] );
+	}
+
+	public function test_convert_shipping_method_rate_cost_for_array_cost() {
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_price' )
+			->with( '11' )
+			->willReturn( 25.0 );
+
+		add_filter( 'wc_tax_enabled', '__return_true' );
+		add_filter(
+			'woocommerce_find_rates',
+			function() {
+				return [
+					1 =>
+						[
+							'rate'     => 10.0,
+							'label'    => 'Tax',
+							'shipping' => 'yes',
+							'compound' => 'no',
+						],
+				];
+			},
+			50,
+			2
+		);
+
+		WC()->session->init();
+		WC()->customer->set_location( 'US', 'CA' );
+
+		$shipping_method             = new \WC_Shipping_Flat_Rate();
+		$shipping_method->tax_status = 'taxable';
+		$shipping_method->add_rate(
+			[
+				'cost'  => [ '10', '1' ],
 				'id'    => 1,
 				'label' => 'label',
 			]
