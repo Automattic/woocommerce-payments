@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Send a few extra pieces of data when checking if a WooPay user exists.
