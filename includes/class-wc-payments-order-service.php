@@ -161,10 +161,12 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_capture_completed( $order, $intent_id, $intent_status, $charge_id ) {
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+		if ( ! is_a( $order, 'WC_Order' ) || $this->is_order_locked( $order, $intent_id ) ) {
+			Logger::log( 'Error when updating status after capture completed for order ' . $order->get_id() );
 			return;
 		}
 
+		$this->lock_order_payment( $order, $intent_id );
 		$this->update_order_status( $order, 'payment_complete', $intent_id );
 		$this->add_capture_success_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_status );
