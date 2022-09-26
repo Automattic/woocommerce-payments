@@ -137,7 +137,7 @@ if [[ -n $CI ]]; then
 fi
 
 echo "Pulling the WordPress CLI docker image..."
-docker pull wordpress:cli-php7.4 > /dev/null
+docker pull wordpress:cli > /dev/null
 
 echo "Setting up WordPress..."
 cli wp core install \
