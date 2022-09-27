@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Change 'zero-cost-fee' to 'empty-order', for product_code while sending level 3 data for shipping-only orders, without products.
