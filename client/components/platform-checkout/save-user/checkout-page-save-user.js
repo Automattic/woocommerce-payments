@@ -14,22 +14,82 @@ import AdditionalInformation from './additional-information';
 import PhoneNumberInput from 'settings/phone-input';
 import Agreement from './agreement';
 import { getConfig } from 'utils/checkout';
+// eslint-disable-next-line import/no-unresolved
+import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 
-const CheckoutPageSaveUser = () => {
+const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
 	// eslint-disable-next-line no-unused-vars
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const isRegisteredUser = usePlatformCheckoutUser();
-	const {
-		isWCPayChosen,
-		isNewPaymentTokenChosen,
-	} = useSelectedPaymentMethod();
+	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
+		isBlocksCheckout
+	);
+
+	const getPhoneFieldValue = () => {
+		let phoneFieldValue = '';
+		if ( isBlocksCheckout ) {
+			phoneFieldValue =
+				document.getElementById( 'phone' )?.value ||
+				document.getElementById( 'shipping-phone' )?.value ||
+				'';
+		} else {
+			// for classic checkout.
+			phoneFieldValue =
+				document.getElementById( 'billing_phone' )?.value || '';
+		}
+
+		setPhoneNumber( phoneFieldValue );
+		return phoneFieldValue;
+	};
+
+	// use extensionCartUpdate for blocks checkout only.
+	useEffect( () => {
+		if ( ! isBlocksCheckout ) {
+			return;
+		}
+
+		const formSubmitButton = document.querySelector(
+			'button.wc-block-components-checkout-place-order-button'
+		);
+
+		if ( ! formSubmitButton ) {
+			return;
+		}
+
+		// send data to extension endpoint when place order button is clicked.
+		const sendRequestToExtension = () => {
+			extensionCartUpdate( {
+				namespace: 'platform-checkout',
+				data: {
+					save_user_in_platform_checkout: isSaveDetailsChecked,
+					platform_checkout_user_phone_field: {
+						full: phoneNumber,
+					},
+				},
+			} );
+		};
+
+		formSubmitButton.addEventListener( 'click', sendRequestToExtension );
+
+		return () => {
+			// Remove event listener
+			formSubmitButton.removeEventListener(
+				'click',
+				sendRequestToExtension
+			);
+		};
+	}, [ isBlocksCheckout, isSaveDetailsChecked, phoneNumber ] );
 
 	useEffect( () => {
-		const formSubmitButton = document.querySelector(
-			'form.woocommerce-checkout button[type="submit"]'
-		);
+		const formSubmitButton = isBlocksCheckout
+			? document.querySelector(
+					'button.wc-block-components-checkout-place-order-button'
+			  )
+			: document.querySelector(
+					'form.woocommerce-checkout button[type="submit"]'
+			  );
 
 		if ( ! formSubmitButton ) {
 			return;
@@ -51,13 +111,18 @@ const CheckoutPageSaveUser = () => {
 			// Clean up
 			formSubmitButton.removeAttribute( 'disabled' );
 		};
-	}, [ isPhoneValid, isSaveDetailsChecked ] );
+	}, [ isBlocksCheckout, isPhoneValid, isSaveDetailsChecked ] );
+
+	if ( isBlocksCheckout && ( ! isWCPayChosen || isRegisteredUser ) ) {
+		return null;
+	}
 
 	if (
-		! getConfig( 'forceNetworkSavedCards' ) ||
-		! isWCPayChosen ||
-		! isNewPaymentTokenChosen ||
-		isRegisteredUser
+		! isBlocksCheckout &&
+		( ! getConfig( 'forceNetworkSavedCards' ) ||
+			! isWCPayChosen ||
+			! isNewPaymentTokenChosen ||
+			isRegisteredUser )
 	) {
 		return null;
 	}
@@ -99,8 +164,7 @@ const CheckoutPageSaveUser = () => {
 					<PhoneNumberInput
 						value={
 							null === phoneNumber
-								? document.getElementById( 'billing_phone' )
-										?.value || ''
+								? getPhoneFieldValue()
 								: phoneNumber
 						}
 						onValueChange={ setPhoneNumber }
