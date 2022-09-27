@@ -3,8 +3,13 @@
  */
 import { useEffect, useState } from 'react';
 
-const getWCPayRadioButtonStatus = () =>
-	document.querySelector( '#payment_method_woocommerce_payments' )?.checked;
+const getWCPayRadioButtonStatus = ( isBlocksCheckout ) =>
+	isBlocksCheckout
+		? document.querySelector(
+				'#radio-control-wc-payment-method-options-woocommerce_payments'
+		  )?.checked
+		: document.querySelector( '#payment_method_woocommerce_payments' )
+				?.checked;
 
 const getNewPaymentTokenRadioButtonStatus = () =>
 	document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
@@ -14,9 +19,9 @@ const getNewPaymentTokenRadioButtonStatus = () =>
 	);
 
 // hook for checking if WCPay is selected.
-const useSelectedPaymentMethod = () => {
+const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
 	const [ isWCPayChosen, setIsWCPayChosen ] = useState(
-		getWCPayRadioButtonStatus()
+		getWCPayRadioButtonStatus( isBlocksCheckout )
 	);
 
 	const [ isNewPaymentTokenChosen, setNewPaymentTokenChosen ] = useState(
