@@ -28,18 +28,23 @@ const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
 		getNewPaymentTokenRadioButtonStatus()
 	);
 
-	const updateIsWCPayChosen = () => {
-		setIsWCPayChosen( getWCPayRadioButtonStatus );
-	};
-
-	const updateIsNewPaymentTokenChosen = () => {
-		setNewPaymentTokenChosen( getNewPaymentTokenRadioButtonStatus );
-	};
-
 	useEffect( () => {
-		const paymentMethods = document.querySelectorAll(
-			'[type=radio][name="payment_method"]'
-		);
+		const updateIsWCPayChosen = () => {
+			setIsWCPayChosen( getWCPayRadioButtonStatus( isBlocksCheckout ) );
+		};
+
+		const updateIsNewPaymentTokenChosen = () => {
+			setNewPaymentTokenChosen( getNewPaymentTokenRadioButtonStatus );
+		};
+
+		const paymentMethods = isBlocksCheckout
+			? document.querySelectorAll(
+					'[type=radio][name="radio-control-wc-payment-method-options"]'
+			  )
+			: document.querySelectorAll(
+					'[type=radio][name="payment_method"]'
+			  );
+
 		paymentMethods.forEach( ( paymentMethod ) => {
 			paymentMethod.addEventListener( 'change', updateIsWCPayChosen );
 		} );
@@ -69,7 +74,7 @@ const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
 				);
 			} );
 		};
-	}, [] );
+	}, [ isBlocksCheckout ] );
 
 	return {
 		isWCPayChosen,
