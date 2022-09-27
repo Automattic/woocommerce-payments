@@ -12,12 +12,21 @@ import CheckoutPageSaveUser from '../checkout-page-save-user';
 import usePlatformCheckoutUser from '../../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../../hooks/use-selected-payment-method';
 import { getConfig } from 'utils/checkout';
+// eslint-disable-next-line import/no-unresolved
+import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 
 jest.mock( '../../hooks/use-platform-checkout-user', () => jest.fn() );
 jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
+jest.mock(
+	'@woocommerce/blocks-checkout',
+	() => ( {
+		extensionCartUpdate: jest.fn(),
+	} ),
+	{ virtual: true }
+);
 
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
@@ -98,7 +107,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should render the save user form when checkbox is checked', () => {
+	it( 'should render the save user form when checkbox is checked for classic checkout', () => {
 		render( <CheckoutPageSaveUser /> );
 
 		expect(
@@ -125,5 +134,52 @@ describe( 'CheckoutPageSaveUser', () => {
 		expect(
 			screen.queryByLabelText( 'Mobile phone number' )
 		).toBeInTheDocument();
+	} );
+
+	it( 'should render the save user form when checkbox is checked for blocks checkout', () => {
+		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
+
+		expect(
+			screen.queryByLabelText(
+				'Save my information for faster checkouts'
+			)
+		).not.toBeChecked();
+		expect(
+			screen.queryByLabelText( 'Mobile phone number' )
+		).not.toBeInTheDocument();
+
+		// click on the checkbox
+		userEvent.click(
+			screen.queryByLabelText(
+				'Save my information for faster checkouts'
+			)
+		);
+
+		expect(
+			screen.queryByLabelText(
+				'Save my information for faster checkouts'
+			)
+		).toBeChecked();
+		expect(
+			screen.queryByLabelText( 'Mobile phone number' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'call `extensionCartUpdate` on blocks checkout when `place order` button is clicked', () => {
+		extensionCartUpdate.mockResolvedValue( {} );
+		const placeOrderButton = document.createElement( 'button' );
+		placeOrderButton.classList.add(
+			'wc-block-components-checkout-place-order-button'
+		);
+		document.body.appendChild( placeOrderButton );
+
+		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
+
+		expect( extensionCartUpdate ).not.toHaveBeenCalled();
+
+		// click on the button
+		userEvent.click( placeOrderButton );
+
+		expect( extensionCartUpdate ).toHaveBeenCalledTimes( 1 );
 	} );
 } );
