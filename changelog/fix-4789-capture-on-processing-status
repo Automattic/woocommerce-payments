@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Capture charge when order status is processing/complete
