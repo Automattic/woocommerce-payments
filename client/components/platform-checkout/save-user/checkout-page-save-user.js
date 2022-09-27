@@ -113,16 +113,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		};
 	}, [ isBlocksCheckout, isPhoneValid, isSaveDetailsChecked ] );
 
-	if ( isBlocksCheckout && ( ! isWCPayChosen || isRegisteredUser ) ) {
-		return null;
-	}
-
 	if (
-		! isBlocksCheckout &&
-		( ! getConfig( 'forceNetworkSavedCards' ) ||
-			! isWCPayChosen ||
-			! isNewPaymentTokenChosen ||
-			isRegisteredUser )
+		! getConfig( 'forceNetworkSavedCards' ) ||
+		! isWCPayChosen ||
+		! isNewPaymentTokenChosen ||
+		isRegisteredUser
 	) {
 		return null;
 	}
