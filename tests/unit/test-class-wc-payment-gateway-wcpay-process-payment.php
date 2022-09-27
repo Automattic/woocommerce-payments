@@ -1056,7 +1056,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
 	}
 
-	public function test_save_payment_method_to_platform() {
+	public function test_save_payment_method_to_platform_for_classic_checkout() {
 		$order = WC_Helper_Order::create_order();
 
 		$intent = WC_Helper_Intention::create_intention();
@@ -1070,6 +1070,36 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->will( $this->returnValue( $intent ) );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_save_payment_method_to_platform_for_blocks_checkout() {
+		$order = WC_Helper_Order::create_order();
+
+		$intent = WC_Helper_Intention::create_intention();
+
+		WC()->session->set(
+			'platform-checkout-user-data',
+			[
+				'save_user_in_platform_checkout'     => true,
+				'platform_checkout_user_phone_field' => [
+					'full' => '+12015555555',
+				],
+			]
+		);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_and_confirm_intention' )
+			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, $this->anything(), $this->anything() )
+			->will( $this->returnValue( $intent ) );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		// clean up session.
+		WC()->session->set(
+			'platform-checkout-user-data',
+			[]
+		);
 	}
 
 	public function test_process_payment_using_platform_payment_method_adds_platform_payment_method_flag_to_request() {
