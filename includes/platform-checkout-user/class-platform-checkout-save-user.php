@@ -57,11 +57,17 @@ class Platform_Checkout_Save_User {
 	 * @return array
 	 */
 	public function maybe_add_userdata_to_metadata( $metadata, $order ) {
+		$session_data = WC()->session->get( 'platform-checkout-user-data' );
 		// If we should be creating a platform checkout customer, add the necessary customer data to the metadata.
-		$should_create_platform_customer = isset( $_POST['save_user_in_platform_checkout'] ) && filter_var( wp_unslash( $_POST['save_user_in_platform_checkout'] ), FILTER_VALIDATE_BOOLEAN ); // phpcs:ignore WordPress.Security.NonceVerification
-		if ( $should_create_platform_customer && ! empty( $_POST['platform_checkout_user_phone_field']['full'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-				$platform_checkout_phone = wc_clean( wp_unslash( $_POST['platform_checkout_user_phone_field']['full'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$should_create_platform_customer = ( isset( $_POST['save_user_in_platform_checkout'] ) && filter_var( wp_unslash( $_POST['save_user_in_platform_checkout'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['save_user_in_platform_checkout'] ) && filter_var( $session_data['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
+		if ( ! empty( $_POST['platform_checkout_user_phone_field']['full'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$platform_checkout_phone = wc_clean( wp_unslash( $_POST['platform_checkout_user_phone_field']['full'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		} elseif ( ! empty( $session_data['platform_checkout_user_phone_field']['full'] ) ) {
+			$platform_checkout_phone = $session_data['platform_checkout_user_phone_field']['full'];
+		}
+
+		if ( $should_create_platform_customer && $platform_checkout_phone ) {
 				// Add the metadata.
 				$metadata['platform_checkout_primary_first_name']   = wc_clean( $order->get_billing_first_name() );
 				$metadata['platform_checkout_primary_last_name']    = wc_clean( $order->get_billing_last_name() );
