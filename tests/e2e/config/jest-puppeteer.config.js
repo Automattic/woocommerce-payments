@@ -1,4 +1,4 @@
-const { jestPuppeteerConfig } = require( '@automattic/puppeteer-utils' );
+const { jestPuppeteerConfig } = require( '@woocommerce/e2e-environment' );
 
 // Add arg to allow accessing the payments iframes in interactive mode ({ headles: false }).
 // https://github.com/puppeteer/puppeteer/issues/4960#issuecomment-535729011
