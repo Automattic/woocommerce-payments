@@ -82,6 +82,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $order_service;
 
 	/**
+	 * Test product to add to the cart
+	 * @var WC_Product_Simple
+	 */
+	private $simple_product;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -140,6 +146,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_rate_limiter,
 			$this->order_service
 		);
+
+		$this->simple_product = WC_Helper_Product::create_simple_product();
 	}
 
 	/**
@@ -1965,6 +1973,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_platform_checkout_enabled_returns_true() {
+		WC()->cart->add_to_cart( $this->simple_product->get_id(), 1 );
+
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );

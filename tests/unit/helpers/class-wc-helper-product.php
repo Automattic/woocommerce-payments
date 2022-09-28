@@ -57,6 +57,37 @@ class WC_Helper_Product {
 	}
 
 	/**
+	 * Create simple product.
+	 *
+	 * @since 2.3
+	 * @param bool $save Save or return object.
+	 * @return WC_Product_Simple
+	 */
+	public static function create_free_product( $save = true ) {
+		$product = new WC_Product_Simple();
+		$product->set_props(
+			[
+				'name'          => 'Dummy Free Product',
+				'regular_price' => 0,
+				'price'         => 0,
+				'sku'           => 'DUMMY Free SKU',
+				'manage_stock'  => false,
+				'downloadable'  => false,
+				'virtual'       => false,
+				'stock_status'  => 'instock',
+				'weight'        => '1.1',
+			]
+		);
+
+		if ( $save ) {
+			$product->save();
+			return wc_get_product( $product->get_id() );
+		} else {
+			return $product;
+		}
+	}
+
+	/**
 	 * Create external product.
 	 *
 	 * @since 3.0.0

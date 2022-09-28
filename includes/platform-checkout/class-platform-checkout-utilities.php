@@ -23,10 +23,11 @@ class Platform_Checkout_Utilities {
 	 * @return boolean
 	 */
 	public function should_enable_platform_checkout( $gateway ) {
+		$needs_payment                 = WC()->cart->needs_payment();
 		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
 		$is_platform_checkout_enabled  = 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
 
-		return $is_platform_checkout_eligible && $is_platform_checkout_enabled;
+		return $needs_payment && $is_platform_checkout_eligible && $is_platform_checkout_enabled;
 	}
 
 	/**
