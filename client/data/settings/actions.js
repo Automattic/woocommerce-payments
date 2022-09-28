@@ -145,6 +145,29 @@ export function updateAccountBrandingLogo( accountBrandingLogo ) {
 	} );
 }
 
+export function updateDepositScheduleInterval( depositScheduleInterval ) {
+	return updateSettingsValues( {
+		deposit_schedule_interval: depositScheduleInterval,
+	} );
+}
+export function updateDepositScheduleWeeklyAnchor(
+	depositScheduleWeeklyAnchor
+) {
+	return updateSettingsValues( {
+		deposit_schedule_weekly_anchor: depositScheduleWeeklyAnchor,
+	} );
+}
+export function updateDepositScheduleMonthlyAnchor(
+	depositScheduleMonthlyAnchor
+) {
+	return updateSettingsValues( {
+		deposit_schedule_monthly_anchor:
+			'' === depositScheduleMonthlyAnchor
+				? null
+				: parseInt( depositScheduleMonthlyAnchor, 10 ),
+	} );
+}
+
 export function* saveSettings() {
 	let error = null;
 	try {

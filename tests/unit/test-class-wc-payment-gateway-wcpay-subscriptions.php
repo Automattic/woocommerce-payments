@@ -212,6 +212,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
 		$renewal_order->add_payment_token( $token );
 
+		$mock_subscription = new WC_Subscription();
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $id ) use ( $mock_subscription ) {
+				return [ '1' => $mock_subscription ];
+			}
+		);
+
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
@@ -263,6 +271,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$token = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
 		$renewal_order->add_payment_token( $token );
 
+		$mock_subscription = new WC_Subscription();
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $id ) use ( $mock_subscription ) {
+				return [ '1' => $mock_subscription ];
+			}
+		);
+
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
@@ -279,6 +295,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$token = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
 		$renewal_order->add_payment_token( $token );
 		$renewal_order->set_currency( 'EUR' );
+
+		$mock_subscription = new WC_Subscription();
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $id ) use ( $mock_subscription ) {
+				return [ '1' => $mock_subscription ];
+			}
+		);
 
 		$this->mock_customer_service
 			->expects( $this->once() )
@@ -490,7 +514,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$subscription->add_payment_token( $tokens[1] );
 
 		$this->expectOutputString(
-			'<select name="field_id" id="field_id"><option value="' . $tokens[0]->get_id() . '" selected>' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
+			'<select name="field_id" id="field_id">' .
+				'<option value="' . $tokens[0]->get_id() . '" selected>' . $tokens[0]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option>' .
+			'</select>'
 		);
 
 		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', strval( $tokens[0]->get_id() ) );
@@ -506,7 +533,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$subscription->add_payment_token( $tokens[1] );
 
 		$this->expectOutputString(
-			'<select name="field_id" id="field_id"><option value="" selected disabled>Please select a payment method</option><option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
+			'<select name="field_id" id="field_id">' .
+				'<option value="" selected disabled>Please select a payment method</option>' .
+				'<option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option>' .
+			'</select>'
 		);
 
 		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', 'invalid_value' );
@@ -563,7 +594,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$subscription->add_payment_token( $tokens[1] );
 
 		$this->expectOutputString(
-			'<select name="field_id" id="field_id"><option value="" selected disabled>Please select a payment method</option><option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option><option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option></select>'
+			'<select name="field_id" id="field_id">' .
+				'<option value="" selected disabled>Please select a payment method</option>' .
+				'<option value="' . $tokens[0]->get_id() . '" >' . $tokens[0]->get_display_name() . '</option>' .
+				'<option value="' . $tokens[1]->get_id() . '" >' . $tokens[1]->get_display_name() . '</option>' .
+			'</select>'
 		);
 
 		$this->wcpay_gateway->render_custom_payment_meta_input( $subscription, 'field_id', '' );

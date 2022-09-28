@@ -18,6 +18,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
+use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -70,6 +71,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
 	 */
 	private $mock_wcpay_account;
+	/**
+	 * @var \PHPUnit\Framework\MockObject\MockObject|Database_Cache
+	 */
+	private $mock_db_cache;
 
 	/**
 	 * Pre-test setup
@@ -119,6 +124,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			Sepa_Payment_Method::class,
 			P24_Payment_Method::class,
 			Ideal_Payment_Method::class,
+			Link_Payment_Method::class,
 		];
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
@@ -429,16 +435,19 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			->with(
 				$this->equalTo(
 					[
-						'statement_descriptor'     => 'test statement descriptor',
-						'business_name'            => 'test business_name',
-						'business_url'             => 'test business_url',
-						'business_support_address' => 'test business_support_address',
-						'business_support_email'   => 'test business_support_email',
-						'business_support_phone'   => 'test business_support_phone',
-						'branding_logo'            => 'test branding_logo',
-						'branding_icon'            => 'test branding_icon',
-						'branding_primary_color'   => 'test branding_primary_color',
-						'branding_secondary_color' => 'test branding_secondary_color',
+						'statement_descriptor'            => 'test statement descriptor',
+						'business_name'                   => 'test business_name',
+						'business_url'                    => 'test business_url',
+						'business_support_address'        => 'test business_support_address',
+						'business_support_email'          => 'test business_support_email',
+						'business_support_phone'          => 'test business_support_phone',
+						'branding_logo'                   => 'test branding_logo',
+						'branding_icon'                   => 'test branding_icon',
+						'branding_primary_color'          => 'test branding_primary_color',
+						'branding_secondary_color'        => 'test branding_secondary_color',
+						'deposit_schedule_interval'       => 'test deposit_schedule_interval',
+						'deposit_schedule_weekly_anchor'  => 'test deposit_schedule_weekly_anchor',
+						'deposit_schedule_monthly_anchor' => 'test deposit_schedule_monthly_anchor',
 					]
 				)
 			);
@@ -454,6 +463,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'account_branding_icon', 'test branding_icon' );
 		$request->set_param( 'account_branding_primary_color', 'test branding_primary_color' );
 		$request->set_param( 'account_branding_secondary_color', 'test branding_secondary_color' );
+		$request->set_param( 'deposit_schedule_interval', 'test deposit_schedule_interval' );
+		$request->set_param( 'deposit_schedule_weekly_anchor', 'test deposit_schedule_weekly_anchor' );
+		$request->set_param( 'deposit_schedule_monthly_anchor', 'test deposit_schedule_monthly_anchor' );
 
 		$this->controller->update_settings( $request );
 	}
@@ -518,6 +530,86 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
 	}
+
+
+	public function deposit_schedules_data_provider() {
+		return [
+			[
+				[ 'deposit_schedule_interval' => 'daily' ],
+				[ 'deposit_schedule_interval' => 'daily' ],
+				'manual',
+			],
+			[
+				[
+					'deposit_schedule_interval'      => 'weekly',
+					'deposit_schedule_weekly_anchor' => 'tuesday',
+				],
+				[
+					'deposit_schedule_interval'      => 'weekly',
+					'deposit_schedule_weekly_anchor' => 'tuesday',
+				],
+			],
+			[
+				// If only the weekly anchor is sent through as an update, we should re-send through the previously set interval.
+				[ 'deposit_schedule_weekly_anchor' => 'tuesday' ],
+				[
+					'deposit_schedule_interval'      => 'weekly',
+					'deposit_schedule_weekly_anchor' => 'tuesday',
+				],
+				'weekly',
+			],
+			[
+				[
+					'deposit_schedule_interval'       => 'monthly',
+					'deposit_schedule_monthly_anchor' => '3',
+				],
+				[
+					'deposit_schedule_interval'       => 'monthly',
+					'deposit_schedule_monthly_anchor' => '3',
+				],
+			],
+			[
+				// If only the monthly anchor is sent through as an update, we should re-send through the previously set interval.
+				[ 'deposit_schedule_monthly_anchor' => '6' ],
+				[
+					'deposit_schedule_interval'       => 'monthly',
+					'deposit_schedule_monthly_anchor' => '6',
+				],
+				'monthly',
+			],
+			[
+				[ 'deposit_schedule_interval' => 'manual' ],
+				[ 'deposit_schedule_interval' => 'manual' ],
+			],
+			[
+				// we don't expect to send an update request if the settings match the current settings.
+				[ 'deposit_schedule_interval' => 'daily' ],
+				null,
+				'daily',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider deposit_schedules_data_provider
+	 */
+	public function test_update_account_deposit_schedule( $request_params, $expected_updates, $initial_period = '' ) {
+
+		$this->mock_wcpay_account->method( 'get_deposit_schedule_interval' )->willReturn( $initial_period );
+		$this->mock_wcpay_account->method( 'is_stripe_connected' )->willReturn( true );
+
+		$request = new WP_REST_Request();
+		foreach ( $request_params as $key => $value ) {
+			$request->set_param( $key, $value );
+		}
+
+		$this->mock_wcpay_account->expects( null === $expected_updates ? $this->never() : $this->once() )
+								->method( 'update_stripe_account' )
+								->with( $expected_updates );
+
+		$this->controller->update_settings( $request );
+	}
+
 
 	/**
 	 * @param bool $can_manage_woocommerce
