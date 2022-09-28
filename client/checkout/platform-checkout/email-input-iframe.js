@@ -326,7 +326,7 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 					return;
 				}
 			} catch ( err ) {
-				if ( 20 !== err.code ) {
+				if ( 'AbortError' !== err.name ) {
 					showErrorMessage();
 					spinner.remove();
 				}
@@ -385,10 +385,10 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 				}
 			} )
 			.catch( ( err ) => {
-				// Only show the error if it's not a DOMException (20),
-				// for example, fetch being aborted because user
+				// Only show the error if it's not an AbortError,
+				// it occur when the fetch request is aborted because user
 				// clicked the Place Order button while loading.
-				if ( 20 !== err.code ) {
+				if ( 'AbortError' !== err.name ) {
 					showErrorMessage();
 				}
 			} )
