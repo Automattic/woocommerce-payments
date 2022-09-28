@@ -7,8 +7,14 @@ import React from 'react';
  * Internal dependencies
  */
 
-const OnboardingPage = (): JSX.Element => {
-	return <p>Onboarding</p>;
+import RegularOnboardingNotice from './regular-onboarding-notice';
+
+const OnboardingPage: React.FunctionComponent = () => {
+	return (
+		<>
+			<RegularOnboardingNotice />
+		</>
+	);
 };
 
 export default OnboardingPage;
