@@ -22,7 +22,7 @@ const FileUploadPreview = ( {
 }: FileUploadProps ): JSX.Element => {
 	let url =
 		wcpaySettings.restUrl + NAMESPACE.substring( 1 ) + '/file/' + fileName;
-	url = addQueryArgs( url, { as_account: 0 } );
+	url = addQueryArgs( url, { as_account: 1 } );
 
 	return (
 		<>

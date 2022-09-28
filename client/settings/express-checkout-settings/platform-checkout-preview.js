@@ -13,7 +13,7 @@ import { NAMESPACE } from 'wcpay/data/constants';
 export default ( { storeName, storeLogo, ...props } ) => {
 	let storeLogoUrl =
 		wcpaySettings.restUrl + NAMESPACE.substring( 1 ) + '/file/' + storeLogo;
-	storeLogoUrl = addQueryArgs( storeLogoUrl, { as_account: 0 } );
+	storeLogoUrl = addQueryArgs( storeLogoUrl, { as_account: 1 } );
 
 	return (
 		<>
