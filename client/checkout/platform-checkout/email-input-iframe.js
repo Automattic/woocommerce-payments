@@ -70,12 +70,12 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 	const iframeWrapper = document.createElement( 'div' );
 	iframeWrapper.setAttribute( 'role', 'dialog' );
 	iframeWrapper.setAttribute( 'aria-modal', 'true' );
-	iframeWrapper.classList.add( 'platform-checkout-sms-otp-iframe-wrapper' );
+	iframeWrapper.classList.add( 'platform-checkout-otp-iframe-wrapper' );
 
 	// Make the otp iframe.
 	const iframe = document.createElement( 'iframe' );
 	iframe.title = __( 'WooPay SMS code verification', 'woocommerce-payments' );
-	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
+	iframe.classList.add( 'platform-checkout-otp-iframe' );
 
 	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
 	iframe.classList.add( 'intrinsic-ignore' );
@@ -246,7 +246,7 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
-		) }/sms-otp/?${ urlParams.toString() }`;
+		) }/otp/?${ urlParams.toString() }`;
 
 		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( iframeWrapper, null );
