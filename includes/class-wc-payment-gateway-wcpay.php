@@ -669,31 +669,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_payment_fields_js_config() {
 		$platform_checkout_util = new Platform_Checkout_Utilities();
+		$wc_checkout            = WC_Checkout::instance();
 
 		return [
-			'publishableKey'                 => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-			'testMode'                       => $this->is_in_test_mode(),
-			'accountId'                      => $this->account->get_stripe_account_id(),
-			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
-			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'createPaymentIntentNonce'       => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
-			'updatePaymentIntentNonce'       => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
-			'initPlatformCheckoutNonce'      => wp_create_nonce( 'wcpay_init_platform_checkout_nonce' ),
-			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
-			'fraudServices'                  => $this->account->get_fraud_services_config(),
-			'features'                       => $this->supports,
-			'forceNetworkSavedCards'         => WC_Payments::is_network_saved_cards_enabled() || $this->should_use_stripe_platform_on_checkout_page(),
-			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
-			'isSavedCardsEnabled'            => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled'      => $platform_checkout_util->should_enable_platform_checkout( $this ),
-			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
-			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
-			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
-			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,
-			'platformCheckoutNeedLogin'      => ! is_user_logged_in() && $platform_checkout_util->is_subscription_item_in_cart(),
-			'userExistsEndpoint'             => get_rest_url( null, '/wc/v3/users/exists' ),
+			'publishableKey'                   => $this->account->get_publishable_key( $this->is_in_test_mode() ),
+			'testMode'                         => $this->is_in_test_mode(),
+			'accountId'                        => $this->account->get_stripe_account_id(),
+			'ajaxUrl'                          => admin_url( 'admin-ajax.php' ),
+			'wcAjaxUrl'                        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'createSetupIntentNonce'           => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
+			'createPaymentIntentNonce'         => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
+			'updatePaymentIntentNonce'         => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
+			'initPlatformCheckoutNonce'        => wp_create_nonce( 'wcpay_init_platform_checkout_nonce' ),
+			'genericErrorMessage'              => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
+			'fraudServices'                    => $this->account->get_fraud_services_config(),
+			'features'                         => $this->supports,
+			'forceNetworkSavedCards'           => WC_Payments::is_network_saved_cards_enabled() || $this->should_use_stripe_platform_on_checkout_page(),
+			'locale'                           => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			'isUPEEnabled'                     => WC_Payments_Features::is_upe_enabled(),
+			'isSavedCardsEnabled'              => $this->is_saved_cards_enabled(),
+			'isPlatformCheckoutEnabled'        => $platform_checkout_util->should_enable_platform_checkout( $this ),
+			'platformCheckoutHost'             => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
+			'platformTrackerNonce'             => wp_create_nonce( 'platform_tracks_nonce' ),
+			'accountIdForIntentConfirmation'   => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
+			'wcpayVersionNumber'               => WCPAY_VERSION_NUMBER,
+			'platformCheckoutNeedLogin'        => ! is_user_logged_in() && $wc_checkout->is_registration_required(),
+			'userExistsEndpoint'               => get_rest_url( null, '/wc/v3/users/exists' ),
+			'platformCheckoutRequestSignature' => $platform_checkout_util->get_platform_checkout_request_signature(),
+			'platformCheckoutMerchantId'       => \Jetpack_Options::get_option( 'id' ),
 		];
 	}
 
@@ -1250,17 +1253,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 
-			// Make sure the payment method being charged was created in the platform.
-			if (
-				! $payment_information->is_using_saved_payment_method() &&
-				$this->should_use_stripe_platform_on_checkout_page() &&
-				// This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
-				! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
-				filter_var( $_POST['wcpay-is-platform-payment-method'], FILTER_VALIDATE_BOOLEAN ) // phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			) {
-				// This payment method was created under the platform account.
-				$additional_api_parameters['is_platform_payment_method'] = 'true';
-			}
+			$additional_api_parameters['is_platform_payment_method'] = $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() );
 
 			// This meta is only set by WooPay.
 			// We want to handle the intention creation differently when there are subscriptions.
@@ -1369,6 +1362,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_information->get_payment_method(),
 					$customer_id,
 					false,
+					$this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ),
 					$save_user_in_platform_checkout,
 					$metadata
 				);
@@ -2553,13 +2547,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$process_item  = static function( $item ) use ( $currency ) {
 			// Check to see if it is a WC_Order_Item_Product or a WC_Order_Item_Fee.
 			if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
-				$subtotal   = $item->get_subtotal();
-				$product_id = $item->get_variation_id()
+				$subtotal     = $item->get_subtotal();
+				$product_id   = $item->get_variation_id()
 					? $item->get_variation_id()
 					: $item->get_product_id();
+				$product_code = substr( $product_id, 0, 12 );
 			} else {
-				$subtotal   = $item->get_total();
-				$product_id = substr( sanitize_title( $item->get_name() ), 0, 12 );
+				$subtotal     = $item->get_total();
+				$product_code = substr( sanitize_title( $item->get_name() ), 0, 12 );
 			}
 
 			$description = substr( $item->get_name(), 0, 26 );
@@ -2575,7 +2570,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			return (object) [
-				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.
+				'product_code'        => (string) $product_code, // Up to 12 characters that uniquely identify the product.
 				'product_description' => $description, // Up to 26 characters long describing the product.
 				'unit_cost'           => $unit_cost, // Cost of the product, in cents, as a non-negative integer.
 				'quantity'            => $quantity, // The number of items of this type sold, as a non-negative integer.
@@ -2938,7 +2933,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $this->payments_api_client->create_and_confirm_setup_intent(
 			$payment_information->get_payment_method(),
 			$customer_id,
-			$should_save_in_platform_account
+			$should_save_in_platform_account,
+			$this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() )
 		);
 	}
 
@@ -3212,11 +3208,49 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Add extra `wcpay-checkout-email-field` class.
 			$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
 
-			// Append StripeLink modal trigger button for logged in users.
-			$fields['billing_email']['label'] = $fields['billing_email']['label']
-				. ' <button class="wcpay-stripelink-modal-trigger"></button>';
+			add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * Append StripeLink button within email field for logged in users.
+	 *
+	 * @param string $field    - HTML content within email field.
+	 * @param string $key      - Key.
+	 * @param array  $args     - Arguments.
+	 * @param string $value    - Default value.
+	 *
+	 * @return string $field    - Updated email field content with the button appended.
+	 */
+	public function append_stripelink_button( $field, $key, $args, $value ) {
+		if ( 'billing_email' === $key ) {
+			$field = str_replace( '</span>', '<button class="wcpay-stripelink-modal-trigger"></button></span>', $field );
+		}
+		return $field;
+	}
+
+	/**
+	 * Determine if current payment method is a platform payment method.
+	 *
+	 * @param boolean $is_using_saved_payment_method If it is using saved payment method.
+	 *
+	 * @return boolean True if it is a platform payment method.
+	 */
+	private function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+		// Make sure the payment method being charged was created in the platform.
+		if (
+			! $is_using_saved_payment_method &&
+			$this->should_use_stripe_platform_on_checkout_page() &&
+			// This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
+			! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
+			filter_var( $_POST['wcpay-is-platform-payment-method'], FILTER_VALIDATE_BOOLEAN ) // phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		) {
+			// This payment method was created under the platform account.
+			return true;
+		}
+
+		return false;
 	}
 }
