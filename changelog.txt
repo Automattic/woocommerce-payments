@@ -18,7 +18,6 @@
 * Fix - Hide Link payment method for non-us accounts.
 * Fix - Limit level 3 product code within 12 digits.
 * Fix - Prevent circumstance where WCPay Subscriptions customers could be double charged when the WC Subscriptions extension is active.
-* Fix - Retain test mode context in CRON jobs queued up while checking out.
 * Fix - The feature flag for the task list in Payments > Overview page was not passed correctly. We now see the business details and reconnect wpcom user task when appropriate.
 * Update - Add timezone formatting only in case client provides user timezone.
 * Dev - Bump minimum required version of WooCommerce from 6.4 to 6.6.
