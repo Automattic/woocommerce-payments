@@ -42,7 +42,7 @@ class WC_Payment_Token_WCPay_Link extends WC_Payment_Token {
 	];
 
 	/**
-	 * Get type to display to user.
+	 * Get payment method type to display to user.
 	 *
 	 * @param  string $deprecated Deprecated since WooCommerce 3.0.
 	 * @return string
