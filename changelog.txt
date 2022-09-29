@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 4.8.0 - 2022-xx-xx =
+= 4.8.0 - 2022-09-29 =
 * Add - Add bundle size check for PR's.
 * Add - Allow subscription processing via WooPay.
 * Add - Auto redirect logged in platform checkout users.
