@@ -8,11 +8,14 @@ import React from 'react';
  */
 
 import RegularOnboardingNotice from './regular-onboarding-notice';
+import OnboardingForm from './onboarding-form';
 
 const OnboardingPage: React.FunctionComponent = () => {
 	return (
 		<>
 			<RegularOnboardingNotice />
+			<br />
+			<OnboardingForm />
 		</>
 	);
 };
