@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.8.0
+Stable tag: 4.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 4.8.0 - 2022-09-28 =
+= 4.8.0 - 2022-xx-xx =
 * Add - Add bundle size check for PR's.
 * Add - Allow subscription processing via WooPay.
 * Add - Auto redirect logged in platform checkout users.
