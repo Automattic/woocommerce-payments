@@ -57,9 +57,8 @@ class WC_Helper_Product {
 	}
 
 	/**
-	 * Create simple product.
+	 * Create free product.
 	 *
-	 * @since 2.3
 	 * @param bool $save Save or return object.
 	 * @return WC_Product_Simple
 	 */

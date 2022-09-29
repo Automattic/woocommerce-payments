@@ -283,8 +283,10 @@ class WC_Payments {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 		}
 
-		// // Load platform checkout save user section if feature is enabled.
-		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_platform_checkout' ] );
+		// Load platform checkout save user section if feature is enabled.
+		// It needs to be after calculate totals due to subscriptions with trial
+		// that can change the WC()->cart->needs_payment() value.
+		add_action( 'woocommerce_after_calculate_totals', [ __CLASS__, 'init_platform_checkout' ] );
 
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
