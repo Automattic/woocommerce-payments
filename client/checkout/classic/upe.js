@@ -523,6 +523,25 @@ jQuery( function ( $ ) {
 				// Log payment errors on charge and then throw the error.
 				const logError = await api.logPaymentError( error.charge );
 				if ( logError ) {
+					if ( 'lock_timeout' === error.code ) {
+						const paymentIntent = getPaymentIntentFromSession();
+
+						if ( paymentIntent.hasOwnProperty( 'clientSecret' ) ) {
+							const paymentIntentResponse = await api
+								.getStripe()
+								.retrievePaymentIntent(
+									paymentIntent.clientSecret
+								);
+							if (
+								! paymentIntentResponse.error &&
+								'succeeded' ===
+									paymentIntentResponse.paymentIntent.status
+							) {
+								window.location.href = redirectUrl;
+								return;
+							}
+						}
+					}
 					throw error;
 				}
 			}
