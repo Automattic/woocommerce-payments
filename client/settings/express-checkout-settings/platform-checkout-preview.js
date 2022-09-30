@@ -3,7 +3,6 @@
  * External dependencies
  */
 import React from 'react';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies.
@@ -11,9 +10,8 @@ import { addQueryArgs } from '@wordpress/url';
 import { NAMESPACE } from 'wcpay/data/constants';
 
 export default ( { storeName, storeLogo, ...props } ) => {
-	let storeLogoUrl =
+	const storeLogoUrl =
 		wcpaySettings.restUrl + NAMESPACE.substring( 1 ) + '/file/' + storeLogo;
-	storeLogoUrl = addQueryArgs( storeLogoUrl, { as_account: 1 } );
 
 	return (
 		<>
