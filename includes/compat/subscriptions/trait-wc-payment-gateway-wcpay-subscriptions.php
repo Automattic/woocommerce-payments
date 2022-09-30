@@ -265,6 +265,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
+		// Exit early if the order belongs to a WCPay Subscription. The payment will be processed by the subscription via webhooks.
+		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
+			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+				return;
+			}
+		}
+
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
 			$this->process_payment_for_order( null, $payment_information );

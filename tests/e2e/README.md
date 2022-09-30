@@ -175,7 +175,7 @@ Handy utility scripts for managing environment:
 
 ## Writing tests
 
-Package `@automattic/puppeteer-utils` overrides `it` method to attach custom reporter for failed tests.
+Package `@woocommerce/e2e-environment` overrides `it` method to attach custom reporter for failed tests.
 It is important to write test cases within `it()` rather than `test()` function to make sure failed tests are reported to Slack channel.
 
 ## Debugging tests
@@ -184,7 +184,7 @@ Create file `local.env` inside `tests/e2e/config` folder and set `E2E_DEBUG=true
 
 ## Slack integration
 
-Slack reporter requires custom jest config provided by `@automattic/puppeteer-utils` package. This config is only applied with `npm run test:e2e` command.
+Slack reporter requires custom jest config provided by `@woocommerce/e2e-environment` package. This config is only applied with `npm run test:e2e` command.
 
 **Configuration steps:**
 
