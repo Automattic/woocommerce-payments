@@ -2013,14 +2013,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_get_authorization_not_found() {
 		$payment_intent_id = 'pi_123smtm';
-		$error_code        = 'authorization_missing';
 		$error_message     = 'The authorization you asked for does not exist';
 
 		$this->set_http_mock_response(
 			404,
 			[
 				'error' => [
-					'code'    => $error_code,
+					'code'    => 'authorization_missing',
 					'message' => $error_message,
 				],
 			]
