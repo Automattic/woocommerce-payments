@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix the rate calculation when using Table Rate Shipping and per item or per line item calculation type
