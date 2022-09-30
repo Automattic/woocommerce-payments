@@ -1,4 +1,11 @@
 /**
+ * External dependencies
+ */
+import Utf8 from 'crypto-js/enc-utf8';
+import AES from 'crypto-js/aes';
+import Pkcs7 from 'crypto-js/pad-pkcs7';
+
+/**
  * Generates terms parameter for UPE, with value set for reusable payment methods
  *
  * @param {Object} paymentMethodsConfig Object mapping payment method strings to their settings.
@@ -35,4 +42,23 @@ export const getCookieValue = ( name ) =>
 export const isWCPayChosen = function () {
 	return document.getElementById( 'payment_method_woocommerce_payments' )
 		.checked;
+};
+
+export const decryptClientSecret = function (
+	encryptedValue,
+	stripeAccountId
+) {
+	if ( 3 < encryptedValue.length && 'pi_' !== encryptedValue.slice( 0, 3 ) ) {
+		return Utf8.stringify(
+			AES.decrypt(
+				encryptedValue,
+				Utf8.parse( stripeAccountId.slice( 5 ) ),
+				{
+					iv: Utf8.parse( 'WC'.repeat( 8 ) ),
+					padding: Pkcs7,
+				}
+			)
+		);
+	}
+	return encryptedValue;
 };

@@ -12,7 +12,12 @@ import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import {
+	getTerms,
+	getCookieValue,
+	isWCPayChosen,
+	decryptClientSecret,
+} from '../utils/upe';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
@@ -235,7 +240,10 @@ jQuery( function ( $ ) {
 		}
 
 		elements = api.getStripe().elements( {
-			clientSecret,
+			clientSecret: decryptClientSecret(
+				clientSecret,
+				window.wcpay_config.accountId
+			),
 			appearance,
 			fonts: getFontRulesFromPage(),
 			loader: 'never',
