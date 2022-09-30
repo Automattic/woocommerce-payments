@@ -19,6 +19,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
+use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -108,15 +109,16 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$mock_payment_methods   = [];
 		$payment_method_classes = [
-			Payment_Method::CARD       => CC_Payment_Method::class,
-			Payment_Method::GIROPAY    => Giropay_Payment_Method::class,
-			Payment_Method::SOFORT     => Sofort_Payment_Method::class,
-			Payment_Method::BANCONTACT => Bancontact_Payment_Method::class,
-			Payment_Method::EPS        => EPS_Payment_Method::class,
-			Payment_Method::P24        => P24_Payment_Method::class,
-			Payment_Method::IDEAL      => Ideal_Payment_Method::class,
-			Payment_Method::SEPA       => Sepa_Payment_Method::class,
-			Payment_Method::BECS       => Becs_Payment_Method::class,
+			Becs_Payment_Method::class,
+			CC_Payment_Method::class,
+			Bancontact_Payment_Method::class,
+			Eps_Payment_Method::class,
+			Giropay_Payment_Method::class,
+			Sofort_Payment_Method::class,
+			Sepa_Payment_Method::class,
+			P24_Payment_Method::class,
+			Ideal_Payment_Method::class,
+			Link_Payment_Method::class,
 		];
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
