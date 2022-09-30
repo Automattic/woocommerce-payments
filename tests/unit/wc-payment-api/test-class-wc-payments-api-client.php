@@ -2003,7 +2003,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		);
 
 		$authorization = $this->payments_api_client->get_authorization( $payment_intent_id );
-		$this->assertEquals( $payment_intent_id, $authorization['payment_intent_id'] );
+		$this->assertSame( $payment_intent_id, $authorization['payment_intent_id'] );
 	}
 
 	/**
