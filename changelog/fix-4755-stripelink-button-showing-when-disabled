@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Hide button below email field at checkout, when StripeLink is disabled.
