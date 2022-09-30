@@ -2573,7 +2573,7 @@ class WC_Payments_API_Client {
 	 * @return array
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
-	public function list_authorizations( $page = 0, $page_size = 25, $sort = 'created', $direction = 'desc' ) {
+	public function list_authorizations( int $page = 0, int $page_size = 25, string $sort = 'created', string $direction = 'desc' ) {
 		$query = [
 			'page'      => $page,
 			'pagesize'  => $page_size,
@@ -2581,9 +2581,7 @@ class WC_Payments_API_Client {
 			'direction' => $direction,
 		];
 
-		$authorizations = $this->request( $query, self::AUTHORIZATIONS_API, self::GET );
-
-		return $authorizations;
+		return $this->request( $query, self::AUTHORIZATIONS_API, self::GET );
 	}
 
 	/**
@@ -2602,7 +2600,7 @@ class WC_Payments_API_Client {
 	 * @param string $payment_intent_id id of requested transaction.
 	 * @return array authorization object.
 	 */
-	public function get_authorization( $payment_intent_id ) {
+	public function get_authorization( string $payment_intent_id ) {
 		return $this->request( [], self::AUTHORIZATIONS_API . '/' . $payment_intent_id, self::GET );
 	}
 }
