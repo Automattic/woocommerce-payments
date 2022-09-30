@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-The feature flag for the task list in Payments > Overview page was not passed correctly. We now see the business details and reconnect wpcom user task when appropriate.
