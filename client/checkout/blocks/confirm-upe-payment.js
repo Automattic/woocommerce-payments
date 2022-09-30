@@ -4,6 +4,7 @@
  * @param {WCPayAPI} api            The API used for connection both with the server and Stripe.
  * @param {string}   redirectUrl    The URL to redirect to after confirming the intent on Stripe.
  * @param {boolean}  paymentNeeded  A boolean whether a payment or a setup confirmation is needed.
+ * @param {string|null}   paymentIntentSecret Payment Intent Secret used to validate payment on rate limit error.
  * @param {Object}   elements       Reference to the UPE elements mounted on the page.
  * @param {Object}   billingData    An object containing the customer's billing data.
  * @param {Object}   emitResponse   Various helpers for usage with observer response objects.
@@ -13,6 +14,7 @@ export default async function confirmUPEPayment(
 	api,
 	redirectUrl,
 	paymentNeeded,
+	paymentIntentSecret,
 	elements,
 	billingData,
 	emitResponse
@@ -44,10 +46,11 @@ export default async function confirmUPEPayment(
 		};
 
 		if ( paymentNeeded ) {
-			const { error } = await api.getStripe().confirmPayment( {
-				elements,
+			const { error } = await api.handlePaymentConfirmation(
 				confirmParams,
-			} );
+				elements,
+				paymentIntentSecret
+			);
 			if ( error ) {
 				throw error;
 			}

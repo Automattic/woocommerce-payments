@@ -400,7 +400,7 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Updates a payment intent with data from order: customer, level3 data and and maybe sets the payment for future use.
+	 * Updates a payment intent with data from order: customer, level3 data and maybe sets the payment for future use.
 	 *
 	 * @param {string} paymentIntentId The id of the payment intent.
 	 * @param {int} orderId The id of the order.
@@ -442,6 +442,45 @@ export default class WCPayAPI {
 					throw new Error( error.statusText );
 				}
 			} );
+	}
+
+	/**
+	 * Confirm Stripe payment with fallback for rate limit error.
+	 *
+	 * @param {Object} confirmParams Confirm payment request parameters.
+	 * @param {Object|StripeElements} elements Stripe elements.
+	 * @param {string|null} paymentIntentSecret Payment intent secret used to validate payment on rate limit error
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	async handlePaymentConfirmation(
+		confirmParams,
+		elements,
+		paymentIntentSecret
+	) {
+		const stripe = this.getStripe();
+		const confirmPaymentResult = await stripe.confirmPayment( {
+			elements,
+			confirmParams,
+		} );
+		if (
+			paymentIntentSecret &&
+			confirmPaymentResult.error &&
+			'lock_timeout' === confirmPaymentResult.error.code
+		) {
+			const paymentIntentResult = await stripe.retrievePaymentIntent(
+				paymentIntentSecret
+			);
+			if (
+				! paymentIntentResult.error &&
+				'succeeded' === paymentIntentResult.paymentIntent.status
+			) {
+				window.location.href = confirmParams.redirect_url;
+				return paymentIntentResult; //To prevent returning an error during the redirection.
+			}
+		}
+
+		return confirmPaymentResult;
 	}
 
 	/**

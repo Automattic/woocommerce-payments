@@ -52,6 +52,7 @@ jQuery( function ( $ ) {
 	let elements = null;
 	let upeElement = null;
 	let paymentIntentId = null;
+	let paymentIntentClientSecret = null;
 	let isUPEComplete = false;
 	const hiddenBillingFields = {
 		name:
@@ -226,6 +227,7 @@ jQuery( function ( $ ) {
 		}
 
 		paymentIntentId = intentId;
+		paymentIntentClientSecret = clientSecret;
 
 		let appearance = getConfig( 'upeAppearance' );
 
@@ -379,12 +381,13 @@ jQuery( function ( $ ) {
 		}
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
-			const { error } = await api.getStripe().confirmPayment( {
-				elements,
-				confirmParams: {
+			const { error } = await api.handlePaymentConfirmation(
+				{
 					return_url: returnUrl,
 				},
-			} );
+				elements,
+				null
+			);
 			$form.removeClass( 'processing' ).unblock();
 			showErrorCheckout( error.message );
 			return false;
@@ -429,12 +432,13 @@ jQuery( function ( $ ) {
 				$( '#wcpay_payment_country' ).val()
 			);
 
-			const { error } = await api.getStripe().confirmPayment( {
-				elements,
-				confirmParams: {
+			const { error } = await api.handlePaymentConfirmation(
+				{
 					return_url: returnUrl,
 				},
-			} );
+				elements,
+				getPaymentIntentSecret()
+			);
 			if ( error ) {
 				throw error;
 			}
@@ -513,9 +517,11 @@ jQuery( function ( $ ) {
 			};
 			let error;
 			if ( response.payment_needed ) {
-				( { error } = await api
-					.getStripe()
-					.confirmPayment( upeConfig ) );
+				( { error } = await api.handlePaymentConfirmation(
+					upeConfig.confirmParams,
+					elements,
+					getPaymentIntentSecret()
+				) );
 			} else {
 				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
 			}
@@ -523,25 +529,6 @@ jQuery( function ( $ ) {
 				// Log payment errors on charge and then throw the error.
 				const logError = await api.logPaymentError( error.charge );
 				if ( logError ) {
-					if ( 'lock_timeout' === error.code ) {
-						const paymentIntent = getPaymentIntentFromSession();
-
-						if ( paymentIntent.hasOwnProperty( 'clientSecret' ) ) {
-							const paymentIntentResponse = await api
-								.getStripe()
-								.retrievePaymentIntent(
-									paymentIntent.clientSecret
-								);
-							if (
-								! paymentIntentResponse.error &&
-								'succeeded' ===
-									paymentIntentResponse.paymentIntent.status
-							) {
-								window.location.href = redirectUrl;
-								return;
-							}
-						}
-					}
 					throw error;
 				}
 			}
@@ -652,6 +639,19 @@ jQuery( function ( $ ) {
 		}
 
 		return {};
+	}
+
+	/**
+	 * Returns stripe intent secret that will be used to confirm payment
+	 *
+	 * @return {string | null} The intent secret required to confirm payment during the rate limit error.
+	 */
+	function getPaymentIntentSecret() {
+		if ( paymentIntentClientSecret ) {
+			return paymentIntentClientSecret;
+		}
+		const { clientSecret } = getPaymentIntentFromSession();
+		return clientSecret ? clientSecret : null;
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
