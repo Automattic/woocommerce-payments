@@ -80,6 +80,10 @@ class Platform_Checkout_Save_User {
 				$metadata['platform_checkout_phone']                = $platform_checkout_phone;
 		}
 
+		if ( ! empty( $session_data ) ) {
+			WC()->session->set( 'platform-checkout-user-data', null );
+		}
+
 		return $metadata;
 	}
 }
