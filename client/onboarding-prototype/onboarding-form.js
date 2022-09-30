@@ -9,6 +9,7 @@ import {
 	SelectControl,
 	TextControl,
 } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
@@ -84,6 +85,7 @@ const initialValues = Object.keys( controls ).reduce(
 
 const OnboardingForm = () => {
 	const [ accountData, setAccountData ] = useState( initialValues );
+	const [ isSubmitted, setIsSubmitted ] = useState( false );
 
 	const getControlProps = ( name ) => ( {
 		label: controls[ name ].label,
@@ -93,7 +95,13 @@ const OnboardingForm = () => {
 	} );
 
 	const handleSubmit = () => {
-		alert( JSON.stringify( fromDotNotation( accountData ), null, 2 ) );
+		setIsSubmitted( true );
+
+		const url = addQueryArgs( wcpaySettings.connectUrl, {
+			progressive: fromDotNotation( accountData ),
+		} );
+
+		window.location = url;
 	};
 
 	return (
@@ -119,7 +127,12 @@ const OnboardingForm = () => {
 					{ ...getControlProps( 'individual.first_name' ) }
 				/>
 				<TextControl { ...getControlProps( 'individual.last_name' ) } />
-				<Button isPrimary onClick={ handleSubmit }>
+				<Button
+					isPrimary
+					isBusy={ isSubmitted }
+					disabled={ isSubmitted }
+					onClick={ handleSubmit }
+				>
 					{ strings.submit }
 				</Button>
 			</CardBody>

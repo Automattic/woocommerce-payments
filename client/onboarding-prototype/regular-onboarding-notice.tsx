@@ -10,7 +10,7 @@ import { Button, Notice } from '@wordpress/components';
 import strings from './strings';
 
 const RegularOnboardingNotice: React.FunctionComponent = () => {
-	const [ isSubmitted, setSubmitted ] = useState( false );
+	const [ isSubmitted, setIsSubmitted ] = useState( false );
 
 	return (
 		<Notice isDismissible={ false }>
@@ -18,7 +18,7 @@ const RegularOnboardingNotice: React.FunctionComponent = () => {
 				isPrimary
 				isBusy={ isSubmitted }
 				disabled={ isSubmitted }
-				onClick={ () => setSubmitted( true ) }
+				onClick={ () => setIsSubmitted( true ) }
 				href={ wcpaySettings.connectUrl }
 			>
 				{ strings.connect }

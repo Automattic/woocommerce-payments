@@ -980,6 +980,9 @@ class WC_Payments_Account {
 			$country = null;
 		}
 
+		// Progressive onboarding prefill.
+		$progressive_onboarding = isset( $_GET['progressive'] ) ? wc_clean( wp_unslash( $_GET['progressive'] ) ) : [];
+
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
 			array_merge(
@@ -995,7 +998,8 @@ class WC_Payments_Account {
 				'site_username' => $current_user->user_login,
 				'site_locale'   => get_locale(),
 			],
-			$this->get_actioned_notes()
+			$this->get_actioned_notes(),
+			array_filter( $progressive_onboarding )
 		);
 
 		delete_transient( self::ON_BOARDING_STARTED_TRANSIENT );

@@ -1180,12 +1180,13 @@ class WC_Payments_API_Client {
 	 * @param array  $business_data  - Data to prefill the form.
 	 * @param array  $site_data      - Data to track ToS agreement.
 	 * @param array  $actioned_notes - Actioned WCPay note names to be sent to the on-boarding flow.
+	 * @param array  $account_data   - Data to prefill the progressive onboarding.
 	 *
 	 * @return array An array containing the url and state fields.
 	 *
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
+	public function get_onboarding_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [], $account_data = [] ) {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -1194,6 +1195,8 @@ class WC_Payments_API_Client {
 				'site_data'           => $site_data,
 				'create_live_account' => ! $this->is_in_dev_mode(),
 				'actioned_notes'      => $actioned_notes,
+				'progressive'         => ! empty( $account_data ),
+				'account_data'        => $account_data,
 			]
 		);
 
