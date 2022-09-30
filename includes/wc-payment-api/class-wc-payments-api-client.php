@@ -216,7 +216,6 @@ class WC_Payments_API_Client {
 		$request                   = [];
 		$request['amount']         = $amount;
 		$request['currency']       = $currency_code;
-		$request['confirm']        = 'true';
 		$request['payment_method'] = $payment_method_id;
 		$request['customer']       = $customer_id;
 		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
@@ -230,6 +229,10 @@ class WC_Payments_API_Client {
 
 		$request             = array_merge( $request, $additional_parameters );
 		$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
+
+		if ( apply_filters( 'wcpay_server_side_intent_confirmation', true ) || $off_session ) {
+			$request['confirm'] = 'true';
+		}
 
 		if ( $off_session ) {
 			$request['off_session'] = 'true';
