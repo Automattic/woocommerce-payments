@@ -98,7 +98,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->title              = $payment_method->get_title();
 
 		add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
-		add_action( "wc_ajax_wcpay_update_payment_inten_ $this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
+		add_action( "wc_ajax_wcpay_update_payment_intent_ $this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
 		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
 
 		if ( 'card' !== $this->stripe_id ) {
@@ -107,6 +107,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		} else {
 			// Only add these filters once.
 			add_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] );
+			add_action( 'wc_ajax_wcpay_update_payment_method_type', [ $this, 'update_payment_method_type' ] );
 			add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
 			add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
 			add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
@@ -175,6 +176,37 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
 
 			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country ), 200 );
+		} catch ( Exception $e ) {
+			// Send back error so it can be displayed to the customer.
+			wp_send_json_error(
+				[
+					'error' => [
+						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
+					],
+				]
+			);
+		}
+	}
+
+	/**
+	 * Handle AJAX request for updating a payment intent's payment method types array for Stripe UPE.
+	 *
+	 * @throws Process_Payment_Exception - If nonce or setup intent is invalid.
+	 */
+	public function update_payment_method_type() {
+		try {
+			$is_nonce_valid = check_ajax_referer( 'wcpay_update_payment_method_type_nonce', false, false );
+			if ( ! $is_nonce_valid ) {
+				throw new Process_Payment_Exception(
+					__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+					'wcpay_upe_intent_error'
+				);
+			}
+
+			$payment_intent_id         = isset( $_POST['payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['payment_intent_id'] ) ) : '';
+			$selected_upe_payment_type = isset( $_POST['selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['selected_upe_payment_type'] ) ) : '';
+
+			wp_send_json_success( $this->payments_api_client->update_intention_payment_method_type( $payment_intent_id, $selected_upe_payment_type ), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(

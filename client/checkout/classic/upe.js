@@ -43,6 +43,7 @@ jQuery( function ( $ ) {
 		gatewayUPEComponents[ paymentMethodType ] = {
 			elements: null,
 			upeElement: null,
+			domElement: null,
 			isUPEComplete: null,
 			country: null,
 		};
@@ -125,12 +126,11 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Finds selected payment gateway and returns matching Stripe payment method for gateway.
+	 * Returns DOM id of currently selected payment gateway.
 	 *
-	 * @return {string} Stripe payment method type
+	 * @return {string} Selected gateway DOM ID.
 	 */
-	const getSelectedGatewayPaymentMethod = () => {
-		const gatewayCardId = getUPEConfig( 'gatewayId' );
+	const getSelectedGatewayId = () => {
 		let selectedGatewayId = null;
 
 		// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
@@ -148,6 +148,18 @@ jQuery( function ( $ ) {
 		if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
 			selectedGatewayId = 'payment_method_woocommerce_payments_card';
 		}
+
+		return selectedGatewayId;
+	};
+
+	/**
+	 * Finds selected payment gateway and returns matching Stripe payment method for gateway.
+	 *
+	 * @return {string} Stripe payment method type
+	 */
+	const getSelectedGatewayPaymentMethod = () => {
+		const gatewayCardId = getUPEConfig( 'gatewayId' );
+		const selectedGatewayId = getSelectedGatewayId();
 
 		let selectedPaymentMethod = null;
 
@@ -190,16 +202,25 @@ jQuery( function ( $ ) {
 		};
 	};
 
-	const setSharedIntent = async function ( isSetupIntent = false ) {
+	/**
+	 * Set shared payment intent for all payment elements to global components array.
+	 *
+	 * @param {string} paymentMethodType Payment method type.
+	 * @param {boolean} isSetupIntent Whether intent is payment or setup.
+	 */
+	const setSharedIntent = async function (
+		paymentMethodType,
+		isSetupIntent = false
+	) {
 		let { intentId, clientSecret } = isSetupIntent
-			? getSetupIntentFromSession( 'card' )
-			: getPaymentIntentFromSession( 'card' );
+			? getSetupIntentFromSession( paymentMethodType )
+			: getPaymentIntentFromSession( paymentMethodType );
 
 		if ( ! intentId ) {
 			try {
 				const newIntent = isSetupIntent
-					? await api.initSetupIntent( 'card' )
-					: await api.createIntent( 'card' );
+					? await api.initSetupIntent( paymentMethodType )
+					: await api.createIntent( paymentMethodType );
 				intentId = newIntent.id;
 				clientSecret = newIntent.client_secret;
 			} catch ( error ) {
@@ -340,15 +361,21 @@ jQuery( function ( $ ) {
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
 	};
 
+	/**
+	 * Mounts all payment elements for all payment method types, using shared intent.
+	 */
 	const mountPaymentElements = async function () {
-		await setSharedIntent();
 		const upeDOMElements = $( '.wcpay-upe-element' );
+		const firstPaymentMethodType = $( upeDOMElements[ 0 ] ).attr(
+			'data-payment-method-type'
+		);
+		await setSharedIntent( firstPaymentMethodType );
 		for ( let i = 0; i < upeDOMElements.length; i++ ) {
 			const upeDOMElement = upeDOMElements[ i ];
 			const paymentMethodType = $( upeDOMElement ).attr(
 				'data-payment-method-type'
 			);
-
+			// gatewayUPEComponents[ paymentMethodType ].domElement = upeDOMElement
 			const upeElement =
 				gatewayUPEComponents[ paymentMethodType ].upeElement;
 			if ( upeElement ) {
@@ -556,7 +583,7 @@ jQuery( function ( $ ) {
 			const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 			formFields.wcpay_payment_country = upeComponents.country;
 			const response = await api.processCheckout(
-				upeComponents.paymentIntentId,
+				gatewayUPEComponents.paymentIntentId,
 				formFields
 			);
 			const redirectUrl = response.redirect_url;
@@ -704,6 +731,22 @@ jQuery( function ( $ ) {
 		return {};
 	}
 
+	const updatePaymentMethodType = async ( selectedPaymentMethodType ) => {
+		const selectedGatewayId = getSelectedGatewayId();
+		const $gatewayContainer = $( selectedGatewayId );
+		try {
+			blockUI( $( $gatewayContainer ) );
+			await api.updatePaymentMethodType(
+				gatewayUPEComponents.paymentIntentId,
+				selectedPaymentMethodType
+			);
+			unblockUI( $gatewayContainer );
+		} catch ( error ) {
+			unblockUI( $gatewayContainer );
+			showErrorCheckout( error.message );
+		}
+	};
+
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_BANCONTACT,
@@ -721,8 +764,7 @@ jQuery( function ( $ ) {
 	$( 'form.checkout' ).on( checkoutEvents, function () {
 		const paymentMethodType = getSelectedGatewayPaymentMethod();
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
-			const paymentIntentId =
-				gatewayUPEComponents[ paymentMethodType ].paymentIntentId;
+			const paymentIntentId = gatewayUPEComponents.paymentIntentId;
 			if ( isUPEEnabled && paymentIntentId ) {
 				handleUPECheckout( $( this ), paymentMethodType );
 				return false;
@@ -782,6 +824,18 @@ jQuery( function ( $ ) {
 			}
 		}
 	);
+
+	$( document.body ).on( 'payment_method_selected', async () => {
+		const selectedPaymentMethodType = getSelectedGatewayPaymentMethod();
+		if ( ! selectedPaymentMethodType ) {
+			return;
+		}
+		const upeElement =
+			gatewayUPEComponents[ selectedPaymentMethodType ].upeElement;
+		if ( isUPEEnabled && upeElement ) {
+			await updatePaymentMethodType( selectedPaymentMethodType );
+		}
+	} );
 
 	// On every page load, check to see whether we should display the authentication
 	// modal and display it if it should be displayed.
