@@ -63,7 +63,7 @@
 	}
 }
 
-.platform-checkout-sms-otp-iframe {
+.platform-checkout-otp-iframe {
 	transition: top 500ms;
 	width: 100%;
 	height: 100vh;
@@ -78,7 +78,7 @@
 	}
 }
 
-.platform-checkout-sms-otp-iframe-wrapper {
+.platform-checkout-otp-iframe-wrapper {
 	.arrow {
 		position: fixed;
 		top: 100%;
@@ -86,7 +86,7 @@
 }
 
 @media screen and ( min-width: 768px ) {
-	.platform-checkout-sms-otp-iframe-wrapper {
+	.platform-checkout-otp-iframe-wrapper {
 		position: fixed;
 		background: rgba( 117, 117, 117, 0.6 );
 		top: 0;
@@ -97,7 +97,7 @@
 		display: block;
 		z-index: 355000;
 
-		.platform-checkout-sms-otp-iframe {
+		.platform-checkout-otp-iframe {
 			transition: none;
 			height: 90vh;
 			max-height: 520px;
