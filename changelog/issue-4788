@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Prevent circumstance where WCPay Subscriptions customers could be double charged when the WC Subscriptions extension is active
