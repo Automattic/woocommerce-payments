@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Remove deprecated beta headers from Stripe requests
