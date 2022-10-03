@@ -30,7 +30,7 @@ import PreviewReceiptPage from 'card-readers/preview-receipt';
 import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
 import OnboardingExperimentPage from 'onboarding-experiment';
-import OnboardinPrototype from 'onboarding-prototype';
+import OnboardingPrototype from 'onboarding-prototype';
 import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
@@ -71,7 +71,7 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardinPrototype,
+			container: OnboardingPrototype,
 			path: '/payments/onboarding-prototype',
 			wpOpenMenu: menuID,
 			breadcrumbs: [

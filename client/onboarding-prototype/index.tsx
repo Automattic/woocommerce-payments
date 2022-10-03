@@ -10,7 +10,7 @@ import React from 'react';
 import RegularOnboardingNotice from './regular-onboarding-notice';
 import OnboardingForm from './onboarding-form';
 
-const OnboardingPage: React.FunctionComponent = () => {
+const OnboardingPrototype: React.FunctionComponent = () => {
 	return (
 		<>
 			<RegularOnboardingNotice />
@@ -20,4 +20,4 @@ const OnboardingPage: React.FunctionComponent = () => {
 	);
 };
 
-export default OnboardingPage;
+export default OnboardingPrototype;
