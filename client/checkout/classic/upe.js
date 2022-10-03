@@ -208,8 +208,8 @@ jQuery( function ( $ ) {
 		isSetupIntent = false
 	) {
 		let { intentId, clientSecret } = isSetupIntent
-			? getSetupIntentFromSession( paymentMethodType )
-			: getPaymentIntentFromSession( paymentMethodType );
+			? getSetupIntentFromSession()
+			: getPaymentIntentFromSession();
 		if ( ! intentId ) {
 			try {
 				const newIntent = isSetupIntent
@@ -710,10 +710,9 @@ jQuery( function ( $ ) {
 	 * @param {string} paymentMethodType Stripe payment method type ID.
 	 * @return {Object} The intent id and client secret required for mounting the UPE element.
 	 */
-	function getPaymentIntentFromSession( paymentMethodType ) {
+	function getPaymentIntentFromSession() {
 		const cartHash = getCookieValue( 'woocommerce_cart_hash' );
-		const upePaymentIntentData =
-			paymentMethodsConfig[ paymentMethodType ].upePaymentIntentData;
+		const upePaymentIntentData = getUPEConfig( 'upePaymentIntentData' );
 
 		if (
 			cartHash &&
@@ -734,9 +733,8 @@ jQuery( function ( $ ) {
 	 * @param {string} paymentMethodType Stripe payment method type ID.
 	 * @return {Object} The intent id and client secret required for mounting the UPE element.
 	 */
-	function getSetupIntentFromSession( paymentMethodType ) {
-		const upeSetupIntentData =
-			paymentMethodsConfig[ paymentMethodType ].upeSetupIntentData;
+	function getSetupIntentFromSession() {
+		const upeSetupIntentData = getUPEConfig( 'upeSetupIntentData' );
 		if ( upeSetupIntentData ) {
 			const intentId = upeSetupIntentData.split( '-' )[ 0 ];
 			const clientSecret = upeSetupIntentData.split( '-' )[ 1 ];
