@@ -15,7 +15,7 @@ import Gridicon from 'gridicons';
 /**
  * Internal dependencies.
  */
-import type { DisputeFileUpload } from 'wcpay/types/disputes';
+import type { FileUploadControlProps } from 'wcpay/types/disputes';
 import FileUploadError from './upload-error';
 import FileUploadPreview from './preview';
 
@@ -32,7 +32,7 @@ export const FileUploadControl = ( {
 	help,
 	showPreview,
 	uploadButtonLabel,
-}: DisputeFileUpload ): JSX.Element => {
+}: FileUploadControlProps ): JSX.Element => {
 	const hasError = ( error && 0 < error.length ) || false;
 
 	const getIcon = (
