@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Add link payment method for capture later option
+Enable Link to support authorization/capture scenarios.
