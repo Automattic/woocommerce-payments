@@ -126,11 +126,12 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Returns DOM id of currently selected payment gateway.
+	 * Finds selected payment gateway and returns matching Stripe payment method for gateway.
 	 *
-	 * @return {string} Selected gateway DOM ID.
+	 * @return {string} Stripe payment method type
 	 */
-	const getSelectedGatewayId = () => {
+	const getSelectedGatewayPaymentMethod = () => {
+		const gatewayCardId = getUPEConfig( 'gatewayId' );
 		let selectedGatewayId = null;
 
 		// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
@@ -149,18 +150,6 @@ jQuery( function ( $ ) {
 			selectedGatewayId = 'payment_method_woocommerce_payments_card';
 		}
 
-		return selectedGatewayId;
-	};
-
-	/**
-	 * Finds selected payment gateway and returns matching Stripe payment method for gateway.
-	 *
-	 * @return {string} Stripe payment method type
-	 */
-	const getSelectedGatewayPaymentMethod = () => {
-		const gatewayCardId = getUPEConfig( 'gatewayId' );
-		const selectedGatewayId = getSelectedGatewayId();
-
 		let selectedPaymentMethod = null;
 
 		for ( const paymentMethodType in paymentMethodsConfig ) {
@@ -173,6 +162,12 @@ jQuery( function ( $ ) {
 			}
 		}
 		return selectedPaymentMethod;
+	};
+
+	const getPaymentGatewayItemByType = ( paymentMethodType ) => {
+		return $(
+			`.wcpay-upe-element[data-payment-method-type='${ paymentMethodType }']`
+		);
 	};
 
 	/**
@@ -215,7 +210,6 @@ jQuery( function ( $ ) {
 		let { intentId, clientSecret } = isSetupIntent
 			? getSetupIntentFromSession( paymentMethodType )
 			: getPaymentIntentFromSession( paymentMethodType );
-
 		if ( ! intentId ) {
 			try {
 				const newIntent = isSetupIntent
@@ -232,9 +226,30 @@ jQuery( function ( $ ) {
 				);
 			}
 		}
-
 		gatewayUPEComponents.paymentIntentId = intentId;
 		gatewayUPEComponents.clientSecret = clientSecret;
+	};
+
+	/**
+	 * Updates `payment_method_type` field on UPE intent to selected payment method.
+	 *
+	 * @param {string} selectedPaymentMethodType Stripe payment method type.
+	 */
+	const updatePaymentMethodType = async ( selectedPaymentMethodType ) => {
+		const $gatewayContainer = getPaymentGatewayItemByType(
+			selectedPaymentMethodType
+		);
+		try {
+			blockUI( $( $gatewayContainer ) );
+			await api.updatePaymentMethodType(
+				gatewayUPEComponents.paymentIntentId,
+				selectedPaymentMethodType
+			);
+			unblockUI( $gatewayContainer );
+		} catch ( error ) {
+			unblockUI( $gatewayContainer );
+			showErrorCheckout( error.message );
+		}
 	};
 
 	/**
@@ -375,12 +390,12 @@ jQuery( function ( $ ) {
 			const paymentMethodType = $( upeDOMElement ).attr(
 				'data-payment-method-type'
 			);
-			// gatewayUPEComponents[ paymentMethodType ].domElement = upeDOMElement
 			const upeElement =
 				gatewayUPEComponents[ paymentMethodType ].upeElement;
 			if ( upeElement ) {
 				upeElement.mount( upeDOMElement );
 			} else {
+				await updatePaymentMethodType( paymentMethodType );
 				mountUPEElement( paymentMethodType, upeDOMElement );
 			}
 		}
@@ -731,22 +746,6 @@ jQuery( function ( $ ) {
 		return {};
 	}
 
-	const updatePaymentMethodType = async ( selectedPaymentMethodType ) => {
-		const selectedGatewayId = getSelectedGatewayId();
-		const $gatewayContainer = $( selectedGatewayId );
-		try {
-			blockUI( $( $gatewayContainer ) );
-			await api.updatePaymentMethodType(
-				gatewayUPEComponents.paymentIntentId,
-				selectedPaymentMethodType
-			);
-			unblockUI( $gatewayContainer );
-		} catch ( error ) {
-			unblockUI( $gatewayContainer );
-			showErrorCheckout( error.message );
-		}
-	};
-
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_BANCONTACT,
@@ -824,18 +823,6 @@ jQuery( function ( $ ) {
 			}
 		}
 	);
-
-	$( document.body ).on( 'payment_method_selected', async () => {
-		const selectedPaymentMethodType = getSelectedGatewayPaymentMethod();
-		if ( ! selectedPaymentMethodType ) {
-			return;
-		}
-		const upeElement =
-			gatewayUPEComponents[ selectedPaymentMethodType ].upeElement;
-		if ( isUPEEnabled && upeElement ) {
-			await updatePaymentMethodType( selectedPaymentMethodType );
-		}
-	} );
 
 	// On every page load, check to see whether we should display the authentication
 	// modal and display it if it should be displayed.
