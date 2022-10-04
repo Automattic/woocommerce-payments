@@ -146,10 +146,6 @@ jQuery( function ( $ ) {
 			).attr( 'id' );
 		}
 
-		if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
-			selectedGatewayId = 'payment_method_woocommerce_payments_card';
-		}
-
 		let selectedPaymentMethod = null;
 
 		for ( const paymentMethodType in paymentMethodsConfig ) {
@@ -164,7 +160,13 @@ jQuery( function ( $ ) {
 		return selectedPaymentMethod;
 	};
 
-	const getPaymentGatewayItemByType = ( paymentMethodType ) => {
+	/**
+	 * Return jQuery reference of mounted divfor corresponding payment method element.
+	 *
+	 * @param {tring} paymentMethodType Stripe payment method type.
+	 * @return {Object} jQuery reference to div where payment element is mounted.
+	 */
+	const getPaymentGatewayContainerByType = ( paymentMethodType ) => {
 		return $(
 			`.wcpay-upe-element[data-payment-method-type='${ paymentMethodType }']`
 		);
@@ -203,10 +205,10 @@ jQuery( function ( $ ) {
 	 * @param {string} paymentMethodType Payment method type.
 	 * @param {boolean} isSetupIntent Whether intent is payment or setup.
 	 */
-	const setSharedIntent = async function (
+	const setSharedIntent = async (
 		paymentMethodType,
 		isSetupIntent = false
-	) {
+	) => {
 		let { intentId, clientSecret } = isSetupIntent
 			? getSetupIntentFromSession()
 			: getPaymentIntentFromSession();
@@ -236,7 +238,7 @@ jQuery( function ( $ ) {
 	 * @param {string} selectedPaymentMethodType Stripe payment method type.
 	 */
 	const updatePaymentMethodType = async ( selectedPaymentMethodType ) => {
-		const $gatewayContainer = getPaymentGatewayItemByType(
+		const $gatewayContainer = getPaymentGatewayContainerByType(
 			selectedPaymentMethodType
 		);
 		try {
@@ -259,10 +261,7 @@ jQuery( function ( $ ) {
 	 * @param {Object} upeDOMElement DOM element or HTML selector to use to mount UPE payment element.
 	 * @param {boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
 	 */
-	const mountUPEElement = async function (
-		paymentMethodType,
-		upeDOMElement
-	) {
+	const mountUPEElement = async ( paymentMethodType, upeDOMElement ) => {
 		// Do not mount UPE twice.
 		const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 		let upeElement = upeComponents.upeElement;
@@ -377,28 +376,36 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Mounts all payment elements for all payment method types, using shared intent.
+	 * Mount UPE Element if selected gateway uses UPE and element has not yet been mounted.
 	 */
-	const mountPaymentElements = async function () {
+	const maybeMountPaymentElement = async () => {
+		const selectedPaymentMethodType = getSelectedGatewayPaymentMethod();
+		if ( null === selectedPaymentMethodType ) {
+			// Selected payment gateway does not use UPE.
+			return;
+		}
+
+		const upeElement =
+			gatewayUPEComponents[ selectedPaymentMethodType ].upeElement;
+		if ( upeElement ) {
+			// Payment element already mounted.
+			return;
+		}
+
+		const upeContainer = getPaymentGatewayContainerByType(
+			selectedPaymentMethodType
+		)[ 0 ];
+		await updatePaymentMethodType( selectedPaymentMethodType );
+		mountUPEElement( selectedPaymentMethodType, upeContainer );
+	};
+
+	const initUPE = async () => {
 		const upeDOMElements = $( '.wcpay-upe-element' );
 		const firstPaymentMethodType = $( upeDOMElements[ 0 ] ).attr(
 			'data-payment-method-type'
 		);
 		await setSharedIntent( firstPaymentMethodType );
-		for ( let i = 0; i < upeDOMElements.length; i++ ) {
-			const upeDOMElement = upeDOMElements[ i ];
-			const paymentMethodType = $( upeDOMElement ).attr(
-				'data-payment-method-type'
-			);
-			const upeElement =
-				gatewayUPEComponents[ paymentMethodType ].upeElement;
-			if ( upeElement ) {
-				upeElement.mount( upeDOMElement );
-			} else {
-				await updatePaymentMethodType( paymentMethodType );
-				mountUPEElement( paymentMethodType, upeDOMElement );
-			}
-		}
+		await maybeMountPaymentElement();
 	};
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
@@ -412,7 +419,7 @@ jQuery( function ( $ ) {
 			! $( '.wcpay-upe-element' ).children().length &&
 			isUPEEnabled
 		) {
-			mountPaymentElements();
+			initUPE();
 		}
 	} );
 
@@ -820,6 +827,12 @@ jQuery( function ( $ ) {
 				} );
 			}
 		}
+	);
+
+	// Mount payment element on payment method change, if element has not yet been mounted.
+	$( document.body ).on(
+		'payment_method_selected',
+		maybeMountPaymentElement
 	);
 
 	// On every page load, check to see whether we should display the authentication
