@@ -368,7 +368,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
-		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
@@ -588,22 +587,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return in_array( $current_currency, $supported_currencies, true );
-	}
-
-	/**
-	 * Add notice explaining test mode when it's enabled.
-	 */
-	public function display_test_mode_notice() {
-		if ( $this->is_in_test_mode() ) {
-			?>
-			<div id="wcpay-test-mode-notice" class="notice notice-warning">
-				<p>
-					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
-					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
-				</p>
-			</div>
-			<?php
-		}
 	}
 
 	/**

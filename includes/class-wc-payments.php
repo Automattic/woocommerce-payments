@@ -373,6 +373,9 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$database_cache );
 
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
+			new WC_Payments_Admin_Settings( self::get_gateway() );
+
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 
