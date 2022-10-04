@@ -834,7 +834,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 			);
 
-			$prepared_customer_data = $this->get_prepared_customer_data();
+			$prepared_customer_data = $this->customer_service->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {
 				wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
 			}
