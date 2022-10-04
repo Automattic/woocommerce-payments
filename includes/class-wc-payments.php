@@ -464,7 +464,7 @@ class WC_Payments {
 	 */
 	public static function add_plugin_links( $links ) {
 		$plugin_links = [
-			'<a href="' . esc_attr( WC_Payment_Gateway_WCPay::get_settings_url() ) . '">' . esc_html__( 'Settings', 'woocommerce-payments' ) . '</a>',
+			'<a href="' . esc_attr( WC_Payments_Admin_Settings::get_settings_url() ) . '">' . esc_html__( 'Settings', 'woocommerce-payments' ) . '</a>',
 		];
 
 		return array_merge( $plugin_links, $links );

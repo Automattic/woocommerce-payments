@@ -18,6 +18,17 @@ class WC_Payments_Admin_Settings {
 	private $gateway;
 
 	/**
+	 * Set of parameters to build the URL to the gateway's settings page.
+	 *
+	 * @var string[]
+	 */
+	private static $settings_url_params = [
+		'page'    => 'wc-settings',
+		'tab'     => 'checkout',
+		'section' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+	];
+
+	/**
 	 * Initialize class actions.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway Payment Gateway.
@@ -42,5 +53,23 @@ class WC_Payments_Admin_Settings {
 			</div>
 			<?php
 		}
+	}
+
+	/**
+	 * Whether the current page is the WooCommerce Payments settings page.
+	 *
+	 * @return bool
+	 */
+	public static function is_current_page_settings() {
+		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	}
+
+	/**
+	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 *
+	 * @return string URL of the configuration screen for this gateway
+	 */
+	public static function get_settings_url() {
+		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
 	}
 }

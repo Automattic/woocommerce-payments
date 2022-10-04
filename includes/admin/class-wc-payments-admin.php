@@ -320,7 +320,7 @@ class WC_Payments_Admin {
 			$submenu[ $last_submenu_key ][] = [ // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				$this->get_settings_menu_item_name(),
 				'manage_woocommerce',
-				WC_Payment_Gateway_WCPay::get_settings_url(),
+				WC_Payments_Admin_Settings::get_settings_url(),
 			];
 
 			// Temporary fix to settings menu disappearance is to register the page after settings menu has been manually added.
@@ -640,7 +640,7 @@ class WC_Payments_Admin {
 				'WCPAY_TOS',
 				'wcpay_tos_settings',
 				[
-					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
+					'settingsUrl'          => WC_Payments_Admin_Settings::get_settings_url(),
 					'tosAgreementRequired' => $tos_agreement_required,
 					'tosAgreementDeclined' => $tos_agreement_declined,
 					'trackStripeConnected' => $track_stripe_connected,

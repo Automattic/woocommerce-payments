@@ -76,17 +76,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
 
 	/**
-	 * Set of parameters to build the URL to the gateway's settings page.
-	 *
-	 * @var string[]
-	 */
-	private static $settings_url_params = [
-		'page'    => 'wc-settings',
-		'tab'     => 'checkout',
-		'section' => self::GATEWAY_ID,
-	];
-
-	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -422,24 +411,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$account_status = $this->account->get_account_status_data();
 		return parent::needs_setup() || ! empty( $account_status['error'] ) || ! $account_status['paymentsEnabled'];
-	}
-
-	/**
-	 * Whether the current page is the WooCommerce Payments settings page.
-	 *
-	 * @return bool
-	 */
-	public static function is_current_page_settings() {
-		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	}
-
-	/**
-	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 *
-	 * @return string URL of the configuration screen for this gateway
-	 */
-	public static function get_settings_url() {
-		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
 	}
 
 	/**
