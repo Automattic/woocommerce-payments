@@ -10,7 +10,7 @@ import { mocked } from 'ts-jest/utils';
  * Internal dependencies
  */
 import AddBusinessInfoTask from '../';
-import { useBusinessTypes } from 'onboarding/hooks';
+import { useBusinessTypes } from 'onboarding-experiment/hooks';
 
 declare const global: {
 	wcpaySettings: {
@@ -20,7 +20,7 @@ declare const global: {
 	};
 };
 
-jest.mock( 'onboarding/hooks', () => ( {
+jest.mock( 'onboarding-experiment/hooks', () => ( {
 	useBusinessTypes: jest.fn(),
 } ) );
 

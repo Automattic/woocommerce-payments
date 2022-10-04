@@ -751,6 +751,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'e' => 5,
 							'f' => 6,
 						],
+						'progressive'         => false,
+						'account_data'        => [],
 					]
 				),
 				true,
