@@ -406,7 +406,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * external plugins to check if a connection has been established.
 	 */
 	public function is_connected() {
-		return $this->account->is_stripe_connected( false );
+		return $this->account->is_stripe_connected();
 	}
 
 	/**
