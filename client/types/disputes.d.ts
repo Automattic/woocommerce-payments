@@ -95,7 +95,7 @@ export interface FileUploadControlProps {
 	help?: string;
 	showPreview?: boolean;
 	uploadButtonLabel?: string;
-	evidence_details?: EvidenceDetails;
+	evidenceDetails?: EvidenceDetails;
 }
 
 export interface DisputesSummary {
