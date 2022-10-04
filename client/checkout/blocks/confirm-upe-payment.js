@@ -47,8 +47,8 @@ export default async function confirmUPEPayment(
 
 		if ( paymentNeeded ) {
 			const { error } = await api.handlePaymentConfirmation(
-				confirmParams,
 				elements,
+				confirmParams,
 				paymentIntentSecret
 			);
 			if ( error ) {

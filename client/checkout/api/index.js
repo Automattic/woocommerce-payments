@@ -447,15 +447,15 @@ export default class WCPayAPI {
 	/**
 	 * Confirm Stripe payment with fallback for rate limit error.
 	 *
-	 * @param {Object} confirmParams Confirm payment request parameters.
 	 * @param {Object|StripeElements} elements Stripe elements.
+	 * @param {Object} confirmParams Confirm payment request parameters.
 	 * @param {string|null} paymentIntentSecret Payment intent secret used to validate payment on rate limit error
 	 *
-	 * @return {Promise} The final promise for the request to the server.
+	 * @return {Promise} The payment confirmation promise.
 	 */
 	async handlePaymentConfirmation(
-		confirmParams,
 		elements,
+		confirmParams,
 		paymentIntentSecret
 	) {
 		const stripe = this.getStripe();

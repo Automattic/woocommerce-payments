@@ -382,10 +382,10 @@ jQuery( function ( $ ) {
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
 			const { error } = await api.handlePaymentConfirmation(
+				elements,
 				{
 					return_url: returnUrl,
 				},
-				elements,
 				null
 			);
 			$form.removeClass( 'processing' ).unblock();
@@ -433,10 +433,10 @@ jQuery( function ( $ ) {
 			);
 
 			const { error } = await api.handlePaymentConfirmation(
+				elements,
 				{
 					return_url: returnUrl,
 				},
-				elements,
 				getPaymentIntentSecret()
 			);
 			if ( error ) {
@@ -518,8 +518,8 @@ jQuery( function ( $ ) {
 			let error;
 			if ( response.payment_needed ) {
 				( { error } = await api.handlePaymentConfirmation(
-					upeConfig.confirmParams,
 					elements,
+					upeConfig.confirmParams,
 					getPaymentIntentSecret()
 				) );
 			} else {
