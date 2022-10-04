@@ -63,7 +63,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @var WC_Payments_Order_Service|PHPUnit_Framework_MockObject_MockObject
 	 */
-	private $mock_order_service;
+	private $order_service;
 
 	/**
 	 * Mock WC_Payments_Account.
@@ -118,7 +118,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 
-		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
+		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -131,7 +131,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
-					$this->mock_order_service,
+					$this->order_service,
 				]
 			)
 			->setMethods(
@@ -221,7 +221,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 10 ) )
+			->expects( $this->exactly( 11 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
@@ -233,14 +233,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
 				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ],
-				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ],
+				[ '_intention_status', $status ]
 			);
-
-		// Assert: The Order_Service is called correctly.
-		$this->mock_order_service
-			->expects( $this->once() )
-			->method( 'mark_payment_completed' )
-			->with( $mock_order, $intent_id, $status, $charge_id );
 
 		// Assert: empty_cart() was called.
 		$mock_cart
@@ -340,6 +335,19 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
 
+		// Arrange: "data store" for when order is cloned in order service.
+		$mock_data_store = new class( $mock_order ) {
+			// phpcs:ignore
+			public function __construct( $mock_order ) { $this->mock_order = $mock_order; }
+			// phpcs:ignore
+			public function read( $unused ) { return $this->mock_order; }
+		};
+
+		// Arrange: Set a good return value for `get_data_store()`.
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( $mock_data_store );
+
 		// Arrange: Set a good return value for order ID.
 		$mock_order
 			->method( 'get_id' )
@@ -382,7 +390,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-			->expects( $this->exactly( 10 ) )
+			->expects( $this->exactly( 11 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
@@ -394,14 +402,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
 				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ],
-				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ],
+				[ '_intention_status', $status ]
 			);
-
-		// Assert: The Order_Service is called correctly.
-		$this->mock_order_service
-			->expects( $this->once() )
-			->method( 'mark_payment_authorized' )
-			->with( $mock_order, $intent_id, $status, $charge_id );
 
 		// Assert: Order has correct transaction ID set.
 		$mock_order
@@ -764,12 +767,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'USD' ],
 				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
-
-		// Assert: The Order_Service is called correctly.
-		$this->mock_order_service
-			->expects( $this->once() )
-			->method( 'mark_payment_started' )
-			->with( $mock_order, $intent_id, $status, $charge_id );
 
 		// Assert: Order has correct transaction ID set.
 		$mock_order

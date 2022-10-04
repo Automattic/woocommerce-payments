@@ -39,13 +39,29 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	private $charge_id = 'py_123';
 
 	/**
+	 * WC_Payments_Account instance.
+	 *
+	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_wcpay_account;
+
+	/**
+	 * Mock WC_Payments_API_Client.
+	 *
+	 * @var WC_Payments_API_Client|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_api_client;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
-		$this->order         = WC_Helper_Order::create_order();
+		$this->mock_api_client    = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
+		$this->order_service      = new WC_Payments_Order_Service( $this->mock_api_client );
+		$this->order              = WC_Helper_Order::create_order();
 	}
 
 	/**
@@ -573,5 +589,175 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'Note exists at the beginning'               => [ [ 'check_string', 'note 1', 'note 2' ], 'check_string', true ],
 			'Note exists at the end'                     => [ [ 'note 1', 'note 2', 'check_string' ], 'check_string', true ],
 		];
+	}
+
+	public function test_attach_intent_info_to_order() {
+		$order = $this
+			->getMockBuilder( WC_Order::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'update_meta_data', 'save' ] )
+			->getMock();
+
+		$intent_id      = 'pi_mock';
+		$charge_id      = 'ch_mock';
+		$customer_id    = 'cus_12345';
+		$payment_method = 'woocommerce_payments';
+		$intent_status  = 'succeeded';
+		$currency       = 'USD';
+
+		$order->expects( $this->atLeast( 2 ) )->method( 'update_meta_data' )->withConsecutive(
+			[ '_intent_id', $intent_id ],
+			[ '_charge_id', $charge_id ]
+		);
+
+		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+	}
+
+	public function test_update_order_status_from_intent_success_payment_complete() {
+		$order = $this
+			->getMockBuilder( WC_Order::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'update_meta_data', 'save', 'payment_complete', 'get_data_store' ] )
+			->getMock();
+
+		$order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$intent_id     = 'pi_mock';
+		$charge_id     = 'ch_mock';
+		$intent_status = 'succeeded';
+
+		$order->expects( $this->once() )->method( 'payment_complete' )->with( $intent_id );
+
+		$this->order_service->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
+	}
+
+	public function test_update_order_status_from_intent_fails_payment_complete() {
+		// test if metadata needed for refunds is being saved despite the payment_complete method.
+		$order = $this
+			->getMockBuilder( WC_Order::class )
+			->disableOriginalConstructor()
+			->setMethods( [ 'update_meta_data', 'save', 'payment_complete', 'get_data_store' ] )
+			->getMock();
+
+		$order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$intent_id     = 'pi_mock';
+		$charge_id     = 'ch_mock';
+		$intent_status = 'succeeded';
+
+		$order
+			->expects( $this->once() )
+			->method( 'payment_complete' )
+			->willThrowException( new Exception( 'something went wrong' ) );
+
+		$this->order_service->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
+	}
+
+	public function test_attach_exchange_info_to_order_with_no_conversion() {
+		$charge_id = 'ch_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'USD' );
+		$order->save();
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$this->order_service->attach_exchange_info_to_order( $order, $charge_id, $this->mock_wcpay_account );
+
+		// The meta key should not be set.
+		$this->assertEquals( '', $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_with_different_account_currency_no_conversion() {
+		$charge_id = 'ch_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'USD' );
+		$order->save();
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'jpy' );
+
+		$this->order_service->attach_exchange_info_to_order( $order, $charge_id, $this->mock_wcpay_account );
+
+		// The meta key should not be set.
+		$this->assertEquals( '', $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_with_zero_decimal_order_currency() {
+		$charge_id = 'ch_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'JPY' );
+		$order->save();
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn(
+				[
+					'id'                  => 'ch_123456',
+					'amount'              => 4500,
+					'balance_transaction' => [
+						'amount'        => 4450,
+						'fee'           => 50,
+						'currency'      => 'USD',
+						'exchange_rate' => 0.9414,
+					],
+				]
+			);
+
+		$this->order_service->attach_exchange_info_to_order( $order, $charge_id, $this->mock_wcpay_account );
+		$this->assertEquals( 0.009414, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
+	}
+
+	public function test_attach_exchange_info_to_order_with_different_order_currency() {
+		$charge_id = 'ch_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->set_currency( 'EUR' );
+		$order->save();
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'get_account_default_currency' )
+			->willReturn( 'usd' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_charge' )
+			->willReturn(
+				[
+					'id'                  => 'ch_123456',
+					'amount'              => 4500,
+					'balance_transaction' => [
+						'amount'        => 4450,
+						'fee'           => 50,
+						'currency'      => 'USD',
+						'exchange_rate' => 0.853,
+					],
+				]
+			);
+
+		$this->order_service->attach_exchange_info_to_order( $order, $charge_id, $this->mock_wcpay_account );
+		$this->assertEquals( 0.853, $order->get_meta( '_wcpay_multi_currency_stripe_exchange_rate' ) );
 	}
 }

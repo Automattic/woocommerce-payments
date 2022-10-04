@@ -35,6 +35,13 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_product_service;
 
 	/**
+	 * The WCPay Order Service.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -43,7 +50,8 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client      = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_product_service = $this->createMock( WC_Payments_Product_Service::class );
 		$this->mock_gateway         = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$this->invoice_service      = new WC_Payments_Invoice_Service( $this->mock_api_client, $this->mock_product_service, $this->mock_gateway );
+		$this->order_service        = new WC_Payments_Order_Service( $this->mock_api_client );
+		$this->invoice_service      = new WC_Payments_Invoice_Service( $this->mock_api_client, $this->mock_product_service, $this->mock_gateway, $this->order_service );
 	}
 
 	/**
@@ -312,11 +320,6 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 			->with( $intent_id )
 			->willReturn( $intent );
 
-		$this->mock_gateway
-			->expects( $this->once() )
-			->method( 'attach_intent_info_to_order' )
-			->willReturn( null );
-
 		$this->invoice_service->get_and_attach_intent_info_to_order( $mock_order, $intent_id );
 	}
 
@@ -332,11 +335,6 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_intent' )
 			->with( $intent_id )
 			->will( $this->throwException( new API_Exception( 'whoops', 'mock_error', 403 ) ) );
-
-		$this->mock_gateway
-			->expects( $this->never() )
-			->method( 'attach_intent_info_to_order' )
-			->willReturn( null );
 
 		$this->invoice_service->get_and_attach_intent_info_to_order( $mock_order, $intent_id );
 	}

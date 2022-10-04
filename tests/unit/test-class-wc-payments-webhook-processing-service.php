@@ -539,6 +539,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			],
 			'currency' => $currency      = 'eur',
 			'status'   => $intent_status = 'succeeded',
+			'metadata' => [],
+			'customer' => 'cus_123',
 		];
 
 		$mock_order = $this->createMock( WC_Order::class );
@@ -610,6 +612,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'currency' => $currency      = 'eur',
 			'status'   => $intent_status = 'succeeded',
 			'metadata' => [ 'order_id' => 'id_1323' ], // Using order_id inside of the intent metadata to find the order.
+			'customer' => 'cus_123',
 		];
 
 		$mock_order = $this->createMock( WC_Order::class );
@@ -687,6 +690,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			],
 			'currency' => $currency      = 'eur',
 			'status'   => $intent_status = 'succeeded',
+			'metadata' => [],
+			'customer' => 'cus_123',
 		];
 
 		$mock_order = $this->createMock( WC_Order::class );
@@ -760,6 +765,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			],
 			'currency' => 'eur',
 			'status'   => 'succeeded',
+			'metadata' => [],
+			'customer' => 'cus_123',
 		];
 
 		$mock_merchant_settings = [
