@@ -175,6 +175,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 			</CardHeader>
 			<CardBody>
 				<CollapsibleList
+					className={ 'wcpay-task-list' }
 					collapsed={ false }
 					show={ 5 }
 					collapseLabel={ __( 'Hide tasks', 'woocommerce-payments' ) }
