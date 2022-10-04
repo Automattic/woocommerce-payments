@@ -146,10 +146,6 @@ jQuery( function ( $ ) {
 			).attr( 'id' );
 		}
 
-		if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
-			selectedGatewayId = 'payment_method_woocommerce_payments_card';
-		}
-
 		let selectedPaymentMethod = null;
 
 		for ( const paymentMethodType in paymentMethodsConfig ) {
@@ -164,7 +160,7 @@ jQuery( function ( $ ) {
 		return selectedPaymentMethod;
 	};
 
-	const getPaymentGatewayItemByType = ( paymentMethodType ) => {
+	const getPaymentGatewayContainerByType = ( paymentMethodType ) => {
 		return $(
 			`.wcpay-upe-element[data-payment-method-type='${ paymentMethodType }']`
 		);
@@ -203,10 +199,10 @@ jQuery( function ( $ ) {
 	 * @param {string} paymentMethodType Payment method type.
 	 * @param {boolean} isSetupIntent Whether intent is payment or setup.
 	 */
-	const setSharedIntent = async function (
+	const setSharedIntent = async (
 		paymentMethodType,
 		isSetupIntent = false
-	) {
+	) => {
 		let { intentId, clientSecret } = isSetupIntent
 			? getSetupIntentFromSession()
 			: getPaymentIntentFromSession();
@@ -236,7 +232,7 @@ jQuery( function ( $ ) {
 	 * @param {string} selectedPaymentMethodType Stripe payment method type.
 	 */
 	const updatePaymentMethodType = async ( selectedPaymentMethodType ) => {
-		const $gatewayContainer = getPaymentGatewayItemByType(
+		const $gatewayContainer = getPaymentGatewayContainerByType(
 			selectedPaymentMethodType
 		);
 		try {
@@ -259,10 +255,7 @@ jQuery( function ( $ ) {
 	 * @param {Object} upeDOMElement DOM element or HTML selector to use to mount UPE payment element.
 	 * @param {boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
 	 */
-	const mountUPEElement = async function (
-		paymentMethodType,
-		upeDOMElement
-	) {
+	const mountUPEElement = async ( paymentMethodType, upeDOMElement ) => {
 		// Do not mount UPE twice.
 		const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 		let upeElement = upeComponents.upeElement;
@@ -379,7 +372,7 @@ jQuery( function ( $ ) {
 	/**
 	 * Mounts all payment elements for all payment method types, using shared intent.
 	 */
-	const mountPaymentElements = async function () {
+	const mountPaymentElements = async () => {
 		const upeDOMElements = $( '.wcpay-upe-element' );
 		const firstPaymentMethodType = $( upeDOMElements[ 0 ] ).attr(
 			'data-payment-method-type'
