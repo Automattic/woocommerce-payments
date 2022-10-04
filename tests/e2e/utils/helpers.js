@@ -1,4 +1,11 @@
 /**
+ * External dependencies
+ */
+import shell from 'shelljs';
+const WP_CONTAINER = 'wcp_e2e_wordpress';
+const WP_CLI = `docker exec ${ WP_CONTAINER }`;
+
+/**
  * Wait for UI placeholders to finish and UI content is loaded.
  *
  */
@@ -17,5 +24,12 @@ export const takeScreenshot = ( name ) => {
 	return page.screenshot( {
 		path: `./screenshots/${ name }.png`,
 		fullPage: true,
+	} );
+};
+
+// Helper to run WP-CLI commands
+export const runWPCLI = async ( command ) => {
+	await shell.exec( `${ WP_CLI + ' ' + command } --allow-root`, {
+		silent: true,
 	} );
 };
