@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 4.8.1 - 2022-xx-xx =
+* Fix - Fix fatal error thrown during the renewal order payment flow when the store doesn't have the WCPay Subscriptions feature enabled
+
 = 4.8.0 - 2022-09-29 =
 * Add - Add bundle size check for PR's.
 * Add - Allow subscription processing via WooPay.
