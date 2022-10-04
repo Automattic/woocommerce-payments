@@ -143,7 +143,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$intent_status = $intent->get_status();
 			$charge        = $intent->get_charge();
 			$charge_id     = $charge ? $charge->get_id() : null;
-			$this->gateway->attach_intent_info_to_order(
+			$this->order_service->attach_intent_info_to_order(
 				$order,
 				$intent_id,
 				$intent_status,
@@ -152,7 +152,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				$charge_id,
 				$intent->get_currency()
 			);
-			$this->gateway->update_order_status_from_intent(
+			$this->order_service->update_order_status_from_intent(
 				$order,
 				$intent_id,
 				$intent_status,

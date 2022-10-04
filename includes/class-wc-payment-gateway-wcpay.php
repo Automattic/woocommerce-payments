@@ -2354,7 +2354,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$charge    = ! empty( $intent ) ? $intent->get_charge() : null;
 		$charge_id = ! empty( $charge ) ? $charge->get_id() : $order->get_meta( '_charge_id' );
 
-		$this->attach_exchange_info_to_order( $order, $charge_id );
+		$this->order_service->attach_exchange_info_to_order( $order, $charge_id, $this->account );
 
 		if ( 'succeeded' === $status ) {
 			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $status, $charge_id );
@@ -2595,8 +2595,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge    = $intent->get_charge();
 				$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
 
-				$this->attach_exchange_info_to_order( $order, $charge_id );
-				$this->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
+				$this->order_service->attach_exchange_info_to_order( $order, $charge_id, $this->account );
+				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
 				$intent    = $this->payments_api_client->get_setup_intent( $intent_id );
