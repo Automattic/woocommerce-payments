@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix fatal error thrown during the renewal order payment flow when the store doesn't have the WCPay Subscriptions feature enabled
