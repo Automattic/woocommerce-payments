@@ -982,6 +982,7 @@ class WC_Payments_Account {
 
 		// Progressive onboarding prefill.
 		$progressive_onboarding = isset( $_GET['progressive'] ) ? wc_clean( wp_unslash( $_GET['progressive'] ) ) : [];
+		$progressive_complete   = isset( $_GET['progressive_complete'] ) && (bool) $_GET['progressive_complete'];
 
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
@@ -999,7 +1000,8 @@ class WC_Payments_Account {
 				'site_locale'   => get_locale(),
 			],
 			$this->get_actioned_notes(),
-			array_filter( $progressive_onboarding )
+			array_filter( $progressive_onboarding ),
+			$progressive_complete
 		);
 
 		delete_transient( self::ON_BOARDING_STARTED_TRANSIENT );
