@@ -227,62 +227,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
           />
         </div>
       </div>
-      <div
-        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
-      >
-        <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-        >
-          <label
-            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="form-file-upload-base-control-customer_signature"
-          >
-            Customer signature
-          </label>
-          <div
-            class="components-drop-zone__provider"
-          >
-            <div
-              class="components-drop-zone"
-            />
-          </div>
-          <div
-            class="file-upload"
-          >
-            <div
-              class="components-form-file-upload"
-            >
-              <button
-                class="components-button is-secondary has-text has-icon"
-                disabled=""
-                id="form-file-upload-customer_signature"
-                type="button"
-              >
-                <svg
-                  class="gridicon gridicons-add-outline"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g>
-                    <path
-                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
-                    />
-                  </g>
-                </svg>
-                Upload file
-              </button>
-              <input
-                accept=".pdf, image/png, image/jpeg"
-                style="display: none;"
-                type="file"
-              />
-            </div>
-            
-          </div>
-        </div>
-      </div>
+      
       <div
         class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
@@ -315,6 +260,7 @@ exports[`Dispute evidence page renders correctly 1`] = `
   <div
     class="wcpay-dispute-evidence woocommerce-payments-page is-narrow"
   >
+    
     <div
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
