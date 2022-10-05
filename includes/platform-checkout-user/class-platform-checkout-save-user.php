@@ -18,6 +18,7 @@ class Platform_Checkout_Save_User {
 	public function __construct() {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_checkout_page_scripts' ] );
 		add_filter( 'wcpay_metadata_from_order', [ $this, 'maybe_add_userdata_to_metadata' ], 10, 2 );
+		add_action( 'woocommerce_payment_complete', [ $this, 'maybe_clear_session_key' ], 10, 2 );
 	}
 
 	/**
@@ -80,10 +81,19 @@ class Platform_Checkout_Save_User {
 				$metadata['platform_checkout_phone']                = $platform_checkout_phone;
 		}
 
+		return $metadata;
+	}
+
+	/**
+	 * Clears if platform checkout user data is set.
+	 *
+	 * @return void
+	 */
+	public function maybe_clear_session_key() {
+		$session_data = WC()->session->get( 'platform-checkout-user-data' );
+
 		if ( ! empty( $session_data ) ) {
 			WC()->session->set( 'platform-checkout-user-data', null );
 		}
-
-		return $metadata;
 	}
 }
