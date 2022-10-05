@@ -22,6 +22,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	// eslint-disable-next-line no-unused-vars
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
+	const [ userDataSent, setUserDataSent ] = useState( false );
 	const isRegisteredUser = usePlatformCheckoutUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
@@ -68,6 +69,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						full: phoneNumber,
 					},
 				},
+			} ).then( () => {
+				setUserDataSent( true );
 			} );
 		};
 
@@ -80,7 +83,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				sendRequestToExtension
 			);
 		};
-	}, [ isBlocksCheckout, isSaveDetailsChecked, phoneNumber ] );
+	}, [
+		isBlocksCheckout,
+		isSaveDetailsChecked,
+		phoneNumber,
+		setUserDataSent,
+	] );
 
 	useEffect( () => {
 		const formSubmitButton = isBlocksCheckout
@@ -119,6 +127,16 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		! isNewPaymentTokenChosen ||
 		isRegisteredUser
 	) {
+		// Clicking the place order button sets the extension data in backend. If user changes the payment method
+		// due to an error, we need to clear the extension data in backend.
+		if ( isBlocksCheckout && userDataSent ) {
+			extensionCartUpdate( {
+				namespace: 'platform-checkout',
+				data: {},
+			} ).then( () => {
+				setUserDataSent( false );
+			} );
+		}
 		return null;
 	}
 
