@@ -33,6 +33,16 @@ const api = new WCPayAPI(
 	request
 );
 
+// Create an API object, which will be used for payment request buttons.
+const paymentRequestApi = new WCPayAPI(
+	{
+		publishableKey: getConfig( 'publishableKey' ),
+		accountId: getConfig( 'accountId' ),
+		locale: getConfig( 'locale' ),
+	},
+	request
+);
+
 registerPaymentMethod( {
 	name: PAYMENT_METHOD_NAME_CARD,
 	content: <WCPayFields api={ api } />,
@@ -49,7 +59,9 @@ registerPaymentMethod( {
 	},
 } );
 
-registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+registerExpressPaymentMethod(
+	paymentRequestPaymentMethod( paymentRequestApi )
+);
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
