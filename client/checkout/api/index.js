@@ -244,10 +244,7 @@ export default class WCPayAPI {
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
 				return this.getStripe().confirmCardSetup(
-					decryptClientSecret(
-						clientSecret,
-						window.wcpay_config.accountId
-					)
+					decryptClientSecret( clientSecret )
 				);
 			}
 
@@ -269,10 +266,7 @@ export default class WCPayAPI {
 			// When not dealing with a setup intent or platform checkout we need to force an account
 			// specific request in Stripe.
 			return this.getStripe( true ).confirmCardPayment(
-				decryptClientSecret(
-					clientSecret,
-					window.wcpay_config.accountId
-				)
+				decryptClientSecret( clientSecret )
 			);
 		};
 
@@ -373,10 +367,7 @@ export default class WCPayAPI {
 
 			return this.getStripe()
 				.confirmCardSetup(
-					decryptClientSecret(
-						response.data.client_secret,
-						window.wcpay_config.accountId
-					)
+					decryptClientSecret( response.data.client_secret )
 				)
 				.then( ( confirmedSetupIntent ) => {
 					const { setupIntent, error } = confirmedSetupIntent;

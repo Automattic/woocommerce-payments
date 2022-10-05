@@ -46,9 +46,13 @@ export const isWCPayChosen = function () {
 
 export const decryptClientSecret = function (
 	encryptedValue,
-	stripeAccountId
+	stripeAccountId = null
 ) {
 	if ( 3 < encryptedValue.length && 'pi_' !== encryptedValue.slice( 0, 3 ) ) {
+		stripeAccountId =
+			stripeAccountId ||
+			( window.wcpay_config?.accountId ??
+				window.wcSettings?.woocommerce_payments_data.accountId );
 		return Utf8.stringify(
 			AES.decrypt(
 				encryptedValue,

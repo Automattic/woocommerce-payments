@@ -415,10 +415,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		<Elements
 			stripe={ stripe }
 			options={ {
-				clientSecret: decryptClientSecret(
-					clientSecret,
-					window.wcpay_config.accountId
-				),
+				clientSecret: decryptClientSecret( clientSecret ),
 				appearance,
 				fonts: fontRules,
 				loader: 'never',

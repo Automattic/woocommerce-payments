@@ -240,10 +240,7 @@ jQuery( function ( $ ) {
 		}
 
 		elements = api.getStripe().elements( {
-			clientSecret: decryptClientSecret(
-				clientSecret,
-				window.wcpay_config.accountId
-			),
+			clientSecret: decryptClientSecret( clientSecret ),
 			appearance,
 			fonts: getFontRulesFromPage(),
 			loader: 'never',
