@@ -16,6 +16,7 @@ import {
 	TextControl,
 	TextareaControl,
 	SelectControl,
+	Notice,
 } from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
 import moment from 'moment';
@@ -140,11 +141,13 @@ export const DisputeEvidenceForm = ( props ) => {
 	const composeFieldControl = ( field ) => {
 		switch ( field.type ) {
 			case 'file':
-				return (
+				return ! readOnly ? (
 					<FileUploadControl
 						key={ field.key }
 						{ ...composeFileUploadProps( field ) }
 					/>
+				) : (
+					''
 				);
 			case 'text':
 				return (
@@ -265,6 +268,15 @@ export const DisputeEvidencePage = ( props ) => {
 	const disputeIsAvailable = ! isLoading && dispute.id;
 	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
 
+	const readOnlyNotice = (
+		<Notice className="wcpay-test-mode-notice" status="informational">
+			{ __(
+				'Evidence is already submitted. Details below are read-only.',
+				'woocommerce-payments'
+			) }
+		</Notice>
+	);
+
 	if ( ! isLoading && ! disputeIsAvailable ) {
 		return (
 			<Page isNarrow className="wcpay-dispute-details">
@@ -279,6 +291,7 @@ export const DisputeEvidencePage = ( props ) => {
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
 			{ testModeNotice }
+			{ readOnly ? readOnlyNotice : '' }
 			<ErrorBoundary>
 				<Card size="large">
 					<CardHeader>

@@ -32,7 +32,6 @@ export const FileUploadControl = ( {
 	help,
 	showPreview,
 	uploadButtonLabel,
-	evidenceDetails,
 }: FileUploadControlProps ): JSX.Element => {
 	const hasError = ( error && 0 < error.length ) || false;
 
