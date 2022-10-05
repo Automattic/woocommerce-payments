@@ -605,7 +605,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function should_use_stripe_platform_on_checkout_page() {
-		// TODO: Add support for blocks checkout.
 		if (
 			WC_Payments_Features::is_platform_checkout_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
@@ -3012,6 +3011,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean True if it is a platform payment method.
 	 */
 	private function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+		// Return flase for express checkout method.
+		if ( isset( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return false;
+		}
+
 		// Make sure the payment method being charged was created in the platform.
 		if (
 			! $is_using_saved_payment_method &&
