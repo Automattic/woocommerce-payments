@@ -30,6 +30,7 @@ use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
+use WCPay\WC_Payments_Checkout;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -190,6 +191,21 @@ class WC_Payments {
 	private static $webhook_reliability_service;
 
 	/**
+	 * Platform Checkout Utilities.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	private static $platform_checkout_util;
+
+	/**
+	 * WC Payments Checkout
+	 *
+	 * @var WC_Payments_Checkout
+	 */
+	private static $wc_payments_checkout;
+
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -230,6 +246,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
+		include_once __DIR__ . '/class-wc-payments-checkout.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
@@ -306,9 +323,6 @@ class WC_Payments {
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 
-		$card_class = CC_Payment_Gateway::class;
-		$upe_class  = UPE_Payment_Gateway::class;
-
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$payment_methods        = [];
 			$payment_method_classes = [
@@ -327,11 +341,13 @@ class WC_Payments {
 				$payment_method                               = new $payment_method_class( self::$token_service );
 				$payment_methods[ $payment_method->get_id() ] = $payment_method;
 			}
-			self::$card_gateway = new $upe_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+			self::$card_gateway = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 		} else {
-			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
+			self::$card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
 
+		self::$platform_checkout_util      = new Platform_Checkout_Utilities();
+		self::$wc_payments_checkout        = new WC_Payments_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
@@ -777,6 +793,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payment_Gateway_WCPay instance
+	 *
+	 * @return WC_Payment_Gateway_WCPay gateway instance
+	 */
+	public static function get_wc_payments_checkout() {
+		return self::$wc_payments_checkout;
+	}
+
+	/**
 	 * Returns the Database_Cache instance.
 	 *
 	 * @return Database_Cache Database_Cache instance.
@@ -1197,8 +1222,7 @@ class WC_Payments {
 	 */
 	public static function init_platform_checkout() {
 		// Load platform checkout save user section if feature is enabled.
-		$platform_checkout_util = new Platform_Checkout_Utilities();
-		if ( $platform_checkout_util->should_enable_platform_checkout( self::get_gateway() ) ) {
+		if ( self::$platform_checkout_util->should_enable_platform_checkout( self::get_gateway() ) ) {
 			// Update email field location.
 			add_action( 'woocommerce_checkout_billing', [ __CLASS__, 'platform_checkout_fields_before_billing_details' ], -50 );
 			add_filter( 'woocommerce_form_field_email', [ __CLASS__, 'filter_woocommerce_form_field_platform_checkout_email' ], 20, 4 );

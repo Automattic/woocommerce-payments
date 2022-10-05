@@ -19,7 +19,6 @@ use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Constants\Payment_Method;
 use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
@@ -546,47 +545,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Generates the configuration values, needed for payment fields.
-	 *
-	 * Isolated as a separate method in order to be available both
-	 * during the classic checkout, as well as the checkout block.
-	 *
-	 * @return array
-	 */
-	public function get_payment_fields_js_config() {
-		$platform_checkout_util = new Platform_Checkout_Utilities();
-		$wc_checkout            = WC_Checkout::instance();
-
-		return [
-			'publishableKey'                   => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-			'testMode'                         => $this->is_in_test_mode(),
-			'accountId'                        => $this->account->get_stripe_account_id(),
-			'ajaxUrl'                          => admin_url( 'admin-ajax.php' ),
-			'wcAjaxUrl'                        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'createSetupIntentNonce'           => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'createPaymentIntentNonce'         => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
-			'updatePaymentIntentNonce'         => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
-			'initPlatformCheckoutNonce'        => wp_create_nonce( 'wcpay_init_platform_checkout_nonce' ),
-			'genericErrorMessage'              => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
-			'fraudServices'                    => $this->account->get_fraud_services_config(),
-			'features'                         => $this->supports,
-			'forceNetworkSavedCards'           => WC_Payments::is_network_saved_cards_enabled() || $this->should_use_stripe_platform_on_checkout_page(),
-			'locale'                           => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			'isUPEEnabled'                     => WC_Payments_Features::is_upe_enabled(),
-			'isSavedCardsEnabled'              => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled'        => $platform_checkout_util->should_enable_platform_checkout( $this ),
-			'platformCheckoutHost'             => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
-			'platformTrackerNonce'             => wp_create_nonce( 'platform_tracks_nonce' ),
-			'accountIdForIntentConfirmation'   => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
-			'wcpayVersionNumber'               => WCPAY_VERSION_NUMBER,
-			'platformCheckoutNeedLogin'        => ! is_user_logged_in() && $wc_checkout->is_registration_required(),
-			'userExistsEndpoint'               => get_rest_url( null, '/wc/v3/users/exists' ),
-			'platformCheckoutRequestSignature' => $platform_checkout_util->get_platform_checkout_request_signature(),
-			'platformCheckoutMerchantId'       => \Jetpack_Options::get_option( 'id' ),
-		];
-	}
-
-	/**
 	 * Registers all scripts, necessary for the gateway.
 	 */
 	public function register_scripts() {
@@ -664,99 +622,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return false;
 	}
 
-
 	/**
 	 * Renders the credit card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
-		try {
-			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
-
-			add_action( 'wp_footer', [ $this, 'enqueue_payment_scripts' ] );
-
-			$prepared_customer_data = $this->customer_service->get_prepared_customer_data();
-			if ( ! empty( $prepared_customer_data ) ) {
-				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayCustomerData', $prepared_customer_data );
-			}
-
-			wp_enqueue_style(
-				'WCPAY_CHECKOUT',
-				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
-				[],
-				WC_Payments::get_file_version( 'dist/checkout.css' )
-			);
-
-			// Output the form HTML.
-			?>
-			<?php if ( ! empty( $this->get_description() ) ) : ?>
-				<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
-			<?php endif; ?>
-
-			<?php if ( $this->is_in_test_mode() ) : ?>
-				<p class="testmode-info">
-				<?php
-					echo WC_Payments_Utils::esc_interpolated_html(
-						/* translators: link to Stripe testing page */
-						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
-						[
-							'strong' => '<strong>',
-							'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
-						]
-					);
-				?>
-				</p>
-			<?php endif; ?>
-
-			<?php
-
-			if ( $display_tokenization ) {
-				$this->tokenization_script();
-				$this->saved_payment_methods();
-			}
-			?>
-
-			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form">
-				<div id="wcpay-card-element"></div>
-				<div id="wcpay-errors" role="alert"></div>
-				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
-				<input type="hidden" name="wcpay-is-platform-payment-method" value="<?php echo esc_attr( $this->should_use_stripe_platform_on_checkout_page() ); ?>" />
-			<?php
-			if ( $this->is_saved_cards_enabled() ) {
-				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
-				$this->save_payment_method_checkbox( $force_save_payment );
-			}
-			?>
-
-			</fieldset>
-
-			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
-				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
-			<?php endif; ?>
-
-			<?php
-
-			do_action( 'wcpay_payment_fields_wcpay', $this->id );
-
-		} catch ( Exception $e ) {
-			// Output the error message.
-			?>
-			<div>
-				<?php
-				echo esc_html__( 'An error was encountered when preparing the payment form. Please try again later.', 'woocommerce-payments' );
-				?>
-			</div>
-			<?php
-		}
-	}
-
-	/**
-	 * Enqueues and localizes WCPay's checkout scripts.
-	 */
-	public function enqueue_payment_scripts() {
-		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
-		wp_enqueue_script( 'WCPAY_CHECKOUT' );
+		do_action( 'wc_payments_add_payment_fields' );
 	}
 
 	/**
