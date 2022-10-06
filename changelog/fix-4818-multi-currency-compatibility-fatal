@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix fatal error with call to MultiCurrency/Compatibility::convert_order_prices method.
