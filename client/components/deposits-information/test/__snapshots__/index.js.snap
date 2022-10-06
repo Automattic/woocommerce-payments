@@ -245,7 +245,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43&nbsp;€
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -270,7 +270,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43&nbsp;€
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -299,7 +299,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          31,60&nbsp;€
+          31,60 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -324,7 +324,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          20,30&nbsp;€
+          20,30 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -533,7 +533,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43&nbsp;€
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -558,7 +558,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43&nbsp;€
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -587,7 +587,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          31,60&nbsp;€
+          31,60 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -612,7 +612,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          20,30&nbsp;€
+          20,30 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
