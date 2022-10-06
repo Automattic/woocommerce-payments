@@ -387,7 +387,8 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$order_changed = false;
 		foreach ( $meta_data_to_update as $key => $value ) {
-			if ( $value && ! $order->get_meta( $key ) ) {
+			// Override existing meta data with incoming values, if present.
+			if ( $value ) {
 				$order_changed = true;
 				$order->update_meta_data( $key, $value );
 			}
