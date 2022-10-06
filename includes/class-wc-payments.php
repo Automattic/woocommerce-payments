@@ -515,9 +515,11 @@ class WC_Payments {
 			if ( is_add_payment_method_page() ) {
 				return array_merge( $gateways, $reusable_methods );
 			}
+
+			return array_merge( $gateways, $all_upe_gateways );
 		}
 
-		return array_merge( $gateways, $all_upe_gateways );
+		return $gateways;
 	}
 
 	/**
