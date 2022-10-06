@@ -27,7 +27,7 @@ import moment from 'moment';
 import '../style.scss';
 import { useDisputeEvidence } from 'wcpay/data';
 import evidenceFields from './fields';
-import { FileUploadControl } from 'components/file-upload';
+import { FileUploadControl, UploadedReadOnly } from 'components/file-upload';
 import Info from '../info';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
@@ -147,7 +147,10 @@ export const DisputeEvidenceForm = ( props ) => {
 						{ ...composeFileUploadProps( field ) }
 					/>
 				) : (
-					''
+					<UploadedReadOnly
+						key={ field.key }
+						{ ...composeFileUploadProps( field ) }
+					/>
 				);
 			case 'text':
 				return (

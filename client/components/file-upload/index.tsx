@@ -134,3 +134,34 @@ export const FileUploadControl = ( {
 		</BaseControl>
 	);
 };
+
+export const UploadedReadOnly = ( {
+	field,
+	fileName,
+	error,
+	showPreview,
+}: FileUploadControlProps ): JSX.Element => {
+	const hasError = ( error && 0 < error.length ) || false;
+
+	return (
+		<BaseControl
+			id={ `form-file-upload-base-control-${ field.key }` }
+			label={ field.label }
+		>
+			<div className="file-upload">
+				{ hasError ? (
+					<FileUploadError error={ error } />
+				) : (
+					<FileUploadPreview
+						fileName={
+							fileName
+								? `File uploaded: ${ fileName }`
+								: 'Evidence file was not uploaded'
+						}
+						showPreview={ showPreview }
+					/>
+				) }
+			</div>
+		</BaseControl>
+	);
+};
