@@ -48,7 +48,11 @@ export const decryptClientSecret = function (
 	encryptedValue,
 	stripeAccountId = null
 ) {
-	if ( 3 < encryptedValue.length && 'pi_' !== encryptedValue.slice( 0, 3 ) ) {
+	if (
+		3 < encryptedValue.length &&
+		'pi_' !== encryptedValue.slice( 0, 3 ) &&
+		'seti_' !== encryptedValue.slice( 0, 5 )
+	) {
 		stripeAccountId =
 			stripeAccountId ||
 			( window.wcpay_config?.accountId ??
