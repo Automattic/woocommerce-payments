@@ -1,0 +1,39 @@
+# Handles the installation, building, and caching of the projects within the repository.
+name: Setup WooCommerce Payments repository
+
+on:
+  workflow_call:
+    inputs:
+      php-version:
+        description: The version of PHP that the action should set up.
+        required: false
+        type: string
+        default: "7.4"
+
+jobs:
+  setup:
+    name: Setup Node and PHP with caching
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Enable composer dependencies caching
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/composer/
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php-version }}
+          tools: composer
+          coverage: none
