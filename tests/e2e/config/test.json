@@ -4,15 +4,20 @@
     "admin": {
       "username": "admin",
       "password": "password",
-      "email": "admin@woocommercecoree2etestsuite.com"
+      "email": "e2e-wcpay-admin@woocommerce.com"
     },
     "customer": {
       "username": "customer",
       "password": "password",
-      "email": "customer@woocommercecoree2etestsuite.com"
+      "email": "e2e-wcpay-customer@woocommerce.com"
+    },
+    "subscriptions-customer": {
+      "username": "subscriptions-customer",
+      "password": "password",
+      "email": "e2e-wcpay-customer@woocommerce.com"
     },
     "guest": {
-      "email": "guest@woocommercecoree2etestsuite.com"
+      "email": "e2e-wcpay-guest@woocommerce.com"
     }
   },
   "products": {
@@ -39,7 +44,7 @@
         "city": "San Francisco",
         "state": "CA",
         "postcode": "94110",
-        "email": "e2e-wcpay-admin@woocommerce.com"
+        "email": "e2e-wcpay-subscriptions-customer@woocommerce.com"
       }
     },
     "customer": {
@@ -68,6 +73,34 @@
         "postcode": "94110",
         "phone": "123456789",
         "email": "e2e-wcpay-customer@woocommerce.com"
+      }
+    },
+    "subscriptions-customer": {
+      "billing": {
+        "firstname": "I am",
+        "lastname": "Subscriptions Customer",
+        "company": "Automattic",
+        "country": "United States (US)",
+        "addressfirstline": "60 29th Street #343",
+        "addresssecondline": "billing",
+        "city": "San Francisco",
+        "state": "CA",
+        "postcode": "94110",
+        "phone": "123456789",
+        "email": "e2e-wcpay-subscriptions-customer@woocommerce.com"
+      },
+      "shipping": {
+        "firstname": "I am",
+        "lastname": "Subscriptions Recipient",
+        "company": "Automattic",
+        "country": "United States (US)",
+        "addressfirstline": "60 29th Street #343",
+        "addresssecondline": "shipping",
+        "city": "San Francisco",
+        "state": "CA",
+        "postcode": "94110",
+        "phone": "123456789",
+        "email": "e2e-wcpay-subscriptions-customer@woocommerce.com"
       }
     }
   },
