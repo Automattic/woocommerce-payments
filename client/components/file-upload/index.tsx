@@ -135,6 +135,7 @@ export const FileUploadControl = ( {
 	);
 };
 
+// Hide upload button and show file name for use cases like submitted dispute form
 export const UploadedReadOnly = ( {
 	field,
 	fileName,

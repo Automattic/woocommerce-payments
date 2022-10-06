@@ -153,14 +153,28 @@ export const DisputeEvidenceForm = ( props ) => {
 					/>
 				);
 			case 'text':
-				return (
+				return readOnly && ! field.value ? (
+					<TextControl
+						key={ field.key }
+						label={ field.label }
+						value={ 'No information submitted' }
+						disabled={ true }
+					/>
+				) : (
 					<TextControl
 						key={ field.key }
 						{ ...composeDefaultControlProps( field ) }
 					/>
 				);
 			case 'date':
-				return (
+				return readOnly && ! field.value ? (
+					<TextControl
+						key={ field.key }
+						label={ field.label }
+						value={ 'Date not submitted' }
+						disabled={ true }
+					/>
+				) : (
 					<TextControl
 						key={ field.key }
 						type={ 'date' }
@@ -169,7 +183,9 @@ export const DisputeEvidenceForm = ( props ) => {
 					/>
 				);
 			default:
-				return (
+				return readOnly && ! field.value ? (
+					''
+				) : (
 					<TextareaControl
 						key={ field.key }
 						maxLength={ field.maxLength }
@@ -272,7 +288,11 @@ export const DisputeEvidencePage = ( props ) => {
 	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
 
 	const readOnlyNotice = (
-		<Notice className="wcpay-test-mode-notice" status="informational">
+		<Notice
+			className="wcpay-test-mode-notice"
+			status="informational"
+			isDismissible={ false }
+		>
 			{ __(
 				'Evidence is already submitted. Details below are read-only.',
 				'woocommerce-payments'

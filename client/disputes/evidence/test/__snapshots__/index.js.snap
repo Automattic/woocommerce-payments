@@ -186,26 +186,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     <div
       class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
-      <div
-        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
-      >
-        <div
-          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-        >
-          <label
-            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
-            for="inspector-textarea-control-1"
-          >
-            Product description
-          </label>
-          <textarea
-            class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
-            disabled=""
-            id="inspector-textarea-control-1"
-            rows="4"
-          />
-        </div>
-      </div>
+      
       <div
         class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
@@ -223,11 +204,33 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
             disabled=""
             id="inspector-text-control-2"
             type="text"
-            value=""
+            value="No information submitted"
           />
         </div>
       </div>
-      
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="form-file-upload-base-control-customer_signature"
+          >
+            Customer signature
+          </label>
+          <div
+            class="file-upload"
+          >
+            <span
+              class="upload-message"
+            >
+              Evidence file was not uploaded
+            </span>
+          </div>
+        </div>
+      </div>
       <div
         class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
@@ -244,9 +247,8 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
             class="components-text-control__input"
             disabled=""
             id="inspector-text-control-3"
-            max="2021-06-24"
-            type="date"
-            value=""
+            type="text"
+            value="Date not submitted"
           />
         </div>
       </div>
