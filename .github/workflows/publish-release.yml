@@ -88,10 +88,12 @@ jobs:
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//\"/''}"
           echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG_JSON_FORMATTED")
           
+      - name: Bump version header
+        run: |
+          sed -i "s/^ \* Version: .*$/ * Version: ${TAG_NAME}/" woocommerce-payments.php
+                    
       - name: Build release
         run: |
-          # Change the 'Version' header in woocommerce-payments.php
-          sed -i "s/^ \* Version: .*$/ * Version: ${TAG_NAME}/" woocommerce-payments.php
           npm ci
           npm run build
     

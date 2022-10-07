@@ -1,0 +1,101 @@
+---
+name: Prepare a stable release
+on:
+  workflow_dispatch:
+    inputs:
+      tagName:
+        description: 'The tag name (e.g. 4.5.0)'
+        required: true
+env:
+  RELEASE_FILENAME: 'woocommerce-payments.zip'
+  
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish-release:
+    name: Publish the release
+    runs-on: ubuntu-20.04
+    outputs: 
+      branch: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
+    env:
+      TAG_NAME: ${{ inputs.tagName }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+#        with:
+#          ref: 'develop'
+
+      - name: Create a branch and tag
+        id: create_branch_tag
+        run: |
+          BRANCH_NAME="release/${{ inputs.tagName }}"
+          TAG_MESSAGE="Version ${{  env.TAG_NAME }}"
+          
+          git checkout -b $BRANCH_NAME
+          git push origin $BRANCH_NAME
+          echo "::set-output name=BRANCH_NAME::$(echo $BRANCH_NAME)"
+
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          
+          git tag -a -m "$TAG_MESSAGE" ${{ env.TAG_NAME }}
+          echo "::set-output name=TAG_MESSAGE::$(echo $TAG_MESSAGE)"
+          
+          git push origin ${{ env.TAG_NAME }}
+
+      - name: Setup Node and PHP with cache
+        uses: ./.github/actions/setup-repo
+        
+      - name: Extract changelog
+        id: get_changelog
+        run: |
+          # Pick anything before the first dash as a version number
+          VERSION=$(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME)
+
+          # Install this dev package globally to gather changelog entries while not including it into the release package
+          composer global require automattic/jetpack-changelogger:^3.0.7
+
+          # Gather changelog entries
+          ~/.composer/vendor/bin/changelogger write --use-version="$VERSION" --release-date=unreleased
+
+          echo "Picking up changelog for version '$VERSION'..."
+          CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
+          echo "$CHANGELOG"
+          
+          CHANGELOG_JSON_FORMATTED=$(echo "$CHANGELOG" | jq -aRs '.')
+          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//'\n'/'%0A'}"
+          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//\"/''}"
+          echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG_JSON_FORMATTED")
+          
+      - name: Bump version
+        run: |
+          CURRENT_VERSION=$(jq '.version' package.json -r)
+
+          # 'Version' header in woocommerce-payments.php
+          sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
+                    
+          # 'version' field in package.json
+          sed -i '/"version":/s/.*/'${TAG_NAME}'/'
+
+          # 'Stable tag' header in readme.txt;
+          sed -i "s/^Stable tag: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
+
+          # Release date in changelog.txt
+          PLANNED_RELEASE_DATE=${ date -v -Wed "+%Y-%m-%d" } # Wednesday of current week as YYYY-MM-DD
+          sed -i "/= $CURRENT_VERSION - /s/[0-9][0-9][0-9][0-9]-xx-xx =/$PLANNED_RELEASE_DATE =/" changelog.txt
+          
+          # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
+          sed "s/== Changelog ==/== Changelog ==\n\n $CHANGELOG/"
+      
+      - name: Build and commit changes
+        run: |
+          npm ci
+          git add .
+          git commit 
+          
+      - name: Create a PR to trunk
+        run: |
+          gh pr create --title "Release branch for $TAG_NAME" --body "Changelog to be added" --base="trunk"
