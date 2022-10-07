@@ -324,7 +324,7 @@ export const DisputeEvidencePage = ( props ) => {
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
 			{ testModeNotice }
-			{ readOnly ? readOnlyNotice : '' }
+			{ readOnly && ! isLoading ? readOnlyNotice : '' }
 			<ErrorBoundary>
 				<Card size="large">
 					<CardHeader>
