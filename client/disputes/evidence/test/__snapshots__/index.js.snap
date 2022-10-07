@@ -187,6 +187,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
       class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
       
+      
       <div
         class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
@@ -220,15 +221,11 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
           >
             Customer signature
           </label>
-          <div
-            class="file-upload"
+          <span
+            class="upload-message"
           >
-            <span
-              class="upload-message"
-            >
-              Evidence file was not uploaded
-            </span>
-          </div>
+            : Evidence file was not uploaded
+          </span>
         </div>
       </div>
       <div

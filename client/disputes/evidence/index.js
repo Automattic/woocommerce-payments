@@ -153,7 +153,7 @@ export const DisputeEvidenceForm = ( props ) => {
 					/>
 				);
 			case 'text':
-				return readOnly && ! field.value ? (
+				return readOnly && ! evidence[ field.key ] ? (
 					<TextControl
 						key={ field.key }
 						label={ field.label }
@@ -170,7 +170,7 @@ export const DisputeEvidenceForm = ( props ) => {
 					/>
 				);
 			case 'date':
-				return readOnly && ! field.value ? (
+				return readOnly && ! evidence[ field.key ] ? (
 					<TextControl
 						key={ field.key }
 						label={ field.label }
@@ -189,7 +189,7 @@ export const DisputeEvidenceForm = ( props ) => {
 					/>
 				);
 			default:
-				return readOnly && ! field.value ? (
+				return readOnly && ! evidence[ field.key ] ? (
 					''
 				) : (
 					<TextareaControl
