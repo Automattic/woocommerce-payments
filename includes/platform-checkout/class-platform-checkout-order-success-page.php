@@ -89,6 +89,10 @@ class Platform_Checkout_Order_Success_Page {
 			return;
 		}
 
+		// We want to be sure we're actually supposed to process something before trying to verify
+		// a nonce that may not be present.
+		check_ajax_referer( 'woopay_checkout' );
+
 		$order = wc_get_order( $order_id );
 
 		if ( ! $order || ! is_object( $order ) ) {

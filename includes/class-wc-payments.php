@@ -1052,14 +1052,15 @@ class WC_Payments {
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
 		$body = [
-			'wcpay_version'        => WCPAY_VERSION_NUMBER,
-			'user_id'              => $user->ID,
-			'customer_id'          => $customer_id,
-			'session_nonce'        => wp_create_nonce( 'wc_store_api' ),
-			'email'                => $email,
-			'session_cookie_name'  => $session_cookie_name,
-			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
-			'store_data'           => [
+			'wcpay_version'         => WCPAY_VERSION_NUMBER,
+			'user_id'               => $user->ID,
+			'customer_id'           => $customer_id,
+			'session_nonce'         => wp_create_nonce( 'wc_store_api' ),
+			'woopay_checkout_nonce' => wp_create_nonce( 'woopay_checkout' ),
+			'email'                 => $email,
+			'session_cookie_name'   => $session_cookie_name,
+			'session_cookie_value'  => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			'store_data'            => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
 				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
@@ -1073,7 +1074,7 @@ class WC_Payments {
 				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 			],
-			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
+			'user_session'          => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
 		$args = [
 			'url'     => $url,
