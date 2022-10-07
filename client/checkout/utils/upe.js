@@ -4,6 +4,7 @@
 import Utf8 from 'crypto-js/enc-utf8';
 import AES from 'crypto-js/aes';
 import Pkcs7 from 'crypto-js/pad-pkcs7';
+import { getConfig } from 'wcpay/utils/checkout';
 
 /**
  * Generates terms parameter for UPE, with value set for reusable payment methods
@@ -55,8 +56,7 @@ export const decryptClientSecret = function (
 	) {
 		stripeAccountId =
 			stripeAccountId ||
-			( window.wcpay_config?.accountId ??
-				window.wcSettings?.woocommerce_payments_data.accountId );
+			( window.wcpay_config?.accountId ?? getConfig( 'accountId' ) );
 		return Utf8.stringify(
 			AES.decrypt(
 				encryptedValue,

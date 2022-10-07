@@ -805,4 +805,22 @@ class WC_Payments_Utils {
 
 		return $formatted_amount;
 	}
+
+	/**
+	 * Encrypts client secret of intents created on Stripe.
+	 *
+	 * @param   string $stripe_account_id Stripe account ID.
+	 * @param   string $client_secret     Client secret string.
+	 *
+	 * @return  string                 Encrypted value.
+	 */
+	public static function encrypt_client_secret( string $stripe_account_id, string $client_secret ): string {
+		return openssl_encrypt(
+			$client_secret,
+			'aes-128-cbc',
+			substr( $stripe_account_id, 5 ),
+			0,
+			str_repeat( 'WC', 8 )
+		);
+	}
 }

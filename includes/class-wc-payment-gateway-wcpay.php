@@ -1441,7 +1441,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							$client_secret,
+							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						),
 						// Include the payment method ID so the Blocks integration can save cards.
@@ -2954,6 +2954,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$setup_intent = $this->create_and_confirm_setup_intent();
+
+			if ( $setup_intent['client_secret'] ) {
+				$setup_intent['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $setup_intent['client_secret'] );
+			}
 
 			wp_send_json_success( $setup_intent, 200 );
 		} catch ( Exception $e ) {
