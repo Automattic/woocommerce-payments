@@ -1620,6 +1620,30 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Pre-clones a payment method.
+	 *
+	 * @param string $customer_id Stripe customer ID.
+	 * @param string $order_key an order's key.
+	 * @param string $payment_method Payment method ID.
+	 * @return array Payment method details.
+	 *
+	 * @throws API_Exception If detachment fails.
+	 */
+	public function pre_clone_payment_method( $customer_id, $order_key, $payment_method ) {
+		$request = [
+			'customer'       => $customer_id,
+			'order_key'      => $order_key,
+			'payment_method' => $payment_method,
+		];
+
+		return $this->request(
+			$request,
+			self::PAYMENT_METHODS_API . '/pre-clone',
+			self::POST
+		);
+	}
+
+	/**
 	 * Records a new Terms of Service agreement.
 	 *
 	 * @param string $source     A string, which describes where the merchant agreed to the terms.
