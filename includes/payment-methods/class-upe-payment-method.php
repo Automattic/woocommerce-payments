@@ -59,6 +59,13 @@ abstract class UPE_Payment_Method {
 	protected $currencies;
 
 	/**
+	 * Payment method icon URL
+	 *
+	 * @var string
+	 */
+	protected $icon_url;
+
+	/**
 	 * Create instance of payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
