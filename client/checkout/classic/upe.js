@@ -57,6 +57,7 @@ jQuery( function ( $ ) {
 	let elements = null;
 	let upeElement = null;
 	let paymentIntentId = null;
+	let paymentIntentClientSecret = null;
 	let isUPEComplete = false;
 	const hiddenBillingFields = {
 		name:
@@ -231,6 +232,7 @@ jQuery( function ( $ ) {
 		}
 
 		paymentIntentId = intentId;
+		paymentIntentClientSecret = clientSecret;
 
 		let appearance = getConfig( 'upeAppearance' );
 
@@ -384,12 +386,13 @@ jQuery( function ( $ ) {
 		}
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
-			const { error } = await api.getStripe().confirmPayment( {
+			const { error } = await api.handlePaymentConfirmation(
 				elements,
-				confirmParams: {
+				{
 					return_url: returnUrl,
 				},
-			} );
+				null
+			);
 			$form.removeClass( 'processing' ).unblock();
 			showErrorCheckout( error.message );
 			return false;
@@ -434,12 +437,13 @@ jQuery( function ( $ ) {
 				$( '#wcpay_payment_country' ).val()
 			);
 
-			const { error } = await api.getStripe().confirmPayment( {
+			const { error } = await api.handlePaymentConfirmation(
 				elements,
-				confirmParams: {
+				{
 					return_url: returnUrl,
 				},
-			} );
+				getPaymentIntentSecret()
+			);
 			if ( error ) {
 				throw error;
 			}
@@ -518,9 +522,11 @@ jQuery( function ( $ ) {
 			};
 			let error;
 			if ( response.payment_needed ) {
-				( { error } = await api
-					.getStripe()
-					.confirmPayment( upeConfig ) );
+				( { error } = await api.handlePaymentConfirmation(
+					elements,
+					upeConfig.confirmParams,
+					getPaymentIntentSecret()
+				) );
 			} else {
 				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
 			}
@@ -638,6 +644,19 @@ jQuery( function ( $ ) {
 		}
 
 		return {};
+	}
+
+	/**
+	 * Returns stripe intent secret that will be used to confirm payment
+	 *
+	 * @return {string | null} The intent secret required to confirm payment during the rate limit error.
+	 */
+	function getPaymentIntentSecret() {
+		if ( paymentIntentClientSecret ) {
+			return paymentIntentClientSecret;
+		}
+		const { clientSecret } = getPaymentIntentFromSession();
+		return clientSecret ? clientSecret : null;
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
