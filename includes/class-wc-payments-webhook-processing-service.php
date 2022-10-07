@@ -435,6 +435,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
 		$customer_id   = $this->read_webhook_property( $event_object, 'customer' );
+		$metadata      = $this->read_webhook_property( $event_object, 'metadata' );
 
 		if ( ! $order ) {
 			return;

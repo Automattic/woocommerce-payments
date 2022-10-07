@@ -40,6 +40,27 @@ class Platform_Checkout_Order_Success_Page {
 	private $order_service;
 
 	/**
+	 * WCPay Account.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
+	 * WCPay API client.
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	private $payments_api_client;
+
+	/**
+	 * WCPay action scheduler service.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service
+	 */
+	private $action_scheduler_service;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param WC_Payments_Account                  $account The merchant account object.
@@ -159,7 +180,7 @@ class Platform_Checkout_Order_Success_Page {
 						'order_id'     => $order->get_id(),
 						'customer_id'  => $customer_id,
 						'is_test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
-						'is_woopay'    => $options['is_woopay'] ?? false,
+						'is_woopay'    => true,
 					]
 				);
 
