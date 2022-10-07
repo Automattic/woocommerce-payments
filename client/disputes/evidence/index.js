@@ -110,7 +110,7 @@ export const DisputeEvidenceForm = ( props ) => {
 			onChange( field.key, value );
 		},
 		disabled: readOnly,
-		help: expandHelp( field.description ),
+		help: readOnly ? '' : expandHelp( field.description ),
 	} );
 
 	const composeFileUploadProps = ( field ) => {
@@ -134,7 +134,7 @@ export const DisputeEvidenceForm = ( props ) => {
 			isLoading,
 			isDone,
 			error,
-			help: expandHelp( field.description ),
+			help: readOnly ? '' : expandHelp( field.description ),
 		};
 	};
 
@@ -157,7 +157,10 @@ export const DisputeEvidenceForm = ( props ) => {
 					<TextControl
 						key={ field.key }
 						label={ field.label }
-						value={ 'No information submitted' }
+						value={ __(
+							'No information submitted',
+							'woocommerce-payments'
+						) }
 						disabled={ true }
 					/>
 				) : (
@@ -171,7 +174,10 @@ export const DisputeEvidenceForm = ( props ) => {
 					<TextControl
 						key={ field.key }
 						label={ field.label }
-						value={ 'Date not submitted' }
+						value={ __(
+							'Date not submitted',
+							'woocommerce-payments'
+						) }
 						disabled={ true }
 					/>
 				) : (
@@ -200,7 +206,11 @@ export const DisputeEvidenceForm = ( props ) => {
 			<Card size="large" key={ section.key }>
 				<CardHeader>{ section.title }</CardHeader>
 				<CardBody>
-					{ section.description && <p>{ section.description }</p> }
+					{ readOnly
+						? ''
+						: section.description && (
+								<p>{ section.description }</p>
+						  ) }
 					{ section.fields.map( composeFieldControl ) }
 				</CardBody>
 			</Card>

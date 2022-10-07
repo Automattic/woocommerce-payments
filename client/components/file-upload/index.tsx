@@ -135,34 +135,28 @@ export const FileUploadControl = ( {
 	);
 };
 
-// Hide upload button and show file name for use cases like submitted dispute form
+// Hide upload button and show file name for cases like submitted dispute form
 export const UploadedReadOnly = ( {
 	field,
 	fileName,
-	error,
 	showPreview,
 }: FileUploadControlProps ): JSX.Element => {
-	const hasError = ( error && 0 < error.length ) || false;
-
 	return (
 		<BaseControl
 			id={ `form-file-upload-base-control-${ field.key }` }
 			label={ field.label }
 		>
-			<div className="file-upload">
-				{ hasError ? (
-					<FileUploadError error={ error } />
-				) : (
-					<FileUploadPreview
-						fileName={
-							fileName
-								? `File uploaded: ${ fileName }`
-								: 'Evidence file was not uploaded'
-						}
-						showPreview={ showPreview }
-					/>
-				) }
-			</div>
+			<FileUploadPreview
+				fileName={
+					fileName
+						? `: ${ fileName }`
+						: __(
+								': Evidence file was not uploaded',
+								'woocommerce-payments'
+						  )
+				}
+				showPreview={ showPreview }
+			/>
 		</BaseControl>
 	);
 };
