@@ -27,6 +27,7 @@ class Becs_Payment_Method extends UPE_Payment_Method {
 		$this->title       = 'BECS Direct Debit';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'AUD' ];
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/bank_debit.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

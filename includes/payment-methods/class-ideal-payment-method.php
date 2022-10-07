@@ -27,6 +27,7 @@ class Ideal_Payment_Method extends UPE_Payment_Method {
 		$this->title       = 'iDEAL';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/ideal.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

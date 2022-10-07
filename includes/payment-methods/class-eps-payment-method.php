@@ -27,6 +27,7 @@ class Eps_Payment_Method extends UPE_Payment_Method {
 		$this->title       = 'EPS';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/eps.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
