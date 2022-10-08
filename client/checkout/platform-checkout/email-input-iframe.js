@@ -7,10 +7,34 @@ import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 
-export const handlePlatformCheckoutEmailInput = ( field, api ) => {
+// Waits for the email field to exist as in the Blocks checkout, sometimes the email field is not immediately available.
+const waitForEmailField = ( selector ) => {
+	return new Promise( ( resolve ) => {
+		if ( document.querySelector( selector ) ) {
+			return resolve( document.querySelector( selector ) );
+		}
+
+		const checkoutBlock = document.querySelector(
+			'[data-block-name="woocommerce/checkout"]'
+		);
+		const observer = new MutationObserver( () => {
+			if ( document.querySelector( selector ) ) {
+				resolve( document.querySelector( selector ) );
+				observer.disconnect();
+			}
+		} );
+
+		observer.observe( checkoutBlock, {
+			childList: true,
+			subtree: true,
+		} );
+	} );
+};
+
+export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = document.querySelector( field );
+	const platformCheckoutEmailInput = await waitForEmailField( field );
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
@@ -46,12 +70,12 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const iframeWrapper = document.createElement( 'div' );
 	iframeWrapper.setAttribute( 'role', 'dialog' );
 	iframeWrapper.setAttribute( 'aria-modal', 'true' );
-	iframeWrapper.classList.add( 'platform-checkout-sms-otp-iframe-wrapper' );
+	iframeWrapper.classList.add( 'platform-checkout-otp-iframe-wrapper' );
 
 	// Make the otp iframe.
 	const iframe = document.createElement( 'iframe' );
 	iframe.title = __( 'WooPay SMS code verification', 'woocommerce-payments' );
-	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
+	iframe.classList.add( 'platform-checkout-otp-iframe' );
 
 	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
 	iframe.classList.add( 'intrinsic-ignore' );
@@ -189,6 +213,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	// Error message to display when there's an error contacting WooPay.
 	const errorMessage = document.createElement( 'div' );
+	errorMessage.style[ 'white-space' ] = 'normal';
 	errorMessage.textContent = __(
 		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
 		'woocommerce-payments'
@@ -221,7 +246,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
-		) }/sms-otp/?${ urlParams.toString() }`;
+		) }/otp/?${ urlParams.toString() }`;
 
 		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( iframeWrapper, null );
