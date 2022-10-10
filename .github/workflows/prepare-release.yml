@@ -83,7 +83,7 @@ jobs:
           sed -i "s/^Stable tag: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
 
           # Release date in changelog.txt
-          PLANNED_RELEASE_DATE=$( date -d "next wednesday" ) # Wednesday of current week as YYYY-MM-DD
+          PLANNED_RELEASE_DATE=${ date -d "next wednesday" } # Wednesday of current week as YYYY-MM-DD
           sed -i "/= $CURRENT_VERSION - /s/[0-9][0-9][0-9][0-9]-xx-xx =/$PLANNED_RELEASE_DATE =/" changelog.txt
           
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
