@@ -89,6 +89,7 @@ jobs:
       
       - name: Build and commit changes
         run: |
+          npm ci
           git commit -am "Add changelog entries for release $TAG_NAME"
           git push --set-upstream origin release/$TAG_NAME
 
