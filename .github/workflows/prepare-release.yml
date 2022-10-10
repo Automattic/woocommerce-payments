@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: woocommerce/woorelease
-          token: ${{ secrets.GH_REPO_PAT }}
+          token: ${{ secrets.WOORELEASE }}
           path: 'woorelease'
 
       - name: Create a branch and tag
