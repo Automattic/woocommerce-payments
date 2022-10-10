@@ -1,5 +1,5 @@
 ---
-name: Release - prepare
+name: Release - Create PR for stable release
 on:
   workflow_dispatch:
     inputs:
@@ -13,7 +13,7 @@ defaults:
 
 jobs:
   prepare-release:
-    name: Prepare a stable release
+    name: Prepare a stable release with a Pull Request
     runs-on: ubuntu-20.04
     outputs: 
       branch: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
@@ -25,13 +25,6 @@ jobs:
         uses: actions/checkout@v3
 #        with:
 #          ref: 'develop'
-
-      - name: Check out woorelease repository
-        uses: actions/checkout@v3
-        with:
-          repository: woocommerce/woorelease
-          token: ${{ secrets.WOORELEASE }}
-          path: 'woorelease'
 
       - name: Create a branch and tag
         id: create_branch_tag
@@ -53,11 +46,6 @@ jobs:
 
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
-
-      - name: Install Woorelease composer dependencies
-        run: |
-          cd ./woorelease
-          composer install --prefer-dist --no-dev
         
       - name: Extract changelog
         id: get_changelog
@@ -88,21 +76,21 @@ jobs:
         run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
           php bin/update-version.php $TAG_NAME
-#          # 'Version' header in woocommerce-payments.php
-#          sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
-#                    
-#          # 'version' field in package.json
-#          sed -ri 's/("version": )".*"/\1"'${TAG_NAME}'"/' package.json
-#
-#          # 'Stable tag' header in readme.txt;
-#          sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
-#
-#          # Release date in changelog.txt
-#          PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday") # Wednesday of current week as YYYY-MM-DD
-#          sed -ri "s/(= $TAG_NAME - )[0-9][0-9][0-9][0-9]-xx-xx =/\1$PLANNED_RELEASE_DATE =/" changelog.txt
-#          
-#          # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
-#          sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
+          # 'Version' header in woocommerce-payments.php
+          sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
+
+          # 'version' field in package.json
+          sed -ri 's/("version": )".*"/\1"'${TAG_NAME}'"/' package.json
+
+          # 'Stable tag' header in readme.txt;
+          sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
+
+          # Release date in changelog.txt
+          PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday") # Wednesday of current week as YYYY-MM-DD
+          sed -ri "s/(= $TAG_NAME - )[0-9][0-9][0-9][0-9]-xx-xx =/\1$PLANNED_RELEASE_DATE =/" changelog.txt
+
+          # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
+          sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
       
       - name: Build and commit changes
         run: |
@@ -114,5 +102,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGELOG_JSON: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
         run: |
-          echo -e "\`\`\`${CHANGELOG_JSON}\`\`\`" > commitmsg
-          gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
+          PR_BODY=$(echo -e "\`\`\`${CHANGELOG_JSON}\`\`\`")
+          gh pr create --title "Release branch for $TAG_NAME" --body=$PR_BODY --base="trunk"
