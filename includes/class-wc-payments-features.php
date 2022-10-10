@@ -100,15 +100,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the platform checkout is elegible for paying for subscriptions.
-	 *
-	 * @return boolean
-	 */
-	public static function is_platform_checkout_subscriptions_enabled() {
-		return '1' === get_option( '_wcpay_feature_platform_checkout_subscriptions_enabled', '0' );
-	}
-
-	/**
 	 * Checks whether documents section is enabled.
 	 *
 	 * @return bool

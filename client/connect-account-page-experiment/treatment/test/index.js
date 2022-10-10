@@ -12,7 +12,12 @@ import ConnectAccountPageExperiment from '..';
 
 describe( 'ConnectAccountPageExperimentExperiment', () => {
 	beforeEach( () => {
-		window.location.assign = jest.fn();
+		Object.defineProperty( window, 'location', {
+			value: {
+				assign: jest.fn(),
+			},
+		} );
+
 		global.wcpaySettings = {
 			connectUrl: '/wcpay-connect-url',
 			connect: {

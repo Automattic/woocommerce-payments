@@ -34,6 +34,8 @@ const WCPAY_DEPOSITS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/deposits';
 const WCPAY_TRANSACTIONS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
+const WCPAY_MULTI_CURRENCY =
+	baseUrl + 'wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency';
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
@@ -390,8 +392,30 @@ export const merchantWCP = {
 		await uiLoaded();
 	},
 
-	openActionScheduler: async () => {
-		await page.goto( ACTION_SCHEDULER, {
+	openMultiCurrency: async () => {
+		await page.goto( WCPAY_MULTI_CURRENCY, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+	},
+
+	openOrderAnalytics: async () => {
+		await merchant.openAnalyticsPage( 'orders' );
+		await uiLoaded();
+	},
+
+	openActionScheduler: async ( status, search ) => {
+		let pageUrl = ACTION_SCHEDULER;
+
+		if ( 'undefined' !== typeof status ) {
+			pageUrl += '&status=' + status;
+		}
+
+		if ( 'undefined' !== typeof search ) {
+			pageUrl += '&s=' + search;
+		}
+
+		await page.goto( pageUrl, {
 			waitUntil: 'networkidle0',
 		} );
 	},
@@ -443,6 +467,7 @@ export const merchantWCP = {
 		await expect( page ).toClick(
 			'button.editor-post-publish-panel__toggle'
 		);
+		await page.waitFor( 500 );
 		await expect( page ).toClick( 'button.editor-post-publish-button' );
 		await page.waitForSelector(
 			'.components-snackbar__content',
