@@ -92,7 +92,7 @@ jobs:
       - name: Build and commit changes
         run: |
           git add .
-          git commit 
+          git commit -m "Add changelog entries for release $TAG_NAME"
           git push
 
       - name: Create a PR to trunk
