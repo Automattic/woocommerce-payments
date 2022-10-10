@@ -71,6 +71,7 @@ jobs:
           CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"  
           CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
           CHANGELOG="${CHANGELOG//'\"'/'\\"'}"
+          echo "$CHANGELOG"
           echo ::set-output name=CHANGELOG::"$CHANGELOG"
           
       - name: Bump version
