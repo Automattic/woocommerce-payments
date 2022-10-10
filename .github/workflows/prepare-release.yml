@@ -33,9 +33,9 @@ jobs:
           BRANCH_NAME="release/${{ inputs.tagName }}"
           TAG_MESSAGE="Version ${{  env.TAG_NAME }}"
           
-          git checkout -b $BRANCH_NAME
-          git push origin $BRANCH_NAME
-          echo "::set-output name=BRANCH_NAME::$(echo $BRANCH_NAME)"
+#          git checkout -b $BRANCH_NAME
+#          git push origin $BRANCH_NAME
+#          echo "::set-output name=BRANCH_NAME::$(echo $BRANCH_NAME)"
 
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
@@ -83,18 +83,18 @@ jobs:
           sed -i "s/^Stable tag: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
 
           # Release date in changelog.txt
-          PLANNED_RELEASE_DATE=${ date "+%Y-%m-%d" -d "next wednesday" } # Wednesday of current week as YYYY-MM-DD
+          PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday" ) # Wednesday of current week as YYYY-MM-DD
           sed -i "/= $CURRENT_VERSION - /s/[0-9][0-9][0-9][0-9]-xx-xx =/$PLANNED_RELEASE_DATE =/" changelog.txt
           
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
           sed "s/== Changelog ==/== Changelog ==\n\n $CHANGELOG/"
       
-      - name: Build and commit changes
-        run: |
-          npm ci
-          git add .
-          git commit 
-          
-      - name: Create a PR to trunk
-        run: |
-          gh pr create --title "Release branch for $TAG_NAME" --body "Changelog to be added" --base="trunk"
+#      - name: Build and commit changes
+#        run: |
+#          npm ci
+#          git add .
+#          git commit 
+#          
+#      - name: Create a PR to trunk
+#        run: |
+#          gh pr create --title "Release branch for $TAG_NAME" --body "Changelog to be added" --base="trunk"
