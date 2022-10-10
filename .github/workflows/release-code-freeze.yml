@@ -102,11 +102,19 @@ jobs:
     env:
       RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.releaseVersion }}
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.releaseDate }}
-      GITHUB_RELEASE_URL: ${{ format( '{0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.releaseVersion ) }}
+      GITHUB_RELEASE_URL: ${{ format( '{0}/{1}/pull/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.releaseVersion ) }}
+      BRANCH_NAME: ${{ prepare-stable-release.outputs.branch }}
     steps:
+      - name: Get pull request number
+        id: pr_number
+        run: |
+          PR_NUMBER=$( gh pr view "${{ env.BRANCH_NAME }}/${{ env.RELEASE_VERSION ))" --json number -q .number || echo "" )
+          echo ::set-output name=PR_NUMBER::$PR_NUMBER
+          
       - name: Slack ping
         uses: slackapi/slack-github-action@v1.18.0
         env:
+          GITHUB_RELEASE_URL: ${{ format( '{0}/{1}/pull/{2}', github.server_url, github.repository, steps.pr_number.outputs.PR_NUMBER ) }}
           SLACK_WEBHOOK_URL: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
         with:
@@ -126,7 +134,7 @@ jobs:
                         "type": "section",
                         "text": {
                           "type": "mrkdwn",
-                          "text": "The automated workflow just created a release branch and uploaded the release on GitHub. Any PRs that were not already merged will be a part of the release after that by default.\n If you have something that needs to be released in ${{ env.RELEASE_VERSION }}, please consult the release lead."
+                          "text": "The automated workflow just created a release branch and raised a Pull Request to merge changes on trunk. Any PRs that were not already merged will be a part of the release after that by default.\n If you have something that needs to be released in ${{ env.RELEASE_VERSION }}, please consult the release lead."
                         }
                     },
                     {
