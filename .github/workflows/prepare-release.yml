@@ -91,7 +91,6 @@ jobs:
       
       - name: Build and commit changes
         run: |
-#          npm ci
           git add .
           git commit 
           git push
