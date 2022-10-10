@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.7.2
+Stable tag: 4.8.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,34 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 4.8.1 - 2022-10-04 =
+* Fix - Fix fatal error thrown during the renewal order payment flow when the store doesn't have the WCPay Subscriptions feature enabled
+
+= 4.8.0 - 2022-09-29 =
+* Add - Add bundle size check for PR's.
+* Add - Allow subscription processing via WooPay.
+* Add - Auto redirect logged in platform checkout users.
+* Add - Remove deprecated beta headers from Stripe requests.
+* Add - Send a few extra pieces of data when checking if a WooPay user exists.
+* Add - StripeLink - prefill first and last names on checkout.
+* Add - Timezone formatting for transaction filters.
+* Fix - Ask for login when guest mode is disabled while checking out with WooPay.
+* Fix - Change 'zero-cost-fee' to 'empty-order', for product_code while sending level 3 data for shipping-only orders, without products.
+* Fix - Correct empty email error when StripeLink is active on checkout page.
+* Fix - Fix off by one error.
+* Fix - Fix the rate calculation when using Table Rate Shipping and per item or per line item calculation type.
+* Fix - Fix trial subscription checkout without WooPay signing up.
+* Fix - Hide button below email field at checkout, when StripeLink is disabled.
+* Fix - Hide Link payment method for non-us accounts.
+* Fix - Limit level 3 product code within 12 digits.
+* Fix - Prevent circumstance where WCPay Subscriptions customers could be double charged when the WC Subscriptions extension is active.
+* Fix - The feature flag for the task list in Payments > Overview page was not passed correctly. We now see the business details and reconnect wpcom user task when appropriate.
+* Update - Add timezone formatting only in case client provides user timezone.
+* Dev - Bump minimum required version of WooCommerce from 6.4 to 6.6.
+* Dev - Removes gutenberg plugin installation from E2E environment setup.
+* Dev - Update node to v16 and npm to v8.
+* Dev - Update to add E2E tests for the Multi-Currency functionality.
 
 = 4.7.2 - 2022-09-15 =
 * Fix - Fixes Order ID appearing as N/A in Payments > Transactions

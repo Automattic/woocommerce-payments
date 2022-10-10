@@ -212,6 +212,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
 		$renewal_order->add_payment_token( $token );
 
+		$mock_subscription = new WC_Subscription();
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $id ) use ( $mock_subscription ) {
+				return [ '1' => $mock_subscription ];
+			}
+		);
+
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
@@ -263,6 +271,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$token = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
 		$renewal_order->add_payment_token( $token );
 
+		$mock_subscription = new WC_Subscription();
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $id ) use ( $mock_subscription ) {
+				return [ '1' => $mock_subscription ];
+			}
+		);
+
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
@@ -279,6 +295,14 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$token = WC_Helper_Token::create_token( 'new_payment_method', self::USER_ID );
 		$renewal_order->add_payment_token( $token );
 		$renewal_order->set_currency( 'EUR' );
+
+		$mock_subscription = new WC_Subscription();
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $id ) use ( $mock_subscription ) {
+				return [ '1' => $mock_subscription ];
+			}
+		);
 
 		$this->mock_customer_service
 			->expects( $this->once() )
