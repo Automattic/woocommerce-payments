@@ -11,41 +11,23 @@ import { Button, RadioControl, TextareaControl } from '@wordpress/components';
  */
 import './style.scss';
 import ConfirmationModal from 'components/confirmation-modal';
-import useIsUpeEnabled from 'settings/wcpay-upe-toggle/hook';
 import { wcPaySurveys } from './questions';
 import WcPaySurveyContext from './context';
-import InlineNotice from '../../components/inline-notice';
 import { LoadableBlock } from '../../components/loadable';
 
 const SurveyModalBody = ( { options, surveyQuestion } ) => {
-	const [ isUpeEnabled ] = useIsUpeEnabled();
 	const { surveyAnswers, setSurveyAnswers, isLoadingSsr } = useContext(
 		WcPaySurveyContext
 	);
 
 	return (
 		<>
-			{ ! isUpeEnabled && (
-				<InlineNotice status="success" isDismissible={ false }>
-					{ __(
-						"You've disabled the new payments experience in your store.",
-						'woocommerce-payments'
-					) }
-				</InlineNotice>
-			) }
 			<RadioControl
 				className="survey-radiocontrols"
-				label={
-					isUpeEnabled
-						? __(
-								'Do you have any feedback for the new payments experience?',
-								'woocommerce-payments'
-						  )
-						: __(
-								'What made you disable the new payments experience?',
-								'woocommerce-payments'
-						  )
-				}
+				label={ __(
+					'Do you have any feedback for the payments experience?',
+					'woocommerce-payments'
+				) }
 				options={ options }
 				onChange={ ( value ) => {
 					setSurveyAnswers( ( prev ) => ( {

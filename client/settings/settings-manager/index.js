@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -18,9 +18,7 @@ import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
 import Deposits from '../deposits';
-import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
-import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
 import { useDepositDelayDays } from '../../data';
 
@@ -109,13 +107,6 @@ const DepositsDescription = () => {
 };
 
 const SettingsManager = () => {
-	const {
-		featureFlags: {
-			upeSettingsPreview: isUPESettingsPreviewEnabled,
-			upe: isUpeEnabled,
-		},
-	} = useContext( WCPaySettingsContext );
-
 	return (
 		<SettingsLayout>
 			<SettingsSection description={ GeneralSettingsDescription }>
@@ -125,19 +116,13 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			{ isUPESettingsPreviewEnabled && (
-				<SettingsSection description={ PaymentMethodsDescription }>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<WcPayUpeContextProvider
-								defaultIsUpeEnabled={ isUpeEnabled }
-							>
-								<PaymentMethods />
-							</WcPayUpeContextProvider>
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
+			<SettingsSection description={ PaymentMethodsDescription }>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<PaymentMethods />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
 			<SettingsSection description={ ExpressCheckoutDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
@@ -148,11 +133,7 @@ const SettingsManager = () => {
 			<SettingsSection description={ TransactionsDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<WcPayUpeContextProvider
-							defaultIsUpeEnabled={ isUpeEnabled }
-						>
-							<Transactions />
-						</WcPayUpeContextProvider>
+						<Transactions />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>

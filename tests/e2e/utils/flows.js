@@ -252,60 +252,6 @@ export const shopperWCP = {
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
 // keeping our customizations grouped here so it's easier to extend the flows once the move happens.
 export const merchantWCP = {
-	activateUpe: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if ( ! ( await page.$( '#_wcpay_feature_upe:checked' ) ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout',
-			} );
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
-		);
-
-		if ( ! isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
-	deactivateUpe: async () => {
-		await page.goto( WCPAY_DEV_TOOLS, {
-			waitUntil: 'networkidle0',
-		} );
-
-		if ( await page.$( '#_wcpay_feature_upe:checked' ) ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout',
-			} );
-		}
-
-		const isAdditionalPaymentsActive = await page.$(
-			'#_wcpay_feature_upe_additional_payment_methods:checked'
-		);
-
-		if ( isAdditionalPaymentsActive ) {
-			await expect( page ).toClick( 'label', {
-				text: 'Add UPE additional payment methods',
-			} );
-		}
-
-		await expect( page ).toClick( 'input[type="submit"]' );
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
-	},
-
 	openDisputeDetails: async ( disputeDetailsLink ) => {
 		await Promise.all( [
 			page.goto( WC_ADMIN_BASE_URL + disputeDetailsLink, {

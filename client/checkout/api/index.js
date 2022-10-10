@@ -56,15 +56,10 @@ export default class WCPayAPI {
 			accountId,
 			forceNetworkSavedCards,
 			locale,
-			isUPEEnabled,
 			isStripeLinkEnabled,
 		} = this.options;
 
-		if (
-			forceNetworkSavedCards &&
-			! forceAccountRequest &&
-			! isUPEEnabled
-		) {
+		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
 			if ( ! this.stripePlatform ) {
 				this.stripePlatform = this.createStripe(
 					publishableKey,
@@ -75,28 +70,20 @@ export default class WCPayAPI {
 		}
 
 		if ( ! this.stripe ) {
-			if ( isUPEEnabled ) {
-				let betas = [ 'card_country_event_beta_1' ];
-				if ( isStripeLinkEnabled ) {
-					betas = betas.concat( [
-						'link_autofill_modal_beta_1',
-						'link_beta_2',
-					] );
-				}
-
-				this.stripe = this.createStripe(
-					publishableKey,
-					locale,
-					accountId,
-					betas
-				);
-			} else {
-				this.stripe = this.createStripe(
-					publishableKey,
-					locale,
-					accountId
-				);
+			let betas = [ 'card_country_event_beta_1' ];
+			if ( isStripeLinkEnabled ) {
+				betas = betas.concat( [
+					'link_autofill_modal_beta_1',
+					'link_beta_2',
+				] );
 			}
+
+			this.stripe = this.createStripe(
+				publishableKey,
+				locale,
+				accountId,
+				betas
+			);
 		}
 		return this.stripe;
 	}

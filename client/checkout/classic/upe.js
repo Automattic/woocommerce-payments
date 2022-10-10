@@ -28,7 +28,6 @@ jQuery( function ( $ ) {
 
 	const publishableKey = getUPEConfig( 'publishableKey' );
 	const isChangingPayment = getUPEConfig( 'isChangingPayment' );
-	const isUPEEnabled = getUPEConfig( 'isUPEEnabled' );
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
 	const isStripeLinkEnabled =
@@ -58,7 +57,6 @@ jQuery( function ( $ ) {
 			accountId: getUPEConfig( 'accountId' ),
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
-			isUPEEnabled,
 			isStripeLinkEnabled,
 		},
 		apiRequest
@@ -349,8 +347,7 @@ jQuery( function ( $ ) {
 		// We also don't re-mount if already mounted in DOM.
 		if (
 			$( '.wcpay-upe-element' ).length &&
-			! $( '.wcpay-upe-element' ).children().length &&
-			isUPEEnabled
+			! $( '.wcpay-upe-element' ).children().length
 		) {
 			const upeDOMElements = $( '.wcpay-upe-element' );
 			for ( let i = 0; i < upeDOMElements.length; i++ ) {
@@ -376,8 +373,7 @@ jQuery( function ( $ ) {
 	) {
 		if (
 			$( '.wcpay-upe-element' ).length &&
-			! $( '.wcpay-upe-element' ).children().length &&
-			isUPEEnabled
+			! $( '.wcpay-upe-element' ).children().length
 		) {
 			// We use a setup intent if we are on the screens to add a new payment method or to change a subscription payment.
 			const useSetUpIntent =
@@ -719,7 +715,7 @@ jQuery( function ( $ ) {
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
 			const paymentIntentId =
 				gatewayUPEComponents[ paymentMethodType ].paymentIntentId;
-			if ( isUPEEnabled && paymentIntentId ) {
+			if ( paymentIntentId ) {
 				handleUPECheckout( $( this ), paymentMethodType );
 				return false;
 			}
@@ -732,7 +728,7 @@ jQuery( function ( $ ) {
 			const paymentMethodType = getSelectedGatewayPaymentMethod();
 			const paymentIntentId =
 				gatewayUPEComponents[ paymentMethodType ].paymentIntentId;
-			if ( isUPEEnabled && paymentIntentId ) {
+			if ( paymentIntentId ) {
 				handleUPEAddPayment( $( this ) );
 				return false;
 			}
@@ -771,7 +767,7 @@ jQuery( function ( $ ) {
 			}
 			const upeElement =
 				gatewayUPEComponents[ paymentMethodType ].upeElement;
-			if ( isUPEEnabled && upeElement ) {
+			if ( upeElement ) {
 				upeElement.update( {
 					terms: getTerms( paymentMethodsConfig, value ),
 				} );

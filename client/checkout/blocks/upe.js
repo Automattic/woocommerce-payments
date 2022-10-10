@@ -34,7 +34,6 @@ const api = new WCPayAPI(
 		accountId: getConfig( 'accountId' ),
 		forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
 		locale: getConfig( 'locale' ),
-		isUPEEnabled: getConfig( 'isUPEEnabled' ),
 		isStripeLinkEnabled,
 	},
 	request

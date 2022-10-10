@@ -3,18 +3,10 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	Button,
-	Card,
-	CardDivider,
-	CardHeader,
-	DropdownMenu,
-	ExternalLink,
-} from '@wordpress/components';
+import { Card, CardHeader, DropdownMenu } from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
-import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -26,89 +18,29 @@ import {
 	useGetPaymentMethodStatuses,
 } from 'wcpay/data';
 
-import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
-import WcPayUpeContext from '../settings/wcpay-upe-toggle/context';
-
 // Survey modal imports.
 import WcPaySurveyContextProvider from '../settings/survey-modal/provider';
 import SurveyModal from '../settings/survey-modal';
-import DisableUPEModal from '../settings/disable-upe-modal';
 import PaymentMethodsList from 'components/payment-methods-list';
 import PaymentMethod from 'components/payment-methods-list/payment-method';
-import WCPaySettingsContext from '../settings/wcpay-settings-context';
-import Pill from '../components/pill';
 import methodsConfiguration from '../payment-methods-map';
 import CardBody from '../settings/card-body';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
-import { getAdminUrl } from 'wcpay/utils';
 
 const PaymentMethodsDropdownMenu = ( { setOpenModal } ) => {
 	return (
 		<DropdownMenu
 			icon={ moreVertical }
-			label={ __( 'Add feedback or disable', 'woocommerce-payments' ) }
+			label={ __( 'Add feedback', 'woocommerce-payments' ) }
 			controls={ [
 				{
 					title: __( 'Provide feedback', 'woocommerce-payments' ),
 					onClick: () => setOpenModal( 'survey' ),
 				},
-				{
-					title: 'Disable',
-					onClick: () => setOpenModal( 'disable' ),
-				},
 			] }
 		/>
-	);
-};
-
-const UpeSetupBanner = () => {
-	const [ , setIsUpeEnabled ] = useIsUpeEnabled();
-
-	const handleEnableUpeClick = () => {
-		setIsUpeEnabled( true ).then( () => {
-			window.location.href = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/additional-payment-methods',
-			} );
-		} );
-	};
-
-	return (
-		<>
-			<CardDivider />
-			<CardBody className="payment-methods__express-checkouts">
-				<Pill>{ __( 'Early access', 'woocommerce-payments' ) }</Pill>
-				<h3>
-					{ __(
-						'Enable the new WooCommerce Payments checkout experience',
-						'woocommerce-payments'
-					) }
-				</h3>
-				<p>
-					{ __(
-						/* eslint-disable-next-line max-len */
-						'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.',
-						'woocommerce-payments'
-					) }
-				</p>
-
-				<div className="payment-methods__express-checkouts-actions">
-					<span className="payment-methods__express-checkouts-get-started">
-						<Button isPrimary onClick={ handleEnableUpeClick }>
-							{ __(
-								'Enable in your store',
-								'woocommerce-payments'
-							) }
-						</Button>
-					</span>
-					<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/">
-						{ __( 'Learn more', 'woocommerce-payments' ) }
-					</ExternalLink>
-				</div>
-			</CardBody>
-		</>
 	);
 };
 
@@ -190,23 +122,10 @@ const PaymentMethods = () => {
 		}
 	};
 
-	const {
-		featureFlags: { upeSettingsPreview: isUpeSettingsPreviewEnabled },
-	} = useContext( WCPaySettingsContext );
-
-	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
 
 	return (
 		<>
-			{ 'disable' === openModalIdentifier ? (
-				<DisableUPEModal
-					setOpenModal={ setOpenModalIdentifier }
-					triggerAfterDisable={ () =>
-						setOpenModalIdentifier( 'survey' )
-					}
-				/>
-			) : null }
 			{ 'survey' === openModalIdentifier ? (
 				<WcPaySurveyContextProvider>
 					<SurveyModal
@@ -217,29 +136,17 @@ const PaymentMethods = () => {
 				</WcPaySurveyContextProvider>
 			) : null }
 
-			<Card
-				className={ classNames( 'payment-methods', {
-					'is-loading': 'pending' === status,
-				} ) }
-			>
-				{ isUpeEnabled && (
-					<CardHeader className="payment-methods__header">
-						<h4 className="payment-methods__heading">
-							<span>
-								{ __(
-									'Payment methods',
-									'woocommerce-payments'
-								) }
-							</span>{ ' ' }
-							<Pill>
-								{ __( 'Early access', 'woocommerce-payments' ) }
-							</Pill>
-						</h4>
-						<PaymentMethodsDropdownMenu
-							setOpenModal={ setOpenModalIdentifier }
-						/>
-					</CardHeader>
-				) }
+			<Card className="payment-methods">
+				<CardHeader className="payment-methods__header">
+					<h4 className="payment-methods__heading">
+						<span>
+							{ __( 'Payment methods', 'woocommerce-payments' ) }
+						</span>
+					</h4>
+					<PaymentMethodsDropdownMenu
+						setOpenModal={ setOpenModalIdentifier }
+					/>
+				</CardHeader>
 
 				<CardBody size={ null }>
 					<PaymentMethodsList className="payment-methods__available-methods">
@@ -280,9 +187,6 @@ const PaymentMethods = () => {
 						) }
 					</PaymentMethodsList>
 				</CardBody>
-				{ isUpeSettingsPreviewEnabled && ! isUpeEnabled && (
-					<UpeSetupBanner />
-				) }
 			</Card>
 			{ activationModalParams && (
 				<ConfirmPaymentMethodActivationModal
