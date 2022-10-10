@@ -128,7 +128,7 @@ addFilter(
 	'woocommerce-payments',
 	( filters ) => [
 		{
-			label: __( 'Currency', 'woocommerce-payments' ),
+			label: __( 'Customer currency', 'woocommerce-payments' ),
 			param: 'currency',
 			staticParams: [],
 			showFilters: () => true,
