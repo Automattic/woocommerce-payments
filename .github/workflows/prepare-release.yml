@@ -26,18 +26,18 @@ jobs:
 #        with:
 #          ref: 'develop'
 
-      - name: Create a branch and tag
-        id: create_branch_tag
-        run: |
-          BRANCH_NAME="release/$TAG_NAME"
-          TAG_MESSAGE="Version $TAG_NAME"
-          
-          git checkout -b $BRANCH_NAME
-          git push origin $BRANCH_NAME
-          echo "::set-output name=BRANCH_NAME::$(echo $BRANCH_NAME)"
-
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
+#      - name: Create a branch and tag
+#        id: create_branch_tag
+#        run: |
+#          BRANCH_NAME="release/$TAG_NAME"
+#          TAG_MESSAGE="Version $TAG_NAME"
+#          
+#          git checkout -b $BRANCH_NAME
+#          git push origin $BRANCH_NAME
+#          echo "::set-output name=BRANCH_NAME::$(echo $BRANCH_NAME)"
+#
+#          git config user.name "${{ github.actor }}"
+#          git config user.email "${{ github.actor }}@users.noreply.github.com"
           
 #          git tag -a -m "$TAG_MESSAGE" ${{ env.TAG_NAME }}
 #          echo "::set-output name=TAG_MESSAGE::$(echo $TAG_MESSAGE)"
@@ -63,9 +63,12 @@ jobs:
           echo "$CHANGELOG"
           
           CHANGELOG_JSON_FORMATTED=$(echo "$CHANGELOG" | jq -aRs '.')
+          echo "$CHANGELOG_JSON_FORMATTED"
+
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//'\n'/'%0A'}"  
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED%\"}"
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED#\"}"
+          echo "$CHANGELOG_JSON_FORMATTED"
           echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG")
           
       - name: Bump version
@@ -86,15 +89,15 @@ jobs:
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
           sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
       
-      - name: Build and commit changes
-        run: |
-          git commit -am "Add changelog entries for release $TAG_NAME"
-          git push --set-upstream origin release/$TAG_NAME
-
-      - name: Create a PR to trunk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHANGELOG_JSON: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
-        run: |
-          echo -e "\`\`\`${CHANGELOG_JSON}\`\`\`" > commitmsg
-          gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
+#      - name: Build and commit changes
+#        run: |
+#          git commit -am "Add changelog entries for release $TAG_NAME"
+#          git push --set-upstream origin release/$TAG_NAME
+#
+#      - name: Create a PR to trunk
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          CHANGELOG_JSON: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
+#        run: |
+#          echo -e "\`\`\`${CHANGELOG_JSON}\`\`\`" > commitmsg
+#          gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
