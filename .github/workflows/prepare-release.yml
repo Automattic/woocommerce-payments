@@ -103,8 +103,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
         run: |
-          echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`" > commitmsg
-          gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
-          git status
-          git add .
-          git status
+          PR_BODY=$(echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`")
+          gh pr create --title "Release branch for $TAG_NAME" --body="$PR_BODY" --base="trunk"
