@@ -47,19 +47,15 @@ jobs:
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
         
-      - name: Extract changelog
-        id: get_changelog
+      - name: Write changelog
         run: |
-          # Pick anything before the first dash as a version number
-          VERSION=$(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME)
-
           # Install this dev package globally to gather changelog entries while not including it into the release package
           composer global require automattic/jetpack-changelogger:^3.0.7
 
-          # Gather changelog entries
-          ~/.composer/vendor/bin/changelogger write --use-version="$VERSION" --release-date=unreleased
+          PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday") # Wednesday of current week as YYYY-MM-DD
+          vendor/bin/changelogger write --use-version="$TAG_NAME" --release-date="$PLANNED_RELEASE_DATE"
 
-          echo "Picking up changelog for version '$VERSION'..."
+          echo "Picking up changelog for version '$TAG_NAME'..."
           CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           echo "$CHANGELOG"
           
@@ -70,9 +66,22 @@ jobs:
           echo ::set-output name=CHANGELOG::$(echo "$CHANGELOG")
           echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG_JSON_FORMATTED")
           
+      - name: Extract changelog
+        id: get_changelog
+        run: |
+          echo "Picking up changelog for version '$TAG_NAME'..."
+          CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
+          echo "$CHANGELOG"
+          
+          CHANGELOG_JSON_FORMATTED=$(echo "$CHANGELOG" | jq -aRs '.')
+          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//'\n'/'%0A'}"  
+          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED%\"}"
+          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED#\"}"
+          echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG_JSON_FORMATTED")
+          
       - name: Bump version
         env:
-          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
         run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
 
