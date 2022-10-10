@@ -91,7 +91,8 @@ jobs:
           sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
 
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
-          sed -ri 's|(== Changelog ==)|\1\n\n = '"$TAG_NAME"' - '"$RELEASE_DATE"' =\n'"$CHANGELOG"'|' readme.txt
+          sed -ri "s|(== Changelog ==)|\1\n\n = $TAG_NAME - $RELEASE_DATE =\n $CHANGELOG|" readme.txt
+#          sed -ri 's|(== Changelog ==)|\1\n\n = '"$TAG_NAME"' - '"$RELEASE_DATE"' =\n'"$CHANGELOG"'|' readme.txt
       
       - name: Build and commit changes
         run: |
