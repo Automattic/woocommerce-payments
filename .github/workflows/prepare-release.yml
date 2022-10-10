@@ -89,7 +89,7 @@ jobs:
       
       - name: Build and commit changes
         run: |
-          npm install
+          npm install --package-lock-only
           git commit -am "Update version and add changelog entries for release $TAG_NAME"
           git push --set-upstream origin release/$TAG_NAME
 
