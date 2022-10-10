@@ -1,0 +1,104 @@
+---
+name: Release - Create PR
+on:
+  workflow_dispatch:
+    inputs:
+      tagName:
+        description: 'The tag name (e.g. 4.5.0)'
+        required: true
+      releaseDateString:
+        description: "The release date in human-readable format, which will be formatted for changelog.txt and readme.txt (default: 'next wednesday')."
+        required: false
+        default: "next wednesday"
+        type: string
+  
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  prepare-release:
+    name: Prepare a stable release with a Pull Request
+    runs-on: ubuntu-20.04
+    outputs: 
+      branch: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
+    env:
+      TAG_NAME: ${{ inputs.tagName }}
+      RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}    
+    
+    steps:
+      - name: Checkout WCPay repository
+        uses: actions/checkout@v3
+#        with:
+#          ref: 'develop'
+
+      - name: Create a branch and tag
+        id: create_branch_tag
+        run: |
+          BRANCH_NAME="release/$TAG_NAME"
+          TAG_MESSAGE="Version $TAG_NAME"
+
+          git checkout -b $BRANCH_NAME
+          git push origin $BRANCH_NAME
+          echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
+
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          
+#          git tag -a -m "$TAG_MESSAGE" ${{ env.TAG_NAME }}
+#          echo "::set-output name=TAG_MESSAGE::$(echo $TAG_MESSAGE)"
+#
+#          git push origin ${{ env.TAG_NAME }}
+
+      - name: Setup Node and PHP with cache
+        uses: ./.github/actions/setup-repo
+          
+      - name: Extract changelog
+        id: get_changelog
+        run: |
+          # Install this dev package globally to gather changelog entries while not including it into the release package
+          composer global require automattic/jetpack-changelogger:^3.0.7
+
+          RELEASE_DATE=$( date "+%Y-%m-%d" -d "$RELEASE_DATE_STRING" ) # Release date formatted as YYYY-MM-DD
+          echo ::set-output name=RELEASE_DATE::"$RELEASE_DATE"
+
+          ~/.composer/vendor/bin/changelogger write --use-version="$TAG_NAME" --release-date="$RELEASE_DATE"
+          
+          echo "Picking up changelog for version '$TAG_NAME'..."
+          CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
+          echo "$CHANGELOG"
+          CHANGELOG="${CHANGELOG//$'\n'/\\n}"  
+          echo ::set-output name=CHANGELOG::"$CHANGELOG"
+          
+      - name: Bump version
+        env:
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
+          RELEASE_DATE: ${{ steps.get_changelog.outputs.RELEASE_DATE }}
+        run: |
+          CURRENT_VERSION=$(jq '.version' package.json -r)
+
+          # 'Version' header in woocommerce-payments.php
+          sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
+
+          # 'version' field in package.json
+          sed -ri 's/("version": )".*"/\1"'${TAG_NAME}'"/' package.json
+
+          # 'Stable tag' header in readme.txt;
+          sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
+
+          # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
+          sed -ri "s|(== Changelog ==)|\1\n\n = $TAG_NAME - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
+      
+      - name: Build and commit changes
+        run: |
+          npm install
+          git commit -am "Update version and add changelog entries for release $TAG_NAME"
+          git push --set-upstream origin release/$TAG_NAME
+
+      - name: Create a PR to trunk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
+        run: |
+          PR_BODY=$(echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`")
+          gh pr create --title "Release branch for $TAG_NAME" --body="$PR_BODY" --base="trunk"

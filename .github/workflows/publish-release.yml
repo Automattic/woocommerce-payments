@@ -1,6 +1,16 @@
 ---
-name: Publish a release (production or prerelease)
+name: Publish a release (stable or pre-release)
 on:
+  workflow_call:
+    inputs:
+      tagName:
+        description: 'The tag name (e.g. 4.5.0 for release or 4.5.0-test-2 for prerelease during week 2)'
+        required: true
+        type: string
+    outputs:
+      branchName:
+        description: "The branch created"
+        value: ${{ jobs.publish-release.outputs.branch }}
   workflow_dispatch:
     inputs:
       tagName:
@@ -18,6 +28,8 @@ jobs:
   publish-release:
     name: Publish the release
     runs-on: ubuntu-20.04
+    outputs: 
+      branch: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
     env:
       TAG_NAME: ${{ inputs.tagName }}
       
@@ -42,7 +54,8 @@ jobs:
           
           git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
-          
+          echo "::set-output name=BRANCH_NAME::$(echo $BRANCH_NAME)"
+
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
           
@@ -75,10 +88,12 @@ jobs:
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//\"/''}"
           echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG_JSON_FORMATTED")
           
+      - name: Bump version header
+        run: |
+          sed -i "s/^ \* Version: .*$/ * Version: ${TAG_NAME}/" woocommerce-payments.php
+                    
       - name: Build release
         run: |
-          # Change the 'Version' header in woocommerce-payments.php
-          sed -i "s/^ \* Version: .*$/ * Version: ${TAG_NAME}/" woocommerce-payments.php
           npm ci
           npm run build
     
@@ -101,7 +116,6 @@ jobs:
             PRERELEASE_FLAG=""
           fi
           gh release create ${{ env.TAG_NAME }} --notes "${{ env.CHANGELOG }}" --title "${{ env.TAG_MESSAGE }}" --target "develop" $PRERELEASE_FLAG $RELEASE_FILENAME
-
 #      - name: Trigger translations update on GlotPress
 #        env:
 #          GLOTPRESS_IMPORT_URL: ${{ secrets.GLOTPRESS_IMPORT_URL }}
