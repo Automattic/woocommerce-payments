@@ -65,12 +65,9 @@ jobs:
           sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
           
           CHANGELOG_JSON_FORMATTED=$(echo "$CHANGELOG" | jq -aRs '.')
-          echo "$CHANGELOG_JSON_FORMATTED"
-
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//'\n'/'%0A'}"  
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED%\"}"
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED#\"}"
-          echo "$CHANGELOG_JSON_FORMATTED"
           echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG")
           
       - name: Bump version
@@ -87,6 +84,10 @@ jobs:
 
           # 'Stable tag' header in readme.txt;
           sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
+
+          echo "$CHANGELOG"
+          sed -n "99,120p" readme.txt
+          sed -n "1,10p" changelog.txt
 
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
           sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
