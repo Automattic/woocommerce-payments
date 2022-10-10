@@ -29,8 +29,8 @@ jobs:
       - name: Create a branch and tag
         id: create_branch_tag
         run: |
-          BRANCH_NAME="release/${{ inputs.tagName }}"
-          TAG_MESSAGE="Version ${{  env.TAG_NAME }}"
+          BRANCH_NAME="release/$TAG_NAME"
+          TAG_MESSAGE="Version $TAG_NAME"
           
           git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
@@ -90,9 +90,8 @@ jobs:
       
       - name: Build and commit changes
         run: |
-          git add .
-          git commit -m "Add changelog entries for release $TAG_NAME"
-          git push
+          git commit -am "Add changelog entries for release $TAG_NAME"
+          git push --set-upstream origin release/$TAG_NAME
 
       - name: Create a PR to trunk
         run: |
