@@ -53,7 +53,7 @@ jobs:
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
           
-      - name: Bump version
+      - name: Extract changelog
         id: get_changelog
         run: |
           # Install this dev package globally to gather changelog entries while not including it into the release package
@@ -67,8 +67,16 @@ jobs:
           echo "Picking up changelog for version '$TAG_NAME'..."
           CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           echo "$CHANGELOG"
+          CHANGELOG="${CHANGELOG//$'\n'/'<br>'}"  
+          CHANGELOG="${CHANGELOG//'"'/'\"'}"
+          echo "$CHANGELOG"
+          echo ::set-output name=CHANGELOG::"$CHANGELOG"
           
-          
+      - name: Bump version
+        env:
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
+          RELEASE_DATE: ${{ steps.get_changelog.outputs.RELEASE_DATE }}
+        run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
 
           # 'Version' header in woocommerce-payments.php
@@ -82,11 +90,6 @@ jobs:
 
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
           sed -ri "s|(== Changelog ==)|\1\n\n = $TAG_NAME - $RELEASE_DATE =\n $CHANGELOG|" readme.txt
-          
-          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"  
-          CHANGELOG="${CHANGELOG//'"'/'\"'}"
-          echo "$CHANGELOG"
-          echo ::set-output name=CHANGELOG::"$CHANGELOG"
 #          sed -ri 's|(== Changelog ==)|\1\n\n = '"$TAG_NAME"' - '"$RELEASE_DATE"' =\n'"$CHANGELOG"'|' readme.txt
       
       - name: Build and commit changes
