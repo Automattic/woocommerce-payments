@@ -94,5 +94,7 @@ jobs:
           git push --set-upstream origin release/$TAG_NAME
 
       - name: Create a PR to trunk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr create --title "Release branch for $TAG_NAME" --body "Changelog to be added" --base="trunk"
