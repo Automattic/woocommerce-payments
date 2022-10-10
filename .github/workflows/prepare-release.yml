@@ -82,10 +82,11 @@ jobs:
           # Release date in changelog.txt
           PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday") # Wednesday of current week as YYYY-MM-DD
           echo "$PLANNED_RELEASE_DATE"
-          sed -i "/= $CURRENT_VERSION - /s/[0-9][0-9][0-9][0-9]-xx-xx =/$PLANNED_RELEASE_DATE =/" changelog.txt
+          sed -ri "s/(= $CURRENT_VERSION - )[0-9][0-9][0-9][0-9]-xx-xx =/\1$PLANNED_RELEASE_DATE =/" changelog.txt
           
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
           sed "s/== Changelog ==/== Changelog ==\n\n $CHANGELOG/" readme.txt
+          sed "s/== Changelog ==/Testing" readme.txt
       
       - name: Build and commit changes
         run: |
@@ -97,4 +98,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
         run: |
-          gh pr create --title "Release branch for $TAG_NAME" --body "```$CHANGELOG```" --base="trunk"
+          echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`" > commitmsg
+          gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
