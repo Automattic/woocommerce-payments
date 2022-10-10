@@ -89,12 +89,13 @@ jobs:
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
           sed "s/== Changelog ==/== Changelog ==\n\n $CHANGELOG/"
       
-#      - name: Build and commit changes
-#        run: |
+      - name: Build and commit changes
+        run: |
 #          npm ci
-#          git add .
-#          git commit 
-#          
-#      - name: Create a PR to trunk
-#        run: |
-#          gh pr create --title "Release branch for $TAG_NAME" --body "Changelog to be added" --base="trunk"
+          git add .
+          git commit 
+          git push
+
+      - name: Create a PR to trunk
+        run: |
+          gh pr create --title "Release branch for $TAG_NAME" --body "Changelog to be added" --base="trunk"
