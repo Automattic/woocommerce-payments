@@ -61,15 +61,17 @@ jobs:
 
           echo "Picking up changelog for version '$VERSION'..."
           CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
-          echo "$CHANGELOG"
+             echo "$CHANGELOG"
           
-          CHANGELOG_FORMATTED=$(echo "$CHANGELOG")
-          CHANGELOG_FORMATTED="${CHANGELOG_FORMATTED//'\n'/'%0A'}"  
-          echo ::set-output name=CHANGELOG::$(echo "$CHANGELOG_FORMATTED")
+          CHANGELOG_JSON_FORMATTED=$(echo "$CHANGELOG" | jq -aRs '.')
+          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//'\n'/'%0A'}"  
+          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED%\"}"
+          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED#\"}"
+          echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG_JSON_FORMATTED")
           
       - name: Bump version
         env:
-          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
         run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
 
@@ -97,7 +99,7 @@ jobs:
       - name: Create a PR to trunk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
         run: |
           echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`" > commitmsg
           gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
