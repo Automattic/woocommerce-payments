@@ -59,10 +59,8 @@ jobs:
           cd ./woorelease
           composer install --prefer-dist --no-dev
           ls
-          cd ../
-          ls
-          cd ../
-          ls cd
+          ls ../
+          ls ../..
         
       - name: Extract changelog
         id: get_changelog
