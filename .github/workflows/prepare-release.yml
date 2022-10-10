@@ -62,8 +62,7 @@ jobs:
           CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           echo "$CHANGELOG"
           
-          sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
-          
+#          sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
           CHANGELOG_JSON_FORMATTED=$(echo "$CHANGELOG" | jq -aRs '.')
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//'\n'/'%0A'}"  
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED%\"}"
