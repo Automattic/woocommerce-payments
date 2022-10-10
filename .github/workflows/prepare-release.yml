@@ -9,7 +9,7 @@ on:
       releaseDateString:
         description: "The release date in human-readable format, which will be formatted for changelog.txt and readme.txt (default: 'next wednesday')."
         required: false
-        default: 'next wednesday'
+        default: "next wednesday"
         type: string
   
 defaults:
