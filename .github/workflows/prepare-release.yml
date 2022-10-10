@@ -26,22 +26,22 @@ jobs:
 #        with:
 #          ref: 'develop'
 
-#      - name: Create a branch and tag
-#        id: create_branch_tag
-#        run: |
-#          BRANCH_NAME="release/$TAG_NAME"
-#          TAG_MESSAGE="Version $TAG_NAME"
-#          
-#          git checkout -b $BRANCH_NAME
-#          git push origin $BRANCH_NAME
-#          echo "::set-output name=BRANCH_NAME::$(echo $BRANCH_NAME)"
-#
-#          git config user.name "${{ github.actor }}"
-#          git config user.email "${{ github.actor }}@users.noreply.github.com"
+      - name: Create a branch and tag
+        id: create_branch_tag
+        run: |
+          BRANCH_NAME="release/$TAG_NAME"
+          TAG_MESSAGE="Version $TAG_NAME"
+
+          git checkout -b $BRANCH_NAME
+          git push origin $BRANCH_NAME
+          echo "::set-output name=BRANCH_NAME::$(echo $BRANCH_NAME)"
+
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
           
 #          git tag -a -m "$TAG_MESSAGE" ${{ env.TAG_NAME }}
 #          echo "::set-output name=TAG_MESSAGE::$(echo $TAG_MESSAGE)"
-#          
+#
 #          git push origin ${{ env.TAG_NAME }}
 
       - name: Setup Node and PHP with cache
