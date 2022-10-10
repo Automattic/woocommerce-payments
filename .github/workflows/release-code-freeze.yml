@@ -109,6 +109,7 @@ jobs:
       - name: Get pull request number
         id: pr_number
         run: |
+          echo $( gh pr list --json number)
           PR_NUMBER=$( gh pr view "${{ env.BRANCH_NAME }}" --json number -q .number || echo "" )
           echo ::set-output name=PR_NUMBER::$PR_NUMBER
           
