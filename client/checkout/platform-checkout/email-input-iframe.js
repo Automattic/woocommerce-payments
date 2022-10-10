@@ -394,9 +394,13 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 	};
 
 	const openLoginSessionIframe = () => {
+		const emailParam = new URLSearchParams();
+		emailParam.append( 'email', platformCheckoutEmailInput.value );
+		emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
+
 		loginSessionIframe.src = `${ getConfig(
 			'platformCheckoutHost'
-		) }/login-session`;
+		) }/login-session?${ emailParam.toString() }`;
 
 		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( loginSessionIframeWrapper, null );
