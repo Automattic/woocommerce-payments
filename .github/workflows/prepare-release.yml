@@ -83,22 +83,18 @@ jobs:
           # 'Stable tag' header in readme.txt;
           sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
 
-          echo "$CHANGELOG"
-          sed -n "99,120p" readme.txt
-          sed -n "1,10p" changelog.txt
-
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
           sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
       
-#      - name: Build and commit changes
-#        run: |
-#          git commit -am "Add changelog entries for release $TAG_NAME"
-#          git push --set-upstream origin release/$TAG_NAME
-#
-#      - name: Create a PR to trunk
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          CHANGELOG_JSON: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
-#        run: |
-#          echo -e "\`\`\`${CHANGELOG_JSON}\`\`\`" > commitmsg
-#          gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
+      - name: Build and commit changes
+        run: |
+          git commit -am "Add changelog entries for release $TAG_NAME"
+          git push --set-upstream origin release/$TAG_NAME
+
+      - name: Create a PR to trunk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGELOG_JSON: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
+        run: |
+          echo -e "\`\`\`${CHANGELOG}\`\`\`" > commitmsg
+          gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
