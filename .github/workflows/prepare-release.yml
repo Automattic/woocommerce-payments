@@ -89,7 +89,7 @@ jobs:
           sed -ri "s/(= $TAG_NAME - )[0-9][0-9][0-9][0-9]-xx-xx =/\1$PLANNED_RELEASE_DATE =/" changelog.txt
           
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
-          sed -ri "s|(== Changelog ==)|\1\\n\\n $CHANGELOG|" readme.txt
+          sed -ri "s~(== Changelog ==)~\1\n\n $CHANGELOG~" readme.txt
       
       - name: Build and commit changes
         run: |
