@@ -103,7 +103,7 @@ jobs:
       RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.releaseVersion }}
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.releaseDate }}
       GITHUB_RELEASE_URL: ${{ format( '{0}/{1}/pull/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.releaseVersion ) }}
-      BRANCH_NAME: ${{ prepare-stable-release.outputs.branch }}
+      BRANCH_NAME: ${{ needs.prepare-stable-release.outputs.branch }}
     steps:
       - name: Get pull request number
         id: pr_number
