@@ -96,7 +96,7 @@ jobs:
 
   slack-notification:
     name: "Send code freeze notification to Slack"
-    needs: [check-code-freeze, publish-stable-release]
+    needs: [check-code-freeze, prepare-stable-release]
     if: ${{ inputs.skipSlackPing != true }}
     runs-on: ubuntu-20.04
     env:
