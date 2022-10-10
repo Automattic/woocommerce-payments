@@ -78,10 +78,8 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-terminal-locations-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-	require_once $_plugin_dir . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
-	require_once $_plugin_dir . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
 	require_once $_plugin_dir . 'includes/class-platform-checkout-tracker.php';

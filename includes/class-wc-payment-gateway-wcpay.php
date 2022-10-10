@@ -741,7 +741,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'features'                       => $this->supports,
 			'forceNetworkSavedCards'         => WC_Payments::is_network_saved_cards_enabled() || $this->should_use_stripe_platform_on_checkout_page(),
 			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'            => $this->is_saved_cards_enabled(),
 			'isPlatformCheckoutEnabled'      => $platform_checkout_util->should_enable_platform_checkout( $this ),
 			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',

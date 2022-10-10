@@ -473,9 +473,7 @@ class WC_Payments_Admin {
 			'accountEmail'               => $this->account->get_account_email(),
 			'showUpdateDetailsTask'      => get_option( 'wcpay_show_update_business_details_task', 'no' ),
 			'wpcomReconnectUrl'          => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
-			'additionalMethodsSetup'     => [
-				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
-			],
+			'additionalMethodsSetup'     => [],
 			'multiCurrencySetup'         => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
@@ -801,10 +799,6 @@ class WC_Payments_Admin {
 	 */
 	private function get_settings_menu_item_name() {
 		$label = __( 'Settings', 'woocommerce' ); // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
-
-		if ( WC_Payments_Features::is_upe_settings_preview_enabled() && ! WC_Payments_Features::is_upe_enabled() ) {
-			$label .= self::MENU_NOTIFICATION_BADGE;
-		}
 
 		return $label;
 	}

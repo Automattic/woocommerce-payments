@@ -242,6 +242,9 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			->with( 'cus_12345' )
 			->willReturn( $mock_payment_methods );
 
+		$gateway = WC_Payments::get_gateway();
+		$gateway->settings['upe_enabled_payment_method_ids'] = [ Payment_Method::CARD ];
+
 		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, 'woocommerce_payments' );
 		$result_tokens = array_values( $result );
 		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );

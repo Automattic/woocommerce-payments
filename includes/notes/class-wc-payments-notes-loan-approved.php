@@ -13,7 +13,7 @@ use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WC_Payments_Notes_Additional_Payment_Methods
+ * Class WC_Payments_Notes_Loan_Approved
  */
 class WC_Payments_Notes_Loan_Approved {
 	use NoteTraits;

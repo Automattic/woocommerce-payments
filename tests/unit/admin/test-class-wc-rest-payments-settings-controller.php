@@ -252,7 +252,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_update_settings_request_returns_status_code_200() {
 		$request = new WP_REST_Request( 'POST', self::$settings_route );
 		$request->set_param( 'is_wcpay_enabled', true );
-		$request->set_param( 'enabled_payment_method_ids', [ 'card' ] );
+		$request->set_param( 'enabled_payment_method_ids', [] );
 
 		$response = rest_do_request( $request );
 

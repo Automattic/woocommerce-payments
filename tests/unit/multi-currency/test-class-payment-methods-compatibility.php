@@ -59,16 +59,6 @@ class WCPay_Multi_Currency_Payment_Methods_Compatibility_Tests extends WCPAY_Uni
 			->getMock();
 
 		$this->payment_methods_compatibility = new \WCPay\MultiCurrency\PaymentMethodsCompatibility( $this->multi_currency_mock, $this->gateway_mock );
-		add_filter( 'pre_option__wcpay_feature_upe', [ $this, 'mock_upe_flag' ], 50, 3 );
-	}
-
-	public function tear_down() {
-		parent::tear_down();
-		remove_filter( 'pre_option__wcpay_feature_upe', [ $this, 'mock_upe_flag' ], 50 );
-	}
-
-	public function mock_upe_flag( $pre_option, $option, $default ) {
-		return '1';
 	}
 
 	public function test_it_should_not_update_available_currencies_when_enabled_payment_methods_do_not_need_it() {
