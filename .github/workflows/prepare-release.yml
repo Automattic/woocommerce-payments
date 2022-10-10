@@ -61,7 +61,7 @@ jobs:
           echo "Picking up changelog for version '$TAG_NAME'..."
           CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           echo "$CHANGELOG"
-          $CHANGELOG="${$CHANGELOG//'\n'/'%0A'}"  
+          $CHANGELOG="${CHANGELOG//'\n'/'%0A'}"  
           echo ::set-output name=CHANGELOG::"$CHANGELOG"
           
       - name: Bump version
