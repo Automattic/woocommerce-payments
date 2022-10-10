@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payment_Token_WCPay_SEPA
+ * Class WC_Payment_Token_WCPay_Link
  *
  * @package WooCommerce\Payments
  */
