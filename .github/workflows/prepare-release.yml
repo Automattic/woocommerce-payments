@@ -21,10 +21,17 @@ jobs:
       TAG_NAME: ${{ inputs.tagName }}
       
     steps:
-      - name: Checkout repository
+      - name: Checkout WCPay repository
         uses: actions/checkout@v3
 #        with:
 #          ref: 'develop'
+
+      - name: Check out woorelease repository
+        uses: actions/checkout@v3
+        with:
+          repository: woocommerce/woorelease
+          token: ${{ secrets.GH_REPO_PAT }}
+          path: 'woorelease'
 
       - name: Create a branch and tag
         id: create_branch_tag
@@ -46,6 +53,11 @@ jobs:
 
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
+
+      - name: Install Woorelease composer dependencies
+        run: |
+          cd ./woorelease
+          composer install --prefer-dist --no-dev
         
       - name: Extract changelog
         id: get_changelog
@@ -60,39 +72,38 @@ jobs:
           ~/.composer/vendor/bin/changelogger write --use-version="$VERSION" --release-date=unreleased
 
           echo "Picking up changelog for version '$VERSION'..."
-          CHANGELOG_TEST=$(awk -v ver="$VERSION" '/^= / { if (p) { exit }; if ($2 == ver) { p=1; next } } p && NF' changelog.txt)
           CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           echo "$CHANGELOG"
-          echo "$CHANGELOG_TEST"
-
+          
           CHANGELOG_JSON_FORMATTED=$(echo "$CHANGELOG" | jq -aRs '.')
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//'\n'/'%0A'}"  
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED%\"}"
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED#\"}"
-          echo ::set-output name=CHANGELOG::$(echo "$CHANGELOG_TEST")
-          echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG_TEST")
+          echo ::set-output name=CHANGELOG::$(echo "$CHANGELOG")
+          echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG_JSON_FORMATTED")
           
       - name: Bump version
         env:
           CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
         run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
-
-          # 'Version' header in woocommerce-payments.php
-          sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
-                    
-          # 'version' field in package.json
-          sed -ri 's/("version": )".*"/\1"'${TAG_NAME}'"/' package.json
-
-          # 'Stable tag' header in readme.txt;
-          sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
-
-          # Release date in changelog.txt
-          PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday") # Wednesday of current week as YYYY-MM-DD
-          sed -ri "s/(= $TAG_NAME - )[0-9][0-9][0-9][0-9]-xx-xx =/\1$PLANNED_RELEASE_DATE =/" changelog.txt
           
-          # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
-          sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
+          php bin/update-version.php $TAG_NAME
+#          # 'Version' header in woocommerce-payments.php
+#          sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
+#                    
+#          # 'version' field in package.json
+#          sed -ri 's/("version": )".*"/\1"'${TAG_NAME}'"/' package.json
+#
+#          # 'Stable tag' header in readme.txt;
+#          sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
+#
+#          # Release date in changelog.txt
+#          PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday") # Wednesday of current week as YYYY-MM-DD
+#          sed -ri "s/(= $TAG_NAME - )[0-9][0-9][0-9][0-9]-xx-xx =/\1$PLANNED_RELEASE_DATE =/" changelog.txt
+#          
+#          # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
+#          sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
       
       - name: Build and commit changes
         run: |
