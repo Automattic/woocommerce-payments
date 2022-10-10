@@ -97,5 +97,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
         run: |
-          gh pr create --title "Release branch for $TAG_NAME" --body="\`\`\`$CHANGELOG\`\`\`" --base="trunk"
+          gh pr create --title "Release branch for $TAG_NAME" --body="\`\`\`\n$CHANGELOG\n\`\`\`" --base="trunk"
           git status -u
