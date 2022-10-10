@@ -108,7 +108,7 @@ jobs:
       - name: Get pull request number
         id: pr_number
         run: |
-          PR_NUMBER=$( gh pr view "${{ env.BRANCH_NAME }}/${{ env.RELEASE_VERSION ))" --json number -q .number || echo "" )
+          PR_NUMBER=$( gh pr view "${{ env.BRANCH_NAME }}/${{ env.RELEASE_VERSION }}" --json number -q .number || echo "" )
           echo ::set-output name=PR_NUMBER::$PR_NUMBER
           
       - name: Slack ping
