@@ -61,17 +61,18 @@ jobs:
 
           echo "Picking up changelog for version '$VERSION'..."
           CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
-             echo "$CHANGELOG"
+          echo "$CHANGELOG"
           
           CHANGELOG_JSON_FORMATTED=$(echo "$CHANGELOG" | jq -aRs '.')
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//'\n'/'%0A'}"  
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED%\"}"
           CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED#\"}"
+          echo ::set-output name=CHANGELOG::$(echo "$CHANGELOG")
           echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG_JSON_FORMATTED")
           
       - name: Bump version
         env:
-          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
         run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
 
@@ -89,7 +90,7 @@ jobs:
           sed -ri "s/(= $TAG_NAME - )[0-9][0-9][0-9][0-9]-xx-xx =/\1$PLANNED_RELEASE_DATE =/" changelog.txt
           
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
-          sed -ri "s/(== Changelog ==)/\1\n\n Testing/" readme.txt
+          sed -ri "s/(== Changelog ==)/\1\n\n $CHANGELOG/" readme.txt
       
       - name: Build and commit changes
         run: |
@@ -99,7 +100,7 @@ jobs:
       - name: Create a PR to trunk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
+          CHANGELOG_JSON: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
         run: |
-          echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`" > commitmsg
+          echo -e "\`\`\`${CHANGELOG_JSON}\`\`\`" > commitmsg
           gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
