@@ -76,10 +76,10 @@ jobs:
           sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
                     
           # 'version' field in package.json
-          sed -ri 's/("version": )".*"/\1'${TAG_NAME}'/' package.json
+          sed -ri 's/("version": )".*"/\1"'${TAG_NAME}'",/' package.json
 
           # 'Stable tag' header in readme.txt;
-          sed -i "s/^Stable tag: .*$/ * Version: $TAG_NAME/" readme.txt
+          sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
 
           # Release date in changelog.txt
           PLANNED_RELEASE_DATE=$( date -d "next wednesday" ) # Wednesday of current week as YYYY-MM-DD
@@ -97,5 +97,6 @@ jobs:
       - name: Create a PR to trunk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
         run: |
           gh pr create --title "Release branch for $TAG_NAME" --body "$CHANGELOG" --base="trunk"
