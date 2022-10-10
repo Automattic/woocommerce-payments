@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Support for legacy payment methods (sources), stored by the WooCommerce Stripe Gateway
