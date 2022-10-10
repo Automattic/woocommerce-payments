@@ -105,3 +105,6 @@ jobs:
         run: |
           echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`" > commitmsg
           gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
+          git status
+          git add .
+          git status
