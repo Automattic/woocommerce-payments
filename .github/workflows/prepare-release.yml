@@ -1,5 +1,5 @@
 ---
-name: Release - Create PR for stable release
+name: Release - Create PR
 on:
   workflow_dispatch:
     inputs:
@@ -102,5 +102,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGELOG_JSON: ${{ steps.get_changelog.outputs.CHANGELOG_JSON }}
         run: |
-          PR_BODY=$(echo -e "\`\`\`${CHANGELOG_JSON}\`\`\`")
-          gh pr create --title "Release branch for $TAG_NAME" --body=$PR_BODY --base="trunk"
+          echo -e "\`\`\`${CHANGELOG_JSON}\`\`\`" > commitmsg
+          gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
