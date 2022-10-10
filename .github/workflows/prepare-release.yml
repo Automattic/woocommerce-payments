@@ -1,5 +1,5 @@
 ---
-name: Prepare a stable release
+name: Release - prepare
 on:
   push:
   workflow_dispatch:
@@ -13,8 +13,8 @@ defaults:
     shell: bash
 
 jobs:
-  publish-release:
-    name: Release - prepare
+  prepare-release:
+    name: Prepare a stable release
     runs-on: ubuntu-20.04
     outputs: 
       branch: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
