@@ -20,34 +20,11 @@ import { SavedTokenHandler } from './saved-token-handler';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
-import {
-	PAYMENT_METHOD_NAME_CARD,
-	PAYMENT_METHOD_NAME_BANCONTACT,
-	PAYMENT_METHOD_NAME_BECS,
-	PAYMENT_METHOD_NAME_EPS,
-	PAYMENT_METHOD_NAME_GIROPAY,
-	PAYMENT_METHOD_NAME_IDEAL,
-	PAYMENT_METHOD_NAME_P24,
-	PAYMENT_METHOD_NAME_SEPA,
-	PAYMENT_METHOD_NAME_SOFORT,
-} from '../constants.js';
 
-const upeMethods = {
-	card: PAYMENT_METHOD_NAME_CARD,
-	bancontact: PAYMENT_METHOD_NAME_BANCONTACT,
-	au_becs_debit: PAYMENT_METHOD_NAME_BECS,
-	eps: PAYMENT_METHOD_NAME_EPS,
-	giropay: PAYMENT_METHOD_NAME_GIROPAY,
-	ideal: PAYMENT_METHOD_NAME_IDEAL,
-	p24: PAYMENT_METHOD_NAME_P24,
-	sepa_debit: PAYMENT_METHOD_NAME_SEPA,
-	sofort: PAYMENT_METHOD_NAME_SOFORT,
-};
-
-const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 const isStripeLinkEnabled =
-	paymentMethodsConfig.link !== undefined &&
-	paymentMethodsConfig.card !== undefined;
+	enabledPaymentMethodsConfig.link !== undefined &&
+	enabledPaymentMethodsConfig.card !== undefined;
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -62,7 +39,7 @@ const api = new WCPayAPI(
 	request
 );
 
-Object.entries( upeMethods ).map( ( [ upeName, upePaymentMethodId ] ) =>
+Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName ] ) =>
 	registerPaymentMethod( {
 		name: upeName,
 		content: <WCPayUPEFields paymentMethodId={ upeName } api={ api } />,
