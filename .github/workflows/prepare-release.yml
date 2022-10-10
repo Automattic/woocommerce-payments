@@ -68,7 +68,7 @@ jobs:
           
       - name: Bump version
         env:
-          CHANGELOG: ${{ steps.get_changelog.outputs.$CHANGELOG }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
         run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
 
@@ -96,7 +96,7 @@ jobs:
       - name: Create a PR to trunk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHANGELOG: ${{ steps.get_changelog.outputs.$CHANGELOG }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
         run: |
           echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`" > commitmsg
           gh pr create --title "Release branch for $TAG_NAME" --body-file commitmsg --base="trunk"
