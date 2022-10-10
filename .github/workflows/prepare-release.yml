@@ -1,11 +1,22 @@
 ---
 name: Release - Create PR
 on:
+  workflow_call:
+    inputs:
+      tagName:
+        description: 'The tag name (e.g. 4.5.0)'
+        required: true
+        type: string
+    outputs:
+      branchName:
+        description: "The branch created"
+        value: ${{ jobs.prepare-release.outputs.branch }}
   workflow_dispatch:
     inputs:
       tagName:
         description: 'The tag name (e.g. 4.5.0)'
         required: true
+        type: string
       releaseDateString:
         description: "The release date in human-readable format, which will be formatted for changelog.txt and readme.txt (default: 'next wednesday')."
         required: false
