@@ -89,6 +89,7 @@ jobs:
       - name: Build and commit changes
         run: |
           git commit -am "Add changelog entries for release $TAG_NAME"
+          git status
           git push --set-upstream origin release/$TAG_NAME
 
       - name: Create a PR to trunk
