@@ -6,6 +6,10 @@ on:
       tagName:
         description: 'The tag name (e.g. 4.5.0)'
         required: true
+      releaseDateString:
+        description: "The release date in human-readable format, which will be formatted for changelog.txt and readme.txt (default: 'next wednesday')."
+        required: false
+        default: 'next wednesday'
   
 defaults:
   run:
@@ -19,7 +23,8 @@ jobs:
       branch: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
     env:
       TAG_NAME: ${{ inputs.tagName }}
-      
+      RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}    
+    
     steps:
       - name: Checkout WCPay repository
         uses: actions/checkout@v3
@@ -34,7 +39,7 @@ jobs:
 
           git checkout -b $BRANCH_NAME
           git push origin $BRANCH_NAME
-          echo "::set-output name=BRANCH_NAME::$(echo $BRANCH_NAME)"
+          echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
 
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
@@ -53,10 +58,10 @@ jobs:
           # Install this dev package globally to gather changelog entries while not including it into the release package
           composer global require automattic/jetpack-changelogger:^3.0.7
 
-          PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday") # Wednesday of current week as YYYY-MM-DD
-          echo ::set-output name=RELEASE_DATE::"$PLANNED_RELEASE_DATE"
+          RELEASE_DATE=$( date "+%Y-%m-%d" -d ${{ env.RELEASE_DATE_STRING ) # Release date formatted as YYYY-MM-DD
+          echo ::set-output name=RELEASE_DATE::"$RELEASE_DATE"
 
-          ~/.composer/vendor/bin/changelogger write --use-version="$TAG_NAME" --release-date="$PLANNED_RELEASE_DATE"
+          ~/.composer/vendor/bin/changelogger write --use-version="$TAG_NAME" --release-date="$RELEASE_DATE"
           
           echo "Picking up changelog for version '$TAG_NAME'..."
           CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
@@ -65,7 +70,6 @@ jobs:
           CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"  
           CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
           CHANGELOG="${CHANGELOG//'\"'/'\\"'}"
-          echo "$CHANGELOG"
           echo ::set-output name=CHANGELOG::"$CHANGELOG"
           
       - name: Bump version
@@ -89,7 +93,7 @@ jobs:
       
       - name: Build and commit changes
         run: |
-          npm install --package-lock-only
+          npm install
           git commit -am "Update version and add changelog entries for release $TAG_NAME"
           git push --set-upstream origin release/$TAG_NAME
 
