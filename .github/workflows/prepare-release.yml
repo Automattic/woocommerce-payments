@@ -1,13 +1,12 @@
 ---
 name: Prepare a stable release
 on:
+  push:
   workflow_dispatch:
     inputs:
       tagName:
         description: 'The tag name (e.g. 4.5.0)'
         required: true
-env:
-  RELEASE_FILENAME: 'woocommerce-payments.zip'
   
 defaults:
   run:
@@ -15,7 +14,7 @@ defaults:
 
 jobs:
   publish-release:
-    name: Publish the release
+    name: Release - prepare
     runs-on: ubuntu-20.04
     outputs: 
       branch: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
@@ -41,10 +40,10 @@ jobs:
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
           
-          git tag -a -m "$TAG_MESSAGE" ${{ env.TAG_NAME }}
-          echo "::set-output name=TAG_MESSAGE::$(echo $TAG_MESSAGE)"
-          
-          git push origin ${{ env.TAG_NAME }}
+#          git tag -a -m "$TAG_MESSAGE" ${{ env.TAG_NAME }}
+#          echo "::set-output name=TAG_MESSAGE::$(echo $TAG_MESSAGE)"
+#          
+#          git push origin ${{ env.TAG_NAME }}
 
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
