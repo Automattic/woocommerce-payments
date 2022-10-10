@@ -76,7 +76,7 @@ jobs:
           echo "Next version: ${{ env.NEXT_VERSION }}"
           git fetch --tags origin
           NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
-          NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-1" | tail -1)
+          NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-2" | tail -1)
           echo "NEXT_VERSION_TAG_FROM_WEEK_2: $NEXT_VERSION_TAG_FROM_WEEK_2"
           if [[ -z "$NEXT_VERSION_TAG_FROM_WEEK_2" ]]; then
             echo "::warning::Code freeze is not needed"
@@ -86,11 +86,11 @@ jobs:
             echo ::set-output name=FREEZE::1
           fi
 
-  publish-stable-release:
-    name: "Publish the next stable release"
+  prepare-stable-release:
+    name: "Raise a PR to trunk for the next stable release"
     needs: check-code-freeze
     if: needs.check-code-freeze.outputs.freeze == 1
-    uses: ./.github/workflows/publish-release.yml
+    uses: ./.github/workflows/prepare-release.yml
     with:
       tagName: ${{ needs.check-code-freeze.outputs.releaseVersion }}
 
@@ -118,7 +118,7 @@ jobs:
                         "type": "header",
                         "text": {
                             "type": "plain_text",
-                            "text": "Code freeze notification for release ${{ env.RELEASE_VERSION }}",
+                            "text": "Code freeze notification",
                             "emoji": true
                         }
                     },
