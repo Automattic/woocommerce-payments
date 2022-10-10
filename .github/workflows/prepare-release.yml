@@ -53,7 +53,7 @@ jobs:
           composer global require automattic/jetpack-changelogger:^3.0.7
 
           PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday") # Wednesday of current week as YYYY-MM-DD
-          ./vendor/bin/changelogger write --use-version="$TAG_NAME" --release-date="$PLANNED_RELEASE_DATE"
+          ~/.composer/vendor/bin/changelogger write --use-version="$TAG_NAME" --release-date="$PLANNED_RELEASE_DATE"
           
       - name: Extract changelog
         id: get_changelog
