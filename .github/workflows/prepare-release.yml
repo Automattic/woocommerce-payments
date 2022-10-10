@@ -67,10 +67,6 @@ jobs:
           echo "Picking up changelog for version '$TAG_NAME'..."
           CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           echo "$CHANGELOG"
-          CHANGELOG="${CHANGELOG//$'\n'/'<br/>'}"  
-          CHANGELOG="${CHANGELOG//'"'/'\"'}"
-          echo "$CHANGELOG"
-          echo ::set-output name=CHANGELOG::"$CHANGELOG"
           
       - name: Bump version
         env:
@@ -90,7 +86,6 @@ jobs:
 
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
           sed -ri "s|(== Changelog ==)|\1\n\n = $TAG_NAME - $RELEASE_DATE =\n $CHANGELOG|" readme.txt
-#          sed -ri 's|(== Changelog ==)|\1\n\n = '"$TAG_NAME"' - '"$RELEASE_DATE"' =\n'"$CHANGELOG"'|' readme.txt
       
       - name: Build and commit changes
         run: |
@@ -103,5 +98,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
         run: |
-          PR_BODY=$(echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`")
+          CHANGELOG_FORMATTED="${CHANGELOG//'%'/'%25'}"
+          CHANGELOG_FORMATTED="${CHANGELOG_FORMATTED//$'\n'/'%0A'}"  
+          CHANGELOG_FORMATTED="${CHANGELOG_FORMATTED//$'\r'/'%0D'}"
+          PR_BODY=$(echo -e "\`\`\`\n${CHANGELOG_FORMATTED}\n\`\`\`")
           gh pr create --title "Release branch for $TAG_NAME" --body="$PR_BODY" --base="trunk"
