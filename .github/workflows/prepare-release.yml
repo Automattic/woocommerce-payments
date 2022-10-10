@@ -1,7 +1,6 @@
 ---
 name: Release - prepare
 on:
-  push:
   workflow_dispatch:
     inputs:
       tagName:
