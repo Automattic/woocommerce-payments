@@ -39,7 +39,7 @@ const api = new WCPayAPI(
 	request
 );
 
-Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName ] ) =>
+Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName, upeConfig ] ) =>
 	registerPaymentMethod( {
 		name: upeName,
 		content: <WCPayUPEFields paymentMethodId={ upeName } api={ api } />,
@@ -47,7 +47,7 @@ Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName ] ) =>
 		savedTokenComponent: <SavedTokenHandler api={ api } />,
 		canMakePayment: () => !! api.getStripe(),
 		paymentMethodId: upeName,
-		label: getUPEConfig( 'checkoutTitle' ),
+		label: upeConfig.title,
 		ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
 		supports: {
 			showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,
