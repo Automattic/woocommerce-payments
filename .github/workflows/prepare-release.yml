@@ -70,7 +70,7 @@ jobs:
           CHANGELOG="${CHANGELOG//'%'/'%25'}"
           CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"  
           CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
-          CHANGELOG="${CHANGELOG//'\"'/'\\"'}"
+          CHANGELOG="${CHANGELOG//'"'/'\"'}"
           echo "$CHANGELOG"
           echo ::set-output name=CHANGELOG::"$CHANGELOG"
           
