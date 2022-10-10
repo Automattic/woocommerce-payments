@@ -4,7 +4,7 @@ Tags: woocommerce, payment, payment request, credit card, automattic
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.8.1
+Stable tag: 7.2.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,14 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+ = 7.2.6 - 2022-10-12 =
+ * Add - Support Platform Checkout from Checkout Blocks.
+* Fix - Fix fatal error with call to MultiCurrency/Compatibility::convert_order_prices method.
+* Fix - The ellipsis menu is now readable and we can dismiss the task in the "Things to do" task list from Payments > Overview page
+* Update - Update formatCurrency to decode HTML entities for rendering currency symbols.
+* Dev - Bump minimum required version of WooCommerce to 6.8 to support L2 policy
+* Dev - changed WooPay otp url
 
 = 4.8.1 - 2022-10-04 =
 * Fix - Fix fatal error thrown during the renewal order payment flow when the store doesn't have the WCPay Subscriptions feature enabled
