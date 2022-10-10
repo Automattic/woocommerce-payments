@@ -18,7 +18,7 @@ $plugin_folder    = dirname( __DIR__ );
 $main_plugin_file = $plugin_folder . '/' . $plugin_slug . '.php';
 
 // Load the Woorelease autoloader.
-require_once dirname( __DIR__, 2 ) . '/woorelease/vendor/autoload.php';
+require_once dirname( __DIR__, 1 ) . '/woorelease/vendor/autoload.php';
 
 // Set up the logger.
 $time_format   = 'H:i:s';

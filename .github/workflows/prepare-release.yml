@@ -58,9 +58,6 @@ jobs:
         run: |
           cd ./woorelease
           composer install --prefer-dist --no-dev
-          ls
-          ls ../
-          ls ../..
         
       - name: Extract changelog
         id: get_changelog
@@ -90,7 +87,6 @@ jobs:
           CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
         run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
-          ls
           php bin/update-version.php $TAG_NAME
 #          # 'Version' header in woocommerce-payments.php
 #          sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
