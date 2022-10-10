@@ -77,7 +77,7 @@ jobs:
           sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
                     
           # 'version' field in package.json
-          sed -i '/"version":/s/.*/'${TAG_NAME}'/'
+          sed -i '/"version":/s/.*/'${TAG_NAME}'/' package.json
 
           # 'Stable tag' header in readme.txt;
           sed -i "s/^Stable tag: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
