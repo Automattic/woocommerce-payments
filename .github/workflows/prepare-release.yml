@@ -53,18 +53,7 @@ jobs:
           composer global require automattic/jetpack-changelogger:^3.0.7
 
           PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday") # Wednesday of current week as YYYY-MM-DD
-          vendor/bin/changelogger write --use-version="$TAG_NAME" --release-date="$PLANNED_RELEASE_DATE"
-
-          echo "Picking up changelog for version '$TAG_NAME'..."
-          CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
-          echo "$CHANGELOG"
-          
-          CHANGELOG_JSON_FORMATTED=$(echo "$CHANGELOG" | jq -aRs '.')
-          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED//'\n'/'%0A'}"  
-          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED%\"}"
-          CHANGELOG_JSON_FORMATTED="${CHANGELOG_JSON_FORMATTED#\"}"
-          echo ::set-output name=CHANGELOG::$(echo "$CHANGELOG")
-          echo ::set-output name=CHANGELOG_JSON::$(echo "$CHANGELOG_JSON_FORMATTED")
+          ./vendor/bin/changelogger write --use-version="$TAG_NAME" --release-date="$PLANNED_RELEASE_DATE"
           
       - name: Extract changelog
         id: get_changelog
@@ -93,10 +82,6 @@ jobs:
 
           # 'Stable tag' header in readme.txt;
           sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
-
-          # Release date in changelog.txt
-          PLANNED_RELEASE_DATE=$( date "+%Y-%m-%d" -d "next wednesday") # Wednesday of current week as YYYY-MM-DD
-          sed -ri "s/(= $TAG_NAME - )[0-9][0-9][0-9][0-9]-xx-xx =/\1$PLANNED_RELEASE_DATE =/" changelog.txt
 
           # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
           sed -ri "s|(== Changelog ==)|\1\n\n $CHANGELOG|" readme.txt
