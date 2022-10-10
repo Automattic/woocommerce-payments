@@ -59,10 +59,7 @@ jobs:
           # Install this dev package globally to gather changelog entries while not including it into the release package
           composer global require automattic/jetpack-changelogger:^3.0.7
 
-          echo ${{ inputs.releaseDateString }}
-          echo ${{ github.event.inputs.releaseDateString }}
-
-          RELEASE_DATE=$( date "+%Y-%m-%d" -d $releaseDateString ) # Release date formatted as YYYY-MM-DD
+          RELEASE_DATE=$( date "+%Y-%m-%d" -d "$RELEASE_DATE_STRING" ) # Release date formatted as YYYY-MM-DD
           echo ::set-output name=RELEASE_DATE::"$RELEASE_DATE"
 
           ~/.composer/vendor/bin/changelogger write --use-version="$TAG_NAME" --release-date="$RELEASE_DATE"
