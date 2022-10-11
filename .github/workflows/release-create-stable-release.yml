@@ -1,0 +1,55 @@
+---
+name: "Release - create a stable release"
+
+# This action will only run when a pull request targeting `trunk` is closed/merged.
+on:
+  pull_request_target:
+    branches:
+      - 'trunk'
+    types:
+      - closed
+env:
+  RELEASE_FILENAME: 'woocommerce-payments.zip'
+  
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  create-release:
+    # We require that the PR originated from a release branch and that it was merged
+    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
+    name: Create the release
+    runs-on: ubuntu-20.04
+    env:
+      TAG_NAME: ${{ inputs.tagName }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - name: Get release version from merge commit
+        id: get_version
+        run: echo ::set-output name=RELEASE_VERSION::$(jq '.version' package.json -r)
+        
+      - name: Build release
+        run: |
+          npm ci
+          npm run build
+          
+          if [[ ! -f $RELEASE_FILENAME ]]; then
+            echo "::error::Failed to create release archive $RELEASE_FILENAME."
+            exit 1
+          fi
+      
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ steps.get_version.outputs.RELEASE_VERSION }}
+          TAG_MESSAGE: ${{ github.event.pull_request.title }}
+          TARGET_COMMIT: ${{ github.event.pull_request.merge_commit_sha }}
+          RELEASE_NOTES: ${{ github.event.pull_request.body }}
+        run: |
+          gh release create $RELEASE_VERSION --notes "$RELEASE_NOTES" --title "$TAG_MESSAGE" --target $TARGET_COMMIT $RELEASE_FILENAME

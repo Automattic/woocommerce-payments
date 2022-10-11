@@ -1,5 +1,7 @@
 ---
-name: "Release - publish a GH pre-release"
+name: "Release - create a pre-release"
+
+# This action will run when it is triggered manually
 on:
   workflow_dispatch:
     inputs:
@@ -15,8 +17,8 @@ defaults:
     shell: bash
 
 jobs:
-  publish-pre-release:
-    name: Publish the pre-release
+  create-release:
+    name: Create the pre-release
     runs-on: ubuntu-20.04
     env:
       TAG_NAME: ${{ inputs.tagName }}

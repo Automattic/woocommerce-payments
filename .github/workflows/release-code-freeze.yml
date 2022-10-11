@@ -1,11 +1,13 @@
 name: "Release - Code freeze"
+
+# This action will run according to the cron schedule or when triggered manually
 on:
   schedule:
     - cron: '0 12 * * 0' # Run at 1200 UTC on Sundays.
   workflow_dispatch:
     inputs:
       skipSlackPing:
-        description: "If true, the Slack ping will be skipped (useful for testing)"
+        description: "If true, the Slack ping will be skipped"
         type: boolean
         required: false
         default: false
@@ -87,17 +89,17 @@ jobs:
             echo ::set-output name=FREEZE::1
           fi
 
-  prepare-stable-release:
+  create-release-pr:
     name: "Raise a PR to trunk for the next stable release"
     needs: check-code-freeze
     if: needs.check-code-freeze.outputs.freeze == 1
-    uses: ./.github/workflows/prepare-release.yml
+    uses: ./.github/workflows/release-create-pr.yml
     with:
       tagName: ${{ needs.check-code-freeze.outputs.releaseVersion }}
 
   slack-notification:
     name: "Send code freeze notification to Slack"
-    needs: [check-code-freeze, prepare-stable-release]
+    needs: [check-code-freeze, create-release-pr]
     if: ${{ inputs.skipSlackPing != true }}
     runs-on: ubuntu-20.04
     env:

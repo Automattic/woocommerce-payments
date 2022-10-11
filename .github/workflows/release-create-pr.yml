@@ -1,5 +1,7 @@
 ---
 name: "Release - Create PR to trunk"
+
+# This action will run inside the release code freeze workflow or when it is triggered manually
 on:
   workflow_call:
     inputs:
@@ -7,10 +9,6 @@ on:
         description: 'The tag name (e.g. 4.5.0)'
         required: true
         type: string
-    outputs:
-      branchName:
-        description: "The branch created (e.g. release/4.5.0)"
-        value: ${{ jobs.prepare-release.outputs.branch }}
   workflow_dispatch:
     inputs:
       tagName:
@@ -32,7 +30,7 @@ jobs:
     name: Prepare a stable release with a Pull Request
     runs-on: ubuntu-20.04
     outputs: 
-      branch: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
+      branch: ${{ steps.create_branch_tag.outputs.branch-name }}
     env:
       TAG_NAME: ${{ inputs.tagName }}
       RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}    
