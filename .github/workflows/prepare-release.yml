@@ -59,30 +59,24 @@ jobs:
 
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
-          
-      - name: Extract changelog
-        id: get_changelog
-        run: |
-          # Install this dev package globally to gather changelog entries while not including it into the release package
-          composer global require automattic/jetpack-changelogger:^3.0.7
 
-          RELEASE_DATE=$( date "+%Y-%m-%d" -d "$RELEASE_DATE_STRING" ) # Release date formatted as YYYY-MM-DD
-          echo ::set-output name=RELEASE_DATE::"$RELEASE_DATE"
-
-          ~/.composer/vendor/bin/changelogger write --use-version="$TAG_NAME" --release-date="$RELEASE_DATE"
-          
-          echo "Picking up changelog for version '$TAG_NAME'..."
-          CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
-          echo "$CHANGELOG"
-          
-          # New line characters need to be escaped because set-output doesn't support multi-line strings out of the box
-          CHANGELOG="${CHANGELOG//$'\n'/\\n}"  
-          echo ::set-output name=CHANGELOG::"$CHANGELOG"
+      - name: Define variables
+        id: define_var
+          run: |
+            RELEASE_DATE=$( date "+%Y-%m-%d" -d "$RELEASE_DATE_STRING" ) # Release date formatted as YYYY-MM-DD
+            echo ::set-output name=RELEASE_DATE::"$RELEASE_DATE"
+        
+      - name: Generate the changelog
+        id: generate_changelog
+        uses: ./.github/actions/generate-changelog
+        with:
+          release-version: ${{ env.TAG_NAME }}
+          release-date: ${{ steps.define_var.outputs.RELEASE_DATE }}
           
       - name: Bump version
         env:
-          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
-          RELEASE_DATE: ${{ steps.get_changelog.outputs.RELEASE_DATE }}
+          CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
+          RELEASE_DATE: ${{ steps.define_var.outputs.RELEASE_DATE }}
         run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
 
@@ -109,7 +103,7 @@ jobs:
       - name: Create a PR to trunk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
+          CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
         run: |
           PR_BODY=$(echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`")
           gh pr create --title "Release branch for $TAG_NAME" --body="$PR_BODY" --base="trunk"

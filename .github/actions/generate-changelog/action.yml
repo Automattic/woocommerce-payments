@@ -5,6 +5,10 @@ inputs:
   release-version:
     description: "The release version for which the action should generate the changelog"
     required: true
+  release-date:
+    description: "The release date for which the action should generate the changelog (default: unreleased)"
+    required: false
+    default: "unreleased"
     
 outputs: 
   changelog:
@@ -19,12 +23,13 @@ runs:
       shell: bash
       env:
         VERSION: ${{ inputs.release-version }}
+        RELEASE_DATE: ${{ inputs.release-date }}
       run: |
         # Install this dev package globally to gather changelog entries while not including it into the release package
         composer global require automattic/jetpack-changelogger:^3.0.7
         
         # Gather changelog entries
-        ~/.composer/vendor/bin/changelogger write --use-version="$VERSION" --release-date=unreleased
+        ~/.composer/vendor/bin/changelogger write --use-version="$VERSION" --release-date="$RELEASE_DATE"
         
         echo "Picking up changelog for version '$VERSION'..."
         CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
