@@ -48,7 +48,7 @@ jobs:
         id: generate_changelog
         uses: ./.github/actions/generate-changelog
         with:
-          release-version: $(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME)
+          release-version: ${{ $(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME) }}
           
       - name: Bump version header
         run: |
