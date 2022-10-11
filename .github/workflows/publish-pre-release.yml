@@ -1,6 +1,7 @@
 ---
 name: Publish a pre-release
 on:
+  push:
   workflow_dispatch:
     inputs:
       tagName:
