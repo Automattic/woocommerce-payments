@@ -1,4 +1,4 @@
-name: "Release: code freeze"
+name: "Release - Code freeze"
 on:
   schedule:
     - cron: '0 12 * * 0' # Run at 1200 UTC on Sundays.
@@ -73,10 +73,11 @@ jobs:
         env:
           NEXT_VERSION: ${{ steps.next-version.outputs.RELEASE_VERSION }}
         run: |
-          echo "Next version: ${{ env.NEXT_VERSION }}"
+          echo "::warning::Next version: $NEXT_VERSION"
+          
           git fetch --tags origin
           NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
-          NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-1" | tail -1)
+          NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-2" | tail -1)
           echo "NEXT_VERSION_TAG_FROM_WEEK_2: $NEXT_VERSION_TAG_FROM_WEEK_2"
           if [[ -z "$NEXT_VERSION_TAG_FROM_WEEK_2" ]]; then
             echo "::warning::Code freeze is not needed"
@@ -86,23 +87,23 @@ jobs:
             echo ::set-output name=FREEZE::1
           fi
 
-  publish-stable-release:
-    name: "Publish the next stable release"
+  prepare-stable-release:
+    name: "Raise a PR to trunk for the next stable release"
     needs: check-code-freeze
     if: needs.check-code-freeze.outputs.freeze == 1
-    uses: ./.github/workflows/publish-release.yml
+    uses: ./.github/workflows/prepare-release.yml
     with:
       tagName: ${{ needs.check-code-freeze.outputs.releaseVersion }}
 
   slack-notification:
     name: "Send code freeze notification to Slack"
-    needs: [check-code-freeze, publish-stable-release]
+    needs: [check-code-freeze, prepare-stable-release]
     if: ${{ inputs.skipSlackPing != true }}
     runs-on: ubuntu-20.04
     env:
       RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.releaseVersion }}
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.releaseDate }}
-      GITHUB_RELEASE_URL: ${{ format( '{0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.releaseVersion ) }}
+      GITHUB_TAG_URL: ${{ format( '{0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.releaseVersion ) }}
     steps:
       - name: Slack ping
         uses: slackapi/slack-github-action@v1.18.0
@@ -118,7 +119,7 @@ jobs:
                         "type": "header",
                         "text": {
                             "type": "plain_text",
-                            "text": "Code freeze notification for release ${{ env.RELEASE_VERSION }}",
+                            "text": "Code freeze notification",
                             "emoji": true
                         }
                     },
@@ -126,7 +127,7 @@ jobs:
                         "type": "section",
                         "text": {
                           "type": "mrkdwn",
-                          "text": "The automated workflow just created a release branch and uploaded the release on GitHub. Any PRs that were not already merged will be a part of the release after that by default.\n If you have something that needs to be released in ${{ env.RELEASE_VERSION }}, please consult the release lead."
+                          "text": "The automated workflow just created a release branch and raised a Pull Request to merge changes on trunk. Any PRs that were not already merged will be a part of the release after that by default.\n If you have something that needs to be released in ${{ env.RELEASE_VERSION }}, please consult the release lead."
                         }
                     },
                     {
@@ -134,7 +135,7 @@ jobs:
                         "fields": [
                             {
                                 "type": "mrkdwn",
-                                "text": "*Version:*\n<${{ env.GITHUB_RELEASE_URL }}|${{ env.RELEASE_VERSION }}>"
+                                "text": "*Version:*\n<${{ env.GITHUB_TAG_URL }}|${{ env.RELEASE_VERSION }}>"
                             },
                             {
                                 "type": "mrkdwn",
