@@ -385,16 +385,14 @@ class WC_Payments_Webhook_Processing_Service {
 			WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY => $currency,
 		];
 
-		$order_changed = false;
 		foreach ( $meta_data_to_update as $key => $value ) {
-			if ( $value && ! $order->get_meta( $key ) ) {
-				$order_changed = true;
+			// Override existing meta data with incoming values, if present.
+			if ( $value ) {
 				$order->update_meta_data( $key, $value );
 			}
 		}
-		if ( true === $order_changed ) {
-			$order->save();
-		}
+		// Save the order after updating the meta data values.
+		$order->save();
 
 		$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 
