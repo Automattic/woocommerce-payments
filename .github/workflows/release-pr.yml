@@ -32,7 +32,7 @@ defaults:
 
 jobs:
   prepare-release:
-    name: Prepare a stable release with a Pull Request
+    name: Prepare a stable release
     runs-on: ubuntu-20.04
     outputs: 
       branch: ${{ steps.create_branch_tag.outputs.branch-name }}

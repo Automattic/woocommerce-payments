@@ -3,6 +3,7 @@ name: "Create a pre-release"
 
 # This action will run when it is triggered manually
 on:
+  push:
   workflow_dispatch:
     inputs:
       tagName:
@@ -53,7 +54,7 @@ jobs:
         run: |
           sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
       
-      - name: Build release
+      - name: Build the plugin
         uses: ./.github/actions/build
           
       - name: Create release

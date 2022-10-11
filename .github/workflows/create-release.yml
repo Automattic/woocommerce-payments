@@ -5,7 +5,7 @@ name: "Create a stable release"
 on:
   pull_request_target:
     branches:
-      - 'trunk'
+      - 'test/gh-workflow'
     types:
       - closed
 env:
@@ -34,7 +34,7 @@ jobs:
         id: get_version
         run: echo ::set-output name=RELEASE_VERSION::$(jq '.version' package.json -r)
         
-      - name: Build release
+      - name: Build the plugin
         uses: ./.github/actions/build
       
       - name: Create release
