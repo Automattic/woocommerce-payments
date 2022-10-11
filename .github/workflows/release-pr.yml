@@ -1,8 +1,8 @@
----
 name: "Release - Create PR to trunk"
 
 # This action will run inside the release code freeze workflow or when it is triggered manually
 on:
+  push:
   workflow_call:
     inputs:
       tagName:
