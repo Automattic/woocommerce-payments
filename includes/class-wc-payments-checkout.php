@@ -30,28 +30,28 @@ class WC_Payments_Checkout {
 	 *
 	 * @var WC_Payment_Gateway_WCPay
 	 */
-	private $gateway;
+	protected $gateway;
 
 	/**
 	 * Platform Checkout Utilities.
 	 *
 	 * @var Platform_Checkout_Utilities
 	 */
-	private $platform_checkout_util;
+	protected $platform_checkout_util;
 
 	/**
 	 * WC Payments Account.
 	 *
 	 * @var WC_Payments_Account
 	 */
-	private $account;
+	protected $account;
 
 	/**
 	 * WC Payments Customer Service
 	 *
 	 * @var WC_Payments_Customer_Service
 	 */
-	private $customer_service;
+	protected $customer_service;
 
 
 	/**
