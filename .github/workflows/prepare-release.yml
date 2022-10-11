@@ -43,19 +43,11 @@ jobs:
 #        with:
 #          ref: 'develop'
 
-      - name: Create a branch and tag
+      - name: Create a release branch and tag
         id: create_branch_tag
-        run: |
-          BRANCH_NAME="release/$TAG_NAME"
-          git checkout -b $BRANCH_NAME
-          git push origin $BRANCH_NAME
-          echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
-
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          TAG_MESSAGE="Version $TAG_NAME"
-          git tag -a -m "$TAG_MESSAGE" ${{ env.TAG_NAME }}
-          git push origin ${{ env.TAG_NAME }}
+        uses: ./.github/actions/create-branch-tag
+        with:
+          tag-name: $TAG_NAME
 
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
@@ -94,7 +86,7 @@ jobs:
       
       - name: Build and commit changes
         env:
-          BRANCH_NAME: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
+          BRANCH_NAME: ${{ steps.create_branch_tag.outputs.branch-name }}
         run: |
           npm install
           git commit -am "Update version and add changelog entries for release $TAG_NAME"

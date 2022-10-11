@@ -26,20 +26,12 @@ jobs:
         uses: actions/checkout@v3
 #        with:
 #          ref: 'develop'
-
-      - name: Create a branch and tag
+        
+      - name: Create a testing branch and tag
         id: create_branch_tag
-        run: |
-          BRANCH_NAME="testing/${{ inputs.tagName }}"
-          git checkout -b $BRANCH_NAME
-          git push origin $BRANCH_NAME
-
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          TAG_MESSAGE="Version for testing $TAG_NAME. Not for Production"
-          git tag -a -m "$TAG_MESSAGE" $TAG_NAME
-          git push origin ${{ env.TAG_NAME }}
-          echo "::set-output name=TAG_MESSAGE::$TAG_MESSAGE"
+        uses: ./.github/actions/create-branch-tag
+        with:
+          tag-name: $TAG_NAME
 
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
@@ -72,7 +64,7 @@ jobs:
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_MESSAGE: ${{ steps.create_branch_tag.outputs.TAG_MESSAGE }}
+          TAG_MESSAGE: ${{ steps.create_branch_tag.outputs.tag-message }}
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
         run: |
           RELEASE_NOTES=$(echo -e "${CHANGELOG}")
