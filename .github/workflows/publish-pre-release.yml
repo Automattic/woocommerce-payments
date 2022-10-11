@@ -43,26 +43,12 @@ jobs:
 
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
-        
-      - name: Extract changelog
-        id: get_changelog
-        run: |
-          # Pick anything before the first dash as a version number
-          VERSION=$(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME)
 
-          # Install this dev package globally to gather changelog entries while not including it into the release package
-          composer global require automattic/jetpack-changelogger:^3.0.7
-
-          # Gather changelog entries
-          ~/.composer/vendor/bin/changelogger write --use-version="$VERSION" --release-date=unreleased
-
-          echo "Picking up changelog for version '$VERSION'..."
-          CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
-          echo "$CHANGELOG"
-          
-          # New line characters need to be escaped because set-output doesn't support multi-line strings out of the box
-          CHANGELOG="${CHANGELOG//$'\n'/\\n}"  
-          echo ::set-output name=CHANGELOG::"$CHANGELOG"
+      - name: Generate the changelog
+        id: generate_changelog
+        uses: ./.github/actions/generate-changelog
+        with:
+          release-version: $(sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME)
           
       - name: Bump version header
         run: |
@@ -82,7 +68,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_MESSAGE: ${{ steps.create_branch_tag.outputs.TAG_MESSAGE }}
-          CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
+          CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
         run: |
           RELEASE_NOTES=$(echo -e "${CHANGELOG}")
           gh release create $TAG_NAME --notes "$RELEASE_NOTES" --title "$TAG_MESSAGE" --target "develop" "--prerelease" $RELEASE_FILENAME
