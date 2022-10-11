@@ -9,6 +9,11 @@ on:
         description: 'The tag name (e.g. 4.5.0)'
         required: true
         type: string
+      releaseDateString:
+        description: "The release date in human-readable format, which will be formatted for changelog.txt and readme.txt (default: 'next wednesday')."
+        required: false
+        default: "next wednesday"
+        type: string
   workflow_dispatch:
     inputs:
       tagName:

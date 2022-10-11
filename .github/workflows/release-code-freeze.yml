@@ -90,7 +90,7 @@ jobs:
           fi
 
   create-release-pr:
-    name: "Raise a PR to trunk for the next stable release"
+    name: "Raise a PR to trunk"
     needs: check-code-freeze
     if: needs.check-code-freeze.outputs.freeze == 1
     uses: ./.github/workflows/release-pr.yml
@@ -98,7 +98,7 @@ jobs:
       tagName: ${{ needs.check-code-freeze.outputs.releaseVersion }}
 
   slack-notification:
-    name: "Send code freeze notification to Slack"
+    name: "Send notification to Slack"
     needs: [check-code-freeze, create-release-pr]
     if: ${{ inputs.skipSlackPing != true }}
     runs-on: ubuntu-20.04
