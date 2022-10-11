@@ -40,6 +40,8 @@ jobs:
           git tag -a -m "$TAG_MESSAGE" $TAG_NAME
           git push origin ${{ env.TAG_NAME }}
           echo "::set-output name=TAG_MESSAGE::$TAG_MESSAGE"
+          
+          echo "::set-output name=RELEASE_VERSION::$( sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME )"
 
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
@@ -48,7 +50,7 @@ jobs:
         id: generate_changelog
         uses: ./.github/actions/generate-changelog
         with:
-          release-version: ${{ sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME }}
+          release-version: $(( steps.create_branch_tag.outputs.RELEASE_VERSION }}
           
       - name: Bump version header
         run: |
