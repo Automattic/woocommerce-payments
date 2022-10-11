@@ -1,5 +1,5 @@
 ---
-name: "Release - create a pre-release"
+name: "Create a pre-release"
 
 # This action will run when it is triggered manually
 on:

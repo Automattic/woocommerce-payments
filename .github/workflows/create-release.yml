@@ -1,5 +1,5 @@
 ---
-name: "Release - create a stable release"
+name: "Create a stable release"
 
 # This action will only run when a pull request targeting `trunk` is closed/merged.
 on:
