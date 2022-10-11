@@ -43,7 +43,8 @@ jQuery( function ( $ ) {
 		gatewayUPEComponents[ paymentMethodType ] = {
 			elements: null,
 			upeElement: null,
-			domElement: null,
+			paymentIntentId: null,
+			paymentIntentClientSecret: null,
 			isUPEComplete: null,
 			country: null,
 		};
@@ -465,12 +466,13 @@ jQuery( function ( $ ) {
 		}
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
-			const { error } = await api.getStripe().confirmPayment( {
+			const { error } = await api.handlePaymentConfirmation(
 				elements,
-				confirmParams: {
+				{
 					return_url: returnUrl,
 				},
-			} );
+				null
+			);
 			$form.removeClass( 'processing' ).unblock();
 			showErrorCheckout( error.message );
 			return false;
@@ -517,12 +519,13 @@ jQuery( function ( $ ) {
 				$( '#wcpay_payment_country' ).val()
 			);
 
-			const { error } = await api.getStripe().confirmPayment( {
-				elements: upeComponents.elements,
-				confirmParams: {
+			const { error } = await api.handlePaymentConfirmation(
+				upeComponents.elements,
+				{
 					return_url: returnUrl,
 				},
-			} );
+				getPaymentIntentSecret( paymentMethodType )
+			);
 			if ( error ) {
 				throw error;
 			}
@@ -606,9 +609,11 @@ jQuery( function ( $ ) {
 			};
 			let error;
 			if ( response.payment_needed ) {
-				( { error } = await api
-					.getStripe()
-					.confirmPayment( upeConfig ) );
+				( { error } = await api.handlePaymentConfirmation(
+					upeComponents.elements,
+					upeConfig.confirmParams,
+					getPaymentIntentSecret( paymentMethodType )
+				) );
 			} else {
 				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
 			}
@@ -735,6 +740,23 @@ jQuery( function ( $ ) {
 		}
 
 		return {};
+	}
+
+	/**
+	 * Returns stripe intent secret that will be used to confirm payment
+	 *
+	 * @param {string} paymentMethodType Stripe payment method type ID.
+	 * @return {string | null} The intent secret required to confirm payment during the rate limit error.
+	 */
+	function getPaymentIntentSecret( paymentMethodType ) {
+		const upeComponents = gatewayUPEComponents[ paymentMethodType ];
+		if ( upeComponents.paymentIntentClientSecret ) {
+			return upeComponents.paymentIntentClientSecret;
+		}
+		const { clientSecret } = getPaymentIntentFromSession(
+			paymentMethodType
+		);
+		return clientSecret ? clientSecret : null;
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.
