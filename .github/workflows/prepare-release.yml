@@ -9,7 +9,7 @@ on:
         type: string
     outputs:
       branchName:
-        description: "The branch created"
+        description: "The branch created (e.g. release/4.5.0)"
         value: ${{ jobs.prepare-release.outputs.branch }}
   workflow_dispatch:
     inputs:
@@ -74,6 +74,8 @@ jobs:
           echo "Picking up changelog for version '$TAG_NAME'..."
           CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
           echo "$CHANGELOG"
+          
+          # New line characters need to be escaped because set-output doesn't support multi-line strings out of the box
           CHANGELOG="${CHANGELOG//$'\n'/\\n}"  
           echo ::set-output name=CHANGELOG::"$CHANGELOG"
           
@@ -93,14 +95,16 @@ jobs:
           # 'Stable tag' header in readme.txt;
           sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
 
-          # Duplicate the changelog.txt content into the Changelog section in the readme.txt 
+          # Duplicate the generated changelog into the Changelog section from the readme.txt 
           sed -ri "s|(== Changelog ==)|\1\n\n= $TAG_NAME - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
       
       - name: Build and commit changes
+        env:
+          BRANCH_NAME: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
         run: |
           npm install
           git commit -am "Update version and add changelog entries for release $TAG_NAME"
-          git push --set-upstream origin release/$TAG_NAME
+          git push --set-upstream origin $BRANCH_NAME
 
       - name: Create a PR to trunk
         env:
