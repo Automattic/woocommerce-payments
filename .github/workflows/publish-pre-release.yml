@@ -50,7 +50,7 @@ jobs:
         id: generate_changelog
         uses: ./.github/actions/generate-changelog
         with:
-          release-version: $(( steps.create_branch_tag.outputs.RELEASE_VERSION }}
+          release-version: ${{ steps.create_branch_tag.outputs.RELEASE_VERSION }}
           
       - name: Bump version header
         run: |
