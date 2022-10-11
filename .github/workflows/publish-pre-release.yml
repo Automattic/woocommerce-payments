@@ -15,8 +15,8 @@ defaults:
     shell: bash
 
 jobs:
-  publish-release:
-    name: Publish the release
+  publish-pre-release:
+    name: Publish the pre-release
     runs-on: ubuntu-20.04
     env:
       TAG_NAME: ${{ inputs.tagName }}
@@ -84,7 +84,8 @@ jobs:
           TAG_MESSAGE: ${{ steps.create_branch_tag.outputs.TAG_MESSAGE }}
           CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
         run: |
-          gh release create $TAG_NAME --notes "$CHANGELOG" --title "$TAG_MESSAGE" --target "develop" "--prerelease" $RELEASE_FILENAME
+          RELEASE_NOTES=$(echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`")
+          gh release create $TAG_NAME --notes "$RELEASE_NOTES" --title "$TAG_MESSAGE" --target "develop" "--prerelease" $RELEASE_FILENAME
           
 #      - name: Trigger translations update on GlotPress
 #        env:
