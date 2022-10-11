@@ -84,7 +84,7 @@ jobs:
           TAG_MESSAGE: ${{ steps.create_branch_tag.outputs.TAG_MESSAGE }}
           CHANGELOG: ${{ steps.get_changelog.outputs.CHANGELOG }}
         run: |
-          RELEASE_NOTES=$(echo -e "\`\`\`\n${CHANGELOG}\n\`\`\`")
+          RELEASE_NOTES=$(echo -e "${CHANGELOG}")
           gh release create $TAG_NAME --notes "$RELEASE_NOTES" --title "$TAG_MESSAGE" --target "develop" "--prerelease" $RELEASE_FILENAME
           
 #      - name: Trigger translations update on GlotPress
