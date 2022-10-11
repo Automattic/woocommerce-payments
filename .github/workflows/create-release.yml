@@ -35,14 +35,7 @@ jobs:
         run: echo ::set-output name=RELEASE_VERSION::$(jq '.version' package.json -r)
         
       - name: Build release
-        run: |
-          npm ci
-          npm run build
-          
-          if [[ ! -f $RELEASE_FILENAME ]]; then
-            echo "::error::Failed to create release archive $RELEASE_FILENAME."
-            exit 1
-          fi
+        uses: ./.github/actions/build
       
       - name: Create release
         env:

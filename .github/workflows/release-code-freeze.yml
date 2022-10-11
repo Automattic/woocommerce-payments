@@ -93,7 +93,7 @@ jobs:
     name: "Raise a PR to trunk for the next stable release"
     needs: check-code-freeze
     if: needs.check-code-freeze.outputs.freeze == 1
-    uses: ./.github/workflows/release-create-pr.yml
+    uses: ./.github/workflows/release-pr.yml
     with:
       tagName: ${{ needs.check-code-freeze.outputs.releaseVersion }}
 

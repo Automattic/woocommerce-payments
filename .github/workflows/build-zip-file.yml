@@ -1,0 +1,28 @@
+name: "Build WooCommerce Payments zip file"
+
+# This action will run when it is triggered manually
+on:
+  workflow_dispatch:
+    
+jobs:
+  build-zip:
+    name: Build the zip file
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node and PHP with cache
+        uses: ./.github/actions/setup-repo
+
+      - name: Build the plugin
+        uses: ./.github/actions/build
+      
+      - name: Upload the zip file as an artifact
+        uses: actions/upload-artifact@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: woocommerce-payments
+          path: zipfile
+          retention-days: 7
