@@ -1,0 +1,45 @@
+name: Create a branch and a tag
+description: Create a branch and a tag from the version provided
+
+inputs:
+  tag-name:
+    description: "The tag name that the action should use to determine which branch and tag it should create"
+    required: true
+    
+outputs: 
+  branch-name:
+    description: "The name of the branch created"
+    value: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
+  tag-message:
+    description: "The tagging message"
+    value: ${{ steps.create_branch_tag.outputs.TAG_MESSAGE }}
+
+runs:
+  using: composite
+  steps:
+    - name: Create a branch and tag
+      id: create_branch_tag
+      shell: bash
+      env:
+        IS_PRERELEASE: ${{ contains( inputs.tag-name, 'test') }}
+        TAG_NAME: ${{ inputs.tag-name }}
+      run: |
+        if ${{ env.IS_PRERELEASE }}; then
+          echo "::warning::Creating a test branch and tag."
+          BRANCH_NAME="testing/$TAG_NAME"
+          TAG_MESSAGE="Version for testing $TAG_NAME. Not for Production"
+        else
+          echo "::warning::Creating a release branch and tag."
+          BRANCH_NAME="release/$TAG_NAME"
+          TAG_MESSAGE="Version $TAG_NAME"
+        fi
+
+        git checkout -b $BRANCH_NAME
+        git push origin $BRANCH_NAME
+        echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
+
+        git config user.name "${{ github.actor }}"
+        git config user.email "${{ github.actor }}@users.noreply.github.com"
+        git tag -a -m "$TAG_MESSAGE" $TAG_NAME
+        git push origin $TAG_NAME
+        echo "::set-output name=TAG_MESSAGE::$TAG_MESSAGE"
