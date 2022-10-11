@@ -719,6 +719,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['upeAppearance']            = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->is_subscription_item_in_cart();
+		$payment_fields['forceNetworkSavedCards']   = false;
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
