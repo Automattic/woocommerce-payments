@@ -42,7 +42,13 @@ const api = new WCPayAPI(
 Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName, upeConfig ] ) =>
 	registerPaymentMethod( {
 		name: upeName,
-		content: <WCPayUPEFields paymentMethodId={ upeName } api={ api } />,
+		content: (
+			<WCPayUPEFields
+				paymentMethodId={ upeName }
+				api={ api }
+				testingInstructions={ upeConfig.testingInstructions }
+			/>
+		),
 		edit: <WCPayUPEFields paymentMethodId={ upeName } api={ api } />,
 		savedTokenComponent: <SavedTokenHandler api={ api } />,
 		canMakePayment: () => !! api.getStripe(),

@@ -57,6 +57,7 @@ const useCustomerData = () => {
 const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
+	testingInstructions,
 	billing: { billingData },
 	eventRegistration: {
 		onPaymentProcessing,
@@ -77,14 +78,9 @@ const WCPayUPEFields = ( {
 	const [ paymentCountry, setPaymentCountry ] = useState( null );
 
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
-	const testMode = getConfig( 'testMode' );
-	const testCopy = (
-		<p>
-			<strong>Test mode:</strong> use the test VISA card 4242424242424242
-			with any expiry date and CVC.
-		</p>
-	);
-
+	const isTestMode = getConfig( 'testMode' );
+	const testingInstructionsIfAppropriate =
+		isTestMode && false !== testingInstructions ? testingInstructions : '';
 	const gatewayConfig = getPaymentMethods()[ PAYMENT_METHOD_NAME_CARD ];
 	const customerData = useCustomerData();
 
@@ -332,7 +328,12 @@ const WCPayUPEFields = ( {
 
 	return (
 		<>
-			{ testMode ? testCopy : '' }
+			<p
+				className="content"
+				dangerouslySetInnerHTML={ {
+					__html: testingInstructionsIfAppropriate,
+				} }
+			></p>
 			<PaymentElement
 				options={ elementOptions }
 				onChange={ upeOnChange }

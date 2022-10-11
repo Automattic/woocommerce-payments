@@ -1077,6 +1077,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				'title'                => $payment_method->get_title(),
 				'upePaymentIntentData' => $this->get_payment_intent_data_from_session( $payment_method_id ),
 				'upeSetupIntentData'   => $this->get_setup_intent_data_from_session( $payment_method_id ),
+				'testingInstructions'  => WC_Payments_Utils::esc_interpolated_html(
+					/* translators: link to Stripe testing page */
+					$payment_method->get_testing_instructions(),
+					[
+						'strong' => '<strong>',
+						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+					]
+				),
 			];
 		}
 
