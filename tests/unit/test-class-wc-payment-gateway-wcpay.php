@@ -12,7 +12,10 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Information;
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\WC_Payments_Checkout;
+use WCPay\WC_Payments_UPE_Checkout;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -82,6 +85,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $order_service;
 
 	/**
+	 * Platform_Checkout_Utilities instance.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	private $mock_platform_checkout_utilities;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -139,6 +149,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$this->mock_rate_limiter,
 			$this->order_service
+		);
+
+		$this->mock_platform_checkout_utilities = $this->createMock( Platform_Checkout_Utilities::class );
+
+		$this->upe_checkout = new WC_Payments_Checkout(
+			$this->wcpay_gateway,
+			$this->mock_platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
 		);
 	}
 
@@ -1967,7 +1986,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_is_platform_checkout_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertTrue( $this->upe_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
 	public function test_force_network_saved_cards_is_returned_as_true_if_should_use_stripe_platform() {
@@ -1978,17 +1997,24 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'should_use_stripe_platform_on_checkout_page' )
 			->willReturn( true );
 
-		$this->assertTrue( $mock_wcpay_gateway->get_payment_fields_js_config()['forceNetworkSavedCards'] );
+		$upe_checkout = new WC_Payments_Checkout(
+			$mock_wcpay_gateway,
+			$this->mock_platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
+
+		$this->assertTrue( $upe_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 	}
 
 	public function test_is_platform_checkout_enabled_returns_false_if_ineligible() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
-		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertFalse( $this->upe_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
 	public function test_is_platform_checkout_enabled_returns_false_if_ineligible_and_enabled() {
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertFalse( $this->upe_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
 	public function is_platform_checkout_falsy_value_provider() {
