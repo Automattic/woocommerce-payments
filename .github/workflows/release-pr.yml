@@ -82,7 +82,7 @@ jobs:
           # Duplicate the generated changelog into the Changelog section from the readme.txt 
           sed -ri "s|(== Changelog ==)|\1\n\n= $TAG_NAME - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
       
-      - name: Build and commit changes
+      - name: Update package.lock and commit changes
         env:
           BRANCH_NAME: ${{ steps.create_branch_tag.outputs.branch-name }}
         run: |
