@@ -3,7 +3,6 @@ name: "Create a pre-release"
 
 # This action will run when it is triggered manually
 on:
-  push:
   workflow_dispatch:
     inputs:
       tagName:
