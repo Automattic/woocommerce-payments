@@ -62,9 +62,9 @@ jobs:
 
       - name: Define variables
         id: define_var
-          run: |
-            RELEASE_DATE=$( date "+%Y-%m-%d" -d "$RELEASE_DATE_STRING" ) # Release date formatted as YYYY-MM-DD
-            echo ::set-output name=RELEASE_DATE::"$RELEASE_DATE"
+        run: |
+          RELEASE_DATE=$( date "+%Y-%m-%d" -d "$RELEASE_DATE_STRING" ) # Release date formatted as YYYY-MM-DD
+          echo ::set-output name=RELEASE_DATE::"$RELEASE_DATE"
         
       - name: Generate the changelog
         id: generate_changelog
