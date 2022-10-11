@@ -29,8 +29,23 @@ const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
 	);
 
 	useEffect( () => {
+		// hides the `Save payment information to my account for future purchases` checkbox.
+		const hideCheckbox = () => {
+			const checkbox = document.querySelector(
+				'.wc-block-components-payment-methods__save-card-info'
+			);
+			checkbox.style.display = 'none';
+		};
+
 		const updateIsWCPayChosen = () => {
-			setIsWCPayChosen( getWCPayRadioButtonStatus( isBlocksCheckout ) );
+			const WCPayRadioButtonStatus = getWCPayRadioButtonStatus(
+				isBlocksCheckout
+			);
+			setIsWCPayChosen( WCPayRadioButtonStatus );
+
+			if ( WCPayRadioButtonStatus ) {
+				hideCheckbox();
+			}
 		};
 
 		const updateIsNewPaymentTokenChosen = () => {
