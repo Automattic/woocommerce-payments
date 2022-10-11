@@ -58,7 +58,7 @@ class Platform_Checkout_Save_User {
 	 * @return array
 	 */
 	public function maybe_add_userdata_to_metadata( $metadata, $order ) {
-		$session_data = WC()->session->get( 'platform-checkout-user-data' );
+		$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
 		// If we should be creating a platform checkout customer, add the necessary customer data to the metadata.
 		$should_create_platform_customer = ( isset( $_POST['save_user_in_platform_checkout'] ) && filter_var( wp_unslash( $_POST['save_user_in_platform_checkout'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['save_user_in_platform_checkout'] ) && filter_var( $session_data['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
@@ -90,10 +90,10 @@ class Platform_Checkout_Save_User {
 	 * @return void
 	 */
 	public function maybe_clear_session_key() {
-		$session_data = WC()->session->get( 'platform-checkout-user-data' );
+		$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
 
 		if ( ! empty( $session_data ) ) {
-			WC()->session->set( 'platform-checkout-user-data', null );
+			WC()->session->__unset( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
 		}
 	}
 }

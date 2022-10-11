@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class Platform_Checkout_Extension {
 	const EXTENSION_NAMESPACE           = 'platform-checkout';
-	const PLATMORM_CHECKOUT_SESSION_KEY = 'platform-checkout-user-data';
+	const PLATFORM_CHECKOUT_SESSION_KEY = 'platform-checkout-user-data';
 
 	/**
 	 * Registers callback.
@@ -36,6 +36,6 @@ class Platform_Checkout_Extension {
 	 * @return void
 	 */
 	public function store_user_consent_for_platform_checkout( array $data ) {
-		WC()->session->set( self::PLATMORM_CHECKOUT_SESSION_KEY, $data );
+		WC()->session->set( self::PLATFORM_CHECKOUT_SESSION_KEY, $data );
 	}
 }

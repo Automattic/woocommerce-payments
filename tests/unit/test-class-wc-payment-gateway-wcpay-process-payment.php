@@ -1078,7 +1078,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$intent = WC_Helper_Intention::create_intention();
 
 		WC()->session->set(
-			'platform-checkout-user-data',
+			Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY,
 			[
 				'save_user_in_platform_checkout'     => true,
 				'platform_checkout_user_phone_field' => [
@@ -1097,7 +1097,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// clean up session.
 		WC()->session->set(
-			'platform-checkout-user-data',
+			Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY,
 			[]
 		);
 	}
