@@ -47,7 +47,7 @@ jobs:
         id: create_branch_tag
         uses: ./.github/actions/create-branch-tag
         with:
-          tag-name: $TAG_NAME
+          tag-name: ${{ env.TAG_NAME }}
 
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
