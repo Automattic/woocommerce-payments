@@ -1,5 +1,5 @@
 ---
-name: Release - Create PR
+name: "Release - Create PR to trunk"
 on:
   workflow_call:
     inputs:

@@ -1,4 +1,4 @@
-name: "Release: code freeze"
+name: "Release - Code freeze"
 on:
   schedule:
     - cron: '0 12 * * 0' # Run at 1200 UTC on Sundays.
@@ -73,7 +73,8 @@ jobs:
         env:
           NEXT_VERSION: ${{ steps.next-version.outputs.RELEASE_VERSION }}
         run: |
-          echo "Next version: ${{ env.NEXT_VERSION }}"
+          echo "::warning::Next version: $NEXT_VERSION"
+          
           git fetch --tags origin
           NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
           NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-2" | tail -1)
@@ -102,7 +103,7 @@ jobs:
     env:
       RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.releaseVersion }}
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.releaseDate }}
-      GITHUB_TAG_URL: ${{ format( '{0}/{1}/pull/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.releaseVersion ) }}
+      GITHUB_TAG_URL: ${{ format( '{0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.releaseVersion ) }}
     steps:
       - name: Slack ping
         uses: slackapi/slack-github-action@v1.18.0
@@ -134,11 +135,11 @@ jobs:
                         "fields": [
                             {
                                 "type": "mrkdwn",
-                                "text": "*Version:*\n<${{ env.GITHUB_TAG_URL }}|${{ env.RELEASE_VERSION }}>"
+                                "text": "*Version:*\n<$GITHUB_TAG_URL|$RELEASE_VERSION>"
                             },
                             {
                                 "type": "mrkdwn",
-                                "text": "*Planned date:*\n<https://wcpay.wordpress.com/dev-resources/wc-payments-release-calendar/|${{ env.RELEASE_DATE }}>"
+                                "text": "*Planned date:*\n<https://wcpay.wordpress.com/dev-resources/wc-payments-release-calendar/|$RELEASE_DATE>"
                             }
                         ]
                     }

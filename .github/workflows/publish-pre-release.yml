@@ -1,5 +1,5 @@
 ---
-name: Publish a pre-release
+name: "Release - publish a GH pre-release"
 on:
   workflow_dispatch:
     inputs:
