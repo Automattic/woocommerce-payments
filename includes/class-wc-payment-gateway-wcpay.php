@@ -343,6 +343,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'link'          => 'link_payments',
 		];
 
+		// Platform checkout utilities.
+		$this->platform_checkout_util = new Platform_Checkout_Utilities();
+
 		// Load the settings.
 		$this->init_settings();
 
@@ -753,10 +756,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information->must_save_payment_method_to_store();
 		}
 
-		$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		$should_save_platform_customer = ( ! empty( $_POST['save_user_in_platform_checkout'] ) && filter_var( $_POST['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['save_user_in_platform_checkout'] ) && filter_var( $session_data['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) );
-		if ( $should_save_platform_customer ) {
+		if ( $this->platform_checkout_util->should_save_platform_customer() ) {
 			do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
 			$payment_information->must_save_payment_method_to_platform();
 		}
@@ -1054,11 +1054,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$save_user_in_platform_checkout = false;
 
-				$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-				$should_save_platform_customer = ( ! empty( $_POST['save_user_in_platform_checkout'] ) && filter_var( $_POST['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['save_user_in_platform_checkout'] ) && filter_var( $session_data['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) );
-
-				if ( $should_save_platform_customer ) {
+				if ( $this->platform_checkout_util->should_save_platform_customer() ) {
 					$save_user_in_platform_checkout = true;
 					$metadata_from_order            = apply_filters(
 						'wcpay_metadata_from_order',
@@ -2633,7 +2629,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$should_save_in_platform_account = false;
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( ! empty( $_POST['save_payment_method_in_platform_account'] ) && filter_var( wp_unslash( $_POST['save_payment_method_in_platform_account'] ), FILTER_VALIDATE_BOOLEAN ) ) {
+		if ( $this->platform_checkout_util->should_save_platform_customer() ) {
 			$should_save_in_platform_account = true;
 		}
 
