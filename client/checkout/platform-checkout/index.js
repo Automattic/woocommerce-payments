@@ -27,13 +27,12 @@ const renderSaveUserSection = () => {
 	);
 
 	if ( blocksCheckout.length ) {
-		const orderSummary = document.getElementsByClassName(
-			'wp-block-woocommerce-checkout-order-summary-block'
+		const paymentOptions = document.getElementsByClassName(
+			'wp-block-woocommerce-checkout-payment-block'
 		)?.[ 0 ];
-		const orderSummaryParent = orderSummary?.parentNode;
 
-		if ( orderSummary && orderSummaryParent ) {
-			orderSummaryParent.appendChild( checkoutPageSaveUserContainer );
+		if ( paymentOptions ) {
+			paymentOptions.appendChild( checkoutPageSaveUserContainer );
 
 			ReactDOM.render(
 				<CheckoutPageSaveUser isBlocksCheckout={ true } />,
