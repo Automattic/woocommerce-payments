@@ -133,7 +133,7 @@ export const DisputeEvidenceForm = ( props ) => {
 			isLoading,
 			isDone,
 			error,
-			help: readOnly ? '' : expandHelp( field.description ),
+			help: readOnly && expandHelp( field.description ),
 		};
 	};
 
@@ -324,7 +324,7 @@ export const DisputeEvidencePage = ( props ) => {
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
 			{ testModeNotice }
-			{ readOnly && ! isLoading ? readOnlyNotice : '' }
+			{ readOnly && ! isLoading && readOnlyNotice }
 			<ErrorBoundary>
 				<Card size="large">
 					<CardHeader>
