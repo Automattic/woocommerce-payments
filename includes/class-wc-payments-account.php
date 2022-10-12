@@ -388,7 +388,9 @@ class WC_Payments_Account {
 	 */
 	public function get_fees() {
 		$account = $this->get_cached_account_data();
-		return ! empty( $account ) && isset( $account['fees'] ) ? $account['fees'] : [];
+		$fees    = ! empty( $account ) && isset( $account['fees'] ) ? $account['fees'] : [];
+
+		return apply_filters( 'wcpay_get_account_fees_settings', $fees );
 	}
 
 	/**

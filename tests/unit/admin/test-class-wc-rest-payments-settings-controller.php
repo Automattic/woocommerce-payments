@@ -315,6 +315,12 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
 		$request = new WP_REST_Request( 'POST', self::$settings_route );
 		$request->set_param( 'enabled_payment_method_ids', [ 'foo', 'baz' ] );
+		add_filter(
+			'wcpay_get_account_fees_settings',
+			function () {
+				return [ 'card' => 1 ];
+			}
+		);
 
 		$response = rest_do_request( $request );
 		$this->assertEquals( 400, $response->get_status() );
