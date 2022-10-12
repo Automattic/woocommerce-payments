@@ -109,7 +109,7 @@ export const DisputeEvidenceForm = ( props ) => {
 			onChange( field.key, value );
 		},
 		disabled: readOnly,
-		help: readOnly ? '' : expandHelp( field.description ),
+		help: readOnly && expandHelp( field.description ),
 	} );
 
 	const composeFileUploadProps = ( field ) => {
