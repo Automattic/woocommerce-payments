@@ -257,7 +257,6 @@ exports[`Dispute evidence page renders correctly 1`] = `
   <div
     class="wcpay-dispute-evidence woocommerce-payments-page is-narrow"
   >
-    
     <div
       class="components-card is-size-large css-1xs3c37-CardUI e1q7k77g0"
     >
