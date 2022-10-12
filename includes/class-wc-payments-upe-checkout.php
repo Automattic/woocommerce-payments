@@ -8,7 +8,6 @@
 namespace WCPay;
 
 use Exception;
-use WC_Payment_Gateway_WCPay;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
@@ -26,7 +25,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	/**
 	 * WC Payments Gateway.
 	 *
-	 * @var WC_Payment_Gateway_WCPay
+	 * @var UPE_Payment_Gateway
 	 */
 	protected $gateway;
 
