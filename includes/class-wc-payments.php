@@ -201,7 +201,7 @@ class WC_Payments {
 	/**
 	 * WC Payments Checkout
 	 *
-	 * @var WC_Payments_Checkout
+	 * @var WC_Payments_Checkout|WC_Payments_UPE_Checkout
 	 */
 	private static $wc_payments_checkout;
 
@@ -791,16 +791,16 @@ class WC_Payments {
 	/**
 	 * Returns the WC_Payment_Gateway_WCPay instance
 	 *
-	 * @return WC_Payment_Gateway_WCPay gateway instance
+	 * @return WC_Payment_Gateway_WCPay|UPE_Payment_Gateway gateway instance
 	 */
 	public static function get_gateway() {
 		return self::$card_gateway;
 	}
 
 	/**
-	 * Returns the WC_Payment_Gateway_WCPay instance
+	 * Returns the WC_Payments_Checkout instance
 	 *
-	 * @return WC_Payment_Gateway_WCPay gateway instance
+	 * @return WC_Payments_Checkout|WC_Payments_UPE_Checkout gateway instance
 	 */
 	public static function get_wc_payments_checkout() {
 		return self::$wc_payments_checkout;

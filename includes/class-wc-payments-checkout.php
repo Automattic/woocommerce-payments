@@ -199,7 +199,7 @@ class WC_Payments_Checkout {
 
 			do_action( 'wcpay_payment_fields_wcpay', $this->gateway->id );
 
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			// Output the error message.
 			?>
 			<div>

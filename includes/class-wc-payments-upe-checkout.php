@@ -153,7 +153,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
 		if ( $this->gateway->is_subscriptions_enabled() && $this->gateway->is_changing_payment_method_for_subscription() ) {
-			$enabled_payment_methods = array_filter( $enabled_payment_methods, [ $this, 'is_enabled_for_saved_payments' ] );
+			$enabled_payment_methods = array_filter( $enabled_payment_methods, [ $this->gateway, 'is_enabled_for_saved_payments' ] );
 		}
 
 		$payment_methods = $this->gateway->get_payment_methods();
@@ -259,7 +259,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 
 			do_action( 'wcpay_payment_fields_upe', $this->gateway->id );
 
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			// Output the error message.
 			Logger::log( 'Error: ' . $e->getMessage() );
 			?>
