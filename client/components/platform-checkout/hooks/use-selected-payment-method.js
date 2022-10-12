@@ -11,12 +11,43 @@ const getWCPayRadioButtonStatus = ( isBlocksCheckout ) =>
 		: document.querySelector( '#payment_method_woocommerce_payments' )
 				?.checked;
 
-const getNewPaymentTokenRadioButtonStatus = () =>
-	document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
-		?.checked ||
-	! document.querySelector(
-		'[type=radio][name="wc-woocommerce_payments-payment-token"]'
-	);
+const getNewPaymentTokenRadioButtonStatus = ( isBlocksCheckout ) =>
+	isBlocksCheckout
+		? document.querySelector(
+				'#radio-control-wc-payment-method-options-woocommerce_payments'
+		  )?.checked
+		: document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
+				?.checked ||
+		  ! document.querySelector(
+				'[type=radio][name="wc-woocommerce_payments-payment-token"]'
+		  );
+
+const getPaymentMethods = ( isBlocksCheckout ) => {
+	if ( isBlocksCheckout ) {
+		// For blocks checkout there is no common selector to find all the payment methods including the
+		// saved tokens. Thus need to concate them here to make a whole list.
+		return [
+			...document.querySelectorAll(
+				'[type=radio][name="radio-control-wc-payment-method-options"]'
+			),
+			...document.querySelectorAll(
+				'[type=radio][name="radio-control-wc-payment-method-saved-tokens"]'
+			),
+		];
+	}
+	// for classic checkout
+	return document.querySelectorAll( '[type=radio][name="payment_method"]' );
+};
+
+const getPaymentTokens = ( isBlocksCheckout ) => {
+	return isBlocksCheckout
+		? document.querySelectorAll(
+				'[type=radio][name="radio-control-wc-payment-method-saved-tokens"]'
+		  )
+		: document.querySelectorAll(
+				'[type=radio][name="wc-woocommerce_payments-payment-token"]'
+		  );
+};
 
 // hook for checking if WCPay is selected.
 const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
@@ -25,7 +56,7 @@ const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
 	);
 
 	const [ isNewPaymentTokenChosen, setNewPaymentTokenChosen ] = useState(
-		getNewPaymentTokenRadioButtonStatus()
+		getNewPaymentTokenRadioButtonStatus( isBlocksCheckout )
 	);
 
 	useEffect( () => {
@@ -43,30 +74,24 @@ const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
 			);
 			setIsWCPayChosen( WCPayRadioButtonStatus );
 
-			if ( WCPayRadioButtonStatus ) {
+			if ( isBlocksCheckout && WCPayRadioButtonStatus ) {
 				hideCheckbox();
 			}
 		};
 
 		const updateIsNewPaymentTokenChosen = () => {
-			setNewPaymentTokenChosen( getNewPaymentTokenRadioButtonStatus );
+			setNewPaymentTokenChosen(
+				getNewPaymentTokenRadioButtonStatus( isBlocksCheckout )
+			);
 		};
 
-		const paymentMethods = isBlocksCheckout
-			? document.querySelectorAll(
-					'[type=radio][name="radio-control-wc-payment-method-options"]'
-			  )
-			: document.querySelectorAll(
-					'[type=radio][name="payment_method"]'
-			  );
+		const paymentMethods = getPaymentMethods( isBlocksCheckout );
 
 		paymentMethods.forEach( ( paymentMethod ) => {
 			paymentMethod.addEventListener( 'change', updateIsWCPayChosen );
 		} );
 
-		const paymentTokens = document.querySelectorAll(
-			'[type=radio][name="wc-woocommerce_payments-payment-token"]'
-		);
+		const paymentTokens = getPaymentTokens( isBlocksCheckout );
 		paymentTokens.forEach( ( paymentToken ) => {
 			paymentToken.addEventListener(
 				'change',

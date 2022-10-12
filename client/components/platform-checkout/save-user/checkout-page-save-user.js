@@ -121,10 +121,15 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		};
 	}, [ isBlocksCheckout, isPhoneValid, isSaveDetailsChecked ] );
 
+	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
+	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
+	const isWCPayWithNewTokenChosen = isBlocksCheckout
+		? isWCPayChosen
+		: isWCPayChosen && isNewPaymentTokenChosen;
+
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
-		! isWCPayChosen ||
-		! isNewPaymentTokenChosen ||
+		! isWCPayWithNewTokenChosen ||
 		isRegisteredUser
 	) {
 		// Clicking the place order button sets the extension data in backend. If user changes the payment method
