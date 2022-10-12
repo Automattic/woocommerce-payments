@@ -269,6 +269,15 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function test_payment_fields_outputs_fields() {
 		$this->set_cart_contains_subscription_items( false );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
+		// Add the UPE Checkout action.
+		new WC_Payments_UPE_Checkout(
+			$this->mock_upe_gateway,
+			$this->mock_platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
+
 		$this->mock_upe_gateway->payment_fields();
 
 		$this->expectOutputRegex( '/<div id="wcpay-upe-element"><\/div>/' );

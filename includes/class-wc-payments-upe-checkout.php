@@ -71,7 +71,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$this->account                = $account;
 		$this->customer_service       = $customer_service;
 
-		add_action( 'wc_payments_add_payment_fields', [ $this, 'payment_fields' ] );
+		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
 	}
 
 	/**
