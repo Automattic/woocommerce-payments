@@ -22,7 +22,7 @@ import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
 import { getTerms } from '../utils/upe';
-import { PAYMENT_METHOD_NAME_CARD, WC_STORE_CART } from '../constants.js';
+import { WC_STORE_CART } from '../constants.js';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
@@ -64,6 +64,7 @@ const WCPayUPEFields = ( {
 		onCheckoutAfterProcessingWithSuccess,
 	},
 	emitResponse,
+	paymentMethodId,
 	paymentIntentId,
 	errorMessage,
 	shouldSavePayment,
@@ -81,7 +82,7 @@ const WCPayUPEFields = ( {
 	const isTestMode = getConfig( 'testMode' );
 	const testingInstructionsIfAppropriate =
 		isTestMode && false !== testingInstructions ? testingInstructions : '';
-	const gatewayConfig = getPaymentMethods()[ PAYMENT_METHOD_NAME_CARD ];
+	const gatewayConfig = getPaymentMethods()[ paymentMethodId ];
 	const customerData = useCustomerData();
 
 	useEffect( () => {
@@ -191,7 +192,7 @@ const WCPayUPEFields = ( {
 	useEffect(
 		() =>
 			onPaymentProcessing( () => {
-				if ( PAYMENT_METHOD_NAME_CARD !== activePaymentMethod ) {
+				if ( paymentMethodId !== activePaymentMethod ) {
 					return;
 				}
 
@@ -225,7 +226,7 @@ const WCPayUPEFields = ( {
 					type: 'success',
 					meta: {
 						paymentMethodData: {
-							paymentMethod: PAYMENT_METHOD_NAME_CARD,
+							paymentMethod: paymentMethodId,
 							wc_payment_intent_id: paymentIntentId,
 							wcpay_selected_upe_payment_type: selectedUPEPaymentType,
 						},
@@ -376,7 +377,6 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		if ( paymentIntentId || hasRequestedIntent ) {
 			return;
 		}
-
 		async function createIntent( paymentMethodId ) {
 			try {
 				const response = await api.createIntent( paymentMethodId );

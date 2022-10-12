@@ -20,6 +20,29 @@ import { SavedTokenHandler } from './saved-token-handler';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
+import {
+	PAYMENT_METHOD_NAME_CARD,
+	PAYMENT_METHOD_NAME_BANCONTACT,
+	PAYMENT_METHOD_NAME_BECS,
+	PAYMENT_METHOD_NAME_EPS,
+	PAYMENT_METHOD_NAME_GIROPAY,
+	PAYMENT_METHOD_NAME_IDEAL,
+	PAYMENT_METHOD_NAME_P24,
+	PAYMENT_METHOD_NAME_SEPA,
+	PAYMENT_METHOD_NAME_SOFORT,
+} from '../constants.js';
+
+const upeMethods = {
+	card: PAYMENT_METHOD_NAME_CARD,
+	bancontact: PAYMENT_METHOD_NAME_BANCONTACT,
+	au_becs_debit: PAYMENT_METHOD_NAME_BECS,
+	eps: PAYMENT_METHOD_NAME_EPS,
+	giropay: PAYMENT_METHOD_NAME_GIROPAY,
+	ideal: PAYMENT_METHOD_NAME_IDEAL,
+	p24: PAYMENT_METHOD_NAME_P24,
+	sepa_debit: PAYMENT_METHOD_NAME_SEPA,
+	sofort: PAYMENT_METHOD_NAME_SOFORT,
+};
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 const isStripeLinkEnabled =
@@ -52,7 +75,7 @@ Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName, upeConfig ] ) =>
 		edit: <WCPayUPEFields paymentMethodId={ upeName } api={ api } />,
 		savedTokenComponent: <SavedTokenHandler api={ api } />,
 		canMakePayment: () => !! api.getStripe(),
-		paymentMethodId: upeName,
+		paymentMethodId: upeMethods[ upeName ],
 		label: upeConfig.title,
 		ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
 		supports: {
