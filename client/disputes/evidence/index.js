@@ -19,7 +19,6 @@ import {
 	Notice,
 } from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
-import moment from 'moment';
 
 /**
  * Internal dependencies.
@@ -139,57 +138,60 @@ export const DisputeEvidenceForm = ( props ) => {
 	};
 
 	const composeFieldControl = ( field ) => {
+		const displayAsReadOnly = readOnly && ! evidence[ field.key ];
 		switch ( field.type ) {
 			case 'file':
-				return ! readOnly ? (
-					<FileUploadControl
+				return readOnly ? (
+					<UploadedReadOnly
 						key={ field.key }
 						{ ...composeFileUploadProps( field ) }
 					/>
 				) : (
-					<UploadedReadOnly
+					<FileUploadControl
 						key={ field.key }
 						{ ...composeFileUploadProps( field ) }
 					/>
 				);
 			case 'text':
-				return readOnly && ! evidence[ field.key ] ? (
+				return (
 					<TextControl
 						key={ field.key }
 						label={ field.label }
-						value={ __(
-							'No information submitted',
-							'woocommerce-payments'
-						) }
-						disabled={ true }
-					/>
-				) : (
-					<TextControl
-						key={ field.key }
-						{ ...composeDefaultControlProps( field ) }
+						value={
+							displayAsReadOnly
+								? __(
+										'No information submitted',
+										'woocommerce-payments'
+								  )
+								: null
+						}
+						disabled={ displayAsReadOnly }
+						{ ...( displayAsReadOnly
+							? {}
+							: composeDefaultControlProps( field ) ) }
 					/>
 				);
 			case 'date':
-				return readOnly && ! evidence[ field.key ] ? (
+				return (
 					<TextControl
 						key={ field.key }
 						label={ field.label }
-						value={ __(
-							'Date not submitted',
-							'woocommerce-payments'
-						) }
-						disabled={ true }
-					/>
-				) : (
-					<TextControl
-						key={ field.key }
-						type={ 'date' }
-						max={ moment().format( 'YYYY-MM-DD' ) }
-						{ ...composeDefaultControlProps( field ) }
+						value={
+							displayAsReadOnly
+								? __(
+										'Date not submitted',
+										'woocommerce-payments'
+								  )
+								: null
+						}
+						disabled={ displayAsReadOnly }
+						{ ...( displayAsReadOnly
+							? {}
+							: composeDefaultControlProps( field ) ) }
 					/>
 				);
 			default:
-				return readOnly && ! evidence[ field.key ] ? (
+				return displayAsReadOnly ? (
 					''
 				) : (
 					<TextareaControl
@@ -206,11 +208,9 @@ export const DisputeEvidenceForm = ( props ) => {
 			<Card size="large" key={ section.key }>
 				<CardHeader>{ section.title }</CardHeader>
 				<CardBody>
-					{ readOnly
-						? ''
-						: section.description && (
-								<p>{ section.description }</p>
-						  ) }
+					{ ! readOnly && section.description && (
+						<p>{ section.description }</p>
+					) }
 					{ section.fields.map( composeFieldControl ) }
 				</CardBody>
 			</Card>
