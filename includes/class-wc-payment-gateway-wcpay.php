@@ -1199,7 +1199,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+			// If UPE is enabled, get the selected payment method.
+			if ( ! WC_Payments_Features::is_upe_enabled() ) {
+				$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+			} else {
+				$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+				if ( 'woocommerce_payments' !== $upe_payment_method ) {
+					$upe_payment_method = str_replace( 'woocommerce_payments_', '', $upe_payment_method );
+				} else {
+					$upe_payment_method = 'card';
+				}
+
+				$payment_methods = [ $upe_payment_method ];
+			}
 
 			// Make sure the payment method being charged was created in the platform.
 			if (
