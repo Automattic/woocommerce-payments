@@ -60,7 +60,7 @@ class Platform_Checkout_Order_Status_Sync {
 	 * @return string
 	 */
 	private static function get_webhook_delivery_url() {
-		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'http://host.docker.internal:8090';
+		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
 		return $platform_checkout_host . '/wp-json/platform-checkout/v1/merchant-notification';
 	}
 

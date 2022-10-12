@@ -64,6 +64,7 @@ const WCPayUPEFields = ( {
 	},
 	emitResponse,
 	paymentIntentId,
+	paymentIntentSecret,
 	errorMessage,
 	shouldSavePayment,
 } ) => {
@@ -268,6 +269,7 @@ const WCPayUPEFields = ( {
 							api,
 							paymentDetails.redirect_url,
 							paymentDetails.payment_needed,
+							paymentIntentSecret,
 							elements,
 							billingData,
 							emitResponse
@@ -423,6 +425,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 			<WCPayUPEFields
 				api={ api }
 				paymentIntentId={ paymentIntentId }
+				paymentIntentSecret={ clientSecret }
 				errorMessage={ errorMessage }
 				{ ...props }
 			/>
