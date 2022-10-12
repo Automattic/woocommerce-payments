@@ -333,30 +333,47 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 			}
 		}
 
-		const emailExistsQuery = new URLSearchParams();
-		emailExistsQuery.append( 'email', email );
-		emailExistsQuery.append( 'test_mode', !! getConfig( 'testMode' ) );
-		emailExistsQuery.append(
-			'wcpay_version',
-			getConfig( 'wcpayVersionNumber' )
-		);
-		emailExistsQuery.append(
-			'blog_id',
-			getConfig( 'platformCheckoutMerchantId' )
-		);
-		emailExistsQuery.append(
-			'request_signature',
-			getConfig( 'platformCheckoutRequestSignature' )
-		);
+		fetch( getConfig( 'platformCheckoutSignatureEndpoint' ) )
+			.then( ( response ) => {
+				if ( ! response.ok ) {
+					showErrorMessage();
+				}
 
-		fetch(
-			`${ getConfig(
-				'platformCheckoutHost'
-			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
-			{
-				signal,
-			}
-		)
+				return response.json();
+			} )
+			.then( ( data ) => {
+				if ( data.signature ) {
+					return data.signature;
+				}
+
+				throw new Error( 'Signature not found' );
+			} )
+			.then( ( signature ) => {
+				const emailExistsQuery = new URLSearchParams();
+				emailExistsQuery.append( 'email', email );
+				emailExistsQuery.append(
+					'test_mode',
+					!! getConfig( 'testMode' )
+				);
+				emailExistsQuery.append(
+					'wcpay_version',
+					getConfig( 'wcpayVersionNumber' )
+				);
+				emailExistsQuery.append(
+					'blog_id',
+					getConfig( 'platformCheckoutMerchantId' )
+				);
+				emailExistsQuery.append( 'request_signature', signature );
+
+				return fetch(
+					`${ getConfig(
+						'platformCheckoutHost'
+					) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
+					{
+						signal,
+					}
+				);
+			} )
 			.then( ( response ) => {
 				if ( 200 !== response.status ) {
 					showErrorMessage();

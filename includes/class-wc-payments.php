@@ -719,6 +719,10 @@ class WC_Payments {
 		$user_exists_controller = new WC_REST_User_Exists_Controller();
 		$user_exists_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-platform-checkout-signature-controller.php';
+		$platform_checkout_signature_controller = new WC_REST_Platform_Checkout_Signature_Controller();
+		$platform_checkout_signature_controller->register_routes();
+
 		if ( WC_Payments_Features::is_upe_settings_preview_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
 			$upe_flag_toggle_controller = new WC_REST_UPE_Flag_Toggle_Controller( self::get_gateway() );
