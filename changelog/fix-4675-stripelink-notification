@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Correct empty email error when StripeLink is active on checkout page.

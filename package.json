@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "4.7.2",
+  "version": "4.8.1",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -108,7 +108,7 @@
     "@wordpress/data-controls": "1.6.0",
     "@wordpress/date": "3.9.0",
     "@wordpress/dependency-extraction-webpack-plugin": "3.7.0",
-    "@wordpress/e2e-test-utils": "4.11.0",
+    "@wordpress/e2e-test-utils": "^8.0.0",
     "@wordpress/element": "2.20.3",
     "@wordpress/hooks": "3.2.0",
     "@wordpress/html-entities": "2.11.2",
