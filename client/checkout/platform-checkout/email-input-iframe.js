@@ -335,18 +335,21 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 
 		fetch( getConfig( 'platformCheckoutSignatureEndpoint' ) )
 			.then( ( response ) => {
-				if ( ! response.ok ) {
-					showErrorMessage();
+				if ( response.ok ) {
+					return response.json();
 				}
 
-				return response.json();
+				showErrorMessage();
+				throw new Error(
+					'Unexpected response when getting signature.'
+				);
 			} )
 			.then( ( data ) => {
 				if ( data.signature ) {
 					return data.signature;
 				}
 
-				throw new Error( 'Signature not found' );
+				throw new Error( 'Signature not found.' );
 			} )
 			.then( ( signature ) => {
 				const emailExistsQuery = new URLSearchParams();

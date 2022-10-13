@@ -37,7 +37,7 @@ class WC_REST_Platform_Checkout_Signature_Controller extends WP_REST_Controller 
 			'/' . $this->rest_base,
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_platform_checkout_request_signature' ],
+				'callback'            => [ $this, 'get_platform_checkout_signature' ],
 				'permission_callback' => '__return_true',
 			]
 		);
@@ -46,11 +46,9 @@ class WC_REST_Platform_Checkout_Signature_Controller extends WP_REST_Controller 
 	/**
 	 * Retrieve a platform checkout request signature.
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
-	 *
 	 * @return WP_REST_Response
 	 */
-	public function get_platform_checkout_request_signature( WP_REST_Request $request ): WP_REST_Response {
+	public function get_platform_checkout_signature(): WP_REST_Response {
 		$platform_checkout_util = new Platform_Checkout_Utilities();
 
 		$signature = $platform_checkout_util->get_platform_checkout_request_signature();
