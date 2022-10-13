@@ -131,6 +131,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $payment_method_capability_key_map;
 
 	/**
+	 * Platform checkout utilities.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	protected $platform_checkout_util;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.

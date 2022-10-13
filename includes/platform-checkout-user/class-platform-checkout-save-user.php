@@ -15,6 +15,13 @@ use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 class Platform_Checkout_Save_User {
 
 	/**
+	 * Platform checkout utilities.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	protected $platform_checkout_util;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {

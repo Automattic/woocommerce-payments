@@ -56,7 +56,7 @@ class Platform_Checkout_Utilities {
 	/**
 	 * Get phone number for creating platform checkout customer.
 	 *
-	 * @return boolean
+	 * @return mixed|string
 	 */
 	public function get_platform_checkout_phone() {
 		$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
@@ -67,6 +67,6 @@ class Platform_Checkout_Utilities {
 			return $session_data['platform_checkout_user_phone_field']['full'];
 		}
 
-		return null;
+		return '';
 	}
 }
