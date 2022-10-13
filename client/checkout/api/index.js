@@ -392,7 +392,6 @@ export default class WCPayAPI {
 	 * @return {Promise} The final promise for the request to the server.
 	 */
 	createIntent( paymentMethodType, orderId ) {
-		console.log( paymentMethodType );
 		return this.request(
 			buildAjaxURL(
 				getConfig( 'wcAjaxUrl' ),
@@ -438,7 +437,10 @@ export default class WCPayAPI {
 		paymentCountry
 	) {
 		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'update_payment_intent' ),
+			buildAjaxURL(
+				getConfig( 'wcAjaxUrl' ),
+				`update_payment_intent_${ selectedUPEPaymentType }`
+			),
 			{
 				wcpay_order_id: orderId,
 				wc_payment_intent_id: paymentIntentId,

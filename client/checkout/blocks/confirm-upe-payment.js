@@ -17,7 +17,6 @@ export default async function confirmUPEPayment(
 	billingData,
 	emitResponse
 ) {
-	console.log( 'we are confirming the UPE payment right now' );
 	const name =
 		`${ billingData.first_name } ${ billingData.last_name }`.trim() || '-';
 

@@ -98,7 +98,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->title              = $payment_method->get_title();
 
 		add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
-		add_action( "wc_ajax_wcpay_update_payment_inten_ $this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
+		add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
 		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
 
 		if ( 'card' !== $this->stripe_id ) {
