@@ -274,6 +274,22 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 	// to remove it when change the e-mail address.
 	let hasPlatformCheckoutSubscriptionLoginError = false;
 
+	// Cancel platform checkout request and close iframe
+	// when user clicks Place Order before it loads.
+	const abortController = new AbortController();
+	const { signal } = abortController;
+
+	signal.addEventListener( 'abort', () => {
+		spinner.remove();
+		closeIframe( false );
+	} );
+
+	document
+		.querySelector( 'form[name="checkout"]' )
+		.addEventListener( 'submit', () => {
+			abortController.abort();
+		} );
+
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
@@ -294,7 +310,8 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 					getConfig( 'userExistsEndpoint' ),
 					{
 						email,
-					}
+					},
+					{ signal }
 				);
 
 				if ( userExistsData[ 'user-exists' ] ) {
@@ -308,9 +325,11 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 					spinner.remove();
 					return;
 				}
-			} catch {
-				showErrorMessage();
-				spinner.remove();
+			} catch ( err ) {
+				if ( 'AbortError' !== err.name ) {
+					showErrorMessage();
+					spinner.remove();
+				}
 			}
 		}
 
@@ -333,7 +352,10 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 		fetch(
 			`${ getConfig(
 				'platformCheckoutHost'
-			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`
+			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
+			{
+				signal,
+			}
 		)
 			.then( ( response ) => {
 				if ( 200 !== response.status ) {
@@ -362,8 +384,13 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 					);
 				}
 			} )
-			.catch( () => {
-				showErrorMessage();
+			.catch( ( err ) => {
+				// Only show the error if it's not an AbortError,
+				// it occur when the fetch request is aborted because user
+				// clicked the Place Order button while loading.
+				if ( 'AbortError' !== err.name ) {
+					showErrorMessage();
+				}
 			} )
 			.finally( () => {
 				spinner.remove();
@@ -381,8 +408,6 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 	};
 
 	const closeLoginSessionIframe = () => {
-		hasCheckedLoginSession = true;
-
 		loginSessionIframeWrapper.remove();
 		loginSessionIframe.classList.remove( 'open' );
 		platformCheckoutEmailInput.focus();
@@ -481,6 +506,7 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 
 		switch ( e.data.action ) {
 			case 'auto_redirect_to_platform_checkout':
+				hasCheckedLoginSession = true;
 				api.initPlatformCheckout(
 					'',
 					e.data.platformCheckoutUserSession
@@ -501,6 +527,7 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 				} );
 				break;
 			case 'close_auto_redirection_modal':
+				hasCheckedLoginSession = true;
 				closeLoginSessionIframe();
 				break;
 			case 'redirect_to_platform_checkout':
