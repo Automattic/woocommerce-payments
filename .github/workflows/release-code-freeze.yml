@@ -39,7 +39,7 @@ jobs:
         run: |
           VERSION=$(jq '.version' package.json -r)
           echo "::warning::Current version found: $VERSION"
-          echo "VERSION::$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -65,10 +65,10 @@ jobs:
           // Because we go from 5.9 to 6.0, we can get the next major_minor by adding 0.1 and formatting appropriately.
           $latest_version_as_float = (float) $latest_version_with_release;
           $branch_major_minor      = number_format( $latest_version_as_float + 0.1, 1 );
-          echo "RELEASE_VERSION::$branch_major_minor.0" . PHP_EOL >> $GITHUB_OUTPUT;
+          echo "RELEASE_VERSION=$branch_major_minor.0" . PHP_EOL >> $GITHUB_OUTPUT;
 
           $next_wednesday = date('Y-n-d', strtotime('next Wednesday'));
-          echo "RELEASE_PLANNED_DATE::$next_wednesday" . PHP_EOL >> $GITHUB_OUTPUT;
+          echo "RELEASE_PLANNED_DATE=$next_wednesday" . PHP_EOL >> $GITHUB_OUTPUT;
 
       - name: Check if the next version needs a code freeze
         id: check-freeze
@@ -83,10 +83,10 @@ jobs:
           echo "NEXT_VERSION_TAG_FROM_WEEK_2: $NEXT_VERSION_TAG_FROM_WEEK_2"
           if [[ -z "$NEXT_VERSION_TAG_FROM_WEEK_2" ]]; then
             echo "::warning::Code freeze is not needed"
-            echo "FREEZE::0" >> $GITHUB_OUTPUT
+            echo "FREEZE=0" >> $GITHUB_OUTPUT
           elif [[ -z "$NEXT_VERSION_TAG_STABLE" ]]; then
             echo "::warning::Code freeze is needed"
-            echo "FREEZE::1" >> $GITHUB_OUTPUT
+            echo "FREEZE=1" >> $GITHUB_OUTPUT
           fi
 
   create-release-pr:

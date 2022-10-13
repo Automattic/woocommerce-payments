@@ -30,7 +30,7 @@ jobs:
 
       - name: Get release version from merge commit
         id: get_version
-        run: echo "RELEASE_VERSION::$(jq '.version' package.json -r)" >> $GITHUB_OUTPUT
+        run: echo "RELEASE_VERSION=$(jq '.version' package.json -r)" >> $GITHUB_OUTPUT
         
       - name: Build the plugin
         uses: ./.github/actions/build
