@@ -41,7 +41,7 @@ jobs:
       - name: Define variables
         id: define_var
         run: |
-          echo "::set-output name=RELEASE_VERSION::$( sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME )"
+          echo "RELEASE_VERSION=$( sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME )" >> $GITHUB_ENV
 
       - name: Generate the changelog
         id: generate_changelog

@@ -5,7 +5,7 @@ name: "Create a stable release"
 on:
   pull_request_target:
     branches:
-      - 'test/gh-workflow'
+      - 'trunk'
     types:
       - closed
 env:
@@ -21,8 +21,6 @@ jobs:
     if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
     name: Create the release
     runs-on: ubuntu-20.04
-    env:
-      TAG_NAME: ${{ inputs.tagName }}
       
     steps:
       - name: Checkout repository
@@ -32,7 +30,7 @@ jobs:
 
       - name: Get release version from merge commit
         id: get_version
-        run: echo ::set-output name=RELEASE_VERSION::$(jq '.version' package.json -r)
+        run: echo "RELEASE_VERSION::$(jq '.version' package.json -r)" >> $GITHUB_ENV
         
       - name: Build the plugin
         uses: ./.github/actions/build

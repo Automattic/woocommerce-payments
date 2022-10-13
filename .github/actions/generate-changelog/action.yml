@@ -37,4 +37,4 @@ runs:
         
         # New line characters need to be escaped because set-output doesn't support multi-line strings out of the box
         CHANGELOG="${CHANGELOG//$'\n'/\\n}"  
-        echo ::set-output name=CHANGELOG::"$CHANGELOG"
+        echo "CHANGELOG::$CHANGELOG" >> $GITHUB_ENV

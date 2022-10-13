@@ -36,10 +36,10 @@ runs:
 
         git checkout -b $BRANCH_NAME
         git push origin $BRANCH_NAME
-        echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
-
+        echo "BRANCH_NAME::$BRANCH_NAME" >> $GITHUB_ENV
+        
         git config user.name "${{ github.actor }}"
         git config user.email "${{ github.actor }}@users.noreply.github.com"
         git tag -a -m "$TAG_MESSAGE" $TAG_NAME
         git push origin $TAG_NAME
-        echo "::set-output name=TAG_MESSAGE::$TAG_MESSAGE"
+        echo "TAG_MESSAGE::$TAG_MESSAGE" >> $GITHUB_ENV
