@@ -1,11 +1,17 @@
 name: Build WooCommerce Payments
 description: Build WooCommerce Payments
+inputs: 
+  release-filename:
+    description: "The name of the release filename"
+    default: 'woocommerce-payments.zip'
 
 runs:
   using: composite
   steps:
     - name: Build the plugin
       shell: bash
+      env:
+        RELEASE_FILENAME: ${{ inputs.release-filename }}
       run: |
         npm ci
         npm run build
