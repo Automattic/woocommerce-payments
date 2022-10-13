@@ -408,8 +408,6 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 	};
 
 	const closeLoginSessionIframe = () => {
-		hasCheckedLoginSession = true;
-
 		loginSessionIframeWrapper.remove();
 		loginSessionIframe.classList.remove( 'open' );
 		platformCheckoutEmailInput.focus();
@@ -500,6 +498,7 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 
 		switch ( e.data.action ) {
 			case 'auto_redirect_to_platform_checkout':
+				hasCheckedLoginSession = true;
 				api.initPlatformCheckout(
 					'',
 					e.data.platformCheckoutUserSession
@@ -519,6 +518,7 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 				} );
 				break;
 			case 'close_auto_redirection_modal':
+				hasCheckedLoginSession = true;
 				closeLoginSessionIframe();
 				break;
 			case 'redirect_to_platform_checkout':
