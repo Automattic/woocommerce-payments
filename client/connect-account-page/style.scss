@@ -125,4 +125,26 @@
 			}
 		}
 	}
+
+	.wcpay-connect-info-notice.components-notice {
+		margin: 24px 0;
+		padding: 12px;
+		border-left: none;
+		font-size: 12px;
+		background-color: #fbf1fa;
+
+		.components-notice__content {
+			color: $studio-gray-80;
+
+			a {
+				text-decoration: none;
+				font-weight: 700;
+				color: $studio-woocommerce-purple-70;
+			}
+
+			span.wcpay-connect-trigger-info-modal {
+				color: $studio-woocommerce-purple-50;
+			}
+		}
+	}
 }

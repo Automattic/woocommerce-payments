@@ -10,6 +10,7 @@ import { render, useState, useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import OnboardingLocationCheckModal from './modal';
+import OnboardingMoreInfoModal from './info-modal';
 import Page from 'components/page';
 import strings from './strings';
 import wcpayTracks from 'tracks';
@@ -176,10 +177,41 @@ const ConnectPageOnboarding = () => {
 	);
 };
 
+const ConnectPageInfoNotice = () => {
+	const showInfoModal = () => {
+		const container = document.createElement( 'div' );
+		container.id = 'wcpay-onboarding-location-check-container';
+		render( <OnboardingMoreInfoModal />, container );
+		document.body.appendChild( container );
+	};
+
+	return (
+		<Notice
+			className="wcpay-connect-info-notice"
+			status="info"
+			isDismissible={ false }
+		>
+			{
+				<p>
+					{ strings.infoNotice.description }
+					<button
+						className="show-info-modal-button"
+						onClick={ showInfoModal }
+					>
+						&nbsp;
+						{ strings.infoNotice.button }
+					</button>
+				</p>
+			}
+		</Notice>
+	);
+};
+
 const ConnectPageOnboardingSteps = () => {
 	return (
 		<>
 			<h2>{ strings.stepsHeading }</h2>
+			<ConnectPageInfoNotice />
 			<div className="connect-page-onboarding-steps">
 				<div className="connect-page-onboarding-steps-item">
 					<StepNumber>1</StepNumber>
