@@ -58,7 +58,7 @@ jobs:
         id: define_var
         run: |
           RELEASE_DATE=$( date "+%Y-%m-%d" -d "$RELEASE_DATE_STRING" ) # Release date formatted as YYYY-MM-DD
-          echo "RELEASE_DATE::$RELEASE_DATE" >> $GITHUB_ENV
+          echo "RELEASE_DATE::$RELEASE_DATE" >> $GITHUB_OUTPUT
 
       - name: Generate the changelog
         id: generate_changelog

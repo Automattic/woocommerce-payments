@@ -1,4 +1,4 @@
-name: "Build WooCommerce Payments zip file"
+name: "Build zip file"
 
 # This action will run when it is triggered manually
 on:
