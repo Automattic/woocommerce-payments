@@ -14,6 +14,7 @@ import {
 	shopperWCP,
 	merchantWCP,
 	describeif,
+	checkPageExists,
 	RUN_WC_BLOCKS_TESTS,
 } from '../../../utils';
 
@@ -22,7 +23,6 @@ const productName = config.get( 'products.simple.name' );
 
 import {
 	fillCardDetailsWCB,
-	clearWCBCardDetails,
 	confirmCardAuthentication,
 } from '../../../utils/payments';
 
@@ -30,9 +30,15 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 	'WooCommerce Blocks > Checkout failures',
 	() => {
 		beforeAll( async () => {
-			await merchant.login();
-			await merchantWCP.addNewPageCheckoutWCB();
-			await merchant.logout();
+			// Check whether block checkout page exists & create if required
+			try {
+				await checkPageExists( 'checkout-wcb' );
+			} catch ( error ) {
+				await merchant.login();
+				await merchantWCP.addNewPageCheckoutWCB();
+				await merchant.logout();
+			}
+
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
 			await shopperWCP.openCheckoutWCB();
@@ -43,9 +49,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 		} );
 
 		afterEach( async () => {
-			// Clear card details for the next test
-			await shopperWCP.openCheckoutWCB();
-			await clearWCBCardDetails();
+			await page.reload( { waitUntil: 'networkidle0' } );
 		} );
 
 		afterAll( async () => {
@@ -75,6 +79,8 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
+			await uiUnblocked();
+			await page.waitForSelector( 'div.wc-block-components-notices' );
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
@@ -90,6 +96,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
+			await page.waitForSelector( 'div.wc-block-components-notices' );
 			await expect(
 				page
 			).toMatchElement(
@@ -173,6 +180,8 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await expect( page ).toClick( 'button > span', {
 				text: 'Place Order',
 			} );
+			await uiUnblocked();
+			await page.waitForSelector( 'div.wc-block-components-notices' );
 			// Verify the error message
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',

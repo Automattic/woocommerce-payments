@@ -122,3 +122,44 @@ addFilter(
 		return tableData;
 	}
 );
+
+addFilter(
+	'woocommerce_admin_orders_report_filters',
+	'woocommerce-payments',
+	( filters ) => [
+		{
+			label: __( 'Customer currency', 'woocommerce-payments' ),
+			param: 'currency',
+			staticParams: [],
+			showFilters: () => true,
+			filters: [
+				{
+					label: __( 'All currencies', 'woocommerce-payments' ),
+					value: 'all',
+				},
+				...getCustomerCurrencies(),
+			],
+		},
+		...filters,
+	]
+);
+
+// Filter report currency formatter to display the selected currency symbol.
+addFilter(
+	'woocommerce_admin_report_currency',
+	'woocommerce-payments',
+	( config, { currency } ) => {
+		if ( ! currency ) return config;
+
+		const currencyData = Object.values( wcpaySettings.currencyData ).find(
+			( c ) => c.code === currency
+		);
+
+		if ( ! currencyData ) return config;
+
+		return {
+			...config,
+			symbol: currencyData.symbol,
+		};
+	}
+);
