@@ -6,6 +6,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
+import { buildAjaxURL } from '../../payment-request/utils';
 
 // Waits for the email field to exist as in the Blocks checkout, sometimes the email field is not immediately available.
 const waitForEmailField = ( selector ) => {
@@ -333,16 +334,21 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 			}
 		}
 
-		fetch( getConfig( 'platformCheckoutSignatureEndpoint' ) )
+		request(
+			buildAjaxURL(
+				getConfig( 'wcAjaxUrl' ),
+				'get_platform_checkout_signaturea'
+			),
+			{
+				_ajax_nonce: getConfig( 'platformCheckoutSignatureNonce' ),
+			}
+		)
 			.then( ( response ) => {
-				if ( response.ok ) {
-					return response.json();
+				if ( response.success ) {
+					return response.data;
 				}
 
-				showErrorMessage();
-				throw new Error(
-					'Unexpected response when getting signature.'
-				);
+				throw new Error( 'Request for signature failed.' );
 			} )
 			.then( ( data ) => {
 				if ( data.signature ) {

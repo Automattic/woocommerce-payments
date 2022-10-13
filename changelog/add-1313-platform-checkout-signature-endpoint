@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add endpoint to get platform checkout signature at time of request

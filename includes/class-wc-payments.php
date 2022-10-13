@@ -974,6 +974,7 @@ class WC_Payments {
 
 		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
+			add_action( 'wc_ajax_wcpay_get_platform_checkout_signature', [ __CLASS__, 'ajax_get_platform_checkout_signature' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
 			// We should remove this once both features are available by default in the WC minimum supported version.
@@ -1107,6 +1108,33 @@ class WC_Payments {
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Retrieve a platform checkout request signature.
+	 *
+	 * @return void
+	 */
+	public static function ajax_get_platform_checkout_signature() {
+		$is_nonce_valid = check_ajax_referer( 'platform_checkout_signature_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		$platform_checkout_util = new Platform_Checkout_Utilities();
+
+		$signature = $platform_checkout_util->get_platform_checkout_request_signature();
+
+		wp_send_json_success(
+			[
+				'signature' => $signature,
+			],
+			200
+		);
 	}
 
 	/**
