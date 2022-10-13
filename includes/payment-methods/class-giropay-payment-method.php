@@ -27,6 +27,7 @@ class Giropay_Payment_Method extends UPE_Payment_Method {
 		$this->title       = 'giropay';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/giropay.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

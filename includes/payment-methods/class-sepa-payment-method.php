@@ -27,6 +27,7 @@ class Sepa_Payment_Method extends UPE_Payment_Method {
 		$this->title       = 'SEPA Direct Debit';
 		$this->is_reusable = true;
 		$this->currencies  = [ 'EUR' ];
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/sepa_debit.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
