@@ -9,46 +9,14 @@ import {
 	getAuthorizationsSummary,
 } from '../selectors';
 import { getResourceId } from 'utils/data';
-import { RiskLevel } from 'wcpay/types/authorizations';
+import authorizationsFixture from './authorizations.fixture.json';
+import authorizationsSummaryFixture from './authorizations-summary.fixture.json';
 
 const emptyState = { authorizations: {} };
 
 describe( 'Authorizations selector', () => {
 	const mockQuery = { paged: '2', perPage: '50' };
-	const mockAuthorizations = [
-		{
-			authorization_id: 'id_1661935621753_995',
-			authorized_on: 'Aug 31, 2022 / 8:47AM',
-			capture_by: 'Sep 7, 2022 / 8:47AM',
-			order: {
-				number: 254,
-				customer_url: 'https://doggo.com',
-				url: 'https://doggo.com',
-			},
-			risk_level: 'elevated' as RiskLevel,
-			amount: 4654,
-			customer_email: 'good_boy@doge.com',
-			customer_country: 'Kingdom of Dogs',
-			customer_name: 'Good boy',
-			payment_intent_id: 'pi_3Lcm2iQsDOQXPzI102uKS0FD',
-		},
-		{
-			authorization_id: 'id_1661935621753_107',
-			authorized_on: 'Aug 31, 2022 / 8:47AM',
-			capture_by: 'Sep 7, 2022 / 8:47AM',
-			order: {
-				number: 254,
-				customer_url: 'https://doggo.com',
-				url: 'https://doggo.com',
-			},
-			risk_level: 'normal' as RiskLevel,
-			amount: 4906,
-			customer_email: 'good_boy@doge.com',
-			customer_country: 'Kingdom of Dogs',
-			customer_name: 'Good boy',
-			payment_intent_id: 'pi_3Lcm2iQsDOQXPzI102uKS0FD',
-		},
-	];
+	const mockAuthorizations = authorizationsFixture;
 
 	const filledSuccessState = {
 		authorizations: {
@@ -76,18 +44,14 @@ describe( 'Authorizations selector', () => {
 
 describe( 'Authorizations summary selector', () => {
 	const mockQuery = { paged: '2', perPage: '50' };
-	const mockAuthorizationsSummary = {
-		count: 42,
-	};
+	const mockAuthorizationsSummary = authorizationsSummaryFixture;
 
 	// State is populated.
 	const filledSuccessState = {
 		authorizations: {
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
-					data: {
-						count: 42,
-					},
+					data: mockAuthorizationsSummary,
 				},
 			},
 		},
@@ -107,27 +71,12 @@ describe( 'Authorizations summary selector', () => {
 } );
 
 describe( 'Authorization selector', () => {
-	const mockAuthorization = {
-		authorization_id: 'id_1661935621753_995',
-		authorized_on: 'Aug 31, 2022 / 8:47AM',
-		capture_by: 'Sep 7, 2022 / 8:47AM',
-		order: {
-			number: 254,
-			customer_url: 'https://doggo.com',
-			url: 'https://doggo.com',
-		},
-		risk_level: 'elevated' as RiskLevel,
-		amount: 4654,
-		customer_email: 'good_boy@doge.com',
-		customer_country: 'Kingdom of Dogs',
-		customer_name: 'Good boy',
-		payment_intent_id: 'pi_3Lcm2iQsDOQXPzI102uKS0FD',
-	};
+	const mockAuthorization = authorizationsFixture[ 0 ];
 
 	const filledState = {
 		authorizations: {
 			byId: {
-				id_1661935621753_995: mockAuthorization,
+				[ mockAuthorization.authorization_id ]: mockAuthorization,
 			},
 		},
 	};
@@ -140,7 +89,7 @@ describe( 'Authorization selector', () => {
 
 	test( 'Returns authorization when it is present', () => {
 		expect(
-			getAuthorization( filledState, 'id_1661935621753_995' )
+			getAuthorization( filledState, mockAuthorization.authorization_id )
 		).toStrictEqual( mockAuthorization );
 	} );
 } );

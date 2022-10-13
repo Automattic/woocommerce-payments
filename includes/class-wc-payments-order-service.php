@@ -40,7 +40,7 @@ class WC_Payments_Order_Service {
 	public function __construct( WC_Payments_API_Client $api_client ) {
 		$this->api_client = $api_client;
 
-		add_action( self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this, 'add_fee_breakdown_to_order_notes' ], 10, 2 );
+		add_action( self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this, 'add_fee_breakdown_to_order_notes' ], 10, 3 );
 	}
 
 	/**
@@ -69,8 +69,9 @@ class WC_Payments_Order_Service {
 			time(),
 			self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES,
 			[
-				'order_id'  => $order->get_id(),
-				'intent_id' => $intent_id,
+				'order_id'     => $order->get_id(),
+				'intent_id'    => $intent_id,
+				'is_test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
 			]
 		);
 
@@ -338,10 +339,19 @@ class WC_Payments_Order_Service {
 	/**
 	 * Adds a note with the fee breakdown for the order.
 	 *
-	 * @param string $order_id  WC Order Id.
-	 * @param string $intent_id The intent id for the payment.
+	 * @param string $order_id     WC Order Id.
+	 * @param string $intent_id    The intent id for the payment.
+	 * @param bool   $is_test_mode Whether to run the CRON job in test mode.
 	 */
-	public function add_fee_breakdown_to_order_notes( $order_id, $intent_id ) {
+	public function add_fee_breakdown_to_order_notes( $order_id, $intent_id, $is_test_mode = false ) {
+		// Since this CRON job may have been created in test_mode, when the CRON job runs, it
+		// may lose the test_mode context. So, instead, we pass that context when creating
+		// the CRON job and apply the context here.
+		$apply_test_mode_context = function () use ( $is_test_mode ) {
+			return $is_test_mode;
+		};
+		add_filter( 'wcpay_test_mode', $apply_test_mode_context );
+
 		$order = wc_get_order( $order_id );
 		try {
 			$events = $this->api_client->get_timeline( $intent_id );

@@ -5,47 +5,13 @@
  */
 import reducer from '../reducer';
 import types from '../action-types';
-import { RiskLevel } from 'wcpay/types/authorizations';
 import { getResourceId } from 'utils/data';
+import authorizationsFixture from './authorizations.fixture.json';
+import authorizationsSummaryFixture from './authorizations-summary.fixture.json';
 
 describe( 'Authorizations reducer', () => {
 	const mockQuery = { paged: '1', perPage: '50' };
-	const mockAuthorizations = [
-		{
-			authorization_id: 'id_1661935621753_995',
-			authorized_on: 'Aug 31, 2022 / 8:47AM',
-			capture_by: 'Sep 7, 2022 / 8:47AM',
-			captured: false,
-			order: {
-				number: 254,
-				customer_url: 'https://doggo.com',
-				url: 'https://doggo.com',
-			},
-			risk_level: 'elevated' as RiskLevel,
-			amount: 4654,
-			customer_email: 'good_boy@doge.com',
-			customer_country: 'Kingdom of Dogs',
-			customer_name: 'Good boy',
-			payment_intent_id: 'pi_3Lcm2iQsDOQXPzI102uKS0FD',
-		},
-		{
-			authorization_id: 'id_1661935621753_107',
-			authorized_on: 'Aug 31, 2022 / 8:47AM',
-			capture_by: 'Sep 7, 2022 / 8:47AM',
-			captured: false,
-			order: {
-				number: 254,
-				customer_url: 'https://doggo.com',
-				url: 'https://doggo.com',
-			},
-			risk_level: 'normal' as RiskLevel,
-			amount: 4906,
-			customer_email: 'good_boy@doge.com',
-			customer_country: 'Kingdom of Dogs',
-			customer_name: 'Good boy',
-			payment_intent_id: 'pi_3Lcm2iQsDOQXPzI102uKS0FD',
-		},
-	];
+	const mockAuthorizations = authorizationsFixture;
 
 	test( 'should reduce new authorizations correctly', () => {
 		const reduced = reducer(
@@ -101,18 +67,14 @@ describe( 'Authorizations reducer', () => {
 		const reduced = reducer( undefined, {
 			type: types.SET_AUTHORIZATIONS_SUMMARY,
 			query: mockQuery,
-			data: {
-				count: 42,
-			},
+			data: authorizationsSummaryFixture,
 		} );
 
 		const after = {
 			byId: {},
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
-					data: {
-						count: 42,
-					},
+					data: authorizationsSummaryFixture,
 				},
 			},
 		};
@@ -135,18 +97,14 @@ describe( 'Authorizations reducer', () => {
 		const reduced = reducer( before, {
 			type: types.SET_AUTHORIZATIONS_SUMMARY,
 			query: mockQuery,
-			data: {
-				count: 4242,
-			},
+			data: authorizationsSummaryFixture,
 		} );
 
 		const after = {
 			...before,
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
-					data: {
-						count: 4242,
-					},
+					data: authorizationsSummaryFixture,
 				},
 			},
 		};
@@ -162,7 +120,8 @@ describe( 'Authorizations reducer', () => {
 
 		expect( stateAfterOne ).toStrictEqual( {
 			byId: {
-				id_1661935621753_995: mockAuthorizations[ 0 ],
+				[ mockAuthorizations[ 0 ].payment_intent_id ]:
+					mockAuthorizations[ 0 ],
 			},
 			summary: {},
 		} );
@@ -174,8 +133,10 @@ describe( 'Authorizations reducer', () => {
 
 		expect( stateAfterTwo ).toStrictEqual( {
 			byId: {
-				id_1661935621753_995: mockAuthorizations[ 0 ],
-				id_1661935621753_107: mockAuthorizations[ 1 ],
+				[ mockAuthorizations[ 0 ].payment_intent_id ]:
+					mockAuthorizations[ 0 ],
+				[ mockAuthorizations[ 1 ].payment_intent_id ]:
+					mockAuthorizations[ 1 ],
 			},
 			summary: {},
 		} );

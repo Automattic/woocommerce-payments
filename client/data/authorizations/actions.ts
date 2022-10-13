@@ -1,17 +1,20 @@
 /** @format */
+/**
+ * External Dependencies
+ */
+import { Query } from '@woocommerce/navigation';
+import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal Dependencies
  */
-import { Query } from '@woocommerce/navigation';
 import TYPES from './action-types';
 import {
 	AuthorizationsSummary,
 	Authorization,
 } from 'wcpay/types/authorizations';
-import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { STORE_NAME } from '../constants';
-import { __ } from '@wordpress/i18n';
 
 export function updateAuthorizations(
 	query: Query,
@@ -53,13 +56,12 @@ export function updateAuthorizationsSummary(
 }
 
 export function* submitCaptureAuthorization(
-	id: string,
-	orderId: number,
-	paymentIntentId: string
+	paymentIntentId: string,
+	orderId: number
 ): Generator< unknown | Authorization > {
 	try {
 		yield dispatch( STORE_NAME, 'startResolution', 'getAuthorization', [
-			id,
+			paymentIntentId,
 		] );
 
 		let authorization = yield apiFetch( {
@@ -71,7 +73,7 @@ export function* submitCaptureAuthorization(
 		} );
 
 		authorization = {
-			authorization_id: id,
+			payment_intent_id: paymentIntentId,
 			captured: true,
 		};
 
@@ -109,7 +111,7 @@ export function* submitCaptureAuthorization(
 		yield dispatch( 'core/notices', 'createErrorNotice', message );
 	} finally {
 		yield dispatch( STORE_NAME, 'finishResolution', 'getAuthorization', [
-			id,
+			paymentIntentId,
 		] );
 	}
 }

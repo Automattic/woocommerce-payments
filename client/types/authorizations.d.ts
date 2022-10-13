@@ -7,7 +7,7 @@ export interface Authorization {
 	capture_by: string;
 	captured: boolean;
 	order: OrderDetails;
-	risk_level: RiskLevel;
+	risk_level: RiskLevel | string;
 	amount: number;
 	customer_name: string;
 	customer_email: string;

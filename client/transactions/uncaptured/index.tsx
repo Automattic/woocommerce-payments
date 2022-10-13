@@ -14,7 +14,7 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
 import { RiskLevel } from 'wcpay/types/authorizations';
-import CaptureAuthorizationButton from './capture-authorization-button';
+import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 
 interface Column extends TableCardColumn {
 	key:
@@ -120,7 +120,7 @@ export const AuthorizationsList = (): JSX.Element => {
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
-	const getRiskColor = ( risk: RiskLevel ) => {
+	const getRiskColor = ( risk: RiskLevel | string ) => {
 		switch ( risk ) {
 			case 'high':
 				return 'crimson';
@@ -179,7 +179,6 @@ export const AuthorizationsList = (): JSX.Element => {
 			action: {
 				display: (
 					<CaptureAuthorizationButton
-						id={ auth.authorization_id }
 						orderId={ auth.order.number }
 						paymentIntentId={ auth.payment_intent_id }
 					/>

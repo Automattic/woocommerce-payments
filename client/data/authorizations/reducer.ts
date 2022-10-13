@@ -33,8 +33,8 @@ const receiveAuthorizations = (
 				...state,
 				byId: {
 					...state.byId,
-					[ authorization.authorization_id ]: {
-						...state.byId[ authorization.authorization_id ],
+					[ authorization.payment_intent_id ]: {
+						...state.byId[ authorization.payment_intent_id ],
 						...action.data,
 					},
 				},

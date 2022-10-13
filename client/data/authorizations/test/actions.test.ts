@@ -4,54 +4,45 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import { Authorization, RiskLevel } from 'wcpay/types/authorizations';
+import { Authorization } from 'wcpay/types/authorizations';
 
 /**
  * Internal dependencies
  */
 import { submitCaptureAuthorization, updateAuthorization } from '../actions';
+import authorizationsFixture from './authorizations.fixture.json';
 
 describe( 'submitCaptureAuthorization', () => {
-	const mockAuthorization = {
-		authorization_id: '42',
-		authorized_on: 'Aug 31, 2022 / 3:41AM',
-		capture_by: 'capture_by',
-		captured: false,
-		order: {
-			number: 52,
-			customer_url: 'https://example.com',
-			url: 'https://example.com',
-		},
-		risk_level: 'risk_level' as RiskLevel,
-		amount: 42,
-		customer_email: 'customer_email',
-		customer_country: 'customer_country',
-		customer_name: 'customer_name',
-		payment_intent_id: 'pi_4242',
-	};
+	const {
+		order: mockOrder,
+		payment_intent_id: mockPaymentIntentId,
+	} = authorizationsFixture[ 0 ];
 
 	test( 'should capture authorization and show success notice.', () => {
-		const generator = submitCaptureAuthorization( '42', 52, 'pi_4242' );
+		const generator = submitCaptureAuthorization(
+			mockPaymentIntentId,
+			mockOrder.number
+		);
 
 		expect( generator.next().value ).toEqual(
 			dispatch( 'wc/payments', 'startResolution', 'getAuthorization', [
-				'42',
+				mockPaymentIntentId,
 			] )
 		);
 
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
-				path: `/wc/v3/payments/orders/${ 52 }/capture_authorization`,
+				path: `/wc/v3/payments/orders/${ mockOrder.number }/capture_authorization`,
 				method: 'post',
 				data: {
-					payment_intent_id: 'pi_4242',
+					payment_intent_id: mockPaymentIntentId,
 				},
 			} )
 		);
 
-		expect( generator.next( mockAuthorization ).value ).toEqual(
+		expect( generator.next( authorizationsFixture[ 0 ] ).value ).toEqual(
 			updateAuthorization( {
-				authorization_id: mockAuthorization.authorization_id,
+				payment_intent_id: mockPaymentIntentId,
 				captured: true,
 			} as Authorization )
 		);
@@ -90,7 +81,7 @@ describe( 'submitCaptureAuthorization', () => {
 
 		expect( generator.next().value ).toEqual(
 			dispatch( 'wc/payments', 'finishResolution', 'getAuthorization', [
-				'42',
+				mockPaymentIntentId,
 			] )
 		);
 
@@ -98,7 +89,7 @@ describe( 'submitCaptureAuthorization', () => {
 	} );
 
 	test( 'should show notice on error', () => {
-		const generator = submitCaptureAuthorization( '42', 52, 'pi_4242' );
+		const generator = submitCaptureAuthorization( 'pi_4242', 42 );
 		generator.next();
 
 		expect( generator.throw( { code: 'error' } ).value ).toEqual(
