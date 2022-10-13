@@ -65,10 +65,10 @@ jobs:
           // Because we go from 5.9 to 6.0, we can get the next major_minor by adding 0.1 and formatting appropriately.
           $latest_version_as_float = (float) $latest_version_with_release;
           $branch_major_minor      = number_format( $latest_version_as_float + 0.1, 1 );
-          echo "RELEASE_VERSION=$branch_major_minor.0" . PHP_EOL >> getenv( 'GITHUB_OUTPUT' );
+          echo "RELEASE_VERSION=$branch_major_minor.0" >> getenv( 'GITHUB_OUTPUT' );
 
           $next_wednesday = date('Y-n-d', strtotime('next Wednesday'));
-          echo "RELEASE_PLANNED_DATE=$next_wednesday" . PHP_EOL >> getenv( 'GITHUB_OUTPUT' );
+          echo "RELEASE_PLANNED_DATE=$next_wednesday" >> getenv( 'GITHUB_OUTPUT' );
 
       - name: Check if the next version needs a code freeze
         id: check-freeze
