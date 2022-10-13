@@ -337,7 +337,7 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 		request(
 			buildAjaxURL(
 				getConfig( 'wcAjaxUrl' ),
-				'get_platform_checkout_signaturea'
+				'get_platform_checkout_signature'
 			),
 			{
 				_ajax_nonce: getConfig( 'platformCheckoutSignatureNonce' ),
