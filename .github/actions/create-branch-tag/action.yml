@@ -25,11 +25,12 @@ runs:
         TAG_NAME: ${{ inputs.tag-name }}
       run: |
         if ${{ env.IS_PRERELEASE }}; then
-          echo "::warning::Creating a test branch and tag."
+          echo "Creating a test branch and tag." >> $GITHUB_STEP_SUMMARY
           BRANCH_NAME="testing/$TAG_NAME"
           TAG_MESSAGE="Version for testing $TAG_NAME. Not for Production"
         else
-          echo "::warning::Creating a release branch and tag."
+          echo ":rocket: Creating a release branch and tag. :rocket:" >> $GITHUB_STEP_SUMMARY
+
           BRANCH_NAME="release/$TAG_NAME"
           TAG_MESSAGE="Version $TAG_NAME"
         fi

@@ -38,7 +38,7 @@ jobs:
         id: current-version
         run: |
           VERSION=$(jq '.version' package.json -r)
-          echo "::warning::Current version found: $VERSION"
+          echo "Current version found: $VERSION" >> $GITHUB_STEP_SUMMARY
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Setup PHP
@@ -75,17 +75,17 @@ jobs:
         env:
           NEXT_VERSION: ${{ steps.next-version.outputs.RELEASE_VERSION }}
         run: |
-          echo "::warning::Next version: $NEXT_VERSION"
+          echo "Next version: $NEXT_VERSION" >> $GITHUB_STEP_SUMMARY
           
           git fetch --tags origin
           NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
           NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-2" | tail -1)
           echo "NEXT_VERSION_TAG_FROM_WEEK_2: $NEXT_VERSION_TAG_FROM_WEEK_2"
           if [[ -z "$NEXT_VERSION_TAG_FROM_WEEK_2" ]]; then
-            echo "::warning::Code freeze is not needed"
+            echo ":x: Code freeze is not needed :x:" >> $GITHUB_STEP_SUMMARY
             echo "FREEZE=0" >> $GITHUB_OUTPUT
           elif [[ -z "$NEXT_VERSION_TAG_STABLE" ]]; then
-            echo "::warning::Code freeze is needed"
+            echo ":white_check_mark: Code freeze is not needed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
             echo "FREEZE=1" >> $GITHUB_OUTPUT
           fi
 
