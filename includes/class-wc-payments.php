@@ -356,9 +356,11 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-track-upe-status.php';
+		require_once __DIR__ . '/migrations/class-delete-active-platform-checkout-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Track_Upe_Status', 'maybe_track' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_Platform_Checkout_Webhook', 'maybe_delete' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
@@ -740,6 +742,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
 		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
 		$payment_intents_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
+		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
+		$authorizations_controller->register_routes();
 	}
 
 	/**
@@ -968,8 +974,6 @@ class WC_Payments {
 
 		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
-			add_filter( 'determine_current_user', [ __CLASS__, 'determine_current_user_for_platform_checkout' ] );
-			add_filter( 'woocommerce_cookie', [ __CLASS__, 'determine_session_cookie_for_platform_checkout' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
 			// We should remove this once both features are available by default in the WC minimum supported version.
@@ -1121,37 +1125,6 @@ class WC_Payments {
 		}
 
 		return get_rest_url( null, $store_api_url ?? 'wc/store' );
-	}
-
-	/**
-	 * Tells WC to use platform checkout session cookie if the header is present.
-	 *
-	 * @param string $cookie_hash Default cookie hash.
-	 *
-	 * @return string
-	 */
-	public static function determine_session_cookie_for_platform_checkout( $cookie_hash ) {
-		if ( isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) && 0 === (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) {
-			return 'platform_checkout_session';
-		}
-		return $cookie_hash;
-	}
-
-	/**
-	 * Determine the current user
-	 *
-	 * @param WP_User|int $user The user to determine.
-	 */
-	public static function determine_current_user_for_platform_checkout( $user ) {
-		if ( $user ) {
-			return $user;
-		}
-
-		if ( ! isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) || ! is_numeric( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) ) {
-			return $user;
-		}
-
-		return (int) $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'];
 	}
 
 	/**

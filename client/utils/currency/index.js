@@ -111,10 +111,12 @@ export const formatCurrency = (
 
 	try {
 		return 'function' === typeof currency.formatAmount
-			? currency.formatAmount( amount )
-			: currency.formatCurrency( amount );
+			? htmlDecode( currency.formatAmount( amount ) )
+			: htmlDecode( currency.formatCurrency( amount ) );
 	} catch ( err ) {
-		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
+		return htmlDecode(
+			composeFallbackCurrency( amount, currencyCode, isZeroDecimal )
+		);
 	}
 };
 
@@ -261,4 +263,9 @@ function trimEndingZeroes( formattedCurrencyAmount = '' ) {
 			endsWith( chunk, '0' ) ? trimEnd( chunk, '0' ) : chunk
 		)
 		.join( ' ' );
+}
+
+function htmlDecode( input ) {
+	const doc = new DOMParser().parseFromString( input, 'text/html' );
+	return doc.documentElement.textContent;
 }

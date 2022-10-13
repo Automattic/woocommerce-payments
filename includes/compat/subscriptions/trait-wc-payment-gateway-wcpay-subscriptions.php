@@ -265,6 +265,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
+		// Exit early if the order belongs to a WCPay Subscription. The payment will be processed by the subscription via webhooks.
+		if ( $this->is_wcpay_subscription_renewal_order( $renewal_order ) ) {
+			return;
+		}
+
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
 			$this->process_payment_for_order( null, $payment_information );
@@ -762,5 +767,28 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( isset( $this->order_pay_var ) ) {
 			$wp->query_vars['order-pay'] = $this->order_pay_var;
 		}
+	}
+
+	/**
+	 * Checks if a renewal order is linked to a WCPay subscription.
+	 *
+	 * @param WC_Order $renewal_order The renewal order to check.
+	 * @return bool True if the renewal order is linked to a renewal order. Otherwise false.
+	 */
+	private function is_wcpay_subscription_renewal_order( WC_Order $renewal_order ) {
+
+		// Exit early if WCPay subscriptions functionality isn't enabled.
+		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+			return false;
+		}
+
+		// Check if the renewal order is linked to a subscription which is a WCPay Subscription.
+		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
+			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

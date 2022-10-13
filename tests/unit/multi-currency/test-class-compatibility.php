@@ -190,4 +190,15 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 		$order = wc_get_order( $result->get_id() );
 		$this->assertEquals( 1000, $order->get_total() );
 	}
+
+	public function test_filter_woocommerce_order_query_with_object_not_array() {
+		$order = wc_create_order();
+		$order->set_total( 1000 );
+		$order->set_currency( 'GBP' );
+
+		// Turn the order array into an object to confirm the object is returned as is.
+		$expected = (object) [ $order ];
+
+		$this->assertEquals( $expected, $this->compatibility->convert_order_prices( $expected, [] ) );
+	}
 }
