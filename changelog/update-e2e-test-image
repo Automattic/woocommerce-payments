@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update E2E docker image and change image user

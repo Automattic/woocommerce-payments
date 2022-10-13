@@ -207,7 +207,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "21,64&nbsp;$ USD will be deducted from a future deposit.",
+    "headline": "21,64 $ USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -216,11 +216,11 @@ Array [
   },
   Object {
     "body": Array [
-      "1,00 EUR → 1,20222 USD: 21,64&nbsp;$ USD",
+      "1,00 EUR → 1,20222 USD: 21,64 $ USD",
       "",
     ],
     "date": 2020-04-04T13:51:06.000Z,
-    "headline": "A payment of 18,00&nbsp;€ EUR was successfully refunded.",
+    "headline": "A payment of 18,00 € EUR was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"
@@ -245,7 +245,7 @@ Array [
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "6,00&nbsp;$ USD will be deducted from a future deposit.",
+    "headline": "6,00 $ USD will be deducted from a future deposit.",
     "icon": <t
       className=""
       icon="minus"
@@ -254,11 +254,11 @@ Array [
   },
   Object {
     "body": Array [
-      "1,00 EUR → 1,2 USD: 6,00&nbsp;$ USD",
+      "1,00 EUR → 1,2 USD: 6,00 $ USD",
       "Acquirer Reference Number (ARN) 4785767637658864",
     ],
     "date": 2020-04-03T18:58:01.000Z,
-    "headline": "A payment of 5,00&nbsp;€ EUR was successfully refunded.",
+    "headline": "A payment of 5,00 € EUR was successfully refunded.",
     "icon": <t
       className="is-success"
       icon="checkmark"

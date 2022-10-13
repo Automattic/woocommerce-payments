@@ -23,10 +23,10 @@ jobs:
         with:
           ref: 'develop'
 
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Setup Node
+        uses: actions/setup-node@v2
         with:
-          node-version: '12.x'
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       # Runs a set of commands using the runners shell
@@ -38,7 +38,7 @@ jobs:
           unzip woocommerce-payments.zip
           mkdir -p htdocs/wp-content/plugins
           cp -R woocommerce-payments htdocs/wp-content/plugins
-      
+
       - name: FTP-Deploy-Action
         uses: Automattic/FTP-Deploy-Action@3.0.1
         with:

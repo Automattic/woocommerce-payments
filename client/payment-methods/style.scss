@@ -77,4 +77,11 @@
 			}
 		}
 	}
+
+	// Gutenberg compatibility adjustments. The component changed its classes and
+	// styling in @wordpress/components 19.11.0. We're currently using 11.1.5.
+	// To be removed when we upgrade this package.
+	.components-popover {
+		position: fixed;
+	}
 }
