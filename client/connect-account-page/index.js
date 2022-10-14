@@ -24,6 +24,7 @@ import Discover from './cards/discover.js';
 import GPay from './cards/gpay.js';
 import JCB from './cards/jcb.js';
 import UnionPay from './cards/unionpay.js';
+import LightbulbIcon from '../../assets/images/icons/lightbulb.svg';
 import './style.scss';
 
 const LearnMore = () => {
@@ -178,28 +179,25 @@ const ConnectPageOnboarding = () => {
 };
 
 const ConnectPageInfoNotice = () => {
-	const showInfoModal = () => {
-		const container = document.createElement( 'div' );
-		container.id = 'wcpay-onboarding-location-check-container';
-		render( <OnboardingMoreInfoModal />, container );
-		document.body.appendChild( container );
-	};
+	const [ isModalOpen, setModalOpen ] = useState( false );
 
 	return (
-		<Notice
-			className="wcpay-connect-info-notice"
-			status="info"
-			isDismissible={ false }
-		>
-			{
-				<p>
+		<>
+			<div className="wcpay-connect-info-notice">
+				<img src={ LightbulbIcon } alt="" />
+				<div>
 					{ strings.infoNotice.description }
-					<Button onClick={ showInfoModal }>
+					<Button onClick={ () => setModalOpen( true ) }>
 						{ strings.infoNotice.button }
 					</Button>
-				</p>
-			}
-		</Notice>
+				</div>
+			</div>
+			{ isModalOpen && (
+				<OnboardingMoreInfoModal
+					handleModalClose={ () => setModalOpen( false ) }
+				/>
+			) }
+		</>
 	);
 };
 

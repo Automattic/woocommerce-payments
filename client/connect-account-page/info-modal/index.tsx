@@ -6,7 +6,6 @@
 import React from 'react';
 import { Button, Modal, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -14,29 +13,21 @@ import { useState } from '@wordpress/element';
 import './style.scss';
 import strings from '../strings';
 
-const OnboardingMoreInfoModal = (): JSX.Element => {
-	// Declare state attributes
-	const [ isModalOpen, setModalOpen ] = useState( true );
-	const [ isProcessingContinue ] = useState( false );
+interface Props {
+	handleModalClose: () => void;
+}
 
-	// Declare hooks to handle button clicks
-	const handleModalClose = () => {
-		setModalOpen( false );
-	};
-
+const OnboardingMoreInfoModal: React.FunctionComponent< Props > = ( {
+	handleModalClose,
+} ) => {
 	const renderList = ( list: Array< string > ) =>
 		list.map( ( item: string ) => {
 			return <li key={ item }>{ item }</li>;
 		} );
 
-	const title = __(
-		'Verifying your information with WooCommerce Payments',
-		'woocommerce-payments'
-	);
-
 	return (
 		<Modal
-			title={ title }
+			title={ strings.infoModal.title }
 			isDismissible={ true }
 			shouldCloseOnClickOutside={ true }
 			shouldCloseOnEsc={ true }
@@ -92,12 +83,9 @@ const OnboardingMoreInfoModal = (): JSX.Element => {
 						</ul>
 					</Notice>
 				</div>
+				<hr />
 				<div className="woocommerce-payments__onboarding_more_info-footer">
-					<Button
-						isPrimary
-						onClick={ handleModalClose }
-						isBusy={ isProcessingContinue }
-					>
+					<Button isPrimary onClick={ handleModalClose }>
 						{ __( 'Got it', 'woocommerce-payments' ) }
 					</Button>
 				</div>

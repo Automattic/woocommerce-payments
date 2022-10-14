@@ -56,6 +56,10 @@ export default {
 	},
 
 	infoModal: {
+		title: __(
+			'Verifying your information with WooCommerce Payments',
+			'woocommerce-payments'
+		),
 		whyWeAsk: {
 			heading: __(
 				'Why we ask for personal financial information',
