@@ -1,0 +1,188 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Onboarding: more info modal renders correctly when opened 1`] = `
+<div
+  aria-labelledby="components-modal-header-0"
+  class="components-modal__frame woocommerce-payments__onboarding_more_info-modal"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="components-modal__content"
+    role="document"
+  >
+    <div
+      class="components-modal__header"
+    >
+      <div
+        class="components-modal__header-heading-container"
+      >
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-0"
+        >
+          Verifying your information with WooCommerce Payments
+        </h1>
+      </div>
+      <button
+        aria-label="Close dialog"
+        class="components-button has-icon"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          role="img"
+          size="24"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div
+      class="woocommerce-payments__onboarding_more_info-wrapper"
+    >
+      <div
+        class="woocommerce-payments__onboarding_more_info-message"
+      >
+        <h4>
+          Why we ask for personal financial information
+           
+        </h4>
+        <p>
+          As you continue the process of signing up for WooCommerce Payments, we'll ask for information about your business, including the business owner's date of birth and tax ID number. We know you may wonder why we ask for this information, and how it will be used. The “Know Your Customer” process, explained below, helps us provide a safe, ethical environment for all financial transactions.
+        </p>
+        <h4>
+          What is “Know Your Customer”?
+           
+        </h4>
+        <p>
+          “Know Your Customer” standards are used by banks and other financial institutions to confirm that customers are who they say they are. By confirming their customers' identities, banks and financial institutions can help keep transactions safe from fraud and other suspicious activities.
+        </p>
+        <h4>
+          Why do I have to share this information?
+           
+        </h4>
+        <p>
+          Before we build a payment relationship with a customer, we ask for the information listed above to validate the business owner's identity and tax ID number, and to ensure that we can connect the listed bank account with the business itself.
+        </p>
+        <p>
+          The ultimate goal of the “Know Your Customer” process is to help your business get up and running with payments as soon as possible while protecting your business and your customers. We follow the same regulations as other financial institutions so that we can ensure we operate in an ethical and trustworthy manner. We want to protect your business and the payments that we manage for you. The “Know Your Customer” process helps us protect you.
+        </p>
+        <h4>
+          What else should I keep in mind while completing this process?
+           
+        </h4>
+        <p>
+          If you're setting up WooCommerce Payments for someone else, it's best to have that person complete the account creation process. As you can see above, we ask for very specific information about the business owner - and you might not have all the details at hand. It's not always possible to change account information once it's been saved, especially if the site accepts live transactions before the correct account information is entered.
+        </p>
+        <h4>
+          Is my data safe with WooCommerce?
+           
+        </h4>
+        <p>
+          We take every step required to safeguard your personal data. WooCommerce Payments is built in partnership with Stripe to store your data in a safe and secure manner.
+        </p>
+        <h4>
+          How quickly will you confirm my identity and allow me to process payments?
+           
+        </h4>
+        <p>
+          We'll do our best to work with Stripe to confirm your identity as quickly as we can. Typically, we'll confirm your application within a couple of days.
+        </p>
+        <h4>
+          What information should I have at hand before I start the “Know Your Customer” process?
+           
+        </h4>
+        <p>
+          Here's a brief list of the information you'll need to finish payment signup:
+        </p>
+        <div
+          class="wcpay-connect-warning-notice components-notice is-warning"
+        >
+          <div
+            class="components-notice__content"
+          >
+            <span>
+              <b>
+                Business owner info:
+              </b>
+            </span>
+            <ul>
+              <li>
+                Legal name
+              </li>
+              <li>
+                Date of birth
+              </li>
+              <li>
+                Home address
+              </li>
+              <li>
+                Email address
+              </li>
+              <li>
+                Mobile phone number
+              </li>
+              <li>
+                Bank account information
+              </li>
+              <li>
+                Social Security number (SSN) or Taxpayer Identification Number
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div
+          class="wcpay-connect-warning-notice components-notice is-warning"
+        >
+          <div
+            class="components-notice__content"
+          >
+            <span>
+              <b>
+                Business info:
+              </b>
+            </span>
+            <ul>
+              <li>
+                Country where your business is based
+              </li>
+              <li>
+                Type of businesss
+              </li>
+              <li>
+                Industry
+              </li>
+              <li>
+                Company address
+              </li>
+              <li>
+                Company phone number
+              </li>
+              <li>
+                Company URL
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <div
+        class="woocommerce-payments__onboarding_more_info-footer"
+      >
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
