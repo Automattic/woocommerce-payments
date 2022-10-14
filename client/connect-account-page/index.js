@@ -194,13 +194,9 @@ const ConnectPageInfoNotice = () => {
 			{
 				<p>
 					{ strings.infoNotice.description }
-					<button
-						className="show-info-modal-button"
-						onClick={ showInfoModal }
-					>
-						&nbsp;
+					<Button onClick={ showInfoModal }>
 						{ strings.infoNotice.button }
-					</button>
+					</Button>
 				</p>
 			}
 		</Notice>

@@ -146,5 +146,15 @@
 				color: $studio-woocommerce-purple-50;
 			}
 		}
+
+		button {
+			height: initial;
+			padding: 0 $gap-smallest 0;
+			color: $studio-woocommerce-purple-50;
+			&:focus {
+				box-shadow: none;
+				color: $studio-woocommerce-purple-50;
+			}
+		}
 	}
 }
