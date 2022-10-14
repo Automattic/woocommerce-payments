@@ -11,10 +11,6 @@ on:
         type: boolean
         required: false
         default: false
-      slackChannel:
-        description: "The channel ID used to send a Slack ping about the code freeze"
-        type: string
-        required: false
 
 defaults:
   run:
