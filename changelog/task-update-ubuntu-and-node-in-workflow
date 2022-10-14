@@ -1,0 +1,3 @@
+Significance: patch
+Type: fix
+Comment: This updates the ubuntu version and points to node file in github workflows.
