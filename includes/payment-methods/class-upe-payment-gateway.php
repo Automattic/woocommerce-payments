@@ -700,6 +700,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Generates the configuration values, needed for UPE payment fields.
+	 *
+	 * @deprecated 4.9.0
+	 *
+	 * @return array
+	 */
+	public function get_payment_fields_js_config() {
+		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_UPE_Checkout::get_payment_fields_js_config' );
+		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
+	}
+
+	/**
 	 * True if the request contains the values that indicates a redirection after a successful setup intent creation.
 	 *
 	 * @return bool
@@ -908,6 +920,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 		}
 		return $title;
+	}
+
+	/**
+	 * Gets payment method settings to pass to client scripts
+	 *
+	 * @deprecated 4.9.0
+	 *
+	 * @return array
+	 */
+	private function get_enabled_payment_method_config() {
+		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_UPE_Checkout::get_enabled_payment_method_config' );
+		return WC_Payments::get_wc_payments_checkout()->get_enabled_payment_method_config();
 	}
 
 	/**
