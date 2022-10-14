@@ -389,6 +389,8 @@ class WC_Payments {
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
+
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
 	}
 
 	/**
@@ -1195,6 +1197,18 @@ class WC_Payments {
 
 			new Platform_Checkout_Save_User();
 			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
+		}
+	}
+
+	/**
+	 * Load webpack runtime script, only if SCRIPT_DEBUG is enabled and the script exists.
+	 * Required for webpack server with HMR.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_dev_runtime_scripts() {
+		if ( ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) && file_exists( WCPAY_ABSPATH . 'dist/runtime.js' ) ) {
+			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
 	}
 }
