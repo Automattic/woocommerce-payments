@@ -1556,12 +1556,14 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'title'                => 'Credit card / debit card',
 					'upePaymentIntentData' => null,
 					'upeSetupIntentData'   => null,
+					'testingInstructions'  => '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">here</a>.',
 				],
 				'link' => [
 					'isReusable'           => true,
 					'title'                => 'Link',
 					'upePaymentIntentData' => null,
 					'upeSetupIntentData'   => null,
+					'testingInstructions'  => '',
 				],
 			]
 		);
