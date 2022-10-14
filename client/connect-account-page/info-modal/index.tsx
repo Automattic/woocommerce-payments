@@ -56,11 +56,7 @@ const OnboardingMoreInfoModal: React.FunctionComponent< Props > = ( {
 						status="warning"
 						isDismissible={ false }
 					>
-						<span>
-							<b>
-								{ strings.infoModal.businessOwnerInfo.heading }
-							</b>
-						</span>
+						<b>{ strings.infoModal.businessOwnerInfo.heading }</b>
 						<ul>
 							{ renderList(
 								strings.infoModal.businessOwnerInfo.fields
@@ -73,9 +69,7 @@ const OnboardingMoreInfoModal: React.FunctionComponent< Props > = ( {
 						status="warning"
 						isDismissible={ false }
 					>
-						<span>
-							<b>{ strings.infoModal.businessInfo.heading }</b>
-						</span>
+						<b>{ strings.infoModal.businessInfo.heading }</b>
 						<ul>
 							{ renderList(
 								strings.infoModal.businessInfo.fields

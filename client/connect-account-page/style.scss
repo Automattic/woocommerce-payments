@@ -127,16 +127,15 @@
 	}
 
 	.wcpay-connect-info-notice {
-		margin: 24px 0;
-		padding: 12px;
-		border-left: none;
+		margin: $gap-small 0 $gap-large;
+		padding: $gap;
 		font-size: 12px;
 		background-color: #fbf1fa;
 		color: $studio-gray-80;
 		display: flex;
 
 		img {
-			margin: $gap-small;
+			margin: 0 $gap 0 $gap-smallest;
 		}
 
 		a {

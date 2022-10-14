@@ -107,11 +107,9 @@ exports[`Onboarding: more info modal renders correctly when opened 1`] = `
           <div
             class="components-notice__content"
           >
-            <span>
-              <b>
-                Business owner info:
-              </b>
-            </span>
+            <b>
+              Business owner info:
+            </b>
             <ul>
               <li>
                 Legal name
@@ -143,11 +141,9 @@ exports[`Onboarding: more info modal renders correctly when opened 1`] = `
           <div
             class="components-notice__content"
           >
-            <span>
-              <b>
-                Business info:
-              </b>
-            </span>
+            <b>
+              Business info:
+            </b>
             <ul>
               <li>
                 Country where your business is based
