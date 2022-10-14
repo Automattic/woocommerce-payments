@@ -17,18 +17,15 @@ const CaptureAuthorizationButton = ( {
 	paymentIntentId,
 	buttonIsPrimary = false,
 	buttonIsSmall = true,
-	paymentIsCaptured = true,
 }: {
 	orderId: number;
 	paymentIntentId: string;
 	buttonIsPrimary?: boolean;
 	buttonIsSmall?: boolean;
-	paymentIsCaptured?: boolean; // TODO: remove when getAuthorization switches to live data.
 } ): JSX.Element => {
 	const { doCaptureAuthorization, isLoading } = useAuthorization(
 		paymentIntentId,
-		orderId,
-		paymentIsCaptured
+		orderId
 	);
 
 	return (

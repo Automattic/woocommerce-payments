@@ -3,12 +3,13 @@
 /**
  * External dependencies
  */
+import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
+import { apiFetch } from '@wordpress/data-controls';
 
 /**
  * Internal dependencies
  */
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
 import {
 	Authorization,
 	AuthorizationsSummary,
@@ -23,6 +24,7 @@ import {
 	getAuthorizations,
 	getAuthorizationsSummary,
 } from '../resolvers';
+import { NAMESPACE } from '../../constants';
 
 describe( 'getAuthorizations resolver', () => {
 	const query = { paged: '1', perPage: 25, orderBy: 'someKey' };
@@ -49,11 +51,11 @@ describe( 'getAuthorization resolver', () => {
 	const mockIsCaptured = false;
 	const mockCaptureBy = dateI18n(
 		'M j, Y / g:iA',
-		moment.utc( new Date() ).add( '7', 'days' ).local().toISOString() // TODO: remove when getAuthorization switches to live data.
+		moment.utc( new Date() ).add( '7', 'days' ).local().toISOString()
 	);
 
 	beforeEach( () => {
-		generator = getAuthorization( mockPaymentIntentId, mockIsCaptured );
+		generator = getAuthorization( mockPaymentIntentId );
 	} );
 
 	afterEach( () => {
@@ -61,6 +63,11 @@ describe( 'getAuthorization resolver', () => {
 	} );
 
 	test( 'should update state with authorization data', () => {
+		expect( generator.next().value ).toEqual(
+			apiFetch( {
+				path: `${ NAMESPACE }/authorizations/${ mockPaymentIntentId }`,
+			} )
+		);
 		expect( generator.next().value ).toEqual(
 			updateAuthorization( {
 				payment_intent_id: mockPaymentIntentId,

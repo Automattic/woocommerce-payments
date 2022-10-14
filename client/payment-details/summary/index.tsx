@@ -38,8 +38,6 @@ const placeholderValues = {
 	refunded: null,
 };
 
-const displayCaptureAuthorization = false;
-
 const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 	[
 		{
@@ -106,15 +104,9 @@ const PaymentDetailsSummary = ( {
 		: placeholderValues;
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
-	// TODO: remove when getAuthorization switches to live data.
-	let isCaptured = charge.captured;
-	if ( isCaptured === undefined ) {
-		isCaptured = charge.amount_captured >= charge.amount;
-	}
 	const { authorization } = useAuthorization(
-		charge.payment_intent || '',
-		charge.order?.number || 0,
-		isCaptured
+		charge.payment_intent,
+		charge.order?.number
 	);
 
 	return (
@@ -240,34 +232,31 @@ const PaymentDetailsSummary = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
-			{ displayCaptureAuthorization &&
-				authorization &&
-				! authorization.captured && (
-					<Loadable isLoading={ isLoading } placeholder="">
-						<CardFooter className="payment-details-capture-notice">
-							<div className="payment-details-capture-notice__section">
-								<div className="payment-details-capture-notice__text">
-									{ `${ __(
-										'You need to capture this charge before',
-										'woocommerce-payments'
-									) } ` }
-									<b>{ authorization.capture_by }</b>
-								</div>
-								<div className="payment-details-capture-notice__button">
-									<CaptureAuthorizationButton
-										orderId={ charge.order?.number || 0 }
-										paymentIntentId={
-											charge.payment_intent || ''
-										}
-										buttonIsPrimary={ true }
-										buttonIsSmall={ false }
-										paymentIsCaptured={ isCaptured }
-									/>
-								</div>
+			{ authorization && ! authorization.captured && (
+				<Loadable isLoading={ isLoading } placeholder="">
+					<CardFooter className="payment-details-capture-notice">
+						<div className="payment-details-capture-notice__section">
+							<div className="payment-details-capture-notice__text">
+								{ `${ __(
+									'You need to capture this charge before',
+									'woocommerce-payments'
+								) } ` }
+								<b>{ authorization.capture_by }</b>
 							</div>
-						</CardFooter>
-					</Loadable>
-				) }
+							<div className="payment-details-capture-notice__button">
+								<CaptureAuthorizationButton
+									orderId={ charge.order?.number || 0 }
+									paymentIntentId={
+										charge.payment_intent || ''
+									}
+									buttonIsPrimary={ true }
+									buttonIsSmall={ false }
+								/>
+							</div>
+						</div>
+					</CardFooter>
+				</Loadable>
+			) }
 		</Card>
 	);
 };

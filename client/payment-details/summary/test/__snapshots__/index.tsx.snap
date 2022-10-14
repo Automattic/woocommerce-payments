@@ -786,10 +786,6 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
         </p>
       </span>
     </div>
-    <span
-      aria-busy="true"
-      class="is-loadable-placeholder"
-    />
   </div>
 </div>
 `;

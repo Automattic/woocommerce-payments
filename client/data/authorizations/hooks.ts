@@ -48,9 +48,8 @@ export const useAuthorizationsSummary = ( {}: Query ): {
 	} );
 
 export const useAuthorization = (
-	paymentIntentId: string,
-	orderId: number,
-	isCaptured = true // TODO: remove when getAuthorization switches to live data.
+	paymentIntentId: string | null,
+	orderId?: number
 ): {
 	isLoading: boolean;
 	doCaptureAuthorization: () => void;
@@ -59,7 +58,7 @@ export const useAuthorization = (
 	const { authorization, isLoading } = useSelect( ( select ) => {
 		const { getAuthorization, isResolving } = select( STORE_NAME );
 		return {
-			authorization: getAuthorization( paymentIntentId, isCaptured ),
+			authorization: getAuthorization( paymentIntentId ),
 			isLoading: isResolving( 'getAuthorization', [ paymentIntentId ] ),
 		};
 	} );
