@@ -380,57 +380,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Add a new logo column on the right of "method" in the payment methods table.
-	 *
-	 * @param array $columns the columns in the "all payment methods" page.
-	 *
-	 * @deprecated 4.9.0
-	 *
-	 * @return array
-	 */
-	public function add_all_payment_methods_logos_column( $columns ) {
-		wc_deprecated_function( __FUNCTION__, '4.9.0' );
-		$logos  = [ 'logos' => '' ]; // Setting an ID for the column, but not a label.
-		$offset = array_search( 'name', array_keys( $columns ), true ) + 1;
-
-		return array_merge( array_slice( $columns, 0, $offset ), $logos, array_slice( $columns, $offset ) );
-	}
-
-	/**
-	 * Add a list of payment method logos to WooCommerce Payment in the logo column.
-	 *
-	 * @param WC_Payment_Gateway $gateway the current gateway iterated over to be displayed in the "all payment methods" page.
-	 *
-	 * @deprecated 4.9.0
-	 */
-	public function add_all_payment_methods_icon_logos( $gateway ) {
-		wc_deprecated_function( __FUNCTION__, '4.9.0' );
-		if ( 'woocommerce_payments' !== $gateway->id ) {
-			echo '<td class="logo"></td>';
-
-			return;
-		}
-
-		$icons = [
-			'visa',
-			'mastercard',
-			'amex',
-			'apple-pay',
-			'google-pay',
-		];
-
-		echo '<td class="logo">';
-		?>
-		<div>
-			<?php foreach ( $icons as $icon ) : ?>
-				<span class="payment-method__icon payment-method__brand payment-method__brand--<?php echo esc_attr( $icon ); ?>"/></span>
-			<?php endforeach; ?>
-		</div>
-		<?php
-		echo '</td>';
-	}
-
-	/**
 	 * Proceed with current request using new login session (to ensure consistent nonce).
 	 *
 	 * @param string $cookie New cookie value.
@@ -460,30 +409,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$account_status = $this->account->get_account_status_data();
 		return parent::needs_setup() || ! empty( $account_status['error'] ) || ! $account_status['paymentsEnabled'];
-	}
-
-	/**
-	 * Whether the current page is the WooCommerce Payments settings page.
-	 *
-	 * @deprecated 4.9.0
-	 *
-	 * @return bool
-	 */
-	public static function is_current_page_settings() {
-		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Admin_Settings::is_current_page_settings' );
-		return WC_Payments_Admin_Settings::is_current_page_settings();
-	}
-
-	/**
-	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 *
-	 * @deprecated 4.9.0
-	 *
-	 * @return string URL of the configuration screen for this gateway
-	 */
-	public static function get_settings_url() {
-		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Admin_Settings::get_settings_url' );
-		return WC_Payments_Admin_Settings::get_settings_url();
 	}
 
 	/**
@@ -620,21 +545,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Generates the configuration values, needed for payment fields.
-	 *
-	 * Isolated as a separate method in order to be available both
-	 * during the classic checkout, as well as the checkout block.
-	 *
-	 * @deprecated use WC_Payments_Checkout::get_payment_fields_js_config instead.
-	 *
-	 * @return array
-	 */
-	public function get_payment_fields_js_config() {
-		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Checkout::get_payment_fields_js_config' );
-		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-	}
-
-	/**
 	 * Registers all scripts, necessary for the gateway.
 	 */
 	public function register_scripts() {
@@ -710,20 +620,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
-	 * Customer data is retrieved from order when on Pay for Order.
-	 * Customer data is retrieved from customer when on 'Add Payment Method'.
-	 *
-	 * @deprecated use WC_Payments_Customer_Service::get_prepared_customer_data() instead.
-	 *
-	 * @return array|null An array with customer data or nothing.
-	 */
-	public function get_prepared_customer_data() {
-		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Customer_Service::get_prepared_customer_data' );
-		return WC_Payments::get_customer_service()->get_prepared_customer_data();
 	}
 
 	/**
@@ -3047,6 +2943,114 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 		return $field;
 	}
+
+	// Start: Deprecated functions.
+
+	/**
+	 * Add a new logo column on the right of "method" in the payment methods table.
+	 *
+	 * @param array $columns the columns in the "all payment methods" page.
+	 *
+	 * @deprecated 4.9.0
+	 *
+	 * @return array
+	 */
+	public function add_all_payment_methods_logos_column( $columns ) {
+		wc_deprecated_function( __FUNCTION__, '4.9.0' );
+		$logos  = [ 'logos' => '' ]; // Setting an ID for the column, but not a label.
+		$offset = array_search( 'name', array_keys( $columns ), true ) + 1;
+
+		return array_merge( array_slice( $columns, 0, $offset ), $logos, array_slice( $columns, $offset ) );
+	}
+
+	/**
+	 * Add a list of payment method logos to WooCommerce Payment in the logo column.
+	 *
+	 * @param WC_Payment_Gateway $gateway the current gateway iterated over to be displayed in the "all payment methods" page.
+	 *
+	 * @deprecated 4.9.0
+	 */
+	public function add_all_payment_methods_icon_logos( $gateway ) {
+		wc_deprecated_function( __FUNCTION__, '4.9.0' );
+		if ( 'woocommerce_payments' !== $gateway->id ) {
+			echo '<td class="logo"></td>';
+
+			return;
+		}
+
+		$icons = [
+			'visa',
+			'mastercard',
+			'amex',
+			'apple-pay',
+			'google-pay',
+		];
+
+		echo '<td class="logo">';
+		?>
+		<div>
+			<?php foreach ( $icons as $icon ) : ?>
+				<span class="payment-method__icon payment-method__brand payment-method__brand--<?php echo esc_attr( $icon ); ?>"/></span>
+			<?php endforeach; ?>
+		</div>
+		<?php
+		echo '</td>';
+	}
+
+	/**
+	 * Whether the current page is the WooCommerce Payments settings page.
+	 *
+	 * @deprecated 4.9.0
+	 *
+	 * @return bool
+	 */
+	public static function is_current_page_settings() {
+		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Admin_Settings::is_current_page_settings' );
+		return WC_Payments_Admin_Settings::is_current_page_settings();
+	}
+
+	/**
+	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 *
+	 * @deprecated 4.9.0
+	 *
+	 * @return string URL of the configuration screen for this gateway
+	 */
+	public static function get_settings_url() {
+		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Admin_Settings::get_settings_url' );
+		return WC_Payments_Admin_Settings::get_settings_url();
+	}
+
+	/**
+	 * Generates the configuration values, needed for payment fields.
+	 *
+	 * Isolated as a separate method in order to be available both
+	 * during the classic checkout, as well as the checkout block.
+	 *
+	 * @deprecated use WC_Payments_Checkout::get_payment_fields_js_config instead.
+	 *
+	 * @return array
+	 */
+	public function get_payment_fields_js_config() {
+		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Checkout::get_payment_fields_js_config' );
+		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
+	}
+
+	/**
+	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
+	 * Customer data is retrieved from order when on Pay for Order.
+	 * Customer data is retrieved from customer when on 'Add Payment Method'.
+	 *
+	 * @deprecated use WC_Payments_Customer_Service::get_prepared_customer_data() instead.
+	 *
+	 * @return array|null An array with customer data or nothing.
+	 */
+	public function get_prepared_customer_data() {
+		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Customer_Service::get_prepared_customer_data' );
+		return WC_Payments::get_customer_service()->get_prepared_customer_data();
+	}
+
+	// End: Deprecated functions.
 
 	/**
 	 * Determine if current payment method is a platform payment method.
