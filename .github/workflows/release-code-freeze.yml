@@ -77,7 +77,6 @@ jobs:
           git fetch --tags origin
           NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
           NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-2" | tail -1)
-          echo "NEXT_VERSION_TAG_FROM_WEEK_2: $NEXT_VERSION_TAG_FROM_WEEK_2"
           if [[ -z "$NEXT_VERSION_TAG_FROM_WEEK_2" ]]; then
             echo "Code freeze is not needed :x:" >> $GITHUB_STEP_SUMMARY
             echo "FREEZE=0" >> $GITHUB_OUTPUT
