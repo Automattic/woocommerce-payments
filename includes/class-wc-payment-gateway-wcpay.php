@@ -2947,57 +2947,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	// Start: Deprecated functions.
 
 	/**
-	 * Add a new logo column on the right of "method" in the payment methods table.
-	 *
-	 * @param array $columns the columns in the "all payment methods" page.
-	 *
-	 * @deprecated 4.9.0
-	 *
-	 * @return array
-	 */
-	public function add_all_payment_methods_logos_column( $columns ) {
-		wc_deprecated_function( __FUNCTION__, '4.9.0' );
-		$logos  = [ 'logos' => '' ]; // Setting an ID for the column, but not a label.
-		$offset = array_search( 'name', array_keys( $columns ), true ) + 1;
-
-		return array_merge( array_slice( $columns, 0, $offset ), $logos, array_slice( $columns, $offset ) );
-	}
-
-	/**
-	 * Add a list of payment method logos to WooCommerce Payment in the logo column.
-	 *
-	 * @param WC_Payment_Gateway $gateway the current gateway iterated over to be displayed in the "all payment methods" page.
-	 *
-	 * @deprecated 4.9.0
-	 */
-	public function add_all_payment_methods_icon_logos( $gateway ) {
-		wc_deprecated_function( __FUNCTION__, '4.9.0' );
-		if ( 'woocommerce_payments' !== $gateway->id ) {
-			echo '<td class="logo"></td>';
-
-			return;
-		}
-
-		$icons = [
-			'visa',
-			'mastercard',
-			'amex',
-			'apple-pay',
-			'google-pay',
-		];
-
-		echo '<td class="logo">';
-		?>
-		<div>
-			<?php foreach ( $icons as $icon ) : ?>
-				<span class="payment-method__icon payment-method__brand payment-method__brand--<?php echo esc_attr( $icon ); ?>"/></span>
-			<?php endforeach; ?>
-		</div>
-		<?php
-		echo '</td>';
-	}
-
-	/**
 	 * Whether the current page is the WooCommerce Payments settings page.
 	 *
 	 * @deprecated 4.9.0
