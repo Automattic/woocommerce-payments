@@ -15,6 +15,8 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
+        with:
+          node-version-file: '.nvmrc'
       # enable dependencies caching
       - uses: actions/cache@v2
         with:
@@ -45,6 +47,7 @@ jobs:
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          node-version-file: '.nvmrc'
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:

@@ -29,6 +29,8 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
+        with:
+          node-version-file: '.nvmrc'
       # enable dependencies caching
       - uses: actions/cache@v2
         with:
@@ -63,6 +65,8 @@ jobs:
     steps:
       # clone the repository
       - uses: actions/checkout@v2
+        with:
+          node-version-file: '.nvmrc'
       # enable dependencies caching
       - uses: actions/cache@v2
         with:
