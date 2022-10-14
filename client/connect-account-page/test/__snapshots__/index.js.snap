@@ -718,6 +718,31 @@ exports[`ConnectAccountPage should render correctly 1`] = `
             You’re only steps away from getting paid
           </h2>
           <div
+            class="wcpay-connect-info-notice"
+          >
+            <img
+              alt=""
+              src="[object Object]"
+            />
+            <div>
+              In order to receive payouts with 
+              <a
+                href="https://woocommerce.com/payments/"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                WooCommerce Payments
+              </a>
+              , you'll need to share business details to verify who you are.
+              <button
+                class="components-button"
+                type="button"
+              >
+                Learn more about how to receive payouts.
+              </button>
+            </div>
+          </div>
+          <div
             class="connect-page-onboarding-steps"
           >
             <div
