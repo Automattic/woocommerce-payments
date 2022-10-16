@@ -83,19 +83,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			];
 		}
 
-		// return array_merge(
-		// 	[
-		// 		'title'       => $this->gateway->get_option( 'title', '' ),
-		// 		'description' => $this->gateway->get_option( 'description', '' ),
-		// 		'is_admin'    => is_admin(), // Used to display payment method preview in wp-admin.
-		// 	],
-		// 	$platform_checkout_config,
-		// 	$this->gateway->get_payment_fields_js_config()
-		// );
-//harris TODO: revert this change after debugging
-		$config = $this->gateway->get_payment_fields_js_config();
-
-		$result = array_merge(
+		return array_merge(
 			[
 				'title'       => $this->gateway->get_option( 'title', '' ),
 				'description' => $this->gateway->get_option( 'description', '' ),
@@ -104,6 +92,5 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			$platform_checkout_config,
 			$this->gateway->get_payment_fields_js_config()
 		);
-		return $result;
 	}
 }

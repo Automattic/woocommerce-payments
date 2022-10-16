@@ -15,6 +15,7 @@ class WC_Payments_UPE_Blocks_Payment_Method extends WC_Payments_Blocks_Payment_M
 	 * @return string[] A list of script handles.
 	 */
 	public function get_payment_method_script_handles() {
+		$classic_blocks_scripts = parent::get_payment_method_script_handles();
 		wp_enqueue_style(
 			'wc-blocks-checkout-style',
 			plugins_url( 'dist/upe-blocks-checkout.css', WCPAY_PLUGIN_FILE ),
@@ -31,7 +32,7 @@ class WC_Payments_UPE_Blocks_Payment_Method extends WC_Payments_Blocks_Payment_M
 		);
 
 		wp_register_script(
-			'WCPAY_BLOCKS_CHECKOUT',
+			'WCPAY_BLOCKS_UPE_CHECKOUT',
 			plugins_url( 'dist/upe-blocks-checkout.js', WCPAY_PLUGIN_FILE ),
 			[ 'stripe' ],
 			'1.0.1',
@@ -39,6 +40,6 @@ class WC_Payments_UPE_Blocks_Payment_Method extends WC_Payments_Blocks_Payment_M
 		);
 		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
 
-		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
+		return array_merge( $classic_blocks_scripts, [ 'WCPAY_BLOCKS_UPE_CHECKOUT' ] );
 	}
 }

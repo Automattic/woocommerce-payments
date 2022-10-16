@@ -1068,6 +1068,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
+			if ( 'card' === $payment_method_id ) {
+				continue;
+			}
 			$payment_method                 = $this->wc_payments_get_payment_method_by_id( $payment_method_id );
 			$settings[ $payment_method_id ] = [
 				'isReusable'           => $payment_method->is_reusable(),
