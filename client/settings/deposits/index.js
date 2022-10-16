@@ -4,12 +4,14 @@
 import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import {
+	Button,
 	Card,
 	SelectControl,
 	ExternalLink,
 	Notice,
 	RadioControl,
 } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 import Gridicon from 'gridicons';
 
 /**
@@ -17,6 +19,7 @@ import Gridicon from 'gridicons';
  */
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
+import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import {
 	useDepositScheduleInterval,
 	useDepositScheduleWeeklyAnchor,
@@ -86,6 +89,10 @@ const CustomizeDepositSchedule = () => {
 		setDepositScheduleMonthlyAnchor,
 	] = useDepositScheduleMonthlyAnchor();
 
+	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
+		false
+	);
+
 	const handleIntervalChange = ( newInterval ) => {
 		switch ( newInterval ) {
 			case 'weekly':
@@ -100,7 +107,8 @@ const CustomizeDepositSchedule = () => {
 				);
 				break;
 			case 'manual':
-				break;
+				setIsConfirmationModalOpen( true );
+				return;
 			default:
 				newInterval = 'daily';
 		}
@@ -108,8 +116,56 @@ const CustomizeDepositSchedule = () => {
 		setDepositScheduleInterval( newInterval );
 	};
 
+	const handleModalClose = () => {
+		setIsConfirmationModalOpen( false );
+	};
+
+	const handleModalConfirmation = () => {
+		setDepositScheduleInterval( 'manual' );
+		setIsConfirmationModalOpen( false );
+	};
+
 	return (
 		<>
+			{ isConfirmationModalOpen && (
+				<ConfirmationModal
+					title={ __(
+						'Enable manual deposits',
+						'woocommerce-payments'
+					) }
+					actions={
+						<>
+							<Button onClick={ handleModalClose } isSecondary>
+								{ __( 'Cancel', 'woocommerce-payments' ) }
+							</Button>
+							<Button
+								onClick={ handleModalConfirmation }
+								isPrimary
+							>
+								{ __(
+									'Yes, enable manual deposits',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</>
+					}
+					onRequestClose={ handleModalClose }
+				>
+					<p>
+						{ __(
+							'Manual deposits must have at least a $5 balance and can only be initiated once every 24 hours.',
+							'woocommerce-payments'
+						) }
+					</p>
+					<p>
+						{ __(
+							'Are you sure you want to continue?',
+							'woocommerce-payments'
+						) }
+					</p>
+				</ConfirmationModal>
+			) }
+
 			<RadioControl
 				selected={
 					'manual' !== depositScheduleInterval
