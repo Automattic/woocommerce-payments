@@ -226,60 +226,57 @@ const ExpressCheckout = () => {
 										) }
 									</div>
 									<div className="express-checkout__description">
-										<p>
-											{
-												/* eslint-disable jsx-a11y/anchor-has-content */
-												interpolateComponents( {
-													mixedString: __(
-														'Link autofills your customers’ payment and shipping details to ' +
-															'deliver an easy and seamless checkout experience. ' +
-															'By enabling this feature, you agree to the ' +
-															'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
-															'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
-														'woocommerce-payments'
+										{
+											/* eslint-disable jsx-a11y/anchor-has-content */
+											interpolateComponents( {
+												mixedString: __(
+													'Link autofills your customers’ payment and shipping details to ' +
+														'deliver an easy and seamless checkout experience. ' +
+														'By enabling this feature, you agree to the ' +
+														'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
+														'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
+													'woocommerce-payments'
+												),
+												components: {
+													stripeLinkTerms: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://link.co/terms"
+														/>
 													),
-													components: {
-														stripeLinkTerms: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://link.co/terms"
-															/>
-														),
-														privacyPolicy: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://link.co/privacy"
-															/>
-														),
-													},
-												} )
-												/* eslint-enable jsx-a11y/anchor-has-content */
-											}
-										</p>
-										<p>
-											{
-												/* eslint-disable jsx-a11y/anchor-has-content */
-												interpolateComponents( {
-													mixedString: __(
-														'{{linkDocs}}Link docs support article.{{/linkDocs}}',
-														'woocommerce-payments'
+													privacyPolicy: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://link.co/privacy"
+														/>
 													),
-													components: {
-														linkDocs: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																/* eslint-disable-next-line max-len */
-																href="https://woocommerce.com/document/payments/woocommerce-payments-stripe-link/"
-															/>
-														),
-													},
-												} )
-												/* eslint-enable jsx-a11y/anchor-has-content */
-											}
-										</p>
+												},
+											} )
+											/* eslint-enable jsx-a11y/anchor-has-content */
+										}
+										<br />
+										{
+											/* eslint-disable jsx-a11y/anchor-has-content */
+											interpolateComponents( {
+												mixedString: __(
+													'{{linkDocs}}Link docs support article.{{/linkDocs}}',
+													'woocommerce-payments'
+												),
+												components: {
+													linkDocs: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															/* eslint-disable-next-line max-len */
+															href="https://woocommerce.com/document/payments/woocommerce-payments-stripe-link/"
+														/>
+													),
+												},
+											} )
+											/* eslint-enable jsx-a11y/anchor-has-content */
+										}
 									</div>
 								</div>
 							</div>
