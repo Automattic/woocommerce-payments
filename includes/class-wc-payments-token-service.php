@@ -60,17 +60,25 @@ class WC_Payments_Token_Service {
 		// Clear cached payment methods.
 		$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
 
-		if ( Payment_Method::SEPA === $payment_method['type'] ) {
-			$token = new WC_Payment_Token_WCPay_SEPA();
-			$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
-			$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
-		} else {
-			$token = new WC_Payment_Token_CC();
-			$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
-			$token->set_expiry_month( $payment_method[ Payment_Method::CARD ]['exp_month'] );
-			$token->set_expiry_year( $payment_method[ Payment_Method::CARD ]['exp_year'] );
-			$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['brand'] ) );
-			$token->set_last4( $payment_method[ Payment_Method::CARD ]['last4'] );
+		switch ( $payment_method['type'] ) {
+			case Payment_Method::SEPA:
+				$token = new WC_Payment_Token_WCPay_SEPA();
+				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+				$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
+				break;
+			case Payment_Method::LINK:
+				$token = new WC_Payment_Token_WCPay_Link();
+				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+				$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
+				break;
+			default:
+				$token = new WC_Payment_Token_CC();
+				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+				$token->set_expiry_month( $payment_method[ Payment_Method::CARD ]['exp_month'] );
+				$token->set_expiry_year( $payment_method[ Payment_Method::CARD ]['exp_year'] );
+				$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['brand'] ) );
+				$token->set_last4( $payment_method[ Payment_Method::CARD ]['last4'] );
+
 		}
 		$token->set_token( $payment_method['id'] );
 		$token->set_user_id( $user->ID );
