@@ -467,6 +467,7 @@ export const merchantWCP = {
 		await expect( page ).toClick(
 			'button.editor-post-publish-panel__toggle'
 		);
+		await page.waitFor( 500 );
 		await expect( page ).toClick( 'button.editor-post-publish-button' );
 		await page.waitForSelector(
 			'.components-snackbar__content',
