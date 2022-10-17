@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -27,6 +27,7 @@ import {
 	useDepositStatus,
 	useCompletedWaitingPeriod,
 } from '../../data';
+import { formatCurrency } from 'utils/currency';
 import './style.scss';
 
 const daysOfWeek = [
@@ -76,6 +77,17 @@ const monthlyAnchors = [
 ];
 
 const CustomizeDepositSchedule = () => {
+	const {
+		accountStatus: {
+			deposits: { minimum_deposit_amounts: minimumDepositAmounts },
+		},
+		storeCurrencies,
+	} = useContext( WCPaySettingsContext );
+
+	const defaultStoreCurrency = storeCurrencies.default || 'usd';
+	const minimumDepositAmount =
+		minimumDepositAmounts[ defaultStoreCurrency ] || 500;
+
 	const [
 		depositScheduleInterval,
 		setDepositScheduleInterval,
@@ -153,9 +165,15 @@ const CustomizeDepositSchedule = () => {
 					onRequestClose={ handleModalClose }
 				>
 					<p>
-						{ __(
-							'Manual deposits must have at least a $5 balance and can only be initiated once every 24 hours.',
-							'woocommerce-payments'
+						{ sprintf(
+							__(
+								'Manual deposits must have at least a %s balance and can only be initiated once every 24 hours.',
+								'woocommerce-payments'
+							),
+							formatCurrency(
+								minimumDepositAmount,
+								defaultStoreCurrency
+							)
 						) }
 					</p>
 					<p>
