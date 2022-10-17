@@ -65,6 +65,7 @@ class WC_Payments_API_Client {
 	const DOCUMENTS_API                = 'documents';
 	const VAT_API                      = 'vat';
 	const LINKS_API                    = 'links';
+	const AUTHORIZATIONS_API           = 'authorizations';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -2559,5 +2560,47 @@ class WC_Payments_API_Client {
 		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
 
 		return $customer_fingerprint_metadata;
+	}
+
+	/**
+	 * List authorizations
+	 *
+	 * @param int    $page       The requested page.
+	 * @param int    $page_size  The size of the requested page.
+	 * @param string $sort       The column to be used for sorting.
+	 * @param string $direction  The sorting direction.
+	 *
+	 * @return array
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function list_authorizations( int $page = 0, int $page_size = 25, string $sort = 'created', string $direction = 'desc' ) {
+		$query = [
+			'page'      => $page,
+			'pagesize'  => $page_size,
+			'sort'      => $sort,
+			'direction' => $direction,
+		];
+
+		return $this->request( $query, self::AUTHORIZATIONS_API, self::GET );
+	}
+
+	/**
+	 * Return summary for authorizations.
+	 *
+	 * @return array     The authorizations summary.
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_authorizations_summary() {
+		return $this->request( [], self::AUTHORIZATIONS_API . '/summary', self::GET );
+	}
+
+	/**
+	 * Fetch a single authorizations with provided payment intent id.
+	 *
+	 * @param string $payment_intent_id id of requested transaction.
+	 * @return array authorization object.
+	 */
+	public function get_authorization( string $payment_intent_id ) {
+		return $this->request( [], self::AUTHORIZATIONS_API . '/' . $payment_intent_id, self::GET );
 	}
 }
