@@ -13,6 +13,7 @@ import {
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
+import { handlePlatformCheckoutPopup } from '../platform-checkout/popup-window';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { isWCPayChosen } from '../utils/upe';
@@ -551,6 +552,6 @@ jQuery( function ( $ ) {
 	} );
 
 	if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
-		handlePlatformCheckoutEmailInput( '#billing_email', api );
+		handlePlatformCheckoutPopup( '#billing_email', api );
 	}
 } );
