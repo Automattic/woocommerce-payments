@@ -34,6 +34,11 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 	 * @return bool
 	 */
 	public static function should_display_note() {
+		// If UPE is not enabled, skip.
+		if ( ! \WC_Payments_Features::is_upe_enabled() ) {
+			return false;
+		}
+
 		// WCPay gateway instance.
 		$gateway = \WC_Payments::get_gateway();
 
