@@ -129,13 +129,14 @@ const CustomizeDepositSchedule = () => {
 		<>
 			{ isConfirmationModalOpen && (
 				<ConfirmationModal
+					className="manual-deposit-schedule-confirmation-modal"
 					title={ __(
 						'Enable manual deposits',
 						'woocommerce-payments'
 					) }
 					actions={
 						<>
-							<Button onClick={ handleModalClose } isSecondary>
+							<Button onClick={ handleModalClose } isLink>
 								{ __( 'Cancel', 'woocommerce-payments' ) }
 							</Button>
 							<Button
