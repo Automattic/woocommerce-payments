@@ -29,6 +29,13 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 	const NOTE_DOCUMENTATION_URL = 'https://woocommerce.com/document/payments/woocommerce-payments-stripe-link/';
 
 	/**
+	 * The account service instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private static $gateway;
+
+	/**
 	 * Checks if a note can and should be added.
 	 *
 	 * @return bool
@@ -39,18 +46,15 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 			return false;
 		}
 
-		// WCPay gateway instance.
-		$gateway = \WC_Payments::get_gateway();
-
 		// Check if Link payment is available.
-		$available_upe_payment_methods = $gateway->get_upe_available_payment_methods();
+		$available_upe_payment_methods = self::$gateway->get_upe_available_payment_methods();
 
 		if ( ! in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $available_upe_payment_methods, true ) ) {
 			return false;
 		}
 
 		// Retrieve enabled payment methods at checkout.
-		$enabled_payment_methods = $gateway->get_payment_method_ids_enabled_at_checkout( null, true );
+		$enabled_payment_methods = self::$gateway->get_payment_method_ids_enabled_at_checkout( null, true );
 
 		// If card payment method is not enabled, skip.
 		if ( ! in_array( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) ) {
@@ -91,5 +95,14 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 		);
 
 		return $note;
+	}
+
+	/**
+	 * Sets the WCPay gateway instance reference on the class.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway instance.
+	 */
+	public static function set_gateway( WC_Payment_Gateway_WCPay $gateway ) {
+		self::$gateway = $gateway;
 	}
 }

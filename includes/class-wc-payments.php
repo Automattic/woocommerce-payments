@@ -931,6 +931,7 @@ class WC_Payments {
 			WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
+			WC_Payments_Notes_Set_Up_StripeLink::set_gateway( self::get_gateway() );
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_add_note();
 		}
 	}
