@@ -233,6 +233,7 @@ const ExpressCheckout = () => {
 											mixedString: __(
 												'Link autofills your customers’ payment and shipping details to ' +
 													'deliver an easy and seamless checkout experience. ' +
+													'New payment experience (UPE) needs to be enabled for Link. ' +
 													'By enabling this feature, you agree to the ' +
 													'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
 													'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
