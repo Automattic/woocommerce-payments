@@ -211,7 +211,10 @@ const ExpressCheckout = () => {
 						<li className="express-checkout has-icon-border">
 							<div className="express-checkout__checkbox loadable-checkbox label-hidden">
 								<CheckboxControl
-									label={ 'Link by Stripe' }
+									label={ __(
+										'Link by Stripe',
+										'woocommerce-payments'
+									) }
 									checked={ isStripeLinkEnabled }
 									onChange={ updateStripeLinkCheckout }
 								/>
