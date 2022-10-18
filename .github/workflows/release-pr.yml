@@ -70,7 +70,7 @@ jobs:
           
       - name: Bump version
         env:
-          TAG_NAME: ${{ steps.tag_format_check.outputs.tag-name }}
+          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
           RELEASE_DATE: ${{ steps.define_var.outputs.RELEASE_DATE }}
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
         run: |
@@ -90,7 +90,7 @@ jobs:
       
       - name: Commit changes
         env:
-          TAG_NAME: ${{ steps.tag_format_check.outputs.tag-name }}
+          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
           BRANCH_NAME: ${{ steps.create_branch_tag.outputs.branch-name }}
         run: |
           npm install # To update package-lock.json with the new version of the plugin
@@ -102,7 +102,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_NAME: ${{ steps.create_branch_tag.outputs.branch-name }}
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
-          TAG_NAME: ${{ steps.tag_format_check.outputs.tag-name }}
+          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
         run: |
           PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command: \` git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \`\n\`\`\`\n${CHANGELOG}\n\`\`\`")
           gh pr create --title "Release branch for $TAG_NAME" --body="$PR_BODY" --base="trunk"
