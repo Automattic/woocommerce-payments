@@ -27,8 +27,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-#        with:
-#          ref: 'develop'
+        with:
+          ref: 'develop'
     
       - name: Get current version
         id: current-version

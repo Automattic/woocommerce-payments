@@ -42,8 +42,6 @@ jobs:
     steps:
       - name: Checkout WCPay repository
         uses: actions/checkout@v3
-#        with:
-#          ref: 'develop'
 
       - name: Create a release branch and tag
         id: create_branch_tag

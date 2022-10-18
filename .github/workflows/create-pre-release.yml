@@ -26,8 +26,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-#        with:
-#          ref: 'develop'
+        with:
+          ref: 'develop'
         
       - name: Create a testing branch and tag
         id: create_branch_tag
