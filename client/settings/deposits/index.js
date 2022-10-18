@@ -4,7 +4,6 @@
 import React, { useContext } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import {
-	Button,
 	Card,
 	SelectControl,
 	ExternalLink,
@@ -19,7 +18,6 @@ import Gridicon from 'gridicons';
  */
 import WCPaySettingsContext from '../wcpay-settings-context';
 import CardBody from '../card-body';
-import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import {
 	useDepositScheduleInterval,
 	useDepositScheduleWeeklyAnchor,
@@ -86,7 +84,7 @@ const CustomizeDepositSchedule = () => {
 
 	const defaultStoreCurrency = storeCurrencies.default || 'usd';
 	const minimumDepositAmount =
-		minimumDepositAmounts[ defaultStoreCurrency ] || 500;
+		minimumDepositAmounts?.[ defaultStoreCurrency ] || 500;
 
 	const [
 		depositScheduleInterval,
@@ -101,8 +99,8 @@ const CustomizeDepositSchedule = () => {
 		setDepositScheduleMonthlyAnchor,
 	] = useDepositScheduleMonthlyAnchor();
 
-	const [ isConfirmationModalOpen, setIsConfirmationModalOpen ] = useState(
-		false
+	const [ automaticDepositSchedule, setAutomaticDepositSchedule ] = useState(
+		'manual' === depositScheduleInterval ? 'daily' : depositScheduleInterval
 	);
 
 	const handleIntervalChange = ( newInterval ) => {
@@ -118,77 +116,34 @@ const CustomizeDepositSchedule = () => {
 					depositScheduleMonthlyAnchor || '1'
 				);
 				break;
+			case 'automatic':
 			case 'manual':
-				setIsConfirmationModalOpen( true );
-				return;
+				break;
 			default:
 				newInterval = 'daily';
 		}
 
+		if ( 'automatic' === newInterval ) {
+			newInterval = automaticDepositSchedule;
+		}
+
 		setDepositScheduleInterval( newInterval );
+		if (
+			'manual' !== newInterval &&
+			newInterval !== automaticDepositSchedule
+		) {
+			setAutomaticDepositSchedule( newInterval );
+		}
 	};
 
-	const handleModalClose = () => {
-		setIsConfirmationModalOpen( false );
-	};
-
-	const handleModalConfirmation = () => {
-		setDepositScheduleInterval( 'manual' );
-		setIsConfirmationModalOpen( false );
-	};
+	const automaticControlsDisabled = 'manual' === depositScheduleInterval;
 
 	return (
 		<>
-			{ isConfirmationModalOpen && (
-				<ConfirmationModal
-					className="manual-deposit-schedule-confirmation-modal"
-					title={ __(
-						'Enable manual deposits',
-						'woocommerce-payments'
-					) }
-					actions={
-						<>
-							<Button onClick={ handleModalClose } isLink>
-								{ __( 'Cancel', 'woocommerce-payments' ) }
-							</Button>
-							<Button
-								onClick={ handleModalConfirmation }
-								isPrimary
-							>
-								{ __(
-									'Yes, enable manual deposits',
-									'woocommerce-payments'
-								) }
-							</Button>
-						</>
-					}
-					onRequestClose={ handleModalClose }
-				>
-					<p>
-						{ sprintf(
-							__(
-								'Manual deposits must have at least a %s balance and can only be initiated once every 24 hours.',
-								'woocommerce-payments'
-							),
-							formatCurrency(
-								minimumDepositAmount,
-								defaultStoreCurrency
-							)
-						) }
-					</p>
-					<p>
-						{ __(
-							'Are you sure you want to continue?',
-							'woocommerce-payments'
-						) }
-					</p>
-				</ConfirmationModal>
-			) }
-
 			<RadioControl
 				selected={
 					'manual' !== depositScheduleInterval
-						? ''
+						? 'automatic'
 						: depositScheduleInterval
 				}
 				onChange={ handleIntervalChange }
@@ -198,77 +153,69 @@ const CustomizeDepositSchedule = () => {
 							'Automatic deposits',
 							'woocommerce-payments'
 						),
-						value: '',
+						value: 'automatic',
 					},
 				] }
 			/>
-			{ 'manual' !== depositScheduleInterval && (
-				<div className="schedule-sub-radio">
-					<div className="schedule-controls">
+			<div className="schedule-sub-radio">
+				<div className="schedule-controls">
+					<SelectControl
+						disabled={ automaticControlsDisabled }
+						label={ __( 'Frequency', 'woocommerce-payments' ) }
+						value={ automaticDepositSchedule }
+						onChange={ handleIntervalChange }
+						options={ [
+							{
+								value: 'daily',
+								label: __( 'Daily', 'woocommerce-payments' ),
+							},
+							{
+								value: 'weekly',
+								label: __( 'Weekly', 'woocommerce-payments' ),
+							},
+							{
+								value: 'monthly',
+								label: __( 'Monthly', 'woocommerce-payments' ),
+							},
+						] }
+					/>
+					{ 'monthly' === automaticDepositSchedule && (
 						<SelectControl
-							label={ __( 'Frequency', 'woocommerce-payments' ) }
-							value={ depositScheduleInterval }
-							onChange={ handleIntervalChange }
-							options={ [
-								{
-									value: 'daily',
-									label: __(
-										'Daily',
-										'woocommerce-payments'
-									),
-								},
-								{
-									value: 'weekly',
-									label: __(
-										'Weekly',
-										'woocommerce-payments'
-									),
-								},
-								{
-									value: 'monthly',
-									label: __(
-										'Monthly',
-										'woocommerce-payments'
-									),
-								},
-							] }
+							disabled={ automaticControlsDisabled }
+							label={ __( 'Date', 'woocommerce-payments' ) }
+							value={ depositScheduleMonthlyAnchor }
+							onChange={ setDepositScheduleMonthlyAnchor }
+							options={ monthlyAnchors }
 						/>
-						{ 'monthly' === depositScheduleInterval && (
-							<SelectControl
-								label={ __( 'Date', 'woocommerce-payments' ) }
-								value={ depositScheduleMonthlyAnchor }
-								onChange={ setDepositScheduleMonthlyAnchor }
-								options={ monthlyAnchors }
-							/>
-						) }
-						{ 'weekly' === depositScheduleInterval && (
-							<SelectControl
-								label={ __( 'Day', 'woocommerce-payments' ) }
-								value={ depositScheduleWeeklyAnchor }
-								onChange={ setDepositScheduleWeeklyAnchor }
-								options={ daysOfWeek }
-							/>
-						) }
-					</div>
-					<p className="help-text">
-						{ 'monthly' === depositScheduleInterval &&
-							__(
-								'Deposits scheduled on a weekend will be sent on the next business day.',
-								'woocommerce-payments'
-							) }
-						{ 'weekly' === depositScheduleInterval &&
-							__(
-								'Deposits that fall on a holiday will initiate on the next business day.',
-								'woocommerce-payments'
-							) }
-						{ 'daily' === depositScheduleInterval &&
-							__(
-								'Deposits will occur every business day.',
-								'woocommerce-payments'
-							) }
-					</p>
+					) }
+					{ 'weekly' === automaticDepositSchedule && (
+						<SelectControl
+							disabled={ automaticControlsDisabled }
+							label={ __( 'Day', 'woocommerce-payments' ) }
+							value={ depositScheduleWeeklyAnchor }
+							onChange={ setDepositScheduleWeeklyAnchor }
+							options={ daysOfWeek }
+						/>
+					) }
 				</div>
-			) }
+				<p className="help-text">
+					{ 'monthly' === automaticDepositSchedule &&
+						__(
+							'Deposits scheduled on a weekend will be sent on the next business day.',
+							'woocommerce-payments'
+						) }
+					{ 'weekly' === automaticDepositSchedule &&
+						__(
+							'Deposits that fall on a holiday will initiate on the next business day.',
+							'woocommerce-payments'
+						) }
+					{ 'daily' === automaticDepositSchedule &&
+						__(
+							'Deposits will occur every business day.',
+							'woocommerce-payments'
+						) }
+				</p>
+			</div>
 			<RadioControl
 				className="schedule-manual-radio"
 				selected={ depositScheduleInterval }
@@ -279,9 +226,12 @@ const CustomizeDepositSchedule = () => {
 						value: 'manual',
 					},
 				] }
-				help={ __(
-					'Initiate a deposit at any time from the Payments dashboard.',
-					'woocommerce-payments'
+				help={ sprintf(
+					__(
+						'You can create deposits from the Payments Overview once per day, with a minimum available balance of %s.',
+						'woocommerce-payments'
+					),
+					formatCurrency( minimumDepositAmount, defaultStoreCurrency )
 				) }
 			/>
 		</>

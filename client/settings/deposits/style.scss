@@ -23,8 +23,12 @@
 	}
 	.help-text {
 		color: #757575;
-		margin-top: 0;
+		font-size: 12px;
 		margin-bottom: 1em;
+		margin-top: 0;
+	}
+	.components-base-control__help {
+		font-size: 12px;
 	}
 	&__notice > div {
 		align-items: center;
@@ -45,15 +49,5 @@
 		.components-base-control__help {
 			margin-left: 26px;
 		}
-	}
-}
-
-.manual-deposit-schedule-confirmation-modal {
-	p {
-		margin: 8px 0;
-	}
-
-	button.is-link {
-		text-decoration: none;
 	}
 }
