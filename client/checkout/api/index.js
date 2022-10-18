@@ -644,6 +644,15 @@ export default class WCPayAPI {
 		);
 	}
 
+	initPlatformCheckoutSimple() {
+		return this.request(
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_platform_checkout' ),
+			{
+				_wpnonce: getConfig( 'initPlatformCheckoutNonce' ),
+			}
+		);
+	}
+
 	paymentRequestPayForOrder( order, paymentData ) {
 		return this.request( getPaymentRequestAjaxURL( 'pay_for_order' ), {
 			_wpnonce: getPaymentRequestData( 'nonce' )?.pay_for_order,

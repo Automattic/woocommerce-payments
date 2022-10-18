@@ -34,26 +34,21 @@ export const handlePlatformCheckoutPopup = async ( field, api ) => {
 
 	// add button for express checkout
 	const openPopup = () => {
-		// api.initPlatformCheckout(
-		// 	platformCheckoutEmailInput.value,
-		// 	e.data.platformCheckoutUserSession
-		// ).then( ( response ) => {
-		// 	if ( 'success' === response.result ) {
-		// 		window.location = response.url;
-		// 	} else {
-		// 		showErrorMessage();
-		// 		closeIframe( false );
-		// 	}
-		// } );
+		api.initPlatformCheckoutSimple().then( ( response ) => {
+			if ( 'success' === response.result ) {
+				const popupUrl = response.url;
+				const { top, left } = getPopupPosition();
+				window.open(
+					popupUrl,
+					'wooPayPopup',
+					`popup,width=1000,height=700,top=${ top },left=${ left }`
+				);
+			} else {
+				alert('Failed response');
+			}
+		} );
 
-		const popupUrl = `${ getConfig( 'platformCheckoutHost' ) }/woopay`;
-		const { top, left } = getPopupPosition();
-		console.log( "top", top, "left", left );
-		window.open(
-			popupUrl,
-			'wooPayPopup',
-			`popup,width=1000,height=700,top=${ top },left=${ left }`
-		);
+
 	};
 
 	const wooPayButton = document.createElement( 'button' );
