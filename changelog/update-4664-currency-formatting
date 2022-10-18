@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Update formatCurrency to decode HTML entities for rendering currency symbols.
