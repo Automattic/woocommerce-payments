@@ -15,10 +15,10 @@ import moment from 'moment';
  */
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
-import { RiskLevel } from 'wcpay/types/authorizations';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
-import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'utils/currency';
+import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 
 interface Column extends TableCardColumn {
 	key:
@@ -116,35 +116,10 @@ export const AuthorizationsList = (): JSX.Element => {
 	} = useAuthorizationsSummary( getQuery() );
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
-	
-	const getRiskColor = ( risk: RiskLevel ) => {
-		switch ( risk ) {
-			case 'high':
-				return 'crimson';
-			case 'normal':
-				return 'green';
-			case 'elevated':
-				return 'darkorange';
-		}
-	};
-
-	const getRiskLevelFromRiskScore = ( risk: number ): RiskLevel => {
-		if ( risk < 20 ) {
-			return 'normal';
-		}
-
-		if ( risk < 70 ) {
-			return 'high';
-		}
-
-		return 'elevated';
-	};
 
 	const rows = authorizations.map( ( auth ) => {
 		const stringAmount = String( auth.amount );
-		const riskLevelForAuthorization = getRiskLevelFromRiskScore(
-			auth.risk_level
-		);
+		const riskLevel = <RiskLevel risk={ auth.risk_level } />;
 		const detailsURL = getDetailsURL(
 			auth.payment_intent_id,
 			'transactions'
@@ -156,13 +131,23 @@ export const AuthorizationsList = (): JSX.Element => {
 
 		const data = {
 			authorization_id: {
-				value: auth.charge_id,
-				display: auth.charge_id,
+				// The authorization id is not exposed. Using the payment intent id as unique identifier
+				value: auth.payment_intent_id,
+				display: auth.payment_intent_id,
 			},
 			authorized_on: {
-				value: auth.created,
-				display: clickable( auth.created ),
+				value: dateI18n(
+					'M j, Y / g:iA',
+					moment.utc( auth.created ).local().toISOString()
+				),
+				display: clickable(
+					dateI18n(
+						'M j, Y / g:iA',
+						moment.utc( auth.created ).local().toISOString()
+					)
+				),
 			},
+			// Payments are authorized for a maximum of 7 days
 			capture_by: {
 				value: dateI18n(
 					'M j, Y / g:iA',
@@ -190,17 +175,8 @@ export const AuthorizationsList = (): JSX.Element => {
 				),
 			},
 			risk_level: {
-				value: riskLevelForAuthorization,
-				display: clickable(
-					<span
-						style={ {
-							color: getRiskColor( riskLevelForAuthorization ),
-						} }
-					>
-						{ riskLevelForAuthorization.charAt( 0 ).toUpperCase() +
-							riskLevelForAuthorization.slice( 1 ) }
-					</span>
-				),
+				value: calculateRiskMapping( auth.risk_level ),
+				display: clickable( riskLevel ),
 			},
 			amount: {
 				value: auth.amount,
