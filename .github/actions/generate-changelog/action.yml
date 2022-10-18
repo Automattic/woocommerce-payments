@@ -3,10 +3,10 @@ description: Generate the changelog from the version provided
 
 inputs:
   release-version:
-    description: "The release version for which the action should generate the changelog"
+    description: "The release version for which the action should generate the changelog (e.g. 4.5.0)"
     required: true
   release-date:
-    description: "The release date for which the action should generate the changelog (default: unreleased)"
+    description: "The release date (format: YYYY-MM-DD) for which the action should generate the changelog (default: unreleased)"
     required: false
     default: "unreleased"
     

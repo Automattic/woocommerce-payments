@@ -40,8 +40,10 @@ jobs:
         
       - name: Define variables
         id: define_var
+        env: 
+          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
         run: |
-          echo "RELEASE_VERSION=$( sed -E 's/^([^-]+)-.*/\1/' <<< $TAG_NAME )" >> $GITHUB_OUTPUT
+          echo "RELEASE_VERSION=$( sed -E 's/^([^-]+)-.*/\1/' <<< TAG_NAME )" >> $GITHUB_OUTPUT
 
       - name: Generate the changelog
         id: generate_changelog
@@ -50,6 +52,8 @@ jobs:
           release-version: ${{ steps.define_var.outputs.RELEASE_VERSION }}
           
       - name: Bump version header
+        env:
+          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
         run: |
           sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
       
@@ -59,8 +63,9 @@ jobs:
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_MESSAGE: ${{ steps.create_branch_tag.outputs.tag-message }}
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
+          TAG_MESSAGE: ${{ steps.create_branch_tag.outputs.tag-message }}
+          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
         run: |
           RELEASE_NOTES=$(echo -e "${CHANGELOG}")
           gh release create $TAG_NAME --notes "$RELEASE_NOTES" --title "$TAG_MESSAGE" --target "develop" "--prerelease" $RELEASE_FILENAME
@@ -68,6 +73,7 @@ jobs:
       - name: Trigger translations update on GlotPress
         env:
           GLOTPRESS_IMPORT_URL: ${{ secrets.GLOTPRESS_IMPORT_URL }}
+          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
         run: |
           echo "Triggering translations update on GlotPress..."
 
