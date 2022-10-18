@@ -116,10 +116,7 @@ export const AuthorizationsList = (): JSX.Element => {
 	} = useAuthorizationsSummary( getQuery() );
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
-
-	console.log( 'auths', authorizations );
-	console.log( 'summ', authorizationsSummary );
-
+	
 	const getRiskColor = ( risk: RiskLevel ) => {
 		switch ( risk ) {
 			case 'high':
@@ -222,7 +219,10 @@ export const AuthorizationsList = (): JSX.Element => {
 		};
 
 		return columnsToDisplay.map(
-			( { key } ) => data[ key ] || { display: null }
+			( { key } ) =>
+				data[ key ] || {
+					display: null,
+				}
 		);
 	} );
 

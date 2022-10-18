@@ -65,6 +65,5 @@ const getAuthorizationsSummaryForQuery = (state: Record<string, any>, query: Que
 };
 
 export const getAuthorizationsSummary = (state: Record<string, any>, query: Query): AuthorizationsSummary => {
-	console.log('summary', state);
 	return getAuthorizationsSummaryForQuery( state, query ).data || {};
 };
