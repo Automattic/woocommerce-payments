@@ -3,7 +3,7 @@ description: Create a branch and a tag from the version provided
 
 inputs:
   tag-name:
-    description: "The tag name that the action should use to determine which branch and tag it should create"
+    description: "The tag name that the action should use to determine which branch and tag it should create (e.g. 4.5.0 or 4.5.0-test-2)"
     required: true
     
 outputs: 
@@ -17,7 +17,18 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Create a branch and tag
+    - name: "Check the format of the tag"
+      shell: bash
+      env:
+        TAG_NAME: ${{ inputs.tag-name }}
+      run: |
+        TAG_FORMAT=/^[0-9]\.[0-9]\.[0-9](-test-[1-3])*$/
+        TRIMMED_TAG_NAME=$(echo "$TAG_NAME" | xargs)
+        if ! [[ $TRIMMED_TAG_NAME =~ TAG_FORMAT ]]; then
+          echo "::error::The tag name provided doesn't respect the format (tag name: $TAG_NAME)."
+          exit 1
+        fi
+    - name: "Create a branch and tag"
       id: create_branch_tag
       shell: bash
       env:
@@ -30,7 +41,6 @@ runs:
           TAG_MESSAGE="Version for testing $TAG_NAME. Not for Production"
         else
           echo ":rocket: Created a release branch and tag. :rocket:" >> $GITHUB_STEP_SUMMARY
-
           BRANCH_NAME="release/$TAG_NAME"
           TAG_MESSAGE="Version $TAG_NAME"
         fi
