@@ -924,11 +924,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return string[]
 	 */
 	public function get_payment_method_ids_enabled_at_checkout( $order_id = null, $force_currency_check = false ) {
-		$automatic_capture          = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
-		$capturable_payment_methods = $automatic_capture ? $this->get_upe_enabled_payment_method_ids() : [ Payment_Method::CARD, Payment_Method::LINK ];
-		$enabled_payment_methods    = [];
-		$active_payment_methods     = $this->get_upe_enabled_payment_method_statuses();
-		foreach ( $capturable_payment_methods as $payment_method_id ) {
+		$automatic_capture = empty( $this->get_option( 'manual_capture' ) ) || $this->get_option( 'manual_capture' ) === 'no';
+		if ( $automatic_capture ) {
+			$upe_enabled_payment_methods = $this->get_upe_enabled_payment_method_ids();
+		} else {
+			$upe_enabled_payment_methods = array_intersect( $this->get_upe_enabled_payment_method_ids(), [ Payment_Method::CARD, Payment_Method::LINK ] );
+		}
+
+		$enabled_payment_methods = [];
+		$active_payment_methods  = $this->get_upe_enabled_payment_method_statuses();
+		foreach ( $upe_enabled_payment_methods as $payment_method_id ) {
 			$payment_method_capability_key = $this->payment_method_capability_key_map[ $payment_method_id ] ?? 'undefined_capability_key';
 			if ( isset( $this->payment_methods[ $payment_method_id ] ) ) {
 				// When creating a payment intent, we need to ensure the currency is matching
