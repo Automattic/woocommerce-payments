@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Update priority for Multi-Currency filters for prices and currency to later priority to avoid plugin conflicts.
