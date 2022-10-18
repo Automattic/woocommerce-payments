@@ -7,6 +7,8 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -14,6 +16,9 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
 import { RiskLevel } from 'wcpay/types/authorizations';
+import { getDetailsURL } from 'components/details-link';
+import ClickableCell from 'components/clickable-cell';
+import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 
 interface Column extends TableCardColumn {
 	key:
@@ -112,6 +117,9 @@ export const AuthorizationsList = (): JSX.Element => {
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
+	console.log( 'auths', authorizations );
+	console.log( 'summ', authorizationsSummary );
+
 	const getRiskColor = ( risk: RiskLevel ) => {
 		switch ( risk ) {
 			case 'high':
@@ -123,50 +131,93 @@ export const AuthorizationsList = (): JSX.Element => {
 		}
 	};
 
+	const getRiskLevelFromRiskScore = ( risk: number ): RiskLevel => {
+		if ( risk < 20 ) {
+			return 'normal';
+		}
+
+		if ( risk < 70 ) {
+			return 'high';
+		}
+
+		return 'elevated';
+	};
+
 	const rows = authorizations.map( ( auth ) => {
 		const stringAmount = String( auth.amount );
+		const riskLevelForAuthorization = getRiskLevelFromRiskScore(
+			auth.risk_level
+		);
+		const detailsURL = getDetailsURL(
+			auth.payment_intent_id,
+			'transactions'
+		);
+
+		const clickable = ( children: JSX.Element | string ) => (
+			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
+		);
 
 		const data = {
 			authorization_id: {
-				value: auth.authorization_id,
-				display: auth.authorization_id,
+				value: auth.charge_id,
+				display: auth.charge_id,
 			},
 			authorized_on: {
-				value: auth.authorized_on,
-				display: auth.authorized_on,
+				value: auth.created,
+				display: clickable( auth.created ),
 			},
 			capture_by: {
-				value: auth.capture_by,
-				display: auth.capture_by,
+				value: dateI18n(
+					'M j, Y / g:iA',
+					moment
+						.utc( auth.created )
+						.add( 7, 'd' )
+						.local()
+						.toISOString()
+				),
+				display: clickable(
+					dateI18n(
+						'M j, Y / g:iA',
+						moment
+							.utc( auth.created )
+							.add( 7, 'd' )
+							.local()
+							.toISOString()
+					)
+				),
 			},
 			order: {
-				value: auth.order.number,
-				display: (
-					<a
-						href={ auth.order.url }
-					>{ `#${ auth.order.number } from ${ auth.customer_name }` }</a>
+				value: auth.order_id,
+				display: clickable(
+					`#${ auth.order_id } from ${ auth.customer_name }`
 				),
 			},
 			risk_level: {
-				value: auth.risk_level,
-				display: (
-					<span style={ { color: getRiskColor( auth.risk_level ) } }>
-						{ auth.risk_level.charAt( 0 ).toUpperCase() +
-							auth.risk_level.slice( 1 ) }
+				value: riskLevelForAuthorization,
+				display: clickable(
+					<span
+						style={ {
+							color: getRiskColor( riskLevelForAuthorization ),
+						} }
+					>
+						{ riskLevelForAuthorization.charAt( 0 ).toUpperCase() +
+							riskLevelForAuthorization.slice( 1 ) }
 					</span>
 				),
 			},
 			amount: {
 				value: auth.amount,
-				display: getFormatedAmountFromString( stringAmount ),
+				display: clickable(
+					getFormatedAmountFromString( stringAmount )
+				),
 			},
 			customer_email: {
 				value: auth.customer_email,
-				display: auth.customer_email,
+				display: clickable( auth.customer_email ),
 			},
 			customer_country: {
 				value: auth.customer_country,
-				display: auth.customer_country,
+				display: clickable( auth.customer_country ),
 			},
 		};
 
@@ -180,27 +231,25 @@ export const AuthorizationsList = (): JSX.Element => {
 	const isAuthorizationsSummaryLoaded =
 		authorizationsSummary.count !== undefined &&
 		authorizationsSummary.total !== undefined &&
-		authorizationsSummary.totalAmount !== undefined &&
 		false === isSummaryLoading;
+	const totalRows = authorizationsSummary.count || 0;
 
 	if ( isAuthorizationsSummaryLoaded ) {
 		summary = [
 			{
+				label: __( 'authorization(s)', 'woocommerce-payments' ),
 				value: String( authorizationsSummary.count ),
-				label: 'authorizations',
 			},
 		];
 
 		summary.push( {
-			value: String( authorizationsSummary.total ),
-			label: 'total',
-		} );
-
-		summary.push( {
-			value: getFormatedAmountFromString(
-				String( authorizationsSummary.totalAmount )
-			),
-			label: 'Pending',
+			label: __( 'total', 'woocommerce-payments' ),
+			value: `${ formatExplicitCurrency(
+				// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
+				// that so we remove the `undefined` in the type manually.
+				authorizationsSummary.total as number,
+				authorizationsSummary.currency
+			) }`,
 		} );
 	}
 
@@ -213,8 +262,8 @@ export const AuthorizationsList = (): JSX.Element => {
 					'woocommerce-payments'
 				) }
 				isLoading={ isLoading || isSummaryLoading }
-				rowsPerPage={ 10 }
-				totalRows={ 2 }
+				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
+				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
