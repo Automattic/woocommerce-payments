@@ -160,9 +160,7 @@ describe( 'Deposits', () => {
 		within( frequencySelect ).getByRole( 'option', { name: /Weekly/ } );
 		within( frequencySelect ).getByRole( 'option', { name: /Monthly/ } );
 
-		const automaticDepositsRadio = screen.getByLabelText(
-			/Automatic deposits/
-		);
+		const automaticDepositsRadio = screen.getByLabelText( /Automatic/ );
 		expect( automaticDepositsRadio ).toBeChecked();
 	} );
 
@@ -199,9 +197,7 @@ describe( 'Deposits', () => {
 			} );
 		}
 
-		const automaticDepositsRadio = screen.getByLabelText(
-			/Automatic deposits/
-		);
+		const automaticDepositsRadio = screen.getByLabelText( /Automatic/ );
 		expect( automaticDepositsRadio ).toBeChecked();
 	} );
 
@@ -228,9 +224,7 @@ describe( 'Deposits', () => {
 			} );
 		}
 
-		const automaticDepositsRadio = screen.getByLabelText(
-			/Automatic deposits/
-		);
+		const automaticDepositsRadio = screen.getByLabelText( /Automatic/ );
 		expect( automaticDepositsRadio ).toBeChecked();
 	} );
 
@@ -241,10 +235,10 @@ describe( 'Deposits', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		const automaticRadio = screen.getByLabelText( /Automatic deposits/ );
+		const automaticRadio = screen.getByLabelText( /Automatic/ );
 		expect( automaticRadio ).toBeInTheDocument();
 
-		const manualRadio = screen.getByLabelText( /Manual deposits/ );
+		const manualRadio = screen.getByLabelText( /Manual/ );
 		expect( manualRadio ).toBeInTheDocument();
 	} );
 
@@ -257,7 +251,7 @@ describe( 'Deposits', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		const manualDepositsRadio = screen.getByLabelText( /Manual deposits/ );
+		const manualDepositsRadio = screen.getByLabelText( /Manual/ );
 		expect( manualDepositsRadio ).toBeChecked();
 
 		const frequencySelect = screen.queryByLabelText( /Frequency/ );

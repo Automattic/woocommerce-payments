@@ -10,7 +10,7 @@ import {
 	Notice,
 	RadioControl,
 } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { createInterpolateElement, useState } from '@wordpress/element';
 import Gridicon from 'gridicons';
 
 /**
@@ -138,6 +138,9 @@ const CustomizeDepositSchedule = () => {
 
 	const automaticControlsDisabled = 'manual' === depositScheduleInterval;
 
+	const depositSettingsDocsUrl =
+		'https://woocommerce.com/document/payments/#section-15';
+
 	return (
 		<>
 			<RadioControl
@@ -149,10 +152,7 @@ const CustomizeDepositSchedule = () => {
 				onChange={ handleIntervalChange }
 				options={ [
 					{
-						label: __(
-							'Automatic deposits',
-							'woocommerce-payments'
-						),
+						label: __( 'Automatic', 'woocommerce-payments' ),
 						value: 'automatic',
 					},
 				] }
@@ -199,21 +199,15 @@ const CustomizeDepositSchedule = () => {
 					) }
 				</div>
 				<p className="help-text">
-					{ 'monthly' === automaticDepositSchedule &&
+					{ createInterpolateElement(
 						__(
-							'Deposits scheduled on a weekend will be sent on the next business day.',
+							'Deposits that fall on a holiday or a weekend will initiate on the next business day. <a>Learn more</a>',
 							'woocommerce-payments'
-						) }
-					{ 'weekly' === automaticDepositSchedule &&
-						__(
-							'Deposits that fall on a holiday will initiate on the next business day.',
-							'woocommerce-payments'
-						) }
-					{ 'daily' === automaticDepositSchedule &&
-						__(
-							'Deposits will occur every business day.',
-							'woocommerce-payments'
-						) }
+						),
+						{
+							a: <ExternalLink href={ depositSettingsDocsUrl } />,
+						}
+					) }
 				</p>
 			</div>
 			<RadioControl
@@ -222,16 +216,25 @@ const CustomizeDepositSchedule = () => {
 				onChange={ handleIntervalChange }
 				options={ [
 					{
-						label: __( 'Manual deposits', 'woocommerce-payments' ),
+						label: __( 'Manual', 'woocommerce-payments' ),
 						value: 'manual',
 					},
 				] }
-				help={ sprintf(
-					__(
-						'You can create deposits from the Payments Overview once per day, with a minimum available balance of %s.',
-						'woocommerce-payments'
+				help={ createInterpolateElement(
+					sprintf(
+						__(
+							// eslint-disable-next-line max-len
+							'Create a deposit from the Payments Overview. Deposits are available once per day, with a minimum available balance of %s. <a>Learn more</a>',
+							'woocommerce-payments'
+						),
+						formatCurrency(
+							minimumDepositAmount,
+							defaultStoreCurrency
+						)
 					),
-					formatCurrency( minimumDepositAmount, defaultStoreCurrency )
+					{
+						a: <ExternalLink href={ depositSettingsDocsUrl } />,
+					}
 				) }
 			/>
 		</>
