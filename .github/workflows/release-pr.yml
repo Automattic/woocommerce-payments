@@ -50,6 +50,7 @@ jobs:
         uses: ./.github/actions/create-branch-tag
         with:
           tag-name: ${{ env.TAG_NAME }}
+          is-pre-release: "false"
 
       - name: Setup Node and PHP with cache
         uses: ./.github/actions/setup-repo
