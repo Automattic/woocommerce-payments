@@ -31,7 +31,15 @@ jest.mock( 'wcpay/data', () => ( {
 
 describe( 'Deposits', () => {
 	const settingsContext = {
-		accountStatus: { accountLink: '/account-link' },
+		accountStatus: {
+			accountLink: '/account-link',
+			deposits: {
+				minimum_deposit_amounts: {},
+			},
+		},
+		storeCurrencies: {
+			default: 'usd',
+		},
 	};
 
 	beforeEach( () => {
@@ -43,6 +51,26 @@ describe( 'Deposits', () => {
 			'monday',
 			jest.fn(),
 		] );
+
+		global.wcpaySettings = {
+			featureFlags: {},
+			isSubscriptionsActive: false,
+			zeroDecimalCurrencies: [],
+			currentUserEmail: 'mock@example.com',
+			connect: {
+				country: 'US',
+			},
+			currencyData: {
+				US: {
+					code: 'USD',
+					symbol: '$',
+					symbolPosition: 'left',
+					thousandSeparator: ',',
+					decimalSeparator: '.',
+					precision: 2,
+				},
+			},
+		};
 	} );
 
 	it( 'renders', () => {
@@ -233,6 +261,6 @@ describe( 'Deposits', () => {
 		expect( manualDepositsRadio ).toBeChecked();
 
 		const frequencySelect = screen.queryByLabelText( /Frequency/ );
-		expect( frequencySelect ).not.toBeInTheDocument();
+		expect( frequencySelect ).toBeDisabled();
 	} );
 } );
