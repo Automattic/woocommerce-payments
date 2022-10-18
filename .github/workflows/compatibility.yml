@@ -3,6 +3,9 @@ name: Compatibility - WC, WP and PHP
 on:
   pull_request
 
+env:
+  WC_L2_VERSION: '6.8.2'
+
 jobs:
   woocommerce-compatibility:
     name:    WC compatibility
