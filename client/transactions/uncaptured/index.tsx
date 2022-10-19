@@ -43,7 +43,7 @@ const getColumns = (): Column[] =>
 			isLeftAligned: true,
 		},
 		{
-			key: 'authorized_on',
+			key: 'created',
 			label: __( 'Authorized on', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Authorized on', 'woocommerce-payments' ),
 			required: true,
@@ -135,7 +135,7 @@ export const AuthorizationsList = (): JSX.Element => {
 				value: auth.payment_intent_id,
 				display: auth.payment_intent_id,
 			},
-			authorized_on: {
+			created: {
 				value: dateI18n(
 					'M j, Y / g:iA',
 					moment.utc( auth.created ).local().toISOString()
