@@ -23,7 +23,47 @@
 	}
 }
 
-.platform-checkout-sms-otp-iframe {
+.platform-checkout-login-session-iframe {
+	width: 100%;
+	height: 100vh;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate( -50%, -50% );
+	z-index: 355000;
+	border: 0;
+	background: #fff;
+	visibility: hidden;
+	&.open {
+		transition: top 500ms;
+		visibility: visible;
+	}
+}
+
+@media screen and ( min-width: 768px ) {
+	.platform-checkout-login-session-iframe-wrapper {
+		position: fixed;
+		background: rgba( 117, 117, 117, 0.6 );
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		content: ' ';
+		display: block;
+		z-index: 355000;
+
+		.platform-checkout-login-session-iframe {
+			transition: none;
+			height: 90vh;
+			max-height: 520px;
+			position: absolute;
+			max-width: 374px;
+			border-radius: 8px;
+		}
+	}
+}
+
+.platform-checkout-otp-iframe {
 	transition: top 500ms;
 	width: 100%;
 	height: 100vh;
@@ -38,7 +78,7 @@
 	}
 }
 
-.platform-checkout-sms-otp-iframe-wrapper {
+.platform-checkout-otp-iframe-wrapper {
 	.arrow {
 		position: fixed;
 		top: 100%;
@@ -46,7 +86,7 @@
 }
 
 @media screen and ( min-width: 768px ) {
-	.platform-checkout-sms-otp-iframe-wrapper {
+	.platform-checkout-otp-iframe-wrapper {
 		position: fixed;
 		background: rgba( 117, 117, 117, 0.6 );
 		top: 0;
@@ -57,7 +97,7 @@
 		display: block;
 		z-index: 355000;
 
-		.platform-checkout-sms-otp-iframe {
+		.platform-checkout-otp-iframe {
 			transition: none;
 			height: 90vh;
 			max-height: 520px;
