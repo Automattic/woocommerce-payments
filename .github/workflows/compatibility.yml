@@ -19,7 +19,8 @@ jobs:
         id: generate_matrix_include
         run: |
           WC_VERSIONS_MATRIX=( ${{ env.WC_L2_VERSION }}, 'latest', 'beta' )
-          echo "include={\"woocommerce\":\"6.8.2\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}" >> $GITHUB_OUTPUT
+          echo "test={\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}" >> $GITHUB_OUTPUT
+#         echo "include={\"woocommerce\":\"6.8.2\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}" >> $GITHUB_OUTPUT
   
   woocommerce-compatibility:
     name: "WC compatibility"
@@ -44,7 +45,7 @@ jobs:
       WP_VERSION:        ${{ matrix.wordpress }}
       WC_VERSION:        ${{ matrix.woocommerce }}
       GUTENBERG_VERSION: ${{ matrix.gutenberg }}
-      TEST: ${{ fromJSON(needs.generate-some-matrix-values.outputs.include) }}
+      TEST: ${{ fromJSON(needs.generate-some-matrix-values.outputs.test) }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2
