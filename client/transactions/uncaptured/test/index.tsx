@@ -11,7 +11,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import Authorizations, { AuthorizationsList } from '../';
+import Authorizations, { AuthorizationsList } from '..';
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import { Authorization } from 'wcpay/types/authorizations';
 
@@ -177,10 +177,10 @@ describe( 'Authorizations list', () => {
 
 		test( 'sorts by authorized on field', () => {
 			sortBy( 'Authorized on' );
-			expectSortingToBe( 'authorized_on', 'asc' );
+			expectSortingToBe( 'created', 'asc' );
 
 			sortBy( 'Authorized on' );
-			expectSortingToBe( 'authorized_on', 'desc' );
+			expectSortingToBe( 'created', 'desc' );
 		} );
 
 		test( 'sorts by capture by field', () => {

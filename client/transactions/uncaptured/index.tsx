@@ -23,7 +23,7 @@ import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 interface Column extends TableCardColumn {
 	key:
 		| 'authorization_id'
-		| 'authorized_on'
+		| 'created'
 		| 'capture_by'
 		| 'order'
 		| 'risk_level'
