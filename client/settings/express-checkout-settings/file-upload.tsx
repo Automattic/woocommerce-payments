@@ -83,8 +83,6 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 		const body = new FormData();
 		body.append( 'file', file );
 		body.append( 'purpose', purpose );
-		// Interpreting as_account as Boolean false in the backend
-		body.append( 'as_account', '0' );
 
 		try {
 			const uploadedFile: unknown = await apiFetch( {

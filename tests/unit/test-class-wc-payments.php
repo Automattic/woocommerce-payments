@@ -12,10 +12,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	const EXPECTED_PLATFORM_CHECKOUT_HOOKS = [
 		'wc_ajax_wcpay_init_platform_checkout' => [ WC_Payments::class, 'ajax_init_platform_checkout' ],
-		'determine_current_user'               => [
-			WC_Payments::class,
-			'determine_current_user_for_platform_checkout',
-		],
 	];
 
 	public function set_up() {

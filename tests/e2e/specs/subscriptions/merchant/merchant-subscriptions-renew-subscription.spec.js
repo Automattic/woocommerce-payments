@@ -28,7 +28,7 @@ let subscriptionId;
  * tasks, e.g. image regeneration. Hence, it is better to skip test until we
  * can find a way to create a "pure" environment without any background tasks.
  */
-describeif( RUN_SUBSCRIPTIONS_TESTS ).skip(
+describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Subscriptions > Renew a subscription as a merchant',
 	() => {
 		beforeAll( async () => {
