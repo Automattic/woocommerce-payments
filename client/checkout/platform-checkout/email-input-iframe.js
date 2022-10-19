@@ -459,6 +459,10 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 				openLoginSessionIframe();
 			}
 		} else {
+			wcpayTracks.recordUserEvent(
+				wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
+			);
+
 			searchParams.delete( 'skip_platform_checkout' );
 
 			let { pathname } = window.location;
