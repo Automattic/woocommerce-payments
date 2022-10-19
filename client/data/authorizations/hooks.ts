@@ -16,6 +16,7 @@ import {
 
 export const useAuthorizations = ( {
 	paged,
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	per_page,
 	orderby,
 	order,
