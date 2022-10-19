@@ -13,21 +13,38 @@ import TYPES from './action-types';
 import {
 	AuthorizationsSummary,
 	Authorization,
+	AuthorizationsList,
 } from 'wcpay/types/authorizations';
 import { STORE_NAME } from '../constants';
+import { ApiError } from 'wcpay/types/errors';
 
 export function updateAuthorizations(
 	query: Query,
-	data: Array< Authorization >
+	authorizationsList: AuthorizationsList
 ): {
 	type: string;
-	data: Array< Authorization >;
+	data: Authorization[];
 	query: Query;
 } {
 	return {
 		type: TYPES.SET_AUTHORIZATIONS,
-		data,
+		data: authorizationsList.data,
 		query,
+	};
+}
+
+export function updateErrorForAuthorizations(
+	query: Query,
+	error: ApiError
+): {
+	type: string;
+	query: Query;
+	error: ApiError;
+} {
+	return {
+		type: TYPES.SET_ERROR_FOR_AUTHORIZATIONS,
+		query,
+		error,
 	};
 }
 

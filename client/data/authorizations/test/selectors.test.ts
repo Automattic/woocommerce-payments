@@ -76,7 +76,7 @@ describe( 'Authorization selector', () => {
 	const filledState = {
 		authorizations: {
 			byId: {
-				[ mockAuthorization.authorization_id ]: mockAuthorization,
+				[ mockAuthorization.payment_intent_id ]: mockAuthorization,
 			},
 		},
 	};
@@ -89,7 +89,7 @@ describe( 'Authorization selector', () => {
 
 	test( 'Returns authorization when it is present', () => {
 		expect(
-			getAuthorization( filledState, mockAuthorization.authorization_id )
+			getAuthorization( filledState, mockAuthorization.payment_intent_id )
 		).toStrictEqual( mockAuthorization );
 	} );
 } );

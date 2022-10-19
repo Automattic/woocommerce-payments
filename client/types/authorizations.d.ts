@@ -2,11 +2,10 @@ export type RiskLevel = 'high' | 'elevated' | 'normal';
 
 // TODO: refine this type with more detailed information.
 export interface Authorization {
-	authorization_id: string;
-	authorized_on: string;
-	capture_by: string;
 	captured: boolean;
-	order: OrderDetails;
+	charge_id: string;
+	created: string;
+	order_id: number;
 	risk_level: RiskLevel | string;
 	amount: number;
 	customer_name: string;
@@ -35,4 +34,8 @@ export interface AuthorizationsState {
 		[ x: string ]: { data?: AuthorizationsSummary; error?: string };
 	};
 	byId: Record< string, Authorization >;
+}
+
+interface AuthorizationsList {
+	data: Authorization[];
 }

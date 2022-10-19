@@ -14,14 +14,14 @@ import authorizationsFixture from './authorizations.fixture.json';
 
 describe( 'submitCaptureAuthorization', () => {
 	const {
-		order: mockOrder,
+		order_id: mockOrderId,
 		payment_intent_id: mockPaymentIntentId,
 	} = authorizationsFixture[ 0 ];
 
 	test( 'should capture authorization and show success notice.', () => {
 		const generator = submitCaptureAuthorization(
 			mockPaymentIntentId,
-			mockOrder.number
+			mockOrderId
 		);
 
 		expect( generator.next().value ).toEqual(
@@ -32,7 +32,7 @@ describe( 'submitCaptureAuthorization', () => {
 
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
-				path: `/wc/v3/payments/orders/${ mockOrder.number }/capture_authorization`,
+				path: `/wc/v3/payments/orders/${ mockOrderId }/capture_authorization`,
 				method: 'post',
 				data: {
 					payment_intent_id: mockPaymentIntentId,
