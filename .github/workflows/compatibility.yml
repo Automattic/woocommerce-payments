@@ -31,7 +31,7 @@ jobs:
       max-parallel: 10
       matrix:
         # Minimum support version, ..., Latest version, `beta`.
-        woocommerce: [ ${{ env.WC_L2_VERSION }}, 'latest', 'beta' ]
+        woocommerce: [ '6.8.2', 'latest', 'beta' ]
         wordpress:   [ 'latest' ]
         gutenberg:   [ 'latest' ]
         php:         [ '7.4' ]
