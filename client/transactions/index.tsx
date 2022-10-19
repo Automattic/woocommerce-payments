@@ -31,6 +31,8 @@ const onTabSelected = ( tab: string ) => {
 		{
 			paged: '1',
 			per_page: '25',
+			order: '',
+			orderby: '',
 			tab: tab,
 		},
 		'/payments/transactions'
