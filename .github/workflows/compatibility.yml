@@ -37,7 +37,7 @@ jobs:
         php:         [ '7.4' ]
         include:
           # Edge case: oldest dependencies compatibility
-          - ${{ fromJSON(needs.generate-some-matrix-values.outputs.include) }}
+          ${{ fromJSON(needs.generate-some-matrix-values.outputs.include) }}
     env:
       WP_VERSION:        ${{ matrix.wordpress }}
       WC_VERSION:        ${{ matrix.woocommerce }}
