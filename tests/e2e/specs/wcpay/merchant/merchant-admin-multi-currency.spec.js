@@ -18,6 +18,9 @@ describe( 'Admin Multi-Currency', () => {
 		await expect( page ).toMatchElement( 'h2', {
 			text: 'Enabled currencies',
 		} );
-		await takeScreenshot( 'merchant-admin-multi-currency' );
+		const screenshot = await takeScreenshot(
+			'merchant-admin-multi-currency'
+		);
+		expect( screenshot ).toMatchImageSnapshot();
 	} );
 } );

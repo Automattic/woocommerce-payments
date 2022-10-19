@@ -8,6 +8,19 @@ import {
 
 import { addConsoleSuppression } from '@woocommerce/e2e-environment';
 
+import { configureToMatchImageSnapshot } from 'jest-image-snapshot';
+
+const toMatchImageSnapshot = configureToMatchImageSnapshot( {
+	customDiffConfig: {
+		threshold: 0.1,
+	},
+	customSnapshotsDir: './snapshots',
+	customDiffDir: './snapshots/diff',
+	blur: 1,
+	allowSizeMismatch: true,
+} );
+expect.extend( { toMatchImageSnapshot } );
+
 const ERROR_MESSAGES_TO_IGNORE = [
 	'violates the following Content Security Policy directive',
 	'You may test your Stripe.js integration over HTTP.',

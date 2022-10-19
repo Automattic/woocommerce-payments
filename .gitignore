@@ -64,6 +64,9 @@ contributors.md
 # Screenshots for e2e tests failures
 /screenshots/
 
+# Snapshots diff for visual regressions
+/snapshots/diff
+
 # Volumes mounted by Docker containers
 docker/data
 docker/wordpress
