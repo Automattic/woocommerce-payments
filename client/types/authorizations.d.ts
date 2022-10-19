@@ -3,10 +3,8 @@ export type RiskLevel = 'high' | 'elevated' | 'normal';
 // TODO: refine this type with more detailed information.
 export interface Authorization {
 	payment_intent_id: string;
-	authorized_on: string;
 	created: string;
 	order_id: number;
-	charge_id: string;
 	risk_level: number;
 	amount: number;
 	customer_name: string;
