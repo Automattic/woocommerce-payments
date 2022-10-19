@@ -9,24 +9,35 @@ env:
   WP_L2_VERSION: '5.8'
 
 jobs:
+  generate-some-matrix-values:
+    name: "Generate some values dynamically for the matrix"
+    runs-on: ubuntu-18.04
+    outputs:
+      matrix-include: ${{ steps.generate_matrix_include.outputs.include }}
+    steps:
+      - name: "Generate include"
+        id: generate_matrix_include
+        run: |
+          WC_VERSIONS_MATRIX=( ${{ env.WC_L2_VERSION }}, 'latest', 'beta' )
+          run: |
+          echo "include={\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"$WP_L2_VERSION\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}" >> $GITHUB_OUTPUT
+    
   woocommerce-compatibility:
-    name:    WC compatibility
+    name: "WC compatibility"
+    needs: generate-some-matrix-values
     runs-on: ubuntu-18.04
     strategy:
       fail-fast:    false
       max-parallel: 10
       matrix:
         # Minimum support version, ..., Latest version, `beta`.
-        woocommerce: [ "$WC_L2_VERSION", 'latest', 'beta' ]
+        woocommerce: [ ${{ env.WC_L2_VERSION }}, 'latest', 'beta' ]
         wordpress:   [ 'latest' ]
         gutenberg:   [ 'latest' ]
         php:         [ '7.4' ]
         include:
           # Edge case: oldest dependencies compatibility
-          - woocommerce: '6.8.2'
-            wordpress:   '5.8'
-            gutenberg:   '13.6.0' # The latest version supporting WP 5.8.
-            php:         '7.2' # Minimum supported PHP version
+          - ${{ fromJSON(needs.generate-some-matrix-values.outputs.include) }}
     env:
       WP_VERSION:        ${{ matrix.wordpress }}
       WC_VERSION:        ${{ matrix.woocommerce }}
