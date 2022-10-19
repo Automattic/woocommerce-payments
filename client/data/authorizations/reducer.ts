@@ -6,7 +6,10 @@
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
 import { Query } from '@woocommerce/navigation';
-import { Authorization } from 'wcpay/types/authorizations';
+import {
+	Authorization,
+	AuthorizationsSummary,
+} from 'wcpay/types/authorizations';
 
 const defaultState = { summary: {} };
 
@@ -18,10 +21,10 @@ const receiveAuthorizations = (
 		data = [],
 		error,
 	}: {
-		type: string;
-		query: Query;
-		data: Authorization[];
-		error: string;
+		type?: string;
+		query?: Query;
+		data?: Authorization[] | AuthorizationsSummary;
+		error?: string;
 	}
 ): Record< string, any > => {
 	const index = getResourceId( query );
