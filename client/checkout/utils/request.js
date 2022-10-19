@@ -1,4 +1,4 @@
-export default async function request( url, args ) {
+export default async function request( url, args, options ) {
 	const data = new FormData();
 	for ( const key in args ) {
 		data.append( key, args[ key ] );
@@ -7,6 +7,7 @@ export default async function request( url, args ) {
 	const response = await fetch( url, {
 		method: 'POST',
 		body: data,
+		...options,
 	} );
 
 	return await response.json();
