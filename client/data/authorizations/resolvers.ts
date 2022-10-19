@@ -11,12 +11,16 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { updateAuthorizations, updateAuthorizationsSummary } from './actions';
+import {
+	updateAuthorizations,
+	updateAuthorizationsSummary,
+	updateErrorForAuthorizations,
+	updateErrorForAuthorizationsSummary,
+} from './actions';
 import { Query } from '@woocommerce/navigation';
 
 export function* getAuthorizations( query: Query ): any {
 	const path = addQueryArgs( `${ NAMESPACE }/authorizations`, {
-		test: 1,
 		pagesize: query.per_page,
 		sort: query.orderby,
 		direction: query.order,
@@ -35,13 +39,16 @@ export function* getAuthorizations( query: Query ): any {
 				'woocommerce-payments'
 			)
 		);
-		// TODO: Add error handling
+		yield updateErrorForAuthorizations( query, [], e );
 	}
 }
 
 export function* getAuthorizationsSummary( query: Query ): any {
 	const path = addQueryArgs( `${ NAMESPACE }/authorizations/summary`, {
-		test: 1,
+		pagesize: query.per_page,
+		sort: query.orderby,
+		direction: query.order,
+		page: query.paged,
 	} );
 
 	try {
@@ -56,6 +63,6 @@ export function* getAuthorizationsSummary( query: Query ): any {
 				'woocommerce-payments'
 			)
 		);
-		// TODO: Add error handling
+		yield updateErrorForAuthorizationsSummary( query, {}, e );
 	}
 }

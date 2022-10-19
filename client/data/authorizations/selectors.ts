@@ -1,6 +1,6 @@
 /** @format */
 
-import { Query } from '@testing-library/react';
+import type { Query } from '@woocommerce/navigation';
 import {
 	AuthorizationsSummary,
 	Authorization,
@@ -79,4 +79,11 @@ export const getAuthorizationsSummary = (
 	query: Query
 ): AuthorizationsSummary => {
 	return getAuthorizationsSummaryForQuery( state, query ).data || {};
+};
+
+export const getAuthorizationsSummaryError = (
+	state: Record< string, any >,
+	query: Query
+): Error => {
+	return getAuthorizationsSummaryForQuery( state, query ).error || {};
 };

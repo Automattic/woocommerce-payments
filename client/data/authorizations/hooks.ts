@@ -54,12 +54,17 @@ export const useAuthorizationsSummary = ( {}: Query ): {
 	isLoading: boolean;
 } =>
 	useSelect( ( select ) => {
-		const { getAuthorizationsSummary, isResolving } = select( STORE_NAME );
+		const {
+			getAuthorizationsSummary,
+			getAuthorizationsSummaryError,
+			isResolving,
+		} = select( STORE_NAME );
 
 		const query = {};
 
 		return {
 			authorizationsSummary: getAuthorizationsSummary( query ),
+			authorizationsSummaryError: getAuthorizationsSummaryError( query ),
 			isLoading: isResolving( 'getAuthorizationsSummary', [ query ] ),
 		};
 	} );
