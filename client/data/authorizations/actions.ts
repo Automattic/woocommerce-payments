@@ -81,7 +81,7 @@ export function* submitCaptureAuthorization(
 			paymentIntentId,
 		] );
 
-		let authorization = yield apiFetch( {
+		const result = yield apiFetch( {
 			path: `/wc/v3/payments/orders/${ orderId }/capture_authorization`,
 			method: 'post',
 			data: {
@@ -89,9 +89,9 @@ export function* submitCaptureAuthorization(
 			},
 		} );
 
-		authorization = {
-			payment_intent_id: paymentIntentId,
-			captured: true,
+		const authorization = {
+			payment_intent_id: ( result as any ).id,
+			captured: ( result as any ).status === 'succeeded',
 		};
 
 		yield updateAuthorization( authorization as Authorization );

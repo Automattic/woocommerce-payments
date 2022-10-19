@@ -256,7 +256,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$result = $this->gateway->capture_charge( $order, false );
 
 			if ( 'succeeded' !== $result['status'] ) {
-				$http_code = $result['http_code'] ?? 502;
 				return new WP_Error(
 					'wcpay_capture_error',
 					sprintf(
@@ -264,14 +263,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
 						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
 					),
-					[ 'status' => $http_code ]
+					[ 'status' => $result['http_code'] ?? 502 ]
 				);
 			}
 
 			// Actualize order status.
-			$charge    = $intent->get_charge();
-			$charge_id = $charge ? $charge->get_id() : null;
-			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge_id );
+			$charge = $intent->get_charge();
+			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge->get_id() );
 
 			return rest_ensure_response(
 				[
