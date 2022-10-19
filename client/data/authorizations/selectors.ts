@@ -19,7 +19,7 @@ import { getResourceId } from 'utils/data';
  *
  * @return {Object} The authorizations state.
  */
-const getAuthorizationsState = ( state: Record<string, any> ) => {
+const getAuthorizationsState = ( state: Record< string, any > ) => {
 	if ( ! state ) {
 		return {};
 	}
@@ -36,18 +36,25 @@ const getAuthorizationsState = ( state: Record<string, any> ) => {
  *
  * @return {Object} The list of authorizations for the given query.
  */
-const getAuthorizationsForQuery = (state: Record<string, any>, query: Query) => {
+const getAuthorizationsForQuery = (
+	state: Record< string, any >,
+	query: Query
+) => {
 	const index = getResourceId( query );
 	return getAuthorizationsState( state )[ index ] || {};
 };
 
 export const getAuthorizations = (
-	state: Record< string, any >, query: Query
-): Array<Authorization> => {
+	state: Record< string, any >,
+	query: Query
+): Array< Authorization > => {
 	return getAuthorizationsForQuery( state, query ).data || [];
 };
 
-export const getAuthorizationsError = (state: Record<string, any>, query: Query): Error => {
+export const getAuthorizationsError = (
+	state: Record< string, any >,
+	query: Query
+): Error => {
 	return getAuthorizationsForQuery( state, query ).error || {};
 };
 
@@ -59,11 +66,17 @@ export const getAuthorizationsError = (state: Record<string, any>, query: Query)
  *
  * @return {Object} The transaction summary for the given query.
  */
-const getAuthorizationsSummaryForQuery = (state: Record<string, any>, query: Query): any => {
+const getAuthorizationsSummaryForQuery = (
+	state: Record< string, any >,
+	query: Query
+): any => {
 	const index = getResourceId( query );
 	return getAuthorizationsState( state ).summary[ index ] || {};
 };
 
-export const getAuthorizationsSummary = (state: Record<string, any>, query: Query): AuthorizationsSummary => {
+export const getAuthorizationsSummary = (
+	state: Record< string, any >,
+	query: Query
+): AuthorizationsSummary => {
 	return getAuthorizationsSummaryForQuery( state, query ).data || {};
 };

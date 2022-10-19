@@ -24,7 +24,7 @@ const receiveAuthorizations = (
 		error: string;
 	}
 ): Record< string, any > => {
-	const index = getResourceId(query);
+	const index = getResourceId( query );
 
 	switch ( type ) {
 		case TYPES.SET_AUTHORIZATIONS:

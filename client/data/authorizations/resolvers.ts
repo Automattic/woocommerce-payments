@@ -21,16 +21,19 @@ export function* getAuthorizations( query: Query ): any {
 		sort: query.orderby,
 		direction: query.order,
 		page: query.paged,
-	});
-	
+	} );
+
 	try {
-		const results = yield apiFetch({ path });
+		const results = yield apiFetch( { path } );
 		yield updateAuthorizations( query, results.data || [] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
 			'createErrorNotice',
-			__( 'Error retrieving uncaptured transactions.', 'woocommerce-payments' )
+			__(
+				'Error retrieving uncaptured transactions.',
+				'woocommerce-payments'
+			)
 		);
 		// TODO: Add error handling
 	}
@@ -42,13 +45,16 @@ export function* getAuthorizationsSummary( query: Query ): any {
 	} );
 
 	try {
-		const results = yield apiFetch({ path });
+		const results = yield apiFetch( { path } );
 		yield updateAuthorizationsSummary( query, results || [] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
 			'createErrorNotice',
-			__( 'Error retrieving uncaptured transactions.', 'woocommerce-payments' )
+			__(
+				'Error retrieving uncaptured transactions.',
+				'woocommerce-payments'
+			)
 		);
 		// TODO: Add error handling
 	}
