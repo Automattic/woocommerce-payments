@@ -1,3 +1,16 @@
-.wcpay-standard-deposit-modal__footer > * + * {
-	margin-left: $gap;
+.wcpay-standard-deposit-modal {
+	&#{&} {
+		width: 560px;
+	}
+
+	.is-link {
+		text-decoration: none;
+	}
+}
+
+.wcpay-standard-deposit-modal__footer {
+	display: flex;
+	flex-direction: row-reverse;
+	gap: $gap;
+	margin: 24px 0 0;
 }

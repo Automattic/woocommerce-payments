@@ -42,62 +42,57 @@ describe( 'StandardDepositButton', () => {
 	} );
 
 	test( 'renders correctly when available balance > 0', () => {
-		const depositDelayDays = 2;
 		const availableBalance = {
 			amount: 1.23,
 			currency: 'aud',
-		} as AccountOverview.Balance;
+			source_types: [],
+			transaction_ids: [],
+		};
 
 		const { getByRole } = render(
-			<StandardDepositButton
-				availableBalance={ availableBalance }
-				depositDelayDays={ depositDelayDays }
-			/>
+			<StandardDepositButton availableBalance={ availableBalance } />
 		);
-		const button = getByRole( 'button', { name: 'Deposit now' } );
+		const button = getByRole( 'button', { name: 'Deposit funds' } );
 		expect( button ).not.toHaveAttribute( 'disabled' );
 	} );
 
 	test( 'renders correctly when available balance = 0', () => {
-		const depositDelayDays = 5;
 		const availableBalance = {
 			amount: 0,
 			currency: 'aud',
-		} as AccountOverview.Balance;
+			source_types: [],
+			transaction_ids: [],
+		};
 
 		const { getByRole } = render(
-			<StandardDepositButton
-				availableBalance={ availableBalance }
-				depositDelayDays={ depositDelayDays }
-			/>
+			<StandardDepositButton availableBalance={ availableBalance } />
 		);
-		const button = getByRole( 'button', { name: 'Deposit now' } );
+		const button = getByRole( 'button', { name: 'Deposit funds' } );
 		expect( button ).toHaveAttribute( 'disabled' );
 	} );
 
 	test( 'renders correctly when available balance < 0', () => {
-		const depositDelayDays = 7;
 		const availableBalance = {
 			amount: -0.12,
 			currency: 'aud',
-		} as AccountOverview.Balance;
+			source_types: [],
+			transaction_ids: [],
+		};
 
 		const { getByRole } = render(
-			<StandardDepositButton
-				availableBalance={ availableBalance }
-				depositDelayDays={ depositDelayDays }
-			/>
+			<StandardDepositButton availableBalance={ availableBalance } />
 		);
-		const button = getByRole( 'button', { name: 'Deposit now' } );
+		const button = getByRole( 'button', { name: 'Deposit funds' } );
 		expect( button ).toHaveAttribute( 'disabled' );
 	} );
 
 	test( 'displays modal when clicked', async () => {
-		const depositDelayDays = 7;
 		const availableBalance = {
 			amount: 123,
 			currency: 'eur',
-		} as AccountOverview.Balance;
+			source_types: [],
+			transaction_ids: [],
+		};
 
 		const expectedFormattedBalance = formatCurrency(
 			availableBalance.amount,
@@ -105,15 +100,12 @@ describe( 'StandardDepositButton', () => {
 		);
 
 		const { getByRole } = render(
-			<StandardDepositButton
-				availableBalance={ availableBalance }
-				depositDelayDays={ depositDelayDays }
-			/>
+			<StandardDepositButton availableBalance={ availableBalance } />
 		);
-		const button = getByRole( 'button', { name: 'Deposit now' } );
+		const button = getByRole( 'button', { name: 'Deposit funds' } );
 		user.click( button );
 
-		const modal = getByRole( 'dialog', { name: 'Deposit now' } );
+		const modal = getByRole( 'dialog', { name: 'Deposit funds' } );
 
 		within( modal ).getByRole( 'button', {
 			name: `Deposit ${ expectedFormattedBalance }`,

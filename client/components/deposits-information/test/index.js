@@ -189,7 +189,7 @@ describe( 'Deposits information', () => {
 		} );
 		expect( instantDepositButton ).toBeVisible();
 		const depositNowButton = queryByRole( 'button', {
-			name: 'Deposit now',
+			name: 'Deposit funds',
 		} );
 		expect( depositNowButton ).not.toBeInTheDocument();
 		expect( container ).toMatchSnapshot();
@@ -206,7 +206,9 @@ describe( 'Deposits information', () => {
 		mockOverviews( [ createMockCurrency( 'aud' ) ], accountWithDepositNow );
 
 		const { container, getByRole } = render( <DepositsInformation /> );
-		const depositNowButton = getByRole( 'button', { name: 'Deposit now' } );
+		const depositNowButton = getByRole( 'button', {
+			name: 'Deposit funds',
+		} );
 		expect( depositNowButton ).toBeVisible();
 		expect( depositNowButton ).not.toHaveAttribute( 'disabled' );
 		expect( container ).toMatchSnapshot();
@@ -229,7 +231,9 @@ describe( 'Deposits information', () => {
 		mockOverviews( [ currency ], accountWithDepositNow );
 
 		const { container, getByRole } = render( <DepositsInformation /> );
-		const depositNowButton = getByRole( 'button', { name: 'Deposit now' } );
+		const depositNowButton = getByRole( 'button', {
+			name: 'Deposit funds',
+		} );
 		expect( depositNowButton ).toBeVisible();
 		expect( depositNowButton ).toHaveAttribute( 'disabled' );
 		expect( container ).toMatchSnapshot();

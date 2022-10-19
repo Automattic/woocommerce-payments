@@ -88,7 +88,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
             </g>
           </svg>
           Deposit schedule:
-           
+
           Automatic, every week on Thursday
         </p>
       </div>
@@ -226,7 +226,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
             </g>
           </svg>
           Deposit schedule:
-           
+
           Automatic, every week on Thursday
         </p>
       </div>
@@ -369,7 +369,7 @@ exports[`Deposits information renders instant deposit button only where applicab
             </g>
           </svg>
           Deposit schedule:
-           
+
           Automatic, every week on Thursday
         </p>
       </div>
@@ -514,7 +514,7 @@ exports[`Deposits information renders instant deposit button only where applicab
             </g>
           </svg>
           Deposit schedule:
-           
+
           Automatic, every week on Thursday
         </p>
       </div>
@@ -657,7 +657,7 @@ exports[`Deposits information renders instant deposit button when eligible and s
             </g>
           </svg>
           Deposit schedule:
-           
+
           Temporarily suspended (
           <a
             href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
@@ -815,7 +815,7 @@ exports[`Deposits information renders standard deposit button disabled when no a
             </g>
           </svg>
           Deposit schedule:
-           
+
           Temporarily suspended (
           <a
             href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
@@ -932,7 +932,7 @@ exports[`Deposits information renders standard deposit button disabled when no a
             disabled=""
             type="button"
           >
-            Deposit now
+            Deposit funds
           </button>
         </div>
       </div>
@@ -974,7 +974,7 @@ exports[`Deposits information renders standard deposit button enabled when depos
             </g>
           </svg>
           Deposit schedule:
-           
+
           Temporarily suspended (
           <a
             href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
@@ -1090,7 +1090,7 @@ exports[`Deposits information renders standard deposit button enabled when depos
             class="components-button is-secondary"
             type="button"
           >
-            Deposit now
+            Deposit funds
           </button>
         </div>
       </div>

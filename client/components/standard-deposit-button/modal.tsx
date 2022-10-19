@@ -2,46 +2,52 @@
  * External dependencies
  */
 import React from 'react';
-import { Button, Modal } from '@wordpress/components';
+import { Button, ExternalLink, Modal } from '@wordpress/components';
+import { createInterpolateElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 
-interface StandardDepositModalProps {
+type StandardDepositModalProps = {
 	availableBalance: AccountOverview.Balance;
-	depositDelayDays: number;
 	onClose: () => void;
 	onSubmit: () => void;
 	inProgress: boolean;
-}
+};
 
-const StandardDepositModal = ( {
+const StandardDepositModal: React.FC< StandardDepositModalProps > = ( {
 	availableBalance,
-	depositDelayDays,
 	onClose,
 	onSubmit,
 	inProgress,
-}: StandardDepositModalProps ): JSX.Element => {
-	/* translators: %s: amount representing the available monetary balance, %s: number of business days */
-	const description = sprintf(
-		__(
-			'Ready to get paid? Your available balance of %s will be deposited to your bank account within %s business days.',
-			'woocommerce-payments'
+} ) => {
+	/* translators: %s: amount representing the available monetary balance */
+	const description = createInterpolateElement(
+		sprintf(
+			__(
+				'Your full available balance of <strong>%s</strong> will be deposited within 1-2 business days, and the amount received may differ if your available balance changes within the processing time. <a>Learn more</a>',
+				'woocommerce-payments'
+			),
+			formatExplicitCurrency(
+				availableBalance.amount,
+				availableBalance.currency
+			)
 		),
-		formatExplicitCurrency(
-			availableBalance.amount,
-			availableBalance.currency
-		),
-		depositDelayDays
+		{
+			strong: <strong />,
+			a: (
+				<ExternalLink href="https://woocommerce.com/document/payments/#section-5" />
+			),
+		}
 	);
 
 	return (
 		<Modal
-			title={ __( 'Deposit now', 'woocommerce-payments' ) }
+			title={ __( 'Deposit funds', 'woocommerce-payments' ) }
 			onRequestClose={ onClose }
 			className="wcpay-standard-deposit-modal"
 		>
@@ -54,16 +60,9 @@ const StandardDepositModal = ( {
 					isBusy={ inProgress }
 					disabled={ inProgress }
 				>
-					{ sprintf(
-						/* translators: %s: Monetary amount to deposit */
-						__( 'Deposit %s', 'woocommerce-payments' ),
-						formatCurrency(
-							availableBalance.amount,
-							availableBalance.currency
-						)
-					) }
+					{ __( 'Submit deposit', 'woocommerce-payments' ) }
 				</Button>
-				<Button isTertiary onClick={ onClose }>
+				<Button isLink onClick={ onClose }>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
 			</div>

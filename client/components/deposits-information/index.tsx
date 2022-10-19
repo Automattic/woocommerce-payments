@@ -26,10 +26,10 @@ import { useAllDepositsOverviews } from 'wcpay/data';
 
 import './style.scss';
 
-interface OverviewProps {
+type OverviewProps = {
 	overview: AccountOverview.Overview;
 	account: AccountOverview.Account;
-}
+};
 
 /**
  * Renders a deposits overview
@@ -37,9 +37,7 @@ interface OverviewProps {
  * @param {AccountOverview.Overview} props Deposits overview
  * @return {JSX.Element} Rendered element with deposits overview
  */
-const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
-	props
-) => {
+const DepositsInformationOverview: React.FC< OverviewProps > = ( props ) => {
 	const { overview, account }: OverviewProps = props;
 	const {
 		currency,
@@ -77,15 +75,13 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 		<InstantDepositButton instantBalance={ instant } />
 	);
 
-	const isDepositNowEnabled =
+	const isStandardDepositEnabled =
 		! account.deposits_blocked &&
-		account.deposits_schedule.interval === 'manual';
-	if ( ! depositButton && isDepositNowEnabled ) {
+		account.deposits_schedule.interval !== 'daily';
+
+	if ( ! depositButton && isStandardDepositEnabled ) {
 		depositButton = (
-			<StandardDepositButton
-				availableBalance={ available }
-				depositDelayDays={ account.deposits_schedule.delay_days }
-			/>
+			<StandardDepositButton availableBalance={ available } />
 		);
 	}
 
@@ -151,7 +147,7 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 	);
 };
 
-const DepositsInformation = (): JSX.Element => {
+const DepositsInformation: React.FC = () => {
 	const {
 		overviews,
 		isLoading,
@@ -163,7 +159,7 @@ const DepositsInformation = (): JSX.Element => {
 
 	const { currencies, account } = overviews;
 	return (
-		<React.Fragment>
+		<>
 			{ currencies.map( ( overview: AccountOverview.Overview ) => (
 				<DepositsInformationOverview
 					key={ overview.currency }
@@ -171,7 +167,7 @@ const DepositsInformation = (): JSX.Element => {
 					overview={ overview }
 				/>
 			) ) }
-		</React.Fragment>
+		</>
 	);
 };
 

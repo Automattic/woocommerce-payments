@@ -12,20 +12,18 @@ import { useState } from '@wordpress/element';
 import { useStandardDeposit } from 'wcpay/data';
 import StandardDepositModal from './modal';
 
-interface StandardDepositButtonProps {
-	availableBalance: AccountOverview.Balance;
-	depositDelayDays: number;
-}
+type StandardDepositButtonProps = {
+	availableBalance: AccountOverview.Overview[ 'available' ];
+};
 
-const StandardDepositButton = ( {
+const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 	availableBalance,
-	depositDelayDays,
-}: StandardDepositButtonProps ): JSX.Element => {
-	const [ isModalOpen, setModalOpen ] = useState< boolean >( false );
-	const buttonDisabled = availableBalance.amount > 0 ? false : true;
+} ) => {
+	const { amount, transaction_ids: transactionIds } = availableBalance;
 
-	// TODO: handle manual deposit request
-	const transactionIds = [ 'ch_1Hh9j2JUe3JUe3JUe3JUe3JUe3' ];
+	const [ isModalOpen, setModalOpen ] = useState< boolean >( false );
+	const buttonDisabled = amount > 0 ? false : true;
+
 	const { inProgress, submit } = useStandardDeposit( transactionIds );
 	const onClose = () => {
 		setModalOpen( false );
@@ -38,19 +36,18 @@ const StandardDepositButton = ( {
 	return (
 		<>
 			<Button
-				isSecondary
 				disabled={ buttonDisabled }
+				isPrimary
 				onClick={ () => setModalOpen( true ) }
 			>
-				{ __( 'Deposit now', 'woocommerce-payments' ) }
+				{ __( 'Deposit funds', 'woocommerce-payments' ) }
 			</Button>
 			{ ( isModalOpen || inProgress ) && (
 				<StandardDepositModal
 					availableBalance={ availableBalance }
-					depositDelayDays={ depositDelayDays }
-					onSubmit={ onSubmit }
-					onClose={ onClose }
 					inProgress={ inProgress }
+					onClose={ onClose }
+					onSubmit={ onSubmit }
 				/>
 			) }
 		</>

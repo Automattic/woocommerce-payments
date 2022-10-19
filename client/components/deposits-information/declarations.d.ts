@@ -45,7 +45,7 @@ declare namespace AccountOverview {
 		lastPaid: Deposit;
 		nextScheduled: Deposit;
 		pending: Balance;
-		available: Balance;
+		available: Balance & { transaction_ids: Array< string > };
 		instant: InstantBalance;
 	}
 
