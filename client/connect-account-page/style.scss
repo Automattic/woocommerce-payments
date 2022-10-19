@@ -125,4 +125,34 @@
 			}
 		}
 	}
+
+	.wcpay-connect-info-notice {
+		margin: $gap-small 0 $gap-large;
+		padding: $gap;
+		font-size: 12px;
+		background-color: #fbf1fa;
+		color: $studio-gray-80;
+		display: flex;
+
+		img {
+			margin: 0 $gap 0 $gap-smallest;
+		}
+
+		a {
+			text-decoration: none;
+			font-weight: 700;
+			color: $studio-woocommerce-purple-70;
+		}
+
+		button {
+			height: initial;
+			font-size: 12px;
+			padding: 0 $gap-smallest 0;
+			color: $studio-woocommerce-purple-50;
+			&:focus {
+				box-shadow: none;
+				color: $studio-woocommerce-purple-50;
+			}
+		}
+	}
 }
