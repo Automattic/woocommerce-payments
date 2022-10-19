@@ -37,11 +37,14 @@ jobs:
         php:         [ '7.4' ]
         include:
           # Edge case: oldest dependencies compatibility
-          ${{ fromJSON(needs.generate-some-matrix-values.outputs.include) }}
-    env:
+          - woocommerce: '6.8.2'
+            wordpress: '5.8'
+            gutenberg: '13.6.0' # The latest version supporting WP 5.8.
+            php: '7.2' # Minimum supported PHP version:
       WP_VERSION:        ${{ matrix.wordpress }}
       WC_VERSION:        ${{ matrix.woocommerce }}
       GUTENBERG_VERSION: ${{ matrix.gutenberg }}
+      TEST: ${{ fromJSON(needs.generate-some-matrix-values.outputs.include) }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2
