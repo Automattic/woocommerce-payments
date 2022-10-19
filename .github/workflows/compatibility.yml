@@ -20,7 +20,7 @@ jobs:
         run: |
           WC_VERSIONS_MATRIX=( ${{ env.WC_L2_VERSION }}, 'latest', 'beta' )
           run: |
-          echo "include={\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"$WP_L2_VERSION\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}" >> $GITHUB_OUTPUT
+          echo "include={\"woocommerce\":\"6.8.2\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}" >> $GITHUB_OUTPUT
     
   woocommerce-compatibility:
     name: "WC compatibility"
