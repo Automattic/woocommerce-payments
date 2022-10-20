@@ -11,7 +11,7 @@ env:
 jobs:
   generate-matrix:
     name: "Generate the matrix dynamically"
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -24,7 +24,7 @@ jobs:
   woocommerce-compatibility:
     name: "WC compatibility"
     needs: generate-matrix
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
@@ -35,9 +35,9 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
@@ -55,7 +55,7 @@ jobs:
   # a dedicated job, as allowed to fail
   compatibility-woocommerce-beta:
     name:    Environment - WC beta
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -69,9 +69,9 @@ jobs:
       GUTENBERG_VERSION: ${{ matrix.gutenberg }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
