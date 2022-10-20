@@ -75,7 +75,6 @@
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",
-    "@babel/plugin-proposal-object-rest-spread": "7.12.13",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
     "@testing-library/jest-dom": "5.14.1",
     "@testing-library/react": "11.2.5",
@@ -98,7 +97,7 @@
     "@woocommerce/experimental": "2.1.0",
     "@wordpress/api-fetch": "5.1.1",
     "@wordpress/babel-plugin-makepot": "4.2.0",
-    "@wordpress/babel-preset-default": "4.3.0",
+    "@wordpress/babel-preset-default": "7.4.0",
     "@wordpress/base-styles": "3.5.4",
     "@wordpress/block-editor": "7.0.2",
     "@wordpress/blocks": "11.0.1",
