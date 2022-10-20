@@ -9,7 +9,7 @@ import { noop } from 'lodash';
  */
 import TooltipBase from './tooltip-base';
 
-const Tooltip = ( { isVisible, onHide = noop, ...props } ) => {
+const Tooltip = ( { isVisible = false, onHide = noop, ...props } ) => {
 	const [ isHovered, setIsHovered ] = useState( false );
 	const [ isClicked, setIsClicked ] = useState( false );
 
@@ -33,23 +33,27 @@ const Tooltip = ( { isVisible, onHide = noop, ...props } ) => {
 	};
 
 	return (
-		<button
-			className="wcpay-tooltip__content-wrapper"
+		<div
 			// on touch devices there's no mouse enter/leave, so we need to use a separate event (click/focus)
 			// this creates 2 different (desirable) states on non-touch devices: if you hover and then click, the tooltip will persist
-			onMouseEnter={ handleMouseEnter }
-			onMouseLeave={ handleMouseLeave }
-			onFocus={ handleMouseEnter }
+			className="wcpay-tooltip__content-wrapper"
 			onBlur={ handleMouseLeave }
 			onClick={ handleMouseClick }
-			type={ 'button' }
+			onFocus={ handleMouseEnter }
+			onKeyDown={ noop }
+			onMouseEnter={ handleMouseEnter }
+			onMouseLeave={ handleMouseLeave }
+			onPointerEnter={ handleMouseEnter }
+			onPointerLeave={ handleMouseLeave }
+			role="button"
+			tabIndex={ 0 }
 		>
 			<TooltipBase
 				{ ...props }
 				onHide={ handleHide }
 				isVisible={ isVisible || isHovered || isClicked }
 			/>
-		</button>
+		</div>
 	);
 };
 

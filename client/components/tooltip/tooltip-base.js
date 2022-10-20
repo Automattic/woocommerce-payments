@@ -121,13 +121,15 @@ const TooltipPortal = memo( ( { children } ) => {
 } );
 
 const TooltipBase = ( {
-	className,
 	children,
+	className,
 	content,
 	hideDelayMs,
 	isVisible,
-	onHide,
 	maxWidth = '250px',
+	noArrow = false,
+	onHide,
+	position = 'top',
 } ) => {
 	const wrapperRef = useRef( null );
 	const tooltipWrapperRef = useRef( null );
@@ -159,9 +161,15 @@ const TooltipBase = ( {
 			const tooltipElementRect = tooltipElement.getBoundingClientRect();
 
 			const tooltipHeight = tooltipElementRect.height;
-			tooltipElement.style.top = `${
-				wrappedElementRect.top - tooltipHeight - 8
-			}px`;
+			if ( 'top' === position ) {
+				tooltipElement.style.top = `${
+					wrappedElementRect.top - tooltipHeight - 8
+				}px`;
+			} else {
+				tooltipElement.style.top = `${
+					wrappedElementRect.top + wrappedElementRect.height + 8
+				}px`;
+			}
 			const elementMiddle =
 				wrappedElement.offsetWidth / 2 + wrappedElementRect.left;
 			const tooltipWidth = tooltipElement.offsetWidth;
@@ -185,7 +193,7 @@ const TooltipBase = ( {
 			window.removeEventListener( 'resize', debouncedCalculation );
 			document.removeEventListener( 'scroll', debouncedCalculation );
 		};
-	}, [ isTooltipVisible, maxWidth ] );
+	}, [ isTooltipVisible, maxWidth, position ] );
 
 	return (
 		<>
@@ -204,6 +212,8 @@ const TooltipBase = ( {
 						<div
 							className={ classNames(
 								'wcpay-tooltip__tooltip',
+								`tooltip-position-${ position }`,
+								{ 'tooltip-no-arrow': noArrow },
 								className
 							) }
 						>

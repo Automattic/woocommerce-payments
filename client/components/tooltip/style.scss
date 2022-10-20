@@ -26,17 +26,22 @@
 		padding: 10px;
 		text-align: center;
 
-		&::after {
+		&:not( .tooltip-no-arrow )::after {
 			content: ' ';
 			position: absolute;
-
-			// assuming all the tooltips are displayed at the top of the wrapped element.
-			// no need to complicate things since that's the only use case at the moment.
-			bottom: 0;
 			left: 50%;
-			transform: translate( -50%, 22px );
-			border: solid 15px transparent;
+			transform: translate( -50%, 0 );
+			border: solid 6px transparent;
+		}
+
+		&:not( .tooltip-no-arrow ).tooltip-position-top::after {
 			border-top-color: $gray-900;
+			bottom: -12px;
+		}
+
+		&:not( .tooltip-no-arrow ).tooltip-position-bottom::after {
+			border-bottom-color: $gray-900;
+			top: -12px;
 		}
 	}
 }

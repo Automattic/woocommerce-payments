@@ -10,6 +10,15 @@ declare const wcpaySettings: {
 	isJetpackIdcActive: boolean;
 	accountStatus: {
 		error?: boolean;
+		deposits?: {
+			completed_waiting_period: boolean;
+			delay_days: number;
+			interval: 'daily' | 'weekly' | 'monthly' | 'manual';
+			minimum_deposit_amounts: Record< string, number >;
+			monthly_anchor: number | null;
+			status: string;
+			weekly_anchor: string;
+		};
 		status?: string;
 		country?: string;
 		hasSubmittedVatData?: boolean;
