@@ -39,15 +39,7 @@ jobs:
     strategy:
       fail-fast:    false
       max-parallel: 10
-      matrix:
-        # Minimum support version, ..., Latest version, `beta`.
-        woocommerce: [ '6.8.2' ]
-        wordpress:   [ 'latest' ]
-        gutenberg:   [ 'latest' ]
-        php:         [ '7.4' ]
-        include:
-          # Edge case: oldest dependencies compatibility
-          $TEST
+      matrix: ${{ env.TEST }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2
