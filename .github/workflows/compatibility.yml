@@ -9,35 +9,23 @@ env:
   WP_L2_VERSION: '5.8'
 
 jobs:
-  generate-some-matrix-values:
-    name: "Generate some values dynamically for the matrix"
+  generate-matrix:
+    name: "Generate the matrix dynamically"
     runs-on: ubuntu-18.04
     outputs:
-      matrix-include: ${{ steps.generate_matrix_include.outputs.include }}
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
-      - name: "Generate include"
-        id: generate_matrix_include
-        run: |
-          echo "include='{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}'" >> $GITHUB_OUTPUT
-          
-      - name: "Check include output"
-        env:
-          TEST: ${{ fromJSON(steps.generate_matrix_include.outputs.include) }}
-        run: |
-          echo $TEST
-          
       - name: "Generate matrix"
         id: generate_matrix
         env:
           TEST: ${{ fromJSON(steps.generate_matrix_include.outputs.include) }}
         run: |
           WC_VERSIONS=$( echo "[\"$WC_L2_VERSION\", \"latest\", \"beta\"]" )
-          echo "matrix={\"woocommerce\":[\"$WC_L2_VERSION\", \"latest\", \"beta\"],\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]}" >> $GITHUB_OUTPUT
+          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]}" >> $GITHUB_OUTPUT
   
   woocommerce-compatibility:
     name: "WC compatibility"
-    needs: generate-some-matrix-values
+    needs: generate-matrix
     runs-on: ubuntu-18.04
     env:
       WP_VERSION: ${{ matrix.wordpress }}
@@ -46,7 +34,7 @@ jobs:
     strategy:
       fail-fast:    false
       max-parallel: 10
-      matrix: ${{ fromJSON(needs.generate-some-matrix-values.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2
