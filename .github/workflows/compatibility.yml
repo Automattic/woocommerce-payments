@@ -10,7 +10,7 @@ env:
 
 jobs:
   generate-matrix:
-    name: "Generate the matrix dynamically"
+    name: "Generate the matrix for woocommerce compatibility dynamically"
     runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
@@ -25,7 +25,7 @@ jobs:
   woocommerce-compatibility:
     name: "WC compatibility"
     needs: generate-matrix
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     env:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
@@ -56,7 +56,7 @@ jobs:
   # a dedicated job, as allowed to fail
   compatibility-woocommerce-beta:
     name:    Environment - WC beta
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     strategy:
       fail-fast: false
       matrix:
