@@ -112,7 +112,6 @@ export const AuthorizationsList = (): JSX.Element => {
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
 	const rows = authorizations.map( ( auth ) => {
-		const stringAmount = String( auth.amount );
 		const riskLevel = <RiskLevel risk={ auth.risk_level } />;
 		const detailsURL = getDetailsURL(
 			auth.payment_intent_id,
