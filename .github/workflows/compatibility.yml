@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: "Generate matrix"
         id: generate_matrix
-        env:
-          TEST: ${{ fromJSON(steps.generate_matrix_include.outputs.include) }}
         run: |
           WC_VERSIONS=$( echo "[\"$WC_L2_VERSION\", \"latest\", \"beta\"]" )
           echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]}" >> $GITHUB_OUTPUT
