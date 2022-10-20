@@ -19,31 +19,21 @@ describe( 'Authorizations reducer tests', () => {
 	const mockQuery: Query = { paged: '2', per_page: '50' };
 	const mockAuthorizations: Authorization[] = [
 		{
-			authorization_id: 'pi_7890',
+			payment_intent_id: 'pi_7890',
 			amount: 1000,
-			order: {
-				number: 456,
-				url: 'https://test.com',
-				customer_url: 'https://customer.com',
-			},
-			authorized_on: 'Today',
-			capture_by: 'Tomorrow',
-			risk_level: 'high',
+			order_id: 950,
+			created: 'Today',
+			risk_level: 0,
 			customer_name: 'Test',
 			customer_email: 'test@example.com',
 			customer_country: 'US',
 		},
 		{
-			authorization_id: 'pi_1235',
+			payment_intent_id: 'pi_1235',
 			amount: 2000,
-			order: {
-				number: 123,
-				url: 'https://test.com',
-				customer_url: 'https://customer.com',
-			},
-			authorized_on: 'Today',
-			capture_by: 'Tomorrow',
-			risk_level: 'high',
+			order_id: 100,
+			created: 'Today',
+			risk_level: 0,
 			customer_name: 'Test',
 			customer_email: 'test@example.com',
 			customer_country: 'US',
@@ -113,7 +103,7 @@ describe( 'Authorizations reducer tests', () => {
 		expect( reduced ).toStrictEqual( expected );
 	} );
 
-	test( 'New authorizations summary reduced correctly', () => {
+	test( 'New transactions summary reduced correctly', () => {
 		const expected = {
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
@@ -130,7 +120,7 @@ describe( 'Authorizations reducer tests', () => {
 		expect( reduced ).toStrictEqual( expected );
 	} );
 
-	test( 'Authorizations summary updated correctly on updated info', () => {
+	test( 'Transactions summary updated correctly on updated info', () => {
 		const newSummary = {
 			total: 5000,
 			fees: 100,
