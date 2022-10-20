@@ -7,34 +7,10 @@ import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 
-// Waits for the email field to exist as in the Blocks checkout, sometimes the email field is not immediately available.
-const waitForEmailField = ( selector ) => {
-	return new Promise( ( resolve ) => {
-		if ( document.querySelector( selector ) ) {
-			return resolve( document.querySelector( selector ) );
-		}
-
-		const checkoutBlock = document.querySelector(
-			'[data-block-name="woocommerce/checkout"]'
-		);
-		const observer = new MutationObserver( () => {
-			if ( document.querySelector( selector ) ) {
-				resolve( document.querySelector( selector ) );
-				observer.disconnect();
-			}
-		} );
-
-		observer.observe( checkoutBlock, {
-			childList: true,
-			subtree: true,
-		} );
-	} );
-};
-
-export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
+export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = await waitForEmailField( field );
+	const platformCheckoutEmailInput = document.querySelector( field );
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
@@ -213,7 +189,6 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 
 	// Error message to display when there's an error contacting WooPay.
 	const errorMessage = document.createElement( 'div' );
-	errorMessage.style[ 'white-space' ] = 'normal';
 	errorMessage.textContent = __(
 		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
 		'woocommerce-payments'
