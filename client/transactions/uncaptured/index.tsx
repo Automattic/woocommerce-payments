@@ -206,8 +206,8 @@ export const AuthorizationsList = (): JSX.Element => {
 	if ( isAuthorizationsSummaryLoaded ) {
 		summary = [
 			{
+				label: __( 'authorization(s)', 'woocommerce-payments' ),
 				value: String( authorizationsSummary.count ),
-				label: 'authorizations',
 			},
 		];
 
