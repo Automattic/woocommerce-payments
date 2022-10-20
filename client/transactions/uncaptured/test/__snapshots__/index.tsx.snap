@@ -254,25 +254,17 @@ exports[`Authorizations list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item date-time is-left-aligned"
                 >
-                  2020-01-09 17:46:02
+                  2020-01-02 17:46:02
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
-                  <a
-                    href="https://doggo.com"
-                  >
-                    #24 from Good boy
-                  </a>
+                  24
                 </td>
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  <span
-                    style="color: crimson;"
-                  >
-                    High
-                  </span>
+                  high
                 </td>
                 <td
                   class="woocommerce-table__item is-numeric"
@@ -290,25 +282,17 @@ exports[`Authorizations list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item date-time is-left-aligned"
                 >
-                  2020-01-10 17:46:02
+                  2020-01-03 17:46:02
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
-                  <a
-                    href="https://doggo.com"
-                  >
-                    #25 from Good boy
-                  </a>
+                  25
                 </td>
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  <span
-                    style="color: green;"
-                  >
-                    Normal
-                  </span>
+                  normal
                 </td>
                 <td
                   class="woocommerce-table__item is-numeric"

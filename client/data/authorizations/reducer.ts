@@ -5,52 +5,72 @@
  */
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
-import { Query } from '@woocommerce/navigation';
-import { Authorization } from 'wcpay/types/authorizations';
+import {
+	UpdateAuthorizationAction,
+	UpdateAuthorizationsAction,
+	UpdateAuthorizationsSummaryAction,
+} from './types';
+import {
+	Authorization,
+	AuthorizationsState,
+	AuthorizationsSummary,
+} from 'wcpay/types/authorizations';
 
-const defaultState = { summary: {} };
+const defaultState = { summary: {}, byId: {} };
 
 const receiveAuthorizations = (
-	state = defaultState,
-	{
-		type,
-		query = {},
-		data = [],
-		error,
-	}: {
-		type: string;
-		query: Query;
-		data: Authorization[];
-		error: string;
-	}
-): Record< string, any > => {
-	const index = getResourceId( query );
+	state: AuthorizationsState = defaultState,
+	action:
+		| UpdateAuthorizationAction
+		| UpdateAuthorizationsAction
+		| UpdateAuthorizationsSummaryAction
+): AuthorizationsState => {
+	switch ( action.type ) {
+		case TYPES.SET_AUTHORIZATION:
+			const authorization = action.data as Authorization;
 
-	switch ( type ) {
+			return {
+				...state,
+				byId: {
+					...state.byId,
+					[ authorization.payment_intent_id ]: {
+						...state.byId[ authorization.payment_intent_id ],
+						...action.data,
+					},
+				},
+			};
 		case TYPES.SET_AUTHORIZATIONS:
 			return {
 				...state,
-				authorizations: data,
+				[ getResourceId( action.query ) ]: {
+					data: action.data,
+				},
 			};
 		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS:
 			return {
 				...state,
-				[ index ]: {
-					error: error,
+				[ getResourceId( action.query ) ]: {
+					error: action.error,
 				},
 			};
 		case TYPES.SET_AUTHORIZATIONS_SUMMARY:
+			const summary = action.data as AuthorizationsSummary;
 			return {
 				...state,
-				summary: Object.assign( {}, state.summary, data ),
+				summary: {
+					...state.summary,
+					[ getResourceId( action.query ) ]: {
+						data: summary || {},
+					},
+				},
 			};
 		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS_SUMMARY:
 			return {
 				...state,
 				summary: {
 					...state.summary,
-					[ index ]: {
-						error: error,
+					[ getResourceId( action.query ) ]: {
+						error: action.error || '',
 					},
 				},
 			};

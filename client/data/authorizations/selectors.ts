@@ -4,10 +4,20 @@ import {
 	AuthorizationsSummary,
 	Authorization,
 } from 'wcpay/types/authorizations';
+import { getResourceId } from 'wcpay/utils/data';
+import { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+
+const getAuthorizationsState = ( state: Record< string, any > ) => {
+	if ( ! state ) {
+		return {};
+	}
+
+	return state.authorizations || {};
+};
 
 /**
  * Retrieves the authorizations corresponding to the provided query or a sane
@@ -18,24 +28,49 @@ import {
  *
  * @return {Object} The list of authorizations for the given query.
  */
-const getAuthorizationsForQuery = ( state: Record< string, any > ) => {
-	return state.authorizations;
+const getAuthorizationsForQuery = (
+	state: Record< string, any >,
+	query: Query
+) => {
+	const index = getResourceId( query );
+	return getAuthorizationsState( state )[ index ] || {};
+};
+
+const getAuthorizationsSummaryForQuery = (
+	state: Record< string, any >,
+	query: Query
+) => {
+	const index = getResourceId( query );
+	const summary = getAuthorizationsState( state ).summary || {};
+
+	return summary[ index ] || {};
 };
 
 export const getAuthorizations = (
-	state: Record< string, any >
+	state: Record< string, any >,
+	query: Query
 ): Array< Authorization > => {
-	return state.authorizations?.authorizations || [];
+	return getAuthorizationsForQuery( state, query ).data || [];
+};
+
+export const getAuthorization = (
+	state: Record< string, any >,
+	id: string
+): Record< string, any > => {
+	const authorizationById = getAuthorizationsState( state ).byId || {};
+	return authorizationById[ id ];
 };
 
 export const getAuthorizationsError = (
-	state: Record< string, any >
+	state: Record< string, any >,
+	query: Query
 ): Error => {
-	return getAuthorizationsForQuery( state ).error || {};
+	return getAuthorizationsForQuery( state, query ).error || {};
 };
 
 export const getAuthorizationsSummary = (
-	state: Record< string, any >
+	state: Record< string, any >,
+	query: Query
 ): AuthorizationsSummary => {
-	return state.authorizations?.summary;
+	return getAuthorizationsSummaryForQuery( state, query ).data || {};
 };

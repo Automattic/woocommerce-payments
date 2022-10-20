@@ -13,11 +13,9 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
  */
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
-import { RiskLevel } from 'wcpay/types/authorizations';
 
 interface Column extends TableCardColumn {
 	key:
-		| 'authorization_id'
 		| 'authorized_on'
 		| 'capture_by'
 		| 'order'
@@ -31,12 +29,6 @@ interface Column extends TableCardColumn {
 
 const getColumns = (): Column[] =>
 	[
-		{
-			key: 'authorization_id',
-			label: __( 'Authorization Id', 'woocommerce-payments' ),
-			visible: false,
-			isLeftAligned: true,
-		},
 		{
 			key: 'authorized_on',
 			label: __( 'Authorized on', 'woocommerce-payments' ),
@@ -112,49 +104,25 @@ export const AuthorizationsList = (): JSX.Element => {
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
-	const getRiskColor = ( risk: RiskLevel ) => {
-		switch ( risk ) {
-			case 'high':
-				return 'crimson';
-			case 'normal':
-				return 'green';
-			case 'elevated':
-				return 'darkorange';
-		}
-	};
-
 	const rows = authorizations.map( ( auth ) => {
 		const stringAmount = String( auth.amount );
 
 		const data = {
-			authorization_id: {
-				value: auth.authorization_id,
-				display: auth.authorization_id,
-			},
 			authorized_on: {
-				value: auth.authorized_on,
-				display: auth.authorized_on,
+				value: auth.created,
+				display: auth.created, // TODO format date. Will be done on components PR
 			},
 			capture_by: {
-				value: auth.capture_by,
-				display: auth.capture_by,
+				value: auth.created,
+				display: auth.created,
 			},
 			order: {
-				value: auth.order.number,
-				display: (
-					<a
-						href={ auth.order.url }
-					>{ `#${ auth.order.number } from ${ auth.customer_name }` }</a>
-				),
+				value: auth.order_id,
+				display: auth.order_id, // TODO add link to order
 			},
 			risk_level: {
 				value: auth.risk_level,
-				display: (
-					<span style={ { color: getRiskColor( auth.risk_level ) } }>
-						{ auth.risk_level.charAt( 0 ).toUpperCase() +
-							auth.risk_level.slice( 1 ) }
-					</span>
-				),
+				display: auth.risk_level, // TODO use RiskLevel component. Will be done on components PR.
 			},
 			amount: {
 				value: auth.amount,

@@ -66,34 +66,28 @@ declare const global: {
 
 const getMockAuthorizations: () => Authorization[] = () => [
 	{
-		authorization_id: '123',
-		authorized_on: '2020-01-02 17:46:02',
-		capture_by: '2020-01-09 17:46:02',
-		order: {
-			number: 24,
-			customer_url: 'https://doggo.com',
-			url: 'https://doggo.com',
-		},
+		created: '2020-01-02 17:46:02',
+		order_id: 24,
 		risk_level: 'high',
 		amount: 1455,
 		customer_email: 'good_boy@doge.com',
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
+		captured: false,
+		charge_id: 'ch_mock',
+		payment_intent_id: 'pi_mock',
 	},
 	{
-		authorization_id: '456',
-		authorized_on: '2020-01-03 17:46:02',
-		capture_by: '2020-01-10 17:46:02',
-		order: {
-			number: 25,
-			customer_url: 'https://doggo.com',
-			url: 'https://doggo.com',
-		},
+		created: '2020-01-03 17:46:02',
+		order_id: 25,
 		risk_level: 'normal',
 		amount: 2010,
 		customer_email: 'good_boy@doge.com',
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
+		captured: false,
+		charge_id: 'ch_mock',
+		payment_intent_id: 'pi_mock',
 	},
 ];
 
