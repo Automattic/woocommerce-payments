@@ -1,8 +1,7 @@
 name: PHP linting and tests
 
 on:
-  workflow_dispatch:
-  pull_request:
+  pull_request
 
 env:
   WP_VERSION:        latest
