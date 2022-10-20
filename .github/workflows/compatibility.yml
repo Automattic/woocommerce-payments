@@ -32,7 +32,6 @@ jobs:
         env:
           TEST: ${{ fromJSON(steps.generate_matrix_include.outputs.include) }}
         run: |
-          WC_VERSIONS=$( echo "[\"$WC_L2_VERSION\", \"latest\", \"beta\"]" )
           echo "matrix={\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}" >> $GITHUB_OUTPUT
 
       - name: "Check matrix output"
