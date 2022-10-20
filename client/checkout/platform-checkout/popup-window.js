@@ -6,6 +6,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 export const handlePlatformCheckoutPopup = async ( field, api ) => {
 	const popupHeight = 700;
 	const popupWidth = 1000;
+	let wooPayWindow = null;
 
 	const parentDiv = document.querySelector( '#contact_details' );
 
@@ -38,7 +39,7 @@ export const handlePlatformCheckoutPopup = async ( field, api ) => {
 			if ( 'success' === response.result ) {
 				const popupUrl = response.url;
 				const { top, left } = getPopupPosition();
-				window.open(
+				wooPayWindow = window.open(
 					popupUrl,
 					'wooPayPopup',
 					`popup,width=1000,height=700,top=${ top },left=${ left }`
@@ -56,4 +57,19 @@ export const handlePlatformCheckoutPopup = async ( field, api ) => {
 	wooPayButton.textContent = 'Checkout with WooPay';
 	wooPayButton.addEventListener( 'click', openPopup );
 	parentDiv.prepend( wooPayButton );
+
+	window.addEventListener( 'message', ( e ) => {
+		if ( ! getConfig( 'platformCheckoutHost' ).startsWith( e.origin ) ) {
+			return;
+		}
+
+		switch ( e.data.action ) {
+			case 'store_api_call':
+				console.log( 'got our message!' );
+
+				wooPayWindow.postMessage( { action: 'test_reply' }, '*' );
+				break;
+		}
+
+	} );
 };
