@@ -23,7 +23,7 @@ jobs:
           
       - name: "Check output"
         env:
-          TEST: ${{ needs.generate-some-matrix-values.outputs.matrix-include }}
+          TEST: ${{ steps.generate_matrix_include.outputs.include }}
         run: |
           echo $TEST
   
