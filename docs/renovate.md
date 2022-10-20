@@ -28,7 +28,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 5. Check that our CI tests have all passed, realistically these should find 90% of problems for us.
 6. Merge the PR. If there are any lingering concerns, consider merging immediately after a release so that we have the
    most time to do further testing before the next release.
-
+<!-- prettier-ignore-start -->
 ### PHP Dev Dependencies
 | Package Name | Usage Summary | Testing | Notes |
 | ------------ | ------------- | ------- | ----- |
@@ -39,6 +39,11 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | ------------ | ------------- | ------- | ----- |
 | node         | Not a package, but we declare the supported version of node in our `.nvmrc` file. We use node to build the JavaScript for the plugin and run the JavaScript unit tests. | Ensure you're running the new version of node by running the `nvm use` command or manually setting up the correct version. For minor and patch upgrades testing that the build runs is sufficient. For major versions, smoke testing the running plugin would be advised. | |
 
+### Other Dev Dependencies
+| Package Name | Usage Summary | Testing | Notes |
+| ------------ | ------------- | ------- | ----- |
+| husky  |  Used to run hooks pre/post commit, like automatically running PHPCS. | Check out another branch `composer install` should run automatically. |  |
+
 ### PHP Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |
 | ------------ | ------------- | ------- | ----- |
@@ -48,3 +53,4 @@ to catalog our packages and provide guidance to a developer who wants to test an
 | Package Name | Usage Summary | Testing | Notes |
 | ------------ | ------------- | ------- | ----- |
 | @stripe/stripe-js | Powers all the direct communication with Stripe in the user's browser | Reviewing Stripe's changelog is a good idea, then tailoring your testing to that. Testing payments, saving payment information, different payment methods, UPE on and off are all good options. | We configure which version of the Stripe API we want to use, although we aim to stay up to date there it's also worth ensuring the new version of this package is compatible. |
+<!-- prettier-ignore-end -->
