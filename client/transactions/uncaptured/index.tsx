@@ -189,7 +189,10 @@ export const AuthorizationsList = (): JSX.Element => {
 		};
 
 		return columnsToDisplay.map(
-			( { key } ) => data[ key ] || { display: null }
+			( { key } ) =>
+				data[ key ] || {
+					display: null,
+				}
 		);
 	} );
 
