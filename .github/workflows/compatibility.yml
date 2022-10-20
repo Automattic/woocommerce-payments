@@ -33,8 +33,8 @@ jobs:
           TEST: ${{ fromJSON(steps.generate_matrix_include.outputs.include) }}
         run: |
           WC_VERSIONS=$( echo "[\"$WC_L2_VERSION\", \"latest\", \"beta\"]" )
-          echo "matrix={\"include\":[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]}" >> $GITHUB_OUTPUT
-    
+          echo "matrix={\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}" >> $GITHUB_OUTPUT
+
       - name: "Check matrix output"
         env:
           TEST: ${{ fromJSON(steps.generate_matrix.outputs.matrix) }}
