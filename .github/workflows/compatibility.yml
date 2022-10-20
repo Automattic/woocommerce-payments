@@ -20,49 +20,55 @@ jobs:
         run: |
           WC_VERSIONS_MATRIX=( ${{ env.WC_L2_VERSION }}, 'latest', 'beta' )
           echo "include={\"woocommerce\":\"6.8.2\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}" >> $GITHUB_OUTPUT
+          
+      - name: "Check output"
+        env:
+          TEST: ${{ needs.generate-some-matrix-values.outputs.matrix-include }}
+        run: |
+          echo $TEST
   
-  woocommerce-compatibility:
-    name: "WC compatibility"
-    needs: generate-some-matrix-values
-    runs-on: ubuntu-18.04
-    strategy:
-      fail-fast:    false
-      max-parallel: 10
-      matrix:
-        # Minimum support version, ..., Latest version, `beta`.
-        woocommerce: [ '6.8.2' ]
-        wordpress:   [ 'latest' ]
-        gutenberg:   [ 'latest' ]
-        php:         [ '7.4' ]
-        include:
-          # Edge case: oldest dependencies compatibility
-          - woocommerce: '6.8.2'
-            wordpress: '5.8'
-            gutenberg: '13.6.0' # The latest version supporting WP 5.8.
-            php: '7.2' # Minimum supported PHP version:
-    env:
-      WP_VERSION:        ${{ matrix.wordpress }}
-      WC_VERSION:        ${{ matrix.woocommerce }}
-      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
-      TEST: ${{ fromJSON(needs.generate-some-matrix-values.outputs.matrix-include) }}
-    steps:
-      # clone the repository
-      - uses: actions/checkout@v2
-      # enable dependencies caching
-      - uses: actions/cache@v2
-        with:
-          path: ~/.cache/composer/
-          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          tools:       composer
-          coverage:    none
-      # No longer needed. Early version of PHPUnit is already part of repository.
-      # run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
-      # run CI checks
-      - run: bash bin/run-ci-tests.bash
+#  woocommerce-compatibility:
+#    name: "WC compatibility"
+#    needs: generate-some-matrix-values
+#    runs-on: ubuntu-18.04
+#    strategy:
+#      fail-fast:    false
+#      max-parallel: 10
+#      matrix:
+#        # Minimum support version, ..., Latest version, `beta`.
+#        woocommerce: [ '6.8.2' ]
+#        wordpress:   [ 'latest' ]
+#        gutenberg:   [ 'latest' ]
+#        php:         [ '7.4' ]
+#        include:
+#          # Edge case: oldest dependencies compatibility
+#          - woocommerce: '6.8.2'
+#            wordpress: '5.8'
+#            gutenberg: '13.6.0' # The latest version supporting WP 5.8.
+#            php: '7.2' # Minimum supported PHP version:
+#    env:
+#      WP_VERSION:        ${{ matrix.wordpress }}
+#      WC_VERSION:        ${{ matrix.woocommerce }}
+#      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
+#      TEST: ${{ fromJSON(needs.generate-some-matrix-values.outputs.matrix-include) }}
+#    steps:
+#      # clone the repository
+#      - uses: actions/checkout@v2
+#      # enable dependencies caching
+#      - uses: actions/cache@v2
+#        with:
+#          path: ~/.cache/composer/
+#          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+#      # setup PHP, but without debug extensions for reasonable performance
+#      - uses: shivammathur/setup-php@v2
+#        with:
+#          php-version: ${{ matrix.php }}
+#          tools:       composer
+#          coverage:    none
+#      # No longer needed. Early version of PHPUnit is already part of repository.
+#      # run: if [[ "${{ matrix.php }}" == '7.0' ]]; then wget https://phar.phpunit.de/phpunit-6.5.14.phar && mv phpunit-6.5.14.phar phpunit.phar; fi;
+#      # run CI checks
+#      - run: bash bin/run-ci-tests.bash
 
   # a dedicated job, as allowed to fail
 #  compatibility-woocommerce-beta:
