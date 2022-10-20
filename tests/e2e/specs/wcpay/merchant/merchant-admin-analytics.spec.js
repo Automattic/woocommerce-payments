@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-const { merchant, shopper, evalAndClick } = require( '@woocommerce/e2e-utils' );
+const { merchant, shopper } = require( '@woocommerce/e2e-utils' );
 
 /**
  * Internal dependencies
@@ -22,15 +22,27 @@ describe( 'Admin Order Analytics', () => {
 		await fillCardDetails( page, card );
 		await shopper.placeOrder();
 		await expect( page ).toMatch( 'Order received' );
+		const orderCell = await page.$(
+			'.woocommerce-order-overview__order > strong'
+		);
+		const orderId = await page.evaluate(
+			( order ) => order.innerText,
+			orderCell
+		);
 
 		// Login
 		await merchant.login();
 
 		// Go to Action Scheduler
-		await merchantWCP.openActionScheduler( 'pending', actionSchedulerHook );
-
+		await merchantWCP.openActionScheduler( 'pending', orderId );
+		const importOrderRun = await page.$x(
+			'//code[contains(text(), "0 => ' +
+				orderId +
+				'")]/ancestor::tr//span[contains(@class, "run")]/a'
+		);
 		// Run the Action Scheduler task to update the order stats
-		await evalAndClick( 'div.row-actions > span.run > a' );
+		await importOrderRun[ 0 ].evaluate( ( link ) => link.click() );
+
 		await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 		await expect( page ).toMatchElement(
 			'div#message.updated > p > strong',

@@ -277,6 +277,7 @@ class WC_Payments {
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
+		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -356,9 +357,11 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-allowed-payment-request-button-types-update.php';
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-track-upe-status.php';
+		require_once __DIR__ . '/migrations/class-delete-active-platform-checkout-webhook.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Track_Upe_Status', 'maybe_track' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_Platform_Checkout_Webhook', 'maybe_delete' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
@@ -387,6 +390,8 @@ class WC_Payments {
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
+
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
 	}
 
 	/**
@@ -740,6 +745,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
 		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
 		$payment_intents_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
+		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
+		$authorizations_controller->register_routes();
 	}
 
 	/**
@@ -1051,7 +1060,7 @@ class WC_Payments {
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
-				'store_logo'                     => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
+				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
 				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
@@ -1189,6 +1198,18 @@ class WC_Payments {
 
 			new Platform_Checkout_Save_User();
 			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
+		}
+	}
+
+	/**
+	 * Load webpack runtime script, only if SCRIPT_DEBUG is enabled and the script exists.
+	 * Required for webpack server with HMR.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_dev_runtime_scripts() {
+		if ( ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) && file_exists( WCPAY_ABSPATH . 'dist/runtime.js' ) ) {
+			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
 	}
 }
