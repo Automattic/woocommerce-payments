@@ -9,6 +9,7 @@ jobs:
     name: "Load the L-2 versions for WooCommerce and WordPress"
     runs-on: ubuntu-20.04
     steps:
+      - uses: actions/checkout@v3
       - uses: ./.github/actions/load-environment-variables
         with:
           filePath: "./.github/variables/ci-variables.env"
