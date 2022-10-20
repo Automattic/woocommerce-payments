@@ -17,6 +17,7 @@ jobs:
   generate-matrix:
     name: "Generate the matrix dynamically"
     runs-on: ubuntu-18.04
+    needs: load-wc-wp-l2-versions
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
