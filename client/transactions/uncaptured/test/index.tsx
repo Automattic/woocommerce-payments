@@ -74,6 +74,7 @@ const getMockAuthorizations: () => Authorization[] = () => [
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
 		payment_intent_id: 'pi_123',
+		currency: 'usd',
 	},
 	{
 		created: '2020-01-03 17:46:02',
@@ -84,6 +85,7 @@ const getMockAuthorizations: () => Authorization[] = () => [
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
 		payment_intent_id: 'pi_345',
+		currency: 'usd',
 	},
 ];
 

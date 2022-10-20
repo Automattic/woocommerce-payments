@@ -33,6 +33,7 @@ describe( 'Authorizations selectors', () => {
 			customer_name: 'Test',
 			customer_email: 'test@example.com',
 			customer_country: 'US',
+			currency: 'usd',
 		},
 		{
 			payment_intent_id: 'pi_1235',
@@ -43,6 +44,7 @@ describe( 'Authorizations selectors', () => {
 			customer_name: 'Test',
 			customer_email: 'test@example.com',
 			customer_country: 'US',
+			currency: 'usd',
 		},
 	];
 	const mockSummary: AuthorizationsSummary = {
