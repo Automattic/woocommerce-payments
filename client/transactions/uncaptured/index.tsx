@@ -172,11 +172,9 @@ export const AuthorizationsList = (): JSX.Element => {
 				),
 			},
 			order: {
-				value: auth.order.number,
-				display: (
-					<a
-						href={ auth.order.url }
-					>{ `#${ auth.order.number } from ${ auth.customer_name }` }</a>
+				value: auth.order_id,
+				display: clickable(
+					`#${ auth.order_id } from ${ auth.customer_name }`
 				),
 			},
 			risk_level: {
