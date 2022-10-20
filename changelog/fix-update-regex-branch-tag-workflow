@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Adjust regex to check the format of a tag for a pre-release in our GitHub workflow
