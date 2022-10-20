@@ -44,14 +44,25 @@ export function* getAuthorizations( query: Query ): any {
 }
 
 export function* getAuthorizationsSummary( query: Query ): any {
-	const data = {
-		count: 10,
-		total: 100,
-		currency: 'USD',
-		store_currencies: [ 'USD' ],
-		customer_currencies: [ 'USD', 'EUR' ],
-		totalAmount: 126790,
-	};
+	const path = addQueryArgs( `${ NAMESPACE }/authorizations/summary`, {
+		pagesize: query.per_page,
+		sort: query.orderby,
+		direction: query.order,
+		page: query.paged,
+	} );
 
-	yield updateAuthorizationsSummary( query, data );
+	try {
+		const results = yield apiFetch( { path } );
+		yield updateAuthorizationsSummary( query, results || [] );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving uncaptured transactions.',
+				'woocommerce-payments'
+			)
+		);
+		yield updateErrorForAuthorizationsSummary( query, {}, e );
+	}
 }
