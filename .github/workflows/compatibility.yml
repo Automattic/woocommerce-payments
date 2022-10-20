@@ -19,7 +19,7 @@ jobs:
         id: generate_matrix
         run: |
           WC_VERSIONS=$( echo "[\"$WC_L2_VERSION\", \"latest\", \"beta\"]" )
-          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]}" >> $GITHUB_OUTPUT
+          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"$WP_L2_VERSION\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]}" >> $GITHUB_OUTPUT
   
   woocommerce-compatibility:
     name: "WC compatibility"
