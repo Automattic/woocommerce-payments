@@ -75,7 +75,15 @@ const getAuthorizationsSummaryForQuery = (
 };
 
 export const getAuthorizationsSummary = (
-	state: Record< string, any >
-): AuthorizationsSummary => {
-	return state.authorizations?.summary;
+			state: Record< string, any >,
+			query: Query
+		): AuthorizationsSummary => {
+			return getAuthorizationsSummaryForQuery( state, query ).data || {};
+		};
+
+export const getAuthorizationsSummaryError = (
+	state: Record< string, any >,
+	query: Query
+): Error => {
+	return getAuthorizationsSummaryForQuery( state, query ).error || {};
 };
