@@ -47,7 +47,7 @@ jobs:
         php:         [ '7.4' ]
         include:
           # Edge case: oldest dependencies compatibility
-          - ${{ env.TEST }}
+          - $TEST
     steps:
       # clone the repository
       - uses: actions/checkout@v2
