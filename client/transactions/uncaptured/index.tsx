@@ -7,6 +7,8 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -18,7 +20,7 @@ import { RiskLevel } from 'wcpay/types/authorizations';
 interface Column extends TableCardColumn {
 	key:
 		| 'authorization_id'
-		| 'authorized_on'
+		| 'created'
 		| 'capture_by'
 		| 'order'
 		| 'risk_level'
@@ -38,7 +40,7 @@ const getColumns = (): Column[] =>
 			isLeftAligned: true,
 		},
 		{
-			key: 'authorized_on',
+			key: 'created',
 			label: __( 'Authorized on', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Authorized on', 'woocommerce-payments' ),
 			required: true,
@@ -125,6 +127,9 @@ export const AuthorizationsList = (): JSX.Element => {
 
 	const rows = authorizations.map( ( auth ) => {
 		const stringAmount = String( auth.amount );
+		const clickable = ( children: JSX.Element | string ) => (
+			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
+		);
 
 		const data = {
 			authorization_id: {
@@ -132,9 +137,17 @@ export const AuthorizationsList = (): JSX.Element => {
 				value: auth.payment_intent_id,
 				display: auth.payment_intent_id,
 			},
-			authorized_on: {
-				value: auth.authorized_on,
-				display: auth.authorized_on,
+			created: {
+				value: dateI18n(
+					'M j, Y / g:iA',
+					moment.utc( auth.created ).local().toISOString()
+				),
+				display: clickable(
+					dateI18n(
+						'M j, Y / g:iA',
+						moment.utc( auth.created ).local().toISOString()
+					)
+				),
 			},
 			capture_by: {
 				value: auth.capture_by,
