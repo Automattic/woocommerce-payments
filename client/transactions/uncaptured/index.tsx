@@ -180,11 +180,11 @@ export const AuthorizationsList = (): JSX.Element => {
 			},
 			customer_email: {
 				value: auth.customer_email,
-				display: auth.customer_email,
+				display: clickable( auth.customer_email ),
 			},
 			customer_country: {
 				value: auth.customer_country,
-				display: auth.customer_country,
+				display: clickable( auth.customer_country ),
 			},
 		};
 
