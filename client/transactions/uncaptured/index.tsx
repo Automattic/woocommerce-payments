@@ -16,6 +16,7 @@ import moment from 'moment';
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
 import { RiskLevel } from 'wcpay/types/authorizations';
+import ClickableCell from 'components/clickable-cell';
 
 interface Column extends TableCardColumn {
 	key:
@@ -149,9 +150,26 @@ export const AuthorizationsList = (): JSX.Element => {
 					)
 				),
 			},
+			// Payments are authorized for a maximum of 7 days
 			capture_by: {
-				value: auth.capture_by,
-				display: auth.capture_by,
+				value: dateI18n(
+					'M j, Y / g:iA',
+					moment
+						.utc( auth.created )
+						.add( 7, 'd' )
+						.local()
+						.toISOString()
+				),
+				display: clickable(
+					dateI18n(
+						'M j, Y / g:iA',
+						moment
+							.utc( auth.created )
+							.add( 7, 'd' )
+							.local()
+							.toISOString()
+					)
+				),
 			},
 			order: {
 				value: auth.order.number,
