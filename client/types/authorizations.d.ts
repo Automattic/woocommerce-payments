@@ -10,6 +10,7 @@ export interface Authorization {
 	customer_name: string;
 	customer_email: string;
 	customer_country: string;
+	currency: string;
 }
 
 interface Authorizations {

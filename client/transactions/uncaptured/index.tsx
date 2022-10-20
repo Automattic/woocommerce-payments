@@ -17,6 +17,7 @@ import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
+import { formatExplicitCurrency } from 'utils/currency';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 
 interface Column extends TableCardColumn {
@@ -101,12 +102,6 @@ const getColumns = (): Column[] =>
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
-const getFormatedAmountFromString = ( string: string ) => {
-	return `${ string.substring( 0, string.length - 2 ) }.${ string.substring(
-		string.length - 2
-	) }$`;
-};
-
 export const AuthorizationsList = (): JSX.Element => {
 	const columnsToDisplay = getColumns();
 	const {
@@ -179,7 +174,9 @@ export const AuthorizationsList = (): JSX.Element => {
 			},
 			amount: {
 				value: auth.amount,
-				display: getFormatedAmountFromString( stringAmount ),
+				display: clickable(
+					formatExplicitCurrency( auth.amount, auth.currency )
+				),
 			},
 			customer_email: {
 				value: auth.customer_email,
