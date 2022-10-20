@@ -45,18 +45,18 @@ const getAuthorizationsForQuery = (
 };
 
 export const getAuthorizations = (
-			state: Record< string, any >,
-			query: Query
-		): Array< Authorization > => {
-			return getAuthorizationsForQuery( state, query ).data || [];
-		};
+	state: Record< string, any >,
+	query: Query
+): Array< Authorization > => {
+	return getAuthorizationsForQuery( state, query ).data || [];
+};
 
 export const getAuthorizationsError = (
-			state: Record< string, any >,
-			query: Query
-		): Error => {
-			return getAuthorizationsForQuery( state, query ).error || {};
-		};
+	state: Record< string, any >,
+	query: Query
+): Error => {
+	return getAuthorizationsForQuery( state, query ).error || {};
+};
 
 /**
  * Retrieves the authorizations summary corresponding to the provided query.
@@ -75,11 +75,11 @@ const getAuthorizationsSummaryForQuery = (
 };
 
 export const getAuthorizationsSummary = (
-			state: Record< string, any >,
-			query: Query
-		): AuthorizationsSummary => {
-			return getAuthorizationsSummaryForQuery( state, query ).data || {};
-		};
+	state: Record< string, any >,
+	query: Query
+): AuthorizationsSummary => {
+	return getAuthorizationsSummaryForQuery( state, query ).data || {};
+};
 
 export const getAuthorizationsSummaryError = (
 	state: Record< string, any >,
