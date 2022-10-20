@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 4.9.0 - 2022-xx-xx =
+= 4.9.0 - 2022-10-20 =
 * Add - Adds new notice and modal informing users about verifying their account during onboarding.
 * Add - Declare WooCommerce Payments incompatible with COT
 * Add - New Multi-Currency filter to display Analytics > Orders in customer currency.
