@@ -57,6 +57,21 @@ export const getAuthorizationsError = (
 		): Error => {
 			return getAuthorizationsForQuery( state, query ).error || {};
 		};
+
+/**
+ * Retrieves the authorizations summary corresponding to the provided query.
+ *
+ * @param {Object} state Current wp.data state.
+ * @param {Object} query The authorizations summary query.
+ *
+ * @return {Object} The transaction summary for the given query.
+ */
+const getAuthorizationsSummaryForQuery = (
+	state: Record< string, any >,
+	query: Query
+): any => {
+	const index = getResourceId( query );
+	return getAuthorizationsState( state ).summary[ index ] || {};
 };
 
 export const getAuthorizationsSummary = (
