@@ -33,7 +33,9 @@ const receiveAuthorizations = (
 		case TYPES.SET_AUTHORIZATIONS:
 			return {
 				...state,
-				authorizations: data,
+				[ index ]: {
+					data: data,
+				},
 			};
 		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS:
 			return {
@@ -45,7 +47,12 @@ const receiveAuthorizations = (
 		case TYPES.SET_AUTHORIZATIONS_SUMMARY:
 			return {
 				...state,
-				summary: Object.assign( {}, state.summary, data ),
+				summary: {
+					...state.summary,
+					[ index ]: {
+						data: data,
+					},
+				},
 			};
 		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS_SUMMARY:
 			return {
