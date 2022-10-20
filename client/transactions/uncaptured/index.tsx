@@ -128,8 +128,9 @@ export const AuthorizationsList = (): JSX.Element => {
 
 		const data = {
 			authorization_id: {
-				value: auth.authorization_id,
-				display: auth.authorization_id,
+				// The authorization id is not exposed. Using the payment intent id as unique identifier
+				value: auth.payment_intent_id,
+				display: auth.payment_intent_id,
 			},
 			authorized_on: {
 				value: auth.authorized_on,
