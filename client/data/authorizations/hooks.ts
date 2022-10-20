@@ -45,3 +45,12 @@ export const useAuthorizationsSummary = ( {}: Query ): {
 			isLoading: isResolving( 'getAuthorizationsSummary', [ query ] ),
 		};
 	} );
+
+export const useAuthorization = (
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	paymentIntentId: string,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	orderId: number
+): any => {
+	// TODO. This will be implemented in a different PR.
+};
