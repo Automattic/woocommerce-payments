@@ -32,7 +32,9 @@ jobs:
         id: generate_matrix
         env:
           TEST: ${{ fromJSON(steps.generate_matrix_include.outputs.include) }}
-        run: echo "matrix={\"include\":[{\"project\":\"foo\",\"config\":\"Debug\"},{\"project\":\"bar\",\"config\":\"Release\"}]}" >> $GITHUB_OUTPUT
+        run: |
+          WC_VERSIONS_MATRIX=( ${{ env.WC_L2_VERSION }}, 'latest', 'beta' )
+          echo "matrix={\"include\":[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]}" >> $GITHUB_OUTPUT
   
   
   woocommerce-compatibility:
