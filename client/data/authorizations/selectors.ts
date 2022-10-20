@@ -9,6 +9,21 @@ import {
 /**
  * Internal dependencies
  */
+/**
+ * Retrieves the authorizations state from the wp.data store if the state
+ * has been initialized, otherwise returns an empty state.
+ *
+ * @param {Object} state Current wp.data state.
+ *
+ * @return {Object} The authorizations state.
+ */
+const getAuthorizationsState = ( state: Record< string, any > ) => {
+	if ( ! state ) {
+		return {};
+	}
+
+	return state.authorizations || {};
+};
 
 /**
  * Retrieves the authorizations corresponding to the provided query or a sane
