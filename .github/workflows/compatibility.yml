@@ -34,7 +34,7 @@ jobs:
           TEST: ${{ fromJSON(steps.generate_matrix_include.outputs.include) }}
         run: |
           WC_VERSIONS_MATRIX=( ${{ env.WC_L2_VERSION }}, 'latest', 'beta' )
-          echo "matrix={\"include\":[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]}" >> $GITHUB_OUTPUT
+          echo "matrix={\"include\":[{\"woocommerce\":\"$WC_VERSIONS_MATRIX\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]}" >> $GITHUB_OUTPUT
   
   
   woocommerce-compatibility:
