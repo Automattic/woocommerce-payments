@@ -46,7 +46,8 @@ jobs:
     strategy:
       fail-fast:    false
       max-parallel: 10
-      matrix: ${{ fromJSON(needs.generate-some-matrix-values.outputs.matrix) }}
+      matrix: 
+        value: ${{ fromJSON(needs.generate-some-matrix-values.outputs.matrix) }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2
