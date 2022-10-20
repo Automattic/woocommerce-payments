@@ -36,9 +36,9 @@ jobs:
 
       - name: "Check matrix output"
         env:
-          TEST: ${{ fromJSON(steps.generate_matrix.outputs.matrix) }}
+          OTHER: ${{ fromJSON(steps.generate_matrix.outputs.matrix) }}
         run: |
-          echo $TEST
+          echo $OTHER
   
   woocommerce-compatibility:
     name: "WC compatibility"
