@@ -201,7 +201,6 @@ export const AuthorizationsList = (): JSX.Element => {
 	const isAuthorizationsSummaryLoaded =
 		authorizationsSummary.count !== undefined &&
 		authorizationsSummary.total !== undefined &&
-		authorizationsSummary.totalAmount !== undefined &&
 		false === isSummaryLoading;
 
 	if ( isAuthorizationsSummaryLoaded ) {
