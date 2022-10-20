@@ -15,8 +15,9 @@ import moment from 'moment';
  */
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
-import { RiskLevel } from 'wcpay/types/authorizations';
+import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
+import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 
 interface Column extends TableCardColumn {
 	key:
@@ -115,19 +116,14 @@ export const AuthorizationsList = (): JSX.Element => {
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
-	const getRiskColor = ( risk: RiskLevel ) => {
-		switch ( risk ) {
-			case 'high':
-				return 'crimson';
-			case 'normal':
-				return 'green';
-			case 'elevated':
-				return 'darkorange';
-		}
-	};
-
 	const rows = authorizations.map( ( auth ) => {
 		const stringAmount = String( auth.amount );
+		const riskLevel = <RiskLevel risk={ auth.risk_level } />;
+		const detailsURL = getDetailsURL(
+			auth.payment_intent_id,
+			'transactions'
+		);
+
 		const clickable = ( children: JSX.Element | string ) => (
 			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 		);
@@ -178,13 +174,8 @@ export const AuthorizationsList = (): JSX.Element => {
 				),
 			},
 			risk_level: {
-				value: auth.risk_level,
-				display: (
-					<span style={ { color: getRiskColor( auth.risk_level ) } }>
-						{ auth.risk_level.charAt( 0 ).toUpperCase() +
-							auth.risk_level.slice( 1 ) }
-					</span>
-				),
+				value: calculateRiskMapping( auth.risk_level ),
+				display: clickable( riskLevel ),
 			},
 			amount: {
 				value: auth.amount,
