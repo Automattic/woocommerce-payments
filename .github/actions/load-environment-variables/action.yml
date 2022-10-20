@@ -1,0 +1,13 @@
+name: "Load environment variables from a file"
+description: "Configures environment variables for a workflow"
+inputs:
+  filePath:
+    description: "The file path to the .env file that the action should use."
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: "Add content of the env file into the GitHub env"
+      shell: bash
+      run: |
+        cat ${{ inputs.filePath }} >> $GITHUB_ENV

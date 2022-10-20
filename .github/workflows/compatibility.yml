@@ -4,11 +4,15 @@ on:
   workflow_dispatch:
   pull_request:
 
-env:
-  WC_L2_VERSION: '6.8.2'
-  WP_L2_VERSION: '5.8'
-
 jobs:
+  load-wc-wp-l2-versions:
+    name: "Load the L-2 versions for WooCommerce and WordPress"
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: ./.github/actions/load-environment-variables
+        with:
+          filePath: "./.github/variables/ci-variables.env"
+      
   generate-matrix:
     name: "Generate the matrix dynamically"
     runs-on: ubuntu-18.04
