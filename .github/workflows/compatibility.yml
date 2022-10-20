@@ -35,11 +35,18 @@ jobs:
       WP_VERSION: ${{ matrix.wordpress }}
       WC_VERSION: ${{ matrix.woocommerce }}
       GUTENBERG_VERSION: ${{ matrix.gutenberg }}
-      TEST: ${{ fromJSON(needs.generate-some-matrix-values.outputs.matrix-include) }}
     strategy:
       fail-fast:    false
       max-parallel: 10
-      matrix: ${{ fromJSON(needs.generate-some-matrix-values.outputs.matrix-include) }}
+      matrix:
+        # Minimum support version, ..., Latest version, `beta`.
+        woocommerce: [ '6.8.2' ]
+        wordpress:   [ 'latest' ]
+        gutenberg:   [ 'latest' ]
+        php:         [ '7.4' ]
+        include:
+          # Edge case: oldest dependencies compatibility
+          - ${{ fromJSON(needs.generate-some-matrix-values.outputs.matrix-include) }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2
