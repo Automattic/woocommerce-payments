@@ -40,7 +40,10 @@ describe( 'submitCaptureAuthorization', () => {
 			} )
 		);
 
-		expect( generator.next( authorizationsFixture[ 0 ] ).value ).toEqual(
+		expect(
+			generator.next( { id: mockPaymentIntentId, status: 'succeeded' } )
+				.value
+		).toEqual(
 			updateAuthorization( {
 				payment_intent_id: mockPaymentIntentId,
 				captured: true,
