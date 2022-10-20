@@ -4,20 +4,14 @@ on:
   workflow_dispatch:
   pull_request:
 
+env:
+  WC_L2_VERSION: '6.8.2'
+  WP_L2_VERSION: '5.8'
+
 jobs:
-  load-wc-wp-l2-versions:
-    name: "Load the L-2 versions for WooCommerce and WordPress"
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/load-environment-variables
-        with:
-          filePath: "./.github/variables/ci-variables.env"
-      
   generate-matrix:
     name: "Generate the matrix dynamically"
     runs-on: ubuntu-18.04
-    needs: load-wc-wp-l2-versions
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
@@ -59,33 +53,33 @@ jobs:
       - run: bash bin/run-ci-tests.bash
 
   # a dedicated job, as allowed to fail
-#  compatibility-woocommerce-beta:
-#    name:    Environment - WC beta
-#    runs-on: ubuntu-18.04
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        woocommerce: [ 'beta' ]
-#        wordpress:   [ 'latest' ]
-#        gutenberg:   [ 'latest' ]
-#        php:         [ '7.2', '8.0', '8.1' ]
-#    env:
-#      WP_VERSION:        ${{ matrix.wordpress }}
-#      WC_VERSION:        ${{ matrix.woocommerce }}
-#      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
-#    steps:
-#      # clone the repository
-#      - uses: actions/checkout@v2
-#      # enable dependencies caching
-#      - uses: actions/cache@v2
-#        with:
-#          path: ~/.cache/composer/
-#          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-#      # setup PHP, but without debug extensions for reasonable performance
-#      - uses: shivammathur/setup-php@v2
-#        with:
-#          php-version: ${{ matrix.php }}
-#          tools:       composer
-#          coverage:    none
-#      # run CI checks
-#      - run: bash bin/run-ci-tests.bash
+  compatibility-woocommerce-beta:
+    name:    Environment - WC beta
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        woocommerce: [ 'beta' ]
+        wordpress:   [ 'latest' ]
+        gutenberg:   [ 'latest' ]
+        php:         [ '7.2', '8.0', '8.1' ]
+    env:
+      WP_VERSION:        ${{ matrix.wordpress }}
+      WC_VERSION:        ${{ matrix.woocommerce }}
+      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
+    steps:
+      # clone the repository
+      - uses: actions/checkout@v2
+      # enable dependencies caching
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer/
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+      # setup PHP, but without debug extensions for reasonable performance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools:       composer
+          coverage:    none
+      # run CI checks
+      - run: bash bin/run-ci-tests.bash
