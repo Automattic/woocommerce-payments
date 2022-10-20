@@ -212,15 +212,13 @@ export const AuthorizationsList = (): JSX.Element => {
 		];
 
 		summary.push( {
-			value: String( authorizationsSummary.total ),
-			label: 'total',
-		} );
-
-		summary.push( {
-			value: getFormatedAmountFromString(
-				String( authorizationsSummary.totalAmount )
-			),
-			label: 'Pending',
+			label: __( 'total', 'woocommerce-payments' ),
+			value: `${ formatExplicitCurrency(
+				// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
+				// that so we remove the `undefined` in the type manually.
+				authorizationsSummary.total as number,
+				authorizationsSummary.currency
+			) }`,
 		} );
 	}
 
