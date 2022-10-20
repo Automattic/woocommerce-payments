@@ -1,5 +1,6 @@
 /** @format */
 
+import type { Query } from '@woocommerce/navigation';
 import {
 	AuthorizationsSummary,
 	Authorization,
