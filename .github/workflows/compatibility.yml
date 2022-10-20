@@ -19,7 +19,7 @@ jobs:
         id: generate_matrix_include
         run: |
           WC_VERSIONS_MATRIX=( ${{ env.WC_L2_VERSION }}, 'latest', 'beta' )
-          echo "include={\"woocommerce\":\"6.8.2\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}" >> $GITHUB_OUTPUT
+          echo "include='{\"woocommerce\":\"6.8.2\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}"' >> $GITHUB_OUTPUT
           
       - name: "Check output"
         env:
