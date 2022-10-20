@@ -28,12 +28,12 @@ export function updateAuthorizations(
 export function updateErrorForAuthorizations(
 	query: Query,
 	data: Authorization[],
-	error: any
+	error: Error
 ): {
 	type: string;
 	data: Authorization[];
 	query: Query;
-	error: any;
+	error: Error;
 } {
 	return {
 		type: TYPES.SET_ERROR_FOR_AUTHORIZATIONS,
@@ -61,12 +61,12 @@ export function updateAuthorizationsSummary(
 export function updateErrorForAuthorizationsSummary(
 	query: Query,
 	data: AuthorizationsSummary,
-	error: any
+	error: Error
 ): {
 	type: string;
 	data: AuthorizationsSummary;
 	query: Query;
-	error: any;
+	error: Error;
 } {
 	return {
 		type: TYPES.SET_ERROR_FOR_AUTHORIZATIONS_SUMMARY,

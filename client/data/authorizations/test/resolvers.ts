@@ -17,7 +17,10 @@ import {
 } from '../actions';
 import { getAuthorizations, getAuthorizationsSummary } from '../resolvers';
 
-const errorResponse = { code: 'error' };
+const errorResponse = {
+	name: 'authorizations-error',
+	message: 'There was an error',
+};
 
 const paginationQuery = {
 	paged: '1',
