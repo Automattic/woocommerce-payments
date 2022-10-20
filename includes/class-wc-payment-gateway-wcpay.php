@@ -1426,7 +1426,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			if ( 'requires_action' === $status ) {
+			if ( 'requires_action' === $status || 'requires_confirmation' === $status ) {
 				if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
 					$response = [
 						'result'   => 'success',
@@ -1615,6 +1615,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->order_service->mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			case 'requires_action':
+			case 'requires_confirmation':
 			case 'requires_payment_method':
 				$this->order_service->mark_payment_started( $order, $intent_id, $intent_status, $charge_id );
 				break;
