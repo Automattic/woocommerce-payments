@@ -9,6 +9,8 @@ import {
 /**
  * Internal dependencies
  */
+import { getResourceId } from 'utils/data';
+
 /**
  * Retrieves the authorizations state from the wp.data store if the state
  * has been initialized, otherwise returns an empty state.
@@ -34,20 +36,27 @@ const getAuthorizationsState = ( state: Record< string, any > ) => {
  *
  * @return {Object} The list of authorizations for the given query.
  */
-const getAuthorizationsForQuery = ( state: Record< string, any > ) => {
-	return state.authorizations;
+const getAuthorizationsForQuery = (
+	state: Record< string, any >,
+	query: Query
+) => {
+	const index = getResourceId( query );
+	return getAuthorizationsState( state )[ index ] || {};
 };
 
 export const getAuthorizations = (
-	state: Record< string, any >
-): Array< Authorization > => {
-	return state.authorizations?.authorizations || [];
-};
+			state: Record< string, any >,
+			query: Query
+		): Array< Authorization > => {
+			return getAuthorizationsForQuery( state, query ).data || [];
+		};
 
 export const getAuthorizationsError = (
-	state: Record< string, any >
-): Error => {
-	return getAuthorizationsForQuery( state ).error || {};
+			state: Record< string, any >,
+			query: Query
+		): Error => {
+			return getAuthorizationsForQuery( state, query ).error || {};
+		};
 };
 
 export const getAuthorizationsSummary = (
