@@ -35,7 +35,12 @@ jobs:
         run: |
           WC_VERSIONS_MATRIX=( ${{ env.WC_L2_VERSION }}, 'latest', 'beta' )
           echo "matrix={\"include\":[{\"woocommerce\":\"$WC_VERSIONS_MATRIX\",\"wordpress\":\"5.8\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]}" >> $GITHUB_OUTPUT
-  
+    
+      - name: "Check matrix output"
+        env:
+          TEST: ${{ fromJSON(steps.generate_matrix.outputs.matrix) }}
+        run: |
+          echo $TEST
   
   woocommerce-compatibility:
     name: "WC compatibility"
