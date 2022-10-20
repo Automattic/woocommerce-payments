@@ -202,6 +202,7 @@ export const AuthorizationsList = (): JSX.Element => {
 		authorizationsSummary.count !== undefined &&
 		authorizationsSummary.total !== undefined &&
 		false === isSummaryLoading;
+	const totalRows = authorizationsSummary.count || 0;
 
 	if ( isAuthorizationsSummaryLoaded ) {
 		summary = [
@@ -231,8 +232,8 @@ export const AuthorizationsList = (): JSX.Element => {
 					'woocommerce-payments'
 				) }
 				isLoading={ isLoading || isSummaryLoading }
-				rowsPerPage={ 10 }
-				totalRows={ 2 }
+				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
+				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
