@@ -211,15 +211,21 @@ export const AuthorizationsList = (): JSX.Element => {
 			},
 		];
 
-		summary.push( {
-			label: __( 'total', 'woocommerce-payments' ),
-			value: `${ formatExplicitCurrency(
-				// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
-				// that so we remove the `undefined` in the type manually.
-				authorizationsSummary.total as number,
-				authorizationsSummary.currency
-			) }`,
-		} );
+		if (
+			authorizationsSummary.authorizations_currencies &&
+			authorizationsSummary.authorizations_currencies.length === 1
+		) {
+			// Only show the total if there is one currency available
+			summary.push( {
+				label: __( 'total', 'woocommerce-payments' ),
+				value: `${ formatExplicitCurrency(
+					// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
+					// that so we remove the `undefined` in the type manually.
+					authorizationsSummary.total as number,
+					authorizationsSummary.currency
+				) }`,
+			} );
+		}
 	}
 
 	return (
