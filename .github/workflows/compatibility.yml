@@ -6,7 +6,7 @@ on:
 
 env:
   WC_L2_VERSION: '7.0.0'
-  WP_L2_VERSION: '6.0'
+  WP_L2_VERSION: '5.9'
 
 jobs:
   generate-matrix:
