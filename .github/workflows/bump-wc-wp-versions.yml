@@ -2,7 +2,6 @@ name: "Bump WooCommerce and WordPress minimum and tested versions"
 
 # This action will run when it is triggered manually
 on:
-  push:
   workflow_dispatch:
     inputs:
       wcVersion:
