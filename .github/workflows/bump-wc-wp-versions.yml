@@ -19,14 +19,17 @@ on:
         required: true
         type: string
     
+defaults:
+  run:
+    shell: bash
 
 jobs:
   bump-versions:
+    runs-on: ubuntu-20.04
     env:
       WC_VERSION: ${{ inputs.wcVersion }}
       WP_VERSION: ${{ inputs.wpVersion }}
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
-
     steps:
       - name: "Check out WCPay repository"
         uses: actions/checkout@v3
