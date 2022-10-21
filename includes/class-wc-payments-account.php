@@ -1419,6 +1419,16 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Returns the default and supported store currencies.
+	 *
+	 * @return array
+	 */
+	public function get_store_currencies(): array {
+		$account = $this->get_cached_account_data();
+		return $account['store_currencies'] ?? [];
+	}
+
+	/**
 	 * Checks if the user is in onboarding treatment before doing the redirection.
 	 * Also checks if the server is connect and try to connect it otherwise.
 	 *
