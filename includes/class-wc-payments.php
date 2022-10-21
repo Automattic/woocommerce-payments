@@ -929,6 +929,10 @@ class WC_Payments {
 			WC_Payments_Notes_Additional_Payment_Methods::set_account( self::get_account_service() );
 			WC_Payments_Notes_Additional_Payment_Methods::possibly_add_note();
 			WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
+			WC_Payments_Notes_Set_Up_StripeLink::set_gateway( self::get_gateway() );
+			WC_Payments_Notes_Set_Up_StripeLink::possibly_add_note();
 		}
 	}
 
@@ -951,6 +955,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 			WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
+			WC_Payments_Notes_Set_Up_StripeLink::possibly_delete_note();
 		}
 	}
 
@@ -1071,6 +1078,7 @@ class WC_Payments {
 				'test_mode'                      => self::get_gateway()->is_in_test_mode(),
 				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
+				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
