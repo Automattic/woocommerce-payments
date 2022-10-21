@@ -23,4 +23,5 @@ export interface AuthorizationsSummary {
 	count?: number;
 	total?: number;
 	currency?: string;
+	authorizations_currencies?: string[];
 }
