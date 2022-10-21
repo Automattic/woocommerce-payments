@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import Gridicon from 'gridicons';
+import InfoOutlineIcon from 'gridicons/dist/info-outline';
 import { Link } from '@woocommerce/components';
 import { getAdminUrl } from 'wcpay/utils';
 
@@ -17,7 +17,7 @@ export const getDetailsURL = ( id, parentSegment ) =>
 const DetailsLink = ( { id, parentSegment } ) =>
 	id ? (
 		<Link href={ getDetailsURL( id, parentSegment ) }>
-			<Gridicon icon="info-outline" size={ 18 } />
+			<InfoOutlineIcon size={ 18 } />
 		</Link>
 	) : null;
 
