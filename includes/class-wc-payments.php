@@ -195,6 +195,8 @@ class WC_Payments {
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
+		require_once __DIR__ . '/api/class-mode.php';
+
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 
 		include_once __DIR__ . '/class-database-cache.php';
