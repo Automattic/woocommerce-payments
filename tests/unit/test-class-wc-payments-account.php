@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\API\Mode;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 
@@ -439,8 +440,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_dev_account_in_dev_mode() {
-		// enable dev mode.
-		add_filter( 'wcpay_dev_mode', '__return_true' );
+		Mode::enter_dev_mode();
 
 		// cache a dev account.
 		$this->cache_account_details(
@@ -459,7 +459,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 
-		remove_filter( 'wcpay_dev_mode', '__return_true' );
+		Mode::enter_live_mode();
 	}
 
 	public function test_try_is_stripe_connected_returns_false_when_connected_with_dev_account_in_live_mode() {
