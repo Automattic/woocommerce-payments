@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WCPay\API\Mode;
 use WCPay\Logger;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Tracker;
@@ -247,9 +246,9 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return string A string representation of the current mode.
 	 */
 	private function get_gateway_mode_string() {
-		if ( Mode::is_dev() ) {
+		if ( wcpay()->mode->dev ) {
 			return 'dev';
-		} elseif ( Mode::is_test() ) {
+		} elseif ( wcpay()->mode->test ) {
 			return 'test';
 		}
 		return 'live';

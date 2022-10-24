@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\RoutesController;
-use WCPay\API\Mode;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -197,6 +196,16 @@ class WC_Payments {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		require_once __DIR__ . '/api/class-mode.php';
+		require_once __DIR__ . '/api/class-api.php';
+
+		function wcpay() {
+			static $api;
+
+			if ( ! $api ) {
+				$api = new \WCPay\API\API();
+			}
+			return $api;
+		}
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 
@@ -1078,7 +1087,7 @@ class WC_Payments {
 				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
 				'store_api_url'                  => self::get_store_api_url(),
 				'account_id'                     => $account_id,
-				'test_mode'                      => Mode::is_test(),
+				'test_mode'                      => wcpay()->mode->test,
 				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),

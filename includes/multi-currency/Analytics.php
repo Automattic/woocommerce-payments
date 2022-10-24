@@ -10,10 +10,8 @@ namespace WCPay\MultiCurrency;
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use Automattic\WooCommerce\Utilities\OrderUtil;
-use WCPay\API\Mode;
 use WC_Order;
 use WC_Order_Refund;
-use WC_Payments;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -65,7 +63,7 @@ class Analytics {
 			$this->register_customer_currencies();
 		}
 
-		if ( Mode::is_dev() ) {
+		if ( wcpay()->mode->dev ) {
 			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 

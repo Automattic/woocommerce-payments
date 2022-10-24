@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\API\Mode;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -94,7 +92,7 @@ class WC_Payments_Action_Scheduler_Service {
 		$order_mode = $order->get_meta( '_wcpay_mode' );
 
 		if ( $order_mode ) {
-			$current_mode = Mode::is_test() ? 'test' : 'prod';
+			$current_mode = wcpay()->mode->test ? 'test' : 'prod';
 			if ( $current_mode !== $order_mode ) {
 				// If mode doesn't match make sure to stop order tracking to prevent order tracking issues.
 				// False will be returned so maybe future crons will have correct mode.

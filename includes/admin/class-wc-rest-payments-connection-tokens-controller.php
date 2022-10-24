@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\API\Mode;
-
 defined( 'ABSPATH' ) || exit;
 
 
@@ -49,7 +47,7 @@ class WC_REST_Payments_Connection_Tokens_Controller extends WC_Payments_REST_Con
 		if ( is_a( $response, 'WP_REST_Response' ) ) {
 			if ( property_exists( $response, 'data' ) ) {
 				if ( is_array( $response->data ) ) {
-					$response->data['test_mode'] = Mode::is_test();
+					$response->data['test_mode'] = wcpay()->mode->test;
 				}
 			}
 		}

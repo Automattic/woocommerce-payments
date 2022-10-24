@@ -7,7 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\API\Mode;
 
 /**
  * REST controller for account details and status.
@@ -73,7 +72,7 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 		if ( false !== $account ) {
 			// Add extra properties to account if necessary.
 			$account['card_present_eligible'] = false;
-			$account['test_mode']             = Mode::is_test();
+			$account['test_mode']             = wcpay()->mode->test;
 		}
 
 		return rest_ensure_response( $account );

@@ -12,6 +12,10 @@ use Exception;
 
 /**
  * Controls the working mode of WooCommerce Payments.
+ *
+ * @property-read bool $live Flag for live mode.
+ * @property-read bool $dev  Flag for dev mode.
+ * @property-read bool $test Flag for test mode.
  */
 class Mode {
 	/**
@@ -19,14 +23,21 @@ class Mode {
 	 *
 	 * @var bool
 	 */
-	private static $test_mode;
+	private $test_mode;
 
 	/**
 	 * Holds the dev mode flag.
 	 *
 	 * @var bool
 	 */
-	private static $dev_mode;
+	private $dev_mode;
+
+	/**
+	 * Holds the gateway class for settings.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
 
 	/**
 	 * Environment types, which are used to automatically enter dev mode.
@@ -40,90 +51,65 @@ class Mode {
 	];
 
 	/**
-	 * Initializes the working mode of WooCommerce Payments.
+	 * Stores the gateway for later retrieval of options.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway The active gateway.
 	 */
-	public static function init( WC_Payment_Gateway_WCPay $gateway ) {
-		$dev_mode = (
-			// Plugin-specific dev mode.
-			static::is_wcpay_dev_mode_defined()
-
-			// WordPress Dev Environment.
-			|| (
-				function_exists( 'wp_get_environment_type' )
-				&& in_array( static::wp_get_environment_type(), self::DEV_MODE_ENVIRONMENTS, true )
-			)
-		);
-
-		self::$dev_mode = apply_filters( 'wcpay_dev_mode', $dev_mode );
-
-		$test_mode       = self::$dev_mode || 'yes' === $gateway->get_option( 'test_mode' );
-		self::$test_mode = apply_filters( 'wcpay_test_mode', $test_mode );
+	public function set_gateway( WC_Payment_Gateway_WCPay $gateway ) {
+		$this->gateway = $gateway;
 	}
 
 	/**
-	 * Check the defined constant to determine the current plugin mode.
+	 * Checks whether WCPay is in the given mode.
 	 *
-	 * @return bool
-	 * @throws Exception When the mode has not been initialized yet.
-	 */
-	public static function is_dev() {
-		self::throw_exception_if_uninitialized();
-
-		return self::$dev_mode;
-	}
-
-	/**
-	 * Returns whether test_mode or dev_mode is active for the gateway.
+	 * @param  string $property The mode to check for. Either `live`, `test`, or `dev`.
+	 * @return bool If the propery is toggled.
 	 *
-	 * @return boolean Test mode enabled if true, disabled if false
-	 * @throws Exception When the mode has not been initialized yet.
+	 * @throws Exception In case the class has not been initialized yet.
 	 */
-	public static function is_test() {
-		self::throw_exception_if_uninitialized();
+	public function __get( $property ) {
+		if ( ! isset( $this->dev_mode ) || ! isset( $this->test_mode ) ) {
+			if ( isset( $this->gateway ) ) {
+				$this->init();
+			} else {
+				throw new Exception( 'WooCommerce Payments\' working mode is not initialized yet. Wait for the `init` action.' );
+			}
+		}
 
-		return self::$test_mode;
+		if ( 'live' === $property ) {
+			return ! $this->test_mode && ! $this->dev_mode;
+		} else {
+			$prop = $property . '_mode';
+			if ( property_exists( $this, $prop ) ) {
+				return $this->$prop;
+			}
+		}
 	}
 
 	/**
-	 * Checks if WCPay is in live mode.
+	 * Forces a switch of the current mode.
+	 * Only recommended when testing, use filters otherwise.
 	 *
-	 * @return boolean If the gateway is live.
-	 * @throws Exception When the mode has not been initialized yet.
+	 * @param string $name The name of the mode to enter.
+	 * @param array  $args All args for the method (not used).
+	 * @return void
 	 */
-	public static function is_live() {
-		return ! self::is_test() && ! self::is_dev();
-	}
+	public function __call( $name, $args ) {
+		// Only simulate the possible modes.
+		if ( ! in_array( $name, [ 'live', 'test', 'dev' ], true ) ) {
+			return;
+		}
 
-	/**
-	 * Enters test mode.
-	 */
-	public static function enter_test_mode() {
-		self::prevent_switching_when_not_testing();
+		if ( ! defined( 'WCPAY_TEST_ENV' ) || ! WCPAY_TEST_ENV ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+			trigger_error(
+				'Toggling test/dev mode for WooCommerce Payments when not running tests is strongly discouraged.',
+				E_USER_DEPRECATED
+			);
+		}
 
-		self::$test_mode = true;
-		self::$dev_mode  = false;
-	}
-
-	/**
-	 * Enters dev mode.
-	 */
-	public static function enter_dev_mode() {
-		self::prevent_switching_when_not_testing();
-
-		self::$test_mode = true;
-		self::$dev_mode  = true;
-	}
-
-	/**
-	 * Enters live mode.
-	 */
-	public static function enter_live_mode() {
-		self::prevent_switching_when_not_testing();
-
-		self::$test_mode = false;
-		self::$dev_mode  = false;
+		$this->test_mode = 'dev' === $name || 'test' === $name;
+		$this->dev_mode  = 'dev' === $name;
 	}
 
 	/**
@@ -131,7 +117,7 @@ class Mode {
 	 *
 	 * @return bool Whether `WCPAY_DEV_MODE` is defined and true.
 	 */
-	protected static function is_wcpay_dev_mode_defined() {
+	protected function is_wcpay_dev_mode_defined() {
 		return(
 			defined( 'WCPAY_DEV_MODE' )
 			&& WCPAY_DEV_MODE
@@ -141,39 +127,31 @@ class Mode {
 	/**
 	 * Returns the current WP environment type.
 	 *
-	 * Isolated in a separate method in order to allow the method to be mocked.
-	 *
 	 * @return string
 	 */
-	protected static function wp_get_environment_type() {
+	protected function get_wp_environment_type() {
 		return wp_get_environment_type();
 	}
 
 	/**
-	 * Throws an exception if the class has not been initialized yes.
-	 *
-	 * @throws Exception
+	 * Initializes the working mode of WooCommerce Payments.
 	 */
-	private static function throw_exception_if_uninitialized() {
-		if ( isset( self::$dev_mode ) && isset( self::$test_mode ) ) {
-			return;
-		}
+	private function init() {
+		$dev_mode = (
+			// Plugin-specific dev mode.
+			$this->is_wcpay_dev_mode_defined()
 
-		throw new Exception( 'WooCommerce Payments\' working mode is not initialized yet. Wait for the `init` action.' );
-	}
-
-	/**
-	 * Prevents modes from being switched when not running tests to avoid quirky behavior.
-	 */
-	private static function prevent_switching_when_not_testing() {
-		if ( defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) {
-			return;
-		}
-
-		// phpcs:ignore WordPress.PHP.DevelopmentFunctions
-		trigger_error(
-			'Toggling test/dev mode for WooCommerce Payments when not running tests is strongly discouraged.',
-			E_USER_DEPRECATED
+			// WordPress Dev Environment.
+			|| (
+				function_exists( 'wp_get_environment_type' )
+				&& in_array( $this->get_get_environment_type(), self::DEV_MODE_ENVIRONMENTS, true )
+			)
 		);
+
+		$this->dev_mode = apply_filters( 'wcpay_dev_mode', $dev_mode );
+
+		$gateway_test_mode = 'yes' === $this->gateway->get_option( 'test_mode' );
+		$test_mode         = $this->dev_mode || $gateway_test_mode;
+		$this->test_mode   = apply_filters( 'wcpay_test_mode', $test_mode );
 	}
 }

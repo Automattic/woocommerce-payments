@@ -7,7 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\API\Mode;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 
@@ -82,7 +81,7 @@ class WC_Payments_Fraud_Service {
 	 */
 	private function prepare_sift_config( $config ) {
 		// The server returns both production and sandbox beacon keys. Use the sandbox one if test mode is enabled.
-		if ( Mode::is_test() ) {
+		if ( wcpay()->mode->test ) {
 			$config['beacon_key'] = $config['sandbox_beacon_key'];
 		}
 		unset( $config['sandbox_beacon_key'] );
