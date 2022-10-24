@@ -22,7 +22,7 @@
     "require": {
       "php": "7.*",
       "ext-json": "*",
-      "automattic/jetpack-connection": "1.37.3",
+      "automattic/jetpack-connection": "1.45.4",
       "automattic/jetpack-config": "1.6.1",
       "automattic/jetpack-autoloader": "2.10.11",
       "automattic/jetpack-identity-crisis": "0.8.4",
