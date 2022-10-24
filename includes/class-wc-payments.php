@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\RoutesController;
+use WCPay\API\Mode;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -1077,7 +1078,7 @@ class WC_Payments {
 				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
 				'store_api_url'                  => self::get_store_api_url(),
 				'account_id'                     => $account_id,
-				'test_mode'                      => self::get_gateway()->is_in_test_mode(),
+				'test_mode'                      => Mode::is_test(),
 				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),

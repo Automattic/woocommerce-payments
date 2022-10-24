@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\API\Mode;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -1974,7 +1975,7 @@ class WC_Payments_API_Client {
 	 * @return bool
 	 */
 	public function is_in_dev_mode() {
-		return WC_Payments::get_gateway()->is_in_dev_mode();
+		return Mode::is_dev();
 	}
 
 	/**
@@ -1983,7 +1984,7 @@ class WC_Payments_API_Client {
 	 * @return bool
 	 */
 	public function is_in_test_mode() {
-		return WC_Payments::get_gateway()->is_in_test_mode();
+		return Mode::is_test();
 	}
 
 	/**

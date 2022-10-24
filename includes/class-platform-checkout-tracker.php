@@ -10,6 +10,7 @@ namespace WCPay;
 use Jetpack_Tracks_Client;
 use Jetpack_Tracks_Event;
 use WC_Payments_Features;
+use WCPay\API\Mode;
 use WP_Error;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
@@ -111,8 +112,7 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 		}
 
 		// Add event property for test mode vs. live mode events.
-		$gateway               = \WC_Payments::get_gateway();
-		$data['test_mode']     = $gateway->is_in_test_mode() ? 1 : 0;
+		$data['test_mode']     = Mode::is_test() ? 1 : 0;
 		$data['wcpay_version'] = get_option( 'woocommerce_woocommerce_payments_version' );
 
 		return $this->tracks_record_event( $user, $event, $data );

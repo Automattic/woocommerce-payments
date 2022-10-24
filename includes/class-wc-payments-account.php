@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Automattic\WooCommerce\Admin\Notes\DataStore;
+use WCPay\API\Mode;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
@@ -1156,7 +1157,7 @@ class WC_Payments_Account {
 		}
 
 		// test accounts are valid only when in dev mode.
-		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( Mode::is_dev() ) {
 			return true;
 		}
 

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\API\Mode;
 use WCPay\Logger;
 use WCPay\Constants\Payment_Method;
 
@@ -71,7 +72,7 @@ class WC_Payments_Order_Service {
 			[
 				'order_id'     => $order->get_id(),
 				'intent_id'    => $intent_id,
-				'is_test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
+				'is_test_mode' => Mode::is_test(),
 			]
 		);
 

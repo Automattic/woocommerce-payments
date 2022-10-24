@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\API\Mode;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -107,7 +108,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 				'wcpay_document_downloaded',
 				[
 					'document_id' => $document_id,
-					'mode'        => WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'live',
+					'mode'        => Mode::is_test() ? 'test' : 'live',
 				]
 			);
 		}

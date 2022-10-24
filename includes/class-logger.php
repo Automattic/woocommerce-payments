@@ -7,6 +7,7 @@
 
 namespace WCPay;
 
+use WCPay\API\Mode;
 use WC_Logger;
 use WC_Payments;
 
@@ -76,7 +77,7 @@ class Logger {
 			return false;
 		}
 
-		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( Mode::is_dev() ) {
 			return true;
 		}
 
