@@ -13,6 +13,10 @@ const Tooltip = ( { isVisible = false, onHide = noop, ...props } ) => {
 	const [ isHovered, setIsHovered ] = useState( false );
 	const [ isClicked, setIsClicked ] = useState( false );
 
+	if ( ! props.content ) {
+		return <>{ props.children }</>;
+	}
+
 	const handleMouseEnter = () => {
 		setIsHovered( true );
 	};

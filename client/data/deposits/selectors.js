@@ -66,11 +66,12 @@ export const getAllDepositsOverviews = ( state ) => {
 	const { deposit, balance, account } = DepositsOverview.data;
 
 	const groups = {
+		available: balance.available,
+		instant: balance.instant,
+		lastManualDeposit: deposit.last_manual_deposits,
 		lastPaid: deposit.last_paid,
 		nextScheduled: deposit.next_scheduled,
 		pending: balance.pending,
-		available: balance.available,
-		instant: balance.instant,
 	};
 
 	/**
@@ -84,12 +85,13 @@ export const getAllDepositsOverviews = ( state ) => {
 
 			if ( ! currencies[ currency ] ) {
 				currencies[ currency ] = {
+					available: undefined,
 					currency,
+					instant: undefined,
+					lastManualDeposit: undefined,
 					lastPaid: undefined,
 					nextScheduled: undefined,
 					pending: undefined,
-					available: undefined,
-					instant: undefined,
 				};
 			}
 

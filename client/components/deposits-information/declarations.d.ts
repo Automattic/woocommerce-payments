@@ -41,12 +41,18 @@ declare namespace AccountOverview {
 	}
 
 	interface Overview {
+		available: Balance & { transaction_ids: Array< string > };
 		currency: string;
+		instant: InstantBalance;
+		lastManualDeposit:
+			| {
+					currency: string;
+					date: string;
+			  }
+			| undefined;
 		lastPaid: Deposit;
 		nextScheduled: Deposit;
 		pending: Balance;
-		available: Balance & { transaction_ids: Array< string > };
-		instant: InstantBalance;
 	}
 
 	interface OverviewsResponse {

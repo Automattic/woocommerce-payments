@@ -50,7 +50,10 @@ describe( 'StandardDepositButton', () => {
 		};
 
 		const { getByRole } = render(
-			<StandardDepositButton availableBalance={ availableBalance } />
+			<StandardDepositButton
+				availableBalance={ availableBalance }
+				lastManualDeposit={ undefined }
+			/>
 		);
 		const button = getByRole( 'button', { name: 'Deposit funds' } );
 		expect( button ).not.toHaveAttribute( 'disabled' );
@@ -65,7 +68,10 @@ describe( 'StandardDepositButton', () => {
 		};
 
 		const { getByRole } = render(
-			<StandardDepositButton availableBalance={ availableBalance } />
+			<StandardDepositButton
+				availableBalance={ availableBalance }
+				lastManualDeposit={ undefined }
+			/>
 		);
 		const button = getByRole( 'button', { name: 'Deposit funds' } );
 		expect( button ).toHaveAttribute( 'disabled' );
@@ -80,7 +86,10 @@ describe( 'StandardDepositButton', () => {
 		};
 
 		const { getByRole } = render(
-			<StandardDepositButton availableBalance={ availableBalance } />
+			<StandardDepositButton
+				availableBalance={ availableBalance }
+				lastManualDeposit={ undefined }
+			/>
 		);
 		const button = getByRole( 'button', { name: 'Deposit funds' } );
 		expect( button ).toHaveAttribute( 'disabled' );
@@ -100,7 +109,10 @@ describe( 'StandardDepositButton', () => {
 		);
 
 		const { getByRole } = render(
-			<StandardDepositButton availableBalance={ availableBalance } />
+			<StandardDepositButton
+				availableBalance={ availableBalance }
+				lastManualDeposit={ undefined }
+			/>
 		);
 		const button = getByRole( 'button', { name: 'Deposit funds' } );
 		user.click( button );

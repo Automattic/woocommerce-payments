@@ -40,13 +40,18 @@ type OverviewProps = {
 const DepositsInformationOverview: React.FC< OverviewProps > = ( props ) => {
 	const { overview, account }: OverviewProps = props;
 	const {
-		currency,
-		pending,
-		nextScheduled,
-		lastPaid,
 		available,
+		currency,
 		instant,
+		lastManualDeposit,
+		lastPaid,
+		nextScheduled,
+		pending,
 	} = overview;
+
+	const hasCompletedNewAccountWaitingPeriod =
+		wcpaySettings?.accountStatus?.deposits?.completed_waiting_period ??
+		false;
 
 	const pendingAmount = pending ? pending.amount : 0;
 	const pendingDepositsLink = pending?.deposits_count ? (
@@ -71,17 +76,29 @@ const DepositsInformationOverview: React.FC< OverviewProps > = ( props ) => {
 		</Link>
 	);
 
-	let depositButton = instant && (
-		<InstantDepositButton instantBalance={ instant } />
-	);
+	const isInstantDepositEnabled =
+		instant &&
+		hasCompletedNewAccountWaitingPeriod &&
+		! account.deposits_blocked;
+
+	let depositButton = isInstantDepositEnabled ? (
+		<InstantDepositButton
+			instantBalance={ instant }
+			lastManualDeposit={ lastManualDeposit }
+		/>
+	) : null;
 
 	const isStandardDepositEnabled =
 		! account.deposits_blocked &&
+		hasCompletedNewAccountWaitingPeriod &&
 		account.deposits_schedule.interval !== 'daily';
 
 	if ( ! depositButton && isStandardDepositEnabled ) {
 		depositButton = (
-			<StandardDepositButton availableBalance={ available } />
+			<StandardDepositButton
+				availableBalance={ available }
+				lastManualDeposit={ lastManualDeposit }
+			/>
 		);
 	}
 

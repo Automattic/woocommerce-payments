@@ -118,6 +118,17 @@ export const formatDateValue = ( date, upperBound = false ) => {
 };
 
 /**
+ * Formats a date string given the provided format.
+ *
+ * @param {string} format PHP-style formatting string.
+ * @param {moment.MomentInput} date Moment compatible date input.
+ * @param {boolean} utc Whether to format as UTC or local time.
+ * @return {string} Formatted date string.
+ */
+export const formatDate = ( format, date, utc = true ) =>
+	dateI18n( format, moment.utc( date ).toISOString(), utc );
+
+/**
  * Applies country-specific thousand separator to the transactions number
  *
  * @param {number} trxCount The number of transactions.

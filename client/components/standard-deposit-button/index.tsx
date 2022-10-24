@@ -3,8 +3,9 @@
  */
 import React from 'react';
 import { Button } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _x, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -13,30 +14,16 @@ import { formatCurrency } from 'utils/currency';
 import { useStandardDeposit } from 'wcpay/data';
 import StandardDepositModal from './modal';
 import Tooltip from 'wcpay/components/tooltip';
+import { formatDate } from 'utils';
 
 type StandardDepositButtonProps = {
 	availableBalance: AccountOverview.Overview[ 'available' ];
-};
-
-type ButtonTooltipProps = {
-	content: React.ReactNode;
-	noArrow: boolean;
-	position: 'top' | 'bottom';
-};
-
-const ButtonTooltip: React.FC< ButtonTooltipProps > = ( {
-	children,
-	...props
-} ) => {
-	if ( ! props.content ) {
-		return <>{ children }</>;
-	}
-
-	return <Tooltip { ...props }>{ children }</Tooltip>;
+	lastManualDeposit: AccountOverview.Overview[ 'lastManualDeposit' ];
 };
 
 const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 	availableBalance,
+	lastManualDeposit,
 } ) => {
 	const {
 		amount,
@@ -44,13 +31,15 @@ const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 		transaction_ids: transactionIds,
 	} = availableBalance;
 
+	const [ isModalOpen, setModalOpen ] = useState< boolean >( false );
+
 	const minimumDepositAmounts =
 		wcpaySettings?.accountStatus?.deposits?.minimum_deposit_amounts ?? {};
 
 	const minimumDepositAmount = minimumDepositAmounts?.[ currency ] || 500;
 
-	const [ isModalOpen, setModalOpen ] = useState< boolean >( false );
-	const buttonDisabled = amount < minimumDepositAmount;
+	const buttonDisabled =
+		amount < minimumDepositAmount || !! lastManualDeposit;
 
 	const { inProgress, submit } = useStandardDeposit( transactionIds );
 	const onClose = () => {
@@ -63,7 +52,25 @@ const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 
 	let tooltipText = '';
 
-	if ( amount < minimumDepositAmount ) {
+	if ( lastManualDeposit ) {
+		const nextAvailableDepositDate = formatDate(
+			_x(
+				'F j, Y \\a\\t g:iA',
+				'Date format, e.g. November 16, 1989 at 11:00AM',
+				'woocommerce-payments'
+			),
+			moment.utc( lastManualDeposit.date ).add( 24, 'hours' ),
+			false
+		);
+
+		tooltipText = sprintf(
+			__(
+				'Deposits are available once per day. Your next deposit can be created on %s.',
+				'woocommerce-payments'
+			),
+			nextAvailableDepositDate
+		);
+	} else if ( amount < minimumDepositAmount ) {
 		tooltipText = sprintf(
 			__(
 				'Deposits require a minimum available balance of %s.',
@@ -75,7 +82,7 @@ const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 
 	return (
 		<>
-			<ButtonTooltip content={ tooltipText } position="bottom" noArrow>
+			<Tooltip content={ tooltipText } position="bottom" noArrow>
 				<Button
 					disabled={ buttonDisabled }
 					isPrimary
@@ -83,7 +90,7 @@ const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 				>
 					{ __( 'Deposit funds', 'woocommerce-payments' ) }
 				</Button>
-			</ButtonTooltip>
+			</Tooltip>
 			{ ( isModalOpen || inProgress ) && (
 				<StandardDepositModal
 					availableBalance={ availableBalance }
