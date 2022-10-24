@@ -493,7 +493,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_in_dev_mode() {
-		return wcpay()->mode->dev;
+		return WC_Payments::mode()->dev;
 	}
 
 	/**
@@ -502,7 +502,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean Test mode enabled if true, disabled if false
 	 */
 	public function is_in_test_mode() {
-		return wcpay()->mode->test;
+		return WC_Payments::mode()->test;
 	}
 
 
@@ -513,7 +513,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean True if needs to set up forced ssl in checkout or https
 	 */
 	public function needs_https_setup() {
-		return ! wcpay()->mode->test && ! wc_checkout_is_https();
+		return ! WC_Payments::mode()->test && ! wc_checkout_is_https();
 	}
 
 	/**
@@ -592,7 +592,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Add notice explaining test mode when it's enabled.
 	 */
 	public function display_test_mode_notice() {
-		if ( wcpay()->mode->test ) {
+		if ( WC_Payments::mode()->test ) {
 			?>
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
@@ -670,8 +670,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$wc_checkout            = WC_Checkout::instance();
 
 		return [
-			'publishableKey'                   => $this->account->get_publishable_key( wcpay()->mode->test ),
-			'testMode'                         => wcpay()->mode->test,
+			'publishableKey'                   => $this->account->get_publishable_key( WC_Payments::mode()->test ),
+			'testMode'                         => WC_Payments::mode()->test,
 			'accountId'                        => $this->account->get_stripe_account_id(),
 			'ajaxUrl'                          => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'                        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
@@ -851,7 +851,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
 			<?php endif; ?>
 
-			<?php if ( wcpay()->mode->test ) : ?>
+			<?php if ( WC_Payments::mode()->test ) : ?>
 				<p class="testmode-info">
 				<?php
 					echo WC_Payments_Utils::esc_interpolated_html(
@@ -1119,7 +1119,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[
 					'order_id'     => $order->get_id(),
 					'customer_id'  => $customer_id,
-					'is_test_mode' => wcpay()->mode->test,
+					'is_test_mode' => WC_Payments::mode()->test,
 					'is_woopay'    => $options['is_woopay'] ?? false,
 				]
 			);
@@ -1188,7 +1188,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[
 					'payment_method' => $payment_information->get_payment_method(),
 					'order_id'       => $order->get_id(),
-					'is_test_mode'   => wcpay()->mode->test,
+					'is_test_mode'   => WC_Payments::mode()->test,
 				]
 			);
 		}
@@ -1200,7 +1200,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_method = $payment_information->get_payment_method();
 		$order->update_meta_data( '_payment_method_id', $payment_method );
 		$order->update_meta_data( '_stripe_customer_id', $customer_id );
-		$order->update_meta_data( '_wcpay_mode', wcpay()->mode->test ? 'test' : 'prod' );
+		$order->update_meta_data( '_wcpay_mode', WC_Payments::mode()->test ? 'test' : 'prod' );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
@@ -1834,12 +1834,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return '';
 		}
 
-		if ( 'test_mode' === $key && wcpay()->mode->dev ) {
+		if ( 'test_mode' === $key && WC_Payments::mode()->dev ) {
 			$data['custom_attributes']['disabled'] = 'disabled';
 			$data['label']                         = __( 'Dev mode is active so all transactions will be in test mode. This setting is only available to live accounts.', 'woocommerce-payments' );
 		}
 
-		if ( 'enable_logging' === $key && wcpay()->mode->dev ) {
+		if ( 'enable_logging' === $key && WC_Payments::mode()->dev ) {
 			$data['custom_attributes']['disabled'] = 'disabled';
 			$data['label']                         = __( 'Dev mode is active so logging is on by default.', 'woocommerce-payments' );
 		}
@@ -1949,7 +1949,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $is_platform_checkout_enabled !== $current_is_platform_checkout_enabled ) {
 			wc_admin_record_tracks_event(
 				$is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled',
-				[ 'test_mode' => wcpay()->mode->test ? 1 : 0 ]
+				[ 'test_mode' => WC_Payments::mode()->test ? 1 : 0 ]
 			);
 			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
 			if ( ! $is_platform_checkout_enabled ) {
@@ -1964,7 +1964,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function init_settings() {
 		parent::init_settings();
 		$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
-		wcpay()->mode->set_gateway( $this );
 	}
 
 	/**

@@ -1,11 +1,11 @@
 <?php
 /**
- * Class file for WCPay\API\Mode.
+ * Class file for WCPay\Core\Mode.
  *
  * @package WooCommerce Payments
  */
 
-namespace WCPay\API;
+namespace WCPay\Core;
 
 use WC_Payment_Gateway_WCPay;
 use Exception;
@@ -55,7 +55,7 @@ class Mode {
 	 *
 	 * @param WC_Payment_Gateway_WCPay $gateway The active gateway.
 	 */
-	public function set_gateway( WC_Payment_Gateway_WCPay $gateway ) {
+	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
 		$this->gateway = $gateway;
 	}
 
@@ -69,7 +69,7 @@ class Mode {
 	 */
 	public function __get( $property ) {
 		if ( ! isset( $this->dev_mode ) || ! isset( $this->test_mode ) ) {
-			if ( isset( $this->gateway ) ) {
+			if ( isset( $this->gateway ) && ! empty( $this->gateway->settings ) ) {
 				$this->init();
 			} else {
 				throw new Exception( 'WooCommerce Payments\' working mode is not initialized yet. Wait for the `init` action.' );
@@ -130,7 +130,9 @@ class Mode {
 	 * @return string
 	 */
 	protected function get_wp_environment_type() {
-		return wp_get_environment_type();
+		return function_exists( 'wp_get_environment_type' )
+			? wp_get_environment_type()
+			: false;
 	}
 
 	/**
@@ -142,10 +144,7 @@ class Mode {
 			$this->is_wcpay_dev_mode_defined()
 
 			// WordPress Dev Environment.
-			|| (
-				function_exists( 'wp_get_environment_type' )
-				&& in_array( $this->get_get_environment_type(), self::DEV_MODE_ENVIRONMENTS, true )
-			)
+			|| in_array( $this->get_wp_environment_type(), self::DEV_MODE_ENVIRONMENTS, true )
 		);
 
 		$this->dev_mode = apply_filters( 'wcpay_dev_mode', $dev_mode );

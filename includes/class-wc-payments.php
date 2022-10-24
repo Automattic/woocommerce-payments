@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\RoutesController;
+use WCPay\Core\Mode;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -190,23 +191,19 @@ class WC_Payments {
 	private static $webhook_reliability_service;
 
 	/**
+	 * Holds WCPay's working mode.
+	 *
+	 * @var Mode
+	 */
+	private static $mode;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
-		require_once __DIR__ . '/api/class-mode.php';
-		require_once __DIR__ . '/api/class-api.php';
-
-		function wcpay() {
-			static $api;
-
-			if ( ! $api ) {
-				$api = new \WCPay\API\API();
-			}
-			return $api;
-		}
-
+		require_once __DIR__ . '/core/class-mode.php';
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 
 		include_once __DIR__ . '/class-database-cache.php';
@@ -344,6 +341,8 @@ class WC_Payments {
 			self::$card_gateway = new $card_class( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 		}
 
+		self::$mode = new Mode( self::$card_gateway );
+
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::$card_gateway, self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
@@ -404,6 +403,15 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
+	}
+
+	/**
+	 * Returns the gateway's working mode.
+	 *
+	 * @return Mode
+	 */
+	public static function mode() {
+		return self::$mode;
 	}
 
 	/**
@@ -1087,7 +1095,7 @@ class WC_Payments {
 				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
 				'store_api_url'                  => self::get_store_api_url(),
 				'account_id'                     => $account_id,
-				'test_mode'                      => wcpay()->mode->test,
+				'test_mode'                      => self::mode()->test,
 				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
