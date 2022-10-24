@@ -52,7 +52,7 @@ class Mode {
 			// WordPress Dev Environment.
 			|| (
 				function_exists( 'wp_get_environment_type' )
-				&& in_array( wp_get_environment_type(), self::DEV_MODE_ENVIRONMENTS, true )
+				&& in_array( static::wp_get_environment_type(), self::DEV_MODE_ENVIRONMENTS, true )
 			)
 		);
 
@@ -136,6 +136,17 @@ class Mode {
 			defined( 'WCPAY_DEV_MODE' )
 			&& WCPAY_DEV_MODE
 		);
+	}
+
+	/**
+	 * Returns the current WP environment type.
+	 *
+	 * Isolated in a separate method in order to allow the method to be mocked.
+	 *
+	 * @return string
+	 */
+	protected static function wp_get_environment_type() {
+		return wp_get_environment_type();
 	}
 
 	/**
