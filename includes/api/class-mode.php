@@ -61,6 +61,7 @@ class Mode {
 		$test_mode       = self::$dev_mode || 'yes' === $gateway->get_option( 'test_mode' );
 		self::$test_mode = apply_filters( 'wcpay_test_mode', $test_mode );
 	}
+
 	/**
 	 * Check the defined constant to determine the current plugin mode.
 	 *
@@ -86,6 +87,36 @@ class Mode {
 	}
 
 	/**
+	 * Enters test mode.
+	 */
+	public static function enter_test_mode() {
+		self::prevent_switching_when_not_testing();
+
+		self::$test_mode = true;
+		self::$dev_mode  = false;
+	}
+
+	/**
+	 * Enters dev mode.
+	 */
+	public static function enter_dev_mode() {
+		self::prevent_switching_when_not_testing();
+
+		self::$test_mode = true;
+		self::$dev_mode  = true;
+	}
+
+	/**
+	 * Enters live mode.
+	 */
+	public static function enter_live_mode() {
+		self::prevent_switching_when_not_testing();
+
+		self::$test_mode = false;
+		self::$dev_mode  = false;
+	}
+
+	/**
 	 * Throws an exception if the class has not been initialized yes.
 	 *
 	 * @throws Exception
@@ -96,5 +127,20 @@ class Mode {
 		}
 
 		throw new Exception( 'WooCommerce Payments\' working mode is not initialized yet. Wait for the `init` action.' );
+	}
+
+	/**
+	 * Prevents modes from being switched when not running tests to avoid quirky behavior.
+	 */
+	private static function prevent_switching_when_not_testing() {
+		if ( defined( 'WCPAY_TEST_ENV' ) && WCPAY_TEST_ENV ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions
+		trigger_error(
+			'Toggling test/dev mode for WooCommerce Payments when not running tests is strongly discouraged.',
+			E_USER_DEPRECATED
+		);
 	}
 }
