@@ -34,6 +34,7 @@ function _manually_load_plugin() {
 	// NOTE: this will skip the dependency check so the plugin can load. The test environment
 	// needs to still make sure that all dependencies exist for it to successfully run.
 	define( 'WCPAY_TEST_ENV', true );
+	define( 'WP_RUN_CORE_TESTS', true );
 
 	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
 	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';

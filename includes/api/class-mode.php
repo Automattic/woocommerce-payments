@@ -47,7 +47,7 @@ class Mode {
 	public static function init( WC_Payment_Gateway_WCPay $gateway ) {
 		$dev_mode = (
 			// Plugin-specific dev mode.
-			( defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE )
+			static::is_wcpay_dev_mode_defined()
 
 			// WordPress Dev Environment.
 			|| (
@@ -75,7 +75,7 @@ class Mode {
 	}
 
 	/**
-	 * Returns whether test_mode or dev_mode is active for the gateway
+	 * Returns whether test_mode or dev_mode is active for the gateway.
 	 *
 	 * @return boolean Test mode enabled if true, disabled if false
 	 * @throws Exception When the mode has not been initialized yet.
@@ -84,6 +84,16 @@ class Mode {
 		self::throw_exception_if_uninitialized();
 
 		return self::$test_mode;
+	}
+
+	/**
+	 * Checks if WCPay is in live mode.
+	 *
+	 * @return boolean If the gateway is live.
+	 * @throws Exception When the mode has not been initialized yet.
+	 */
+	public static function is_live() {
+		return ! self::is_test() && ! self::is_dev();
 	}
 
 	/**
@@ -114,6 +124,18 @@ class Mode {
 
 		self::$test_mode = false;
 		self::$dev_mode  = false;
+	}
+
+	/**
+	 * Checks if the gateway is forced into dev mode through a constant.
+	 *
+	 * @return bool Whether `WCPAY_DEV_MODE` is defined and true.
+	 */
+	protected static function is_wcpay_dev_mode_defined() {
+		return(
+			defined( 'WCPAY_DEV_MODE' )
+			&& WCPAY_DEV_MODE
+		);
 	}
 
 	/**

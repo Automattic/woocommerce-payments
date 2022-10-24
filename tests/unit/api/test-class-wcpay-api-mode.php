@@ -84,14 +84,23 @@ class API_Mode_Test extends WCPAY_UnitTestCase {
 		remove_filter( 'wcpay_test_mode', '__return_true' );
 	}
 
-	/**
-	 * This is the last step, because we need a constant, which cannot be unset.
-	 */
 	public function test_init_test_init_enters_dev_mode_when_environment_is_dev() {
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
 		putenv( 'WP_ENVIRONMENT_TYPE=development' );
 		self::reload();
 		$this->assertTrue( Mode::is_dev() );
+	}
+
+	public function test_throw_exception_if_uninitialized() {
+		add_filter( 'wcpay_dev_mode', '__return_null' );
+		add_filter( 'wcpay_test_mode', '__return_null' );
+		self::reload();
+
+		$this->expectException( Exception::class );
+		Mode::is_live();
+
+		remove_filter( 'wcpay_dev_mode', '__return_null' );
+		remove_filter( 'wcpay_test_mode', '__return_null' );
 	}
 
 	private function reload() {
