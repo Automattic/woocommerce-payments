@@ -21,12 +21,12 @@ import { NAMESPACE } from '../constants';
 import { ApiError } from 'wcpay/types/errors';
 
 export function* getAuthorizations( query: Query ): Generator< unknown > {
+	const { paged, per_page: perPage, orderby, order } = query;
 	const path = addQueryArgs( `${ NAMESPACE }/authorizations`, {
-		// TODO replace hardcoded values when pagination is ready.
-		page: 1,
-		pagesize: 25,
-		sort: 'created',
-		direction: 'desc',
+		paged,
+		per_page: perPage,
+		orderby,
+		order,
 	} );
 
 	try {
