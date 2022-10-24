@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\API\Mode;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\API_Exception;
 
@@ -35,7 +34,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
-		Mode::enter_dev_mode();
+		WC_Payments::mode()->dev();
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->controller      = new WC_REST_Payments_Accounts_Controller( $this->mock_api_client );
@@ -51,7 +50,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 
-		Mode::enter_live_mode();
+		WC_Payments::mode()->live();
 
 		// Restore the original client.
 		$account_service     = WC_Payments::get_account_service();

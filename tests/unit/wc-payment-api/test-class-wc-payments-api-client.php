@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\API\Mode;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
@@ -1715,7 +1714,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$logger_ref->setAccessible( true );
 		$logger_ref->setValue( null, $mock_logger );
 
-		Mode::enter_dev_mode();
+		WC_Payments::mode()->dev();
 
 		$mock_logger
 			->expects( $this->exactly( $logger_num_calls ) )
@@ -1751,7 +1750,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$logger_ref->setAccessible( true );
 		$logger_ref->setValue( null, null );
 
-		Mode::enter_live_mode();
+		WC_Payments::mode()->live();
 	}
 
 	/**

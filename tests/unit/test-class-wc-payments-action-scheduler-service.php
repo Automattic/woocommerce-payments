@@ -6,7 +6,6 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\API\Mode;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -42,7 +41,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( '_payment_method_id', 'pm_131535132531', true );
 		$order->add_meta_data( '_stripe_customer_id', 'cu_123', true );
-		$order->add_meta_data( '_wcpay_mode', Mode::is_test() ? 'test' : 'prod', true );
+		$order->add_meta_data( '_wcpay_mode', WC_Payments::mode()->test ? 'test' : 'prod', true );
 		$order->save_meta_data();
 
 		$this->mock_api_client->expects( $this->once() )
@@ -75,7 +74,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->add_meta_data( '_payment_method_id', 'pm_131535132531', true );
 		$order->add_meta_data( '_stripe_customer_id', 'cu_123', true );
-		$order->add_meta_data( '_wcpay_mode', Mode::is_test() ? 'test' : 'prod', true );
+		$order->add_meta_data( '_wcpay_mode', WC_Payments::mode()->test ? 'test' : 'prod', true );
 		$order->save_meta_data();
 
 		$this->mock_api_client->expects( $this->once() )
@@ -130,7 +129,7 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 			[
 				'_payment_method_id'  => $order->get_meta( '_payment_method_id' ),
 				'_stripe_customer_id' => $order->get_meta( '_stripe_customer_id' ),
-				'_wcpay_mode'         => Mode::is_test() ? 'test' : 'prod',
+				'_wcpay_mode'         => WC_Payments::mode()->test ? 'test' : 'prod',
 			]
 		);
 	}

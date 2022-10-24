@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\API\Mode;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
@@ -227,7 +226,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ '_wcpay_mode', Mode::is_test() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::mode()->test ? 'test' : 'prod' ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
 				[ '_intention_status', $status ],
@@ -388,7 +387,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ '_wcpay_mode', Mode::is_test() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::mode()->test ? 'test' : 'prod' ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
 				[ '_intention_status', $status ],
@@ -756,7 +755,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ '_wcpay_mode', Mode::is_test() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::mode()->test ? 'test' : 'prod' ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', $charge_id ],
 				[ '_intention_status', $status ],
@@ -874,7 +873,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->withConsecutive(
 				[ '_payment_method_id', 'pm_mock' ],
 				[ '_stripe_customer_id', $customer_id ],
-				[ '_wcpay_mode', Mode::is_test() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::mode()->test ? 'test' : 'prod' ],
 				[ '_intent_id', $intent_id ],
 				[ '_charge_id', '' ],
 				[ '_intention_status', $status ],

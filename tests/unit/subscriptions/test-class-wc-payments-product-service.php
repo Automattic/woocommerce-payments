@@ -6,7 +6,6 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\API\Mode;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -282,9 +281,9 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '_wcpay_product_id_live', WC_Payments_Product_Service::get_wcpay_product_id_option() );
 
 		// set to testmode.
-		Mode::enter_test_mode();
+		WC_Payments::mode()->test();
 		$this->assertSame( '_wcpay_product_id_test', WC_Payments_Product_Service::get_wcpay_product_id_option() );
-		Mode::enter_live_mode();
+		WC_Payments::mode()->live();
 	}
 
 	/**
