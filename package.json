@@ -103,7 +103,7 @@
     "@wordpress/base-styles": "3.5.4",
     "@wordpress/block-editor": "7.0.2",
     "@wordpress/blocks": "11.0.1",
-    "@wordpress/browserslist-config": "3.0.1",
+    "@wordpress/browserslist-config": "5.3.0",
     "@wordpress/components": "11.1.5",
     "@wordpress/data": "4.23.1",
     "@wordpress/data-controls": "1.6.0",
