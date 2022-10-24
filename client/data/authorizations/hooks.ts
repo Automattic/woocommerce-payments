@@ -49,7 +49,9 @@ export const useAuthorizations = ( {
 		[ paged, per_page, orderby, order ]
 	);
 
-export const useAuthorizationsSummary = ( {}: Query ): {
+export const useAuthorizationsSummary = (
+	query: Query
+): {
 	authorizationsSummary: AuthorizationsSummary;
 	isLoading: boolean;
 } =>
@@ -59,8 +61,6 @@ export const useAuthorizationsSummary = ( {}: Query ): {
 			getAuthorizationsSummaryError,
 			isResolving,
 		} = select( STORE_NAME );
-
-		const query = {};
 
 		return {
 			authorizationsSummary: getAuthorizationsSummary( query ),
