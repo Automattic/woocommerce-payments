@@ -39,7 +39,7 @@ export function* getAuthorizations( query: Query ): any {
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForAuthorizations( query, [], e );
+		yield updateErrorForAuthorizations( query, e );
 	}
 }
 
@@ -63,6 +63,6 @@ export function* getAuthorizationsSummary( query: Query ): any {
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForAuthorizationsSummary( query, {}, e );
+		yield updateErrorForAuthorizationsSummary( query, e );
 	}
 }

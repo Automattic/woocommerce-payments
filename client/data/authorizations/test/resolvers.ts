@@ -67,7 +67,7 @@ describe( 'getAuthorizations resolver', () => {
 				)
 			);
 			expect( generator.next().value ).toEqual(
-				updateErrorForAuthorizations( query, [], errorResponse )
+				updateErrorForAuthorizations( query, errorResponse )
 			);
 		} );
 	} );
@@ -111,7 +111,7 @@ describe( 'getAuthorizationsSummary resolver', () => {
 			);
 
 			expect( generator.next().value ).toEqual(
-				updateErrorForAuthorizationsSummary( query, {}, errorResponse )
+				updateErrorForAuthorizationsSummary( query, errorResponse )
 			);
 		} );
 	} );
