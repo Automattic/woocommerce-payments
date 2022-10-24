@@ -9,10 +9,14 @@ import user from '@testing-library/user-event';
  * Internal dependencies
  */
 import StandardDepositButton from '..';
-import { formatCurrency } from 'wcpay/utils/currency';
 
 declare const global: {
 	wcpaySettings: {
+		accountStatus: {
+			deposits: {
+				completed_waiting_period: boolean;
+			};
+		};
 		zeroDecimalCurrencies: string[];
 		currencyData: Record< string, any >;
 		connect: {
@@ -24,6 +28,11 @@ declare const global: {
 describe( 'StandardDepositButton', () => {
 	beforeAll( () => {
 		global.wcpaySettings = {
+			accountStatus: {
+				deposits: {
+					completed_waiting_period: true,
+				},
+			},
 			zeroDecimalCurrencies: [],
 			connect: {
 				country: 'US',
@@ -43,7 +52,7 @@ describe( 'StandardDepositButton', () => {
 
 	test( 'renders correctly when available balance > 0', () => {
 		const availableBalance = {
-			amount: 1.23,
+			amount: 5000,
 			currency: 'aud',
 			source_types: [],
 			transaction_ids: [],
@@ -79,7 +88,7 @@ describe( 'StandardDepositButton', () => {
 
 	test( 'renders correctly when available balance < 0', () => {
 		const availableBalance = {
-			amount: -0.12,
+			amount: -5000,
 			currency: 'aud',
 			source_types: [],
 			transaction_ids: [],
@@ -97,16 +106,11 @@ describe( 'StandardDepositButton', () => {
 
 	test( 'displays modal when clicked', async () => {
 		const availableBalance = {
-			amount: 123,
+			amount: 5000,
 			currency: 'eur',
 			source_types: [],
 			transaction_ids: [],
 		};
-
-		const expectedFormattedBalance = formatCurrency(
-			availableBalance.amount,
-			availableBalance.currency
-		);
 
 		const { getByRole } = render(
 			<StandardDepositButton
@@ -120,7 +124,7 @@ describe( 'StandardDepositButton', () => {
 		const modal = getByRole( 'dialog', { name: 'Deposit funds' } );
 
 		within( modal ).getByRole( 'button', {
-			name: `Deposit ${ expectedFormattedBalance }`,
+			name: 'Submit deposit',
 		} );
 		within( modal ).getByRole( 'button', {
 			name: /Cancel/,

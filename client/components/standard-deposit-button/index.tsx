@@ -29,7 +29,12 @@ const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 		amount,
 		currency,
 		transaction_ids: transactionIds,
-	} = availableBalance;
+	} = availableBalance || {
+		amount: 0,
+		currency: 'usd',
+		source_types: [],
+		transaction_ids: [],
+	};
 
 	const [ isModalOpen, setModalOpen ] = useState< boolean >( false );
 

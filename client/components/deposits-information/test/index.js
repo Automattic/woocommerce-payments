@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { render } from '@testing-library/react';
+import { within } from '@testing-library/dom';
 import { merge } from 'lodash';
 
 /**
@@ -85,6 +86,11 @@ useStandardDeposit.mockReturnValue( {
 describe( 'Deposits information', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
+			accountStatus: {
+				deposits: {
+					completed_waiting_period: true,
+				},
+			},
 			zeroDecimalCurrencies: [],
 			connect: {
 				country: 'FR',
@@ -140,8 +146,24 @@ describe( 'Deposits information', () => {
 		);
 
 		expect( await findAllByText( '$0.00' ) ).toHaveLength( 4 );
-		( await findAllByTestId( 'extra' ) ).forEach( ( extra ) => {
-			expect( extra ).toBeEmptyDOMElement();
+		( await findAllByTestId( 'extra' ) ).forEach( ( extra, index ) => {
+			switch ( index ) {
+				case 0:
+				case 1:
+				case 2:
+					expect( extra ).toBeEmptyDOMElement();
+					break;
+				case 3:
+					const depositFundsButton = within( extra ).getByRole(
+						'button',
+						{
+							name: 'Deposit funds',
+						}
+					);
+					expect( depositFundsButton ).toBeVisible();
+					expect( depositFundsButton ).toHaveAttribute( 'disabled' );
+					break;
+			}
 		} );
 	} );
 
@@ -188,10 +210,10 @@ describe( 'Deposits information', () => {
 			name: 'Instant deposit',
 		} );
 		expect( instantDepositButton ).toBeVisible();
-		const depositNowButton = queryByRole( 'button', {
+		const depositFundsButton = queryByRole( 'button', {
 			name: 'Deposit funds',
 		} );
-		expect( depositNowButton ).not.toBeInTheDocument();
+		expect( depositFundsButton ).not.toBeInTheDocument();
 		expect( container ).toMatchSnapshot();
 	} );
 
@@ -206,11 +228,11 @@ describe( 'Deposits information', () => {
 		mockOverviews( [ createMockCurrency( 'aud' ) ], accountWithDepositNow );
 
 		const { container, getByRole } = render( <DepositsInformation /> );
-		const depositNowButton = getByRole( 'button', {
+		const depositFundsButton = getByRole( 'button', {
 			name: 'Deposit funds',
 		} );
-		expect( depositNowButton ).toBeVisible();
-		expect( depositNowButton ).not.toHaveAttribute( 'disabled' );
+		expect( depositFundsButton ).toBeVisible();
+		expect( depositFundsButton ).not.toHaveAttribute( 'disabled' );
 		expect( container ).toMatchSnapshot();
 	} );
 
@@ -231,11 +253,11 @@ describe( 'Deposits information', () => {
 		mockOverviews( [ currency ], accountWithDepositNow );
 
 		const { container, getByRole } = render( <DepositsInformation /> );
-		const depositNowButton = getByRole( 'button', {
+		const depositFundsButton = getByRole( 'button', {
 			name: 'Deposit funds',
 		} );
-		expect( depositNowButton ).toBeVisible();
-		expect( depositNowButton ).toHaveAttribute( 'disabled' );
+		expect( depositFundsButton ).toBeVisible();
+		expect( depositFundsButton ).toHaveAttribute( 'disabled' );
 		expect( container ).toMatchSnapshot();
 	} );
 } );

@@ -37,6 +37,7 @@ const Tooltip = ( { isVisible = false, onHide = noop, ...props } ) => {
 	};
 
 	return (
+		// eslint-disable-next-line jsx-a11y/no-static-element-interactions
 		<div
 			// on touch devices there's no mouse enter/leave, so we need to use a separate event (click/focus)
 			// this creates 2 different (desirable) states on non-touch devices: if you hover and then click, the tooltip will persist
@@ -49,7 +50,6 @@ const Tooltip = ( { isVisible = false, onHide = noop, ...props } ) => {
 			onMouseLeave={ handleMouseLeave }
 			onPointerEnter={ handleMouseEnter }
 			onPointerLeave={ handleMouseLeave }
-			role="button"
 			tabIndex={ 0 }
 		>
 			<TooltipBase

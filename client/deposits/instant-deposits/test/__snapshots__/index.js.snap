@@ -3,7 +3,7 @@
 exports[`Instant deposit button and modal button renders correctly with balance 1`] = `
 <div>
   <button
-    class="components-button is-secondary"
+    class="components-button is-primary"
     type="button"
   >
     Instant deposit
@@ -13,13 +13,22 @@ exports[`Instant deposit button and modal button renders correctly with balance 
 
 exports[`Instant deposit button and modal button renders correctly with zero balance 1`] = `
 <div>
-  <button
-    class="components-button is-secondary"
-    disabled=""
-    type="button"
+  <div
+    class="wcpay-tooltip__content-wrapper"
+    tabindex="0"
   >
-    Instant deposit
-  </button>
+    <div
+      class="wcpay-tooltip__content-wrapper"
+    >
+      <button
+        class="components-button is-primary"
+        disabled=""
+        type="button"
+      >
+        Instant deposit
+      </button>
+    </div>
+  </div>
 </div>
 `;
 
