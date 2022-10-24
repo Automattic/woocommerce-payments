@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Added a new centralized class to keep track of the gateway's working mode (test, dev, or live).
