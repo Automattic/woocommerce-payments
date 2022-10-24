@@ -1,0 +1,92 @@
+name: "Bump WC/WP min and required versions"
+
+# This action will run when it is triggered manually
+on:
+  workflow_dispatch:
+    inputs:
+      wcVersion:
+        description: "The new WooCommerce version (e.g. 7.0). Optional (leave empty if not applicable)"
+        required: true
+        type: string
+        default: ''
+      wpVersion:
+        description: "The new WordPress version (e.g. 7.0). Optional (leave empty if not applicable)"
+        required: true
+        type: string
+        default: ''
+      releaseVersion:
+        description: 'The next release version (e.g. 4.5.0 if the current version is 4.4.0)'
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  bump-versions:
+    name: "Bump versions for WC and WP"
+    runs-on: ubuntu-20.04
+    env:
+      WC_VERSION: ${{ inputs.wcVersion }}
+      WP_VERSION: ${{ inputs.wpVersion }}
+      RELEASE_VERSION: ${{ inputs.releaseVersion }}
+    steps:
+      - name: "Check out WCPay repository"
+        uses: actions/checkout@v3
+          
+          #      - name: "Setup GitHub SSH for checking out woorelease private repo"
+          #        uses: webfactory/ssh-agent@v0.7.0
+          #        with:
+          #          ssh-private-key: ${{ secrets.WOORELEASE_SSH_PRIVATE_KEY }}
+
+      - name: "Check out woorelease repository"
+        uses: actions/checkout@v3
+        with:
+          repository: woocommerce/woorelease
+          token: '${{ secrets.WOORELEASE }}'
+          path: 'woorelease'
+          ref: dev/test-woorelease-command-in-gh-action
+
+      - name: "Create .woorelease directory under HOME"
+        run: |
+          mkdir -p $HOME/.woorelease/extensions
+          touch $HOME/.woorelease/config
+          echo "[github]" >> $HOME/.woorelease/config
+          echo "token = ${{ secrets.WOORELEASE }}" >> $HOME/.woorelease/config
+          echo $(cat "$HOME/.woorelease/config")
+
+      - name: "Check out woorelease extensions repository under HOME"
+        uses: actions/checkout@v3
+        with:
+          repository: woocommerce/woorelease-extensions
+          ref: add/wcpay-bump-versions-command
+          token: '${{ secrets.WOORELEASE }}'
+          path: "woorelease-extensions"
+
+      - name: Setup Node and PHP with cache
+        uses: ./.github/actions/setup-repo
+
+      - name: "Build woorelease"
+        run: |
+          cp -R woorelease-extensions/. $HOME/.woorelease/extensions
+          cd ./woorelease
+          npm install
+          npm run build
+          unzip woorelease.zip
+
+      - name: "Execute woorelease bump-versions command"
+        run: |
+          cd ./woorelease
+          BRANCH=$(echo "$GITHUB_REF_NAME")
+          php woorelease.phar wcpay:bump-versions --wc_version="$WC_VERSION" --wp_version="$WP_VERSION" --release_version="$RELEASE_VERSION" "$BRANCH"
+
+      - name: "Create a PR targeting develop"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ steps.create_branch_tag.outputs.branch-name }}
+          CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
+          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
+        run: |
+          PR_BODY=$(echo -e "Changes proposed in this Pull Request\n\n- Bump minimum and \"Tested up to\" WC version to $WC_VERSION\n- Bump minimum WP version to $WP_VERSION")
+          gh pr create --title "Bump WC/WP versions for $RELEASE_VERSION release" --body="$PR_BODY" --base="develop"
