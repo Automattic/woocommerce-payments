@@ -439,12 +439,18 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
+		// Subscriptions are processed before redirect so we don't want to redo the processing here
+		// and introduce a race condition.
 		if (
 			function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order )
 			|| function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order )
 		) {
-			// Subscriptions are processed on redirect so we don't want to redo the processing here
-			// and introduce a race condition.
+			return;
+		}
+
+		// Orders with downloadable items are processed on redirect so we don't want to redo the
+		// processing here and introduce a race condition.
+		if ( $order->has_downloadable_item() ) {
 			return;
 		}
 
