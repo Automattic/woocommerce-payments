@@ -305,8 +305,10 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
                     tabindex="-1"
                   >
-                    <span>
-                      N/A
+                    <span
+                      style="color: red;"
+                    >
+                      Highest
                     </span>
                   </a>
                 </td>
@@ -378,8 +380,10 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
                     tabindex="-1"
                   >
-                    <span>
-                      N/A
+                    <span
+                      style="color: green;"
+                    >
+                      Normal
                     </span>
                   </a>
                 </td>

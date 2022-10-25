@@ -118,7 +118,7 @@ export function* submitCaptureAuthorization(
 			sprintf(
 				// translators: %s Order id
 				__(
-					'Payment for order #%s captured successfully',
+					'Payment for order #%s captured successfully.',
 					'woocommerce-payments'
 				),
 				orderId

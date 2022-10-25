@@ -70,7 +70,7 @@ describe( 'submitCaptureAuthorization', () => {
 			dispatch(
 				'core/notices',
 				'createSuccessNotice',
-				'You have captured the payment.'
+				'Payment for order #254 captured successfully.'
 			)
 		);
 
@@ -91,7 +91,7 @@ describe( 'submitCaptureAuthorization', () => {
 			dispatch(
 				'core/notices',
 				'createErrorNotice',
-				'There has been an error capturing the payment. Please try again later.'
+				'There has been an error capturing the payment for order #42. Please try again later.'
 			)
 		);
 	} );

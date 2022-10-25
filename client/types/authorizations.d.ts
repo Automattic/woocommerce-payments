@@ -6,7 +6,7 @@ export interface Authorization {
 	charge_id: string;
 	created: string;
 	order_id: number;
-	risk_level: RiskLevel | string;
+	risk_level: number;
 	amount: number;
 	customer_name: string;
 	customer_email: string;
