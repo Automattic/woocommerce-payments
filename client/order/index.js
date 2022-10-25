@@ -1,5 +1,6 @@
 /* global jQuery */
 
+import { __ } from '@wordpress/i18n';
 import ReactDOM from 'react-dom';
 /**
  * Internal dependencies
@@ -34,15 +35,20 @@ jQuery( function ( $ ) {
 	);
 
 	$( 'select#order_status' ).on( 'change', function () {
-		let originalStatus = $( 'input#original_post_status' ).val();
-		if ( 'wc-refunded' === this.value ) {
+		const originalStatus = $( 'input#original_post_status' ).val();
+		const refundAmount = getConfig( 'remainingRefundAmount' );
+		if ( 'wc-refunded' === this.value &&  'wc-refunded' !== originalStatus ) {
+			if( 0 >= refundAmount ) {
+				alert( __( 'Invalid Refund Amount', 'woocommerce-payments' ) );
+				return;
+			}
 			const container = document.createElement( 'div' );
 			container.id = 'wcpay-refund-confirm-container';
 			document.body.appendChild( container );
 			ReactDOM.render(
 				<RefundConfirmationModal
 					orderStatus={ originalStatus }
-					refundAmount={ getConfig( 'remainingRefundAmount' ) }
+					refundAmount={ refundAmount }
 					refundedAmount={ getConfig( 'refundedAmount' ) }
 					currencyCode={ getConfig( 'orderCurrency' ) }
 				/>,
