@@ -702,7 +702,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Generates the configuration values, needed for UPE payment fields.
 	 *
-	 * @deprecated 4.9.0
+	 * @deprecated 5.0.0
 	 *
 	 * @return array
 	 */
@@ -925,7 +925,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Gets payment method settings to pass to client scripts
 	 *
-	 * @deprecated 4.9.0
+	 * @deprecated 5.0.0
 	 *
 	 * @return array
 	 */
