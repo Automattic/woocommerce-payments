@@ -1,9 +1,11 @@
 /* global jQuery */
 
+import ReactDOM from 'react-dom';
 /**
  * Internal dependencies
  */
 import { getConfig } from 'utils/order';
+import RefundConfirmationModal from './refund-confirm-modal';
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
@@ -30,4 +32,22 @@ jQuery( function ( $ ) {
 			}
 		}
 	);
+
+	$( 'select#order_status' ).on( 'change', function () {
+		let originalStatus = $( 'input#original_post_status' ).val();
+		if ( 'wc-refunded' === this.value ) {
+			const container = document.createElement( 'div' );
+			container.id = 'wcpay-refund-confirm-container';
+			document.body.appendChild( container );
+			ReactDOM.render(
+				<RefundConfirmationModal
+					orderStatus={ originalStatus }
+					refundAmount={ getConfig( 'remainingRefundAmount' ) }
+					refundedAmount={ getConfig( 'refundedAmount' ) }
+					currencyCode={ getConfig( 'orderCurrency' ) }
+				/>,
+				container
+			);
+		}
+	} );
 } );
