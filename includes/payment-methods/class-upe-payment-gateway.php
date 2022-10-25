@@ -703,7 +703,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_fields['isCheckout']               = is_checkout();
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
 		$payment_fields['saveUPEAppearanceNonce']   = wp_create_nonce( 'wcpay_save_upe_appearance_nonce' );
-		$payment_fields['testMode']                 = $this->is_in_test_mode();
+		$payment_fields['testMode']                 = WC_Payments::mode()->test;
 		$payment_fields['upeAppearance']            = get_transient( self::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['checkoutTitle']            = $this->checkout_title;
@@ -852,7 +852,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
 			<?php endif; ?>
 
-			<?php if ( $this->is_in_test_mode() ) : ?>
+			<?php if ( WC_Payments::mode()->test ) : ?>
 				<p class="testmode-info">
 				<?php
 					echo WC_Payments_Utils::esc_interpolated_html(

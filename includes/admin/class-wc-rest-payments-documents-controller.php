@@ -107,7 +107,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 				'wcpay_document_downloaded',
 				[
 					'document_id' => $document_id,
-					'mode'        => WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'live',
+					'mode'        => WC_Payments::mode()->test ? 'test' : 'live',
 				]
 			);
 		}

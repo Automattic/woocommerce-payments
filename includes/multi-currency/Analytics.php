@@ -64,7 +64,7 @@ class Analytics {
 			$this->register_customer_currencies();
 		}
 
-		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->dev ) {
 			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 

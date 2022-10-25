@@ -505,7 +505,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// If no SSL, bail.
-		if ( ! $this->gateway->is_in_test_mode() && ! is_ssl() ) {
+		if ( ! WC_Payments::mode()->test && ! is_ssl() ) {
 			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
 			return false;
 		}
@@ -730,7 +730,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'ajax_url'           => admin_url( 'admin-ajax.php' ),
 			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'             => [
-				'publishableKey' => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
+				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->test ),
 				'accountId'      => $this->account->get_stripe_account_id(),
 				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			],
@@ -1612,7 +1612,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if (
 			$this->gateway->is_enabled()
 			&& 'yes' === $this->gateway->get_option( 'payment_request' )
-			&& ! $this->gateway->is_in_dev_mode()
+			&& ! WC_Payments::mode()->dev
 			&& $this->account->get_is_live()
 		) {
 			$value = wp_rand( 1, 2 );
