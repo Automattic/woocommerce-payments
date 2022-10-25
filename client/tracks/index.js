@@ -82,6 +82,7 @@ const events = {
 	PLATFORM_CHECKOUT_OTP_COMPLETE: 'platform_checkout_otp_prompt_complete',
 	PLATFORM_CHECKOUT_OTP_FAILED: 'platform_checkout_otp_prompt_failed',
 	PLATFORM_CHECKOUT_AUTO_REDIRECT: 'platform_checkout_auto_redirect',
+	PLATFORM_CHECKOUT_SKIPPED: 'platform_checkout_skipped',
 };
 
 export default {
