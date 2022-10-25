@@ -591,7 +591,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'processing', $result_order->get_status() );
 	}
 
-	public function test_capture_authorization_succeeded_intent() {
+	public function test_capture_authorization_succeeded_intent_throws_error() {
 		$order = $this->create_mock_order();
 		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 		$order->set_payment_method_title( 'WooCommerce Payments' );
@@ -679,7 +679,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 409, $data['status'] );
 	}
 
-	public function test_capture_authorization_succeeded_payment_intent_missing_order_id() {
+	public function test_capture_authorization_with_succeeded_payment_intent_and_missing_order_id_throws_error() {
 		$order = $this->create_mock_order();
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'succeeded' ] );
