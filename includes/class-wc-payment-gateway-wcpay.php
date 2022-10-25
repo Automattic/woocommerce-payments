@@ -488,27 +488,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Check the defined constant to determine the current plugin mode.
-	 *
-	 * @return bool
-	 */
-	public function is_in_dev_mode() {
-		$is_extension_dev_mode        = defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
-		$is_wordpress_dev_environment = function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), [ 'development', 'staging' ], true );
-		return apply_filters( 'wcpay_dev_mode', $is_extension_dev_mode || $is_wordpress_dev_environment );
-	}
-
-	/**
-	 * Returns whether test_mode or dev_mode is active for the gateway
-	 *
-	 * @return boolean Test mode enabled if true, disabled if false
-	 */
-	public function is_in_test_mode() {
-		return apply_filters( 'wcpay_test_mode', $this->is_in_dev_mode() || 'yes' === $this->get_option( 'test_mode' ) );
-	}
-
-
-	/**
 	 * Returns whether a store that is not in test mode needs to set https
 	 * in the checkout
 	 *
