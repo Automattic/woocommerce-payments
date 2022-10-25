@@ -1714,10 +1714,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$logger_ref->setAccessible( true );
 		$logger_ref->setValue( null, $mock_logger );
 
-		$wcpay_dev_mode_true = function () {
-			return true;
-		};
-		add_filter( 'wcpay_dev_mode', $wcpay_dev_mode_true );
+		WC_Payments::mode()->dev();
 
 		$mock_logger
 			->expects( $this->exactly( $logger_num_calls ) )
@@ -1752,7 +1749,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		// clean up.
 		$logger_ref->setAccessible( true );
 		$logger_ref->setValue( null, null );
-		remove_filter( 'wcpay_dev_mode', $wcpay_dev_mode_true );
+		WC_Payments::mode()->live();
 	}
 
 	/**

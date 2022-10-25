@@ -34,11 +34,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
-		if ( $this->is_wpcom() ) {
-			add_filter( 'wcpay_dev_mode', '__return_true' );
-		} else {
-			WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
-		}
+		WC_Payments::mode()->test();
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->controller      = new WC_REST_Payments_Accounts_Controller( $this->mock_api_client );
@@ -54,10 +50,7 @@ class WC_REST_Payments_Accounts_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 
-		if ( $this->is_wpcom() ) {
-			remove_filter( 'wcpay_dev_mode', '__return_true' );
-		}
-
+		WC_Payments::mode()->live();
 		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
 
 		// Restore the original client.
