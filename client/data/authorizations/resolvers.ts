@@ -45,6 +45,7 @@ export function* getAuthorizations( query: Query ): Generator< unknown > {
 export function* getAuthorization(
 	paymentIntentId: string
 ): Generator< unknown > {
+	// TODO this is implemented in other PR: https://github.com/Automattic/woocommerce-payments/pull/4688/
 	yield updateAuthorization( {
 		payment_intent_id: paymentIntentId,
 	} as Authorization );
@@ -53,5 +54,6 @@ export function* getAuthorization(
 export function* getAuthorizationsSummary(
 	query: Query
 ): Generator< unknown > {
+	// TODO this is implemented in other PR: https://github.com/Automattic/woocommerce-payments/pull/4982
 	yield updateAuthorizationsSummary( query, {} );
 }
