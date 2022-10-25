@@ -4,7 +4,7 @@
  */
 import { Query } from '@woocommerce/navigation';
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import { __ } from '@wordpress/i18n';
+import { sprintf, __ } from '@wordpress/i18n';
 
 /**
  * Internal Dependencies
@@ -115,14 +115,28 @@ export function* submitCaptureAuthorization(
 		yield dispatch(
 			'core/notices',
 			'createSuccessNotice',
-			__( 'You have captured the payment.', 'woocommerce-payments' )
+			sprintf(
+				// translators: %s Order id
+				__(
+					'Payment for order #%s captured successfully',
+					'woocommerce-payments'
+				),
+				orderId
+			)
 		);
 	} catch ( error ) {
-		const message = __(
-			'There has been an error capturing the payment. Please try again later.',
-			'woocommerce-payments'
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			sprintf(
+				// translators: %s Order id
+				__(
+					'There has been an error capturing the payment for order #%s. Please try again later.',
+					'woocommerce-payments'
+				),
+				orderId
+			)
 		);
-		yield dispatch( 'core/notices', 'createErrorNotice', message );
 	} finally {
 		yield dispatch( STORE_NAME, 'finishResolution', 'getAuthorization', [
 			paymentIntentId,
