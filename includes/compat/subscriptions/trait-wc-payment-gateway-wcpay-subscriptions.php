@@ -270,6 +270,19 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
+		$additional_api_parameters = [];
+
+		// Include mandate from parent subscription order if exists.
+		$renewals = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
+		if ( $renewals ) {
+			$parent_order_id = reset( $renewals )->get_parent_id();
+			$parent_order    = wc_get_order( $parent_order_id );
+			$mandate         = $parent_order->get_meta( '_stripe_mandate_id', true );
+			if ( ! empty( $mandate ) ) {
+				$additional_api_parameters['mandate'] = $mandate;
+			}
+		}
+
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
 			$this->process_payment_for_order( null, $payment_information, $additional_api_parameters );
@@ -787,6 +800,29 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 				return true;
 			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Add card mandate options parameters to the order payment intent if needed.
+	 * Only required for the subscription creation for card issued in India.
+	 * More details https://wp.me/pc4etw-ky
+	 *
+	 * @param WC_Order $order The subscription order.
+	 * @return array Params to be included or empty array.
+	 */
+	public function maybe_add_mandate_to_order_payment( WC_Order $order ):  array {
+		$result = [];
+
+		if ( $this->is_subscriptions_enabled() ) {
+			$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
+			$subscription  = reset( $subscriptions );
+
+			if ( ! $subscription ) {
+				return $result;
+			}
 
 			// Get total by adding only subscriptions and get rid of any other product or fee.
 			$subs_amount = 0;
@@ -802,6 +838,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				'start_date'     => $subscription->get_time( 'date_created' ),
 				'interval'       => $subscription->get_billing_period(),
 				'interval_count' => $subscription->get_billing_interval(),
+				'supported_types' => ['india'],
 			];
 
 			// Multiple subscriptions per order needs:
@@ -815,7 +852,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			}
 		}
 
-		return false;
+		return $result;
 	}
 
 	/**

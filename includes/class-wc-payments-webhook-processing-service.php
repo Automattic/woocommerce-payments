@@ -385,6 +385,12 @@ class WC_Payments_Webhook_Processing_Service {
 			WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY => $currency,
 		];
 
+		// Save mandate id, necessary for some subscription renewals.
+		$mandate_id = $event_data['object']['charges']['data'][0]['payment_method_details']['card']['mandate'] ?? null;
+		if ( $mandate_id ) {
+			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
+		}
+
 		foreach ( $meta_data_to_update as $key => $value ) {
 			// Override existing meta data with incoming values, if present.
 			if ( $value ) {

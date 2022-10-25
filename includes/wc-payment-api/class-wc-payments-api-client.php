@@ -263,6 +263,7 @@ class WC_Payments_API_Client {
 	 * @param string      $capture_method  - optional capture method (either `automatic` or `manual`).
 	 * @param array       $metadata        - A list of intent metadata.
 	 * @param string|null $customer_id     - Customer id for intent.
+	 * @param array       $additional_parameters  - An array of any additional request parameters, particularly for additional payment methods.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -274,7 +275,8 @@ class WC_Payments_API_Client {
 		$order_number,
 		$capture_method = 'automatic',
 		array $metadata = [],
-		$customer_id = null
+		$customer_id = null,
+		$additional_parameters = []
 	) {
 		$request                         = [];
 		$request['amount']               = $amount;
@@ -286,6 +288,8 @@ class WC_Payments_API_Client {
 		if ( $customer_id ) {
 			$request['customer'] = $customer_id;
 		}
+
+		$request             = array_merge( $request, $additional_parameters );
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 

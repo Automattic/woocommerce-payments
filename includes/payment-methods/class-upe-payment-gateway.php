@@ -442,7 +442,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						'fraud_prevention_enabled'
 					);
 				}
-				$additional_api_parameters = $this->maybe_add_mandate_to_order_payment( $order );
 
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {
 					// Throwing an exception instead of adding an error notice
@@ -457,6 +456,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
+				$additional_api_parameters = $this->maybe_add_mandate_to_order_payment( $order );
+
 				try {
 					$updated_payment_intent = $this->payments_api_client->update_intention(
 						$payment_intent_id,
@@ -467,7 +468,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						$this->get_metadata_from_order( $order, $payment_type ),
 						$this->get_level3_data_from_order( $order ),
 						$selected_upe_payment_type,
-						$payment_country
+						$payment_country,
+						$additional_api_parameters
 					);
 				} catch ( Amount_Too_Small_Exception $e ) {
 					// This code would only be reached if the cache has already expired.
