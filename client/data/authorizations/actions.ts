@@ -14,6 +14,7 @@ import {
 	AuthorizationsSummary,
 	Authorization,
 	AuthorizationsList,
+	CaptureAuthorizationApiResponse,
 } from 'wcpay/types/authorizations';
 import { STORE_NAME } from '../constants';
 import { ApiError } from 'wcpay/types/errors';
@@ -90,8 +91,10 @@ export function* submitCaptureAuthorization(
 		} );
 
 		const authorization = {
-			payment_intent_id: ( result as any ).id,
-			captured: ( result as any ).status === 'succeeded',
+			payment_intent_id: ( result as CaptureAuthorizationApiResponse ).id,
+			captured:
+				( result as CaptureAuthorizationApiResponse ).status ===
+				'succeeded',
 		};
 
 		yield updateAuthorization( authorization as Authorization );

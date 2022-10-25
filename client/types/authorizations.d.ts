@@ -39,3 +39,8 @@ export interface AuthorizationsState {
 interface AuthorizationsList {
 	data: Authorization[];
 }
+
+interface CaptureAuthorizationApiResponse {
+	id: string;
+	status: string;
+}
