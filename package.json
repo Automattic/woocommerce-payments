@@ -71,7 +71,7 @@
     "debug": "4.1.1",
     "interpolate-components": "1.1.1",
     "intl-tel-input": "17.0.15",
-    "lodash": "4.17.14"
+    "lodash": "4.17.21"
   },
   "devDependencies": {
     "@automattic/color-studio": "2.3.1",

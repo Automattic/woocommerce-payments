@@ -36,6 +36,7 @@ to catalog our packages and provide guidance to a developer who wants to test an
 ### JavaScript Dev Dependencies
 | Package Name | Usage Summary | Testing | Notes |
 | ------------ | ------------- | ------- | ----- |
+| lodash       | Lodash makes JavaScript easier by taking the hassle out of working with arrays, numbers, objects, strings, etc. | JS tests should pass. |  |
 | node         | Not a package, but we declare the supported version of node in our `.nvmrc` file. We use node to build the JavaScript for the plugin and run the JavaScript unit tests. | Ensure you're running the new version of node by running the `nvm use` command or manually setting up the correct version. For minor and patch upgrades testing that the build runs is sufficient. For major versions, smoke testing the running plugin would be advised. | |
 
 ### PHP Runtime Dependencies
