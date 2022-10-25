@@ -107,12 +107,12 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_termin
 
 ## Capture an authorization
 
-_@since vX.X.X_
+_@since vX.X.X_ <!-- TODO: add version. -->
 
 ### POST params
 
 -   payment_intent_id: string
--   order_id: string??? or number??
+-   order_id: string
 
 ### Error codes
 
@@ -151,10 +151,10 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_author
 
 ```json
 {
-  "code": "wcpay_server_error",
-  "message": "Unexpected server error",
+  "code": "wcpay_payment_uncapturable",
+  "message": "The payment cannot be captured",
   "data": {
-    "status": 500
+    "status": 409
   }
 }
 ```
