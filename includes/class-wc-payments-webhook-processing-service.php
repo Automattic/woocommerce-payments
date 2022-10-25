@@ -439,8 +439,17 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
+		if (
+			function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order )
+			|| function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order )
+		) {
+			// Subscriptions are processed on redirect so we don't want to redo the processing here
+			// and introduce a race condition.
+			return;
+		}
+
 		// Process like a normal payment_intent.succeeded event, but with some extra WooPay
-		// specific operations.
+		// specific operations once that's been completed.
 		$this->process_webhook_payment_intent_succeeded( $event_body );
 
 		$was_paid_on_woopay = filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOL );

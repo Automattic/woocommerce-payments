@@ -213,6 +213,10 @@ class Platform_Checkout_Order_Success_Page {
 	 * @return bool  True if order should be processed now, false otherwise.
 	 */
 	private function should_process_order_now( WC_Order $order ): bool {
-		return $order->has_downloadable_item();
+		if ( $order->has_downloadable_item() ) {
+			return true;
+		}
+
+		return false;
 	}
 }
