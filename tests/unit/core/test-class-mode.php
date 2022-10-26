@@ -33,7 +33,7 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 
 		$this->mode = $this->getMockBuilder( Mode::class )
 			->setConstructorArgs( [ $this->mock_gateway ] )
-			->onlyMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type' ] )
+			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type' ] )
 			->getMock();
 	}
 
