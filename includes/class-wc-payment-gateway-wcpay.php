@@ -2949,7 +2949,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Whether the current page is the WooCommerce Payments settings page.
 	 *
-	 * @deprecated 4.9.0
+	 * @deprecated 5.0.0
 	 *
 	 * @return bool
 	 */
@@ -2961,7 +2961,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
 	 *
-	 * @deprecated 4.9.0
+	 * @deprecated 5.0.0
 	 *
 	 * @return string URL of the configuration screen for this gateway
 	 */
