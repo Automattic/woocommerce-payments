@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.9.0
+Stable tag: 7.2.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,18 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 7.2.6 - 2022-10-26 =
+* Add - Add a "Manual" deposit schedule setting to the payments settings page.
+* Add - Add event when skipped the platform checkout
+* Add - Add Stripe Link set up inbox notification
+* Add - Pass the value of 'woocommerce_tax_display_cart' option from the merchant's store to WooPay
+* Fix - Adjust regex to check the format of a tag for a pre-release in our GitHub workflow
+* Fix - Enable Link to support authorization/capture scenarios.
+* Update - Adjust texts and links in WC admin express checkout section.
+* Update - Remove IE11 support.
+* Dev - Add new GitHub workflows for release management (pre-release and release packages)
+* Dev - Switch to @woocommerce/dependency-extraction-webpack-plugin
 
 = 4.9.0 - 2022-10-20 =
 * Add - Adds new notice and modal informing users about verifying their account during onboarding.
