@@ -23,7 +23,7 @@ env:
   E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_USE_LOCAL_SERVER:  false
   E2E_RESULT_FILEPATH:   'tests/e2e/results.json'
-  WC_L2_VERSION: '7.4.0'
+  WC_L2_VERSION: '7.5.0'
 
 
 jobs:
