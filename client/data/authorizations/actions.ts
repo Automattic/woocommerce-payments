@@ -4,7 +4,7 @@
  */
 import { Query } from '@woocommerce/navigation';
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import { __ } from '@wordpress/i18n';
+import { sprintf, __ } from '@wordpress/i18n';
 
 /**
  * Internal Dependencies
@@ -13,21 +13,39 @@ import TYPES from './action-types';
 import {
 	AuthorizationsSummary,
 	Authorization,
+	AuthorizationsList,
+	CaptureAuthorizationApiResponse,
 } from 'wcpay/types/authorizations';
 import { STORE_NAME } from '../constants';
+import { ApiError } from 'wcpay/types/errors';
 
 export function updateAuthorizations(
 	query: Query,
-	data: Array< Authorization >
+	authorizationsList: AuthorizationsList
 ): {
 	type: string;
-	data: Array< Authorization >;
+	data: Authorization[];
 	query: Query;
 } {
 	return {
 		type: TYPES.SET_AUTHORIZATIONS,
-		data,
+		data: authorizationsList.data,
 		query,
+	};
+}
+
+export function updateErrorForAuthorizations(
+	query: Query,
+	error: ApiError
+): {
+	type: string;
+	query: Query;
+	error: ApiError;
+} {
+	return {
+		type: TYPES.SET_ERROR_FOR_AUTHORIZATIONS,
+		query,
+		error,
 	};
 }
 
@@ -64,7 +82,7 @@ export function* submitCaptureAuthorization(
 			paymentIntentId,
 		] );
 
-		let authorization = yield apiFetch( {
+		const result = yield apiFetch( {
 			path: `/wc/v3/payments/orders/${ orderId }/capture_authorization`,
 			method: 'post',
 			data: {
@@ -72,9 +90,11 @@ export function* submitCaptureAuthorization(
 			},
 		} );
 
-		authorization = {
-			payment_intent_id: paymentIntentId,
-			captured: true,
+		const authorization = {
+			payment_intent_id: ( result as CaptureAuthorizationApiResponse ).id,
+			captured:
+				( result as CaptureAuthorizationApiResponse ).status ===
+				'succeeded',
 		};
 
 		yield updateAuthorization( authorization as Authorization );
@@ -101,14 +121,28 @@ export function* submitCaptureAuthorization(
 		yield dispatch(
 			'core/notices',
 			'createSuccessNotice',
-			__( 'You have captured the payment.', 'woocommerce-payments' )
+			sprintf(
+				// translators: %s Order id
+				__(
+					'Payment for order #%s captured successfully.',
+					'woocommerce-payments'
+				),
+				orderId
+			)
 		);
 	} catch ( error ) {
-		const message = __(
-			'There has been an error capturing the payment. Please try again later.',
-			'woocommerce-payments'
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			sprintf(
+				// translators: %s Order id
+				__(
+					'There has been an error capturing the payment for order #%s. Please try again later.',
+					'woocommerce-payments'
+				),
+				orderId
+			)
 		);
-		yield dispatch( 'core/notices', 'createErrorNotice', message );
 	} finally {
 		yield dispatch( STORE_NAME, 'finishResolution', 'getAuthorization', [
 			paymentIntentId,

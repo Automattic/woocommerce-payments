@@ -3,8 +3,6 @@
 /**
  * External dependencies
  */
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
 import { apiFetch } from '@wordpress/data-controls';
 
 /**
@@ -40,7 +38,7 @@ describe( 'getAuthorizations resolver', () => {
 
 	test( 'should update state with authorizations data', () => {
 		expect( generator.next().value ).toEqual(
-			updateAuthorizations( query, [] )
+			updateAuthorizations( query, { data: [] } )
 		);
 	} );
 } );
@@ -49,10 +47,6 @@ describe( 'getAuthorization resolver', () => {
 	let generator: Generator< unknown >;
 	const mockPaymentIntentId = '42';
 	const mockIsCaptured = false;
-	const mockCaptureBy = dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( new Date() ).add( '7', 'days' ).local().toISOString()
-	);
 
 	beforeEach( () => {
 		generator = getAuthorization( mockPaymentIntentId );
@@ -72,7 +66,6 @@ describe( 'getAuthorization resolver', () => {
 			updateAuthorization( {
 				payment_intent_id: mockPaymentIntentId,
 				captured: mockIsCaptured,
-				capture_by: mockCaptureBy,
 			} as Authorization )
 		);
 	} );

@@ -4,9 +4,8 @@
  * External dependencies
  */
 import { Query } from '@woocommerce/navigation';
-import moment from 'moment';
-import { dateI18n } from '@wordpress/date';
 import { apiFetch, dispatch } from '@wordpress/data-controls';
+import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -16,14 +15,36 @@ import {
 	updateAuthorizations,
 	updateAuthorization,
 	updateAuthorizationsSummary,
+	updateErrorForAuthorizations,
 } from './actions';
-import { Authorization } from 'wcpay/types/authorizations';
-import { ChargeCache } from 'wcpay/types/charges-cache';
+import {
+	Authorization,
+	AuthorizationsList,
+	GetAuthorizationApiResponse,
+} from 'wcpay/types/authorizations';
 import { NAMESPACE } from '../constants';
+import { ApiError } from 'wcpay/types/errors';
 
 export function* getAuthorizations( query: Query ): Generator< unknown > {
-	// TODO: fetch authorizations data from server endpoint.
-	yield updateAuthorizations( query, [] );
+	const {
+		paged = 1,
+		per_page: perPage = 25,
+		orderby = 'created',
+		order = 'desc',
+	} = query;
+	const path = addQueryArgs( `${ NAMESPACE }/authorizations`, {
+		page: paged,
+		pagesize: perPage,
+		sort: orderby,
+		direction: order,
+	} );
+
+	try {
+		const result = yield apiFetch( { path } );
+		yield updateAuthorizations( query, result as AuthorizationsList );
+	} catch ( error ) {
+		yield updateErrorForAuthorizations( query, error as ApiError );
+	}
 }
 
 export function* getAuthorization(
@@ -36,22 +57,14 @@ export function* getAuthorization(
 				path: `${ NAMESPACE }/authorizations/${ paymentIntentId }`,
 			} );
 		}
-		const chargeCache = result as ChargeCache;
-		const isCaptured = chargeCache ? chargeCache.is_captured : false;
-		const captureByDate = chargeCache
-			? new Date( chargeCache.created )
-			: new Date();
+		const isCaptured = result
+			? ( result as GetAuthorizationApiResponse ).is_captured
+			: false;
+
 		yield updateAuthorization( {
-			payment_intent_id: paymentIntentId,
+			payment_intent_id: ( result as GetAuthorizationApiResponse )
+				.payment_intent_id,
 			captured: isCaptured,
-			capture_by: dateI18n(
-				'M j, Y / g:iA',
-				moment
-					.utc( captureByDate )
-					.add( '7', 'days' )
-					.local()
-					.toISOString()
-			),
 		} as Authorization );
 	} catch ( e ) {
 		yield dispatch(
@@ -65,6 +78,6 @@ export function* getAuthorization(
 export function* getAuthorizationsSummary(
 	query: Query
 ): Generator< unknown > {
-	// TODO: fetch authorizations summary data from server endpoint.
+	// TODO this is implemented in other PR: https://github.com/Automattic/woocommerce-payments/pull/4982
 	yield updateAuthorizationsSummary( query, {} );
 }

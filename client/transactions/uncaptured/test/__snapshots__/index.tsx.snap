@@ -265,18 +265,33 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item date-time is-left-aligned is-sorted"
                   scope="row"
                 >
-                  2020-01-02 17:46:02
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
+                    tabindex="-1"
+                  >
+                    Jan 2, 2020 / 12:46PM
+                  </a>
                 </th>
                 <td
                   class="woocommerce-table__item date-time is-left-aligned"
                 >
-                  2020-01-09 17:46:02
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
+                    tabindex="-1"
+                  >
+                    Jan 9, 2020 / 12:46PM
+                  </a>
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
                   <a
-                    href="https://doggo.com"
+                    data-link-type="wp-admin"
+                    href="post.php?post=24&action=edit"
                   >
                     #24 from Good boy
                   </a>
@@ -284,16 +299,40 @@ exports[`Authorizations list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  <span
-                    style="color: crimson;"
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
+                    tabindex="-1"
                   >
-                    High
-                  </span>
+                    <span
+                      style="color: red;"
+                    >
+                      Highest
+                    </span>
+                  </a>
                 </td>
                 <td
                   class="woocommerce-table__item is-numeric"
                 >
-                  14.55$
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
+                    tabindex="-1"
+                  >
+                    14.55$
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <button
+                    class="components-button is-secondary is-small"
+                    type="button"
+                  >
+                    Capture
+                  </button>
                 </td>
                 <td
                   class="woocommerce-table__item"
@@ -311,18 +350,33 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item date-time is-left-aligned is-sorted"
                   scope="row"
                 >
-                  2020-01-03 17:46:02
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
+                    tabindex="-1"
+                  >
+                    Jan 3, 2020 / 12:46PM
+                  </a>
                 </th>
                 <td
                   class="woocommerce-table__item date-time is-left-aligned"
                 >
-                  2020-01-10 17:46:02
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
+                    tabindex="-1"
+                  >
+                    Jan 10, 2020 / 12:46PM
+                  </a>
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
                   <a
-                    href="https://doggo.com"
+                    data-link-type="wp-admin"
+                    href="post.php?post=25&action=edit"
                   >
                     #25 from Good boy
                   </a>
@@ -330,16 +384,40 @@ exports[`Authorizations list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  <span
-                    style="color: green;"
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
+                    tabindex="-1"
                   >
-                    Normal
-                  </span>
+                    <span
+                      style="color: green;"
+                    >
+                      Normal
+                    </span>
+                  </a>
                 </td>
                 <td
                   class="woocommerce-table__item is-numeric"
                 >
-                  20.10$
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
+                    tabindex="-1"
+                  >
+                    20.10$
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <button
+                    class="components-button is-secondary is-small"
+                    type="button"
+                  >
+                    Capture
+                  </button>
                 </td>
                 <td
                   class="woocommerce-table__item"

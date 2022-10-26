@@ -105,8 +105,8 @@ const PaymentDetailsSummary = ( {
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
 	const { authorization } = useAuthorization(
-		charge.payment_intent,
-		charge.order?.number
+		charge.payment_intent || '',
+		charge.order?.number || 0
 	);
 
 	return (
@@ -241,7 +241,15 @@ const PaymentDetailsSummary = ( {
 									'You need to capture this charge before',
 									'woocommerce-payments'
 								) } ` }
-								<b>{ authorization.capture_by }</b>
+								<b>
+									{ dateI18n(
+										'M j, Y / g:iA',
+										moment
+											.utc( authorization.created )
+											.add( 7, 'days' )
+											.toISOString()
+									) }
+								</b>
 							</div>
 							<div className="payment-details-capture-notice__button">
 								<CaptureAuthorizationButton

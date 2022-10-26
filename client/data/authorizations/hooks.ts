@@ -48,8 +48,8 @@ export const useAuthorizationsSummary = ( {}: Query ): {
 	} );
 
 export const useAuthorization = (
-	paymentIntentId: string | null,
-	orderId?: number
+	paymentIntentId: string,
+	orderId: number
 ): {
 	isLoading: boolean;
 	doCaptureAuthorization: () => void;

@@ -4,21 +4,26 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
-import { TableCard, TableCardColumn } from '@woocommerce/components';
+import moment from 'moment';
+import { sprintf, __ } from '@wordpress/i18n';
+import { Link, TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies
  */
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
-import { RiskLevel } from 'wcpay/types/authorizations';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
+import RiskLevelComponent, {
+	calculateRiskMapping,
+} from 'components/risk-level';
+import { getDetailsURL } from 'wcpay/components/details-link';
+import ClickableCell from 'wcpay/components/clickable-cell';
 
 interface Column extends TableCardColumn {
 	key:
-		| 'authorization_id'
 		| 'authorized_on'
 		| 'capture_by'
 		| 'order'
@@ -32,12 +37,6 @@ interface Column extends TableCardColumn {
 
 const getColumns = (): Column[] =>
 	[
-		{
-			key: 'authorization_id',
-			label: __( 'Authorization Id', 'woocommerce-payments' ),
-			visible: false,
-			isLeftAligned: true,
-		},
 		{
 			key: 'authorized_on',
 			label: __( 'Authorized on', 'woocommerce-payments' ),
@@ -120,66 +119,94 @@ export const AuthorizationsList = (): JSX.Element => {
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
-	const getRiskColor = ( risk: RiskLevel | string ) => {
-		switch ( risk ) {
-			case 'high':
-				return 'crimson';
-			case 'normal':
-				return 'green';
-			case 'elevated':
-				return 'darkorange';
-		}
-	};
-
 	const rows = authorizations.map( ( auth ) => {
 		const stringAmount = String( auth.amount );
 
+		const paymentDetailsUrl = getDetailsURL(
+			auth.payment_intent_id || auth.charge_id,
+			'transactions'
+		);
+
+		const clickable = ( children: React.ReactNode ) => (
+			<ClickableCell href={ paymentDetailsUrl }>
+				{ children }
+			</ClickableCell>
+		);
+
 		const data = {
-			authorization_id: {
-				value: auth.authorization_id,
-				display: auth.authorization_id,
-			},
 			authorized_on: {
-				value: auth.authorized_on,
-				display: auth.authorized_on,
+				value: auth.created,
+				display: clickable(
+					dateI18n(
+						'M j, Y / g:iA',
+						moment.utc( auth.created ).local().toISOString()
+					)
+				),
 			},
 			capture_by: {
-				value: auth.capture_by,
-				display: auth.capture_by,
+				value: moment
+					.utc( auth.created )
+					.add( 7, 'days' )
+					.toISOString(),
+				display: clickable(
+					dateI18n(
+						'M j, Y / g:iA',
+						moment
+							.utc( auth.created )
+							.add( 7, 'days' )
+							.toISOString()
+					)
+				),
 			},
 			order: {
-				value: auth.order.number,
-				display: (
-					<a
-						href={ auth.order.url }
-					>{ `#${ auth.order.number } from ${ auth.customer_name }` }</a>
+				value: auth.order_id,
+				display: auth.order_id ? (
+					<Link
+						href={ `post.php?post=${ auth.order_id }&action=edit` }
+						type="wp-admin"
+					>
+						{
+							// translators: %1$s Order identifier %2$ Customer name.
+							auth.customer_name
+								? sprintf(
+										__(
+											'#%1$s from %2$s',
+											'woocommerce-payments'
+										),
+										auth.order_id,
+										auth.customer_name ?? ''
+								  )
+								: `#${ auth.order_id }`
+						}
+					</Link>
+				) : (
+					__( 'N/A', 'woocommerce-payments' )
 				),
 			},
 			risk_level: {
-				value: auth.risk_level,
-				display: (
-					<span style={ { color: getRiskColor( auth.risk_level ) } }>
-						{ auth.risk_level.charAt( 0 ).toUpperCase() +
-							auth.risk_level.slice( 1 ) }
-					</span>
+				value: calculateRiskMapping( auth.risk_level ),
+				display: clickable(
+					<RiskLevelComponent risk={ auth.risk_level } />
 				),
 			},
 			amount: {
 				value: auth.amount,
-				display: getFormatedAmountFromString( stringAmount ),
+				display: clickable(
+					getFormatedAmountFromString( stringAmount )
+				),
 			},
 			customer_email: {
 				value: auth.customer_email,
-				display: auth.customer_email,
+				display: clickable( auth.customer_email ),
 			},
 			customer_country: {
 				value: auth.customer_country,
-				display: auth.customer_country,
+				display: clickable( auth.customer_country ),
 			},
 			action: {
 				display: (
 					<CaptureAuthorizationButton
-						orderId={ auth.order.number }
+						orderId={ auth.order_id }
 						paymentIntentId={ auth.payment_intent_id }
 					/>
 				),

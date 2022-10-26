@@ -14,14 +14,14 @@ import authorizationsFixture from './authorizations.fixture.json';
 
 describe( 'submitCaptureAuthorization', () => {
 	const {
-		order: mockOrder,
+		order_id: mockOrderId,
 		payment_intent_id: mockPaymentIntentId,
 	} = authorizationsFixture[ 0 ];
 
 	test( 'should capture authorization and show success notice.', () => {
 		const generator = submitCaptureAuthorization(
 			mockPaymentIntentId,
-			mockOrder.number
+			mockOrderId
 		);
 
 		expect( generator.next().value ).toEqual(
@@ -32,7 +32,7 @@ describe( 'submitCaptureAuthorization', () => {
 
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
-				path: `/wc/v3/payments/orders/${ mockOrder.number }/capture_authorization`,
+				path: `/wc/v3/payments/orders/${ mockOrderId }/capture_authorization`,
 				method: 'post',
 				data: {
 					payment_intent_id: mockPaymentIntentId,
@@ -40,7 +40,10 @@ describe( 'submitCaptureAuthorization', () => {
 			} )
 		);
 
-		expect( generator.next( authorizationsFixture[ 0 ] ).value ).toEqual(
+		expect(
+			generator.next( { id: mockPaymentIntentId, status: 'succeeded' } )
+				.value
+		).toEqual(
 			updateAuthorization( {
 				payment_intent_id: mockPaymentIntentId,
 				captured: true,
@@ -75,7 +78,7 @@ describe( 'submitCaptureAuthorization', () => {
 			dispatch(
 				'core/notices',
 				'createSuccessNotice',
-				'You have captured the payment.'
+				'Payment for order #254 captured successfully.'
 			)
 		);
 
@@ -96,7 +99,7 @@ describe( 'submitCaptureAuthorization', () => {
 			dispatch(
 				'core/notices',
 				'createErrorNotice',
-				'There has been an error capturing the payment. Please try again later.'
+				'There has been an error capturing the payment for order #42. Please try again later.'
 			)
 		);
 	} );

@@ -1,172 +1,122 @@
 [
   {
-      "authorization_id": "id_1662548429391_195",
-      "authorized_on": "Sep 7, 2022 / 11:00AM",
-      "capture_by": "Sep 14, 2022 / 11:00AM",
+      "created": "Sep 7, 2022 / 11:00AM",
       "captured": false,
-      "order": {
-          "number": 254,
-          "customer_url": "https://doggo.com",
-          "url": "https://doggo.com"
-      },
-      "risk_level": "elevated",
+      "order_id": 254,
+      "risk_level": 1,
       "amount": 3045,
       "customer_email": "good_boy@doge.com",
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
-      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD"
+      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
+      "charge_id": "ch_42"
   },
   {
-      "authorization_id": "id_1662548429391_291",
-      "authorized_on": "Sep 7, 2022 / 11:00AM",
-      "capture_by": "Sep 14, 2022 / 11:00AM",
+      "created": "Sep 7, 2022 / 11:00AM",
       "captured": false,
-      "order": {
-          "number": 254,
-          "customer_url": "https://doggo.com",
-          "url": "https://doggo.com"
-      },
-      "risk_level": "elevated",
+      "order_id": 254,
+      "risk_level": 1,
       "amount": 4157,
       "customer_email": "good_boy@doge.com",
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
-      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD"
+      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
+      "charge_id": "ch_42"
   },
   {
-      "authorization_id": "id_1662548429391_569",
-      "authorized_on": "Sep 7, 2022 / 11:00AM",
-      "capture_by": "Sep 14, 2022 / 11:00AM",
+      "created": "Sep 7, 2022 / 11:00AM",
       "captured": false,
-      "order": {
-          "number": 254,
-          "customer_url": "https://doggo.com",
-          "url": "https://doggo.com"
-      },
-      "risk_level": "normal",
+      "order_id": 254,
+      "risk_level": 0,
       "amount": 4549,
       "customer_email": "good_boy@doge.com",
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
-      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD"
+      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
+      "charge_id": "ch_42"
   },
   {
-      "authorization_id": "id_1662548429391_438",
-      "authorized_on": "Sep 7, 2022 / 11:00AM",
-      "capture_by": "Sep 14, 2022 / 11:00AM",
+      "created": "Sep 7, 2022 / 11:00AM",
       "captured": false,
-      "order": {
-          "number": 254,
-          "customer_url": "https://doggo.com",
-          "url": "https://doggo.com"
-      },
-      "risk_level": "high",
+      "order_id": 254,
+      "risk_level": 2,
       "amount": 3763,
       "customer_email": "good_boy@doge.com",
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
-      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD"
+      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
+      "charge_id": "ch_42"
   },
   {
-      "authorization_id": "id_1662548429391_397",
-      "authorized_on": "Sep 7, 2022 / 11:00AM",
-      "capture_by": "Sep 14, 2022 / 11:00AM",
+      "created": "Sep 7, 2022 / 11:00AM",
       "captured": false,
-      "order": {
-          "number": 254,
-          "customer_url": "https://doggo.com",
-          "url": "https://doggo.com"
-      },
-      "risk_level": "normal",
+      "order_id": 254,
+      "risk_level": 0,
       "amount": 6146,
       "customer_email": "good_boy@doge.com",
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
-      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD"
+      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
+      "charge_id": "ch_42"
   },
   {
-      "authorization_id": "id_1662548429391_945",
-      "authorized_on": "Sep 7, 2022 / 11:00AM",
-      "capture_by": "Sep 14, 2022 / 11:00AM",
+      "created": "Sep 7, 2022 / 11:00AM",
       "captured": false,
-      "order": {
-          "number": 254,
-          "customer_url": "https://doggo.com",
-          "url": "https://doggo.com"
-      },
-      "risk_level": "high",
+      "order_id": 254,
+      "risk_level": 2,
       "amount": 6196,
       "customer_email": "good_boy@doge.com",
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
-      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD"
+      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
+      "charge_id": "ch_42"
   },
   {
-      "authorization_id": "id_1662548429391_350",
-      "authorized_on": "Sep 7, 2022 / 11:00AM",
-      "capture_by": "Sep 14, 2022 / 11:00AM",
+      "created": "Sep 7, 2022 / 11:00AM",
       "captured": false,
-      "order": {
-          "number": 254,
-          "customer_url": "https://doggo.com",
-          "url": "https://doggo.com"
-      },
-      "risk_level": "normal",
+      "order_id": 254,
+      "risk_level": 0,
       "amount": 5223,
       "customer_email": "good_boy@doge.com",
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
-      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD"
+      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
+      "charge_id": "ch_42"
   },
   {
-      "authorization_id": "id_1662548429391_662",
-      "authorized_on": "Sep 7, 2022 / 11:00AM",
-      "capture_by": "Sep 14, 2022 / 11:00AM",
+      "created": "Sep 7, 2022 / 11:00AM",
       "captured": false,
-      "order": {
-          "number": 254,
-          "customer_url": "https://doggo.com",
-          "url": "https://doggo.com"
-      },
-      "risk_level": "high",
+      "order_id": 254,
+      "risk_level": 2,
       "amount": 5185,
       "customer_email": "good_boy@doge.com",
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
-      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD"
+      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
+      "charge_id": "ch_42"
   },
   {
-      "authorization_id": "id_1662548429391_881",
-      "authorized_on": "Sep 7, 2022 / 11:00AM",
-      "capture_by": "Sep 14, 2022 / 11:00AM",
+      "created": "Sep 7, 2022 / 11:00AM",
       "captured": false,
-      "order": {
-          "number": 254,
-          "customer_url": "https://doggo.com",
-          "url": "https://doggo.com"
-      },
-      "risk_level": "normal",
+      "order_id": 254,
+      "risk_level": 0,
       "amount": 4550,
       "customer_email": "good_boy@doge.com",
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
-      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD"
+      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
+      "charge_id": "ch_42"
   },
   {
-      "authorization_id": "id_1662548429391_16",
-      "authorized_on": "Sep 7, 2022 / 11:00AM",
-      "capture_by": "Sep 14, 2022 / 11:00AM",
+      "created": "Sep 7, 2022 / 11:00AM",
       "captured": false,
-      "order": {
-          "number": 254,
-          "customer_url": "https://doggo.com",
-          "url": "https://doggo.com"
-      },
-      "risk_level": "elevated",
+      "order_id": 254,
+      "risk_level": 1,
       "amount": 6243,
       "customer_email": "good_boy@doge.com",
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
-      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD"
+      "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
+      "charge_id": "ch_42"
   }
 ]
