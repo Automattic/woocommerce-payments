@@ -3,29 +3,36 @@ name: Compatibility - WC, WP and PHP
 on:
   pull_request
 
+env:
+  WC_L2_VERSION: '6.8.2'
+  WP_L2_VERSION: '5.8'
+
 jobs:
+  generate-matrix:
+    name: "Generate the matrix for woocommerce compatibility dynamically"
+    runs-on: ubuntu-20.04
+    outputs:
+      matrix: ${{ steps.generate_matrix.outputs.matrix }}
+    steps:
+      - name: "Generate matrix"
+        id: generate_matrix
+        run: |
+          WC_VERSIONS=$( echo "[\"$WC_L2_VERSION\", \"latest\", \"beta\"]" )
+          MATRIX_INCLUDE=$( echo "[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"$WP_L2_VERSION\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]" )
+          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
+  
   woocommerce-compatibility:
-    name:    WC compatibility
+    name: "WC compatibility"
+    needs: generate-matrix
     runs-on: ubuntu-18.04
+    env:
+      WP_VERSION: ${{ matrix.wordpress }}
+      WC_VERSION: ${{ matrix.woocommerce }}
+      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
     strategy:
       fail-fast:    false
       max-parallel: 10
-      matrix:
-        # Minimum support version, ..., Latest version, `beta`.
-        woocommerce: [ '6.8.2', 'latest', 'beta' ]
-        wordpress:   [ 'latest' ]
-        gutenberg:   [ 'latest' ]
-        php:         [ '7.4' ]
-        include:
-          # Edge case: oldest dependencies compatibility
-          - woocommerce: '6.8.2'
-            wordpress:   '5.8'
-            gutenberg:   '13.6.0' # The latest version supporting WP 5.8.
-            php:         '7.2' # Minimum supported PHP version
-    env:
-      WP_VERSION:        ${{ matrix.wordpress }}
-      WC_VERSION:        ${{ matrix.woocommerce }}
-      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     steps:
       # clone the repository
       - uses: actions/checkout@v2

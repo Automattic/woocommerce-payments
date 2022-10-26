@@ -12,7 +12,7 @@
  * WC tested up to: 7.0.0
  * Requires at least: 5.8
  * Requires PHP: 7.0
- * Version: 4.8.1
+ * Version: 4.9.0
  *
  * @package WooCommerce\Payments
  */
@@ -323,3 +323,17 @@ function wcpay_tasks_init() {
 }
 
 add_action( 'plugins_loaded', 'wcpay_tasks_init' );
+
+/**
+ * As the class is defined in later versions of WC, Psalm infers error.
+ *
+ * @psalm-suppress UndefinedClass
+ */
+add_action(
+	'before_woocommerce_init',
+	function() {
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woocommerce-payments/woocommerce-payments.php', false );
+		}
+	}
+);
