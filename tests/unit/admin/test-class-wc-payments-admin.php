@@ -87,7 +87,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu['wc-admin&path=/payments/overview'], 0, 2 );
-		$settings_item_name = $item_names_by_urls[ WC_Payment_Gateway_WCPay::get_settings_url() ];
+		$settings_item_name = $item_names_by_urls[ WC_Payments_Admin_Settings::get_settings_url() ];
 
 		$this->assertEquals( 'Settings' . WC_Payments_Admin::MENU_NOTIFICATION_BADGE, $settings_item_name );
 	}
@@ -111,7 +111,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu['wc-admin&path=/payments/overview'], 0, 2 );
-		$settings_item_name = $item_names_by_urls[ WC_Payment_Gateway_WCPay::get_settings_url() ];
+		$settings_item_name = $item_names_by_urls[ WC_Payments_Admin_Settings::get_settings_url() ];
 
 		$this->assertEquals( 'Settings', $settings_item_name );
 	}
