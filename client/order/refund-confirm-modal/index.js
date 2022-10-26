@@ -34,6 +34,10 @@ const RefundConfirmationModal = ( {
 		} );
 	};
 
+	const unblockUI = ( $form ) => {
+		jQuery( '.refund-confirmation-modal' ).unblock();
+	};
+
 	const closeModal = () => {
 		setIsRefundConfirmationModalOpen( false );
 	};
@@ -60,6 +64,9 @@ const RefundConfirmationModal = ( {
 				refunded_amount: refundedAmount,
 				api_refund: true,
 			},
+			beforeSend: function() {
+				blockUI();
+			},
 			success: function ( response ) {
 				if ( true === response.success ) {
 					// Refresh the page to show the refunded status
@@ -70,6 +77,7 @@ const RefundConfirmationModal = ( {
 				}
 			},
 			complete: function () {
+				unblockUI();
 				closeModal();
 			},
 		} );
