@@ -10,7 +10,9 @@ import {
 	FormFileUpload,
 	Button,
 } from '@wordpress/components';
-import Gridicon from 'gridicons';
+import CheckmarkIcon from 'gridicons/dist/checkmark';
+import AddOutlineIcon from 'gridicons/dist/add-outline';
+import TrashIcon from 'gridicons/dist/trash';
 
 /**
  * Internal dependencies.
@@ -35,12 +37,7 @@ export const FileUploadControl = ( {
 }: DisputeFileUpload ): JSX.Element => {
 	const hasError = ( error && 0 < error.length ) || false;
 
-	const getIcon = (
-		<Gridicon
-			icon={ isDone && ! hasError ? 'checkmark' : 'add-outline' }
-			size={ 18 }
-		/>
-	);
+	const Icon = isDone && ! hasError ? CheckmarkIcon : AddOutlineIcon;
 
 	const handleButtonClick = (
 		event: React.MouseEvent< HTMLButtonElement >,
@@ -99,7 +96,7 @@ export const FileUploadControl = ( {
 							isDestructive={ hasError }
 							isBusy={ isLoading }
 							disabled={ disabled || isLoading }
-							icon={ getIcon }
+							icon={ <Icon size={ 18 } /> }
 							onClick={ (
 								event: React.MouseEvent< HTMLButtonElement >
 							) => handleButtonClick( event, openFileDialog ) }
@@ -126,7 +123,7 @@ export const FileUploadControl = ( {
 							'Remove file',
 							'woocommerce-payments'
 						) }
-						icon={ <Gridicon icon="trash" size={ 18 } /> }
+						icon={ <TrashIcon size={ 18 } /> }
 						onClick={ () => onFileRemove( field.key ) }
 					/>
 				) : null }

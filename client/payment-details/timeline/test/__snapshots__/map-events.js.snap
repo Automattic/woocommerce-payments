@@ -6,11 +6,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "Payment status changed to Paid.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
@@ -25,11 +21,7 @@ Array [
       </Link>
       .
     </React.Fragment>,
-    "icon": <t
-      className=""
-      icon="plus"
-      size={24}
-    />,
+    "icon": <PlusIcon />,
   },
   Object {
     "body": Array [
@@ -40,10 +32,8 @@ Array [
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of €18.00 EUR was successfully charged.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -55,11 +45,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "Payment status changed to Paid.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
@@ -74,11 +60,7 @@ Array [
       </Link>
       .
     </React.Fragment>,
-    "icon": <t
-      className=""
-      icon="plus"
-      size={24}
-    />,
+    "icon": <PlusIcon />,
   },
   Object {
     "body": Array [
@@ -89,10 +71,8 @@ Array [
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of €18.00 EUR was successfully charged.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -104,11 +84,7 @@ Array [
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment status changed to Disputed: Needs response.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [
@@ -118,11 +94,7 @@ Array [
     ],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "$36.60 USD will be deducted from a future deposit.",
-    "icon": <t
-      className=""
-      icon="minus"
-      size={24}
-    />,
+    "icon": <MinusIcon />,
   },
   Object {
     "body": Array [
@@ -136,10 +108,8 @@ Array [
     ],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment disputed as Fraudulent.",
-    "icon": <t
+    "icon": <CrossIcon
       className="is-error"
-      icon="cross"
-      size={24}
     />,
   },
 ]
@@ -151,11 +121,7 @@ Array [
     "body": Array [],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": "Payment status changed to Disputed: Won.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [
@@ -173,20 +139,14 @@ Array [
       </Link>
       .
     </React.Fragment>,
-    "icon": <t
-      className=""
-      icon="plus"
-      size={24}
-    />,
+    "icon": <PlusIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": "Dispute won! The bank ruled in your favor.",
-    "icon": <t
+    "icon": <NoticeOutlineIcon
       className="is-success"
-      icon="notice-outline"
-      size={24}
     />,
   },
 ]
@@ -198,21 +158,13 @@ Array [
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "Payment status changed to Refunded.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "21,64 $ USD will be deducted from a future deposit.",
-    "icon": <t
-      className=""
-      icon="minus"
-      size={24}
-    />,
+    "icon": <MinusIcon />,
   },
   Object {
     "body": Array [
@@ -221,10 +173,8 @@ Array [
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of 18,00 € EUR was successfully refunded.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -236,21 +186,13 @@ Array [
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "Payment status changed to Partial refund.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "6,00 $ USD will be deducted from a future deposit.",
-    "icon": <t
-      className=""
-      icon="minus"
-      size={24}
-    />,
+    "icon": <MinusIcon />,
   },
   Object {
     "body": Array [
@@ -259,10 +201,8 @@ Array [
     ],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of 5,00 € EUR was successfully refunded.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -274,20 +214,14 @@ Array [
     "body": Array [],
     "date": 2020-03-31T21:58:40.000Z,
     "headline": "Payment status changed to Authorization expired.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-03-31T21:58:40.000Z,
     "headline": "Authorization for $86.00 USD expired.",
-    "icon": <t
+    "icon": <CrossIcon
       className="is-error"
-      icon="cross"
-      size={24}
     />,
   },
 ]
@@ -299,20 +233,14 @@ Array [
     "body": Array [],
     "date": 2020-03-31T10:57:59.000Z,
     "headline": "Payment status changed to Authorization voided.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-03-31T10:57:59.000Z,
     "headline": "Authorization for $59.00 USD was voided.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-warning"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -324,20 +252,14 @@ Array [
     "body": Array [],
     "date": 2020-03-30T17:33:16.000Z,
     "headline": "Payment status changed to Authorized.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-03-30T17:33:16.000Z,
     "headline": "A payment of $79.00 USD was successfully authorized.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-warning"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -349,20 +271,14 @@ Array [
     "body": Array [],
     "date": 2020-04-01T03:35:13.000Z,
     "headline": "Payment status changed to Failed.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-04-01T03:35:13.000Z,
     "headline": "A payment of $77.00 USD failed.",
-    "icon": <t
+    "icon": <CrossIcon
       className="is-error"
-      icon="cross"
-      size={24}
     />,
   },
 ]
@@ -374,10 +290,8 @@ Array [
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "The disputed charge has been refunded.",
-    "icon": <t
+    "icon": <NoticeOutlineIcon
       className="is-success"
-      icon="notice-outline"
-      size={24}
     />,
   },
 ]
@@ -389,20 +303,14 @@ Array [
     "body": Array [],
     "date": 2020-04-02T20:26:47.000Z,
     "headline": "Payment status changed to Disputed: In review.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-04-02T20:26:47.000Z,
     "headline": "Challenge evidence submitted.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -414,11 +322,7 @@ Array [
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment status changed to Disputed: Needs response.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [
@@ -426,11 +330,7 @@ Array [
     ],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "No funds have been withdrawn yet.",
-    "icon": <t
-      className=""
-      icon="info-outline"
-      size={24}
-    />,
+    "icon": <InfoOutlineIcon />,
   },
   Object {
     "body": Array [
@@ -444,10 +344,8 @@ Array [
     ],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment disputed as Fraudulent.",
-    "icon": <t
+    "icon": <CrossIcon
       className="is-error"
-      icon="cross"
-      size={24}
     />,
   },
 ]
@@ -459,10 +357,8 @@ Array [
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Dispute inquiry closed. The bank chose not to pursue this dispute.",
-    "icon": <t
+    "icon": <NoticeOutlineIcon
       className="is-success"
-      icon="notice-outline"
-      size={24}
     />,
   },
 ]
@@ -476,10 +372,8 @@ Array [
     ],
     "date": 2020-04-02T20:26:47.000Z,
     "headline": "$1.00 USD refund was attempted but failed due to the card being expired or canceled.",
-    "icon": <t
+    "icon": <NoticeOutlineIcon
       className="is-error"
-      icon="notice-outline"
-      size={24}
     />,
   },
 ]
@@ -491,11 +385,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "Payment status changed to Paid.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
@@ -510,11 +400,7 @@ Array [
       </Link>
       .
     </React.Fragment>,
-    "icon": <t
-      className=""
-      icon="plus"
-      size={24}
-    />,
+    "icon": <PlusIcon />,
   },
   Object {
     "body": Array [
@@ -552,10 +438,8 @@ Array [
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 USD was successfully charged.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -567,11 +451,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "Payment status changed to Paid.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
@@ -586,11 +466,7 @@ Array [
       </Link>
       .
     </React.Fragment>,
-    "icon": <t
-      className=""
-      icon="plus"
-      size={24}
-    />,
+    "icon": <PlusIcon />,
   },
   Object {
     "body": Array [
@@ -601,10 +477,8 @@ Array [
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 USD was successfully charged.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -616,11 +490,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "Payment status changed to Paid.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
@@ -635,11 +505,7 @@ Array [
       </Link>
       .
     </React.Fragment>,
-    "icon": <t
-      className=""
-      icon="plus"
-      size={24}
-    />,
+    "icon": <PlusIcon />,
   },
   Object {
     "body": Array [
@@ -650,10 +516,8 @@ Array [
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 USD was successfully charged.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -665,20 +529,14 @@ Array [
     "body": Array [],
     "date": 2020-04-05T02:56:10.000Z,
     "headline": "Payment status changed to Disputed: Lost.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-04-05T02:56:10.000Z,
     "headline": "Dispute lost. The bank ruled in favor of your customer.",
-    "icon": <t
+    "icon": <CrossIcon
       className="is-error"
-      icon="cross"
-      size={24}
     />,
   },
 ]
@@ -690,11 +548,7 @@ Array [
     "body": Array [],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment status changed to Disputed: Needs response.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [
@@ -704,11 +558,7 @@ Array [
     ],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "$110.00 USD will be deducted from a future deposit.",
-    "icon": <t
-      className=""
-      icon="minus"
-      size={24}
-    />,
+    "icon": <MinusIcon />,
   },
   Object {
     "body": Array [
@@ -722,10 +572,8 @@ Array [
     ],
     "date": 2020-04-02T02:06:14.000Z,
     "headline": "Payment disputed as Fraudulent.",
-    "icon": <t
+    "icon": <CrossIcon
       className="is-error"
-      icon="cross"
-      size={24}
     />,
   },
 ]
@@ -737,11 +585,7 @@ Array [
     "body": Array [],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": "Payment status changed to Disputed: Won.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [
@@ -759,20 +603,14 @@ Array [
       </Link>
       .
     </React.Fragment>,
-    "icon": <t
-      className=""
-      icon="plus"
-      size={24}
-    />,
+    "icon": <PlusIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-04-04T16:20:50.000Z,
     "headline": "Dispute won! The bank ruled in your favor.",
-    "icon": <t
+    "icon": <NoticeOutlineIcon
       className="is-success"
-      icon="notice-outline"
-      size={24}
     />,
   },
 ]
@@ -794,11 +632,7 @@ Array [
     ],
     "date": 2022-02-01T12:04:04.000Z,
     "headline": "$110.00 will be subtracted from a future deposit.",
-    "icon": <t
-      className=""
-      icon="minus"
-      size={24}
-    />,
+    "icon": <MinusIcon />,
   },
 ]
 `;
@@ -809,21 +643,13 @@ Array [
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "Payment status changed to Refunded.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "$100.00 USD will be deducted from a future deposit.",
-    "icon": <t
-      className=""
-      icon="minus"
-      size={24}
-    />,
+    "icon": <MinusIcon />,
   },
   Object {
     "body": Array [
@@ -832,10 +658,8 @@ Array [
     ],
     "date": 2020-04-04T13:51:06.000Z,
     "headline": "A payment of $100.00 USD was successfully refunded.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -847,21 +671,13 @@ Array [
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "Payment status changed to Partial refund.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "$50.00 USD will be deducted from a future deposit.",
-    "icon": <t
-      className=""
-      icon="minus"
-      size={24}
-    />,
+    "icon": <MinusIcon />,
   },
   Object {
     "body": Array [
@@ -870,10 +686,8 @@ Array [
     ],
     "date": 2020-04-03T18:58:01.000Z,
     "headline": "A payment of $50.00 USD was successfully refunded.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]
@@ -885,11 +699,7 @@ Array [
     "body": Array [],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "Payment status changed to Paid.",
-    "icon": <t
-      className=""
-      icon="sync"
-      size={24}
-    />,
+    "icon": <SyncIcon />,
   },
   Object {
     "body": Array [],
@@ -904,11 +714,7 @@ Array [
       </Link>
       .
     </React.Fragment>,
-    "icon": <t
-      className=""
-      icon="plus"
-      size={24}
-    />,
+    "icon": <PlusIcon />,
   },
   Object {
     "body": Array [
@@ -919,10 +725,8 @@ Array [
     ],
     "date": 2020-04-01T14:37:54.000Z,
     "headline": "A payment of $63.00 USD was successfully charged.",
-    "icon": <t
+    "icon": <CheckmarkIcon
       className="is-success"
-      icon="checkmark"
-      size={24}
     />,
   },
 ]

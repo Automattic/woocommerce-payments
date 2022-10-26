@@ -13,9 +13,8 @@ to catalog our packages and provide guidance to a developer who wants to test an
   having them available. This means we should keep the versions of these packages on the highest version avaiable in our
   supported versions of WordPress and WooCommerce, giving us the best chance of catching any issues with the bundled
   packages early.
-* Following on from above, we use the `@wordpress/dependency-extraction-webpack-plugin` to make WebPack aware of what
-  can be found globally at runtime. The configuration for this can be found in `webpack.config.js`. Any `wordpress/*`
-  packages are removed from the built bundle by default, in addition to any packages listed in the configuration file.
+* Following on from above, we use the `@woocommerce/dependency-extraction-webpack-plugin` to make WebPack aware of what
+  can be found globally at runtime. The configuration for this can be found in `webpack.config.js`. Any `wordpress/*`, `woocommerce/*` and [some other packages](https://www.npmjs.com/package/@woocommerce/dependency-extraction-webpack-plugin) are removed from the built bundle by default, in addition to any packages listed in the configuration file.
   Returning `null` in the configuration indicates that we want to bundle the package rather than using the globally
   available one.
 
@@ -37,7 +36,13 @@ to catalog our packages and provide guidance to a developer who wants to test an
 ### JavaScript Dev Dependencies
 | Package Name | Usage Summary | Testing | Notes |
 | ------------ | ------------- | ------- | ----- |
+| lodash       | Lodash makes JavaScript easier by taking the hassle out of working with arrays, numbers, objects, strings, etc. | JS tests should pass. |  |
 | node         | Not a package, but we declare the supported version of node in our `.nvmrc` file. We use node to build the JavaScript for the plugin and run the JavaScript unit tests. | Ensure you're running the new version of node by running the `nvm use` command or manually setting up the correct version. For minor and patch upgrades testing that the build runs is sufficient. For major versions, smoke testing the running plugin would be advised. | |
+
+### Other Dev Dependencies
+| Package Name | Usage Summary | Testing | Notes |
+| ------------ | ------------- | ------- | ----- |
+| husky  |  Used to run hooks pre/post commit, like automatically running PHPCS. | Check out another branch `composer install` should run automatically. |  |
 
 ### PHP Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |
