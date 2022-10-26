@@ -4,8 +4,8 @@ name: "Release - Create PR to trunk"
 on:
   workflow_call:
     inputs:
-      tagName:
-        description: 'The tag name (e.g. 4.5.0)'
+      releaseVersion:
+        description: 'The release version (e.g. 4.5.0)'
         required: true
         type: string
       releaseDateString:
@@ -15,8 +15,8 @@ on:
         type: string
   workflow_dispatch:
     inputs:
-      tagName:
-        description: 'The tag name (e.g. 4.5.0)'
+      releaseVersion:
+        description: 'The release version (e.g. 4.5.0)'
         required: true
         type: string
       releaseDateString:
@@ -31,76 +31,78 @@ defaults:
 
 jobs:
   prepare-release:
-    name: Prepare a stable release
+    name: "Prepare a stable release"
     runs-on: ubuntu-20.04
     outputs: 
-      branch: ${{ steps.create_branch_tag.outputs.branch-name }}
+      branch: ${{ steps.create_branch.outputs.branch-name }}
     env:
-      TAG_NAME: ${{ inputs.tagName }}
+      RELEASE_VERSION: ${{ inputs.releaseVersion }}
       RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}    
     
     steps:
-      - name: Checkout WCPay repository
+      - name: "Checkout repository"
         uses: actions/checkout@v3
-
-      - name: Create a release branch and tag
-        id: create_branch_tag
-        uses: ./.github/actions/create-branch-tag
-        with:
-          tag-name: ${{ env.TAG_NAME }}
-          is-pre-release: "false"
-
-      - name: Setup Node and PHP with cache
+        
+      - name: "Setup Node and PHP with cache"
         uses: ./.github/actions/setup-repo
 
-      - name: Define variables
+      - name: "Create a release branch"
+        id: create_branch
+        uses: ./.github/actions/create-branch
+        with:
+          version: ${{ env.RELEASE_VERSION }}
+          is-pre-release: 'false'
+          
+      - name: "Define the release date"
         id: define_var
         run: |
           RELEASE_DATE=$( date "+%Y-%m-%d" -d "$RELEASE_DATE_STRING" ) # Release date formatted as YYYY-MM-DD
           echo "RELEASE_DATE=$RELEASE_DATE" >> $GITHUB_OUTPUT
 
-      - name: Generate the changelog
+      - name: "Generate the changelog"
         id: generate_changelog
         uses: ./.github/actions/generate-changelog
         with:
-          release-version: ${{ steps.create_branch_tag.outputs.tag-name }}
+          release-version: ${{ steps.create_branch.outputs.trimmed-version }}
           release-date: ${{ steps.define_var.outputs.RELEASE_DATE }}
           
-      - name: Bump version
+      - name: "Bump version"
         env:
-          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
+          RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
           RELEASE_DATE: ${{ steps.define_var.outputs.RELEASE_DATE }}
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
         run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
 
           # 'Version' header in woocommerce-payments.php
-          sed -i "s/^ \* Version: .*$/ * Version: $TAG_NAME/" woocommerce-payments.php
+          sed -i "s/^ \* Version: .*$/ * Version: $RELEASE_VERSION/" woocommerce-payments.php
 
           # 'version' field in package.json
-          sed -ri 's/("version": )".*"/\1"'${TAG_NAME}'"/' package.json
+          sed -ri 's/("version": )".*"/\1"'${RELEASE_VERSION}'"/' package.json
 
           # 'Stable tag' header in readme.txt;
-          sed -i "s/^Stable tag: .*$/Stable tag: $TAG_NAME/" readme.txt
+          sed -i "s/^Stable tag: .*$/Stable tag: $RELEASE_VERSION/" readme.txt
 
           # Duplicate the generated changelog into the Changelog section from the readme.txt 
-          sed -ri "s|(== Changelog ==)|\1\n\n= $TAG_NAME - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
+          sed -ri "s|(== Changelog ==)|\1\n\n= $RELEASE_VERSION - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
       
-      - name: Commit changes
+      - name: "Commit and push changes"
         env:
-          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
-          BRANCH_NAME: ${{ steps.create_branch_tag.outputs.branch-name }}
+          RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
+          BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
         run: |
           npm install # To update package-lock.json with the new version of the plugin
-          git commit -am "Update version and add changelog entries for release $TAG_NAME"
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git commit -am "Update version and add changelog entries for release $RELEASE_VERSION"
           git push --set-upstream origin $BRANCH_NAME
 
-      - name: Create a PR to trunk
+      - name: "Create a PR to trunk"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_NAME: ${{ steps.create_branch_tag.outputs.branch-name }}
+          BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
-          TAG_NAME: ${{ steps.create_branch_tag.outputs.tag-name }}
+          RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
         run: |
           PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command: \` git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \`\n\`\`\`\n${CHANGELOG}\n\`\`\`")
-          gh pr create --title "Release branch for $TAG_NAME" --body="$PR_BODY" --base="trunk"
+          gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk"
