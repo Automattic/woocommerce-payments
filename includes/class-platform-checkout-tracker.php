@@ -9,6 +9,7 @@ namespace WCPay;
 
 use Jetpack_Tracks_Client;
 use Jetpack_Tracks_Event;
+use WC_Payments;
 use WC_Payments_Features;
 use WP_Error;
 
