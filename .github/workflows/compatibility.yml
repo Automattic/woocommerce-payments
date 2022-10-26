@@ -4,8 +4,8 @@ on:
   pull_request
 
 env:
-  WC_L2_VERSION: '7.1.0'
-  WP_L2_VERSION: '6.3'
+  WC_L2_VERSION: '7.2.0'
+  WP_L2_VERSION: '6.4'
 
 jobs:
   generate-matrix:
