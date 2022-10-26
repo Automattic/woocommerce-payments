@@ -132,6 +132,7 @@ class Platform_Checkout_Order_Success_Page {
 
 		if ( $this->should_process_order_now( $order ) ) {
 			$this->process_order_now( $order, $intent_id, $last_4 );
+			do_action( 'woocommerce_blocks_checkout_order_processed', $order->get_id(), [], $order );
 		}
 	}
 

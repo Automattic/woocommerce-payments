@@ -470,6 +470,9 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
 		$this->order_service->attach_exchange_info_to_order( $order, $charge_id, $this->account );
 		$this->order_service->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
+
+		// Make sure tracks are fired when appropriate.
+		do_action( 'woocommerce_blocks_checkout_order_processed', $order->get_id(), [], $order );
 	}
 
 	/**
