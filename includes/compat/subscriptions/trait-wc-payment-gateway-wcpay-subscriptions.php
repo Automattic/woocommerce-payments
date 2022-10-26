@@ -211,7 +211,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return false;
 		}
 
-		$js_config                     = $this->get_payment_fields_js_config();
+		$js_config                     = WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
 		$js_config['intentSecret']     = $intent->get_client_secret();
 		$js_config['updateOrderNonce'] = wp_create_nonce( 'wcpay_update_order_status_nonce' );
 		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $js_config );
