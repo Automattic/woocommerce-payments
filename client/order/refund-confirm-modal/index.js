@@ -34,7 +34,7 @@ const RefundConfirmationModal = ( {
 		} );
 	};
 
-	const unblockUI = ( $form ) => {
+	const unblockUI = () => {
 		jQuery( '.refund-confirmation-modal' ).unblock();
 	};
 
@@ -64,7 +64,7 @@ const RefundConfirmationModal = ( {
 				refunded_amount: refundedAmount,
 				api_refund: true,
 			},
-			beforeSend: function() {
+			beforeSend: function () {
 				blockUI();
 			},
 			success: function ( response ) {
