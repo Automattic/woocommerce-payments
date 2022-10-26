@@ -36,9 +36,19 @@ jQuery( function ( $ ) {
 
 	$( 'select#order_status' ).on( 'change', function () {
 		const originalStatus = $( 'input#original_post_status' ).val();
+		const canRefund = getConfig( 'canRefund' );
 		const refundAmount = getConfig( 'remainingRefundAmount' );
-		if ( 'wc-refunded' === this.value &&  'wc-refunded' !== originalStatus ) {
-			if( 0 >= refundAmount ) {
+		if (
+			'wc-refunded' === this.value &&
+			'wc-refunded' !== originalStatus
+		) {
+			if ( ! canRefund ) {
+				alert(
+					__( 'Order cannot be refunded', 'woocommerce-payments' )
+				);
+				return;
+			}
+			if ( 0 >= refundAmount ) {
 				alert( __( 'Invalid Refund Amount', 'woocommerce-payments' ) );
 				return;
 			}

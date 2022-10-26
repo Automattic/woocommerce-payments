@@ -1,4 +1,4 @@
-/* global jQuery */
+/* global jQuery,woocommerce_admin_meta_boxes */
 /** @format */
 /**
  * External dependencies
@@ -100,10 +100,12 @@ const RefundConfirmationModal = ( {
 					}
 				>
 					<p>
-						Issue a full refund back to your customer's credit card
-						using WooCommerce Payments. This action can not be
-						undone. To issue a partial refund, click "Cancel", and
-						use the "Refund" button in the order details below.
+						{ __(
+							"Issue a full refund back to your customer's credit card using WooCommerce Payments." +
+								'This action can not be undone. To issue a partial refund, click "Cancel", and use ' +
+								'the "Refund" button in the order details below.',
+							'woocommerce-payments'
+						) }
 					</p>
 				</ConfirmationModal>
 			) }

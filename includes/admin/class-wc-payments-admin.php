@@ -687,6 +687,7 @@ class WC_Payments_Admin {
 						'remainingRefundAmount' => $order->get_remaining_refund_amount(),
 						'refundedAmount'        => $order->get_total_refunded(),
 						'orderCurrency'         => $order->get_currency(),
+						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
 					]
 				);
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
