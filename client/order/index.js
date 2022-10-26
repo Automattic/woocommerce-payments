@@ -37,7 +37,7 @@ jQuery( function ( $ ) {
 	$( 'select#order_status' ).on( 'change', function () {
 		const originalStatus = $( 'input#original_post_status' ).val();
 		const canRefund = getConfig( 'canRefund' );
-		const refundAmount = getConfig( 'remainingRefundAmount' );
+		const refundAmount = getConfig( 'refundAmount' );
 		if (
 			'wc-refunded' === this.value &&
 			'wc-refunded' !== originalStatus
@@ -59,8 +59,10 @@ jQuery( function ( $ ) {
 				<RefundConfirmationModal
 					orderStatus={ originalStatus }
 					refundAmount={ refundAmount }
+					formattedRefundAmount={ getConfig(
+						'formattedRefundAmount'
+					) }
 					refundedAmount={ getConfig( 'refundedAmount' ) }
-					currencyCode={ getConfig( 'orderCurrency' ) }
 				/>,
 				container
 			);

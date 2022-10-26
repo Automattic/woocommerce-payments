@@ -9,15 +9,14 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'utils/currency';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import './styles.scss';
 
 const RefundConfirmationModal = ( {
 	orderStatus,
 	refundAmount,
+	formattedRefundAmount,
 	refundedAmount,
-	currencyCode,
 } ) => {
 	const [
 		isRefundConfirmationModalOpen,
@@ -101,7 +100,7 @@ const RefundConfirmationModal = ( {
 							<Button isPrimary onClick={ handleRefundConfirm }>
 								{ sprintf(
 									__( 'Refund %s', 'woocommerce-payments' ),
-									formatCurrency( refundAmount, currencyCode )
+									formattedRefundAmount
 								) }
 							</Button>
 						</>

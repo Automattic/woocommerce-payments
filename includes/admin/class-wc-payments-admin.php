@@ -541,11 +541,6 @@ class WC_Payments_Admin {
 			[],
 			WC_Payments::get_file_version( 'dist/order.css' )
 		);
-		wp_localize_script(
-			'WCPAY_ADMIN_ORDER_ACTIONS',
-			'wcpaySettings',
-			$wcpay_settings
-		);
 
 		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
 		$settings_script_asset_path = WCPAY_ABSPATH . 'dist/settings.asset.php';
@@ -678,18 +673,20 @@ class WC_Payments_Admin {
 			$order = wc_get_order();
 
 			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
+				$refund_amount = $order->get_remaining_refund_amount();
 				wp_localize_script(
 					'WCPAY_ADMIN_ORDER_ACTIONS',
 					'wcpay_order_config',
 					[
 						'disableManualRefunds'  => ! $this->wcpay_gateway->has_refund_failed( $order ),
 						'manualRefundsTip'      => __( 'Refunding manually requires reimbursing your customer offline via cash, check, etc. The refund amounts entered here will only be used to balance your analytics.', 'woocommerce-payments' ),
-						'remainingRefundAmount' => $order->get_remaining_refund_amount(),
+						'refundAmount'          => $refund_amount,
+						'formattedRefundAmount' => wp_strip_all_tags( wc_price( $refund_amount, [ 'currency' => $order->get_currency() ] ) ),
 						'refundedAmount'        => $order->get_total_refunded(),
-						'orderCurrency'         => $order->get_currency(),
 						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
 					]
 				);
+
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
 				wp_enqueue_style( 'WCPAY_ADMIN_ORDER_ACTIONS' );
 			}
