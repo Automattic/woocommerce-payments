@@ -6,6 +6,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
+import { buildAjaxURL } from '../../payment-request/utils';
 
 export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
@@ -308,30 +309,55 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			}
 		}
 
-		const emailExistsQuery = new URLSearchParams();
-		emailExistsQuery.append( 'email', email );
-		emailExistsQuery.append( 'test_mode', !! getConfig( 'testMode' ) );
-		emailExistsQuery.append(
-			'wcpay_version',
-			getConfig( 'wcpayVersionNumber' )
-		);
-		emailExistsQuery.append(
-			'blog_id',
-			getConfig( 'platformCheckoutMerchantId' )
-		);
-		emailExistsQuery.append(
-			'request_signature',
-			getConfig( 'platformCheckoutRequestSignature' )
-		);
-
-		fetch(
-			`${ getConfig(
-				'platformCheckoutHost'
-			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
+		request(
+			buildAjaxURL(
+				getConfig( 'wcAjaxUrl' ),
+				'get_platform_checkout_signature'
+			),
 			{
-				signal,
+				_ajax_nonce: getConfig( 'platformCheckoutSignatureNonce' ),
 			}
 		)
+			.then( ( response ) => {
+				if ( response.success ) {
+					return response.data;
+				}
+
+				throw new Error( 'Request for signature failed.' );
+			} )
+			.then( ( data ) => {
+				if ( data.signature ) {
+					return data.signature;
+				}
+
+				throw new Error( 'Signature not found.' );
+			} )
+			.then( ( signature ) => {
+				const emailExistsQuery = new URLSearchParams();
+				emailExistsQuery.append( 'email', email );
+				emailExistsQuery.append(
+					'test_mode',
+					!! getConfig( 'testMode' )
+				);
+				emailExistsQuery.append(
+					'wcpay_version',
+					getConfig( 'wcpayVersionNumber' )
+				);
+				emailExistsQuery.append(
+					'blog_id',
+					getConfig( 'platformCheckoutMerchantId' )
+				);
+				emailExistsQuery.append( 'request_signature', signature );
+
+				return fetch(
+					`${ getConfig(
+						'platformCheckoutHost'
+					) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
+					{
+						signal,
+					}
+				);
+			} )
 			.then( ( response ) => {
 				if ( 200 !== response.status ) {
 					showErrorMessage();
