@@ -277,6 +277,7 @@ class WC_Payments {
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
+		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -389,6 +390,8 @@ class WC_Payments {
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
+
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
 	}
 
 	/**
@@ -926,6 +929,10 @@ class WC_Payments {
 			WC_Payments_Notes_Additional_Payment_Methods::set_account( self::get_account_service() );
 			WC_Payments_Notes_Additional_Payment_Methods::possibly_add_note();
 			WC_Payments_Notes_Additional_Payment_Methods::maybe_enable_upe_feature_flag();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
+			WC_Payments_Notes_Set_Up_StripeLink::set_gateway( self::get_gateway() );
+			WC_Payments_Notes_Set_Up_StripeLink::possibly_add_note();
 		}
 	}
 
@@ -948,6 +955,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 			WC_Payments_Notes_Additional_Payment_Methods::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
+			WC_Payments_Notes_Set_Up_StripeLink::possibly_delete_note();
 		}
 	}
 
@@ -1058,7 +1068,7 @@ class WC_Payments {
 			'session_cookie_value' => wp_unslash( $_COOKIE[ $session_cookie_name ] ?? '' ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
-				'store_logo'                     => ! empty( $store_logo ) ? add_query_arg( 'as_account', '0', get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) ) : '',
+				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
 				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
@@ -1069,6 +1079,7 @@ class WC_Payments {
 				'test_mode'                      => self::get_gateway()->is_in_test_mode(),
 				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
+				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
@@ -1223,6 +1234,18 @@ class WC_Payments {
 
 			new Platform_Checkout_Save_User();
 			new Platform_Checkout_Tracker( self::get_wc_payments_http() );
+		}
+	}
+
+	/**
+	 * Load webpack runtime script, only if SCRIPT_DEBUG is enabled and the script exists.
+	 * Required for webpack server with HMR.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_dev_runtime_scripts() {
+		if ( ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) && file_exists( WCPAY_ABSPATH . 'dist/runtime.js' ) ) {
+			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
 	}
 }
