@@ -19,6 +19,81 @@ defaults:
     shell: bash
 
 jobs:
+  create-gh-release:
+    name: "Create a GH release"
+    runs-on: ubuntu-20.04
+    env:
+      RELEASE_VERSION: ${{ inputs.releaseVersion }}
+
+    steps:
+      - name: "Checkout repository (trunk)"
+        uses: actions/checkout@v3
+        with:
+          ref: 'trunk'
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      - name: "Create a tag"
+        id: create_tag
+        uses: ./.github/actions/create-tag
+        with:
+          version: ${{ env.RELEASE_VERSION }}
+          is-pre-release: "false"
+
+      - name: "Get the last changelog in changelog.txt"
+        id: get_changelog
+        run: |
+          CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
+          CHANGELOG="${CHANGELOG//$'\n'/\\n}"  
+          echo "CHANGELOG=$CHANGELOG" >> $GITHUB_OUTPUT
+
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: "Create a GH release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.changelog }}
+          TAG_MESSAGE: ${{ steps.create_tag.outputs.tag-message }}
+          FILENAME: ${{ steps.build_plugin.outputs.release-filename }}
+        run: |
+          RELEASE_NOTES=$(echo -e "${CHANGELOG}")
+          gh release create $RELEASE_VERSION --notes "$RELEASE_NOTES" --title "$TAG_MESSAGE" $FILENAME
+
+  merge-trunk-into-develop:
+    name: "Merge trunk back into develop"
+    if: ${{ inputs.allowMerge == 'true' }}
+    runs-on: ubuntu-20.04
+    env:
+      RELEASE_VERSION: ${{ inputs.releaseVersion }}
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          ref: 'trunk'
+          fetch-depth: 0
+
+      - name: "Merge trunk back into develop"
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git checkout develop && git pull
+          git merge trunk --no-ff -m "Merge trunk v$RELEASE_VERSION into develop"
+          git push
+
+  trigger-translations:
+    name: "Trigger translations update for the release"
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Trigger translations update on GlotPress"
+        uses: ./.github/actions/trigger-translations
+        with:
+          release-version: ${{ inputs.releaseVersion }}
+          glotpress-url: ${{ secrets.GLOTPRESS_IMPORT_URL }}
+          
   update-wiki:
     name: "Update the wiki for the next release"
     runs-on: ubuntu-20.04
@@ -52,22 +127,15 @@ jobs:
           
           NEXT_VERSION_INSTRUCTIONS_FILENAME="Release-testing-instructions-for-WC-Payments-$NEXT_VERSION"
           
-          # If file doesn't exist yet
           if [ ! -e "$NEXT_VERSION_INSTRUCTIONS_FILENAME.md" ]; then
-            touch "$NEXT_VERSION_INSTRUCTIONS_FILENAME.md"
-            echo '{Replace with testing instructions}' > "$NEXT_VERSION_INSTRUCTIONS_FILENAME.md"
-            echo "Created file \""$NEXT_VERSION_INSTRUCTIONS_FILENAME.md"\"." >> $GITHUB_STEP_SUMMARY
+            echo $some_line > /path/to/file
+            echo "Created branch $BRANCH_NAME." >> $GITHUB_STEP_SUMMARY
           else
-              echo ":warning: File "$NEXT_VERSION_INSTRUCTIONS_FILENAME.md" already exists. No action needed." >> $GITHUB_STEP_SUMMARY
+            echo $some_line >> /path/to/file
           fi
           
-          # If an entry for the next version doesn't exist yet
-          if ! grep -q "v$NEXT_VERSION" Release-testing-instructions.md; then
-            echo -ne "\n* [v$NEXT_VERSION](https://github.com/Automattic/woocommerce-payments/wiki/$NEXT_VERSION_INSTRUCTIONS_FILENAME)" >> Release-testing-instructions.md
-            echo "Added a new entry for v$NEXT_VERSION in \"Release-testing-instructions.md\"." >> $GITHUB_STEP_SUMMARY
-          else
-              echo ":warning: Entry for v$NEXT_VERSION already exists in \"Release-testing-instructions.md\". No action needed." >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          git commit -am "Update wiki for release $NEXT_VERSION"
+          echo '{Replace with testing instructions}' > "$NEXT_VERSION_INSTRUCTIONS_FILENAME.md"
+          echo -e "\n* [v$NEXT_VERSION](https://github.com/Automattic/woocommerce-payments/wiki/$NEXT_VERSION_INSTRUCTIONS_FILENAME)" >> Release-testing-instructions.md
+          git diff
+          git commit -am "Update wiki for release $RELEASE_VERSION"
           git push --set-upstream origin $BRANCH_NAME
