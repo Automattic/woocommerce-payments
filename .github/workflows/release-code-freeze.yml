@@ -22,8 +22,8 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       freeze: ${{ steps.check-freeze.outputs.FREEZE }}
-      releaseVersion: ${{ steps.next-version.outputs.RELEASE_VERSION }}
-      releaseDate: ${{ steps.next-version.outputs.RELEASE_PLANNED_DATE }}
+      nextReleaseVersion: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
+      nextReleaseDate: ${{ steps.define_var.outputs.RELEASE_PLANNED_DATE }}
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
@@ -39,36 +39,23 @@ jobs:
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
-
-      - name: "Get the next version"
+        
+      - name: "Calculate the next version"
         id: next-version
-        shell: php {0}
         env:
-          CURRENT_VERSION: ${{ steps.current-version.outputs.VERSION }}
+          RELEASE_VERSION: ${{ steps.current-version.outputs.VERSION }}
+        run: php .github/workflows/scripts/get-next-version.php   
+          
+      - name: "Define the release planned date"
+        id: define_var
         run: |
-          <?php
-          
-          $latest_version_with_release = getenv( 'CURRENT_VERSION' );
-          if ( empty( $latest_version_with_release ) ) {
-            echo "::error::Unable to get the latest released version";
-            exit( 1 );
-          }
-          
-          // Because we go from 5.9 to 6.0, we can get the next major_minor by adding 0.1 and formatting appropriately.
-          $latest_version_as_float = (float) $latest_version_with_release;
-          $branch_major_minor      = number_format( $latest_version_as_float + 0.1, 1 );
-          $next_version            = $branch_major_minor.0;
-          echo "::set-output name=RELEASE_VERSION::$next_version" . PHP_EOL;
-
-          $next_wednesday = date('Y-n-d', strtotime('next Wednesday'));
-          echo "::set-output name=RELEASE_PLANNED_DATE::$next_wednesday" . PHP_EOL;
-          
-          echo "Next version: $next_version" >> $GITHUB_STEP_SUMMARY      
+          RELEASE_PLANNED_DATE=$( date "+%Y-%m-%d" -d "next Wednesday" ) # Date formatted as YYYY-MM-DD
+          echo "RELEASE_PLANNED_DATE=$RELEASE_PLANNED_DATE" >> $GITHUB_OUTPUT
       
       - name: "Check if the next version needs a code freeze"
         id: check-freeze
         env:
-          NEXT_VERSION: ${{ steps.next-version.outputs.RELEASE_VERSION }} 
+          NEXT_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }} 
         run: |
           git fetch --tags origin
           NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
@@ -87,7 +74,7 @@ jobs:
     if: needs.check-code-freeze.outputs.freeze == 1
     uses: ./.github/workflows/release-pr.yml
     with:
-      tagName: ${{ needs.check-code-freeze.outputs.releaseVersion }}
+      releaseVersion: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
 
   slack-notification:
     name: "Send notification to Slack"
@@ -95,9 +82,9 @@ jobs:
     if: ${{ inputs.skipSlackPing != true }}
     runs-on: ubuntu-20.04
     env:
-      RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.releaseVersion }}
-      RELEASE_DATE: ${{ needs.check-code-freeze.outputs.releaseDate }}
-      GITHUB_TAG_URL: ${{ format( '{0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.releaseVersion ) }}
+      RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
+      RELEASE_DATE: ${{ needs.check-code-freeze.outputs.nextReleaseDate }}
+      GITHUB_TAG_URL: ${{ format( '{0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.nextReleaseVersion ) }}
     steps:
       - name: "Slack ping"
         uses: slackapi/slack-github-action@v1.23.0
