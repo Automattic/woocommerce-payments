@@ -320,8 +320,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			$order_user  = $is_guest_customer ? new WP_User() : $order_user;
 			$customer_id = $customer_id
-					? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
-					: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
+				? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
+				: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
 
 			$order->update_meta_data( '_stripe_customer_id', $customer_id );
 			$order->save();
