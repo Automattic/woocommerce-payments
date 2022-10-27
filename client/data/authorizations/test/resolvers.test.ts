@@ -30,6 +30,11 @@ describe( 'getAuthorizations resolver', () => {
 
 	beforeEach( () => {
 		generator = getAuthorizations( query );
+		expect( generator.next().value ).toEqual(
+			apiFetch( {
+				path: `/wc/v3/payments/authorizations?page=1&pagesize=25&sort=created&direction=desc`,
+			} )
+		);
 	} );
 
 	afterEach( () => {
@@ -37,7 +42,7 @@ describe( 'getAuthorizations resolver', () => {
 	} );
 
 	test( 'should update state with authorizations data', () => {
-		expect( generator.next().value ).toEqual(
+		expect( generator.next( { data: [] } ).value ).toEqual(
 			updateAuthorizations( query, { data: [] } )
 		);
 	} );
@@ -50,6 +55,11 @@ describe( 'getAuthorization resolver', () => {
 
 	beforeEach( () => {
 		generator = getAuthorization( mockPaymentIntentId );
+		expect( generator.next().value ).toEqual(
+			apiFetch( {
+				path: `/wc/v3/payments/authorizations/42`,
+			} )
+		);
 	} );
 
 	afterEach( () => {
@@ -57,12 +67,12 @@ describe( 'getAuthorization resolver', () => {
 	} );
 
 	test( 'should update state with authorization data', () => {
-		expect( generator.next().value ).toEqual(
-			apiFetch( {
-				path: `${ NAMESPACE }/authorizations/${ mockPaymentIntentId }`,
-			} )
-		);
-		expect( generator.next().value ).toEqual(
+		expect(
+			generator.next( {
+				payment_intent_id: mockPaymentIntentId,
+				is_captured: mockIsCaptured,
+			} ).value
+		).toEqual(
 			updateAuthorization( {
 				payment_intent_id: mockPaymentIntentId,
 				captured: mockIsCaptured,

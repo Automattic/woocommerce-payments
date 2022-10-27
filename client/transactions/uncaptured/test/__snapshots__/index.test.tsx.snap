@@ -334,16 +334,6 @@ exports[`Authorizations list renders correctly 1`] = `
                     Capture
                   </button>
                 </td>
-                <td
-                  class="woocommerce-table__item"
-                >
-                  <button
-                    class="components-button is-secondary is-small"
-                    type="button"
-                  >
-                    Capture
-                  </button>
-                </td>
               </tr>
               <tr>
                 <th
@@ -408,16 +398,6 @@ exports[`Authorizations list renders correctly 1`] = `
                   >
                     20.10$
                   </a>
-                </td>
-                <td
-                  class="woocommerce-table__item"
-                >
-                  <button
-                    class="components-button is-secondary is-small"
-                    type="button"
-                  >
-                    Capture
-                  </button>
                 </td>
                 <td
                   class="woocommerce-table__item"

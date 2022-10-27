@@ -627,7 +627,9 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
             class="payment-details-capture-notice__text"
           >
             You need to capture this charge before 
-            <b />
+            <b>
+              Oct 4, 2022 / 1:07PM
+            </b>
           </div>
           <div
             class="payment-details-capture-notice__button"
