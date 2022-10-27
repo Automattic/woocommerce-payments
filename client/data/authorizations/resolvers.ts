@@ -66,11 +66,15 @@ export function* getAuthorization(
 			} as Authorization );
 		}
 	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
-			__( 'Error retrieving authorization.', 'woocommerce-payments' )
-		);
+		// We might get an error when there is no authorization because the payment was not set to be captured later.
+		// We don't want to display an error to the user in that case.
+		if ( ( e as ApiError ).code !== 'authorization_missing' ) {
+			yield dispatch(
+				'core/notices',
+				'createErrorNotice',
+				__( 'Error retrieving authorization.', 'woocommerce-payments' )
+			);
+		}
 	}
 }
 
