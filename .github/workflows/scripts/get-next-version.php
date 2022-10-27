@@ -7,13 +7,15 @@
 
 // phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
 // phpcs:disable WordPress.NamingConventions.ValidVariableName.InterpolatedVariableNotSnakeCase
-
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_read_file_put_contents
 echo 'all environment variables: ', PHP_EOL;
 foreach ( getenv( null ) as $key => $value ) {
 	echo "$key => $value", PHP_EOL;
 }
 
 echo PHP_EOL;
+
+file_put_contents( getenv( 'GITHUB_STEP_SUMMARY' ), 'Random summary' );
 
 $github_step_summary = getenv( 'GITHUB_STEP_SUMMARY' );
 
