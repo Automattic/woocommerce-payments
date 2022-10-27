@@ -16,7 +16,10 @@ import {
 	updateAuthorizationsSummary,
 	updateErrorForAuthorizations,
 } from './actions';
-import { Authorization, AuthorizationsList } from 'wcpay/types/authorizations';
+import {
+	Authorization,
+	GetAuthorizationsApiResponse,
+} from 'wcpay/types/authorizations';
 import { NAMESPACE } from '../constants';
 import { ApiError } from 'wcpay/types/errors';
 
@@ -27,6 +30,7 @@ export function* getAuthorizations( query: Query ): Generator< unknown > {
 		orderby = 'created',
 		order = 'desc',
 	} = query;
+
 	const path = addQueryArgs( `${ NAMESPACE }/authorizations`, {
 		page: paged,
 		pagesize: perPage,
@@ -36,7 +40,10 @@ export function* getAuthorizations( query: Query ): Generator< unknown > {
 
 	try {
 		const result = yield apiFetch( { path } );
-		yield updateAuthorizations( query, result as AuthorizationsList );
+		yield updateAuthorizations(
+			query,
+			( result as GetAuthorizationsApiResponse ).data
+		);
 	} catch ( error ) {
 		yield updateErrorForAuthorizations( query, error as ApiError );
 	}

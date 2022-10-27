@@ -41,7 +41,7 @@ export interface AuthorizationsState {
 	byId: Record< string, Authorization >;
 }
 
-interface AuthorizationsList {
+interface GetAuthorizationsApiResponse {
 	data: Authorization[];
 }
 
