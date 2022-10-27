@@ -6,14 +6,12 @@
 import TYPES from './action-types';
 import { getResourceId } from 'utils/data';
 import {
-	UpdateAuthorizationAction,
-	UpdateAuthorizationsAction,
-	UpdateAuthorizationsSummaryAction,
-} from './types';
-import {
 	Authorization,
 	AuthorizationsState,
 	AuthorizationsSummary,
+	UpdateAuthorizationAction,
+	UpdateAuthorizationsAction,
+	UpdateAuthorizationsSummaryAction,
 } from 'wcpay/types/authorizations';
 
 const defaultState = { summary: {}, byId: {} };

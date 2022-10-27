@@ -1,6 +1,11 @@
+/**
+ * External Dependencies
+ */
+
+import { Query } from '@woocommerce/navigation';
+
 export type RiskLevel = 'high' | 'elevated' | 'normal';
 
-// TODO: refine this type with more detailed information.
 export interface Authorization {
 	captured: boolean;
 	charge_id: string;
@@ -43,4 +48,35 @@ interface AuthorizationsList {
 interface CaptureAuthorizationApiResponse {
 	id: string;
 	status: string;
+}
+
+export interface UpdateAuthorizationAction {
+	type: string;
+	data: Authorization;
+	query?: Query;
+	error?: string;
+}
+
+export interface UpdateAuthorizationsAction {
+	type: string;
+	data: Array< Authorization >;
+	query: Query;
+	error?: string;
+}
+
+export interface UpdateAuthorizationsSummaryAction {
+	type: string;
+	data: AuthorizationsSummary;
+	query: Query;
+	error?: string;
+}
+
+export interface SetErrorForAuthorizationsAction {
+	type: string;
+	error: string;
+}
+
+export interface SetErrorForAuthorizationsSummaryAction {
+	type: string;
+	error: string;
 }
