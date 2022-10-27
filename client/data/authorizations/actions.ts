@@ -13,7 +13,6 @@ import TYPES from './action-types';
 import {
 	AuthorizationsSummary,
 	Authorization,
-	AuthorizationsList,
 	CaptureAuthorizationApiResponse,
 } from 'wcpay/types/authorizations';
 import { STORE_NAME } from '../constants';
@@ -21,7 +20,7 @@ import { ApiError } from 'wcpay/types/errors';
 
 export function updateAuthorizations(
 	query: Query,
-	authorizationsList: AuthorizationsList
+	data: Authorization[]
 ): {
 	type: string;
 	data: Authorization[];
@@ -29,7 +28,7 @@ export function updateAuthorizations(
 } {
 	return {
 		type: TYPES.SET_AUTHORIZATIONS,
-		data: authorizationsList.data,
+		data,
 		query,
 	};
 }

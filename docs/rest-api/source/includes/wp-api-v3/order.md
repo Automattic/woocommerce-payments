@@ -105,6 +105,61 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_termin
 }
 ```
 
+## Capture an authorization
+
+_@since vX.X.X_ <!-- TODO: add version. -->
+
+### POST params
+
+-   payment_intent_id: string
+-   order_id: string
+
+### Error codes
+
+-   `wcpay_missing_order` - Order not found
+-   `wcpay_refunded_order_uncapturable` -  Payment cannot be captured for partially or fully refunded orders
+-   `wcpay_payment_uncapturable` - The payment cannot be captured if intent status is not one of 'processing', 'requires_capture', or 'succeeded'
+-   `wcpay_intent_order_mismatch` - Payment cannot be captured because the order id does not match
+-   `wcpay_capture_error` - Unknown error
+
+### HTTP request
+
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">POST</i>
+    <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/capture_authorization</h6>
+  </div>
+</div>
+
+```shell
+curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_authorization \
+  -u consumer_key:consumer_secret \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}'
+```
+
+> JSON response example:
+
+```json
+{
+  "status": "succeeded",
+  "id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}
+```
+
+```json
+{
+  "code": "wcpay_payment_uncapturable",
+  "message": "The payment cannot be captured",
+  "data": {
+    "status": 409
+  }
+}
+```
+
+
 ## Create customer
 
 _@since v2.8.0_

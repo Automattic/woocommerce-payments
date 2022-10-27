@@ -1,0 +1,74 @@
+name: Create a branch and a tag
+description: Create a branch and a tag from the version provided
+
+inputs:
+  tag-name:
+    description: "The tag name that the action should use to determine which branch and tag it should create (e.g. 4.5.0 or 4.5.0-test-2)"
+    required: true
+  is-pre-release:
+    description: "Whether the action runs in the context of a pre-release (default: true)"
+    required: true
+    default: "true"
+    
+outputs: 
+  branch-name:
+    description: "The name of the branch created"
+    value: ${{ steps.create_branch_tag.outputs.BRANCH_NAME }}
+  tag-name:
+    description: "The trimmed tag name"
+    value: ${{ steps.tag_format_check.outputs.TAG_NAME }}
+  tag-message:
+    description: "The tagging message"
+    value: ${{ steps.create_branch_tag.outputs.TAG_MESSAGE }}
+
+runs:
+  using: composite
+  steps:
+    - name: "Check the format of the tag"
+      id: tag_format_check
+      shell: bash
+      env:
+        IS_PRERELEASE: ${{ inputs.is-pre-release }}
+        TAG_NAME: ${{ inputs.tag-name }}
+      run: |
+        # Trim leading and ending whitespaces
+        TRIMMED_TAG_NAME=$(echo "$TAG_NAME" | xargs) 
+        
+        if ${{ env.IS_PRERELEASE == 'true' }}; then
+          TAG_FORMAT="^[0-9]\.[0-9]\.[0-9]-test-[1-9]$"
+        else
+          TAG_FORMAT="^[0-9]\.[0-9]\.[0-9]$"
+        fi
+        
+        if [[ $TRIMMED_TAG_NAME =~ $TAG_FORMAT ]]; then
+          echo "TAG_NAME=$TRIMMED_TAG_NAME" >> $GITHUB_OUTPUT
+        else
+          echo "::error::The tag name provided doesn't respect the format expected (tag: $TRIMMED_TAG_NAME; format: $TAG_FORMAT)."
+          exit 1
+        fi
+    - name: "Create a branch and tag"
+      id: create_branch_tag
+      shell: bash
+      env:
+        IS_PRERELEASE: ${{ contains( steps.tag_format_check.outputs.TAG_NAME, 'test') }}
+        TAG_NAME: ${{ steps.tag_format_check.outputs.TAG_NAME }}
+      run: |
+        if ${{ env.IS_PRERELEASE == 'true' }}; then
+          BRANCH_NAME="testing/$TAG_NAME"
+          TAG_MESSAGE="Version for testing $TAG_NAME. Not for Production"
+          echo "Created branch $BRANCH_NAME and tag $TAG_NAME." >> $GITHUB_STEP_SUMMARY
+        else
+          BRANCH_NAME="release/$TAG_NAME"
+          TAG_MESSAGE="Version $TAG_NAME"
+          echo ":rocket: Created branch $BRANCH_NAME and tag $TAG_NAME. :rocket:" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        git checkout -b $BRANCH_NAME
+        git push origin $BRANCH_NAME
+        echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        
+        git config user.name "${{ github.actor }}"
+        git config user.email "${{ github.actor }}@users.noreply.github.com"
+        git tag -a -m "$TAG_MESSAGE" $TAG_NAME
+        git push origin $TAG_NAME
+        echo "TAG_MESSAGE=$TAG_MESSAGE" >> $GITHUB_OUTPUT
