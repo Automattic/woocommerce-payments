@@ -320,8 +320,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 			$order_user  = $is_guest_customer ? new WP_User() : $order_user;
 			$customer_id = $customer_id
-			? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
-			: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
+					? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
+					: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
 
 			$order->update_meta_data( '_stripe_customer_id', $customer_id );
 			$order->save();
@@ -378,7 +378,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ) :array {
 		$payment_methods = $request->get_param( 'payment_methods' );
 		if ( null === $payment_methods ) {
-					return $default_value;
+			return $default_value;
 		}
 
 		if ( ! is_array( $payment_methods ) ) {
@@ -406,7 +406,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ) : string {
 		$capture_method = $request->get_param( 'capture_method' );
 		if ( null === $capture_method ) {
-					return $default_value;
+			return $default_value;
 		}
 
 		if ( ! in_array( $capture_method, [ 'manual', 'automatic' ], true ) ) {
