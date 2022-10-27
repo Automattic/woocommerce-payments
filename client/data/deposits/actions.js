@@ -120,7 +120,7 @@ export function* submitInstantDeposit( transactionIds ) {
 			'getDeposits'
 		);
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
-			'getDepositsOverview'
+			'getAllDepositsOverviews'
 		);
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
@@ -182,9 +182,6 @@ export function* submitStandardDeposit( transactionIds ) {
 		// Need to invalidate the resolution so that the components will render again.
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDeposits'
-		);
-		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
-			'getDepositsOverview'
 		);
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getAllDepositsOverviews'
