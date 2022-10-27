@@ -384,7 +384,7 @@ export default class WCPayAPI {
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	createIntent( paymentMethodType, orderId ) {
+	createIntent( paymentMethodType, orderId = null ) {
 		return this.request(
 			buildAjaxURL(
 				getConfig( 'wcAjaxUrl' ),
@@ -413,6 +413,42 @@ export default class WCPayAPI {
 
 	/**
 	 * Updates a payment intent with data from order: customer, level3 data and maybe sets the payment for future use.
+	 *
+	 * @param {string} paymentIntentId The id of the payment intent.
+	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type.
+	 *
+	 * @return {Promise} The final promise for the request to the server.
+	 */
+	updatePaymentMethodType( paymentIntentId, selectedUPEPaymentType ) {
+		return this.request(
+			buildAjaxURL(
+				getConfig( 'wcAjaxUrl' ),
+				'update_payment_method_type'
+			),
+			{
+				payment_intent_id: paymentIntentId,
+				selected_upe_payment_type: selectedUPEPaymentType,
+				_ajax_nonce: getConfig( 'updatePaymentMethodTypeNonce' ),
+			}
+		)
+			.then( ( response ) => {
+				if ( 'failure' === response.result ) {
+					throw new Error( response.messages );
+				}
+				return response;
+			} )
+			.catch( ( error ) => {
+				if ( error.message ) {
+					throw error;
+				} else {
+					// Covers the case of error on the Ajaxrequest.
+					throw new Error( error.statusText );
+				}
+			} );
+	}
+
+	/**
+	 * Updates a payment intent with data from order: customer, level3 data and and maybe sets the payment for future use.
 	 *
 	 * @param {string} paymentIntentId The id of the payment intent.
 	 * @param {int} orderId The id of the order.

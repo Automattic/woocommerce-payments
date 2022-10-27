@@ -35,7 +35,10 @@ jQuery( function ( $ ) {
 		paymentMethodsConfig.link !== undefined &&
 		paymentMethodsConfig.card !== undefined;
 
-	const gatewayUPEComponents = {};
+	const gatewayUPEComponents = {
+		paymentIntentId: null,
+		clientSecret: null,
+	};
 	for ( const paymentMethodType in paymentMethodsConfig ) {
 		gatewayUPEComponents[ paymentMethodType ] = {
 			elements: null,
@@ -144,10 +147,6 @@ jQuery( function ( $ ) {
 			).attr( 'id' );
 		}
 
-		if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
-			selectedGatewayId = 'payment_method_woocommerce_payments_card';
-		}
-
 		let selectedPaymentMethod = null;
 
 		for ( const paymentMethodType in paymentMethodsConfig ) {
@@ -160,6 +159,18 @@ jQuery( function ( $ ) {
 			}
 		}
 		return selectedPaymentMethod;
+	};
+
+	/**
+	 * Return jQuery reference of mounted divfor corresponding payment method element.
+	 *
+	 * @param {tring} paymentMethodType Stripe payment method type.
+	 * @return {Object} jQuery reference to div where payment element is mounted.
+	 */
+	const getPaymentGatewayContainerByType = ( paymentMethodType ) => {
+		return $(
+			`.wcpay-upe-element[data-payment-method-type='${ paymentMethodType }']`
+		);
 	};
 
 	/**
@@ -190,25 +201,72 @@ jQuery( function ( $ ) {
 	};
 
 	/**
+	 * Set shared payment intent for all payment elements to global components array.
+	 *
+	 * @param {string} paymentMethodType Payment method type.
+	 * @param {boolean} isSetupIntent Whether intent is payment or setup.
+	 */
+	const setSharedIntent = async (
+		paymentMethodType,
+		isSetupIntent = false
+	) => {
+		let { intentId, clientSecret } = isSetupIntent
+			? getSetupIntentFromSession()
+			: getPaymentIntentFromSession();
+		if ( ! intentId ) {
+			try {
+				const newIntent = isSetupIntent
+					? await api.initSetupIntent( paymentMethodType )
+					: await api.createIntent( paymentMethodType );
+				intentId = newIntent.id;
+				clientSecret = newIntent.client_secret;
+			} catch ( error ) {
+				showErrorCheckout( error.message );
+				const gatewayErrorMessage =
+					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
+				$( '.payment_box.payment_method_woocommerce_payments' ).html(
+					gatewayErrorMessage
+				);
+			}
+		}
+		gatewayUPEComponents.paymentIntentId = intentId;
+		gatewayUPEComponents.clientSecret = clientSecret;
+	};
+
+	/**
+	 * Updates `payment_method_type` field on UPE intent to selected payment method.
+	 *
+	 * @param {string} selectedPaymentMethodType Stripe payment method type.
+	 */
+	const updatePaymentMethodType = async ( selectedPaymentMethodType ) => {
+		const $gatewayContainer = getPaymentGatewayContainerByType(
+			selectedPaymentMethodType
+		);
+		try {
+			blockUI( $( $gatewayContainer ) );
+			await api.updatePaymentMethodType(
+				gatewayUPEComponents.paymentIntentId,
+				selectedPaymentMethodType
+			);
+			unblockUI( $gatewayContainer );
+		} catch ( error ) {
+			unblockUI( $gatewayContainer );
+			showErrorCheckout( error.message );
+		}
+	};
+
+	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
 	 * @param {string} paymentMethodType Stripe payment method type.
 	 * @param {Object} upeDOMElement DOM element or HTML selector to use to mount UPE payment element.
 	 * @param {boolean} isSetupIntent Set to true if we are on My Account adding a payment method.
 	 */
-	const mountUPEElement = async function (
-		paymentMethodType,
-		upeDOMElement,
-		isSetupIntent = false
-	) {
+	const mountUPEElement = async ( paymentMethodType, upeDOMElement ) => {
 		// Do not mount UPE twice.
 		const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 		let upeElement = upeComponents.upeElement;
-		const paymentIntentId = upeComponents.paymentIntentId;
-		if ( upeElement || paymentIntentId ) {
-			return;
-		}
-
+		const clientSecret = gatewayUPEComponents.clientSecret;
 		/*
 		 * Trigger this event to ensure the tokenization-form.js init
 		 * is executed.
@@ -223,43 +281,15 @@ jQuery( function ( $ ) {
 		// If paying from order, we need to create Payment Intent from order not cart.
 		const isOrderPay = getUPEConfig( 'isOrderPay' );
 		const isCheckout = getUPEConfig( 'isCheckout' );
-		let orderId;
-		if ( isOrderPay ) {
-			orderId = getUPEConfig( 'orderId' );
-		}
-
-		let { intentId, clientSecret } = isSetupIntent
-			? getSetupIntentFromSession( paymentMethodType )
-			: getPaymentIntentFromSession( paymentMethodType );
 
 		const $upeContainer = $( upeDOMElement );
 		blockUI( $upeContainer );
 
-		if ( ! intentId ) {
-			try {
-				const newIntent = isSetupIntent
-					? await api.initSetupIntent( paymentMethodType )
-					: await api.createIntent( paymentMethodType, orderId );
-				intentId = newIntent.id;
-				clientSecret = newIntent.client_secret;
-			} catch ( error ) {
-				unblockUI( $upeContainer );
-				showErrorCheckout( error.message );
-				const gatewayErrorMessage =
-					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
-				$( '.payment_box.payment_method_woocommerce_payments' ).html(
-					gatewayErrorMessage
-				);
-			}
-		}
-
 		// I repeat, do NOT mount UPE twice.
-		if ( upeElement || paymentIntentId ) {
+		if ( upeElement ) {
 			unblockUI( $upeContainer );
 			return;
 		}
-
-		gatewayUPEComponents[ paymentMethodType ].paymentIntentId = intentId;
 
 		let appearance = getUPEConfig( 'upeAppearance' );
 
@@ -346,6 +376,39 @@ jQuery( function ( $ ) {
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
 	};
 
+	/**
+	 * Mount UPE Element if selected gateway uses UPE and element has not yet been mounted.
+	 */
+	const maybeMountPaymentElement = async () => {
+		const selectedPaymentMethodType = getSelectedGatewayPaymentMethod();
+		if ( null === selectedPaymentMethodType ) {
+			// Selected payment gateway does not use UPE.
+			return;
+		}
+
+		const upeElement =
+			gatewayUPEComponents[ selectedPaymentMethodType ].upeElement;
+		if ( upeElement ) {
+			// Payment element already mounted.
+			return;
+		}
+
+		const upeContainer = getPaymentGatewayContainerByType(
+			selectedPaymentMethodType
+		)[ 0 ];
+		await updatePaymentMethodType( selectedPaymentMethodType );
+		mountUPEElement( selectedPaymentMethodType, upeContainer );
+	};
+
+	const initUPE = async () => {
+		const upeDOMElements = $( '.wcpay-upe-element' );
+		const firstPaymentMethodType = $( upeDOMElements[ 0 ] ).attr(
+			'data-payment-method-type'
+		);
+		await setSharedIntent( firstPaymentMethodType );
+		await maybeMountPaymentElement();
+	};
+
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
@@ -357,21 +420,7 @@ jQuery( function ( $ ) {
 			! $( '.wcpay-upe-element' ).children().length &&
 			isUPEEnabled
 		) {
-			const upeDOMElements = $( '.wcpay-upe-element' );
-			for ( let i = 0; i < upeDOMElements.length; i++ ) {
-				const upeDOMElement = upeDOMElements[ i ];
-				const paymentMethodType = $( upeDOMElement ).attr(
-					'data-payment-method-type'
-				);
-
-				const upeElement =
-					gatewayUPEComponents[ paymentMethodType ].upeElement;
-				if ( upeElement ) {
-					upeElement.mount( upeDOMElement );
-				} else {
-					mountUPEElement( paymentMethodType, upeDOMElement );
-				}
-			}
+			initUPE();
 		}
 	} );
 
@@ -559,7 +608,7 @@ jQuery( function ( $ ) {
 			const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 			formFields.wcpay_payment_country = upeComponents.country;
 			const response = await api.processCheckout(
-				upeComponents.paymentIntentId,
+				gatewayUPEComponents.paymentIntentId,
 				formFields
 			);
 			const redirectUrl = response.redirect_url;
@@ -673,10 +722,9 @@ jQuery( function ( $ ) {
 	 * @param {string} paymentMethodType Stripe payment method type ID.
 	 * @return {Object} The intent id and client secret required for mounting the UPE element.
 	 */
-	function getPaymentIntentFromSession( paymentMethodType ) {
+	function getPaymentIntentFromSession() {
 		const cartHash = getCookieValue( 'woocommerce_cart_hash' );
-		const upePaymentIntentData =
-			paymentMethodsConfig[ paymentMethodType ].upePaymentIntentData;
+		const upePaymentIntentData = getUPEConfig( 'upePaymentIntentData' );
 
 		if (
 			cartHash &&
@@ -697,9 +745,8 @@ jQuery( function ( $ ) {
 	 * @param {string} paymentMethodType Stripe payment method type ID.
 	 * @return {Object} The intent id and client secret required for mounting the UPE element.
 	 */
-	function getSetupIntentFromSession( paymentMethodType ) {
-		const upeSetupIntentData =
-			paymentMethodsConfig[ paymentMethodType ].upeSetupIntentData;
+	function getSetupIntentFromSession() {
+		const upeSetupIntentData = getUPEConfig( 'upeSetupIntentData' );
 		if ( upeSetupIntentData ) {
 			const intentId = upeSetupIntentData.split( '-' )[ 0 ];
 			const clientSecret = upeSetupIntentData.split( '-' )[ 1 ];
@@ -743,8 +790,7 @@ jQuery( function ( $ ) {
 	$( 'form.checkout' ).on( checkoutEvents, function () {
 		const paymentMethodType = getSelectedGatewayPaymentMethod();
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
-			const paymentIntentId =
-				gatewayUPEComponents[ paymentMethodType ].paymentIntentId;
+			const paymentIntentId = gatewayUPEComponents.paymentIntentId;
 			if ( isUPEEnabled && paymentIntentId ) {
 				handleUPECheckout( $( this ), paymentMethodType );
 				return false;
@@ -803,6 +849,12 @@ jQuery( function ( $ ) {
 				} );
 			}
 		}
+	);
+
+	// Mount payment element on payment method change, if element has not yet been mounted.
+	$( document.body ).on(
+		'payment_method_selected',
+		maybeMountPaymentElement
 	);
 
 	// On every page load, check to see whether we should display the authentication
