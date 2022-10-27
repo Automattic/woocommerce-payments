@@ -295,42 +295,42 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function create_customer( $request ) {
 		wc_deprecated_function( __FUNCTION__, '3.9.0' );
 		try {
-					$order_id = $request['order_id'];
+			$order_id = $request['order_id'];
 
-					// Do not process non-existing orders.
-					$order = wc_get_order( $order_id );
+			// Do not process non-existing orders.
+			$order = wc_get_order( $order_id );
 			if ( false === $order || ! ( $order instanceof WC_Order ) ) {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-					$disallowed_order_statuses = apply_filters( 'wcpay_create_customer_disallowed_order_statuses', [ 'completed', 'cancelled', 'refunded', 'failed' ] );
+			$disallowed_order_statuses = apply_filters( 'wcpay_create_customer_disallowed_order_statuses', [ 'completed', 'cancelled', 'refunded', 'failed' ] );
 			if ( $order->has_status( $disallowed_order_statuses ) ) {
 				return new WP_Error( 'wcpay_invalid_order_status', __( 'Invalid order status', 'woocommerce-payments' ), [ 'status' => 400 ] );
 			}
 
-					$order_user        = $order->get_user();
-					$customer_id       = $order->get_meta( '_stripe_customer_id' );
-					$customer_data     = WC_Payments_Customer_Service::map_customer_data( $order );
-					$is_guest_customer = false === $order_user;
+			$order_user        = $order->get_user();
+			$customer_id       = $order->get_meta( '_stripe_customer_id' );
+			$customer_data     = WC_Payments_Customer_Service::map_customer_data( $order );
+			$is_guest_customer = false === $order_user;
 
-					// If the order is created for a registered customer, try extracting it's Stripe customer ID.
+			// If the order is created for a registered customer, try extracting it's Stripe customer ID.
 			if ( ! $customer_id && ! $is_guest_customer ) {
 				$customer_id = $this->customer_service->get_customer_id_by_user_id( $order_user->ID );
 			}
 
-					$order_user  = $is_guest_customer ? new WP_User() : $order_user;
-					$customer_id = $customer_id
-					? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
-					: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
+			$order_user  = $is_guest_customer ? new WP_User() : $order_user;
+			$customer_id = $customer_id
+			? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
+			: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
 
-					$order->update_meta_data( '_stripe_customer_id', $customer_id );
-					$order->save();
+			$order->update_meta_data( '_stripe_customer_id', $customer_id );
+			$order->save();
 
-					return rest_ensure_response(
-						[
-							'id' => $customer_id,
-						]
-					);
+			return rest_ensure_response(
+				[
+					'id' => $customer_id,
+				]
+			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create / update customer from order via REST API: ' . $e );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
@@ -348,7 +348,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		// Do not process non-existing orders.
 		$order = wc_get_order( $request['order_id'] );
 		if ( false === $order ) {
-					return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
+			return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 		}
 
 		try {
@@ -387,11 +387,11 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 
 		foreach ( $payment_methods as $value ) {
 			if ( ! in_array( $value, Payment_Method::IPP_ALLOWED_PAYMENT_METHODS, true ) ) {
-						throw new \Exception( 'One or more payment methods are not supported!' );
+				throw new \Exception( 'One or more payment methods are not supported!' );
 			}
 		}
 
-						return $payment_methods;
+		return $payment_methods;
 	}
 
 	/**
@@ -413,6 +413,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			throw new \Exception( 'Invalid param \'capture_method\'!' );
 		}
 
-						return $capture_method;
+		return $capture_method;
 	}
 }

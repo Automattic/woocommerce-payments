@@ -169,7 +169,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 				$this->mock_charge_id,
 				'USD'
 			);
-
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'update_order_status_from_intent' )
@@ -179,7 +178,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 				'succeeded',
 				'ch_mock'
 			);
-
 		$this->mock_gateway
 			->expects( $this->never() )
 			->method( 'capture_charge' );
@@ -243,7 +241,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 				$this->mock_charge_id,
 				'USD'
 			);
-
 		$this->mock_gateway
 			->expects( $this->once() )
 			->method( 'update_order_status_from_intent' )
@@ -253,7 +250,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 				'succeeded',
 				'ch_mock'
 			);
-
 		$this->mock_gateway
 			->expects( $this->never() )
 			->method( 'capture_charge' );
@@ -407,23 +403,23 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->mock_api_client
-		->expects( $this->once() )
-		->method( 'get_intent' )
-		->willReturn( $mock_intent );
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->willReturn( $mock_intent );
 
 		$this->mock_gateway
-		->expects( $this->once() )
-		->method( 'attach_intent_info_to_order' );
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' );
 
 		$this->mock_gateway
-		->expects( $this->once() )
-		->method( 'capture_charge' )
-		->willReturn(
-			[
-				'status'  => 'failed',
-				'message' => 'Test error',
-			]
-		);
+			->expects( $this->once() )
+			->method( 'capture_charge' )
+			->willReturn(
+				[
+					'status'  => 'failed',
+					'message' => 'Test error',
+				]
+			);
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
@@ -594,7 +590,6 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'WooCommerce Payments', $result_order->get_payment_method_title() );
 		$this->assertSame( 'processing', $result_order->get_status() );
 	}
-
 
 	public function test_capture_authorization_succeeded_intent_throws_error() {
 		$order = $this->create_mock_order();
