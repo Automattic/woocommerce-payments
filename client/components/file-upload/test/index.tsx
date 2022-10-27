@@ -11,10 +11,10 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import { FileUploadControl } from 'components/file-upload';
-import type { DisputeFileUpload } from 'wcpay/types/disputes';
+import type { FileUploadControlProps } from 'wcpay/types/disputes';
 
 describe( 'FileUploadControl', () => {
-	let props: DisputeFileUpload;
+	let props: FileUploadControlProps;
 	const field = {
 		key: 'field_key',
 		label: 'Upload file',
