@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Ask for login when guest mode is disabled while checking out with WooPay
