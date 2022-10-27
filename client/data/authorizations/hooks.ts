@@ -29,13 +29,12 @@ export const useAuthorizations = ( {
 				isResolving,
 			} = select( STORE_NAME );
 
+			const pagedQuery = Number.isNaN( parseInt( paged ?? '', 10 ) );
+			const perPageQuery = Number.isNaN( parseInt( per_page ?? '', 10 ) );
+
 			const query = {
-				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
-					? '1'
-					: paged,
-				per_page: Number.isNaN( parseInt( per_page ?? '', 10 ) )
-					? '25'
-					: per_page,
+				paged: pagedQuery ? '1' : paged,
+				per_page: perPageQuery ? '25' : per_page,
 				orderby: orderby || 'created',
 				order: order || 'desc',
 			};
