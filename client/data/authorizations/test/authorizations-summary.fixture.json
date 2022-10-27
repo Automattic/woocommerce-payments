@@ -3,6 +3,5 @@
   "total": 100,
   "currency": "USD",
   "store_currencies": [ "USD" ],
-  "customer_currencies": [ "USD", "EUR" ],
-  "totalAmount": 126790
+  "customer_currencies": [ "USD", "EUR" ]
 }
