@@ -32,7 +32,7 @@ describe( 'getAuthorizations resolver', () => {
 		generator = getAuthorizations( query );
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
-				path: `/wc/v3/payments/authorizations?page=1&pagesize=25&sort=created&direction=desc`,
+				path: `${ NAMESPACE }/authorizations?page=1&pagesize=25&sort=created&direction=desc`,
 			} )
 		);
 	} );
@@ -43,7 +43,7 @@ describe( 'getAuthorizations resolver', () => {
 
 	test( 'should update state with authorizations data', () => {
 		expect( generator.next( { data: [] } ).value ).toEqual(
-			updateAuthorizations( query, { data: [] } )
+			updateAuthorizations( query, [] )
 		);
 	} );
 } );
@@ -57,7 +57,7 @@ describe( 'getAuthorization resolver', () => {
 		generator = getAuthorization( mockPaymentIntentId );
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
-				path: `/wc/v3/payments/authorizations/42`,
+				path: `${ NAMESPACE }/authorizations/42`,
 			} )
 		);
 	} );
