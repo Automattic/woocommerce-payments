@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { BaseControl, Button } from '@wordpress/components';
-import Gridicon from 'gridicons';
+import TrashIcon from 'gridicons/dist/trash';
 import classNames from 'classnames';
 
 /**
@@ -187,7 +187,7 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 									'Remove file',
 									'woocommerce-payments'
 								) }
-								icon={ <Gridicon icon="trash" size={ 18 } /> }
+								icon={ <TrashIcon size={ 18 } /> }
 								onClick={ handleFileRemove }
 							/>
 						</>

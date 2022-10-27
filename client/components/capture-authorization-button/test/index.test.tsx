@@ -66,20 +66,41 @@ describe( 'CaptureAuthorizationButton', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'should call capture function when clicked', async () => {
+	test( 'should transition to busy state when clicked', async () => {
 		const doCaptureAuthorizationMock = jest.fn();
+		const mockAuthorization = {} as Authorization;
+
 		mockUseAuthorization.mockReturnValue( {
 			doCaptureAuthorization: doCaptureAuthorizationMock,
 			isLoading: false,
-			authorization: {} as Authorization,
+			authorization: mockAuthorization,
 		} );
 
-		renderCaptureAuthorizationButton( 42, 'paymentIntentId' );
+		const { rerender } = renderCaptureAuthorizationButton(
+			42,
+			'paymentIntentId'
+		);
 
 		expect( doCaptureAuthorizationMock.mock.calls.length ).toBe( 0 );
 
 		await user.click( screen.getByRole( 'button' ) );
 
+		mockUseAuthorization.mockReturnValue( {
+			doCaptureAuthorization: doCaptureAuthorizationMock,
+			isLoading: true,
+			authorization: mockAuthorization,
+		} );
+
 		expect( doCaptureAuthorizationMock.mock.calls.length ).toBe( 1 );
+
+		rerender(
+			<CaptureAuthorizationButton
+				orderId={ 42 }
+				paymentIntentId={ 'paymentIntentId' }
+			/>
+		);
+
+		expect( screen.getByRole( 'button' ) ).toHaveClass( 'is-busy' );
+		expect( screen.getByRole( 'button' ) ).toBeDisabled();
 	} );
 } );
