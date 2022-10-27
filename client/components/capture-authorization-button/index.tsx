@@ -15,9 +15,13 @@ import { useAuthorization } from 'wcpay/data';
 const CaptureAuthorizationButton = ( {
 	orderId,
 	paymentIntentId,
+	buttonIsPrimary = false,
+	buttonIsSmall = true,
 }: {
 	orderId: number;
 	paymentIntentId: string;
+	buttonIsPrimary?: boolean;
+	buttonIsSmall?: boolean;
 } ): JSX.Element => {
 	const { doCaptureAuthorization, isLoading } = useAuthorization(
 		paymentIntentId,
@@ -26,8 +30,9 @@ const CaptureAuthorizationButton = ( {
 
 	return (
 		<Button
-			isSecondary
-			isSmall
+			isPrimary={ buttonIsPrimary }
+			isSecondary={ ! buttonIsPrimary }
+			isSmall={ buttonIsSmall }
 			onClick={ doCaptureAuthorization }
 			isBusy={ isLoading }
 			disabled={ isLoading }
