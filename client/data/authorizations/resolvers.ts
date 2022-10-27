@@ -4,8 +4,9 @@
  * External dependencies
  */
 import { Query } from '@woocommerce/navigation';
-import { apiFetch } from '@wordpress/data-controls';
+import { apiFetch, dispatch } from '@wordpress/data-controls';
 import { addQueryArgs } from '@wordpress/url';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -18,6 +19,7 @@ import {
 } from './actions';
 import {
 	Authorization,
+	GetAuthorizationApiResponse,
 	GetAuthorizationsApiResponse,
 } from 'wcpay/types/authorizations';
 import { NAMESPACE } from '../constants';
@@ -52,10 +54,32 @@ export function* getAuthorizations( query: Query ): Generator< unknown > {
 export function* getAuthorization(
 	paymentIntentId: string
 ): Generator< unknown > {
-	// TODO this is implemented in other PR: https://github.com/Automattic/woocommerce-payments/pull/4688/
-	yield updateAuthorization( {
-		payment_intent_id: paymentIntentId,
-	} as Authorization );
+	try {
+		if ( paymentIntentId ) {
+			const result = yield apiFetch( {
+				path: `${ NAMESPACE }/authorizations/${ paymentIntentId }`,
+			} );
+			const isCaptured = result
+				? ( result as GetAuthorizationApiResponse ).is_captured
+				: false;
+
+			yield updateAuthorization( {
+				payment_intent_id: ( result as GetAuthorizationApiResponse )
+					.payment_intent_id,
+				captured: isCaptured,
+			} as Authorization );
+		}
+	} catch ( e ) {
+		// We might get an error when there is no authorization because the payment was not set to be captured later.
+		// We don't want to display an error to the user in that case.
+		if ( ( e as ApiError ).code !== 'authorization_missing' ) {
+			yield dispatch(
+				'core/notices',
+				'createErrorNotice',
+				__( 'Error retrieving authorization.', 'woocommerce-payments' )
+			);
+		}
+	}
 }
 
 export function* getAuthorizationsSummary(

@@ -41,13 +41,18 @@ export interface AuthorizationsState {
 	byId: Record< string, Authorization >;
 }
 
-interface GetAuthorizationsApiResponse {
+export interface GetAuthorizationsApiResponse {
 	data: Authorization[];
 }
 
-interface CaptureAuthorizationApiResponse {
+export interface CaptureAuthorizationApiResponse {
 	id: string;
 	status: string;
+}
+
+export interface GetAuthorizationApiResponse {
+	payment_intent_id: string;
+	is_captured: boolean;
 }
 
 export interface UpdateAuthorizationAction {
