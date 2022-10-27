@@ -307,7 +307,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
                     tabindex="-1"
                   >
-                    14.55$
+                    $14.55
                   </a>
                 </td>
               </tr>
@@ -374,7 +374,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
                     tabindex="-1"
                   >
-                    20.10$
+                    $20.10
                   </a>
                 </td>
               </tr>
