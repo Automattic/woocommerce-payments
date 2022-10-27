@@ -267,32 +267,31 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				);
 			}
 
-					// Actualize order status.
+			// Actualize order status.
+			$charge = $intent->get_charge();
+			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge->get_id() );
 
-					$charge = $intent->get_charge();
-					$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge->get_id() );
-
-					return rest_ensure_response(
-						[
-							'status' => $result['status'],
-							'id'     => $result['id'],
-						]
-					);
+			return rest_ensure_response(
+				[
+					'status' => $result['status'],
+					'id'     => $result['id'],
+				]
+			);
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to capture an authorization via REST API: ' . $e );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
 
-					/**
-					 * Returns customer id from order. Create or update customer if needed.
-					 * Use-cases: It was used by older versions of our Mobile apps in their workflows.
-					 *
-					 * @deprecated 3.9.0
-					 *
-					 * @param WP_REST_Request $request Full data about the request.
-					 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
-					 */
+	/**
+	 * Returns customer id from order. Create or update customer if needed.
+	 * Use-cases: It was used by older versions of our Mobile apps in their workflows.
+	 *
+	 * @deprecated 3.9.0
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
 	public function create_customer( $request ) {
 		wc_deprecated_function( __FUNCTION__, '3.9.0' );
 		try {
@@ -333,18 +332,18 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 						]
 					);
 		} catch ( \Throwable $e ) {
-										Logger::error( 'Failed to create / update customer from order via REST API: ' . $e );
-										return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
+			Logger::error( 'Failed to create / update customer from order via REST API: ' . $e );
+			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
 		}
 	}
 
-					/**
-					 * Create a new in-person payment intent for the given order ID without confirming it.
-					 * Use-cases: Mobile apps using it for `card_present` payment types. (`interac_present` is handled by the apps via Stripe SDK).
-					 *
-					 * @param WP_REST_Request $request Full data about the request.
-					 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
-					 */
+	/**
+	 * Create a new in-person payment intent for the given order ID without confirming it.
+	 * Use-cases: Mobile apps using it for `card_present` payment types. (`interac_present` is handled by the apps via Stripe SDK).
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
 	public function create_terminal_intent( $request ) {
 		// Do not process non-existing orders.
 		$order = wc_get_order( $request['order_id'] );
@@ -367,15 +366,15 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		}
 	}
 
-					/**
-					 * Return terminal intent payment method array based on payment methods request.
-					 *
-					 * @param WP_REST_Request $request Request object.
-					 * @param array           $default_value - default value.
-					 *
-					 * @return array|null
-					 * @throws \Exception
-					 */
+	/**
+	 * Return terminal intent payment method array based on payment methods request.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @param array           $default_value - default value.
+	 *
+	 * @return array|null
+	 * @throws \Exception
+	 */
 	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ) :array {
 		$payment_methods = $request->get_param( 'payment_methods' );
 		if ( null === $payment_methods ) {
@@ -395,15 +394,15 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 						return $payment_methods;
 	}
 
-					/**
-					 * Return terminal intent capture method based on capture method request.
-					 *
-					 * @param WP_REST_Request $request Request object.
-					 * @param string          $default_value default value.
-					 *
-					 * @return string|null
-					 * @throws \Exception
-					 */
+	/**
+	 * Return terminal intent capture method based on capture method request.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 * @param string          $default_value default value.
+	 *
+	 * @return string|null
+	 * @throws \Exception
+	 */
 	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ) : string {
 		$capture_method = $request->get_param( 'capture_method' );
 		if ( null === $capture_method ) {
