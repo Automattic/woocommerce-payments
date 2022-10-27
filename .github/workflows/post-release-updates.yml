@@ -29,7 +29,7 @@ jobs:
       - name: "Checkout repository (develop)"
         uses: actions/checkout@v3
         with:
-          ref: 'develop'
+          ref: 'dev/4824-post-release-workflow'
 
       - name: "Get the next version"
         id: next_version
