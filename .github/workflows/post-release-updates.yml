@@ -43,23 +43,23 @@ jobs:
 
       - name: "Add new pages for the next release"
         env:
-          NEXT_VERSION: ${{ steps.next_version.outputs.NEXT_VERSION }}
+          NEXT_RELEASE_VERSION: ${{ steps.next_version.outputs.NEXT_RELEASE_VERSION }}
         run: |
           cd wiki
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
           
-          NEXT_VERSION_INSTRUCTIONS_FILENAME="Release-testing-instructions-for-WC-Payments-$NEXT_VERSION"
+          NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME="Release-testing-instructions-for-WC-Payments-$NEXT_RELEASE_VERSION"
           
-          if [ ! -e "$NEXT_VERSION_INSTRUCTIONS_FILENAME.md" ]; then
+          if [ ! -e "$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME.md" ]; then
             echo $some_line > /path/to/file
             echo "Created branch $BRANCH_NAME." >> $GITHUB_STEP_SUMMARY
           else
             echo $some_line >> /path/to/file
           fi
           
-          echo '{Replace with testing instructions}' > "$NEXT_VERSION_INSTRUCTIONS_FILENAME.md"
-          echo -e "\n* [v$NEXT_VERSION](https://github.com/Automattic/woocommerce-payments/wiki/$NEXT_VERSION_INSTRUCTIONS_FILENAME)" >> Release-testing-instructions.md
+          echo '{Replace with testing instructions}' > "$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME.md"
+          echo -e "\n* [v$NEXT_RELEASE_VERSION](https://github.com/Automattic/woocommerce-payments/wiki/$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME)" >> Release-testing-instructions.md
           git diff
           git commit -am "Update wiki for release $RELEASE_VERSION"
           git push --set-upstream origin $BRANCH_NAME
