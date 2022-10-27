@@ -51,21 +51,20 @@ export function* getAuthorization(
 	paymentIntentId: string
 ): Generator< unknown > {
 	try {
-		let result;
 		if ( paymentIntentId ) {
-			result = yield apiFetch( {
+			const result = yield apiFetch( {
 				path: `${ NAMESPACE }/authorizations/${ paymentIntentId }`,
 			} );
-		}
-		const isCaptured = result
-			? ( result as GetAuthorizationApiResponse ).is_captured
-			: false;
+			const isCaptured = result
+				? ( result as GetAuthorizationApiResponse ).is_captured
+				: false;
 
-		yield updateAuthorization( {
-			payment_intent_id: ( result as GetAuthorizationApiResponse )
-				.payment_intent_id,
-			captured: isCaptured,
-		} as Authorization );
+			yield updateAuthorization( {
+				payment_intent_id: ( result as GetAuthorizationApiResponse )
+					.payment_intent_id,
+				captured: isCaptured,
+			} as Authorization );
+		}
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
