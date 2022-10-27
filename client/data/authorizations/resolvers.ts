@@ -3,76 +3,64 @@
 /**
  * External dependencies
  */
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
+import { Query } from '@woocommerce/navigation';
+import { apiFetch } from '@wordpress/data-controls';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
-import { updateAuthorizations, updateAuthorizationsSummary } from './actions';
-import { Authorization, RiskLevel } from 'wcpay/types/authorizations';
-import { Query } from '@woocommerce/navigation';
+import {
+	updateAuthorizations,
+	updateAuthorization,
+	updateAuthorizationsSummary,
+	updateErrorForAuthorizations,
+} from './actions';
+import {
+	Authorization,
+	GetAuthorizationsApiResponse,
+} from 'wcpay/types/authorizations';
+import { NAMESPACE } from '../constants';
+import { ApiError } from 'wcpay/types/errors';
 
-export function* getAuthorizations( query: Query ): any {
-	const getMockedRows = () => {
-		const randomAmount = () => {
-			return 1400 + Math.floor( Math.random() * 5000 );
-		};
+export function* getAuthorizations( query: Query ): Generator< unknown > {
+	const {
+		paged = 1,
+		per_page: perPage = 25,
+		orderby = 'created',
+		order = 'desc',
+	} = query;
 
-		const randomDate = dateI18n(
-			'M j, Y / g:iA',
-			moment.utc( new Date() ).local().toISOString()
+	const path = addQueryArgs( `${ NAMESPACE }/authorizations`, {
+		page: paged,
+		pagesize: perPage,
+		sort: orderby,
+		direction: order,
+	} );
+
+	try {
+		const result = yield apiFetch( { path } );
+		yield updateAuthorizations(
+			query,
+			( result as GetAuthorizationsApiResponse ).data
 		);
-
-		const randomCaptureDate = dateI18n(
-			'M j, Y / g:iA',
-			moment.utc( new Date() ).add( '7', 'days' ).local().toISOString()
-		);
-
-		const randomRisk = (): RiskLevel => {
-			const risks: Array< RiskLevel > = [ 'elevated', 'normal', 'high' ];
-
-			return risks[ Math.floor( Math.random() * risks.length ) ];
-		};
-
-		const data = Array( 10 ).fill( 0 );
-
-		return data.map( () => {
-			const dataAmount = randomAmount();
-			const dataRisk = randomRisk();
-
-			const authorization: Authorization = {
-				authorization_id: '123',
-				authorized_on: randomDate,
-				capture_by: randomCaptureDate,
-				order: {
-					number: 24,
-					customer_url: 'https://doggo.com',
-					url: 'https://doggo.com',
-				},
-				risk_level: dataRisk,
-				amount: dataAmount,
-				customer_email: 'good_boy@doge.com',
-				customer_country: 'Kingdom of Dogs',
-				customer_name: 'Good boy',
-			};
-
-			return authorization;
-		} );
-	};
-
-	yield updateAuthorizations( query, getMockedRows() );
+	} catch ( error ) {
+		yield updateErrorForAuthorizations( query, error as ApiError );
+	}
 }
 
-export function* getAuthorizationsSummary( query: Query ): any {
-	const data = {
-		count: 10,
-		total: 100,
-		currency: 'USD',
-		store_currencies: [ 'USD' ],
-		customer_currencies: [ 'USD', 'EUR' ],
-		totalAmount: 126790,
-	};
+export function* getAuthorization(
+	paymentIntentId: string
+): Generator< unknown > {
+	// TODO this is implemented in other PR: https://github.com/Automattic/woocommerce-payments/pull/4688/
+	yield updateAuthorization( {
+		payment_intent_id: paymentIntentId,
+	} as Authorization );
+}
 
-	yield updateAuthorizationsSummary( query, data );
+export function* getAuthorizationsSummary(
+	query: Query
+): Generator< unknown > {
+	// TODO this is implemented in other PR: https://github.com/Automattic/woocommerce-payments/pull/4982
+	yield updateAuthorizationsSummary( query, {} );
 }

@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import type { Query } from '@woocommerce/navigation';
 
 /**
@@ -12,6 +12,7 @@ import { STORE_NAME } from '../constants';
 import {
 	AuthorizationsSummary,
 	Authorizations,
+	Authorization,
 } from 'wcpay/types/authorizations';
 
 export const useAuthorizations = ( {}: Query ): Authorizations =>
@@ -47,10 +48,24 @@ export const useAuthorizationsSummary = ( {}: Query ): {
 	} );
 
 export const useAuthorization = (
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	paymentIntentId: string,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	orderId: number
-): any => {
-	// TODO. This will be implemented in a different PR.
+): {
+	isLoading: boolean;
+	doCaptureAuthorization: () => void;
+	authorization: Authorization;
+} => {
+	const { authorization, isLoading } = useSelect( ( select ) => {
+		const { getAuthorization, isResolving } = select( STORE_NAME );
+		return {
+			authorization: getAuthorization( paymentIntentId ),
+			isLoading: isResolving( 'getAuthorization', [ paymentIntentId ] ),
+		};
+	} );
+
+	const { submitCaptureAuthorization } = useDispatch( STORE_NAME );
+	const doCaptureAuthorization = () =>
+		submitCaptureAuthorization( paymentIntentId, orderId );
+
+	return { authorization, isLoading, doCaptureAuthorization };
 };
