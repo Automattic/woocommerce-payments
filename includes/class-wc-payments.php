@@ -644,7 +644,7 @@ class WC_Payments {
 	 *
 	 * @return WC_Payments_Http_Interface
 	 */
-	private static function get_wc_payments_http() {
+	public static function get_wc_payments_http() {
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
 

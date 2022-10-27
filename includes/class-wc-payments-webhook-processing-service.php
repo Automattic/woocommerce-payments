@@ -11,6 +11,7 @@ use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
+use WCPay\Platform_Checkout_Tracker;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -472,7 +473,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
 
 		// Make sure tracks are fired when appropriate.
-		do_action( 'woocommerce_blocks_checkout_order_processed', $order->get_id(), [], $order );
+		$platform_checkout_tracker = new Platform_Checkout_Tracker( WC_Payments::get_wc_payments_http() );
+		$platform_checkout_tracker->checkout_order_processed();
 	}
 
 	/**

@@ -20,6 +20,7 @@ use WC_Payments_Order_Service;
 use WC_Payments_Utils;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Logger;
+use WCPay\Platform_Checkout_Tracker;
 
 /**
  * Handling for when customers come back to the merchant store after platform checkout.
@@ -132,7 +133,10 @@ class Platform_Checkout_Order_Success_Page {
 
 		if ( $this->should_process_order_now( $order ) ) {
 			$this->process_order_now( $order, $intent_id, $last_4 );
-			do_action( 'woocommerce_blocks_checkout_order_processed', $order->get_id(), [], $order );
+
+			// Make sure tracks are fired when appropriate.
+			$platform_checkout_tracker = new Platform_Checkout_Tracker( WC_Payments::get_wc_payments_http() );
+			$platform_checkout_tracker->checkout_order_processed();
 		}
 	}
 
