@@ -1966,8 +1966,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent                   = null;
 		$status                   = null;
 		$error_message            = null;
-		$http_code                = null;
-		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		try {
 			$intent_id    = $order->get_transaction_id();
@@ -1990,7 +1988,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 
 			$status    = $intent->get_status();
-			$currency  = $intent->get_currency();
 			$http_code = 200;
 		} catch ( API_Exception $e ) {
 			try {
