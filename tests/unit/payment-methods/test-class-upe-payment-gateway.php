@@ -701,12 +701,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_process_payment_passes_save_payment_method_to_store() {
-		$mock_card_payment_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
 		$mock_sepa_payment_gateway = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
 		$order                         = WC_Helper_Order::create_order();
 		$order_id                      = $order->get_id();
-		$gateway_id                    = UPE_Payment_Gateway::GATEWAY_ID;
+		$gateway_id                    = UPE_Payment_Gateway::GATEWAY_ID . '_' . Payment_Method::SEPA;
 		$save_payment_param            = "wc-$gateway_id-new-payment-method";
 		$_POST[ $save_payment_param ]  = 'yes';
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
@@ -714,20 +713,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] );
 
 		$this->mock_api_client
-			->expects( $this->exactly( 2 ) )
+			->expects( $this->exactly( 1 ) )
 			->method( 'update_intention' )
 			->willReturn(
 				$payment_intent
 			);
 
 		$this->set_cart_contains_subscription_items( false );
-
-		// Test saving with cards.
-		$result = $mock_card_payment_gateway->process_payment( $order->get_id() );
-		$this->assertEquals( 'success', $result['result'] );
-		$this->assertMatchesRegularExpression( "/order_id=$order_id/", $result['redirect_url'] );
-		$this->assertMatchesRegularExpression( '/wc_payment_method=woocommerce_payments/', $result['redirect_url'] );
-		$this->assertMatchesRegularExpression( '/save_payment_method=yes/', $result['redirect_url'] );
 
 		// Test saving with SEPA.
 		$result = $mock_sepa_payment_gateway->process_payment( $order->get_id() );
