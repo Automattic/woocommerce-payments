@@ -332,7 +332,7 @@ class WC_Payments {
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
-		self::$gateway_settings                    = new WC_Payments_Gateway_WCPay_Settings();
+		self::$gateway_settings                    = new WC_Payments_Gateway_WCPay_Settings( self::$account );
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$payment_methods        = [];

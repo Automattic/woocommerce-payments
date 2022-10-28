@@ -1455,45 +1455,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string|array|int|bool The value specified for the option or a default value for the option.
 	 */
 	public function get_option( $key, $empty_value = null ) {
-		switch ( $key ) {
-			case 'enabled':
-				return parent::get_option( static::METHOD_ENABLED_KEY, $empty_value );
-			case 'account_statement_descriptor':
-				return $this->get_account_statement_descriptor();
-			case 'account_business_name':
-				return $this->get_account_business_name();
-			case 'account_business_url':
-				return $this->get_account_business_url();
-			case 'account_business_support_address':
-				return $this->get_account_business_support_address();
-			case 'account_business_support_email':
-				return $this->get_account_business_support_email();
-			case 'account_business_support_phone':
-				return $this->get_account_business_support_phone();
-			case 'account_branding_logo':
-				return $this->get_account_branding_logo();
-			case 'account_branding_icon':
-				return $this->get_account_branding_icon();
-			case 'account_branding_primary_color':
-				return $this->get_account_branding_primary_color();
-			case 'account_branding_secondary_color':
-				return $this->get_account_branding_secondary_color();
-			case 'deposit_schedule_interval':
-				return $this->get_deposit_schedule_interval();
-			case 'deposit_schedule_weekly_anchor':
-				return $this->get_deposit_schedule_weekly_anchor();
-			case 'deposit_schedule_monthly_anchor':
-				return $this->get_deposit_schedule_monthly_anchor();
-			case 'deposit_delay_days':
-				return $this->get_deposit_delay_days();
-			case 'deposit_status':
-				return $this->get_deposit_status();
-			case 'deposit_completed_waiting_period':
-				return $this->get_deposit_completed_waiting_period();
-
-			default:
-				return parent::get_option( $key, $empty_value );
+		if ( in_array( $key, WC_Payments_Gateway_WCPay_Settings::OPTIONS, true ) ) {
+			return WC_Payments::get_gateway_settings()->get_option( $key );
 		}
+
+		if ( 'enabled' === $key ) {
+			return parent::get_option( static::METHOD_ENABLED_KEY, $empty_value );
+		}
+
+		return parent::get_option( $key, $empty_value );
 	}
 
 	/**
@@ -1575,302 +1545,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $account_settings;
 	}
 
-	/**
-	 * Gets connected account statement descriptor.
-	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch account descriptor.
-	 *
-	 * @return string Statement descriptor of default value.
-	 */
-	public function get_account_statement_descriptor( string $empty_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_statement_descriptor();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account statement descriptor.' . $e );
-		}
-		return $empty_value;
-	}
 
-	/**
-	 * Gets connected account business name.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch business name.
-	 *
-	 * @return string Business name or default value.
-	 */
-	protected function get_account_business_name( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_business_name();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
-		}
 
-		return $default_value;
-	}
 
-	/**
-	 * Gets connected account business url.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch business url.
-	 *
-	 * @return string Business url or default value.
-	 */
-	protected function get_account_business_url( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_business_url();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account business address.
-	 *
-	 * @param array $default_value Value to return when not connected or failed to fetch business address.
-	 *
-	 * @return array Business address or default value.
-	 */
-	protected function get_account_business_support_address( $default_value = [] ): array {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_business_support_address();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account business support email.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch business support email.
-	 *
-	 * @return string Business support email or default value.
-	 */
-	protected function get_account_business_support_email( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_business_support_email();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account business support phone.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch business support phone.
-	 *
-	 * @return string Business support phone or default value.
-	 */
-	protected function get_account_business_support_phone( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_business_support_phone();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account branding logo.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch branding logo.
-	 *
-	 * @return string Business support branding logo or default value.
-	 */
-	protected function get_account_branding_logo( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_branding_logo();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account branding icon.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch branding icon.
-	 *
-	 * @return string Business support branding icon or default value.
-	 */
-	protected function get_account_branding_icon( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_branding_icon();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account branding primary color.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch branding primary color.
-	 *
-	 * @return string Business support branding primary color or default value.
-	 */
-	protected function get_account_branding_primary_color( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_branding_primary_color();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account branding secondary color.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch branding secondary color.
-	 *
-	 * @return string Business support branding secondary color or default value.
-	 */
-	protected function get_account_branding_secondary_color( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_branding_secondary_color();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account deposit schedule interval.
-	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule.
-	 *
-	 * @return string Interval or default value.
-	 */
-	protected function get_deposit_schedule_interval( string $empty_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_schedule_interval();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit schedule interval.' . $e );
-		}
-		return $empty_value;
-	}
-
-	/**
-	 * Gets connected account deposit schedule weekly anchor.
-	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule weekly anchor.
-	 *
-	 * @return string Weekly anchor or default value.
-	 */
-	protected function get_deposit_schedule_weekly_anchor( string $empty_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_schedule_weekly_anchor();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit schedule weekly anchor.' . $e );
-		}
-		return $empty_value;
-	}
-
-	/**
-	 * Gets connected account deposit schedule monthly anchor.
-	 *
-	 * @param int|null $empty_value Empty value to return when not connected or fails to fetch deposit schedule monthly anchor.
-	 *
-	 * @return int|null Monthly anchor or default value.
-	 */
-	protected function get_deposit_schedule_monthly_anchor( $empty_value = null ) {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_schedule_monthly_anchor();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
-		}
-		return null === $empty_value ? null : (int) $empty_value;
-	}
-
-	/**
-	 * Gets connected account deposit delay days.
-	 *
-	 * @param int $default_value Value to return when not connected or fails to fetch deposit delay days. Default is 7 days.
-	 *
-	 * @return int number of days.
-	 */
-	protected function get_deposit_delay_days( int $default_value = 7 ): int {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_delay_days() ?? $default_value;
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit delay days.' . $e );
-		}
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account deposit status.
-	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit status.
-	 *
-	 * @return string deposit status or default value.
-	 */
-	protected function get_deposit_status( string $empty_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_status();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit status.' . $e );
-		}
-		return $empty_value;
-	}
-
-	/**
-	 * Gets the completed deposit waiting period value.
-	 *
-	 * @param bool $empty_value Empty value to return when not connected or fails to fetch the completed deposit waiting period value.
-	 *
-	 * @return bool The completed deposit waiting period value or default value.
-	 */
-	protected function get_deposit_completed_waiting_period( bool $empty_value = false ): bool {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_completed_waiting_period();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
-		}
-		return $empty_value;
-	}
 
 	/**
 	 * Handles connected account update when plugin settings saved.
@@ -2830,7 +2507,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Isolated as a separate method in order to be available both
 	 * during the classic checkout, as well as the checkout block.
 	 *
-	 * @deprecated use WC_Payments_Checkout::get_payment_fields_js_config instead.
+	 * @deprecated 5.0.0
 	 *
 	 * @return array
 	 */
@@ -2844,13 +2521,253 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Customer data is retrieved from order when on Pay for Order.
 	 * Customer data is retrieved from customer when on 'Add Payment Method'.
 	 *
-	 * @deprecated use WC_Payments_Customer_Service::get_prepared_customer_data() instead.
+	 * @deprecated 5.0.0
 	 *
 	 * @return array|null An array with customer data or nothing.
 	 */
 	public function get_prepared_customer_data() {
 		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Customer_Service::get_prepared_customer_data' );
 		return WC_Payments::get_customer_service()->get_prepared_customer_data();
+	}
+
+	/**
+	 * Gets connected account statement descriptor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch account descriptor.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Statement descriptor of default value.
+	 */
+	public function get_account_statement_descriptor( string $empty_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_statement_descriptor' );
+
+		return WC_Payments::get_gateway_settings()->get_account_statement_descriptor( $empty_value );
+	}
+
+	/**
+	 * Gets connected account business name.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business name.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Business name or default value.
+	 */
+	protected function get_account_business_name( $default_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'get_account_business_name::get_account_business_name' );
+
+		return WC_Payments::get_gateway_settings()->get_account_business_name( $default_value );
+	}
+
+	/**
+	 * Gets connected account business url.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business url.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Business url or default value.
+	 */
+	protected function get_account_business_url( $default_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'get_account_business_url::get_account_business_url' );
+
+		return WC_Payments::get_gateway_settings()->get_account_business_url( $default_value );
+	}
+
+	/**
+	 * Gets connected account business address.
+	 *
+	 * @param array $default_value Value to return when not connected or failed to fetch business address.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return array Business address or default value.
+	 */
+	protected function get_account_business_support_address( $default_value = [] ): array {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_business_support_address' );
+
+		return WC_Payments::get_gateway_settings()->get_account_business_support_address( $default_value );
+	}
+
+	/**
+	 * Gets connected account business support email.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business support email.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Business support email or default value.
+	 */
+	protected function get_account_business_support_email( $default_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_business_support_email' );
+
+		return WC_Payments::get_gateway_settings()->get_account_business_support_email( $default_value );
+	}
+
+	/**
+	 * Gets connected account business support phone.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business support phone.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Business support phone or default value.
+	 */
+	protected function get_account_business_support_phone( $default_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_business_support_phone' );
+
+		return WC_Payments::get_gateway_settings()->get_account_business_support_phone( $default_value );
+	}
+
+	/**
+	 * Gets connected account branding logo.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding logo.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Business support branding logo or default value.
+	 */
+	protected function get_account_branding_logo( $default_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'get_account_branding_logo::get_account_branding_logo' );
+
+		return WC_Payments::get_gateway_settings()->get_account_branding_logo( $default_value );
+	}
+
+	/**
+	 * Gets connected account branding icon.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding icon.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Business support branding icon or default value.
+	 */
+	protected function get_account_branding_icon( $default_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'get_account_branding_icon::get_account_branding_icon' );
+
+		return WC_Payments::get_gateway_settings()->get_account_branding_icon( $default_value );
+	}
+
+	/**
+	 * Gets connected account branding primary color.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding primary color.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Business support branding primary color or default value.
+	 */
+	protected function get_account_branding_primary_color( $default_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_branding_primary_color' );
+
+		return WC_Payments::get_gateway_settings()->get_account_branding_primary_color( $default_value );
+	}
+
+	/**
+	 * Gets connected account branding secondary color.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding secondary color.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Business support branding secondary color or default value.
+	 */
+	protected function get_account_branding_secondary_color( $default_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_branding_secondary_color' );
+
+		return WC_Payments::get_gateway_settings()->get_account_branding_secondary_color( $default_value );
+	}
+
+	/**
+	 * Gets connected account deposit schedule interval.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Interval or default value.
+	 */
+	protected function get_deposit_schedule_interval( string $empty_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_schedule_interval' );
+
+		return WC_Payments::get_gateway_settings()->get_deposit_schedule_interval( $empty_value );
+	}
+
+	/**
+	 * Gets connected account deposit schedule weekly anchor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule weekly anchor.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string Weekly anchor or default value.
+	 */
+	protected function get_deposit_schedule_weekly_anchor( string $empty_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_schedule_weekly_anchor' );
+
+		return WC_Payments::get_gateway_settings()->get_deposit_schedule_weekly_anchor( $empty_value );
+	}
+
+	/**
+	 * Gets connected account deposit schedule monthly anchor.
+	 *
+	 * @param int|null $empty_value Empty value to return when not connected or fails to fetch deposit schedule monthly anchor.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return int|null Monthly anchor or default value.
+	 */
+	protected function get_deposit_schedule_monthly_anchor( $empty_value = null ) {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_schedule_monthly_anchor' );
+
+		return WC_Payments::get_gateway_settings()->get_deposit_schedule_monthly_anchor( $empty_value );
+	}
+
+	/**
+	 * Gets connected account deposit delay days.
+	 *
+	 * @param int $default_value Value to return when not connected or fails to fetch deposit delay days. Default is 7 days.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return int number of days.
+	 */
+	protected function get_deposit_delay_days( int $default_value = 7 ): int {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_delay_days' );
+
+		return WC_Payments::get_gateway_settings()->get_deposit_delay_days( $empty_value );
+	}
+
+	/**
+	 * Gets connected account deposit status.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit status.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return string deposit status or default value.
+	 */
+	protected function get_deposit_status( string $empty_value = '' ): string {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_status' );
+
+		return WC_Payments::get_gateway_settings()->get_deposit_status( $empty_value );
+	}
+
+	/**
+	 * Gets the completed deposit waiting period value.
+	 *
+	 * @param bool $empty_value Empty value to return when not connected or fails to fetch the completed deposit waiting period value.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return bool The completed deposit waiting period value or default value.
+	 */
+	protected function get_deposit_completed_waiting_period( bool $empty_value = false ): bool {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_completed_waiting_period' );
+
+		return WC_Payments::get_gateway_settings()->get_deposit_completed_waiting_period( $empty_value );
 	}
 
 	// End: Deprecated functions.

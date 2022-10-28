@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Logger;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -13,6 +15,34 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Gateway settings class for WooCommerce Payments.
  */
 class WC_Payments_Gateway_WCPay_Settings {
+
+	const OPTIONS = [
+		'account_statement_descriptor',
+		'account_business_name',
+		'account_business_url',
+		'account_business_support_address',
+		'account_business_support_email',
+		'account_business_support_phone',
+		'account_branding_logo',
+		'account_branding_icon',
+		'account_branding_primary_color',
+		'account_branding_secondary_color',
+		'deposit_schedule_interval',
+		'deposit_schedule_weekly_anchor',
+		'deposit_schedule_monthly_anchor',
+		'deposit_delay_days',
+		'deposit_status',
+		'deposit_completed_waiting_period',
+	];
+
+	/**
+	 * WC_Payments_Gateway_WCPay_Settings Constructor.
+	 *
+	 * @param WC_Payments_Account $account - Account class instance.
+	 */
+	public function __construct( WC_Payments_Account $account ) {
+		$this->account = $account;
+	}
 
 	/**
 	 * Returns the setting form for WC Payments.
@@ -165,4 +195,351 @@ class WC_Payments_Gateway_WCPay_Settings {
 		];
 	}
 
+	/**
+	 * Retrieve options from connected account.
+	 *
+	 * @param  string $key           Option key.
+	 *
+	 * @return string|array|int|bool The value specified for the option or a default value for the option.
+	 */
+	public function get_option( $key ) {
+		switch ( $key ) {
+			case 'account_statement_descriptor':
+				return $this->get_account_statement_descriptor();
+			case 'account_business_name':
+				return $this->get_account_business_name();
+			case 'account_business_url':
+				return $this->get_account_business_url();
+			case 'account_business_support_address':
+				return $this->get_account_business_support_address();
+			case 'account_business_support_email':
+				return $this->get_account_business_support_email();
+			case 'account_business_support_phone':
+				return $this->get_account_business_support_phone();
+			case 'account_branding_logo':
+				return $this->get_account_branding_logo();
+			case 'account_branding_icon':
+				return $this->get_account_branding_icon();
+			case 'account_branding_primary_color':
+				return $this->get_account_branding_primary_color();
+			case 'account_branding_secondary_color':
+				return $this->get_account_branding_secondary_color();
+			case 'deposit_schedule_interval':
+				return $this->get_deposit_schedule_interval();
+			case 'deposit_schedule_weekly_anchor':
+				return $this->get_deposit_schedule_weekly_anchor();
+			case 'deposit_schedule_monthly_anchor':
+				return $this->get_deposit_schedule_monthly_anchor();
+			case 'deposit_delay_days':
+				return $this->get_deposit_delay_days();
+			case 'deposit_status':
+				return $this->get_deposit_status();
+			case 'deposit_completed_waiting_period':
+				return $this->get_deposit_completed_waiting_period();
+			default:
+				Logger::error(
+					sprintf(
+						'Option %1$s key not found',
+						$key
+					)
+				);
+		}
+	}
+
+	/**
+	 * Gets connected account statement descriptor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch account descriptor.
+	 *
+	 * @return string Statement descriptor of default value.
+	 */
+	public function get_account_statement_descriptor( string $empty_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_statement_descriptor();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account statement descriptor.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account business name.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business name.
+	 *
+	 * @return string Business name or default value.
+	 */
+	public function get_account_business_name( $default_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_business_name();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business url.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business url.
+	 *
+	 * @return string Business url or default value.
+	 */
+	public function get_account_business_url( $default_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_business_url();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business address.
+	 *
+	 * @param array $default_value Value to return when not connected or failed to fetch business address.
+	 *
+	 * @return array Business address or default value.
+	 */
+	public function get_account_business_support_address( $default_value = [] ): array {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_business_support_address();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business support email.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business support email.
+	 *
+	 * @return string Business support email or default value.
+	 */
+	public function get_account_business_support_email( $default_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_business_support_email();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business support phone.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business support phone.
+	 *
+	 * @return string Business support phone or default value.
+	 */
+	public function get_account_business_support_phone( $default_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_business_support_phone();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding logo.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding logo.
+	 *
+	 * @return string Business support branding logo or default value.
+	 */
+	public function get_account_branding_logo( $default_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_branding_logo();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding icon.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding icon.
+	 *
+	 * @return string Business support branding icon or default value.
+	 */
+	public function get_account_branding_icon( $default_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_branding_icon();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding primary color.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding primary color.
+	 *
+	 * @return string Business support branding primary color or default value.
+	 */
+	public function get_account_branding_primary_color( $default_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_branding_primary_color();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding secondary color.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding secondary color.
+	 *
+	 * @return string Business support branding secondary color or default value.
+	 */
+	public function get_account_branding_secondary_color( $default_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_branding_secondary_color();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule interval.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule.
+	 *
+	 * @return string Interval or default value.
+	 */
+	public function get_deposit_schedule_interval( string $empty_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_deposit_schedule_interval();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule interval.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule weekly anchor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule weekly anchor.
+	 *
+	 * @return string Weekly anchor or default value.
+	 */
+	public function get_deposit_schedule_weekly_anchor( string $empty_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_deposit_schedule_weekly_anchor();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule weekly anchor.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule monthly anchor.
+	 *
+	 * @param int|null $empty_value Empty value to return when not connected or fails to fetch deposit schedule monthly anchor.
+	 *
+	 * @return int|null Monthly anchor or default value.
+	 */
+	public function get_deposit_schedule_monthly_anchor( $empty_value = null ) {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_deposit_schedule_monthly_anchor();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
+		}
+		return null === $empty_value ? null : (int) $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit delay days.
+	 *
+	 * @param int $default_value Value to return when not connected or fails to fetch deposit delay days. Default is 7 days.
+	 *
+	 * @return int number of days.
+	 */
+	public function get_deposit_delay_days( int $default_value = 7 ): int {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_deposit_delay_days() ?? $default_value;
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit delay days.' . $e );
+		}
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account deposit status.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit status.
+	 *
+	 * @return string deposit status or default value.
+	 */
+	public function get_deposit_status( string $empty_value = '' ): string {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_deposit_status();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit status.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets the completed deposit waiting period value.
+	 *
+	 * @param bool $empty_value Empty value to return when not connected or fails to fetch the completed deposit waiting period value.
+	 *
+	 * @return bool The completed deposit waiting period value or default value.
+	 */
+	public function get_deposit_completed_waiting_period( bool $empty_value = false ): bool {
+		try {
+			if ( $this->account->is_stripe_connected() ) {
+				return $this->account->get_deposit_completed_waiting_period();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
+		}
+		return $empty_value;
+	}
 }

@@ -84,7 +84,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	public function get_payment_fields_js_config() {
 
 		$payment_fields                             = parent::get_payment_fields_js_config();
-		$payment_fields['accountDescriptor']        = $this->gateway->get_account_statement_descriptor();
+		$payment_fields['accountDescriptor']        = WC_Payments::get_gateway_settings()->get_account_statement_descriptor();
 		$payment_fields['addPaymentReturnURL']      = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']                = UPE_Payment_Gateway::GATEWAY_ID;
 		$payment_fields['isCheckout']               = is_checkout();
