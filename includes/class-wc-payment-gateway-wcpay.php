@@ -171,7 +171,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->order_service                   = $order_service;
 
 		$this->id                 = static::GATEWAY_ID;
-		$this->icon               = ''; // TODO: icon.
+		$this->icon               = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = WC_Payments_Utils::esc_interpolated_html(
