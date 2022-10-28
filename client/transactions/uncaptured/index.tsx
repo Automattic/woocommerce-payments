@@ -212,8 +212,8 @@ export const AuthorizationsList = (): JSX.Element => {
 		];
 
 		if (
-			authorizationsSummary.authorizations_currencies &&
-			authorizationsSummary.authorizations_currencies.length === 1
+			authorizationsSummary.all_currencies &&
+			authorizationsSummary.all_currencies.length === 1
 		) {
 			// Only show the total if there is one currency available
 			summary.push( {
