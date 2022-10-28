@@ -17,7 +17,7 @@ import TrashIcon from 'gridicons/dist/trash';
 /**
  * Internal dependencies.
  */
-import type { DisputeFileUpload } from 'wcpay/types/disputes';
+import type { FileUploadControlProps } from 'wcpay/types/disputes';
 import FileUploadError from './upload-error';
 import FileUploadPreview from './preview';
 
@@ -34,7 +34,7 @@ export const FileUploadControl = ( {
 	help,
 	showPreview,
 	uploadButtonLabel,
-}: DisputeFileUpload ): JSX.Element => {
+}: FileUploadControlProps ): JSX.Element => {
 	const hasError = ( error && 0 < error.length ) || false;
 
 	const Icon = isDone && ! hasError ? CheckmarkIcon : AddOutlineIcon;
@@ -128,6 +128,32 @@ export const FileUploadControl = ( {
 					/>
 				) : null }
 			</div>
+		</BaseControl>
+	);
+};
+
+// Hide upload button and show file name for cases like submitted dispute form
+export const UploadedReadOnly = ( {
+	field,
+	fileName,
+	showPreview,
+}: FileUploadControlProps ): JSX.Element => {
+	return (
+		<BaseControl
+			id={ `form-file-upload-base-control-${ field.key }` }
+			label={ field.label }
+		>
+			<FileUploadPreview
+				fileName={
+					fileName
+						? `: ${ fileName }`
+						: __(
+								': Evidence file was not uploaded',
+								'woocommerce-payments'
+						  )
+				}
+				showPreview={ showPreview }
+			/>
 		</BaseControl>
 	);
 };
