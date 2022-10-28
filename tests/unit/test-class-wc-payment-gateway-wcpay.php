@@ -106,6 +106,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $mock_charge_created = 1653076178;
 
 	/**
+	 * @var WC_Payments_Gateway_WCPay_Settings instance.
+	 */
+	private $gateway_settings;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -173,6 +178,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
+
+		$this->gateway_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
 	}
 
 	/**
@@ -1587,7 +1594,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_outputs_payments_settings_screen() {
 		ob_start();
-		$this->wcpay_gateway->output_payments_settings_screen();
+		$this->gateway_settings->output_payments_settings_screen();
 		$output = ob_get_clean();
 		$this->assertStringMatchesFormat( '%aid="wcpay-account-settings-container"%a', $output );
 	}
@@ -1595,7 +1602,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_outputs_express_checkout_settings_screen() {
 		$_GET['method'] = 'foo';
 		ob_start();
-		$this->wcpay_gateway->output_payments_settings_screen();
+		$this->gateway_settings->output_payments_settings_screen();
 		$output = ob_get_clean();
 		$this->assertStringMatchesFormat( '%aid="wcpay-express-checkout-settings-container"%a', $output );
 		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );

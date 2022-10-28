@@ -9,13 +9,11 @@ namespace WCPay\Payment_Methods;
 
 use WC_Order;
 use WC_Payment_Token_WCPay_SEPA;
-use WC_Payments_Explicit_Price_Formatter;
 use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
-use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Session_Rate_Limiter;
 use WC_Payment_Gateway_WCPay;
@@ -207,7 +205,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$currency = $order->get_currency();
 
 		if ( $payment_intent_id ) {
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+			list( $user, $customer_id ) = $this->order_service->manage_customer_details_for_order( $order, [ 'test_mode' => $this->is_in_test_mode() ] );
 			$payment_type               = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 
 			$this->payments_api_client->update_intention(
@@ -431,7 +429,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $payment_intent_id ) {
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+			list( $user, $customer_id ) = $this->order_service->manage_customer_details_for_order( $order, [ 'test_mode' => $this->is_in_test_mode() ] );
 
 			if ( $payment_needed ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
@@ -603,7 +601,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );
 
 			// Get user/customer for order.
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+			list( $user, $customer_id ) = $this->order_service->manage_customer_details_for_order( $order, [ 'test_mode' => $this->is_in_test_mode() ] );
 
 			$payment_needed = 0 < $order->get_total();
 

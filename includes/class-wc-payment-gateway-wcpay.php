@@ -390,27 +390,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Add notices to the WooCommerce Payments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
 
-		$this->output_payments_settings_screen();
-	}
-
-	/**
-	 * Generates markup for the settings screen.
-	 */
-	public function output_payments_settings_screen() {
-		// hiding the save button because the react container has its own.
-		global $hide_save_button;
-		$hide_save_button = true;
-
-		if ( ! empty( $_GET['method'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			?>
-			<div
-				id="wcpay-express-checkout-settings-container"
-				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>"
-			></div>
-		<?php else : ?>
-			<div id="wcpay-account-settings-container"></div>
-			<?php
-		endif;
+		WC_Payments::get_gateway_settings()->output_payments_settings_screen();
 	}
 
 	/**
@@ -672,44 +652,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Manages customer details held on WCPay server for WordPress user associated with an order.
-	 *
-	 * @param WC_Order $order   WC Order object.
-	 * @param array    $options Additional options to apply.
-	 *
-	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
-	 */
-	protected function manage_customer_details_for_order( $order, $options = [] ) {
-		$user = $order->get_user();
-		if ( false === $user ) {
-			$user = wp_get_current_user();
-		}
-
-		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-
-		if ( null === $customer_id ) {
-			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
-			// Create a new customer.
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
-		} else {
-			// Update the customer with order data async.
-			$this->action_scheduler_service->schedule_job(
-				time(),
-				self::UPDATE_CUSTOMER_WITH_ORDER_DATA,
-				[
-					'order_id'     => $order->get_id(),
-					'customer_id'  => $customer_id,
-					'is_test_mode' => $this->is_in_test_mode(),
-					'is_woopay'    => $options['is_woopay'] ?? false,
-				]
-			);
-		}
-
-		return [ $user, $customer_id ];
-	}
-
-	/**
 	 * Update the saved payment method information with checkout values, in a CRON job.
 	 *
 	 * @param string $payment_method The payment method to update.
@@ -758,8 +700,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$customer_details_options   = [
 			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			'test_mode' => $this->is_in_test_mode(),
 		];
-		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
+		list( $user, $customer_id ) = $this->order_service->manage_customer_details_for_order( $order, $customer_details_options );
 
 		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
@@ -2366,34 +2309,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Text provided to users during onboarding setup.
-	 *
-	 * @return string
-	 */
-	public function get_setup_help_text() {
-		return __( 'Next we’ll ask you to share a few details about your business to create your account.', 'woocommerce-payments' );
-	}
-
-	/**
-	 * Get the connection URL.
-	 *
-	 * @return string Connection URL.
-	 */
-	public function get_connection_url() {
-		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
-			// Configure step button will show `Set up` instead of `Connect`.
-			return '';
-		}
-		$account_data = $this->account->get_cached_account_data();
-
-		// The onboarding is finished if account_id is set. `Set up` will be shown instead of `Connect`.
-		if ( isset( $account_data['account_id'] ) ) {
-			return '';
-		}
-		return html_entity_decode( WC_Payments_Account::get_connect_url( 'WCADMIN_PAYMENT_TASK' ) );
-	}
-
-	/**
 	 * Returns true if the code returned from the API represents an error that should be rate-limited.
 	 *
 	 * @param string $error_code The error code returned from the API.
@@ -2768,6 +2683,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_completed_waiting_period' );
 
 		return WC_Payments::get_gateway_settings()->get_deposit_completed_waiting_period( $empty_value );
+	}
+
+	/**
+	 * Generates markup for the settings screen.
+	 *
+	 * @deprecated 5.1.0
+	 */
+	public function output_payments_settings_screen() {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::output_payments_settings_screen' );
+		WC_Payments::get_gateway_settings()->output_payments_settings_screen();
+	}
+
+	/**
+	 * Manages customer details held on WCPay server for WordPress user associated with an order.
+	 *
+	 * @param WC_Order $order   WC Order object.
+	 * @param array    $options Additional options to apply.
+	 *
+	 * @deprecated 5.1.0
+	 *
+	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
+	 */
+	public function manage_customer_details_for_order( $order, $options = [] ) {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Order_Service::manage_customer_details_for_order' );
+
+		$options['test_mode'] = $this->is_in_test_mode();
+
+		return $this->order_service->manage_customer_details_for_order( $order, $options );
 	}
 
 	// End: Deprecated functions.

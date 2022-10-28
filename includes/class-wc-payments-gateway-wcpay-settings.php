@@ -542,4 +542,24 @@ class WC_Payments_Gateway_WCPay_Settings {
 		}
 		return $empty_value;
 	}
+
+	/**
+	 * Generates markup for the settings screen.
+	 */
+	public function output_payments_settings_screen() {
+		// hiding the save button because the react container has its own.
+		global $hide_save_button;
+		$hide_save_button = true;
+
+		if ( ! empty( $_GET['method'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			?>
+			<div
+				id="wcpay-express-checkout-settings-container"
+				data-method-id="<?php echo esc_attr( sanitize_text_field( wp_unslash( $_GET['method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>"
+			></div>
+		<?php else : ?>
+			<div id="wcpay-account-settings-container"></div>
+			<?php
+		endif;
+	}
 }

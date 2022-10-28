@@ -33,12 +33,34 @@ class WC_Payments_Order_Service {
 	protected $api_client;
 
 	/**
+	 * WC_Payments_Customer instance for working with customer information
+	 *
+	 * @var WC_Payments_Customer_Service
+	 */
+	protected $customer_service;
+
+	/**
+	 * WC_Payments_Action_Scheduler_Service instance for scheduling ActionScheduler jobs.
+	 *
+	 * @var WC_Payments_Action_Scheduler_Service
+	 */
+	private $action_scheduler_service;
+
+	/**
 	 * WC_Payments_Order_Service constructor.
 	 *
-	 * @param WC_Payments_API_Client $api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_API_Client               $api_client                             WooCommerce Payments API client.
+	 * @param WC_Payments_Customer_Service         $customer_service                 WCPaymetns Customer Service.
+	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service WCPayments Action Scheduler Service.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client ) {
-		$this->api_client = $api_client;
+	public function __construct(
+		WC_Payments_API_Client $api_client,
+		WC_Payments_Customer_Service $customer_service,
+		WC_Payments_Action_Scheduler_Service $action_scheduler_service
+	) {
+		$this->api_client               = $api_client;
+		$this->customer_service         = $customer_service;
+		$this->action_scheduler_service = $action_scheduler_service;
 
 		add_action( self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this, 'add_fee_breakdown_to_order_notes' ], 10, 3 );
 	}
@@ -813,5 +835,43 @@ class WC_Payments_Order_Service {
 			// Continue further, something unexpected happened, but we can't really do anything with that.
 			Logger::log( 'Error when updating status for order ' . $order->get_id() . ': ' . $e->getMessage() );
 		}
+	}
+
+	/**
+	 * Manages customer details held on WCPay server for WordPress user associated with an order.
+	 *
+	 * @param WC_Order $order   WC Order object.
+	 * @param array    $options Additional options to apply.
+	 *
+	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
+	 */
+	public function manage_customer_details_for_order( $order, $options = [] ) {
+		$user = $order->get_user();
+		if ( false === $user ) {
+			$user = wp_get_current_user();
+		}
+
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+
+		if ( null === $customer_id ) {
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+			// Create a new customer.
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
+		} else {
+			// Update the customer with order data async.
+			$this->action_scheduler_service->schedule_job(
+				time(),
+				WC_Payment_Gateway_WCPay::UPDATE_CUSTOMER_WITH_ORDER_DATA,
+				[
+					'order_id'     => $order->get_id(),
+					'customer_id'  => $customer_id,
+					'is_test_mode' => $options['test_mode'],
+					'is_woopay'    => $options['is_woopay'] ?? false,
+				]
+			);
+		}
+
+		return [ $user, $customer_id ];
 	}
 }

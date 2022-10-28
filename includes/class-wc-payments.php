@@ -328,7 +328,7 @@ class WC_Payments {
 		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
-		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
+		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client, self::$customer_service, self::$action_scheduler_service );
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
