@@ -72,7 +72,13 @@ Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName, upeConfig ] ) =>
 				testingInstructions={ upeConfig.testingInstructions }
 			/>
 		),
-		edit: <WCPayUPEFields paymentMethodId={ upeName } api={ api } />,
+		edit: (
+			<WCPayUPEFields
+				paymentMethodId={ upeName }
+				api={ api }
+				testingInstructions={ upeConfig.testingInstructions }
+			/>
+		),
 		savedTokenComponent: <SavedTokenHandler api={ api } />,
 		canMakePayment: () => !! api.getStripe(),
 		paymentMethodId: upeMethods[ upeName ],
