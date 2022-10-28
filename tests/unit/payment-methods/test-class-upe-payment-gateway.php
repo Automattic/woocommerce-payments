@@ -219,10 +219,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
 			->setConstructorArgs(
-				$this->mock_api_client,
-				$this->mock_customer_service,
-				$this->mock_action_scheduler_service
-			);
+				[
+					$this->mock_api_client,
+					$this->mock_customer_service,
+					$this->mock_action_scheduler_service,
+				]
+			)
+			->getMock();
 
 		// Arrange: Mock UPE_Payment_Gateway so that some of its methods can be
 		// mocked, and their return values can be used for testing.

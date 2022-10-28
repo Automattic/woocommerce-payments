@@ -61,10 +61,14 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
-		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_gateway          = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
-		$this->order_service         = new WC_Payments_Order_Service( $this->mock_api_client );
+		$this->mock_api_client               = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_gateway                  = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_customer_service         = $this->createMock( WC_Payments_Customer_Service::class );
+		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
+													->disableOriginalConstructor()
+													->getMock();
+
+		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
 
 		$this->controller = new WC_REST_Payments_Orders_Controller(
 			$this->mock_api_client,
