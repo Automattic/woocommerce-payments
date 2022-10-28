@@ -45,6 +45,13 @@ class WC_Payments {
 	private static $card_gateway;
 
 	/**
+	 * Instance of WC_Payments_Gateway_WCPay_Settings, created in init function.
+	 *
+	 * @var WC_Payments_Gateway_WCPay_Settings
+	 */
+	private static $gateway_settings;
+
+	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
 	 *
 	 * @var WC_Payments_API_Client
@@ -245,6 +252,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-session-rate-limiter.php';
+		include_once __DIR__ . '/class-wc-payments-gateway-wcpay-settings.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
 		include_once __DIR__ . '/class-wc-payments-upe-checkout.php';
@@ -324,6 +332,7 @@ class WC_Payments {
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
+		self::$gateway_settings                    = new WC_Payments_Gateway_WCPay_Settings();
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
 			$payment_methods        = [];
@@ -808,6 +817,15 @@ class WC_Payments {
 	 */
 	public static function get_wc_payments_checkout() {
 		return self::$wc_payments_checkout;
+	}
+
+	/**
+	 * Returns the WC_Payments_Checkout instance
+	 *
+	 * @return WC_Payments_Gateway_WCPay_Settings gateway settings instance
+	 */
+	public static function get_gateway_settings() {
+		return self::$gateway_settings;
 	}
 
 	/**

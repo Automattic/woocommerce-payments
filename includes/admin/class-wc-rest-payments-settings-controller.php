@@ -58,7 +58,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
-		$wcpay_form_fields = $this->wcpay_gateway->get_form_fields();
+		$wcpay_form_fields = WC_Payments::get_gateway_settings()->get_form_fields();
 
 		register_rest_route(
 			$this->namespace,
