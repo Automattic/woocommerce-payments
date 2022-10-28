@@ -59,19 +59,19 @@ export function* getAuthorization(
 			const result = yield apiFetch( {
 				path: `${ NAMESPACE }/authorizations/${ paymentIntentId }`,
 			} );
-			const isCaptured = result
-				? ( result as GetAuthorizationApiResponse ).is_captured
-				: false;
+
+			const {
+				is_captured: isCaptured,
+			} = result as GetAuthorizationApiResponse;
 
 			yield updateAuthorization( {
-				payment_intent_id: ( result as GetAuthorizationApiResponse )
-					.payment_intent_id,
+				payment_intent_id: paymentIntentId,
 				captured: isCaptured,
 			} as Authorization );
 		}
 	} catch ( e ) {
 		// We might get an error when there is no authorization because the payment was not set to be captured later.
-		// We don't want to display an error to the user in that case.
+		// We don't want to display an error to the merchant in that case.
 		if ( ( e as ApiError ).code !== 'authorization_missing' ) {
 			yield dispatch(
 				'core/notices',
