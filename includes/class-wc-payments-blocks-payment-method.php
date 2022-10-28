@@ -16,7 +16,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 *
 	 * @var WC_Payment_Gateway_WCPay
 	 */
-	protected $gateway;
+	private $gateway;
 
 	/**
 	 * Initializes the class.

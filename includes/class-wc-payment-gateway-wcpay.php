@@ -1334,7 +1334,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 
 				if ( $intent_meta_order_id !== $order_id ) {
-
 					throw new Intent_Authentication_Exception(
 						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
 						'order_id_mismatch'

@@ -31,8 +31,8 @@ const WCPayFields = ( {
 	shouldSavePayment,
 } ) => {
 	const [ errorMessage, setErrorMessage ] = useState( null );
-	const testMode = getConfig( 'testMode' );
-	const testCopy = (
+	const isTestMode = getConfig( 'testMode' );
+	const testingInstructions = (
 		<p>
 			<strong>Test mode:</strong> use the test VISA card 4242424242424242
 			with any expiry date and CVC, or any test card numbers listed{ ' ' }
@@ -99,7 +99,7 @@ const WCPayFields = ( {
 
 	return (
 		<>
-			{ testMode ? testCopy : '' }
+			{ isTestMode ? testingInstructions : '' }
 			<div className="wc-block-gateway-container wc-inline-card-element">
 				<CardElement
 					options={ elementOptions }
