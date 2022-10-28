@@ -3,7 +3,6 @@ declare const wcpaySettings: {
 	isSubscriptionsActive: boolean;
 	featureFlags: {
 		customSearch: boolean;
-		customDepositSchedules: boolean;
 	};
 	fraudServices: unknown[];
 	isJetpackConnected: boolean;

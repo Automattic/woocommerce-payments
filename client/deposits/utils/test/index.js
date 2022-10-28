@@ -44,14 +44,6 @@ function getDepositSchedule(
 }
 
 describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
-	beforeEach( () => {
-		global.wcpaySettings = {
-			featureFlags: {
-				customDepositSchedules: false,
-			},
-		};
-	} );
-
 	test( 'renders temporarily suspended notice for accounts with disabled deposits', () => {
 		const depositSchedule = getDepositSchedule(
 			{ interval: 'daily' },
@@ -75,17 +67,7 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 		);
 	} );
 
-	test( 'renders temporarily suspended notice for manual interval', () => {
-		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
-		expect( depositSchedule ).toEqual(
-			'Temporarily suspended (learn more)'
-		);
-	} );
-
-	test( 'renders deposit schedule for manual interval with flag enabled', () => {
-		// Enable custom deposit schedules feature flag.
-		global.wcpaySettings.featureFlags.customDepositSchedules = true;
-
+	test( 'renders deposit schedule for manual interval', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
 		expect( depositSchedule ).toEqual( 'Manual' );
 	} );

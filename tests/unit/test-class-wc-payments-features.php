@@ -16,7 +16,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		'_wcpay_feature_customer_multi_currency'    => 'multiCurrency',
 		'_wcpay_feature_documents'                  => 'documents',
 		'_wcpay_feature_account_overview_task_list' => 'accountOverviewTaskList',
-		'_wcpay_feature_custom_deposit_schedules'   => 'customDepositSchedules',
 	];
 
 	public function set_up() {

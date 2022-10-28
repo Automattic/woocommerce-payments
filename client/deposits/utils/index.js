@@ -94,14 +94,7 @@ export const getDepositScheduleDescriptor = ( {
 	},
 	last_deposit: last,
 } ) => {
-	const isCustomDepositSchedulesEnabled =
-		window.wcpaySettings?.featureFlags?.customDepositSchedules;
-
-	if (
-		disabled ||
-		blocked ||
-		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval )
-	) {
+	if ( disabled || blocked ) {
 		const learnMoreHref =
 			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
 		return createInterpolateElement(
