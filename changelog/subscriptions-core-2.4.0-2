@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+ImImprove wcs_copy_order_address() to use modern APIs for setting address fields.
