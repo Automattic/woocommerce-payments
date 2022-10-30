@@ -17,19 +17,19 @@ import Tooltip from 'wcpay/components/tooltip';
 import { formatDate } from 'utils';
 
 type StandardDepositButtonProps = {
-	availableBalance: AccountOverview.Overview[ 'available' ];
+	standardBalance: AccountOverview.Overview[ 'standard' ];
 	lastManualDeposit: AccountOverview.Overview[ 'lastManualDeposit' ];
 };
 
 const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
-	availableBalance,
+	standardBalance,
 	lastManualDeposit,
 } ) => {
 	const {
 		amount,
 		currency,
 		transaction_ids: transactionIds,
-	} = availableBalance || {
+	} = standardBalance || {
 		amount: 0,
 		currency: 'usd',
 		source_types: [],
@@ -98,10 +98,10 @@ const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 			</Tooltip>
 			{ ( isModalOpen || inProgress ) && (
 				<StandardDepositModal
-					availableBalance={ availableBalance }
 					inProgress={ inProgress }
 					onClose={ onClose }
 					onSubmit={ onSubmit }
+					standardBalance={ standardBalance }
 				/>
 			) }
 		</>

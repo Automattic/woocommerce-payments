@@ -47,6 +47,7 @@ const DepositsInformationOverview: React.FC< OverviewProps > = ( props ) => {
 		lastPaid,
 		nextScheduled,
 		pending,
+		standard,
 	} = overview;
 
 	const hasCompletedNewAccountWaitingPeriod =
@@ -96,8 +97,8 @@ const DepositsInformationOverview: React.FC< OverviewProps > = ( props ) => {
 	if ( ! depositButton && isStandardDepositEnabled ) {
 		depositButton = (
 			<StandardDepositButton
-				availableBalance={ available }
 				lastManualDeposit={ lastManualDeposit }
+				standardBalance={ standard }
 			/>
 		);
 	}

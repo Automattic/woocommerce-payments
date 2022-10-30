@@ -51,7 +51,7 @@ describe( 'StandardDepositButton', () => {
 	} );
 
 	test( 'renders correctly when available balance > 0', () => {
-		const availableBalance = {
+		const standardBalance = {
 			amount: 5000,
 			currency: 'aud',
 			source_types: [],
@@ -60,8 +60,8 @@ describe( 'StandardDepositButton', () => {
 
 		const { getByRole } = render(
 			<StandardDepositButton
-				availableBalance={ availableBalance }
 				lastManualDeposit={ undefined }
+				standardBalance={ standardBalance }
 			/>
 		);
 		const button = getByRole( 'button', { name: 'Deposit funds' } );
@@ -69,7 +69,7 @@ describe( 'StandardDepositButton', () => {
 	} );
 
 	test( 'renders correctly when available balance = 0', () => {
-		const availableBalance = {
+		const standardBalance = {
 			amount: 0,
 			currency: 'aud',
 			source_types: [],
@@ -78,8 +78,8 @@ describe( 'StandardDepositButton', () => {
 
 		const { getByRole } = render(
 			<StandardDepositButton
-				availableBalance={ availableBalance }
 				lastManualDeposit={ undefined }
+				standardBalance={ standardBalance }
 			/>
 		);
 		const button = getByRole( 'button', { name: 'Deposit funds' } );
@@ -87,7 +87,7 @@ describe( 'StandardDepositButton', () => {
 	} );
 
 	test( 'renders correctly when available balance < 0', () => {
-		const availableBalance = {
+		const standardBalance = {
 			amount: -5000,
 			currency: 'aud',
 			source_types: [],
@@ -96,8 +96,8 @@ describe( 'StandardDepositButton', () => {
 
 		const { getByRole } = render(
 			<StandardDepositButton
-				availableBalance={ availableBalance }
 				lastManualDeposit={ undefined }
+				standardBalance={ standardBalance }
 			/>
 		);
 		const button = getByRole( 'button', { name: 'Deposit funds' } );
@@ -105,7 +105,7 @@ describe( 'StandardDepositButton', () => {
 	} );
 
 	test( 'displays modal when clicked', async () => {
-		const availableBalance = {
+		const standardBalance = {
 			amount: 5000,
 			currency: 'eur',
 			source_types: [],
@@ -114,8 +114,8 @@ describe( 'StandardDepositButton', () => {
 
 		const { getByRole } = render(
 			<StandardDepositButton
-				availableBalance={ availableBalance }
 				lastManualDeposit={ undefined }
+				standardBalance={ standardBalance }
 			/>
 		);
 		const button = getByRole( 'button', { name: 'Deposit funds' } );

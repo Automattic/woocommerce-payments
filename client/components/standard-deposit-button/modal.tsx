@@ -13,17 +13,17 @@ import { formatExplicitCurrency } from 'utils/currency';
 import './style.scss';
 
 type StandardDepositModalProps = {
-	availableBalance: AccountOverview.Balance;
+	inProgress: boolean;
 	onClose: () => void;
 	onSubmit: () => void;
-	inProgress: boolean;
+	standardBalance: AccountOverview.Overview[ 'standard' ];
 };
 
 const StandardDepositModal: React.FC< StandardDepositModalProps > = ( {
-	availableBalance,
+	inProgress,
 	onClose,
 	onSubmit,
-	inProgress,
+	standardBalance,
 } ) => {
 	/* translators: %s: amount representing the available monetary balance */
 	const description = createInterpolateElement(
@@ -33,8 +33,8 @@ const StandardDepositModal: React.FC< StandardDepositModalProps > = ( {
 				'woocommerce-payments'
 			),
 			formatExplicitCurrency(
-				availableBalance.amount,
-				availableBalance.currency
+				standardBalance.amount,
+				standardBalance.currency
 			)
 		),
 		{

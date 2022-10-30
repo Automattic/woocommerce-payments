@@ -41,7 +41,7 @@ declare namespace AccountOverview {
 	}
 
 	interface Overview {
-		available: Balance & { transaction_ids: Array< string > };
+		available: Balance;
 		currency: string;
 		instant: InstantBalance;
 		lastManualDeposit:
@@ -53,6 +53,7 @@ declare namespace AccountOverview {
 		lastPaid: Deposit;
 		nextScheduled: Deposit;
 		pending: Balance;
+		standard: Balance & { transaction_ids: Array< string > };
 	}
 
 	interface OverviewsResponse {

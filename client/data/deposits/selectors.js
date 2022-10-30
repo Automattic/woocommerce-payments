@@ -72,6 +72,7 @@ export const getAllDepositsOverviews = ( state ) => {
 		lastPaid: deposit.last_paid,
 		nextScheduled: deposit.next_scheduled,
 		pending: balance.pending,
+		standard: balance.standard,
 	};
 
 	/**
@@ -92,6 +93,7 @@ export const getAllDepositsOverviews = ( state ) => {
 					lastPaid: undefined,
 					nextScheduled: undefined,
 					pending: undefined,
+					standard: undefined,
 				};
 			}
 
