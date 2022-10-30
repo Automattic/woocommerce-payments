@@ -57,6 +57,9 @@ const createMockCurrency = ( currencyCode, extra = {} ) =>
 			available: {
 				amount: 2030,
 			},
+			standard: {
+				amount: 2030,
+			},
 		},
 		extra
 	);
@@ -132,10 +135,11 @@ describe( 'Deposits information', () => {
 		mockOverviews(
 			[
 				createMockCurrency( 'usd', {
-					pending: null,
-					nextScheduled: null,
-					lastPaid: null,
 					available: null,
+					lastPaid: null,
+					nextScheduled: null,
+					pending: null,
+					standard: null,
 				} ),
 			],
 			createMockAccount()
@@ -246,6 +250,9 @@ describe( 'Deposits information', () => {
 
 		const currency = createMockCurrency( 'aud', {
 			available: {
+				amount: 0,
+			},
+			standard: {
 				amount: 0,
 			},
 		} );
