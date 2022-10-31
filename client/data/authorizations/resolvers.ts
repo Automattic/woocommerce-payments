@@ -52,16 +52,17 @@ export function* getAuthorizations( query: Query ): Generator< unknown > {
 }
 
 export function* getAuthorization(
-	paymentIntentId: string
+	requestedPaymentIntentId: string
 ): Generator< unknown > {
 	try {
-		if ( paymentIntentId ) {
+		if ( requestedPaymentIntentId ) {
 			const result = yield apiFetch( {
-				path: `${ NAMESPACE }/authorizations/${ paymentIntentId }`,
+				path: `${ NAMESPACE }/authorizations/${ requestedPaymentIntentId }`,
 			} );
 
 			const {
 				is_captured: isCaptured,
+				payment_intent_id: paymentIntentId,
 			} = result as GetAuthorizationApiResponse;
 
 			yield updateAuthorization( {

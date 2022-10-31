@@ -105,8 +105,8 @@ const PaymentDetailsSummary = ( {
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
 	const { authorization } = useAuthorization(
-		charge.payment_intent || '',
-		charge.order?.number || 0
+		charge.payment_intent as string,
+		charge.order?.number as number
 	);
 
 	return (
