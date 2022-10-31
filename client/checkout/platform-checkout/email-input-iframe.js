@@ -6,35 +6,12 @@ import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
+import { buildAjaxURL } from '../../payment-request/utils';
 
-// Waits for the email field to exist as in the Blocks checkout, sometimes the email field is not immediately available.
-const waitForEmailField = ( selector ) => {
-	return new Promise( ( resolve ) => {
-		if ( document.querySelector( selector ) ) {
-			return resolve( document.querySelector( selector ) );
-		}
-
-		const checkoutBlock = document.querySelector(
-			'[data-block-name="woocommerce/checkout"]'
-		);
-		const observer = new MutationObserver( () => {
-			if ( document.querySelector( selector ) ) {
-				resolve( document.querySelector( selector ) );
-				observer.disconnect();
-			}
-		} );
-
-		observer.observe( checkoutBlock, {
-			childList: true,
-			subtree: true,
-		} );
-	} );
-};
-
-export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
+export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = await waitForEmailField( field );
+	const platformCheckoutEmailInput = document.querySelector( field );
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
@@ -213,7 +190,6 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 
 	// Error message to display when there's an error contacting WooPay.
 	const errorMessage = document.createElement( 'div' );
-	errorMessage.style[ 'white-space' ] = 'normal';
 	errorMessage.textContent = __(
 		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
 		'woocommerce-payments'
@@ -333,30 +309,55 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 			}
 		}
 
-		const emailExistsQuery = new URLSearchParams();
-		emailExistsQuery.append( 'email', email );
-		emailExistsQuery.append( 'test_mode', !! getConfig( 'testMode' ) );
-		emailExistsQuery.append(
-			'wcpay_version',
-			getConfig( 'wcpayVersionNumber' )
-		);
-		emailExistsQuery.append(
-			'blog_id',
-			getConfig( 'platformCheckoutMerchantId' )
-		);
-		emailExistsQuery.append(
-			'request_signature',
-			getConfig( 'platformCheckoutRequestSignature' )
-		);
-
-		fetch(
-			`${ getConfig(
-				'platformCheckoutHost'
-			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
+		request(
+			buildAjaxURL(
+				getConfig( 'wcAjaxUrl' ),
+				'get_platform_checkout_signature'
+			),
 			{
-				signal,
+				_ajax_nonce: getConfig( 'platformCheckoutSignatureNonce' ),
 			}
 		)
+			.then( ( response ) => {
+				if ( response.success ) {
+					return response.data;
+				}
+
+				throw new Error( 'Request for signature failed.' );
+			} )
+			.then( ( data ) => {
+				if ( data.signature ) {
+					return data.signature;
+				}
+
+				throw new Error( 'Signature not found.' );
+			} )
+			.then( ( signature ) => {
+				const emailExistsQuery = new URLSearchParams();
+				emailExistsQuery.append( 'email', email );
+				emailExistsQuery.append(
+					'test_mode',
+					!! getConfig( 'testMode' )
+				);
+				emailExistsQuery.append(
+					'wcpay_version',
+					getConfig( 'wcpayVersionNumber' )
+				);
+				emailExistsQuery.append(
+					'blog_id',
+					getConfig( 'platformCheckoutMerchantId' )
+				);
+				emailExistsQuery.append( 'request_signature', signature );
+
+				return fetch(
+					`${ getConfig(
+						'platformCheckoutHost'
+					) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
+					{
+						signal,
+					}
+				);
+			} )
 			.then( ( response ) => {
 				if ( 200 !== response.status ) {
 					showErrorMessage();
@@ -418,10 +419,18 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 		}
 	};
 
-	const openLoginSessionIframe = () => {
+	const openLoginSessionIframe = ( email ) => {
+		const emailParam = new URLSearchParams();
+
+		if ( validateEmail( email ) ) {
+			parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
+			emailParam.append( 'email', email );
+			emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
+		}
+
 		loginSessionIframe.src = `${ getConfig(
 			'platformCheckoutHost'
-		) }/login-session`;
+		) }/login-session?${ emailParam.toString() }`;
 
 		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( loginSessionIframeWrapper, null );
@@ -456,9 +465,13 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 		) {
 			// Check if user already has a WooPay login session.
 			if ( ! hasCheckedLoginSession ) {
-				openLoginSessionIframe();
+				openLoginSessionIframe( platformCheckoutEmailInput.value );
 			}
 		} else {
+			wcpayTracks.recordUserEvent(
+				wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
+			);
+
 			searchParams.delete( 'skip_platform_checkout' );
 
 			let { pathname } = window.location;
@@ -511,6 +524,7 @@ export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 						wcpayTracks.recordUserEvent(
 							wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
 						);
+						spinner.remove();
 						window.location = response.url;
 					} else {
 						closeLoginSessionIframe();

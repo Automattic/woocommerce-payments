@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Only changes a version number in package-lock.json.
+
+
