@@ -707,7 +707,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
-		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_UPE_Checkout::get_payment_fields_js_config' );
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_UPE_Checkout::get_payment_fields_js_config' );
 		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
 	}
 
@@ -930,7 +930,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	private function get_enabled_payment_method_config() {
-		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_UPE_Checkout::get_enabled_payment_method_config' );
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_UPE_Checkout::get_enabled_payment_method_config' );
 		return WC_Payments::get_wc_payments_checkout()->get_enabled_payment_method_config();
 	}
 
