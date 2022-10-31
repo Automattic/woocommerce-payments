@@ -175,9 +175,6 @@ class WC_Payments_Webhook_Processing_Service {
 			case 'payment_intent.succeeded':
 				$this->process_webhook_payment_intent_succeeded( $event_body );
 				break;
-			case 'woopay.payment_intent.succeeded':
-				$this->process_webhook_woopay_payment_intent_succeeded( $event_body );
-				break;
 			case 'invoice.upcoming':
 				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_upcoming( $event_body );
 				break;
@@ -413,39 +410,10 @@ class WC_Payments_Webhook_Processing_Service {
 			];
 			$this->receipt_service->send_customer_ipp_receipt_email( $order, $merchant_settings, $charges_data[0] );
 		}
-	}
 
-	/**
-	 * Process webhook for a successful payment intent from WooPay.
-	 *
-	 * @param array $event_body The event that triggered the webhook.
-	 *
-	 * @throws Invalid_Webhook_Data_Exception   Required parameters not found.
-	 * @throws Invalid_Payment_Method_Exception When unable to resolve intent ID to order.
-	 */
-	private function process_webhook_woopay_payment_intent_succeeded( $event_body ) {
-		$event_data    = $this->read_webhook_property( $event_body, 'data' );
-		$event_object  = $this->read_webhook_property( $event_data, 'object' );
-		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
-		$currency      = $this->read_webhook_property( $event_object, 'currency' );
-		$order         = $this->get_order_from_event_body_intent_id( $event_body );
-		$intent_status = $this->read_webhook_property( $event_object, 'status' );
-		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
-		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
-		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
-		$customer_id   = $this->read_webhook_property( $event_object, 'customer' );
-		$metadata      = $this->read_webhook_property( $event_object, 'metadata' );
-
-		if ( ! $order ) {
-			return;
-		}
-
-		// Subscriptions are processed before redirect so we don't want to redo the processing here
-		// and introduce a race condition.
-		if (
-			function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order )
-			|| function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order )
-		) {
+		$metadata           = $this->read_webhook_property( $event_object, 'metadata' );
+		$was_paid_on_woopay = filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOL );
+		if ( ! $was_paid_on_woopay ) {
 			return;
 		}
 
@@ -455,17 +423,9 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
-		// Process like a normal payment_intent.succeeded event, but with some extra WooPay
-		// specific operations once that's been completed.
-		$this->process_webhook_payment_intent_succeeded( $event_body );
-
-		$was_paid_on_woopay = filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOL );
-		if ( ! $was_paid_on_woopay ) {
-			return;
-		}
-
 		$order->add_meta_data( 'is_woopay', true, true );
 
+		$customer_id    = $this->read_webhook_property( $event_object, 'customer' );
 		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 
 		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
