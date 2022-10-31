@@ -23,21 +23,30 @@ env:
   E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_USE_LOCAL_SERVER:  false
   E2E_RESULT_FILEPATH:   'tests/e2e/results.json'
+  WC_L2_VERSION: '6.8.2'
 
 
 jobs:
+  generate-matrix:
+    name: "Generate the matrix for subscriptions-tests dynamically"
+    runs-on: ubuntu-20.04
+    outputs:
+      matrix: ${{ steps.generate_matrix.outputs.matrix }}
+    steps:
+      - name: "Generate matrix"
+        id: generate_matrix
+        run: |
+          WC_VERSIONS=$( echo "[\"$WC_L2_VERSION\", \"latest\", \"beta\"]" )
+          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"test_groups\":[\"wcpay\", \"subscriptions\"],\"test_branches\":[\"merchant\", \"shopper\"]}" >> $GITHUB_OUTPUT
+
   # Run WCPay & subscriptions tests against specific WC versions
   wcpay-subscriptions-tests:
     runs-on: ubuntu-20.04
-
+    needs: generate-matrix
     strategy:
       fail-fast:     false
-      matrix:
-        # Min WooCommerce | L-2 | L(atest) | beta
-        woocommerce:   [ '6.8.2', 'latest', 'beta' ]
-        test_groups:   [ 'wcpay', 'subscriptions' ]
-        test_branches: [ 'merchant', 'shopper' ]
-
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:

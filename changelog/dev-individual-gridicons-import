@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update Gridicons imports to be indivuals, reducing our bundle size.
