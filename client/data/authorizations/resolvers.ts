@@ -29,7 +29,7 @@ export function* getAuthorizations( query: Query ): any {
 
 	try {
 		const results = yield apiFetch( { path } );
-		yield updateAuthorizations( query, results.data || [] );
+		yield updateAuthorizations( query, results.data ?? [] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
@@ -53,7 +53,7 @@ export function* getAuthorizationsSummary( query: Query ): any {
 
 	try {
 		const results = yield apiFetch( { path } );
-		yield updateAuthorizationsSummary( query, results || [] );
+		yield updateAuthorizationsSummary( query, results ?? [] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
