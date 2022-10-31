@@ -52,4 +52,5 @@ to catalog our packages and provide guidance to a developer who wants to test an
 ### JavaScript Runtime Dependencies
 | Package Name | Usage Summary | Testing | Notes |
 | ------------ | ------------- | ------- | ----- |
+| [@automattic/interpolate-components](https://www.npmjs.com/package/@automattic/interpolate-components) | Interpolate-Components allows us to work with structured markup as strings and then hydrate them into a tree of React components. Similar to `sprintf` in PHP. | E2E and JS tests should pass. |  |
 | @stripe/stripe-js | Powers all the direct communication with Stripe in the user's browser | Reviewing Stripe's changelog is a good idea, then tailoring your testing to that. Testing payments, saving payment information, different payment methods, UPE on and off are all good options. | We configure which version of the Stripe API we want to use, although we aim to stay up to date there it's also worth ensuring the new version of this package is compatible. |
