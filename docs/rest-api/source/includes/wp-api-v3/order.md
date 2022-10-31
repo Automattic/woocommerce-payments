@@ -107,7 +107,7 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_termin
 
 ## Capture an authorization
 
-_@since vX.X.X_ <!-- TODO: add version. -->
+_@since v5.1.0_
 
 ### POST params
 
