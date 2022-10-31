@@ -2954,7 +2954,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public static function is_current_page_settings() {
-		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Admin_Settings::is_current_page_settings' );
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Admin_Settings::is_current_page_settings' );
 		return WC_Payments_Admin_Settings::is_current_page_settings();
 	}
 
@@ -2966,7 +2966,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string URL of the configuration screen for this gateway
 	 */
 	public static function get_settings_url() {
-		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Admin_Settings::get_settings_url' );
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Admin_Settings::get_settings_url' );
 		return WC_Payments_Admin_Settings::get_settings_url();
 	}
 
@@ -2981,7 +2981,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array
 	 */
 	public function get_payment_fields_js_config() {
-		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Checkout::get_payment_fields_js_config' );
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Checkout::get_payment_fields_js_config' );
 		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
 	}
 
@@ -2995,7 +2995,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array|null An array with customer data or nothing.
 	 */
 	public function get_prepared_customer_data() {
-		wc_deprecated_function( __FUNCTION__, '4.9.0', 'WC_Payments_Customer_Service::get_prepared_customer_data' );
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Customer_Service::get_prepared_customer_data' );
 		return WC_Payments::get_customer_service()->get_prepared_customer_data();
 	}
 
