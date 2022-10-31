@@ -282,12 +282,16 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 	 * Record a Tracks event that the order has been processed.
 	 */
 	public function checkout_order_processed() {
-		$this->maybe_record_event(
-			'order_checkout_complete',
-			[
-				'source' => isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) ? 'platform' : 'standard',
-			]
-		);
+		if ( isset( $_SERVER['HTTP_X_WCPAY_PLATFORM_CHECKOUT_USER'] ) ) {
+			$this->platform_checkout_order_processed();
+		} else {
+			$this->maybe_record_event(
+				'order_checkout_complete',
+				[
+					'source' => 'standard',
+				]
+			);
+		}
 	}
 
 	/**
@@ -302,4 +306,17 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 		);
 	}
 
+	/**
+	 * Record a Tracks event that the platform checkout order has been processed.
+	 *
+	 * @return void
+	 */
+	public function platform_checkout_order_processed() {
+		$this->maybe_record_event(
+			'order_checkout_complete',
+			[
+				'source' => 'platform',
+			]
+		);
+	}
 }

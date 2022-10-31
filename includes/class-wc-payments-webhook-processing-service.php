@@ -474,7 +474,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Make sure tracks are fired when appropriate.
 		$platform_checkout_tracker = new Platform_Checkout_Tracker( WC_Payments::get_wc_payments_http() );
-		$platform_checkout_tracker->checkout_order_processed();
+		$platform_checkout_tracker->platform_checkout_order_processed();
 	}
 
 	/**
