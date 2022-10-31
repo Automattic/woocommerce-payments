@@ -82,7 +82,7 @@ interface UploadFieldObject {
 	label: string;
 }
 
-export interface DisputeFileUpload {
+export interface FileUploadControlProps {
 	field: UploadFieldObject;
 	fileName: string;
 	disabled?: boolean;
