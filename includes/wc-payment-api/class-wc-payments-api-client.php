@@ -1182,7 +1182,7 @@ class WC_Payments_API_Client {
 	 * @param array  $site_data      - Data to track ToS agreement.
 	 * @param array  $actioned_notes - Actioned WCPay note names to be sent to the on-boarding flow.
 	 * @param array  $account_data   - Data to prefill the progressive onboarding.
-	 * @param array  $progressive_complete - Whether we need to redirect user to Stripe KYC to complete their payouts data.
+	 * @param bool   $progressive_complete - Whether we need to redirect user to Stripe KYC to complete their payouts data.
 	 *
 	 * @return array An array containing the url and state fields.
 	 *
