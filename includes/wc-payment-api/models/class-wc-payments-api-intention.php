@@ -85,7 +85,7 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	/**
 	 * The latest charge object
 	 *
-	 * @var WC_Payments_API_Charge
+	 * @var WC_Payments_API_Charge|null
 	 */
 	private $charge;
 
@@ -234,7 +234,7 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	/**
 	 * Returns the charge associated with this intention
 	 *
-	 * @return WC_Payments_API_Charge
+	 * @return WC_Payments_API_Charge|null
 	 */
 	public function get_charge() {
 		return $this->charge;

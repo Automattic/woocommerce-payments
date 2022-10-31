@@ -147,9 +147,14 @@ class Platform_Checkout_Order_Success_Page {
 	 * @param string   $intent_id The Stripe setup/payment intent ID for the order payment.
 	 * @param string   $last_4 The last 4 digits of the card used to pay for the order.
 	 *
+	 * @return void
 	 * @throws Process_Payment_Exception When the payment intent has an error.
 	 */
 	public function process_order_now( WC_Order $order, string $intent_id, string $last_4 ) {
+		// Instantiate variables that may not be defined when we get to the catch clause.
+		$status    = '';
+		$charge_id = '';
+
 		try {
 			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 			$order->add_meta_data( 'is_woopay', true, true );
@@ -162,12 +167,12 @@ class Platform_Checkout_Order_Success_Page {
 
 			// Get user/customer for order.
 			$intent            = $this->payments_api_client->get_intent( $intent_id );
-			$customer_id       = $intent->get_customer_id();
+			$customer_id       = $intent->get_customer_id() ?? '';
 			$status            = $intent->get_status();
 			$charge            = $intent->get_charge();
-			$charge_id         = $charge ? $charge->get_id() : null;
+			$charge_id         = $charge ? $charge->get_id() : '';
 			$currency          = $intent->get_currency();
-			$payment_method_id = $intent->get_payment_method_id();
+			$payment_method_id = $intent->get_payment_method_id() ?? '';
 			$error             = $intent->get_last_payment_error();
 
 			if ( ! empty( $error ) ) {
@@ -195,10 +200,6 @@ class Platform_Checkout_Order_Success_Page {
 			}
 		} catch ( Exception $e ) {
 			Logger::log( 'Error: ' . $e->getMessage() );
-
-			// Confirm our needed variables are set before using them due to there could be a server issue during the get_intent process.
-			$status    = $status ?? null;
-			$charge_id = $charge_id ?? null;
 
 			/* translators: localized exception message */
 			$message = sprintf( __( 'WooPay payment failed to process: %s', 'woocommerce-payments' ), $e->getMessage() );
