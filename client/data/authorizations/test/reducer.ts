@@ -59,12 +59,14 @@ describe( 'Authorizations reducer tests', () => {
 	};
 
 	test( 'Unrelated action is ignored', () => {
-		expect( reducer( emptyState, { type: 'WRONG-TYPE' } ) ).toBe(
-			emptyState
-		);
-		expect( reducer( filledState, { type: 'WRONG-TYPE' } ) ).toBe(
-			filledState
-		);
+		const mockAction = {
+			type: 'WRONG-TYPE',
+			data: mockAuthorizations.slice( 0 ),
+			query: {},
+		};
+
+		expect( reducer( emptyState, mockAction ) ).toBe( emptyState );
+		expect( reducer( filledState, mockAction ) ).toBe( filledState );
 	} );
 
 	test( 'New authorizations reduced correctly', () => {
@@ -105,7 +107,7 @@ describe( 'Authorizations reducer tests', () => {
 		expect( reduced ).toStrictEqual( expected );
 	} );
 
-	test( 'New transactions summary reduced correctly', () => {
+	test( 'New authorizations summary reduced correctly', () => {
 		const expected = {
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
@@ -122,7 +124,7 @@ describe( 'Authorizations reducer tests', () => {
 		expect( reduced ).toStrictEqual( expected );
 	} );
 
-	test( 'Transactions summary updated correctly on updated info', () => {
+	test( 'Authorizations summary updated correctly on updated info', () => {
 		const newSummary = {
 			total: 5000,
 			fees: 100,
