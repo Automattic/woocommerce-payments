@@ -44,7 +44,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 		$note = \WC_Payments_Notes_Set_Up_StripeLink::get_note();
 
 		$this->assertSame( 'Increase conversion at checkout', $note->get_title() );
-		$this->assertSame( 'Reduce cart abandonment and create a frictionless checkout experience with Link by Stripe. Link autofills your customer’s payment and shipping details so they can check out in just six seconds with the Link optimized experience. That’s 9x faster than shoppers who don’t use Link. Link increases conversion rates by over 7% for logged-in Link customers.', $note->get_content() );
+		$this->assertSame( 'Reduce cart abandonment and create a frictionless checkout experience with Link by Stripe. Link autofills your customer’s payment and shipping details so they can check out in just six seconds with the Link optimized experience.', $note->get_content() );
 		$this->assertSame( 'info', $note->get_type() );
 		$this->assertSame( 'wc-payments-notes-set-up-stripe-link', $note->get_name() );
 		$this->assertSame( 'woocommerce-payments', $note->get_source() );

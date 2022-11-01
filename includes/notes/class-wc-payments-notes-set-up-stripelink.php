@@ -75,7 +75,7 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 		$note       = new $note_class();
 
 		$note->set_title( __( 'Increase conversion at checkout', 'woocommerce-payments' ) );
-		$note->set_content( __( 'Reduce cart abandonment and create a frictionless checkout experience with Link by Stripe. Link autofills your customer’s payment and shipping details so they can check out in just six seconds with the Link optimized experience. That’s 9x faster than shoppers who don’t use Link. Link increases conversion rates by over 7% for logged-in Link customers.', 'woocommerce-payments' ) );
+		$note->set_content( __( 'Reduce cart abandonment and create a frictionless checkout experience with Link by Stripe. Link autofills your customer’s payment and shipping details so they can check out in just six seconds with the Link optimized experience.', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
