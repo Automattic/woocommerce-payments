@@ -419,10 +419,18 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}
 	};
 
-	const openLoginSessionIframe = () => {
+	const openLoginSessionIframe = ( email ) => {
+		const emailParam = new URLSearchParams();
+
+		if ( validateEmail( email ) ) {
+			parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
+			emailParam.append( 'email', email );
+			emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
+		}
+
 		loginSessionIframe.src = `${ getConfig(
 			'platformCheckoutHost'
-		) }/login-session`;
+		) }/login-session?${ emailParam.toString() }`;
 
 		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( loginSessionIframeWrapper, null );
@@ -457,7 +465,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		) {
 			// Check if user already has a WooPay login session.
 			if ( ! hasCheckedLoginSession ) {
-				openLoginSessionIframe();
+				openLoginSessionIframe( platformCheckoutEmailInput.value );
 			}
 		} else {
 			wcpayTracks.recordUserEvent(
@@ -516,6 +524,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 						wcpayTracks.recordUserEvent(
 							wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
 						);
+						spinner.remove();
 						window.location = response.url;
 					} else {
 						closeLoginSessionIframe();
