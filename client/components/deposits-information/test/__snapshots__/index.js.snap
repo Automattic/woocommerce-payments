@@ -689,9 +689,7 @@ exports[`Deposits information renders instant deposit button when eligible and s
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Temporarily suspended (
+          Deposits temporarily suspended (
           <a
             href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
             rel="noopener noreferrer"
@@ -699,7 +697,7 @@ exports[`Deposits information renders instant deposit button when eligible and s
           >
             learn more
           </a>
-          )
+          ).
         </p>
       </div>
     </div>
@@ -847,9 +845,7 @@ exports[`Deposits information renders standard deposit button disabled when no a
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Temporarily suspended (
+          Deposits temporarily suspended (
           <a
             href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
             rel="noopener noreferrer"
@@ -857,7 +853,7 @@ exports[`Deposits information renders standard deposit button disabled when no a
           >
             learn more
           </a>
-          )
+          ).
         </p>
       </div>
     </div>
@@ -1015,9 +1011,7 @@ exports[`Deposits information renders standard deposit button enabled when depos
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Temporarily suspended (
+          Deposits temporarily suspended (
           <a
             href="https://woocommerce.com/document/payments/faq/deposits-suspended/"
             rel="noopener noreferrer"
@@ -1025,7 +1019,7 @@ exports[`Deposits information renders standard deposit button enabled when depos
           >
             learn more
           </a>
-          )
+          ).
         </p>
       </div>
     </div>
