@@ -44,8 +44,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
-		$this->order         = WC_Helper_Order::create_order();
+		$this->order_service = new WC_Payments_Order_Service(
+			$this->createMock( WC_Payments_API_Client::class ),
+			$this->createMock( WC_Payments_Customer_Service::class ),
+			$this->createMock( WC_Payments_Action_Scheduler_Service::class )
+		);
+
+		$this->order = WC_Helper_Order::create_order();
 	}
 
 	/**

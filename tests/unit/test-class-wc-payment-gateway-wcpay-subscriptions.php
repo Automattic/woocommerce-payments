@@ -102,7 +102,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
+		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
 
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

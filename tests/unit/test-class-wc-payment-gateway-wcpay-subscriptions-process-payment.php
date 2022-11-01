@@ -129,7 +129,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 
-		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
+		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
 
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(

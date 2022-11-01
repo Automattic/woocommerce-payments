@@ -93,7 +93,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
 		$this->order_service = new WC_Payments_Order_Service(
-			$this->createMock( WC_Payments_API_Client::class )
+			$this->createMock( WC_Payments_API_Client::class ),
+			$this->createMock( WC_Payments_Customer_Service::class ),
+			$this->createMock( WC_Payments_Action_Scheduler_Service::class )
 		);
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
