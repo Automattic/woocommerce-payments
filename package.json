@@ -113,7 +113,7 @@
     "@wordpress/hooks": "3.2.0",
     "@wordpress/html-entities": "2.11.2",
     "@wordpress/i18n": "4.1.1",
-    "@wordpress/icons": "2.10.3",
+    "@wordpress/icons": "9.11.0",
     "@wordpress/jest-preset-default": "4.0.0",
     "@wordpress/plugins": "4.0.6",
     "@wordpress/scripts": "12.6.0",
