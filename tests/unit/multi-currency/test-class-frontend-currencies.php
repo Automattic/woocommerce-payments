@@ -79,7 +79,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	 */
 	public function test_registers_woocommerce_filter( $filter, $function_name ) {
 		$this->assertGreaterThan(
-			10,
+			500,
 			has_filter( $filter, [ $this->frontend_currencies, $function_name ] ),
 			"Filter '$filter' was not registered with '$function_name' with a priority higher than the default"
 		);
