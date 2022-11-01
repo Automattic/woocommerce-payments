@@ -26,6 +26,7 @@ const createMockAccount = ( account = {} ) =>
 	merge(
 		{
 			default_currency: 'eur',
+			deposits_blocked: false,
 			deposits_disabled: false,
 			deposits_schedule: {
 				delay_days: 7,

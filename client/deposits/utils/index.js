@@ -6,9 +6,9 @@ import moment from 'moment';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
- * Internal dependencies
+ * Internal dependencies.
  */
-import { formatDate } from 'utils';
+import { formatDate, getAdminUrl } from 'wcpay/utils';
 
 export const getDepositDate = ( deposit ) =>
 	deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
@@ -43,16 +43,13 @@ export const getNextDepositLabelFormatted = ( deposit ) => {
 const formatDepositSchedule = ( schedule ) => {
 	switch ( schedule.interval ) {
 		case 'manual':
-			return __( 'Manual', 'woocommerce-payments' );
+			return __( 'Deposits set to manual.', 'woocommerce-payments' );
 		case 'daily':
-			return __(
-				'Automatic, every business day',
-				'woocommerce-payments'
-			);
+			return __( 'Deposits set to daily.', 'woocommerce-payments' );
 		case 'weekly':
 			return sprintf(
 				/** translators: %s day of the week e.g. Monday */
-				__( 'Automatic, every week on %s', 'woocommerce-payments' ),
+				__( 'Deposits set to every %s.', 'woocommerce-payments' ),
 				// moment().day() is locale based when using strings. Since Stripe's response is in English,
 				// we need to temporarily set the locale to add the day before formatting
 				moment()
@@ -72,7 +69,7 @@ const formatDepositSchedule = ( schedule ) => {
 			return sprintf(
 				/** translators: %s day of the month */
 				__(
-					'Automatic, every month on the %s',
+					'Deposits set to monthly on the %s.',
 					'woocommerce-payments'
 				),
 				moment()
@@ -94,6 +91,10 @@ export const getDepositScheduleDescriptor = ( {
 	const isCustomDepositSchedulesEnabled =
 		window.wcpaySettings?.featureFlags?.customDepositSchedules;
 
+	const hasCompletedWaitingPeriod =
+		window.wcpaySettings?.accountStatus?.deposits
+			?.completed_waiting_period ?? false;
+
 	if (
 		disabled ||
 		blocked ||
@@ -104,7 +105,7 @@ export const getDepositScheduleDescriptor = ( {
 		return createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
 			__(
-				'Temporarily suspended (<a>learn more</a>)',
+				'Deposits temporarily suspended (<a>learn more</a>).',
 				'woocommerce-payments'
 			),
 			{
@@ -127,7 +128,7 @@ export const getDepositScheduleDescriptor = ( {
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
 				__(
-					'%s – your first deposit is held for seven days (<a>learn more</a>)',
+					'%s Your first deposit is held for seven days (<a>learn more</a>).',
 					'woocommerce-payments'
 				),
 				formatDepositSchedule( schedule )
@@ -139,6 +140,28 @@ export const getDepositScheduleDescriptor = ( {
 						href={ learnMoreHref }
 						target="_blank"
 						rel="noopener noreferrer"
+					/>
+				),
+			}
+		);
+	}
+
+	if ( hasCompletedWaitingPeriod && ! blocked && ! disabled ) {
+		return createInterpolateElement(
+			sprintf(
+				/** translators: %s - deposit schedule, <a> - Settings page URL */
+				__( '%s <a>Change</a>', 'woocommerce-payments' ),
+				formatDepositSchedule( schedule )
+			),
+			{
+				a: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						href={ getAdminUrl( {
+							page: 'wc-settings',
+							section: 'woocommerce_payments',
+							tab: 'checkout',
+						} ) }
 					/>
 				),
 			}
