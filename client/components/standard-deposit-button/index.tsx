@@ -15,6 +15,7 @@ import { useStandardDeposit } from 'wcpay/data';
 import StandardDepositModal from './modal';
 import Tooltip from 'wcpay/components/tooltip';
 import { formatDate } from 'utils';
+import wcpayTracks from 'tracks';
 
 type StandardDepositButtonProps = {
 	standardBalance: AccountOverview.Overview[ 'standard' ];
@@ -52,7 +53,15 @@ const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 	};
 	const onSubmit = () => {
 		setModalOpen( false );
+		wcpayTracks.recordEvent(
+			wcpayTracks.events.DEPOSIT_FUNDS_CONFIRMATION_CLICKED,
+			{}
+		);
 		submit();
+	};
+	const handleOnClick = () => {
+		setModalOpen( true );
+		wcpayTracks.recordEvent( wcpayTracks.events.DEPOSIT_FUNDS_CLICKED, {} );
 	};
 
 	let tooltipText = '';
@@ -91,7 +100,7 @@ const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 				<Button
 					disabled={ buttonDisabled }
 					isPrimary
-					onClick={ () => setModalOpen( true ) }
+					onClick={ handleOnClick }
 				>
 					{ __( 'Deposit funds', 'woocommerce-payments' ) }
 				</Button>

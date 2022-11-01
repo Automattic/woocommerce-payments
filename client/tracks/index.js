@@ -59,6 +59,9 @@ const events = {
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
+	DEPOSIT_FUNDS_CLICKED: 'wcpay_deposit_funds_clicked',
+	DEPOSIT_FUNDS_CONFIRMATION_CLICKED:
+		'wcpay_deposit_funds_confirmation_clicked',
 	UPE_ENABLED: 'wcpay_upe_enabled',
 	UPE_DISABLED: 'wcpay_upe_disabled',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
