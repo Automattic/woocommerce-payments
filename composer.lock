@@ -401,7 +401,6 @@
             "support": {
                 "source": "https://github.com/Automattic/jetpack-heartbeat/tree/v1.4.0"
             },
-            "abandoned": "automattic/jetpack-connection",
             "time": "2022-01-04T21:11:47+00:00"
         },
         {
@@ -551,7 +550,6 @@
             "support": {
                 "source": "https://github.com/Automattic/jetpack-options/tree/v1.14.3"
             },
-            "abandoned": "automattic/jetpack-connection",
             "time": "2022-03-29T18:21:10+00:00"
         },
         {
@@ -850,7 +848,6 @@
             "support": {
                 "source": "https://github.com/Automattic/jetpack-tracking/tree/v1.14.5"
             },
-            "abandoned": "automattic/jetpack-connection",
             "time": "2022-03-29T18:21:15+00:00"
         },
         {
