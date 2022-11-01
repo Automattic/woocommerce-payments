@@ -5,3 +5,7 @@ watch:
   fileMask: '*.php'
 phpunit:
   binaryPath: ./vendor/bin/phpunit
+  timeout: 600
+notifications:
+  passingTests: false
+  failingTests: false
