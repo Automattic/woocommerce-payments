@@ -67,12 +67,14 @@ describe( 'Authorizations reducer tests', () => {
 	};
 
 	test( 'Unrelated action is ignored', () => {
-		expect( reducer( emptyState, { type: 'WRONG-TYPE' } ) ).toBe(
-			emptyState
-		);
-		expect( reducer( filledState, { type: 'WRONG-TYPE' } ) ).toBe(
-			filledState
-		);
+		const mockAction = {
+			type: 'WRONG-TYPE',
+			data: mockAuthorizations.slice( 0 ),
+			query: {},
+		};
+
+		expect( reducer( emptyState, mockAction ) ).toBe( emptyState );
+		expect( reducer( filledState, mockAction ) ).toBe( filledState );
 	} );
 
 	test( 'New authorizations reduced correctly', () => {
