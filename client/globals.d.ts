@@ -12,7 +12,7 @@ declare const wcpaySettings: {
 		error?: boolean;
 		deposits?: {
 			completed_waiting_period: boolean;
-			delay_days: number;
+			delay_days: number | null;
 			interval: 'daily' | 'weekly' | 'monthly' | 'manual';
 			minimum_deposit_amounts: Record< string, number >;
 			monthly_anchor: number | null;
