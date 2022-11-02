@@ -148,7 +148,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
 	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Rate Limiter for failed transactions.
 	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
-	 * @param Platform_Checkout_Utilities          $platform_checkout_util          - Platform checkout utilities.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -157,8 +156,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Token_Service $token_service,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		Session_Rate_Limiter $failed_transaction_rate_limiter = null,
-		WC_Payments_Order_Service $order_service,
-		Platform_Checkout_Utilities $platform_checkout_util
+		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client             = $payments_api_client;
 		$this->account                         = $account;
@@ -167,7 +165,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->action_scheduler_service        = $action_scheduler_service;
 		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 		$this->order_service                   = $order_service;
-		$this->platform_checkout_util          = $platform_checkout_util;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -353,6 +350,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'au_becs_debit' => 'au_becs_debit_payments',
 			'link'          => 'link_payments',
 		];
+
+		// Platform checkout utilities.
+		$this->platform_checkout_util = new Platform_Checkout_Utilities();
 
 		// Load the settings.
 		$this->init_settings();
