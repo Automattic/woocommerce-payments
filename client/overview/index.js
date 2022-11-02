@@ -82,7 +82,7 @@ const OverviewPage = () => {
 
 	const handleSubmit = () => {
 		const url = addQueryArgs( wcpaySettings.connectUrl, {
-			progressive_complete: true,
+			collect_payout_requirements: true,
 		} );
 
 		window.location = url;
