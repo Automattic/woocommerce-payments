@@ -20,8 +20,8 @@ import { useEffect, useState } from '@wordpress/element';
  */
 import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
-import { getConfig } from 'utils/checkout';
-import { getTerms } from '../utils/upe';
+import { getConfig, getUPEConfig } from 'utils/checkout';
+import { getTerms, getPaymentIntentFromSession } from '../utils/upe';
 import { WC_STORE_CART } from '../constants.js';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { useDispatch, useSelect } from '@wordpress/data';
@@ -366,6 +366,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		getConfig( 'wcBlocksUPEAppearance' )
 	);
 	const [ fontRules ] = useState( getFontRulesFromPage() );
+	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
@@ -396,11 +397,29 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 				);
 			}
 		}
+
+		function getOrCreateIntent( paymentMethodId ) {
+			const {
+				intentId,
+				clientSecret: paymentClientSecret,
+			} = getPaymentIntentFromSession(
+				paymentMethodsConfig,
+				paymentMethodId
+			);
+			if ( ! intentId ) {
+				createIntent( paymentMethodId );
+			} else {
+				setPaymentIntentId( intentId );
+				setClientSecret( paymentClientSecret );
+			}
+		}
+
 		setHasRequestedIntent( true );
-		createIntent( props.paymentMethodId );
+		getOrCreateIntent( props.paymentMethodId );
 	}, [
 		props.paymentMethodId,
 		paymentIntentId,
+		paymentMethodsConfig,
 		hasRequestedIntent,
 		api,
 		errorMessage,
