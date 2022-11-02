@@ -412,24 +412,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Whether the current page is the WooCommerce Payments settings page.
-	 *
-	 * @return bool
-	 */
-	public static function is_current_page_settings() {
-		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	}
-
-	/**
-	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 *
-	 * @return string URL of the configuration screen for this gateway
-	 */
-	public static function get_settings_url() {
-		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
-	}
-
-	/**
 	 * Check the defined constant to determine the current plugin mode.
 	 *
 	 * @return bool
