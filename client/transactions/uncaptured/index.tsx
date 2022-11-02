@@ -21,6 +21,7 @@ import RiskLevelComponent, {
 } from 'components/risk-level';
 import { getDetailsURL } from 'wcpay/components/details-link';
 import ClickableCell from 'wcpay/components/clickable-cell';
+import { formatExplicitCurrency } from 'wcpay/utils/currency';
 
 interface Column extends TableCardColumn {
 	key:
@@ -223,28 +224,31 @@ export const AuthorizationsList = (): JSX.Element => {
 	const isAuthorizationsSummaryLoaded =
 		authorizationsSummary.count !== undefined &&
 		authorizationsSummary.total !== undefined &&
-		authorizationsSummary.totalAmount !== undefined &&
 		false === isSummaryLoading;
 
 	if ( isAuthorizationsSummaryLoaded ) {
 		summary = [
 			{
+				label: __( 'authorization(s)', 'woocommerce-payments' ),
 				value: String( authorizationsSummary.count ),
-				label: 'authorizations',
 			},
 		];
 
-		summary.push( {
-			value: String( authorizationsSummary.total ),
-			label: 'total',
-		} );
-
-		summary.push( {
-			value: getFormatedAmountFromString(
-				String( authorizationsSummary.totalAmount )
-			),
-			label: 'Pending',
-		} );
+		if (
+			authorizationsSummary.all_currencies &&
+			authorizationsSummary.all_currencies.length === 1
+		) {
+			// Only show the total if there is one currency available
+			summary.push( {
+				label: __( 'total', 'woocommerce-payments' ),
+				value: `${ formatExplicitCurrency(
+					// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
+					// that so we remove the `undefined` in the type manually.
+					authorizationsSummary.total as number,
+					authorizationsSummary.currency
+				) }`,
+			} );
+		}
 	}
 
 	return (

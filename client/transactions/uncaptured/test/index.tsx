@@ -135,9 +135,8 @@ describe( 'Authorizations list', () => {
 			authorizationsSummary: {
 				count: 3,
 				currency: 'usd',
-				store_currencies: [ 'usd' ],
+				all_currencies: [ 'usd' ],
 				total: 300,
-				totalAmount: 15000,
 			},
 			isLoading: false,
 		} );
@@ -160,9 +159,8 @@ describe( 'Authorizations list', () => {
 				authorizationsSummary: {
 					count: 3,
 					currency: 'usd',
-					store_currencies: [ 'usd' ],
+					all_currencies: [ 'usd' ],
 					total: 300,
-					totalAmount: 15000,
 				},
 				isLoading: false,
 			} );
@@ -218,9 +216,8 @@ describe( 'Authorizations list', () => {
 				authorizationsSummary: {
 					count: 3,
 					currency: 'usd',
-					store_currencies: [ 'usd' ],
+					all_currencies: [ 'usd' ],
 					total: 300,
-					totalAmount: 15000,
 				},
 				isLoading: false,
 			} );
