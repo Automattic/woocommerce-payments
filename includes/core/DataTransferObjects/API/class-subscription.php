@@ -4,7 +4,7 @@ namespace WCPay\Core\DataTransferObjects\API;
 
 use WCPay\Core\DataTransferObjects\Data_Transfer_Object;
 
-final class Subscripton extends Data_Transfer_Object
+final class Subscription extends Data_Transfer_Object
 {
 	/**
 	 * @var string $order_number Order number.
@@ -16,7 +16,7 @@ final class Subscripton extends Data_Transfer_Object
 	 */
 	private $edit_order_url;
 
-	public function __construct(string $order_number, string $edit_order_url)
+	public function __construct($order_number, $edit_order_url)
 	{
 		$this->order_number = $order_number;
 		$this->edit_order_url = $edit_order_url;
@@ -41,19 +41,6 @@ final class Subscripton extends Data_Transfer_Object
 	public function get_edit_order_url()
 	{
 		return $this->edit_order_url;
-	}
-
-	/**
-	 * To array.
-	 *
-	 * @return array
-	 */
-	public function to_array()
-	{
-		return [
-			'order_number' => $this->order_number,
-			'edit_order_url' => $this->edit_order_url,
-		];
 	}
 
 }

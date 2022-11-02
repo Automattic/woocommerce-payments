@@ -22,7 +22,7 @@ final class Order extends Data_Transfer_Object
 	private $customer_url;
 
 	/**
-	 * @var Subscripton[] $subscriptions Order subscriptions.
+	 * @var Subscription[] $subscriptions Order subscriptions.
 	 */
 	private $subscriptions;
 
@@ -73,7 +73,7 @@ final class Order extends Data_Transfer_Object
 
 	/**
 	 * Get subscriptions.
-	 * @return Subscripton[]
+	 * @return Subscription[]
 	 */
 	public function get_subscriptions() {
 		return $this->subscriptions;

@@ -2,7 +2,7 @@
 
 namespace WCPay\Core\Contracts\API\Request;
 
-interface BaseRequest {
+interface Base_Request {
 
 	public function get_parameters();
 

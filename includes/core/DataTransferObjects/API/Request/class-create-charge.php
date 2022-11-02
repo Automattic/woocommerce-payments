@@ -46,7 +46,7 @@ final class Create_Charge extends Data_Transfer_Object
 	/**
 	 * @return array
 	 */
-	public function to_array()
+	public function to_wcpay_request()
 	{
 		return [
 			'amount' => $this->amount,

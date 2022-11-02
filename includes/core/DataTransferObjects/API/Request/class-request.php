@@ -2,10 +2,10 @@
 
 namespace WCPay\Core\DataTransferObjects\API\Request;
 
-use WCPay\Core\Contracts\API\Request\BaseRequest;
+use WCPay\Core\Contracts\API\Request\Base_Request;
 use WCPay\Core\DataTransferObjects\Data_Transfer_Object;
 
-final class Request extends Data_Transfer_Object implements BaseRequest
+final class Request extends Data_Transfer_Object implements Base_Request
 {
 	/**
 	 * @var array $parameters Request params.

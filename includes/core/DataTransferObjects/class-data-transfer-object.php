@@ -35,7 +35,7 @@ abstract class Data_Transfer_Object
 		foreach ($class->getProperties() as $reflectionProperty) {
 			$propertyValue = $reflectionProperty->getValue();
 			$propertyName = $reflectionProperty->getName();
-			if ( !$reflectionProperty->isPrivate() && array_key_exists($propertyName, $values)) {
+			if ( /*!$reflectionProperty->isPrivate() && */array_key_exists($propertyName, $values)) {
 				$propertyValue = $values[$propertyName];
 			}
 			$clone->$propertyName = $propertyValue;

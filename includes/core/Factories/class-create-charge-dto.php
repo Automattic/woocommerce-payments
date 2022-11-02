@@ -7,7 +7,7 @@ use WC_Payments_DB;
 use WCPay\Core\DataTransferObjects\API\Address;
 use WCPay\Core\DataTransferObjects\API\Charge;
 use WCPay\Core\DataTransferObjects\API\Order;
-use WCPay\Core\DataTransferObjects\API\Subscripton;
+use WCPay\Core\DataTransferObjects\API\Subscription;
 use WCPay\Core\DataTransferObjects\Data_Transfer_Object;
 use WCPay\Core\DataTransferObjects\Response;
 
@@ -34,7 +34,7 @@ final class Create_Charge_Dto extends Data_Transfer_Object
 
 				$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] );
 				foreach ( $subscriptions as $subscription ) {
-					$subscriptionsDto[] = new Subscripton(
+					$subscriptionsDto[] = new Subscription(
 						$subscription->get_order_number(),
 						$subscription->get_edit_order_url()
 					);

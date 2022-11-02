@@ -2,7 +2,7 @@
 
 namespace WCPay\Core\Contracts\API\Response;
 
-interface BaseResponse {
+interface Base_Response {
 
 	public function get_parameters();
 

@@ -4,8 +4,10 @@ namespace WCPay\Core\API;
 use WC_Payments;
 use WC_Payments_Http;
 use WC_Payments_Utils;
-use WCPay\Core\Contracts\API\Request\BaseRequest;
+use WCPay\Core\Contracts\API\Request\Base_Request;
 use WCPay\Core\DataTransferObjects\API\Request\Create_Charge;;
+
+use WCPay\Core\DataTransferObjects\API\Request\Create_Intention;
 use WCPay\Core\DataTransferObjects\API\Request\Request;
 use WCPay\Core\DataTransferObjects\Response;
 use WCPay\Core\Enums\Http_Methods;
@@ -71,18 +73,22 @@ class Wc_Pay_Request
 	 * @return \WCPay\Core\DataTransferObjects\API\Charge
 	 */
 	public function create_charge(Create_Charge $charge) {
-		$response = $this->request(new Request($charge->to_array(), Http_Methods::POST, Wc_Pay_Endpoints::CHARGES_API));
+		$response = $this->request(new Request($charge->to_wcpay_request(), Http_Methods::POST, Wc_Pay_Endpoints::CHARGES_API));
 		return Create_Charge_Dto::create_from_wc_pay_response( $response );
 	}
 
-	public function request (BaseRequest $request) {
+	public function create_intention(Create_Intention $intention){
+		$response = $this->request(new Request($intention->to_wcpay_request(), Http_Methods::POST, Wc_Pay_Endpoints::INTENTIONS_API));
+	}
+
+	public function request (Base_Request $request) {
 		$response = Response::create_from_wc_pay_response( $this->send_request($request));
 		$this->check_response_for_errors($response);
 		return $response;
 
 	}
 
-	public function raw_request (BaseRequest $request) {
+	public function raw_request (Base_Request $request) {
 		$response =  $this->send_request($request);
 		$this->check_response_for_errors(Response::create_from_wc_pay_response($response));
 		return $response;
@@ -91,12 +97,12 @@ class Wc_Pay_Request
 	/**
 	 * Private function to request to remote client.
 	 *
-	 * @param BaseRequest $request Request object.
+	 * @param Base_Request $request Request object.
 	 * @return array
 	 * @throws API_Exception
 	 * @throws Amount_Too_Small_Exception
 	 */
-	private function send_request(BaseRequest $request) {
+	private function send_request(Base_Request $request) {
 		$params = $request->get_parameters();
 		$method = $request->get_method();
 		$route = $request->get_route();
@@ -106,7 +112,18 @@ class Wc_Pay_Request
 				'test_mode' => WC_Payments::get_gateway()->is_in_test_mode(),
 			]
 		);
-
+		if ( ! isset( $params['level3']['line_items'] ) || ! is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
+			$params['level3']['line_items'] = [
+				[
+					'discount_amount'     => 0,
+					'product_code'        => 'empty-order',
+					'product_description' => 'The order is empty',
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'unit_cost'           => 0,
+				],
+			];
+		}
 		$params = apply_filters( 'wcpay_api_request_params', $params, $route, $method );
 		$url = Wc_Pay_Endpoints::ENDPOINT_BASE;
 		if ( $request->is_site_specific() ) {
