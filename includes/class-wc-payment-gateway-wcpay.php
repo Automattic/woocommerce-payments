@@ -2947,6 +2947,30 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	// Start: Deprecated functions.
 
 	/**
+	 * Whether the current page is the WooCommerce Payments settings page.
+	 *
+	 * @deprecated 5.0.0
+	 *
+	 * @return bool
+	 */
+	public static function is_current_page_settings() {
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Admin_Settings::is_current_page_settings' );
+		return WC_Payments_Admin_Settings::is_current_page_settings();
+	}
+
+	/**
+	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 *
+	 * @deprecated 5.0.0
+	 *
+	 * @return string URL of the configuration screen for this gateway
+	 */
+	public static function get_settings_url() {
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Admin_Settings::get_settings_url' );
+		return WC_Payments_Admin_Settings::get_settings_url();
+	}
+
+	/**
 	 * Generates the configuration values, needed for payment fields.
 	 *
 	 * Isolated as a separate method in order to be available both
