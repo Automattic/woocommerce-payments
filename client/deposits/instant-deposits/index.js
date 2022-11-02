@@ -18,24 +18,24 @@ import { formatCurrency } from 'utils/currency';
 import Tooltip from 'wcpay/components/tooltip';
 import { formatDate } from 'utils';
 
-const isButtonDisabled = ( instantBalance, lastManualDeposit ) => {
+const isButtonDisabled = ( instantBalance, lastDayManualDeposit ) => {
 	let buttonDisabled = false;
 	if ( 0 === instantBalance.amount ) {
 		buttonDisabled = true;
 	}
 
-	if ( lastManualDeposit ) {
+	if ( lastDayManualDeposit ) {
 		buttonDisabled = true;
 	}
 
 	return buttonDisabled;
 };
 
-const InstantDepositButton = ( { instantBalance, lastManualDeposit } ) => {
+const InstantDepositButton = ( { instantBalance, lastDayManualDeposit } ) => {
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	const buttonDisabled = isButtonDisabled(
 		instantBalance,
-		lastManualDeposit
+		lastDayManualDeposit
 	);
 	const { inProgress, submit } = useInstantDeposit(
 		instantBalance.transaction_ids
@@ -50,14 +50,14 @@ const InstantDepositButton = ( { instantBalance, lastManualDeposit } ) => {
 
 	let tooltipText = '';
 
-	if ( lastManualDeposit ) {
+	if ( lastDayManualDeposit ) {
 		const nextAvailableDepositDate = formatDate(
 			_x(
 				'F j, Y \\a\\t g:iA',
 				'Date format, e.g. November 16, 1989 at 11:00AM',
 				'woocommerce-payments'
 			),
-			moment.utc( lastManualDeposit.date ).add( 24, 'hours' ),
+			moment.utc( lastDayManualDeposit.date ).add( 24, 'hours' ),
 			false
 		);
 

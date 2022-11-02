@@ -68,7 +68,7 @@ export const getAllDepositsOverviews = ( state ) => {
 	const groups = {
 		available: balance.available,
 		instant: balance.instant,
-		lastManualDeposit: deposit.last_manual_deposits,
+		lastDayManualDeposit: deposit.last_manual_deposits,
 		lastPaid: deposit.last_paid,
 		nextScheduled: deposit.next_scheduled,
 		pending: balance.pending,
@@ -89,7 +89,7 @@ export const getAllDepositsOverviews = ( state ) => {
 					available: undefined,
 					currency,
 					instant: undefined,
-					lastManualDeposit: undefined,
+					lastDayManualDeposit: undefined,
 					lastPaid: undefined,
 					nextScheduled: undefined,
 					pending: undefined,

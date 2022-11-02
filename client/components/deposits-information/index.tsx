@@ -43,7 +43,7 @@ const DepositsInformationOverview: React.FC< OverviewProps > = ( props ) => {
 		available,
 		currency,
 		instant,
-		lastManualDeposit,
+		lastDayManualDeposit,
 		lastPaid,
 		nextScheduled,
 		pending,
@@ -85,7 +85,7 @@ const DepositsInformationOverview: React.FC< OverviewProps > = ( props ) => {
 	let depositButton = isInstantDepositEnabled ? (
 		<InstantDepositButton
 			instantBalance={ instant }
-			lastManualDeposit={ lastManualDeposit }
+			lastDayManualDeposit={ lastDayManualDeposit }
 		/>
 	) : null;
 
@@ -97,7 +97,7 @@ const DepositsInformationOverview: React.FC< OverviewProps > = ( props ) => {
 	if ( ! depositButton && isStandardDepositEnabled ) {
 		depositButton = (
 			<StandardDepositButton
-				lastManualDeposit={ lastManualDeposit }
+				lastDayManualDeposit={ lastDayManualDeposit }
 				standardBalance={ standard }
 			/>
 		);

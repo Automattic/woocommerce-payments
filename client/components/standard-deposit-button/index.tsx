@@ -19,12 +19,12 @@ import wcpayTracks from 'tracks';
 
 type StandardDepositButtonProps = {
 	standardBalance: AccountOverview.Overview[ 'standard' ];
-	lastManualDeposit: AccountOverview.Overview[ 'lastManualDeposit' ];
+	lastDayManualDeposit: AccountOverview.Overview[ 'lastDayManualDeposit' ];
 };
 
 const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 	standardBalance,
-	lastManualDeposit,
+	lastDayManualDeposit,
 } ) => {
 	const {
 		amount,
@@ -45,7 +45,7 @@ const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 	const minimumDepositAmount = minimumDepositAmounts?.[ currency ] || 500;
 
 	const buttonDisabled =
-		amount < minimumDepositAmount || !! lastManualDeposit;
+		amount < minimumDepositAmount || !! lastDayManualDeposit;
 
 	const { inProgress, submit } = useStandardDeposit( transactionIds );
 	const onClose = () => {
@@ -66,14 +66,14 @@ const StandardDepositButton: React.FC< StandardDepositButtonProps > = ( {
 
 	let tooltipText = '';
 
-	if ( lastManualDeposit ) {
+	if ( lastDayManualDeposit ) {
 		const nextAvailableDepositDate = formatDate(
 			_x(
 				'F j, Y \\a\\t g:iA',
 				'Date format, e.g. November 16, 1989 at 11:00AM',
 				'woocommerce-payments'
 			),
-			moment.utc( lastManualDeposit.date ).add( 24, 'hours' ),
+			moment.utc( lastDayManualDeposit.date ).add( 24, 'hours' ),
 			false
 		);
 

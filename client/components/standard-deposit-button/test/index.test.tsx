@@ -60,7 +60,7 @@ describe( 'StandardDepositButton', () => {
 
 		const { getByRole } = render(
 			<StandardDepositButton
-				lastManualDeposit={ undefined }
+				lastDayManualDeposit={ undefined }
 				standardBalance={ standardBalance }
 			/>
 		);
@@ -78,7 +78,7 @@ describe( 'StandardDepositButton', () => {
 
 		const { getByRole } = render(
 			<StandardDepositButton
-				lastManualDeposit={ undefined }
+				lastDayManualDeposit={ undefined }
 				standardBalance={ standardBalance }
 			/>
 		);
@@ -96,7 +96,7 @@ describe( 'StandardDepositButton', () => {
 
 		const { getByRole } = render(
 			<StandardDepositButton
-				lastManualDeposit={ undefined }
+				lastDayManualDeposit={ undefined }
 				standardBalance={ standardBalance }
 			/>
 		);
@@ -114,7 +114,7 @@ describe( 'StandardDepositButton', () => {
 
 		const { getByRole } = render(
 			<StandardDepositButton
-				lastManualDeposit={ {
+				lastDayManualDeposit={ {
 					currency: 'aud',
 					date: new Date().toISOString(),
 				} }
@@ -135,7 +135,7 @@ describe( 'StandardDepositButton', () => {
 
 		const { getByRole } = render(
 			<StandardDepositButton
-				lastManualDeposit={ undefined }
+				lastDayManualDeposit={ undefined }
 				standardBalance={ standardBalance }
 			/>
 		);

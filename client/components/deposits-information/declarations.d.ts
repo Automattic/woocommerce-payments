@@ -44,7 +44,7 @@ declare namespace AccountOverview {
 		available: Balance;
 		currency: string;
 		instant: InstantBalance;
-		lastManualDeposit:
+		lastDayManualDeposit:
 			| {
 					currency: string;
 					date: string;
