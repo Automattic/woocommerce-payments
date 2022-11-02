@@ -227,9 +227,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 				]
 			)
+			->setMethods(
+				[
+					'manage_customer_details_for_order',
+				]
+			)
 			->getMock();
 
-		$order_service           = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
 		$this->payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
 
 		// Arrange: Mock UPE_Payment_Gateway so that some of its methods can be
@@ -244,7 +248,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
-					$order_service,
+					$this->mock_order_service,
 					$this->payments_settings,
 				]
 			)
