@@ -87,8 +87,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		/** @var WC_Payments_API_Client|MockObject $mock_api_client */
 		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
-								->disableOriginalConstructor()
-								->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 
 		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
@@ -97,9 +97,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
-									->disableOriginalConstructor()
-									->setMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
-									->getMock();
+			->disableOriginalConstructor()
+			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
+			->getMock();
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
 
@@ -809,6 +809,83 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				$mock_merchant_settings['support_info']['phone'],
 				$mock_merchant_settings['support_info']['email']
 			);
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+
+	/**
+	 * Tests that a payment_intent.succeeded will save mandate if it's received.
+	 */
+	public function test_payment_intent_succeeded_save_mandate() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['data']['object'] = [
+			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => $charge_id         = 'py_123123123123123',
+						'payment_method'         => $payment_method_id = 'pm_foo',
+						'payment_method_details' => [
+							'card' => [
+								'mandate' => $mandate_id = 'mandate_123123123',
+							],
+						],
+					],
+				],
+			],
+			'currency' => $currency      = 'eur',
+			'status'   => $intent_status = 'succeeded',
+		];
+
+		$mock_order = $this->createMock( WC_Order::class );
+
+		$mock_order
+			->expects( $this->exactly( 6 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_intent_id', $id ],
+				[ '_charge_id', $charge_id ],
+				[ '_payment_method_id', $payment_method_id ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ],
+				[ '_stripe_mandate_id', $mandate_id ],
+				[ '_intention_status', $intent_status ],
+			);
+
+		$mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'save' );
+
+		$mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'has_status' )
+			->with( [ 'processing', 'completed' ] )
+			->willReturn( false );
+
+		$mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $mock_order );
+
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_receipt_service
+			->expects( $this->never() )
+			->method( 'send_customer_ipp_receipt_email' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'get_option' );
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );

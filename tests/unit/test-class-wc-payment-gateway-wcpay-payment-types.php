@@ -250,23 +250,15 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	}
 
 	public function test_renewal_subscription_payment() {
-		$order        = WC_Helper_Order::create_order();
-		$subscription = new WC_Subscription();
-		$subscription->set_parent( $order );
+		$order             = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $order );
 
 		$this->mock_wcs_order_contains_subscription( true );
-		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
+		$this->mock_wcs_get_subscriptions_for_order( [ $mock_subscription ] );
 		$this->mock_wcs_get_subscriptions_for_renewal_order( [] );
 
 		$order->add_payment_token( $this->token );
-
-		$mock_subscription = new WC_Subscription();
-
-		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
-				return [ '1' => $mock_subscription ];
-			}
-		);
 
 		$intent = WC_Helper_Intention::create_intention();
 		$this->mock_api_client
