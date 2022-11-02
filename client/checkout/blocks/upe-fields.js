@@ -81,8 +81,9 @@ const WCPayUPEFields = ( {
 
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const isTestMode = getConfig( 'testMode' );
-	const testingInstructionsIfAppropriate =
-		isTestMode && false !== testingInstructions ? testingInstructions : '';
+	const testingInstructionsIfAppropriate = isTestMode
+		? testingInstructions
+		: '';
 	const gatewayConfig = getPaymentMethods()[ paymentMethodId ];
 	const customerData = useCustomerData();
 
