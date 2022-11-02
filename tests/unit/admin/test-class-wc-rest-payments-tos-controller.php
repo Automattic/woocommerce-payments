@@ -59,6 +59,8 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client );
 		$order_service            = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ), $customer_service, $action_scheduler_service );
 
+		$payments_settings = new WC_Payments_Gateway_WCPay_Settings( $mock_wcpay_account );
+
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$mock_api_client,
 			$mock_wcpay_account,
@@ -66,7 +68,8 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 			$token_service,
 			$action_scheduler_service,
 			$mock_rate_limiter,
-			$order_service
+			$order_service,
+			$payments_settings
 		);
 		$this->controller = new WC_REST_Payments_Tos_Controller( $mock_api_client, $this->gateway, $mock_wcpay_account );
 

@@ -160,6 +160,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
 
+		$this->gateway_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
+
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
@@ -167,7 +169,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_rate_limiter,
-			$this->order_service
+			$this->order_service,
+			$this->gateway_settings
 		);
 
 		$this->platform_checkout_utilities = new Platform_Checkout_Utilities();
@@ -178,8 +181,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
-
-		$this->gateway_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
 	}
 
 	/**
@@ -2061,6 +2062,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_rate_limiter,
 					$this->order_service,
+					$this->gateway_settings,
 				]
 			)
 			->setMethods( $methods )

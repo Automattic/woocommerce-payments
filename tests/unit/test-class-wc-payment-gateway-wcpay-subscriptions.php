@@ -102,7 +102,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
+		$this->order_service     = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
+		$this->payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
 
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -111,7 +112,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_session_rate_limiter,
-			$this->order_service
+			$this->order_service,
+			$this->payments_settings
 		);
 	}
 
@@ -623,7 +625,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_session_rate_limiter,
-			$this->order_service
+			$this->order_service,
+			$this->payments_settings
 		);
 
 		$this->assertTrue( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
@@ -640,7 +643,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_token_service,
 			$this->mock_action_scheduler_service,
 			$this->mock_session_rate_limiter,
-			$this->order_service
+			$this->order_service,
+			$this->payments_settings
 		);
 
 		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );

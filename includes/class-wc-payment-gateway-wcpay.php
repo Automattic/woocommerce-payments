@@ -139,6 +139,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $platform_checkout_util;
 
 	/**
+	 * WC_Payments_Gateway_WCPay_Settings instance.
+	 *
+	 * @var WC_Payments_Gateway_WCPay_Settings
+	 */
+	protected $wc_pay_settings;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
 	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
@@ -148,6 +155,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
 	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Rate Limiter for failed transactions.
 	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
+	 * @param WC_Payments_Gateway_WCPay_Settings   $wc_pay_settings                     - WC Pay wc_pay_settings class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -156,7 +164,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Token_Service $token_service,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		Session_Rate_Limiter $failed_transaction_rate_limiter = null,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		WC_Payments_Gateway_WCPay_Settings $wc_pay_settings
 	) {
 		$this->payments_api_client             = $payments_api_client;
 		$this->account                         = $account;
@@ -165,6 +174,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->action_scheduler_service        = $action_scheduler_service;
 		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 		$this->order_service                   = $order_service;
+		$this->wc_pay_settings                 = $wc_pay_settings;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -191,7 +201,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		// Define setting fields.
-		$this->form_fields = WC_Payments::get_gateway_settings()->get_form_fields();
+		$this->form_fields = $this->wc_pay_settings->get_form_fields();
 
 		// Capabilities have different keys than the payment method ID's,
 		// so instead of appending '_payments' to the end of the ID, it'll be better
@@ -390,7 +400,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Add notices to the WooCommerce Payments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
 
-		WC_Payments::get_gateway_settings()->output_payments_settings_screen();
+		$this->wc_pay_settings->output_payments_settings_screen();
 	}
 
 	/**
@@ -1399,7 +1409,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		if ( in_array( $key, WC_Payments_Gateway_WCPay_Settings::OPTIONS, true ) ) {
-			return WC_Payments::get_gateway_settings()->get_option( $key );
+			return $this->wc_pay_settings->get_option( $key );
 		}
 
 		if ( 'enabled' === $key ) {
@@ -2457,7 +2467,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_account_statement_descriptor( string $empty_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_statement_descriptor' );
 
-		return WC_Payments::get_gateway_settings()->get_account_statement_descriptor( $empty_value );
+		return $this->wc_pay_settings->get_account_statement_descriptor( $empty_value );
 	}
 
 	/**
@@ -2472,7 +2482,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_account_business_name( $default_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'get_account_business_name::get_account_business_name' );
 
-		return WC_Payments::get_gateway_settings()->get_account_business_name( $default_value );
+		return $this->wc_pay_settings->get_account_business_name( $default_value );
 	}
 
 	/**
@@ -2487,7 +2497,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_account_business_url( $default_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'get_account_business_url::get_account_business_url' );
 
-		return WC_Payments::get_gateway_settings()->get_account_business_url( $default_value );
+		return $this->wc_pay_settings->get_account_business_url( $default_value );
 	}
 
 	/**
@@ -2502,7 +2512,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_account_business_support_address( $default_value = [] ): array {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_business_support_address' );
 
-		return WC_Payments::get_gateway_settings()->get_account_business_support_address( $default_value );
+		return $this->wc_pay_settings->get_account_business_support_address( $default_value );
 	}
 
 	/**
@@ -2517,13 +2527,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_account_business_support_email( $default_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_business_support_email' );
 
-		return WC_Payments::get_gateway_settings()->get_account_business_support_email( $default_value );
+		return $this->wc_pay_settings->get_account_business_support_email( $default_value );
 	}
 
 	/**
 	 * Gets connected account business support phone.
 	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch business support phone.
+	 * @param string $default_value Value to return hen not connected or failed to fetch business support phone.
 	 *
 	 * @deprecated 5.1.0
 	 *
@@ -2532,7 +2542,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_account_business_support_phone( $default_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_business_support_phone' );
 
-		return WC_Payments::get_gateway_settings()->get_account_business_support_phone( $default_value );
+		return $this->wc_pay_settings->get_account_business_support_phone( $default_value );
 	}
 
 	/**
@@ -2547,13 +2557,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_account_branding_logo( $default_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'get_account_branding_logo::get_account_branding_logo' );
 
-		return WC_Payments::get_gateway_settings()->get_account_branding_logo( $default_value );
+		return $this->wc_pay_settings->get_account_branding_logo( $default_value );
 	}
 
 	/**
 	 * Gets connected account branding icon.
 	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch branding icon.
+	 * @param string $default_value Value to return when not connected or  iled to fetch branding icon.
 	 *
 	 * @deprecated 5.1.0
 	 *
@@ -2562,7 +2572,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_account_branding_icon( $default_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'get_account_branding_icon::get_account_branding_icon' );
 
-		return WC_Payments::get_gateway_settings()->get_account_branding_icon( $default_value );
+		return $this->wc_pay_settings->get_account_branding_icon( $default_value );
 	}
 
 	/**
@@ -2577,7 +2587,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_account_branding_primary_color( $default_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_branding_primary_color' );
 
-		return WC_Payments::get_gateway_settings()->get_account_branding_primary_color( $default_value );
+		return $this->wc_pay_settings->get_account_branding_primary_color( $default_value );
 	}
 
 	/**
@@ -2592,7 +2602,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_account_branding_secondary_color( $default_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_account_branding_secondary_color' );
 
-		return WC_Payments::get_gateway_settings()->get_account_branding_secondary_color( $default_value );
+		return $this->wc_pay_settings->get_account_branding_secondary_color( $default_value );
 	}
 
 	/**
@@ -2607,7 +2617,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_deposit_schedule_interval( string $empty_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_schedule_interval' );
 
-		return WC_Payments::get_gateway_settings()->get_deposit_schedule_interval( $empty_value );
+		return $this->wc_pay_settings->get_deposit_schedule_interval( $empty_value );
 	}
 
 	/**
@@ -2622,7 +2632,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_deposit_schedule_weekly_anchor( string $empty_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_schedule_weekly_anchor' );
 
-		return WC_Payments::get_gateway_settings()->get_deposit_schedule_weekly_anchor( $empty_value );
+		return $this->wc_pay_settings->get_deposit_schedule_weekly_anchor( $empty_value );
 	}
 
 	/**
@@ -2637,7 +2647,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_deposit_schedule_monthly_anchor( $empty_value = null ) {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_schedule_monthly_anchor' );
 
-		return WC_Payments::get_gateway_settings()->get_deposit_schedule_monthly_anchor( $empty_value );
+		return $this->wc_pay_settings->get_deposit_schedule_monthly_anchor( $empty_value );
 	}
 
 	/**
@@ -2652,7 +2662,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_deposit_delay_days( int $default_value = 7 ): int {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_delay_days' );
 
-		return WC_Payments::get_gateway_settings()->get_deposit_delay_days( $empty_value );
+		return $this->wc_pay_settings->get_deposit_delay_days( $empty_value );
 	}
 
 	/**
@@ -2667,7 +2677,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_deposit_status( string $empty_value = '' ): string {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_status' );
 
-		return WC_Payments::get_gateway_settings()->get_deposit_status( $empty_value );
+		return $this->wc_pay_settings->get_deposit_status( $empty_value );
 	}
 
 	/**
@@ -2682,17 +2692,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_deposit_completed_waiting_period( bool $empty_value = false ): bool {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_completed_waiting_period' );
 
-		return WC_Payments::get_gateway_settings()->get_deposit_completed_waiting_period( $empty_value );
+		return $this->wc_pay_settings->get_deposit_completed_waiting_period( $empty_value );
 	}
 
 	/**
-	 * Generates markup for the settings screen.
+	 * Generates markup for the wc_pay_settings screen.
 	 *
 	 * @deprecated 5.1.0
 	 */
 	public function output_payments_settings_screen() {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::output_payments_settings_screen' );
-		WC_Payments::get_gateway_settings()->output_payments_settings_screen();
+		$this->wc_pay_settings->output_payments_wc_pay_settings_screen();
 	}
 
 	/**

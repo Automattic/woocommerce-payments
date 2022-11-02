@@ -7,14 +7,9 @@
 
 namespace WCPay\Payment_Methods;
 
-use PHPUnit\Framework\MockObject\MockObject;
+use WC_Payments_Gateway_WCPay_Settings;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Connection_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
-use WCPay\Logger;
-use WCPay\MultiCurrency\Currency;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
 
@@ -148,6 +143,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	];
 
 	/**
+	 * WC_Payments_Gateway_WCPay_Settings instance.
+	 *
+	 * @var WC_Payments_Gateway_WCPay_Settings
+	 */
+	private $payments_settings;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -227,7 +229,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			)
 			->getMock();
 
-		$order_service = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
+		$order_service           = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
+		$this->payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
 
 		// Arrange: Mock UPE_Payment_Gateway so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -242,6 +245,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$order_service,
+					$this->payments_settings,
 				]
 			)
 			->setMethods(
@@ -1387,6 +1391,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->mock_order_service,
+					$this->payments_settings,
 				]
 			)
 			->setMethods(
@@ -1434,6 +1439,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_payment_methods,
 					$this->mock_rate_limiter,
 					$this->mock_order_service,
+					$this->payments_settings,
 				]
 			)
 			->setMethods(

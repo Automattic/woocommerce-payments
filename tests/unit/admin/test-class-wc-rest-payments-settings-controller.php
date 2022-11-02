@@ -100,26 +100,20 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
+		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client, $customer_service, $action_scheduler_service );
 
-		$this->mock_customer_service         = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
-													->disableOriginalConstructor()
-													->getMock();
-		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
-													->disableOriginalConstructor()
-													->getMock();
+		$payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
 
-		$order_service = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
-
-		$this->gateway = new WC_Payment_Gateway_WCPay(
+		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$customer_service,
 			$token_service,
 			$action_scheduler_service,
 			$mock_rate_limiter,
-			$order_service
+			$order_service,
+			$payments_settings
 		);
-
 		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
 
 		$mock_payment_methods   = [];
@@ -156,7 +150,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$action_scheduler_service,
 			$mock_payment_methods,
 			$mock_rate_limiter,
-			$order_service
+			$order_service,
+			$payments_settings
 		);
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->upe_gateway );
 
