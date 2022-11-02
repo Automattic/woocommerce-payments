@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent proceeding to WooPay when in a preview context.
