@@ -360,6 +360,28 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Updates payment method type for single-typed intention, when gateway changes at checkout.
+	 *
+	 * @param string $intention_id        Stripe intent ID.
+	 * @param string $payment_method_type Payment method type.
+	 *
+	 * @return WC_Payments_API_Intention
+	 * @throws API_Exception - Exception thrown on intention creation failure.
+	 */
+	public function update_intention_payment_method_type( $intention_id, $payment_method_type ) {
+		$amount   = WC()->cart->get_total( '' );
+		$currency = get_woocommerce_currency();
+		$request  = [
+			'amount'               => WC_Payments_Utils::prepare_amount( $amount, $currency ),
+			'currency'             => $currency,
+			'payment_method_types' => [ $payment_method_type ],
+		];
+
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API . '/' . $intention_id, self::POST );
+		return $this->deserialize_intention_object_from_array( $response_array );
+	}
+
+	/**
 	 * Updates an intention's metadata and sets receipt email to empty.
 	 * Unlike `update_intention`, this method allows updating metadata without
 	 * requiring amount, currency, and other mandatory params to be present.
