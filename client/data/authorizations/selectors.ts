@@ -1,16 +1,28 @@
 /** @format */
+/**
+ * External dependencies
+ */
 
-import {
-	AuthorizationsSummary,
-	Authorization,
-} from 'wcpay/types/authorizations';
-import { getResourceId } from 'wcpay/utils/data';
-import { Query } from '@woocommerce/navigation';
+import type { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import { getResourceId } from 'utils/data';
+import { ApiError } from 'wcpay/types/errors';
+import {
+	AuthorizationsSummary,
+	Authorization,
+} from 'wcpay/types/authorizations';
 
+/**
+ * Retrieves the authorizations state from the wp.data store if the state
+ * has been initialized, otherwise returns an empty state.
+ *
+ * @param {Object} state Current wp.data state.
+ *
+ * @return {Object} The authorizations state.
+ */
 const getAuthorizationsState = ( state: Record< string, any > ) => {
 	if ( ! state ) {
 		return {};
@@ -31,19 +43,9 @@ const getAuthorizationsState = ( state: Record< string, any > ) => {
 const getAuthorizationsForQuery = (
 	state: Record< string, any >,
 	query: Query
-) => {
+): Record< string, any > => {
 	const index = getResourceId( query );
 	return getAuthorizationsState( state )[ index ] || {};
-};
-
-const getAuthorizationsSummaryForQuery = (
-	state: Record< string, any >,
-	query: Query
-) => {
-	const index = getResourceId( query );
-	const summary = getAuthorizationsState( state ).summary || {};
-
-	return summary[ index ] || {};
 };
 
 export const getAuthorizations = (
@@ -64,8 +66,24 @@ export const getAuthorization = (
 export const getAuthorizationsError = (
 	state: Record< string, any >,
 	query: Query
-): Error => {
+): ApiError => {
 	return getAuthorizationsForQuery( state, query ).error || {};
+};
+
+/**
+ * Retrieves the authorizations summary corresponding to the provided query.
+ *
+ * @param {Object} state Current wp.data state.
+ * @param {Object} query The authorizations summary query.
+ *
+ * @return {Object} The transaction summary for the given query.
+ */
+const getAuthorizationsSummaryForQuery = (
+	state: Record< string, any >,
+	query: Query
+): Record< string, any > => {
+	const index = getResourceId( query );
+	return getAuthorizationsState( state ).summary[ index ] || {};
 };
 
 export const getAuthorizationsSummary = (
@@ -73,4 +91,11 @@ export const getAuthorizationsSummary = (
 	query: Query
 ): AuthorizationsSummary => {
 	return getAuthorizationsSummaryForQuery( state, query ).data || {};
+};
+
+export const getAuthorizationsSummaryError = (
+	state: Record< string, any >,
+	query: Query
+): ApiError => {
+	return getAuthorizationsSummaryForQuery( state, query ).error || {};
 };

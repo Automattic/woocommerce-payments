@@ -142,3 +142,18 @@ export function* submitCaptureAuthorization(
 		] );
 	}
 }
+
+export function updateErrorForAuthorizationsSummary(
+	query: Query,
+	error: Error
+): {
+	type: string;
+	query: Query;
+	error: Error;
+} {
+	return {
+		type: TYPES.SET_ERROR_FOR_AUTHORIZATIONS_SUMMARY,
+		query,
+		error,
+	};
+}
