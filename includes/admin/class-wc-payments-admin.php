@@ -29,6 +29,15 @@ class WC_Payments_Admin {
 	 */
 	const DISPUTE_NOTIFICATION_BADGE_FORMAT = ' <span class="wcpay-menu-badge awaiting-mod count-%1$s"><span class="plugin-count">%1$d</span></span>';
 
+	// TODO: Removing this and repurpose the previous one as `UNRESOLVED_NOTIFICATION_BADGE_FORMAT`
+	// if there aren't going to be any difference between the two. Design team to confirm.
+	/**
+	 * Transaction notification badge HTML format (with placeholder for the number of uncaptured transactions).
+	 *
+	 * @var string
+	 */
+	const TRANSACTION_NOTIFICATION_BADGE_FORMAT = ' <span class="wcpay-menu-badge awaiting-mod count-%1$s"><span class="plugin-count">%1$d</span></span>';
+
 	/**
 	 * WC Payments WordPress Admin menu slug.
 	 *
@@ -420,6 +429,7 @@ class WC_Payments_Admin {
 		$this->add_menu_notification_badge();
 		$this->add_update_business_details_task();
 		$this->add_disputes_notification_badge();
+		$this->add_transactions_notification_badge();
 	}
 
 	/**
@@ -951,6 +961,31 @@ class WC_Payments_Admin {
 	}
 
 	/**
+	 * Adds a notification badge to the Payments > Transactions admin menu item to
+	 * indicate the number of transactions that need to be captured.
+	 */
+	public function add_transactions_notification_badge() {
+		global $submenu;
+
+		if ( ! isset( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] ) ) {
+			return;
+		}
+
+		$uncaptured_transactions = $this->get_uncaptured_transactions_count();
+
+		if ( $uncaptured_transactions <= 0 ) {
+			return;
+		}
+
+		foreach ( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] as $index => $menu_item ) {
+			if ( 'wc-admin&path=/payments/transactions' === $menu_item[2] ) {
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( self::TRANSACTION_NOTIFICATION_BADGE_FORMAT, esc_html( $uncaptured_transactions ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				break;
+			}
+		}
+	}
+
+	/**
 	 * Gets the number of disputes which need a response. ie have a 'needs_response' or 'warning_needs_response' status.
 	 *
 	 * @return int The number of disputes which need a response.
@@ -969,5 +1004,15 @@ class WC_Payments_Admin {
 
 		$needs_response_statuses = [ 'needs_response', 'warning_needs_response' ];
 		return (int) array_sum( array_intersect_key( $disputes_status_counts, array_flip( $needs_response_statuses ) ) );
+	}
+
+	/**
+	 * Gets the number of uncaptured transactions, that is authorizations that need to be captured within 7 days.
+	 *
+	 * @return int The number of uncaptured transactions.
+	 */
+	private function get_uncaptured_transactions_count() {
+		$authorization_summary = $this->payments_api_client->get_authorizations_summary();
+		return $authorization_summary['count'];
 	}
 }
