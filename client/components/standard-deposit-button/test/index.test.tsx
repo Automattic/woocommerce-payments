@@ -104,6 +104,27 @@ describe( 'StandardDepositButton', () => {
 		expect( button ).toHaveAttribute( 'disabled' );
 	} );
 
+	test( 'renders correctly when a previous deposit has occurred within 24h', () => {
+		const standardBalance = {
+			amount: 5000,
+			currency: 'aud',
+			source_types: [],
+			transaction_ids: [],
+		};
+
+		const { getByRole } = render(
+			<StandardDepositButton
+				lastManualDeposit={ {
+					currency: 'aud',
+					date: new Date().toISOString(),
+				} }
+				standardBalance={ standardBalance }
+			/>
+		);
+		const button = getByRole( 'button', { name: 'Deposit funds' } );
+		expect( button ).toHaveAttribute( 'disabled' );
+	} );
+
 	test( 'displays modal when clicked', async () => {
 		const standardBalance = {
 			amount: 5000,
