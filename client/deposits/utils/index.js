@@ -9,6 +9,7 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies.
  */
 import { formatDate, getAdminUrl } from 'wcpay/utils';
+import wcpayTracks from 'tracks';
 
 export const getDepositDate = ( deposit ) =>
 	deposit ? formatDate( 'F j, Y', deposit.date ) : '—';
@@ -162,6 +163,12 @@ export const getDepositScheduleDescriptor = ( {
 							section: 'woocommerce_payments',
 							tab: 'checkout',
 						} ) }
+						onClick={ () => {
+							wcpayTracks.recordEvent(
+								wcpayTracks.events
+									.CHANGE_DEPOSIT_SCHEDULE_LINK_CLICKED
+							);
+						} }
 					/>
 				),
 			}

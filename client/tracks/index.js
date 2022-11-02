@@ -55,6 +55,8 @@ function recordUserEvent( eventName, eventProperties ) {
 }
 
 const events = {
+	CHANGE_DEPOSIT_SCHEDULE_LINK_CLICKED:
+		'wcpay_change_deposit_schedule_link_clicked',
 	CONNECT_ACCOUNT_CLICKED: 'wcpay_connect_account_clicked',
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
