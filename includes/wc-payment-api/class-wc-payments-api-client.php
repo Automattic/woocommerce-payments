@@ -1203,10 +1203,6 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		if ( $progressive_complete ) {
-			unset( $request_args['force_on_boarding'] );
-		}
-
 		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
 	}
 
