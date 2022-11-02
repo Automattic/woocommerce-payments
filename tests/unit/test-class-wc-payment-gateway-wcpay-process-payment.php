@@ -118,12 +118,22 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 
-		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
-
-		$this->mock_order_service
-			->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
-			->willReturn( [ new WP_User(), 'cus_mock' ] );
+		$this->mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_customer_service,
+					$this->mock_action_scheduler_service,
+				]
+			)
+			->setMethods(
+				[
+					'mark_payment_completed',
+					'mark_payment_authorized',
+					'mark_payment_started',
+				]
+			)
+			->getMock();
 
 		$payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
 
