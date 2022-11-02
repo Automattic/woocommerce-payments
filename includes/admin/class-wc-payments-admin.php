@@ -90,6 +90,8 @@ class WC_Payments_Admin {
 		$this->account             = $account;
 		$this->database_cache      = $database_cache;
 
+		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
+
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
@@ -139,6 +141,29 @@ class WC_Payments_Admin {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Add notice explaining that the selected currency is not available.
+	 */
+	public function display_not_supported_currency_notice() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( ! $this->wcpay_gateway->is_available_for_current_currency() ) {
+			?>
+			<div id="wcpay-unsupported-currency-notice" class="notice notice-warning">
+				<p>
+					<b>
+						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
+						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
+					</b>
+					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+				</p>
+			</div>
+			<?php
+		}
 	}
 
 	/**
@@ -320,7 +345,7 @@ class WC_Payments_Admin {
 			$submenu[ $last_submenu_key ][] = [ // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				$this->get_settings_menu_item_name(),
 				'manage_woocommerce',
-				WC_Payment_Gateway_WCPay::get_settings_url(),
+				WC_Payments_Admin_Settings::get_settings_url(),
 			];
 
 			// Temporary fix to settings menu disappearance is to register the page after settings menu has been manually added.
@@ -640,7 +665,7 @@ class WC_Payments_Admin {
 				'WCPAY_TOS',
 				'wcpay_tos_settings',
 				[
-					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
+					'settingsUrl'          => WC_Payments_Admin_Settings::get_settings_url(),
 					'tosAgreementRequired' => $tos_agreement_required,
 					'tosAgreementDeclined' => $tos_agreement_declined,
 					'trackStripeConnected' => $track_stripe_connected,
@@ -788,7 +813,8 @@ class WC_Payments_Admin {
 	 * This is where the "Are you sure you want to disable WCPay?" confirmation dialog is rendered.
 	 */
 	public function payment_gateways_container() {
-		?><div id="wcpay-payment-gateways-container" />
+		?>
+		<div id="wcpay-payment-gateways-container" />
 		<?php
 	}
 
