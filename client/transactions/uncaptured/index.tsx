@@ -244,6 +244,8 @@ export const AuthorizationsList = (): JSX.Element => {
 		];
 
 		if (
+			authorizationsSummary.count &&
+			authorizationsSummary.count > 0 &&
 			authorizationsSummary.all_currencies &&
 			authorizationsSummary.all_currencies.length === 1
 		) {
