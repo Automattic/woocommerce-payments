@@ -12,7 +12,7 @@ import { getResourceId } from 'utils/data';
 import authorizationsFixture from './authorizations.fixture.json';
 import authorizationsSummaryFixture from './authorizations-summary.fixture.json';
 
-const emptyState = { authorizations: {} };
+const emptyState = { authorizations: { byId: {}, summary: {} } };
 
 describe( 'Authorizations selector', () => {
 	const mockQuery = { paged: '2', perPage: '50' };

@@ -28,10 +28,8 @@ interface Authorizations {
 export interface AuthorizationsSummary {
 	count?: number;
 	total?: number;
-	totalAmount?: number;
 	currency?: string;
-	store_currencies?: string[];
-	customer_currencies?: string[];
+	all_currencies?: string[];
 }
 
 export interface AuthorizationsState {

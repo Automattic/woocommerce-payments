@@ -427,7 +427,7 @@ exports[`Authorizations list renders correctly 1`] = `
             <span
               class="woocommerce-table__summary-label"
             >
-              authorizations
+              authorization(s)
             </span>
           </li>
           <li
@@ -436,26 +436,12 @@ exports[`Authorizations list renders correctly 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              300
+              $3.00
             </span>
             <span
               class="woocommerce-table__summary-label"
             >
               total
-            </span>
-          </li>
-          <li
-            class="woocommerce-table__summary-item"
-          >
-            <span
-              class="woocommerce-table__summary-value"
-            >
-              150.00$
-            </span>
-            <span
-              class="woocommerce-table__summary-label"
-            >
-              Pending
             </span>
           </li>
         </ul>

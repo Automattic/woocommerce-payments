@@ -102,7 +102,6 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 							size={ 24 }
 							className="wcpay-deposits-information-header__icon"
 						/>
-						{ __( 'Deposit schedule:', 'woocommerce-payments' ) }{ ' ' }
 						{ scheduleDescriptor }
 					</p>
 				</div>

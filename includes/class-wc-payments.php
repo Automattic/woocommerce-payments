@@ -228,7 +228,6 @@ class WC_Payments {
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
-		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
 		include_once __DIR__ . '/class-wc-payments-db.php';
@@ -396,6 +395,8 @@ class WC_Payments {
 
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 			new WC_Payments_Admin_Settings( self::get_gateway() );
+
+			add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
@@ -1017,6 +1018,7 @@ class WC_Payments {
 
 		if ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) {
 			add_action( 'wc_ajax_wcpay_init_platform_checkout', [ __CLASS__, 'ajax_init_platform_checkout' ] );
+			add_action( 'wc_ajax_wcpay_get_platform_checkout_signature', [ __CLASS__, 'ajax_get_platform_checkout_signature' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
 			// We should remove this once both features are available by default in the WC minimum supported version.
@@ -1151,6 +1153,33 @@ class WC_Payments {
 
 		Logger::log( $response_body_json );
 		wp_send_json( json_decode( $response_body_json ) );
+	}
+
+	/**
+	 * Retrieve a platform checkout request signature.
+	 *
+	 * @return void
+	 */
+	public static function ajax_get_platform_checkout_signature() {
+		$is_nonce_valid = check_ajax_referer( 'platform_checkout_signature_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		$platform_checkout_util = new Platform_Checkout_Utilities();
+
+		$signature = $platform_checkout_util->get_platform_checkout_request_signature();
+
+		wp_send_json_success(
+			[
+				'signature' => $signature,
+			],
+			200
+		);
 	}
 
 	/**

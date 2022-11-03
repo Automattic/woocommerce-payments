@@ -10,3 +10,4 @@ tests/e2e/docker
 tests/e2e/deps
 
 docs/renovate.md
+docs/dependencies.md
