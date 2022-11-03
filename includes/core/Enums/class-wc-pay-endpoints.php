@@ -1,8 +1,17 @@
 <?php
+/**
+ * Endpoints enum class.
+ *
+ * @package WooCommerce\Payments
+ */
+
 namespace WCPay\Core\Enums;
 
-final class Wc_Pay_Endpoints
-{
+/**
+ * Endpoints enum class.
+ */
+final class Wc_Pay_Endpoints {
+
 	const ENDPOINT_BASE          = 'https://public-api.wordpress.com/wpcom/v2';
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
 	const ENDPOINT_REST_BASE     = 'wcpay';

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\DataTransferObjects\Response;
+use WCPay\Core\ValueObjects\API\Request\Create_Charge;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
@@ -2078,6 +2080,29 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 123, $summary['count'] );
 		$this->assertSame( 1200, $summary['total'] );
 	}
+
+	public function test_wcpay_request_with_value_object() {
+		$expected_amount = 123;
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'          => 'charge_id',
+				'customer_id' => 1,
+				'amount'      => $expected_amount,
+				'created'     => 1557224304,
+				'currency'    => 'usd',
+			]
+		);
+
+		$create_charge = new Create_Charge();
+		$create_charge
+			->set_amount( $expected_amount )
+			->set_source_id( 'source_id' );
+		$result = $this->payments_api_client->send_wcpay_request( $create_charge );
+		$this->assertInstanceOf( Response::class, $result );
+	}
+
 
 	/**
 	 * Set up http mock response.

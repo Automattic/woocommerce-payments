@@ -1,10 +1,19 @@
 <?php
+/**
+ * HTTP methods enum class.
+ *
+ * @package WooCommerce\Payments
+ */
+
 namespace WCPay\Core\Enums;
 
-final class Http_Methods
-{
+/**
+ * HTTP methods enum class.
+ */
+final class Http_Methods {
+
 	const POST   = 'POST';
-	const PATCH   = 'PATCH';
+	const PATCH  = 'PATCH';
 	const GET    = 'GET';
 	const DELETE = 'DELETE';
 }

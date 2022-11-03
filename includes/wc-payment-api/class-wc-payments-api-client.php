@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Core\Contracts\API\Request\Base_Request as WC_Pay_Request;
+use WCPay\Core\DataTransferObjects\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -1984,6 +1986,17 @@ class WC_Payments_API_Client {
 	 */
 	public function is_in_test_mode() {
 		return WC_Payments::get_gateway()->is_in_test_mode();
+	}
+
+	/**
+	 * Send WC pay request using value objects.
+	 *
+	 * @param WC_Pay_Request $request - Request object.
+	 * @return Response
+	 */
+	public function send_wcpay_request( WC_Pay_Request $request ) {
+		$response = $this->request( $request->get_parameters(), $request->get_route(), $request->get_method(), $request->is_site_specific(), $request->use_user_token(), true );
+		return Response::create_from_wc_pay_response( $response );
 	}
 
 	/**
