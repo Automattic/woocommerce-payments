@@ -2236,7 +2236,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Returns the list of enabled payment method types for UPE.
 	 *
-	 * @return string[]
+	 * @return string[]|null
 	 */
 	public function get_upe_enabled_payment_method_ids() {
 		return $this->get_option(
