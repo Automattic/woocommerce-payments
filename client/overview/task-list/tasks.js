@@ -21,7 +21,6 @@ export const getTasks = ( {
 	isAccountOverviewTasksEnabled,
 	numDisputesNeedingResponse = 0,
 } ) => {
-	console.log( accountStatus );
 	const {
 		status,
 		currentDeadline,
