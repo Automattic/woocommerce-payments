@@ -2082,6 +2082,8 @@ class WC_Payments_API_Client {
 			$use_user_token
 		);
 
+		$response = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+
 		$this->check_response_for_errors( $response );
 
 		if ( ! $raw_response ) {

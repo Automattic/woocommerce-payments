@@ -2,7 +2,7 @@
 const path = require( 'path' );
 const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
-const WordPressExternalDependenciesPlugin = require( '@wordpress/dependency-extraction-webpack-plugin' );
+const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
 
 module.exports = {
 	entry: {
@@ -111,20 +111,12 @@ module.exports = {
 			process: 'process/browser',
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
-		new WordPressExternalDependenciesPlugin( {
+		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
 			requestToExternal( request ) {
 				switch ( request ) {
 					case '@wordpress/components':
 						return null;
-					case '@woocommerce/components':
-						return [ 'wc', 'components' ];
-					case '@woocommerce/currency':
-						return [ 'wc', 'currency' ];
-					case '@woocommerce/navigation':
-						return [ 'wc', 'navigation' ];
-					case '@woocommerce/blocks-registry':
-						return [ 'wc', 'wcBlocksRegistry' ];
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
@@ -133,14 +125,6 @@ module.exports = {
 				switch ( request ) {
 					case '@wordpress/components':
 						return null;
-					case '@woocommerce/components':
-						return 'wc-components';
-					case '@woocommerce/currency':
-						return 'wc-currency';
-					case '@woocommerce/navigation':
-						return 'wc-navigation';
-					case '@woocommerce/blocks-registry':
-						return 'wc-blocks-registry';
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';
 				}
