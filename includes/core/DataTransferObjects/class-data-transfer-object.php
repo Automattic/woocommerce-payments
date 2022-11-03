@@ -31,7 +31,7 @@ abstract class Data_Transfer_Object {
 	}
 
 	/**
-	 * Change DTO property value if property is not private.
+	 * The purpose of this function is to DTOs data if passed array have a key where property exists in class . Since all DTOs are immutable, new DTO will be created with the data that was passed.
 	 *
 	 * @param mixed ...$values Values to change.
 	 * @return self Cloned object with changed properties.
