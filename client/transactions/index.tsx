@@ -62,7 +62,14 @@ export const TransactionsPage = (): JSX.Element => {
 				>
 					{ ( tab ) => {
 						if ( 'uncaptured-page' === tab.name ) {
-							return <Authorizations />;
+							return (
+								<>
+									<TestModeNotice
+										topic={ topics.authorizations }
+									/>
+									<Authorizations />
+								</>
+							);
 						}
 
 						return (

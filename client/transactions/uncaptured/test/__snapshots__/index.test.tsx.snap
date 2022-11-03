@@ -293,7 +293,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     data-link-type="wp-admin"
                     href="post.php?post=24&action=edit"
                   >
-                    #24 from Good boy
+                    #24 Good boy
                   </a>
                 </td>
                 <td
@@ -368,7 +368,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     data-link-type="wp-admin"
                     href="post.php?post=25&action=edit"
                   >
-                    #25 from Good boy
+                    #25 Good boy
                   </a>
                 </td>
                 <td

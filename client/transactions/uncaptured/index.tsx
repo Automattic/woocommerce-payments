@@ -172,7 +172,7 @@ export const AuthorizationsList = (): JSX.Element => {
 							auth.customer_name
 								? sprintf(
 										__(
-											'#%1$s from %2$s',
+											'#%1$s %2$s',
 											'woocommerce-payments'
 										),
 										auth.order_id,
