@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
@@ -19,6 +19,7 @@ import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'utils/currency';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
+import wcpayTracks from 'tracks';
 
 interface Column extends TableCardColumn {
 	key:
@@ -227,6 +228,12 @@ export const AuthorizationsList = (): JSX.Element => {
 			} );
 		}
 	}
+
+	useEffect( () => {
+		wcpayTracks.recordEvent( 'page_view', {
+			path: 'payments_transactions_uncaptured',
+		} );
+	}, [] );
 
 	return (
 		<Page>
