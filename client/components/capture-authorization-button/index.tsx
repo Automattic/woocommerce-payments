@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 
@@ -30,6 +30,9 @@ const CaptureAuthorizationButton = ( {
 		orderId
 	);
 
+	// Use local state to prevent the button to be in 'busy' state when it loads
+	const [ isCaptureRequested, setIsCaptureRequested ] = useState( false );
+
 	return (
 		<Button
 			isPrimary={ buttonIsPrimary }
@@ -37,10 +40,11 @@ const CaptureAuthorizationButton = ( {
 			isSmall={ buttonIsSmall }
 			onClick={ () => {
 				onClick();
+				setIsCaptureRequested( true );
 				doCaptureAuthorization();
 			} }
-			isBusy={ isLoading }
-			disabled={ isLoading }
+			isBusy={ isLoading && isCaptureRequested } // Button should be in busy state when the capture is requested
+			disabled={ isLoading && isCaptureRequested } // Button should be disabled when the capture is requested
 		>
 			{ __( 'Capture', 'woocommerce-payments' ) }
 		</Button>
