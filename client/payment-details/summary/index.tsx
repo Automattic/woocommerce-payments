@@ -31,6 +31,8 @@ import './style.scss';
 import { Charge } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
 
+const displayCaptureAuthorizationSection = false;
+
 const placeholderValues = {
 	amount: 0,
 	currency: 'USD',
@@ -233,48 +235,50 @@ const PaymentDetailsSummary = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
-			{ authorization && ! authorization.captured && (
-				<Loadable isLoading={ isLoading } placeholder="">
-					<CardFooter className="payment-details-capture-notice">
-						<div className="payment-details-capture-notice__section">
-							<div className="payment-details-capture-notice__text">
-								{ `${ __(
-									'You need to capture this charge before',
-									'woocommerce-payments'
-								) } ` }
-								<b>
-									{ dateI18n(
-										'M j, Y / g:iA',
-										moment
-											.utc( authorization.created )
-											.add( 7, 'days' )
-											.toISOString()
-									) }
-								</b>
+			{ displayCaptureAuthorizationSection &&
+				authorization &&
+				! authorization.captured && (
+					<Loadable isLoading={ isLoading } placeholder="">
+						<CardFooter className="payment-details-capture-notice">
+							<div className="payment-details-capture-notice__section">
+								<div className="payment-details-capture-notice__text">
+									{ `${ __(
+										'You need to capture this charge before',
+										'woocommerce-payments'
+									) } ` }
+									<b>
+										{ dateI18n(
+											'M j, Y / g:iA',
+											moment
+												.utc( authorization.created )
+												.add( 7, 'days' )
+												.toISOString()
+										) }
+									</b>
+								</div>
+								<div className="payment-details-capture-notice__button">
+									<CaptureAuthorizationButton
+										orderId={ charge.order?.number || 0 }
+										paymentIntentId={
+											charge.payment_intent || ''
+										}
+										buttonIsPrimary={ true }
+										buttonIsSmall={ false }
+										onClick={ () => {
+											wcpayTracks.recordEvent(
+												'payments_transactions_details_capture_charge_button_click',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+										} }
+									/>
+								</div>
 							</div>
-							<div className="payment-details-capture-notice__button">
-								<CaptureAuthorizationButton
-									orderId={ charge.order?.number || 0 }
-									paymentIntentId={
-										charge.payment_intent || ''
-									}
-									buttonIsPrimary={ true }
-									buttonIsSmall={ false }
-									onClick={ () => {
-										wcpayTracks.recordEvent(
-											'payments_transactions_details_capture_charge_button_click',
-											{
-												payment_intent_id:
-													charge.payment_intent,
-											}
-										);
-									} }
-								/>
-							</div>
-						</div>
-					</CardFooter>
-				</Loadable>
-			) }
+						</CardFooter>
+					</Loadable>
+				) }
 		</Card>
 	);
 };
