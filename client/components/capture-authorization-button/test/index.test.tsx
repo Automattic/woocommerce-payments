@@ -58,22 +58,6 @@ describe( 'CaptureAuthorizationButton', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'should render busy status', () => {
-		mockUseAuthorization.mockReturnValue( {
-			doCaptureAuthorization: jest.fn(),
-			isLoading: true,
-			authorization: {} as Authorization,
-		} );
-		const { container } = renderCaptureAuthorizationButton(
-			42,
-			'paymentIntentId',
-			false,
-			true
-		);
-
-		expect( container ).toMatchSnapshot();
-	} );
-
 	test( 'should transition to busy state when clicked', async () => {
 		const doCaptureAuthorizationMock = jest.fn();
 		const mockAuthorization = {} as Authorization;
@@ -84,7 +68,7 @@ describe( 'CaptureAuthorizationButton', () => {
 			authorization: mockAuthorization,
 		} );
 
-		const { rerender } = renderCaptureAuthorizationButton(
+		const { container, rerender } = renderCaptureAuthorizationButton(
 			42,
 			'paymentIntentId',
 			false,
@@ -112,5 +96,6 @@ describe( 'CaptureAuthorizationButton', () => {
 
 		expect( screen.getByRole( 'button' ) ).toHaveClass( 'is-busy' );
 		expect( screen.getByRole( 'button' ) ).toBeDisabled();
+		expect( container ).toMatchSnapshot();
 	} );
 } );
