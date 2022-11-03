@@ -1,4 +1,8 @@
 /** @format */
+/**
+ * External dependencies
+ */
+import type { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -6,110 +10,116 @@
 import reducer from '../reducer';
 import types from '../action-types';
 import { getResourceId } from 'utils/data';
+import { Authorization } from 'wcpay/types/authorizations';
 import authorizationsFixture from './authorizations.fixture.json';
 import authorizationsSummaryFixture from './authorizations-summary.fixture.json';
 
-describe( 'Authorizations reducer', () => {
-	const mockQuery = { paged: '1', perPage: '50' };
+describe( 'Authorizations reducer tests', () => {
+	const mockQuery: Query = { paged: '2', per_page: '50' };
 	const mockAuthorizations = authorizationsFixture;
+	const mockSummary = authorizationsSummaryFixture;
 
-	test( 'should reduce new authorizations correctly', () => {
-		const reduced = reducer(
-			undefined, // Default state.
-			{
-				type: types.SET_AUTHORIZATIONS,
-				data: mockAuthorizations,
-				query: mockQuery,
-			}
-		);
+	const emptyState = { summary: {}, byId: {} };
+	const filledState = {
+		[ getResourceId( mockQuery ) ]: {
+			data: mockAuthorizations,
+		},
+		summary: {
+			[ getResourceId( mockQuery ) ]: {
+				data: mockSummary,
+			},
+		},
+		byId: {},
+	};
 
-		const after = {
-			byId: {},
+	test( 'Unrelated action is ignored', () => {
+		const mockAction = {
+			type: 'WRONG-TYPE',
+			data: mockAuthorizations.slice( 0 ),
+			query: {},
+		};
+
+		expect( reducer( emptyState, mockAction ) ).toBe( emptyState );
+		expect( reducer( filledState, mockAction ) ).toBe( filledState );
+	} );
+
+	test( 'New authorizations reduced correctly', () => {
+		// Set up mock data
+		const expected = {
+			...emptyState,
 			[ getResourceId( mockQuery ) ]: {
 				data: mockAuthorizations,
 			},
-			summary: {},
-		};
-
-		expect( reduced ).toStrictEqual( after );
-	} );
-
-	test( 'should reduce updated authorizations correctly', () => {
-		const before = {
 			byId: {},
-			earlierQuery: {
-				data: mockAuthorizations[ 0 ],
-			},
-			summary: {},
 		};
 
-		const reduced = reducer( before, {
+		const reduced = reducer( emptyState, {
 			type: types.SET_AUTHORIZATIONS,
-			data: mockAuthorizations.slice( 1 ),
+			data: mockAuthorizations,
 			query: mockQuery,
 		} );
+		expect( reduced ).toStrictEqual( expected );
+	} );
 
-		const after = {
-			byId: {},
-			earlierQuery: {
-				data: mockAuthorizations[ 0 ],
-			},
-			summary: {},
+	test( 'Authorizations updated correctly on updated info', () => {
+		const newAuthorizations: Authorization[] = [
+			...mockAuthorizations,
+			...mockAuthorizations,
+		];
+
+		const expected = {
+			...filledState,
 			[ getResourceId( mockQuery ) ]: {
-				data: mockAuthorizations.slice( 1 ),
+				data: newAuthorizations,
 			},
 		};
 
-		expect( reduced ).toStrictEqual( after );
+		const reduced = reducer( filledState, {
+			type: types.SET_AUTHORIZATIONS,
+			data: newAuthorizations,
+			query: mockQuery,
+		} );
+		expect( reduced ).toStrictEqual( expected );
 	} );
 
-	test( 'should reduce authorizations summary correctly', () => {
-		const reduced = reducer( undefined, {
-			type: types.SET_AUTHORIZATIONS_SUMMARY,
-			query: mockQuery,
-			data: authorizationsSummaryFixture,
-		} );
-
-		const after = {
-			byId: {},
+	test( 'New authorizations summary reduced correctly', () => {
+		const expected = {
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
-					data: authorizationsSummaryFixture,
+					data: mockSummary,
 				},
 			},
+			byId: {},
 		};
 
-		expect( reduced ).toStrictEqual( after );
+		const reduced = reducer( emptyState, {
+			type: types.SET_AUTHORIZATIONS_SUMMARY,
+			data: mockSummary,
+			query: mockQuery,
+		} );
+		expect( reduced ).toStrictEqual( expected );
 	} );
 
-	test( 'should reduce updated authorizations summary correctly', () => {
-		const before = {
-			byId: {},
+	test( 'Authorizations summary updated correctly on updated info', () => {
+		const newSummary = {
+			total: 5000,
+		};
+
+		const expected = {
+			...filledState,
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
-					data: {
-						count: 42,
-					},
+					data: newSummary,
 				},
 			},
 		};
 
-		const reduced = reducer( before, {
+		const reduced = reducer( filledState, {
 			type: types.SET_AUTHORIZATIONS_SUMMARY,
+			data: newSummary,
 			query: mockQuery,
-			data: authorizationsSummaryFixture,
 		} );
-
-		const after = {
-			...before,
-			summary: {
-				[ getResourceId( mockQuery ) ]: {
-					data: authorizationsSummaryFixture,
-				},
-			},
-		};
-
-		expect( reduced ).toStrictEqual( after );
+		expect( reduced ).toStrictEqual( expected );
 	} );
 
 	test( 'should reduce new authorization correctly', () => {
