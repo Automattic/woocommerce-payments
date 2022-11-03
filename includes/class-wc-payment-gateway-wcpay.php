@@ -1405,7 +1405,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param  string $key           Option key.
 	 * @param  mixed  $empty_value   Value when empty.
-	 * @return string|array|int|bool The value specified for the option or a default value for the option.
+	 * @return string|array|int|bool|null The value specified for the option or a default value for the option.
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		if ( in_array( $key, WC_Payments_Gateway_WCPay_Settings::OPTIONS, true ) ) {
@@ -2662,7 +2662,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_deposit_delay_days( int $default_value = 7 ): int {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::get_deposit_delay_days' );
 
-		return $this->wc_pay_settings->get_deposit_delay_days( $empty_value );
+		return $this->wc_pay_settings->get_deposit_delay_days( $default_value );
 	}
 
 	/**
@@ -2702,7 +2702,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function output_payments_settings_screen() {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Gateway_WCPay_Settings::output_payments_settings_screen' );
-		$this->wc_pay_settings->output_payments_wc_pay_settings_screen();
+		$this->wc_pay_settings->output_payments_settings_screen();
 	}
 
 	/**

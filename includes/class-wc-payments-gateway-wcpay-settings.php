@@ -36,6 +36,13 @@ class WC_Payments_Gateway_WCPay_Settings {
 	];
 
 	/**
+	 * WC Payments Account.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * WC_Payments_Gateway_WCPay_Settings Constructor.
 	 *
 	 * @param WC_Payments_Account $account - Account class instance.
@@ -200,7 +207,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 	 *
 	 * @param  string $key           Option key.
 	 *
-	 * @return string|array|int|bool The value specified for the option or a default value for the option.
+	 * @return string|array|int|bool|null The value specified for the option or a default value for the option.
 	 */
 	public function get_option( $key ) {
 		switch ( $key ) {
