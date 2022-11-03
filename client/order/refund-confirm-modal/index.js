@@ -51,7 +51,6 @@ const RefundConfirmationModal = ( {
 	};
 
 	const handleRefundConfirm = () => {
-		blockUI();
 		jQuery.ajax( {
 			type: 'post',
 			url: woocommerce_admin_meta_boxes.ajax_url,
@@ -108,7 +107,7 @@ const RefundConfirmationModal = ( {
 				>
 					<p>
 						{ __(
-							"Issue a full refund back to your customer's credit card using WooCommerce Payments." +
+							"Issue a full refund back to your customer's credit card using WooCommerce Payments. " +
 								'This action can not be undone. To issue a partial refund, click "Cancel", and use ' +
 								'the "Refund" button in the order details below.',
 							'woocommerce-payments'
