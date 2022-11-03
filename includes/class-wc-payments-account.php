@@ -570,7 +570,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		$is_on_settings_page           = WC_Payment_Gateway_WCPay::is_current_page_settings();
+		$is_on_settings_page           = WC_Payments_Admin_Settings::is_current_page_settings();
 		$should_redirect_to_onboarding = (bool) get_option( 'wcpay_should_redirect_to_onboarding', false );
 
 		if (
@@ -713,7 +713,7 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-reconnect-wpcom'] ) && check_admin_referer( 'wcpay-reconnect-wpcom' ) ) {
-			$this->payments_api_client->start_server_connection( WC_Payment_Gateway_WCPay::get_settings_url() );
+			$this->payments_api_client->start_server_connection( WC_Payments_Admin_Settings::get_settings_url() );
 			return;
 		}
 
@@ -1425,6 +1425,16 @@ class WC_Payments_Account {
 	public function is_card_testing_protection_eligible(): bool {
 		$account = $this->get_cached_account_data();
 		return $account['card_testing_protection_eligible'] ?? false;
+	}
+
+	/**
+	 * Returns the default and supported store currencies.
+	 *
+	 * @return array
+	 */
+	public function get_store_currencies(): array {
+		$account = $this->get_cached_account_data();
+		return $account['store_currencies'] ?? [];
 	}
 
 	/**
