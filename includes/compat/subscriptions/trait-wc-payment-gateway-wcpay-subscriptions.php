@@ -270,18 +270,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
-		$additional_api_parameters = [];
-
-		// Include mandate from parent subscription order if exists.
-		$renewals = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
-		if ( $renewals ) {
-			$parent_order_id = reset( $renewals )->get_parent_id();
-			$parent_order    = wc_get_order( $parent_order_id );
-			$mandate         = $parent_order->get_meta( '_stripe_mandate_id', true );
-			if ( ! empty( $mandate ) ) {
-				$additional_api_parameters['mandate'] = $mandate;
-			}
-		}
+		// Add mandate param to the order payment if needed.
+		$additional_api_parameters = $this->get_mandate_param_for_renewal_order( $renewal_order );
 
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
@@ -806,14 +796,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Add card mandate options parameters to the order payment intent if needed.
-	 * Only required for the subscription creation for card issued in India.
+	 * Get card mandate parameters for the order payment intent if needed.
+	 * Only required for subscriptions creation for cards issued in India.
 	 * More details https://wp.me/pc4etw-ky
 	 *
 	 * @param WC_Order $order The subscription order.
 	 * @return array Params to be included or empty array.
 	 */
-	public function maybe_add_mandate_to_order_payment( WC_Order $order ):  array {
+	public function get_mandate_params_for_order( WC_Order $order ): array {
 		$result = [];
 
 		if ( $this->is_subscriptions_enabled() ) {
@@ -832,13 +822,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			$result['setup_future_usage']                                = 'off_session';
 			$result['payment_method_options']['card']['mandate_options'] = [
-				'reference'      => $order->get_id(),
-				'amount'         => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
-				'amount_type'    => 'fixed',
-				'start_date'     => $subscription->get_time( 'date_created' ),
-				'interval'       => $subscription->get_billing_period(),
-				'interval_count' => $subscription->get_billing_interval(),
-				'supported_types' => ['india'],
+				'reference'       => $order->get_id(),
+				'amount'          => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
+				'amount_type'     => 'fixed',
+				'start_date'      => $subscription->get_time( 'date_created' ),
+				'interval'        => $subscription->get_billing_period(),
+				'interval_count'  => $subscription->get_billing_interval(),
+				'supported_types' => [ 'india' ],
 			];
 
 			// Multiple subscriptions per order needs:
@@ -878,5 +868,37 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			$order->add_order_note( $note );
 		}
+
+	}
+
+	/**
+	 * Add mandate ID parameter to renewal payment if exists.
+	 * Only required for subscriptions renewals for cards issued in India.
+	 * More details https://wp.me/pc4etw-ky
+	 *
+	 * @param WC_Order $renewal_order The subscription renewal order.
+	 * @return array Param to be included or empty array.
+	 */
+	public function get_mandate_param_for_renewal_order( WC_Order $renewal_order ): array {
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
+		$subscription  = reset( $subscriptions );
+
+		if ( ! $subscription ) {
+			return [];
+		}
+
+		$parent_order = wc_get_order( $subscription->get_parent_id() );
+
+		if ( ! $parent_order ) {
+			return [];
+		}
+
+		$mandate = $parent_order->get_meta( '_stripe_mandate_id', true );
+
+		if ( empty( $mandate ) ) {
+			return [];
+		}
+
+		return [ 'mandate' => $mandate ];
 	}
 }

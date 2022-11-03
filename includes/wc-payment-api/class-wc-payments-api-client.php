@@ -289,7 +289,7 @@ class WC_Payments_API_Client {
 			$request['customer'] = $customer_id;
 		}
 
-		$request             = array_merge( $request, $additional_parameters );
+		$request = array_merge( $request, $additional_parameters );
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 

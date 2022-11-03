@@ -852,7 +852,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				[ '_payment_method_id', $payment_method_id ],
 				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ],
 				[ '_stripe_mandate_id', $mandate_id ],
-				[ '_intention_status', $intent_status ],
+				[ '_intention_status', $intent_status ]
 			);
 
 		$mock_order

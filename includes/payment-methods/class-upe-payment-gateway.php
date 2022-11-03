@@ -456,7 +456,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
-				$additional_api_parameters = $this->maybe_add_mandate_to_order_payment( $order );
+				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
 
 				try {
 					$updated_payment_intent = $this->payments_api_client->update_intention(

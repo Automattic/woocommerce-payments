@@ -956,7 +956,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Add card mandate options parameters to the order payment intent if needed.
 		$additional_api_parameters = array_merge(
 			$additional_api_parameters,
-			$this->maybe_add_mandate_to_order_payment( $order )
+			$this->get_mandate_params_for_order( $order )
 		);
 
 		if ( $payment_needed ) {
