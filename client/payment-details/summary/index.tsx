@@ -29,6 +29,7 @@ import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
+import wcpayTracks from 'tracks';
 
 const placeholderValues = {
 	amount: 0,
@@ -259,6 +260,15 @@ const PaymentDetailsSummary = ( {
 									}
 									buttonIsPrimary={ true }
 									buttonIsSmall={ false }
+									onClick={ () => {
+										wcpayTracks.recordEvent(
+											'payments_transactions_details_capture_charge_button_click',
+											{
+												payment_intent_id:
+													charge.payment_intent,
+											}
+										);
+									} }
 								/>
 							</div>
 						</div>
