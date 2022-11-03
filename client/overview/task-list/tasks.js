@@ -5,6 +5,7 @@
  */
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
+import { addQueryArgs } from '@wordpress/url';
 import moment from 'moment';
 
 /**
@@ -20,7 +21,14 @@ export const getTasks = ( {
 	isAccountOverviewTasksEnabled,
 	numDisputesNeedingResponse = 0,
 } ) => {
-	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
+	console.log( accountStatus );
+	const {
+		status,
+		currentDeadline,
+		pastDue,
+		accountLink,
+		isProgressivelyOnboarded,
+	} = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	let accountDetailsTaskDescription;
@@ -63,7 +71,17 @@ export const getTasks = ( {
 					'complete' === status
 						? undefined
 						: () => {
-								window.open( accountLink, '_blank' );
+								if ( isProgressivelyOnboarded ) {
+									const collectPayoutRequirementsLink = addQueryArgs(
+										wcpaySettings.connectUrl,
+										{
+											collect_payout_requirements: true,
+										}
+									);
+									window.location = collectPayoutRequirementsLink;
+								} else {
+									window.open( accountLink, '_blank' );
+								}
 						  },
 				actionLabel: __( 'Update', 'woocommerce-payments' ),
 				visible: true,

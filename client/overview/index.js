@@ -4,10 +4,9 @@
  * External dependencies
  */
 
-import { Button, Notice } from '@wordpress/components';
+import { Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies.
@@ -80,14 +79,6 @@ const OverviewPage = () => {
 		} )
 		.filter( ( e ) => e && e.fee !== undefined );
 
-	const handleSubmit = () => {
-		const url = addQueryArgs( wcpaySettings.connectUrl, {
-			collect_payout_requirements: true,
-		} );
-
-		window.location = url;
-	};
-
 	return (
 		<Page isNarrow className="wcpay-overview">
 			{ showKycSuccessNotice && (
@@ -154,12 +145,6 @@ const OverviewPage = () => {
 						/>
 					</ErrorBoundary>
 				) }
-
-			<ErrorBoundary>
-				<Button isPrimary onClick={ handleSubmit }>
-					Set up deposits
-				</Button>
-			</ErrorBoundary>
 
 			<ErrorBoundary>
 				<AccountStatus
