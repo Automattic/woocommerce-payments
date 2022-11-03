@@ -59,6 +59,7 @@ const events = {
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
+	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
 	UPE_ENABLED: 'wcpay_upe_enabled',
 	UPE_DISABLED: 'wcpay_upe_disabled',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
