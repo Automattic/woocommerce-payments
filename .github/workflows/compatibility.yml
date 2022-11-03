@@ -19,8 +19,8 @@ jobs:
         run: |
           WC_VERSIONS=$( echo "[\"$WC_L2_VERSION\", \"latest\", \"beta\"]" )
           MATRIX_INCLUDE=$( echo "[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"$WP_L2_VERSION\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]" )
-          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
-  
+          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"6.0.3\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
+
   woocommerce-compatibility:
     name: "WC compatibility"
     needs: generate-matrix
@@ -60,7 +60,7 @@ jobs:
       fail-fast: false
       matrix:
         woocommerce: [ 'beta' ]
-        wordpress:   [ 'latest' ]
+        wordpress:   [ '6.0.3' ]
         gutenberg:   [ 'latest' ]
         php:         [ '7.2', '8.0', '8.1' ]
     env:
