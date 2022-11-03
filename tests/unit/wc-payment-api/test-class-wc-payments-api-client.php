@@ -1987,6 +1987,69 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->payments_api_client->get_document( 'someDocument' );
 	}
 
+	public function test_get_payment_method_with_standard_payment_method() {
+		$payment_method = [ 'type' => 'card' ];
+		$this->prepare_payment_method_request( '~payment_methods/pm_~', $payment_method );
+		$response = $this->payments_api_client->get_payment_method( 'pm_123456789' );
+		$this->assertSame( $payment_method, $response );
+	}
+
+	public function test_get_payment_method_with_card_source() {
+		$source = [ 'type' => 'card' ];
+		$this->prepare_payment_method_request( '~sources/src_~', $source );
+		$response = $this->payments_api_client->get_payment_method( 'src_123456789' );
+		$this->assertSame( $source, $response );
+	}
+
+	public function test_get_payment_method_with_three_d_secure_source() {
+		$source = [
+			'type' => 'three_d_secure',
+			'id'   => 'src_123456789',
+		];
+		$this->prepare_payment_method_request( '~sources/src_~', $source );
+		$response = $this->payments_api_client->get_payment_method( 'src_123456789' );
+		$this->assertIsArray( $response );
+		$this->assertEquals( $response['type'], 'card' ); // The source should be used as a card.
+		$this->assertEquals( $response['id'], 'src_123456789' ); // The source should be used as a card.
+
+	}
+
+	public function test_get_payment_method_with_multibanco_source() {
+		$source = [ 'type' => 'multibanco' ];
+		$this->prepare_payment_method_request( '~sources/src_~', $source );
+		$this->expectException( API_Exception::class );
+		$this->payments_api_client->get_payment_method( 'src_123456789' );
+	}
+
+	/**
+	 * Sets up a payment method request.
+	 *
+	 * @param string $url_regex     A pattern to match the request URL against.
+	 * @param mixed  $response_body The body of the successful response.
+	 */
+	private function prepare_payment_method_request( $url_regex, $response_body ) {
+		$request_validator = function( $request ) use ( $url_regex ) {
+			$this->assertMatchesRegularExpression( $url_regex, $request['url'] );
+			return true;
+		};
+
+		$response_array = [
+			'headers'  => [],
+			'body'     => wp_json_encode( $response_body ),
+			'response' => [
+				'code' => 200,
+			],
+			'cookies'  => [],
+			'filename' => null,
+		];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with( $this->callback( $request_validator ) )
+			->will( $this->returnValue( $response_array ) );
+	}
+
 	/**
 	 * Set up http mock response.
 	 *
