@@ -3,7 +3,8 @@
 /**
  * External dependencies
  */
-import { apiFetch } from '@wordpress/data-controls';
+import { apiFetch, dispatch } from '@wordpress/data-controls';
+import type { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -16,6 +17,8 @@ import {
 	updateAuthorization,
 	updateAuthorizations,
 	updateAuthorizationsSummary,
+	updateErrorForAuthorizations,
+	updateErrorForAuthorizationsSummary,
 } from '../actions';
 import {
 	getAuthorization,
@@ -24,15 +27,31 @@ import {
 } from '../resolvers';
 import { NAMESPACE } from '../../constants';
 
+const errorResponse = {
+	name: 'authorizations-error',
+	message: 'There was an error',
+	code: '42',
+};
+
+const paginationQuery = {
+	paged: '1',
+	per_page: '25',
+	orderby: 'created',
+	order: 'desc',
+};
+
 describe( 'getAuthorizations resolver', () => {
-	const query = { paged: '1', perPage: 25, orderBy: 'someKey' };
-	let generator: Generator< unknown >;
+	const successfulResponse = { data: [] };
+	const query: Query = { ...paginationQuery };
+	const expectedQueryString =
+		'page=1&pagesize=25&sort=created&direction=desc';
+	let generator: Generator;
 
 	beforeEach( () => {
 		generator = getAuthorizations( query );
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
-				path: `${ NAMESPACE }/authorizations?page=1&pagesize=25&sort=created&direction=desc`,
+				path: `/wc/v3/payments/authorizations?${ expectedQueryString }`,
 			} )
 		);
 	} );
@@ -41,10 +60,27 @@ describe( 'getAuthorizations resolver', () => {
 		expect( generator.next().done ).toStrictEqual( true );
 	} );
 
-	test( 'should update state with authorizations data', () => {
-		expect( generator.next( { data: [] } ).value ).toEqual(
-			updateAuthorizations( query, [] )
-		);
+	describe( 'on success', () => {
+		test( 'should update state with authorizations data', () => {
+			expect( generator.next( successfulResponse ).value ).toEqual(
+				updateAuthorizations( query, successfulResponse.data )
+			);
+		} );
+	} );
+
+	describe( 'on error', () => {
+		test( 'should update state with error', () => {
+			expect( generator.throw( errorResponse ).value ).toEqual(
+				dispatch(
+					'core/notices',
+					'createErrorNotice',
+					expect.any( String )
+				)
+			);
+			expect( generator.next().value ).toEqual(
+				updateErrorForAuthorizations( query, errorResponse )
+			);
+		} );
 	} );
 } );
 
@@ -82,20 +118,45 @@ describe( 'getAuthorization resolver', () => {
 } );
 
 describe( 'getAuthorizationsSummary resolver', () => {
-	const query = { paged: '1', perPage: 25, orderBy: 'someKey' };
-	let generator: Generator< unknown >;
+	const successfulResponse = {};
+	const query = {};
+	const expectedQueryString = '';
+	let generator: Generator;
 
 	beforeEach( () => {
 		generator = getAuthorizationsSummary( query );
+		expect( generator.next().value ).toEqual(
+			apiFetch( {
+				path: `/wc/v3/payments/authorizations/summary?${ expectedQueryString }`,
+			} )
+		);
 	} );
 
 	afterEach( () => {
 		expect( generator.next().done ).toStrictEqual( true );
 	} );
 
-	test( 'should update state with authorizations data', () => {
-		expect( generator.next().value ).toEqual(
-			updateAuthorizationsSummary( query, {} as AuthorizationsSummary )
-		);
+	describe( 'on success', () => {
+		test( 'should update state with authorizations summary data', () => {
+			expect( generator.next( successfulResponse ).value ).toEqual(
+				updateAuthorizationsSummary( query, successfulResponse )
+			);
+		} );
+	} );
+
+	describe( 'on error', () => {
+		test( 'should update state with error', () => {
+			expect( generator.throw( errorResponse ).value ).toEqual(
+				dispatch(
+					'core/notices',
+					'createErrorNotice',
+					expect.any( String )
+				)
+			);
+
+			expect( generator.next().value ).toEqual(
+				updateErrorForAuthorizationsSummary( query, errorResponse )
+			);
+		} );
 	} );
 } );
