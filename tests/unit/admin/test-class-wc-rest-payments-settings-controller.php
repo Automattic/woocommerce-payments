@@ -77,13 +77,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	private $mock_db_cache;
 
 	/**
-	 * Mock WC_Payments_Token_Service.
-	 *
-	 * @var WC_Payments_Token_Service
-	 */
-	private $mock_token_service;
-
-	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -108,7 +101,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
 		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client );
-		$this->mock_token_service = $this->createMock( 'WC_Payments_Token_Service' );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -137,7 +129,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $this->mock_token_service ] )
+				->setConstructorArgs( [ $token_service ] )
 				->setMethods( [ 'is_subscription_item_in_cart' ] )
 				->getMock();
 			$mock_payment_method->expects( $this->any() )
