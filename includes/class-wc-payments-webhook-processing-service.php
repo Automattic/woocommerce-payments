@@ -161,6 +161,12 @@ class WC_Payments_Webhook_Processing_Service {
 			case 'charge.expired':
 				$this->process_webhook_expired_authorization( $event_body );
 				break;
+			case 'charge.succeeded':
+				$this->process_webhook_charge_succeeded( $event_body );
+				break;
+			case 'charge.captured':
+				$this->process_webhook_charge_captured( $event_body );
+				break;
 			case 'account.updated':
 				$this->account->refresh_account_data();
 				$this->customer_service->delete_cached_payment_methods();
@@ -312,6 +318,29 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
 		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );
+
+		// Clear the authorization summary cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
+	}
+
+	/**
+	 * Process webhook for a charge succeeded event.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 */
+	private function process_webhook_charge_succeeded( $event_body ) {
+		// Clear the authorization summary cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
+	}
+
+	/**
+	 * Process webhook for a charge captured event.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 */
+	private function process_webhook_charge_captured( $event_body ) {
+		// Clear the authorization summary cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 	}
 
 	/**
