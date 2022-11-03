@@ -13,8 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC Payments Features class
  */
 class WC_Payments_Features {
-	const UPE_FLAG_NAME                 = '_wcpay_feature_upe';
-	const WCPAY_SUBSCRIPTIONS_FLAG_NAME = '_wcpay_feature_subscriptions';
+	const UPE_FLAG_NAME                     = '_wcpay_feature_upe';
+	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
+	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 
 	/**
 	 * Checks whether the UPE gateway is enabled
@@ -117,6 +118,16 @@ class WC_Payments_Features {
 	 */
 	public static function is_custom_deposit_schedules_enabled() {
 		return '1' === get_option( '_wcpay_feature_custom_deposit_schedules', '1' );
+	}
+
+	/**
+	 * Checks whether WooPay Express Checkout is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_woopay_express_checkout_enabled() {
+		// Confirm platform checkout eligibility as well.
+		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '0' ) && self::is_platform_checkout_eligible();
 	}
 
 	/**

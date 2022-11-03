@@ -25,6 +25,21 @@ export function updateAuthorizations(
 	};
 }
 
+export function updateErrorForAuthorizations(
+	query: Query,
+	error: Error
+): {
+	type: string;
+	query: Query;
+	error: Error;
+} {
+	return {
+		type: TYPES.SET_ERROR_FOR_AUTHORIZATIONS,
+		query,
+		error,
+	};
+}
+
 export function updateAuthorizationsSummary(
 	query: Query,
 	data: AuthorizationsSummary
@@ -37,5 +52,20 @@ export function updateAuthorizationsSummary(
 		type: TYPES.SET_AUTHORIZATIONS_SUMMARY,
 		data,
 		query,
+	};
+}
+
+export function updateErrorForAuthorizationsSummary(
+	query: Query,
+	error: Error
+): {
+	type: string;
+	query: Query;
+	error: Error;
+} {
+	return {
+		type: TYPES.SET_ERROR_FOR_AUTHORIZATIONS_SUMMARY,
+		query,
+		error,
 	};
 }
