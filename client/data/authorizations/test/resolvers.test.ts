@@ -4,15 +4,12 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import type { Query } from '@woocommerce/navigation';
+import { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
-import {
-	Authorization,
-	AuthorizationsSummary,
-} from 'wcpay/types/authorizations';
+import { Authorization } from 'wcpay/types/authorizations';
 import {
 	updateAuthorization,
 	updateAuthorizations,
