@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Switch to @woocommerce/dependency-extraction-webpack-plugin
