@@ -21,6 +21,7 @@ import RiskLevelComponent, {
 } from 'components/risk-level';
 import { getDetailsURL } from 'wcpay/components/details-link';
 import ClickableCell from 'wcpay/components/clickable-cell';
+import wcpayTracks from 'tracks';
 
 interface Column extends TableCardColumn {
 	key:
@@ -208,6 +209,14 @@ export const AuthorizationsList = (): JSX.Element => {
 					<CaptureAuthorizationButton
 						orderId={ auth.order_id }
 						paymentIntentId={ auth.payment_intent_id }
+						onClick={ () => {
+							wcpayTracks.recordEvent(
+								'payments_transactions_uncaptured_list_capture_charge_button_click',
+								{
+									payment_intent_id: auth.payment_intent_id,
+								}
+							);
+						} }
 					/>
 				),
 			},
