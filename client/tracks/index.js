@@ -61,6 +61,7 @@ const events = {
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
+	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
 	DEPOSIT_FUNDS_CLICKED: 'wcpay_deposit_funds_clicked',
 	DEPOSIT_FUNDS_CONFIRMATION_CLICKED:
 		'wcpay_deposit_funds_confirmation_clicked',
