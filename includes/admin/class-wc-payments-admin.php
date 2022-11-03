@@ -1014,7 +1014,17 @@ class WC_Payments_Admin {
 	 * @return int The number of uncaptured transactions.
 	 */
 	private function get_uncaptured_transactions_count() {
-		$authorization_summary = $this->payments_api_client->get_authorizations_summary();
+		$authorization_summary = $this->database_cache->get_or_add(
+			Database_Cache::AUTHORIZATION_SUMMARY_KEY,
+			[ $this->payments_api_client, 'get_authorizations_summary' ],
+			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
+			'is_array'
+		);
+
+		if ( empty( $authorization_summary ) ) {
+			return 0;
+		}
+
 		return $authorization_summary['count'];
 	}
 }
