@@ -4,7 +4,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { Button, Icon } from '@wordpress/components';
-import Gridicon from 'gridicons';
+import InfoOutlineIcon from 'gridicons/dist/info-outline';
 import interpolateComponents from 'interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
@@ -62,10 +62,7 @@ const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 						),
 						components: {
 							infoIcon: (
-								<Gridicon
-									icon="info-outline"
-									className="currency-delete-illustration__currency-info-icon"
-								/>
+								<InfoOutlineIcon className="currency-delete-illustration__currency-info-icon" />
 							),
 						},
 					} ) }

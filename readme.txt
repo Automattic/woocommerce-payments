@@ -1,10 +1,10 @@
-=== WooCommerce Payments ===
+=== WooCommerce Payments - Fully Integrated Solution Built and Supported by Woo ===
 Contributors: woocommerce, automattic
-Tags: woocommerce, payment, payment request, credit card, automattic
+Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 4.8.1
+Stable tag: 4.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,31 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 4.9.0 - 2022-10-20 =
+* Add - Adds new notice and modal informing users about verifying their account during onboarding.
+* Add - Declare WooCommerce Payments incompatible with COT
+* Add - New Multi-Currency filter to display Analytics > Orders in customer currency.
+* Fix - Fix dropdown menu appearance in UPE payment methods when Gutenberg is active.
+* Fix - Fixed issue with Stripe rate limit during the checkout
+* Fix - Fix fatal error with call to MultiCurrency/Compatibility::convert_order_prices method.
+* Fix - Fix platform checkout store logo preview.
+* Fix - Move One Time Shipping metabox fields to use the woocommerce_product_options_shipping_product_data hook introduced in WC 6.0.
+* Fix - Prevent OTP modal from showing up when auto redirection is in progress.
+* Fix - Prevent WooPay OTP after click Place Order button
+* Fix - Save Link payment method tokens for subscription renewal
+* Fix - The ellipsis menu is now readable and we can dismiss the task in the "Things to do" task list from Payments > Overview page
+* Fix - Update default platform checkout host to pay.woo.com
+* Update - Improve handling of subscription bulk action execution.
+* Update - Update formatCurrency to decode HTML entities for rendering currency symbols.
+* Update - Update webhook processing to override existing meta data.
+* Dev - Add authorizations endpoints
+* Dev - Added Apple Pay and Google Pay to tags for the plugin.
+* Dev - Bump minimum required version of WooCommerce to 6.8 to support L2 policy
+* Dev - changed WooPay otp url
+* Dev - Split webpack configuration and enable HMR
+* Dev - Update E2E docker image and change image user
+* Dev - Update subscriptions-core to 2.3.0.
 
 = 4.8.1 - 2022-10-04 =
 * Fix - Fix fatal error thrown during the renewal order payment flow when the store doesn't have the WCPay Subscriptions feature enabled
