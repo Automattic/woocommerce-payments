@@ -1,5 +1,4 @@
 /** @format */
-
 /**
  * External dependencies
  */
@@ -23,11 +22,11 @@ import {
 import authorizationsFixture from './authorizations.fixture.json';
 import authorizationsSummaryFixture from './authorizations-summary.fixture.json';
 
-describe( 'Authorizations selector', () => {
+describe( 'Authorizations selectors', () => {
+	// Mock objects.
 	const mockQuery: Query = { paged: '2', per_page: '50' };
 	const mockSummaryQuery: Query = {};
 	const mockAuthorizations: Authorization[] = authorizationsFixture;
-
 	const mockSummary: AuthorizationsSummary = authorizationsSummaryFixture;
 
 	const mockError = {

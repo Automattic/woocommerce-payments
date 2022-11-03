@@ -1,4 +1,8 @@
 /** @format */
+/**
+ * External dependencies
+ */
+import type { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -6,12 +10,12 @@
 import reducer from '../reducer';
 import types from '../action-types';
 import { getResourceId } from 'utils/data';
+import { Authorization } from 'wcpay/types/authorizations';
 import authorizationsFixture from './authorizations.fixture.json';
 import authorizationsSummaryFixture from './authorizations-summary.fixture.json';
-import { Authorization } from 'wcpay/types/authorizations';
 
-describe( 'Authorizations reducer', () => {
-	const mockQuery = { paged: '1', perPage: '50' };
+describe( 'Authorizations reducer tests', () => {
+	const mockQuery: Query = { paged: '2', per_page: '50' };
 	const mockAuthorizations = authorizationsFixture;
 	const mockSummary = authorizationsSummaryFixture;
 
