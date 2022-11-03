@@ -38,6 +38,7 @@
     "test:e2e-performance": "NODE_CONFIG_DIR='tests/e2e/config' wp-scripts test-e2e --config tests/e2e/config/jest.performance.config.js",
     "test:update-snapshots": "npm run test:js -- --updateSnapshot",
     "test:php": "./bin/run-tests.sh",
+    "test:php-watch": "npm run test:php -- -w",
     "watch": "webpack --watch",
     "hmr": "webpack server",
     "start": "npm run watch",
@@ -64,12 +65,12 @@
     "changelog": "./vendor/bin/changelogger add"
   },
   "dependencies": {
+    "@automattic/interpolate-components": "1.2.1",
     "@stripe/react-stripe-js": "1.4.1",
     "@stripe/stripe-js": "1.15.1",
     "@woocommerce/explat": "1.0.1",
     "@woocommerce/number": "2.4.0",
     "debug": "4.1.1",
-    "interpolate-components": "1.1.1",
     "intl-tel-input": "17.0.15",
     "lodash": "4.17.21"
   },
