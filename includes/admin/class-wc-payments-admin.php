@@ -429,7 +429,9 @@ class WC_Payments_Admin {
 		$this->add_menu_notification_badge();
 		$this->add_update_business_details_task();
 		$this->add_disputes_notification_badge();
-		$this->add_transactions_notification_badge();
+		if ( $this->wcpay_gateway->get_option( 'manual_capture' ) === 'yes' ) {
+			$this->add_transactions_notification_badge();
+		}
 	}
 
 	/**
