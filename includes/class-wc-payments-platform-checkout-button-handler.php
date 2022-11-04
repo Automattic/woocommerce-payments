@@ -243,7 +243,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		// TODO: Add translations.
 		$button_settings = $this->get_button_settings();
 		$button_text     = 'default' !== $button_settings['type'] ? ucfirst( $button_settings['type'] ) . ' with WooPay' : 'WooPay';
-		// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+
 		?>
 		<style>
 			.woopay-express-button {
@@ -276,11 +276,10 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		</style>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 			<div id="wcpay-platform-checkout-button">
-				<button class="woopay-express-button <?php echo implode( '-', $this->get_button_settings() ); ?>"><?php echo $button_text; ?></button>
+				<button class="woopay-express-button <?php echo esc_attr( implode( '-', $this->get_button_settings() ) ); ?>"><?php echo esc_html( $button_text ); ?></button>
 			</div>
 		</div>
 		<?php
-		// phpcs:enable
 	}
 
 	/**
