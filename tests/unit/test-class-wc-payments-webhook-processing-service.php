@@ -814,11 +814,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
-
 	/**
-	 * Tests that a payment_intent.succeeded will save mandate if it's received.
+	 * Tests that a payment_intent.succeeded event will save mandate.
 	 */
-	public function test_payment_intent_succeeded_save_mandate() {
+	public function test_payment_intent_successful_and_save_mandate() {
 		$this->event_body['type']           = 'payment_intent.succeeded';
 		$this->event_body['data']['object'] = [
 			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
@@ -841,9 +840,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => $intent_status = 'succeeded',
 		];
 
-		$mock_order = $this->createMock( WC_Order::class );
-
-		$mock_order
+		$this->mock_order
 			->expects( $this->exactly( 6 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
@@ -855,17 +852,17 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				[ '_intention_status', $intent_status ]
 			);
 
-		$mock_order
+		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'save' );
 
-		$mock_order
+		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
 			->with( [ 'processing', 'completed' ] )
 			->willReturn( false );
 
-		$mock_order
+		$this->mock_order
 			->expects( $this->once() )
 			->method( 'payment_complete' );
 
@@ -873,9 +870,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'order_from_intent_id' )
 			->with( 'pi_123123123123123' )
-			->willReturn( $mock_order );
+			->willReturn( $this->mock_order );
 
-		$mock_order
+		$this->mock_order
 			->method( 'get_data_store' )
 			->willReturn( new \WC_Mock_WC_Data_Store() );
 
