@@ -1,0 +1,167 @@
+name: "Handle post-release steps"
+
+# This action will run when it is triggered manually
+on:
+  workflow_dispatch:
+    inputs:
+      allowMerge:
+        description: 'Whether we allow merging trunk back into develop'
+        required: false
+        type: string
+        default: "false"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  get-last-released-version:
+    name: "Get the last released version"
+    runs-on: ubuntu-20.04
+    outputs:
+      releaseVersion: ${{ steps.current-version.outputs.RELEASE_VERSION }}
+    
+    steps:
+      - name: "Checkout repository (trunk)"
+        uses: actions/checkout@v3
+        with:
+          ref: 'trunk'
+          
+      - name: "Get the last released version"
+        id: current-version
+        run: |
+          VERSION=$(jq '.version' package.json -r)
+          echo "Last released version found: $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "RELEASE_VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+  create-gh-release:
+    name: "Create a GH release"
+    needs: get-last-released-version
+    runs-on: ubuntu-20.04
+    env:
+      RELEASE_VERSION: ${{ needs.get-last-released-version.outputs.releaseVersion }}
+
+    steps:
+      - name: "Checkout repository (trunk)"
+        uses: actions/checkout@v3
+        with:
+          ref: 'trunk'
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      - name: "Create a tag"
+        id: create_tag
+        uses: ./.github/actions/create-tag
+        with:
+          version: ${{ env.RELEASE_VERSION }}
+          is-pre-release: "false"
+
+      - name: "Get the last changelog in changelog.txt"
+        id: get_changelog
+        run: |
+          CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
+          CHANGELOG="${CHANGELOG//$'\n'/\\n}"  
+          echo "CHANGELOG=$CHANGELOG" >> $GITHUB_OUTPUT
+
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: "Create a GH release"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGELOG: ${{ steps.get_changelog.outputs.changelog }}
+          TAG_MESSAGE: ${{ steps.create_tag.outputs.tag-message }}
+          FILENAME: ${{ steps.build_plugin.outputs.release-filename }}
+        run: |
+          RELEASE_NOTES=$(echo -e "${CHANGELOG}")
+          gh release create $RELEASE_VERSION --notes "$RELEASE_NOTES" --title "$TAG_MESSAGE" $FILENAME
+
+  merge-trunk-into-develop:
+    name: "Merge trunk back into develop"
+    needs: get-last-released-version
+    if: ${{ inputs.allowMerge == 'true' }}
+    runs-on: ubuntu-20.04
+    env:
+      RELEASE_VERSION: ${{ needs.get-last-released-version.outputs.releaseVersion }}
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          ref: 'trunk'
+          fetch-depth: 0
+
+      - name: "Merge trunk back into develop"
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git checkout develop && git pull
+          git merge trunk --no-ff -m "Merge trunk v$RELEASE_VERSION into develop"
+          git push
+
+  trigger-translations:
+    name: "Trigger translations update for the release"
+    needs: get-last-released-version
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Trigger translations update on GlotPress"
+        uses: ./.github/actions/trigger-translations
+        with:
+          release-version: ${{ needs.get-last-released-version.outputs.releaseVersion }}
+          glotpress-url: ${{ secrets.GLOTPRESS_IMPORT_URL }}
+
+  update-wiki:
+    name: "Update the wiki for the next release"
+    needs: get-last-released-version
+    runs-on: ubuntu-20.04
+    env:
+      RELEASE_VERSION: ${{ needs.get-last-released-version.outputs.releaseVersion }}
+    
+    steps:
+      - name: "Checkout repository (develop)"
+        uses: actions/checkout@v3
+        with:
+          ref: 'develop'
+  
+      - name: "Calculate the next version"
+        id: next-version
+        run: php .github/workflows/scripts/get-next-version.php
+  
+      - name: "Checkout repository's wiki"
+        uses: actions/checkout@v3
+        with:
+          repository: "${{ github.repository }}.wiki"
+          path: "wiki"
+  
+      - name: "Add new pages for the next release"
+        env:
+          NEXT_RELEASE_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
+        run: |
+          cd wiki
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          
+          NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME="Release-testing-instructions-for-WC-Payments-$NEXT_RELEASE_VERSION"
+          
+          # If the instructions file doesn't exist yet
+          if [ ! -e "$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME.md" ]; then
+            touch "$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME.md"
+            echo '{Replace with testing instructions}' > "$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME.md"
+            echo "Created file \""$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME.md"\"." >> $GITHUB_STEP_SUMMARY
+          else
+              echo ":warning: File "$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME.md" already exists. No action needed." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # If an entry for the next version doesn't exist yet
+          if ! grep -q "v$NEXT_RELEASE_VERSION" Release-testing-instructions.md; then
+            echo -ne "\n* [v$NEXT_RELEASE_VERSION](https://github.com/Automattic/woocommerce-payments/wiki/$NEXT_RELEASE_VERSION_INSTRUCTIONS_FILENAME)" >> Release-testing-instructions.md
+            echo "Added a new entry for v$NEXT_RELEASE_VERSION in \"Release-testing-instructions.md\"." >> $GITHUB_STEP_SUMMARY
+          else
+              echo ":warning: Entry for v$NEXT_RELEASE_VERSION already exists in \"Release-testing-instructions.md\". No action needed." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          git add .
+          git commit -m "Update wiki for release $NEXT_RELEASE_VERSION"
+          git push --set-upstream origin $BRANCH_NAME
