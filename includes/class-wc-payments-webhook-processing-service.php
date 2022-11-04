@@ -161,12 +161,6 @@ class WC_Payments_Webhook_Processing_Service {
 			case 'charge.expired':
 				$this->process_webhook_expired_authorization( $event_body );
 				break;
-			case 'charge.succeeded':
-				$this->process_webhook_charge_succeeded( $event_body );
-				break;
-			case 'charge.captured':
-				$this->process_webhook_charge_captured( $event_body );
-				break;
 			case 'account.updated':
 				$this->account->refresh_account_data();
 				$this->customer_service->delete_cached_payment_methods();
@@ -179,6 +173,12 @@ class WC_Payments_Webhook_Processing_Service {
 				break;
 			case 'payment_intent.succeeded':
 				$this->process_webhook_payment_intent_succeeded( $event_body );
+				break;
+			case 'payment_intent.canceled':
+				$this->process_webhook_payment_intent_canceled( $event_body );
+				break;
+			case 'payment_intent.amount_capturable_updated':
+				$this->process_webhook_payment_intent_amount_capturable_updated( $event_body );
 				break;
 			case 'invoice.upcoming':
 				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_upcoming( $event_body );
@@ -324,21 +324,21 @@ class WC_Payments_Webhook_Processing_Service {
 	}
 
 	/**
-	 * Process webhook for a charge succeeded event.
+	 * Process webhook for a payment intent canceled event.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 */
-	private function process_webhook_charge_succeeded( $event_body ) {
+	private function process_webhook_payment_intent_canceled( $event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 	}
 
 	/**
-	 * Process webhook for a charge captured event.
+	 * Process webhook for a payment intent amount capturable updated event.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 */
-	private function process_webhook_charge_captured( $event_body ) {
+	private function process_webhook_payment_intent_amount_capturable_updated( $event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 	}
@@ -438,6 +438,9 @@ class WC_Payments_Webhook_Processing_Service {
 			];
 			$this->receipt_service->send_customer_ipp_receipt_email( $order, $merchant_settings, $charges_data[0] );
 		}
+
+		// Clear the authorization summary cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
 	}
 
 	/**
