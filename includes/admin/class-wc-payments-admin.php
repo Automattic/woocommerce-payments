@@ -967,7 +967,6 @@ class WC_Payments_Admin {
 		}
 
 		$uncaptured_transactions = $this->get_uncaptured_transactions_count();
-
 		if ( $uncaptured_transactions <= 0 ) {
 			return;
 		}
