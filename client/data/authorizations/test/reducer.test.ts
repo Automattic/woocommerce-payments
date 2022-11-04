@@ -20,6 +20,7 @@ describe( 'Authorizations reducer tests', () => {
 	const mockSummary = authorizationsSummaryFixture;
 
 	const emptyState = { summary: {}, byId: {} };
+
 	const filledState = {
 		[ getResourceId( mockQuery ) ]: {
 			data: mockAuthorizations,

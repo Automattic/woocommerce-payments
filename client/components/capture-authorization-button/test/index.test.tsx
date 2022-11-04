@@ -23,12 +23,16 @@ const mockUseAuthorization = useAuthorization as jest.MockedFunction<
 
 function renderCaptureAuthorizationButton(
 	orderId: number,
-	paymentIntentId: string
+	paymentIntentId: string,
+	buttonIsPrimary: boolean,
+	buttonIsSmall: boolean
 ) {
 	return render(
 		<CaptureAuthorizationButton
 			orderId={ orderId }
 			paymentIntentId={ paymentIntentId }
+			buttonIsPrimary={ buttonIsPrimary }
+			buttonIsSmall={ buttonIsSmall }
 		/>
 	);
 }
@@ -46,21 +50,9 @@ describe( 'CaptureAuthorizationButton', () => {
 		} );
 		const { container } = renderCaptureAuthorizationButton(
 			42,
-			'paymentIntentId'
-		);
-
-		expect( container ).toMatchSnapshot();
-	} );
-
-	test( 'should render busy status', () => {
-		mockUseAuthorization.mockReturnValue( {
-			doCaptureAuthorization: jest.fn(),
-			isLoading: true,
-			authorization: {} as Authorization,
-		} );
-		const { container } = renderCaptureAuthorizationButton(
-			42,
-			'paymentIntentId'
+			'paymentIntentId',
+			false,
+			true
 		);
 
 		expect( container ).toMatchSnapshot();
@@ -76,9 +68,11 @@ describe( 'CaptureAuthorizationButton', () => {
 			authorization: mockAuthorization,
 		} );
 
-		const { rerender } = renderCaptureAuthorizationButton(
+		const { container, rerender } = renderCaptureAuthorizationButton(
 			42,
-			'paymentIntentId'
+			'paymentIntentId',
+			false,
+			true
 		);
 
 		expect( doCaptureAuthorizationMock.mock.calls.length ).toBe( 0 );
@@ -102,5 +96,6 @@ describe( 'CaptureAuthorizationButton', () => {
 
 		expect( screen.getByRole( 'button' ) ).toHaveClass( 'is-busy' );
 		expect( screen.getByRole( 'button' ) ).toBeDisabled();
+		expect( container ).toMatchSnapshot();
 	} );
 } );

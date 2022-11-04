@@ -27,7 +27,6 @@ describe( 'Authorizations selectors', () => {
 	const mockQuery: Query = { paged: '2', per_page: '50' };
 	const mockSummaryQuery: Query = {};
 	const mockAuthorizations: Authorization[] = authorizationsFixture;
-
 	const mockSummary: AuthorizationsSummary = authorizationsSummaryFixture;
 
 	const mockError = {
@@ -140,8 +139,9 @@ describe( 'Authorizations selectors', () => {
 } );
 
 describe( 'Authorization selector', () => {
-	const emptyState = { authorizations: { byId: {}, summary: {} } };
 	const mockAuthorization = authorizationsFixture[ 0 ];
+
+	const emptyState = { authorizations: { byId: {}, summary: {} } };
 
 	const filledState = {
 		authorizations: {

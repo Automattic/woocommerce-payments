@@ -10,7 +10,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import PaymentDetailsPage from '../';
+import PaymentDetailsPage from '..';
 
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
@@ -105,6 +105,9 @@ const chargeMock = {
 			getPaymentIntentError: jest.fn().mockReturnValue( null ),
 			getTimeline: jest.fn().mockReturnValue( {} ),
 			getTimelineError: jest.fn().mockReturnValue( null ),
+			getAuthorization: jest.fn().mockReturnValue( {
+				created: '2022-09-27 17:07:09',
+			} ),
 		} )
 	)
 );
