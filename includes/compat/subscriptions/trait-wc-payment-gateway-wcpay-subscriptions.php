@@ -140,7 +140,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
 
 		// Used to filter out unwanted metadata on new renewal orders.
-		add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
+		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
+			add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
+		} else {
+			add_filter( 'wc_subscriptions_renewal_order_data', [ $this, 'remove_data_renewal_order' ], 10, 3 );
+		}
 
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
@@ -731,6 +735,18 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$order_meta_query .= " AND `meta_key` NOT IN ('_new_order_tracking_complete')";
 
 		return $order_meta_query;
+	}
+
+	/**
+	 * Removes the data that we don't need to copy to renewal orders.
+	 *
+	 * @param array $order_data Renewal order data.
+	 *
+	 * @return array The renewal order data with the data we don't want copied removed
+	 */
+	public function remove_data_renewal_order( $order_data ) {
+		unset( $order_data['_new_order_tracking_complete'] );
+		return $order_data;
 	}
 
 	/**
