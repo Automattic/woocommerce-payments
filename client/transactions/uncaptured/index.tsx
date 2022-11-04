@@ -3,22 +3,28 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
 
 /**
  * Internal dependencies
  */
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
-import { RiskLevel } from 'wcpay/types/authorizations';
+import { getDetailsURL } from 'components/details-link';
+import ClickableCell from 'components/clickable-cell';
+import { formatExplicitCurrency } from 'utils/currency';
+import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
+import wcpayTracks from 'tracks';
 
 interface Column extends TableCardColumn {
 	key:
 		| 'authorization_id'
-		| 'authorized_on'
+		| 'created'
 		| 'capture_by'
 		| 'order'
 		| 'risk_level'
@@ -38,7 +44,7 @@ const getColumns = (): Column[] =>
 			isLeftAligned: true,
 		},
 		{
-			key: 'authorized_on',
+			key: 'created',
 			label: __( 'Authorized on', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Authorized on', 'woocommerce-payments' ),
 			required: true,
@@ -97,12 +103,6 @@ const getColumns = (): Column[] =>
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
-const getFormatedAmountFromString = ( string: string ) => {
-	return `${ string.substring( 0, string.length - 2 ) }.${ string.substring(
-		string.length - 2
-	) }$`;
-};
-
 export const AuthorizationsList = (): JSX.Element => {
 	const columnsToDisplay = getColumns();
 	const {
@@ -112,66 +112,87 @@ export const AuthorizationsList = (): JSX.Element => {
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
-	const getRiskColor = ( risk: RiskLevel ) => {
-		switch ( risk ) {
-			case 'high':
-				return 'crimson';
-			case 'normal':
-				return 'green';
-			case 'elevated':
-				return 'darkorange';
-		}
-	};
-
 	const rows = authorizations.map( ( auth ) => {
-		const stringAmount = String( auth.amount );
+		const riskLevel = <RiskLevel risk={ auth.risk_level } />;
+		const detailsURL = getDetailsURL(
+			auth.payment_intent_id,
+			'transactions'
+		);
+
+		const clickable = ( children: JSX.Element | string ) => (
+			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
+		);
 
 		const data = {
 			authorization_id: {
-				value: auth.authorization_id,
-				display: auth.authorization_id,
+				// The authorization id is not exposed. Using the payment intent id as unique identifier
+				value: auth.payment_intent_id,
+				display: auth.payment_intent_id,
 			},
-			authorized_on: {
-				value: auth.authorized_on,
-				display: auth.authorized_on,
+			created: {
+				value: dateI18n(
+					'M j, Y / g:iA',
+					moment.utc( auth.created ).local().toISOString()
+				),
+				display: clickable(
+					dateI18n(
+						'M j, Y / g:iA',
+						moment.utc( auth.created ).local().toISOString()
+					)
+				),
 			},
+			// Payments are authorized for a maximum of 7 days
 			capture_by: {
-				value: auth.capture_by,
-				display: auth.capture_by,
+				value: dateI18n(
+					'M j, Y / g:iA',
+					moment
+						.utc( auth.created )
+						.add( 7, 'd' )
+						.local()
+						.toISOString()
+				),
+				display: clickable(
+					dateI18n(
+						'M j, Y / g:iA',
+						moment
+							.utc( auth.created )
+							.add( 7, 'd' )
+							.local()
+							.toISOString()
+					)
+				),
 			},
 			order: {
-				value: auth.order.number,
-				display: (
-					<a
-						href={ auth.order.url }
-					>{ `#${ auth.order.number } from ${ auth.customer_name }` }</a>
+				value: auth.order_id,
+				display: clickable(
+					`#${ auth.order_id } from ${ auth.customer_name }`
 				),
 			},
 			risk_level: {
-				value: auth.risk_level,
-				display: (
-					<span style={ { color: getRiskColor( auth.risk_level ) } }>
-						{ auth.risk_level.charAt( 0 ).toUpperCase() +
-							auth.risk_level.slice( 1 ) }
-					</span>
-				),
+				value: calculateRiskMapping( auth.risk_level ),
+				display: clickable( riskLevel ),
 			},
 			amount: {
 				value: auth.amount,
-				display: getFormatedAmountFromString( stringAmount ),
+				display: clickable(
+					formatExplicitCurrency( auth.amount, auth.currency )
+				),
 			},
 			customer_email: {
 				value: auth.customer_email,
-				display: auth.customer_email,
+				display: clickable( auth.customer_email ),
 			},
 			customer_country: {
 				value: auth.customer_country,
-				display: auth.customer_country,
+				display: clickable( auth.customer_country ),
 			},
 		};
 
 		return columnsToDisplay.map(
-			( { key } ) => data[ key ] || { display: null }
+			( { key } ) =>
+				data[ key ] || {
+					display: null,
+				}
 		);
 	} );
 
@@ -180,29 +201,39 @@ export const AuthorizationsList = (): JSX.Element => {
 	const isAuthorizationsSummaryLoaded =
 		authorizationsSummary.count !== undefined &&
 		authorizationsSummary.total !== undefined &&
-		authorizationsSummary.totalAmount !== undefined &&
 		false === isSummaryLoading;
+	const totalRows = authorizationsSummary.count || 0;
 
 	if ( isAuthorizationsSummaryLoaded ) {
 		summary = [
 			{
+				label: __( 'authorization(s)', 'woocommerce-payments' ),
 				value: String( authorizationsSummary.count ),
-				label: 'authorizations',
 			},
 		];
 
-		summary.push( {
-			value: String( authorizationsSummary.total ),
-			label: 'total',
-		} );
-
-		summary.push( {
-			value: getFormatedAmountFromString(
-				String( authorizationsSummary.totalAmount )
-			),
-			label: 'Pending',
-		} );
+		if (
+			authorizationsSummary.all_currencies &&
+			authorizationsSummary.all_currencies.length === 1
+		) {
+			// Only show the total if there is one currency available
+			summary.push( {
+				label: __( 'total', 'woocommerce-payments' ),
+				value: `${ formatExplicitCurrency(
+					// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
+					// that so we remove the `undefined` in the type manually.
+					authorizationsSummary.total as number,
+					authorizationsSummary.currency
+				) }`,
+			} );
+		}
 	}
+
+	useEffect( () => {
+		wcpayTracks.recordEvent( 'page_view', {
+			path: 'payments_transactions_uncaptured',
+		} );
+	}, [] );
 
 	return (
 		<Page>
@@ -213,8 +244,8 @@ export const AuthorizationsList = (): JSX.Element => {
 					'woocommerce-payments'
 				) }
 				isLoading={ isLoading || isSummaryLoading }
-				rowsPerPage={ 10 }
-				totalRows={ 2 }
+				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
+				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }

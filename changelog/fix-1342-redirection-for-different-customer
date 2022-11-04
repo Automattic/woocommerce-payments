@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix platform checkout auto redirection for user with pre-populated email when they land on the checkout page.
