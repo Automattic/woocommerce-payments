@@ -131,6 +131,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Auth & Capture (uncaptured transactions tab, capture from payment details page) is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_auth_and_capture_enabled() {
+		return '1' === get_option( '_wcpay_feature_auth_and_capture', '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
