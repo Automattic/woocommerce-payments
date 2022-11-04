@@ -128,8 +128,9 @@ class WC_Payments_Token_Service {
 				}
 			}
 
-			$payment_methods = [ [] ];
-			foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
+			$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::SEPA ];
+			$payment_methods                  = [ [] ];
+			foreach ( $retrievable_payment_method_types as $type ) {
 				$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
 			}
 			$payment_methods = array_merge( ...$payment_methods );
