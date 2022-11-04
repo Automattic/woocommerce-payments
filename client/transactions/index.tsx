@@ -5,6 +5,7 @@ import React from 'react';
 import { Experiment } from '@woocommerce/explat';
 import { TabPanel } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -22,6 +23,22 @@ import Authorizations from './uncaptured';
 import './style.scss';
 
 const displayAuthorizations = false;
+
+const currentQuery = getQuery();
+const initialTab = currentQuery.tab ?? null;
+const onTabSelected = ( tab: string ) => {
+	// When switching tabs, make sure to revert the query strings to default values
+	updateQueryString(
+		{
+			paged: '1',
+			per_page: '25',
+			order: '',
+			orderby: '',
+			tab: tab,
+		},
+		'/payments/transactions'
+	);
+};
 
 export const TransactionsPage = (): JSX.Element => {
 	const defaultExperience = (
@@ -47,6 +64,8 @@ export const TransactionsPage = (): JSX.Element => {
 				<TabPanel
 					className="wcpay-transactions-page"
 					activeClass="active-tab"
+					onSelect={ onTabSelected }
+					initialTabName={ initialTab || 'transactions-page' }
 					tabs={ [
 						{
 							name: 'transactions-page',

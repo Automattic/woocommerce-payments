@@ -17,18 +17,10 @@
 			margin-bottom: 0;
 		}
 	}
-	.schedule-sub-radio {
-		margin-left: 26px;
-		margin-top: -10px;
-	}
 	.help-text {
 		color: #757575;
-		font-size: 12px;
-		margin-bottom: 1em;
 		margin-top: 0;
-	}
-	.components-base-control__help {
-		font-size: 12px;
+		margin-bottom: 1em;
 	}
 	&__notice > div {
 		align-items: center;
@@ -43,11 +35,6 @@
 			svg {
 				fill: $studio-blue-50;
 			}
-		}
-	}
-	.schedule-manual-radio {
-		.components-base-control__help {
-			margin-left: 26px;
 		}
 	}
 }

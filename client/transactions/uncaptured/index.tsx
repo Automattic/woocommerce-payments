@@ -3,30 +3,29 @@
 /**
  * External dependencies
  */
-import React from 'react';
-import moment from 'moment';
-import { sprintf, __ } from '@wordpress/i18n';
-import { Link, TableCard, TableCardColumn } from '@woocommerce/components';
+import React, { useEffect } from 'react';
+import { __ } from '@wordpress/i18n';
+import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { dateI18n } from '@wordpress/date';
+import moment from 'moment';
 
 /**
  * Internal dependencies
  */
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
-import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
-import RiskLevelComponent, {
-	calculateRiskMapping,
-} from 'components/risk-level';
-import { getDetailsURL } from 'wcpay/components/details-link';
-import ClickableCell from 'wcpay/components/clickable-cell';
+import { getDetailsURL } from 'components/details-link';
+import ClickableCell from 'components/clickable-cell';
+import { formatExplicitCurrency } from 'utils/currency';
+import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import wcpayTracks from 'tracks';
-import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 
 interface Column extends TableCardColumn {
 	key:
-		| 'authorized_on'
+		| 'authorization_id'
+		| 'created'
 		| 'capture_by'
 		| 'order'
 		| 'risk_level'
@@ -40,7 +39,7 @@ interface Column extends TableCardColumn {
 const getColumns = (): Column[] =>
 	[
 		{
-			key: 'authorized_on',
+			key: 'created',
 			label: __( 'Authorized on', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Authorized on', 'woocommerce-payments' ),
 			required: true,
@@ -106,12 +105,6 @@ const getColumns = (): Column[] =>
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
-const getFormatedAmountFromString = ( string: string ) => {
-	return `${ string.substring( 0, string.length - 2 ) }.${ string.substring(
-		string.length - 2
-	) }$`;
-};
-
 export const AuthorizationsList = (): JSX.Element => {
 	const columnsToDisplay = getColumns();
 	const {
@@ -122,22 +115,27 @@ export const AuthorizationsList = (): JSX.Element => {
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
 	const rows = authorizations.map( ( auth ) => {
-		const stringAmount = String( auth.amount );
-
-		const paymentDetailsUrl = getDetailsURL(
-			auth.payment_intent_id || auth.charge_id,
+		const riskLevel = <RiskLevel risk={ auth.risk_level } />;
+		const detailsURL = getDetailsURL(
+			auth.payment_intent_id,
 			'transactions'
 		);
 
-		const clickable = ( children: React.ReactNode ) => (
-			<ClickableCell href={ paymentDetailsUrl }>
-				{ children }
-			</ClickableCell>
+		const clickable = ( children: JSX.Element | string ) => (
+			<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 		);
 
 		const data = {
-			authorized_on: {
-				value: auth.created,
+			authorization_id: {
+				// The authorization id is not exposed. Using the payment intent id as unique identifier
+				value: auth.payment_intent_id,
+				display: auth.payment_intent_id,
+			},
+			created: {
+				value: dateI18n(
+					'M j, Y / g:iA',
+					moment.utc( auth.created ).local().toISOString()
+				),
 				display: clickable(
 					dateI18n(
 						'M j, Y / g:iA',
@@ -145,56 +143,41 @@ export const AuthorizationsList = (): JSX.Element => {
 					)
 				),
 			},
+			// Payments are authorized for a maximum of 7 days
 			capture_by: {
-				value: moment
-					.utc( auth.created )
-					.add( 7, 'days' )
-					.toISOString(),
+				value: dateI18n(
+					'M j, Y / g:iA',
+					moment
+						.utc( auth.created )
+						.add( 7, 'd' )
+						.local()
+						.toISOString()
+				),
 				display: clickable(
 					dateI18n(
 						'M j, Y / g:iA',
 						moment
 							.utc( auth.created )
-							.add( 7, 'days' )
+							.add( 7, 'd' )
+							.local()
 							.toISOString()
 					)
 				),
 			},
 			order: {
 				value: auth.order_id,
-				display: auth.order_id ? (
-					<Link
-						href={ `post.php?post=${ auth.order_id }&action=edit` }
-						type="wp-admin"
-					>
-						{
-							// translators: %1$s Order identifier %2$ Customer name.
-							auth.customer_name
-								? sprintf(
-										__(
-											'#%1$s %2$s',
-											'woocommerce-payments'
-										),
-										auth.order_id,
-										auth.customer_name ?? ''
-								  )
-								: `#${ auth.order_id }`
-						}
-					</Link>
-				) : (
-					__( 'N/A', 'woocommerce-payments' )
+				display: clickable(
+					`#${ auth.order_id } from ${ auth.customer_name }`
 				),
 			},
 			risk_level: {
 				value: calculateRiskMapping( auth.risk_level ),
-				display: clickable(
-					<RiskLevelComponent risk={ auth.risk_level } />
-				),
+				display: clickable( riskLevel ),
 			},
 			amount: {
 				value: auth.amount,
 				display: clickable(
-					getFormatedAmountFromString( stringAmount )
+					formatExplicitCurrency( auth.amount, auth.currency )
 				),
 			},
 			customer_email: {
@@ -224,7 +207,10 @@ export const AuthorizationsList = (): JSX.Element => {
 		};
 
 		return columnsToDisplay.map(
-			( { key } ) => data[ key ] || { display: null }
+			( { key } ) =>
+				data[ key ] || {
+					display: null,
+				}
 		);
 	} );
 
@@ -234,6 +220,7 @@ export const AuthorizationsList = (): JSX.Element => {
 		authorizationsSummary.count !== undefined &&
 		authorizationsSummary.total !== undefined &&
 		false === isSummaryLoading;
+	const totalRows = authorizationsSummary.count || 0;
 
 	if ( isAuthorizationsSummaryLoaded ) {
 		summary = [
@@ -262,6 +249,12 @@ export const AuthorizationsList = (): JSX.Element => {
 		}
 	}
 
+	useEffect( () => {
+		wcpayTracks.recordEvent( 'page_view', {
+			path: 'payments_transactions_uncaptured',
+		} );
+	}, [] );
+
 	return (
 		<Page>
 			<TableCard
@@ -271,8 +264,8 @@ export const AuthorizationsList = (): JSX.Element => {
 					'woocommerce-payments'
 				) }
 				isLoading={ isLoading || isSummaryLoading }
-				rowsPerPage={ 10 }
-				totalRows={ 2 }
+				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
+				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
