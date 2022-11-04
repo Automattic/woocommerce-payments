@@ -16,6 +16,7 @@ class WC_Payments_Features {
 	const UPE_FLAG_NAME                     = '_wcpay_feature_upe';
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
+	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 
 	/**
 	 * Checks whether the UPE gateway is enabled
@@ -136,7 +137,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_auth_and_capture_enabled() {
-		return '1' === get_option( '_wcpay_feature_auth_and_capture', '0' );
+		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '0' );
 	}
 
 	/**

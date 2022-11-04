@@ -325,6 +325,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	public function test_transactions_notification_badge_display() {
 		global $submenu;
 
+		update_option( \WC_Payments_Features::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
+
 		// Mock the manual capture setting as being enabled.
 		$this->mock_gateway
 			->expects( $this->once() )
@@ -372,6 +374,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_transactions_notification_badge_no_display() {
 		global $submenu;
+
+		update_option( \WC_Payments_Features::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
 
 		// Mock the manual capture setting as being enabled.
 		$this->mock_gateway
