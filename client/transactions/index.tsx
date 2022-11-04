@@ -18,7 +18,6 @@ import {
 	EmptyStateTableHeaders,
 } from '../empty-state-table/list';
 import EmptyStateTable from 'empty-state-table';
-import { useAuthorizationsSummary } from 'wcpay/data';
 import ListBanner from '../empty-state-table/transactions-banner.svg';
 import Authorizations from './uncaptured';
 import './style.scss';
@@ -59,8 +58,6 @@ export const TransactionsPage = (): JSX.Element => {
 		/>
 	);
 
-	const { authorizationsSummary } = useAuthorizationsSummary( currentQuery );
-
 	if ( displayAuthorizations ) {
 		return (
 			<Page>
@@ -77,10 +74,7 @@ export const TransactionsPage = (): JSX.Element => {
 						},
 						{
 							name: 'uncaptured-page',
-							// TODO: Find way to show a proper badge (as in menu) and convert back to translated string.
-							title: `Uncaptured (${
-								authorizationsSummary.count ?? '...'
-							})`,
+							title: __( 'Uncaptured', 'woocommerce-payments' ),
 							className: 'authorizations-list',
 						},
 					] }
