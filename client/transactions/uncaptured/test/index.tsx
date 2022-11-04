@@ -11,7 +11,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import Authorizations, { AuthorizationsList } from '../';
+import Authorizations, { AuthorizationsList } from '..';
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import { Authorization } from 'wcpay/types/authorizations';
 
@@ -79,6 +79,7 @@ const getMockAuthorizations: () => Authorization[] = () => [
 		customer_name: 'Good boy',
 		payment_intent_id: 'pi_4242',
 		charge_id: 'ch_mock',
+		currency: 'usd',
 	},
 	{
 		created: '2020-01-03 17:46:02',
@@ -91,6 +92,7 @@ const getMockAuthorizations: () => Authorization[] = () => [
 		customer_name: 'Good boy',
 		payment_intent_id: 'pi_4243',
 		charge_id: 'ch_mock',
+		currency: 'usd',
 	},
 ];
 
@@ -186,10 +188,10 @@ describe( 'Authorizations list', () => {
 
 		test( 'sorts by authorized on field', () => {
 			sortBy( 'Authorized on' );
-			expectSortingToBe( 'authorized_on', 'asc' );
+			expectSortingToBe( 'created', 'asc' );
 
 			sortBy( 'Authorized on' );
-			expectSortingToBe( 'authorized_on', 'desc' );
+			expectSortingToBe( 'created', 'desc' );
 		} );
 
 		test( 'sorts by capture by field', () => {

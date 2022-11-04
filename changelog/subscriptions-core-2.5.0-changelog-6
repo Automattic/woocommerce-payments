@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+wcs_get_objects_property and wcs_set_objects_property have been marked as deprecated. Getters/Setters should be used on the objects instead.

@@ -290,8 +290,10 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item"
                 >
                   <a
-                    data-link-type="wp-admin"
-                    href="post.php?post=24&action=edit"
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
+                    tabindex="-1"
                   >
                     #24 from Good boy
                   </a>
@@ -321,7 +323,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
                     tabindex="-1"
                   >
-                    14.55$
+                    $14.55
                   </a>
                 </td>
                 <td
@@ -365,8 +367,10 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item"
                 >
                   <a
-                    data-link-type="wp-admin"
-                    href="post.php?post=25&action=edit"
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
+                    tabindex="-1"
                   >
                     #25 from Good boy
                   </a>
@@ -396,7 +400,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
                     tabindex="-1"
                   >
-                    20.10$
+                    $20.10
                   </a>
                 </td>
                 <td

@@ -1,5 +1,5 @@
-name: Generate the changelog for WooCommerce Payments
-description: Generate the changelog from the version provided
+name: "Generate the changelog for WooCommerce Payments"
+description: "Generate the changelog from the version provided"
 
 inputs:
   release-version:
@@ -18,7 +18,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Generate changelog
+    - name: "Generate changelog"
       id: get_changelog
       shell: bash
       env:

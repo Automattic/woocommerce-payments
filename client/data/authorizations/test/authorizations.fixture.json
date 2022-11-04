@@ -9,7 +9,8 @@
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
       "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
-      "charge_id": "ch_42"
+      "charge_id": "ch_42",
+      "currency": "usd"
   },
   {
       "created": "Sep 7, 2022 / 11:00AM",
@@ -21,7 +22,8 @@
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
       "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
-      "charge_id": "ch_42"
+      "charge_id": "ch_42",
+      "currency": "usd"
   },
   {
       "created": "Sep 7, 2022 / 11:00AM",
@@ -33,7 +35,8 @@
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
       "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
-      "charge_id": "ch_42"
+      "charge_id": "ch_42",
+      "currency": "usd"
   },
   {
       "created": "Sep 7, 2022 / 11:00AM",
@@ -45,7 +48,8 @@
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
       "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
-      "charge_id": "ch_42"
+      "charge_id": "ch_42",
+      "currency": "usd"
   },
   {
       "created": "Sep 7, 2022 / 11:00AM",
@@ -57,7 +61,8 @@
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
       "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
-      "charge_id": "ch_42"
+      "charge_id": "ch_42",
+      "currency": "usd"
   },
   {
       "created": "Sep 7, 2022 / 11:00AM",
@@ -69,7 +74,8 @@
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
       "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
-      "charge_id": "ch_42"
+      "charge_id": "ch_42",
+      "currency": "usd"
   },
   {
       "created": "Sep 7, 2022 / 11:00AM",
@@ -81,7 +87,8 @@
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
       "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
-      "charge_id": "ch_42"
+      "charge_id": "ch_42",
+      "currency": "usd"
   },
   {
       "created": "Sep 7, 2022 / 11:00AM",
@@ -93,7 +100,8 @@
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
       "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
-      "charge_id": "ch_42"
+      "charge_id": "ch_42",
+      "currency": "usd"
   },
   {
       "created": "Sep 7, 2022 / 11:00AM",
@@ -105,7 +113,8 @@
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
       "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
-      "charge_id": "ch_42"
+      "charge_id": "ch_42",
+      "currency": "usd"
   },
   {
       "created": "Sep 7, 2022 / 11:00AM",
@@ -117,6 +126,7 @@
       "customer_country": "Kingdom of Dogs",
       "customer_name": "Good boy",
       "payment_intent_id": "pi_3Lcm2iQsDOQXPzI102uKS0FD",
-      "charge_id": "ch_42"
+      "charge_id": "ch_42",
+      "currency": "usd"
   }
 ]
