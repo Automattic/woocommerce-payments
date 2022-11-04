@@ -249,18 +249,35 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item date-time is-left-aligned is-sorted"
                   scope="row"
                 >
-                  2020-01-02 17:46:02
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+                    tabindex="-1"
+                  >
+                    Jan 2, 2020 / 12:46PM
+                  </a>
                 </th>
                 <td
                   class="woocommerce-table__item date-time is-left-aligned"
                 >
-                  2020-01-09 17:46:02
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+                    tabindex="-1"
+                  >
+                    Jan 9, 2020 / 12:46PM
+                  </a>
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
                   <a
-                    href="https://doggo.com"
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+                    tabindex="-1"
                   >
                     #24 from Good boy
                   </a>
@@ -268,16 +285,30 @@ exports[`Authorizations list renders correctly 1`] = `
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  <span
-                    style="color: crimson;"
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+                    tabindex="-1"
                   >
-                    High
-                  </span>
+                    <span
+                      style="color: green;"
+                    >
+                      Normal
+                    </span>
+                  </a>
                 </td>
                 <td
                   class="woocommerce-table__item is-numeric"
                 >
-                  14.55$
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+                    tabindex="-1"
+                  >
+                    $14.55
+                  </a>
                 </td>
               </tr>
               <tr>
@@ -285,35 +316,66 @@ exports[`Authorizations list renders correctly 1`] = `
                   class="woocommerce-table__item date-time is-left-aligned is-sorted"
                   scope="row"
                 >
-                  2020-01-03 17:46:02
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
+                    tabindex="-1"
+                  >
+                    Jan 3, 2020 / 12:46PM
+                  </a>
                 </th>
                 <td
                   class="woocommerce-table__item date-time is-left-aligned"
                 >
-                  2020-01-10 17:46:02
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
+                    tabindex="-1"
+                  >
+                    Jan 10, 2020 / 12:46PM
+                  </a>
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
                   <a
-                    href="https://doggo.com"
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
+                    tabindex="-1"
                   >
-                    #25 from Good boy
+                    #22 from Good boy
                   </a>
                 </td>
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  <span
-                    style="color: green;"
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
+                    tabindex="-1"
                   >
-                    Normal
-                  </span>
+                    <span
+                      style="color: orange;"
+                    >
+                      Elevated
+                    </span>
+                  </a>
                 </td>
                 <td
                   class="woocommerce-table__item is-numeric"
                 >
-                  20.10$
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
+                    tabindex="-1"
+                  >
+                    $20.10
+                  </a>
                 </td>
               </tr>
             </tbody>
@@ -333,7 +395,7 @@ exports[`Authorizations list renders correctly 1`] = `
             <span
               class="woocommerce-table__summary-label"
             >
-              authorizations
+              authorization(s)
             </span>
           </li>
           <li
@@ -342,26 +404,12 @@ exports[`Authorizations list renders correctly 1`] = `
             <span
               class="woocommerce-table__summary-value"
             >
-              300
+              $3.00
             </span>
             <span
               class="woocommerce-table__summary-label"
             >
               total
-            </span>
-          </li>
-          <li
-            class="woocommerce-table__summary-item"
-          >
-            <span
-              class="woocommerce-table__summary-value"
-            >
-              150.00$
-            </span>
-            <span
-              class="woocommerce-table__summary-label"
-            >
-              Pending
             </span>
           </li>
         </ul>
