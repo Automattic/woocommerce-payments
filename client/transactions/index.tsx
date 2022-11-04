@@ -4,7 +4,6 @@
 import React from 'react';
 import { Experiment } from '@woocommerce/explat';
 import { TabPanel } from '@wordpress/components';
-import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
@@ -60,7 +59,7 @@ export const TransactionsPage = (): JSX.Element => {
 		/>
 	);
 
-	const { authorizationsSummary } = useAuthorizationsSummary( getQuery() );
+	const { authorizationsSummary } = useAuthorizationsSummary( currentQuery );
 
 	if ( displayAuthorizations ) {
 		return (
