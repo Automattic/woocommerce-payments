@@ -9,6 +9,7 @@ import type { Query } from '@woocommerce/navigation';
  */
 import { getResourceId } from 'utils/data';
 import {
+	getAuthorization,
 	getAuthorizations,
 	getAuthorizationsError,
 	getAuthorizationsSummary,
@@ -18,39 +19,17 @@ import {
 	AuthorizationsSummary,
 	Authorization,
 } from 'wcpay/types/authorizations';
+import authorizationsFixture from './authorizations.fixture.json';
+import authorizationsSummaryFixture from './authorizations-summary.fixture.json';
 
 describe( 'Authorizations selectors', () => {
 	// Mock objects.
 	const mockQuery: Query = { paged: '2', per_page: '50' };
 	const mockSummaryQuery: Query = {};
-	const mockAuthorizations: Authorization[] = [
-		{
-			payment_intent_id: 'pi_7890',
-			amount: 1000,
-			order_id: 950,
-			created: 'Today',
-			risk_level: 0,
-			customer_name: 'Test',
-			customer_email: 'test@example.com',
-			customer_country: 'US',
-			currency: 'usd',
-		},
-		{
-			payment_intent_id: 'pi_1235',
-			amount: 2000,
-			order_id: 100,
-			created: 'Today',
-			risk_level: 0,
-			customer_name: 'Test',
-			customer_email: 'test@example.com',
-			customer_country: 'US',
-			currency: 'usd',
-		},
-	];
-	const mockSummary: AuthorizationsSummary = {
-		total: 1000,
-		count: 10,
-	};
+	const mockAuthorizations: Authorization[] = authorizationsFixture;
+
+	const mockSummary: AuthorizationsSummary = authorizationsSummaryFixture;
+
 	const mockError = {
 		error: 'Something went wrong!',
 		code: 400,
@@ -106,9 +85,9 @@ describe( 'Authorizations selectors', () => {
 
 	test( 'Returns authorizations list from state', () => {
 		const expected = mockAuthorizations;
-		expect( getAuthorizations( filledSuccessState, mockQuery ) ).toBe(
-			expected
-		);
+		expect(
+			getAuthorizations( filledSuccessState, mockQuery )
+		).toStrictEqual( expected );
 	} );
 
 	test( 'Returns empty authorizations list error when error is empty', () => {
@@ -157,5 +136,30 @@ describe( 'Authorizations selectors', () => {
 		expect(
 			getAuthorizationsSummaryError( filledErrorState, mockSummaryQuery )
 		).toBe( expected );
+	} );
+} );
+
+describe( 'Authorization selector', () => {
+	const emptyState = { authorizations: { byId: {}, summary: {} } };
+	const mockAuthorization = authorizationsFixture[ 0 ];
+
+	const filledState = {
+		authorizations: {
+			byId: {
+				[ mockAuthorization.payment_intent_id ]: mockAuthorization,
+			},
+		},
+	};
+
+	test( 'Returns undefined when authorization is not present', () => {
+		expect(
+			getAuthorization( emptyState, 'id_1661935621753_995' )
+		).toStrictEqual( undefined );
+	} );
+
+	test( 'Returns authorization when it is present', () => {
+		expect(
+			getAuthorization( filledState, mockAuthorization.payment_intent_id )
+		).toStrictEqual( mockAuthorization );
 	} );
 } );

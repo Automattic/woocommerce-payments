@@ -20,6 +20,7 @@ import { getAuthorizations, getAuthorizationsSummary } from '../resolvers';
 const errorResponse = {
 	name: 'authorizations-error',
 	message: 'There was an error',
+	code: '42',
 };
 
 const paginationQuery = {
@@ -33,7 +34,7 @@ describe( 'getAuthorizations resolver', () => {
 	const successfulResponse = { data: [] };
 	const query: Query = { ...paginationQuery };
 	const expectedQueryString =
-		'pagesize=25&sort=created&direction=desc&page=1';
+		'page=1&pagesize=25&sort=created&direction=desc';
 	let generator: Generator;
 
 	beforeEach( () => {

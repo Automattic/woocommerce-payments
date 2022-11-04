@@ -10,43 +10,16 @@ import type { Query } from '@woocommerce/navigation';
 import reducer from '../reducer';
 import types from '../action-types';
 import { getResourceId } from 'utils/data';
-import {
-	AuthorizationsSummary,
-	Authorization,
-} from 'wcpay/types/authorizations';
+import { Authorization } from 'wcpay/types/authorizations';
+import authorizationsFixture from './authorizations.fixture.json';
+import authorizationsSummaryFixture from './authorizations-summary.fixture.json';
 
 describe( 'Authorizations reducer tests', () => {
 	const mockQuery: Query = { paged: '2', per_page: '50' };
-	const mockAuthorizations: Authorization[] = [
-		{
-			payment_intent_id: 'pi_7890',
-			amount: 1000,
-			order_id: 950,
-			created: 'Today',
-			risk_level: 0,
-			customer_name: 'Test',
-			customer_email: 'test@example.com',
-			customer_country: 'US',
-			currency: 'usd',
-		},
-		{
-			payment_intent_id: 'pi_1235',
-			amount: 2000,
-			order_id: 100,
-			created: 'Today',
-			risk_level: 0,
-			customer_name: 'Test',
-			customer_email: 'test@example.com',
-			customer_country: 'US',
-			currency: 'usd',
-		},
-	];
-	const mockSummary: AuthorizationsSummary = {
-		total: 1000,
-		count: 950,
-	};
+	const mockAuthorizations = authorizationsFixture;
+	const mockSummary = authorizationsSummaryFixture;
 
-	const emptyState = { summary: {} };
+	const emptyState = { summary: {}, byId: {} };
 	const filledState = {
 		[ getResourceId( mockQuery ) ]: {
 			data: mockAuthorizations,
@@ -56,6 +29,7 @@ describe( 'Authorizations reducer tests', () => {
 				data: mockSummary,
 			},
 		},
+		byId: {},
 	};
 
 	test( 'Unrelated action is ignored', () => {
@@ -76,6 +50,7 @@ describe( 'Authorizations reducer tests', () => {
 			[ getResourceId( mockQuery ) ]: {
 				data: mockAuthorizations,
 			},
+			byId: {},
 		};
 
 		const reduced = reducer( emptyState, {
@@ -114,6 +89,7 @@ describe( 'Authorizations reducer tests', () => {
 					data: mockSummary,
 				},
 			},
+			byId: {},
 		};
 
 		const reduced = reducer( emptyState, {
@@ -127,8 +103,6 @@ describe( 'Authorizations reducer tests', () => {
 	test( 'Authorizations summary updated correctly on updated info', () => {
 		const newSummary = {
 			total: 5000,
-			fees: 100,
-			net: 4900,
 		};
 
 		const expected = {
@@ -146,5 +120,35 @@ describe( 'Authorizations reducer tests', () => {
 			query: mockQuery,
 		} );
 		expect( reduced ).toStrictEqual( expected );
+	} );
+
+	test( 'should reduce new authorization correctly', () => {
+		const stateAfterOne = reducer( undefined, {
+			type: types.SET_AUTHORIZATION,
+			data: mockAuthorizations[ 0 ],
+		} );
+
+		expect( stateAfterOne ).toStrictEqual( {
+			byId: {
+				[ mockAuthorizations[ 0 ].payment_intent_id ]:
+					mockAuthorizations[ 0 ],
+			},
+			summary: {},
+		} );
+
+		const stateAfterTwo = reducer( stateAfterOne, {
+			type: types.SET_AUTHORIZATION,
+			data: mockAuthorizations[ 1 ],
+		} );
+
+		expect( stateAfterTwo ).toStrictEqual( {
+			byId: {
+				[ mockAuthorizations[ 0 ].payment_intent_id ]:
+					mockAuthorizations[ 0 ],
+				[ mockAuthorizations[ 1 ].payment_intent_id ]:
+					mockAuthorizations[ 1 ],
+			},
+			summary: {},
+		} );
 	} );
 } );

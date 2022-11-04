@@ -6,9 +6,9 @@ import { Query } from '@woocommerce/navigation';
 
 export type RiskLevel = 'high' | 'elevated' | 'normal';
 
-// TODO: refine this type with more detailed information.
 export interface Authorization {
-	payment_intent_id: string;
+	captured: boolean;
+	charge_id: string;
 	created: string;
 	order_id: number;
 	risk_level: number;
@@ -16,6 +16,7 @@ export interface Authorization {
 	customer_name: string;
 	customer_email: string;
 	customer_country: string;
+	payment_intent_id: string;
 	currency: string;
 }
 
@@ -30,6 +31,22 @@ export interface AuthorizationsSummary {
 	total?: number;
 	currency?: string;
 	all_currencies?: string[];
+}
+
+export interface AuthorizationsState {
+	summary: {
+		[ x: string ]: { data?: AuthorizationsSummary; error?: string };
+	};
+	byId: Record< string, Authorization >;
+}
+
+interface GetAuthorizationsApiResponse {
+	data: Authorization[];
+}
+
+interface CaptureAuthorizationApiResponse {
+	id: string;
+	status: string;
 }
 
 export interface UpdateAuthorizationAction {
@@ -53,8 +70,12 @@ export interface UpdateAuthorizationsSummaryAction {
 	error?: string;
 }
 
-export interface AuthorizationsState {
-	summary: {
-		[ x: string ]: { data?: AuthorizationsSummary; error?: string };
-	};
+export interface SetErrorForAuthorizationsAction {
+	type: string;
+	error: string;
+}
+
+export interface SetErrorForAuthorizationsSummaryAction {
+	type: string;
+	error: string;
 }
