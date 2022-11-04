@@ -143,7 +143,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
 			add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
 		} else {
-			add_filter( 'wc_subscription_renewal_order_data', [ $this, 'remove_data_renewal_order' ], 10, 3 );
+			add_filter( 'wc_subscriptions_renewal_order_data', [ $this, 'remove_data_renewal_order' ], 10, 3 );
 		}
 
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
