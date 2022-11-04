@@ -4,6 +4,7 @@
 import React from 'react';
 import { Experiment } from '@woocommerce/explat';
 import { TabPanel } from '@wordpress/components';
+import { getQuery } from '@woocommerce/navigation';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -17,6 +18,7 @@ import {
 	EmptyStateTableHeaders,
 } from '../empty-state-table/list';
 import EmptyStateTable from 'empty-state-table';
+import { useAuthorizationsSummary } from 'wcpay/data';
 import ListBanner from '../empty-state-table/transactions-banner.svg';
 import Authorizations from './uncaptured';
 import './style.scss';
@@ -41,6 +43,8 @@ export const TransactionsPage = (): JSX.Element => {
 		/>
 	);
 
+	const { authorizationsSummary } = useAuthorizationsSummary( getQuery() );
+
 	if ( displayAuthorizations ) {
 		return (
 			<Page>
@@ -55,7 +59,10 @@ export const TransactionsPage = (): JSX.Element => {
 						},
 						{
 							name: 'uncaptured-page',
-							title: __( 'Uncaptured', 'woocommerce-payments' ),
+							// TODO: Find way to show a proper badge (as in menu) and convert back to translated string.
+							title: `Uncaptured (${
+								authorizationsSummary.count ?? '...'
+							})`,
 							className: 'authorizations-list',
 						},
 					] }
