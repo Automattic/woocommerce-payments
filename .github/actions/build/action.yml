@@ -1,17 +1,19 @@
-name: Build WooCommerce Payments
-description: Build WooCommerce Payments
-inputs: 
+name: "Build WooCommerce Payments"
+description: "Build WooCommerce Payments"
+    
+outputs:
   release-filename:
     description: "The name of the release filename"
-    default: 'woocommerce-payments.zip'
+    value: ${{ steps.build_plugin.outputs.RELEASE_FILENAME }}
 
 runs:
   using: composite
   steps:
-    - name: Build the plugin
+    - name: "Build the plugin"
+      id: build_plugin
       shell: bash
       env:
-        RELEASE_FILENAME: ${{ inputs.release-filename }}
+        RELEASE_FILENAME: "woocommerce-payments.zip"
       run: |
         npm ci
         npm run build
@@ -20,3 +22,5 @@ runs:
           echo "::error::Failed to create release archive $RELEASE_FILENAME."
           exit 1
         fi
+        
+        echo "RELEASE_FILENAME=$RELEASE_FILENAME" >> $GITHUB_OUTPUT
