@@ -217,3 +217,21 @@ export function updatePlatformCheckoutStoreLogo( storeLogo ) {
 		platform_checkout_store_logo: storeLogo,
 	} );
 }
+
+export function updatePlatformCheckoutButtonType( type ) {
+	return updateSettingsValues( { platform_checkout_button_type: type } );
+}
+
+export function updatePlatformCheckoutButtonSize( size ) {
+	return updateSettingsValues( { platform_checkout_button_size: size } );
+}
+
+export function updatePlatformCheckoutButtonTheme( theme ) {
+	return updateSettingsValues( { platform_checkout_button_theme: theme } );
+}
+
+export function updatePlatformCheckoutLocations( locations ) {
+	return updateSettingsValues( {
+		platform_checkout_enabled_locations: [ ...locations ],
+	} );
+}

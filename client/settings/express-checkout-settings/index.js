@@ -25,7 +25,7 @@ const methods = {
 		title: 'WooPay',
 		sections: [
 			{
-				section: 'general',
+				section: 'enable',
 				description: () => (
 					<>
 						<div className="express-checkout-settings__icon">
@@ -47,6 +47,20 @@ const methods = {
 						<div>
 							<h2>{ __( 'Checkout appearance' ) }</h2>
 						</div>
+					</>
+				),
+			},
+			{
+				section: 'general',
+				description: () => (
+					<>
+						<h2>{ __( 'Settings', 'woocommerce-payments' ) }</h2>
+						<p>
+							{ __(
+								'Configure the display of WooPay buttons on your store.',
+								'woocommerce-payments'
+							) }
+						</p>
 					</>
 				),
 			},
