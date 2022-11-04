@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Improve maybe_add_subscription_meta() and subscription_contains_synced_product() inside our WC_Subscriptions_Synchroniser class to use CRUD methods.

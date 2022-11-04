@@ -14,7 +14,7 @@ import {
 	UpdateAuthorizationsSummaryAction,
 } from 'wcpay/types/authorizations';
 
-const defaultState = { summary: {} };
+const defaultState = { summary: {}, byId: {} };
 
 const receiveAuthorizations = (
 	state: AuthorizationsState = defaultState,
@@ -22,13 +22,26 @@ const receiveAuthorizations = (
 		| UpdateAuthorizationAction
 		| UpdateAuthorizationsAction
 		| UpdateAuthorizationsSummaryAction
-): Record< string, any > => {
+): AuthorizationsState => {
 	switch ( action.type ) {
+		case TYPES.SET_AUTHORIZATION:
+			const authorization = action.data as Authorization;
+
+			return {
+				...state,
+				byId: {
+					...state.byId,
+					[ authorization.payment_intent_id ]: {
+						...state.byId[ authorization.payment_intent_id ],
+						...action.data,
+					},
+				},
+			};
 		case TYPES.SET_AUTHORIZATIONS:
 			return {
 				...state,
 				[ getResourceId( action.query ) ]: {
-					data: action.data as Authorization,
+					data: action.data,
 				},
 			};
 		case TYPES.SET_ERROR_FOR_AUTHORIZATIONS:
@@ -39,12 +52,13 @@ const receiveAuthorizations = (
 				},
 			};
 		case TYPES.SET_AUTHORIZATIONS_SUMMARY:
+			const summary = action.data as AuthorizationsSummary;
 			return {
 				...state,
 				summary: {
 					...state.summary,
 					[ getResourceId( action.query ) ]: {
-						data: action.data as AuthorizationsSummary,
+						data: summary || {},
 					},
 				},
 			};
@@ -54,7 +68,7 @@ const receiveAuthorizations = (
 				summary: {
 					...state.summary,
 					[ getResourceId( action.query ) ]: {
-						error: action.error,
+						error: action.error || '',
 					},
 				},
 			};

@@ -515,7 +515,6 @@ class WC_Payments_Admin {
 			'currencyData'               => $currency_data,
 			'restUrl'                    => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 			'numDisputesNeedingResponse' => $this->get_disputes_awaiting_response_count(),
-			'storeCurrencies'            => $this->account->get_store_currencies(),
 		];
 
 		wp_localize_script(
