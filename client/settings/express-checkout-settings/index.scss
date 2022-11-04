@@ -132,11 +132,15 @@
 
 .woopay-express-button {
 	font-size: 20px;
+	font-weight: normal;
 	line-height: 42px;
 	background: #fff;
 	border: 1px solid #fff;
 	color: $studio-woocommerce-purple-70;
 	width: 100%;
+	border-radius: 4px;
+	padding-top: 1px;
+	padding-bottom: 1px;
 
 	&[class*='dark'] {
 		background: $studio-woocommerce-purple-70;
