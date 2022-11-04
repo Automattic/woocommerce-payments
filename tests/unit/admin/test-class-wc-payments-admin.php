@@ -287,7 +287,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		// The expected badge content should include 4 disputes needing a response.
 		$expected_badge = sprintf( WC_Payments_Admin::UNRESOLVED_NOTIFICATION_BADGE_FORMAT, 4 );
 
-		$this->assertEquals( 'Disputes' . $expected_badge, $item_names_by_urls[ $dispute_url ] );
+		$this->assertSame( 'Disputes' . $expected_badge, $item_names_by_urls[ $dispute_url ] );
 	}
 
 	/**
@@ -364,7 +364,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		// The expected badge content should include 3 uncaptured transactions.
 		$expected_badge = sprintf( WC_Payments_Admin::UNRESOLVED_NOTIFICATION_BADGE_FORMAT, 3 );
 
-		$this->assertEquals( 'Transactions' . $expected_badge, $item_names_by_urls[ $transactions_url ] );
+		$this->assertSame( 'Transactions' . $expected_badge, $item_names_by_urls[ $transactions_url ] );
 	}
 
 	/**
@@ -400,6 +400,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$item_names_by_urls     = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
 		$transactions_menu_item = $item_names_by_urls['wc-admin&path=/payments/transactions'];
 
-		$this->assertEquals( 'Transactions', $transactions_menu_item );
+		$this->assertSame( 'Transactions', $transactions_menu_item );
 	}
 }

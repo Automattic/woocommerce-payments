@@ -327,6 +327,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 * Process webhook for a payment intent canceled event.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @return void
 	 */
 	private function process_webhook_payment_intent_canceled( $event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
@@ -337,6 +339,8 @@ class WC_Payments_Webhook_Processing_Service {
 	 * Process webhook for a payment intent amount capturable updated event.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @return void
 	 */
 	private function process_webhook_payment_intent_amount_capturable_updated( $event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.

@@ -956,6 +956,8 @@ class WC_Payments_Admin {
 	/**
 	 * Adds a notification badge to the Payments > Transactions admin menu item to
 	 * indicate the number of transactions that need to be captured.
+	 *
+	 * @return void
 	 */
 	public function add_transactions_notification_badge() {
 		global $submenu;
