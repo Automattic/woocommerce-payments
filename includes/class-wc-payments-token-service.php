@@ -149,7 +149,8 @@ class WC_Payments_Token_Service {
 
 			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) && (
 					( Payment_Method::CARD === $payment_method['type'] && WC_Payment_Gateway_WCPay::GATEWAY_ID === $gateway_id ) ||
-					( Payment_Method::SEPA === $payment_method['type'] && WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA === $gateway_id ) )
+					( Payment_Method::SEPA === $payment_method['type'] && WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA === $gateway_id ) ) ||
+					empty( $gateway_id )
 				) {
 				$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
 				$tokens[ $token->get_id() ] = $token;
