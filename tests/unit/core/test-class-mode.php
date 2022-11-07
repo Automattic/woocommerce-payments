@@ -47,7 +47,7 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 	public function test_throw_exception_if_uninitialized() {
 		$this->mock_gateway->settings = [];
 		$this->expectException( Exception::class );
-		$this->mode->live;
+		$this->mode->is_live();
 	}
 
 	public function test_init_defaults_to_live_mode() {
@@ -56,7 +56,7 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 			->with( 'test_mode' )
 			->willReturn( 'no' );
 
-		$this->assertTrue( $this->mode->live );
+		$this->assertTrue( $this->mode->is_live() );
 	}
 
 	public function test_init_enters_dev_mode_when_constant_is_defined() {
@@ -64,17 +64,15 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 			->method( 'is_wcpay_dev_mode_defined' )
 			->willReturn( true );
 
-		$this->mode->init();
-		$this->assertTrue( $this->mode->dev );
-		$this->assertTrue( $this->mode->test );
-		$this->assertFalse( $this->mode->live );
+		$this->assertTrue( $this->mode->is_dev() );
+		$this->assertTrue( $this->mode->is_test() );
+		$this->assertFalse( $this->mode->is_live() );
 	}
 
 	public function test_init_enters_dev_mode_through_filter() {
 		// Force dev mode to be entered through the filter.
 		add_filter( 'wcpay_dev_mode', '__return_true' );
-		$this->mode->init();
-		$this->assertTrue( $this->mode->dev );
+		$this->assertTrue( $this->mode->is_dev() );
 	}
 
 	public function test_init_enters_test_mode_with_gateway_test_mode_settings() {
@@ -84,18 +82,16 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 			->willReturn( 'yes' );
 
 		// Reset and check.
-		$this->mode->init();
-		$this->assertFalse( $this->mode->dev );
-		$this->assertTrue( $this->mode->test );
+		$this->assertFalse( $this->mode->is_dev() );
+		$this->assertTrue( $this->mode->is_test() );
 	}
 
 	public function test_init_enters_test_mode_through_filter() {
 		// FOrce test mode to be entered through the filter.
 		add_filter( 'wcpay_test_mode', '__return_true' );
 
-		$this->mode->init();
-		$this->assertTrue( $this->mode->test );
-		$this->assertFalse( $this->mode->dev );
+		$this->assertTrue( $this->mode->is_test() );
+		$this->assertFalse( $this->mode->is_dev() );
 	}
 
 	public function test_init_test_init_enters_dev_mode_when_environment_is_dev() {
@@ -103,7 +99,6 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 			->method( 'get_wp_environment_type' )
 			->willReturn( 'development' );
 
-		$this->mode->init();
-		$this->assertTrue( $this->mode->dev );
+		$this->assertTrue( $this->mode->is_dev() );
 	}
 }

@@ -12,13 +12,6 @@ use Exception;
 
 /**
  * Controls the working mode of WooCommerce Payments.
- *
- * @property-read bool $live  Flag for live mode.
- * @property-read bool $dev   Flag for dev mode.
- * @property-read bool $test  Flag for test mode.
- * @method        void live() Enters live mode. Should only be used for tests.
- * @method        void dev()  Enters live mode. Should only be used for tests.
- * @method        void test() Enters live mode. Should only be used for tests.
  */
 class Mode {
 	/**
