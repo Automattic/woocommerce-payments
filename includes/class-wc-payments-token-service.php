@@ -129,7 +129,7 @@ class WC_Payments_Token_Service {
 			}
 
 			$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::SEPA ];
-			$payment_methods                  = [ [] ];
+			$payment_methods                  = [];
 			foreach ( $retrievable_payment_method_types as $type ) {
 				$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
 			}
