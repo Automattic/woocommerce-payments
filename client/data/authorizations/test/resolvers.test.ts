@@ -4,22 +4,30 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import type { Query } from '@woocommerce/navigation';
+import { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
+import { Authorization } from 'wcpay/types/authorizations';
 import {
+	updateAuthorization,
 	updateAuthorizations,
 	updateAuthorizationsSummary,
 	updateErrorForAuthorizations,
 	updateErrorForAuthorizationsSummary,
 } from '../actions';
-import { getAuthorizations, getAuthorizationsSummary } from '../resolvers';
+import {
+	getAuthorization,
+	getAuthorizations,
+	getAuthorizationsSummary,
+} from '../resolvers';
+import { NAMESPACE } from '../../constants';
 
 const errorResponse = {
 	name: 'authorizations-error',
 	message: 'There was an error',
+	code: '42',
 };
 
 const paginationQuery = {
@@ -33,7 +41,7 @@ describe( 'getAuthorizations resolver', () => {
 	const successfulResponse = { data: [] };
 	const query: Query = { ...paginationQuery };
 	const expectedQueryString =
-		'pagesize=25&sort=created&direction=desc&page=1';
+		'page=1&pagesize=25&sort=created&direction=desc';
 	let generator: Generator;
 
 	beforeEach( () => {
@@ -70,6 +78,39 @@ describe( 'getAuthorizations resolver', () => {
 				updateErrorForAuthorizations( query, errorResponse )
 			);
 		} );
+	} );
+} );
+
+describe( 'getAuthorization resolver', () => {
+	let generator: Generator< unknown >;
+	const mockPaymentIntentId = '42';
+	const mockIsCaptured = false;
+
+	beforeEach( () => {
+		generator = getAuthorization( mockPaymentIntentId );
+		expect( generator.next().value ).toEqual(
+			apiFetch( {
+				path: `${ NAMESPACE }/authorizations/42`,
+			} )
+		);
+	} );
+
+	afterEach( () => {
+		expect( generator.next().done ).toStrictEqual( true );
+	} );
+
+	test( 'should update state with authorization data', () => {
+		expect(
+			generator.next( {
+				payment_intent_id: mockPaymentIntentId,
+				is_captured: mockIsCaptured,
+			} ).value
+		).toEqual(
+			updateAuthorization( {
+				payment_intent_id: mockPaymentIntentId,
+				captured: mockIsCaptured,
+			} as Authorization )
+		);
 	} );
 } );
 
