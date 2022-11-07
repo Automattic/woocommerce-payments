@@ -30,6 +30,9 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useAuthorizations: jest.fn(),
 	useAuthorizationsSummary: jest.fn(),
+	useAuthorization: jest.fn( () => ( {
+		doCaptureAuthorization: jest.fn(),
+	} ) ),
 } ) );
 
 const mockUseAuthorizations = useAuthorizations as jest.MockedFunction<
@@ -67,24 +70,28 @@ declare const global: {
 const getMockAuthorizations: () => Authorization[] = () => [
 	{
 		created: '2020-01-02 17:46:02',
+		captured: false,
 		order_id: 24,
-		risk_level: 0,
+		risk_level: 2,
 		amount: 1455,
 		customer_email: 'good_boy@doge.com',
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
-		payment_intent_id: 'pi_123',
+		payment_intent_id: 'pi_4242',
+		charge_id: 'ch_mock',
 		currency: 'usd',
 	},
 	{
 		created: '2020-01-03 17:46:02',
-		order_id: 22,
-		risk_level: 1,
+		captured: false,
+		order_id: 25,
+		risk_level: 0,
 		amount: 2010,
 		customer_email: 'good_boy@doge.com',
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
-		payment_intent_id: 'pi_345',
+		payment_intent_id: 'pi_4243',
+		charge_id: 'ch_mock',
 		currency: 'usd',
 	},
 ];
@@ -130,8 +137,8 @@ describe( 'Authorizations list', () => {
 			authorizationsSummary: {
 				count: 3,
 				currency: 'usd',
+				all_currencies: [ 'usd' ],
 				total: 300,
-				all_currencies: [ 'USD' ],
 			},
 			isLoading: false,
 		} );
@@ -154,8 +161,8 @@ describe( 'Authorizations list', () => {
 				authorizationsSummary: {
 					count: 3,
 					currency: 'usd',
+					all_currencies: [ 'usd' ],
 					total: 300,
-					all_currencies: [ 'USD' ],
 				},
 				isLoading: false,
 			} );
@@ -211,8 +218,8 @@ describe( 'Authorizations list', () => {
 				authorizationsSummary: {
 					count: 3,
 					currency: 'usd',
+					all_currencies: [ 'usd' ],
 					total: 300,
-					all_currencies: [ 'USD' ],
 				},
 				isLoading: false,
 			} );

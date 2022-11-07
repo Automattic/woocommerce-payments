@@ -243,6 +243,22 @@ exports[`Authorizations list renders correctly 1`] = `
                     Sort by Amount in descending order
                   </span>
                 </th>
+                <th
+                  class="woocommerce-table__header"
+                  role="columnheader"
+                  scope="col"
+                >
+                  <span
+                    aria-hidden="true"
+                  >
+                    Action
+                  </span>
+                  <span
+                    class="screen-reader-text"
+                  >
+                    Action
+                  </span>
+                </th>
               </tr>
               <tr>
                 <th
@@ -252,7 +268,7 @@ exports[`Authorizations list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
                     tabindex="-1"
                   >
                     Jan 2, 2020 / 12:46PM
@@ -264,7 +280,7 @@ exports[`Authorizations list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
                     tabindex="-1"
                   >
                     Jan 9, 2020 / 12:46PM
@@ -276,7 +292,7 @@ exports[`Authorizations list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
                     tabindex="-1"
                   >
                     #24 from Good boy
@@ -288,7 +304,84 @@ exports[`Authorizations list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
+                    tabindex="-1"
+                  >
+                    <span
+                      style="color: red;"
+                    >
+                      Highest
+                    </span>
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-numeric"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
+                    tabindex="-1"
+                  >
+                    $14.55
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <button
+                    class="components-button is-secondary is-small"
+                    type="button"
+                  >
+                    Capture
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <th
+                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
+                  scope="row"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
+                    tabindex="-1"
+                  >
+                    Jan 3, 2020 / 12:46PM
+                  </a>
+                </th>
+                <td
+                  class="woocommerce-table__item date-time is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
+                    tabindex="-1"
+                  >
+                    Jan 10, 2020 / 12:46PM
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
+                    tabindex="-1"
+                  >
+                    #25 from Good boy
+                  </a>
+                </td>
+                <td
+                  class="woocommerce-table__item is-left-aligned"
+                >
+                  <a
+                    class="woocommerce-table__clickable-cell"
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
                     tabindex="-1"
                   >
                     <span
@@ -304,78 +397,21 @@ exports[`Authorizations list renders correctly 1`] = `
                   <a
                     class="woocommerce-table__clickable-cell"
                     data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_123"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
                     tabindex="-1"
                   >
-                    $14.55
-                  </a>
-                </td>
-              </tr>
-              <tr>
-                <th
-                  class="woocommerce-table__item date-time is-left-aligned is-sorted"
-                  scope="row"
-                >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
-                    tabindex="-1"
-                  >
-                    Jan 3, 2020 / 12:46PM
-                  </a>
-                </th>
-                <td
-                  class="woocommerce-table__item date-time is-left-aligned"
-                >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
-                    tabindex="-1"
-                  >
-                    Jan 10, 2020 / 12:46PM
+                    $20.10
                   </a>
                 </td>
                 <td
                   class="woocommerce-table__item"
                 >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
-                    tabindex="-1"
+                  <button
+                    class="components-button is-secondary is-small"
+                    type="button"
                   >
-                    #22 from Good boy
-                  </a>
-                </td>
-                <td
-                  class="woocommerce-table__item is-left-aligned"
-                >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
-                    tabindex="-1"
-                  >
-                    <span
-                      style="color: orange;"
-                    >
-                      Elevated
-                    </span>
-                  </a>
-                </td>
-                <td
-                  class="woocommerce-table__item is-numeric"
-                >
-                  <a
-                    class="woocommerce-table__clickable-cell"
-                    data-link-type="wc-admin"
-                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_345"
-                    tabindex="-1"
-                  >
-                    $20.10
-                  </a>
+                    Capture
+                  </button>
                 </td>
               </tr>
             </tbody>
