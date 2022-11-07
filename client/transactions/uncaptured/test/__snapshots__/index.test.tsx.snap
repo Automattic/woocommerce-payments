@@ -271,7 +271,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
                     tabindex="-1"
                   >
-                    Jan 2, 2020 / 12:46PM
+                    Jan 2, 2020 / 5:46PM
                   </a>
                 </th>
                 <td
@@ -283,7 +283,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
                     tabindex="-1"
                   >
-                    Jan 9, 2020 / 12:46PM
+                    Jan 9, 2020 / 5:46PM
                   </a>
                 </td>
                 <td
@@ -348,7 +348,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
                     tabindex="-1"
                   >
-                    Jan 3, 2020 / 12:46PM
+                    Jan 3, 2020 / 5:46PM
                   </a>
                 </th>
                 <td
@@ -360,7 +360,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
                     tabindex="-1"
                   >
-                    Jan 10, 2020 / 12:46PM
+                    Jan 10, 2020 / 5:46PM
                   </a>
                 </td>
                 <td
