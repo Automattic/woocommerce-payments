@@ -47,7 +47,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	public function test_it_registers_platform_checkout_hooks_if_feature_flag_is_enabled() {
 		// Enable dev mode so nonce check is disabled.
-		WC_Payments::mode()->dev;
+		WC_Payments::mode()->is_dev();
 
 		$this->set_platform_checkout_enabled( true );
 

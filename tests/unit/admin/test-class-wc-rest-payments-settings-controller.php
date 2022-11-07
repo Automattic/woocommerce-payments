@@ -398,7 +398,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_update_settings_does_not_save_test_mode_when_dev_mode_enabled() {
 		WC_Payments::mode()->dev();
 		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
-		$this->assertEquals( true, WC_Payments::mode()->test );
+		$this->assertEquals( true, WC_Payments::mode()->is_test() );
 
 		$request = new WP_REST_Request();
 		$request->set_param( 'is_test_mode_enabled', true );
@@ -406,7 +406,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->update_settings( $request );
 
 		$this->assertEquals( 'no', $this->gateway->get_option( 'test_mode' ) );
-		$this->assertEquals( true, WC_Payments::mode()->test );
+		$this->assertEquals( true, WC_Payments::mode()->is_test() );
 
 		WC_Payments::mode()->live();
 	}
