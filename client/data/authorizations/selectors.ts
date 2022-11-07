@@ -1,15 +1,19 @@
 /** @format */
+/**
+ * External dependencies
+ */
 
 import type { Query } from '@woocommerce/navigation';
-import {
-	AuthorizationsSummary,
-	Authorization,
-} from 'wcpay/types/authorizations';
 
 /**
  * Internal dependencies
  */
 import { getResourceId } from 'utils/data';
+import { ApiError } from 'wcpay/types/errors';
+import {
+	AuthorizationsSummary,
+	Authorization,
+} from 'wcpay/types/authorizations';
 
 /**
  * Retrieves the authorizations state from the wp.data store if the state
@@ -39,7 +43,7 @@ const getAuthorizationsState = ( state: Record< string, any > ) => {
 const getAuthorizationsForQuery = (
 	state: Record< string, any >,
 	query: Query
-) => {
+): Record< string, any > => {
 	const index = getResourceId( query );
 	return getAuthorizationsState( state )[ index ] || {};
 };
@@ -51,10 +55,18 @@ export const getAuthorizations = (
 	return getAuthorizationsForQuery( state, query ).data || [];
 };
 
+export const getAuthorization = (
+	state: Record< string, any >,
+	id: string
+): Record< string, any > => {
+	const authorizationById = getAuthorizationsState( state ).byId || {};
+	return authorizationById[ id ];
+};
+
 export const getAuthorizationsError = (
 	state: Record< string, any >,
 	query: Query
-): Error => {
+): ApiError => {
 	return getAuthorizationsForQuery( state, query ).error || {};
 };
 
@@ -69,7 +81,7 @@ export const getAuthorizationsError = (
 const getAuthorizationsSummaryForQuery = (
 	state: Record< string, any >,
 	query: Query
-): any => {
+): Record< string, any > => {
 	const index = getResourceId( query );
 	return getAuthorizationsState( state ).summary[ index ] || {};
 };
@@ -84,6 +96,6 @@ export const getAuthorizationsSummary = (
 export const getAuthorizationsSummaryError = (
 	state: Record< string, any >,
 	query: Query
-): Error => {
+): ApiError => {
 	return getAuthorizationsSummaryForQuery( state, query ).error || {};
 };

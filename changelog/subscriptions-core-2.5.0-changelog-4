@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+When saving sync meta data on a new subscription, use 'woocommerce_new_subscription' instead of 'save_post'. This is to prevent errors when purchasing a subscription on stores that have HPOS enabled.[.

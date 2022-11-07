@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+New WCS_Orders_Table_Data_Store_Controller class to load the proper subscriptions data store when the store has HPOS enabled.
