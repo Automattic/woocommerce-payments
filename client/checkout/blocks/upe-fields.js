@@ -21,7 +21,11 @@ import { useEffect, useState } from '@wordpress/element';
 import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig, getUPEConfig } from 'utils/checkout';
-import { getTerms, getPaymentIntentFromSession } from '../utils/upe';
+import {
+	getTerms,
+	getPaymentIntentFromSession,
+	getCookieValue,
+} from '../utils/upe';
 import { WC_STORE_CART } from '../constants.js';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { useDispatch, useSelect } from '@wordpress/data';
@@ -388,6 +392,17 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		async function createIntent( paymentMethodId ) {
 			try {
 				const response = await api.createIntent( paymentMethodId );
+				const cartHash = getCookieValue( 'woocommerce_cart_hash' );
+				if ( cartHash ) {
+					paymentMethodsConfig[
+						paymentMethodId
+					].upePaymentIntentData =
+						cartHash +
+						'-' +
+						response.id +
+						'-' +
+						response.client_secret;
+				}
 				setPaymentIntentId( response.id );
 				setClientSecret( response.client_secret );
 			} catch ( error ) {
