@@ -44,7 +44,7 @@ exports[`Dispute info renders correctly 1`] = `
       <span
         class="wcpay-dispute-info-value"
       >
-        Nov 8, 2019 - 2:46AM
+        Nov 8, 2019 - 7:46AM
       </span>
     </div>
     <div

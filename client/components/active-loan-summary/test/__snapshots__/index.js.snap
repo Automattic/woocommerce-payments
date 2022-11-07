@@ -55,7 +55,7 @@ exports[`Active loan summary renders correctly 1`] = `
           <div
             class="wcpay-loan-summary-block__title"
           >
-            Repaid this period (until Feb 14, 2022)
+            Repaid this period (until Feb 15, 2022)
           </div>
           <div
             class="wcpay-loan-summary-block__value"

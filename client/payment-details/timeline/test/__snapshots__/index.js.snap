@@ -23,7 +23,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
             <p
               class="woocommerce-timeline-group__title"
             >
-              April 4, 2020
+              April 5, 2020
             </p>
             <ul>
               <li
@@ -58,7 +58,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    10:56pm
+                    2:56am
                   </span>
                 </div>
                 <div
@@ -97,7 +97,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    10:56pm
+                    2:56am
                   </span>
                 </div>
                 <div
@@ -136,7 +136,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    12:20pm
+                    4:20pm
                   </span>
                 </div>
                 <div
@@ -182,7 +182,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    12:20pm
+                    4:20pm
                   </span>
                 </div>
                 <div
@@ -228,7 +228,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    12:20pm
+                    4:20pm
                   </span>
                 </div>
                 <div
@@ -267,7 +267,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    9:51am
+                    1:51pm
                   </span>
                 </div>
                 <div
@@ -306,7 +306,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    9:51am
+                    1:51pm
                   </span>
                 </div>
                 <div
@@ -345,7 +345,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    9:51am
+                    1:51pm
                   </span>
                 </div>
                 <div
@@ -399,7 +399,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    2:58pm
+                    6:58pm
                   </span>
                 </div>
                 <div
@@ -438,7 +438,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    2:58pm
+                    6:58pm
                   </span>
                 </div>
                 <div
@@ -477,7 +477,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    2:58pm
+                    6:58pm
                   </span>
                 </div>
                 <div
@@ -531,7 +531,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    4:26pm
+                    8:26pm
                   </span>
                 </div>
                 <div
@@ -570,7 +570,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    4:26pm
+                    8:26pm
                   </span>
                 </div>
                 <div
@@ -621,7 +621,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    10:06pm
+                    2:06am
                   </span>
                 </div>
                 <div
@@ -660,7 +660,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    10:06pm
+                    2:06am
                   </span>
                 </div>
                 <div
@@ -707,7 +707,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    10:06pm
+                    2:06am
                   </span>
                 </div>
                 <div
@@ -756,7 +756,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    10:37am
+                    2:37pm
                   </span>
                 </div>
                 <div
@@ -802,7 +802,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    10:37am
+                    2:37pm
                   </span>
                 </div>
                 <div
@@ -841,7 +841,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    10:37am
+                    2:37pm
                   </span>
                 </div>
                 <div
@@ -901,7 +901,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    11:35pm
+                    3:35am
                   </span>
                 </div>
                 <div
@@ -940,7 +940,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    11:35pm
+                    3:35am
                   </span>
                 </div>
                 <div
@@ -979,7 +979,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    5:58pm
+                    9:58pm
                   </span>
                 </div>
                 <div
@@ -1018,7 +1018,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    5:58pm
+                    9:58pm
                   </span>
                 </div>
                 <div
@@ -1057,7 +1057,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    6:57am
+                    10:57am
                   </span>
                 </div>
                 <div
@@ -1096,7 +1096,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    6:57am
+                    10:57am
                   </span>
                 </div>
                 <div
@@ -1147,7 +1147,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    1:33pm
+                    5:33pm
                   </span>
                 </div>
                 <div
@@ -1186,7 +1186,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    1:33pm
+                    5:33pm
                   </span>
                 </div>
                 <div
@@ -1343,7 +1343,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    3:18pm
+                    7:18pm
                   </span>
                 </div>
                 <div
@@ -1382,7 +1382,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    3:18pm
+                    7:18pm
                   </span>
                 </div>
                 <div
@@ -1421,7 +1421,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    3:18pm
+                    7:18pm
                   </span>
                 </div>
                 <div
@@ -1482,7 +1482,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    3:18pm
+                    7:18pm
                   </span>
                 </div>
                 <div
@@ -1521,7 +1521,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                   <span
                     class="woocommerce-timeline-item__timestamp"
                   >
-                    3:18pm
+                    7:18pm
                   </span>
                 </div>
                 <div
