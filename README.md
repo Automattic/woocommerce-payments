@@ -55,3 +55,5 @@ See: https://github.com/Automattic/woocommerce-payments/blob/trunk/CONTRIBUTING.
 If you are following the Docker setup [here](https://github.com/Automattic/woocommerce-payments/blob/trunk/docker/README.md), Xdebug is ready to use for debugging.
 
 Install [Xdebug Helper browser extension mentioned here](https://xdebug.org/docs/remote) to enable Xdebug on demand.
+
+Test.
