@@ -112,7 +112,7 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 		}
 
 		// Add event property for test mode vs. live mode events.
-		$data['test_mode']     = WC_Payments::mode()->test ? 1 : 0;
+		$data['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
 		$data['wcpay_version'] = get_option( 'woocommerce_woocommerce_payments_version' );
 
 		return $this->tracks_record_event( $user, $event, $data );

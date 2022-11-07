@@ -344,7 +344,7 @@ class WC_Payments_API_Client {
 				}
 			}
 		}
-		if ( $payment_country && ! WC_Payments::mode()->dev ) {
+		if ( $payment_country && ! WC_Payments::mode()->is_dev() ) {
 			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.
 			$request['payment_country'] = $payment_country;
 		}
@@ -1092,7 +1092,7 @@ class WC_Payments_API_Client {
 	public function get_account_data() {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::mode()->dev, // only send a test mode request if in dev mode.
+				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API,
 			self::GET
@@ -1109,7 +1109,7 @@ class WC_Payments_API_Client {
 	public function get_platform_checkout_eligibility() {
 		return $this->request(
 			[
-				'test_mode' => WC_Payments::mode()->dev, // only send a test mode request if in dev mode.
+				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
 			self::PLATFORM_CHECKOUT_API,
 			self::GET
@@ -1128,7 +1128,7 @@ class WC_Payments_API_Client {
 	public function update_platform_checkout( $data ) {
 		return $this->request(
 			array_merge(
-				[ 'test_mode' => WC_Payments::mode()->dev ],
+				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
 				$data
 			),
 			self::PLATFORM_CHECKOUT_API,
@@ -1193,7 +1193,7 @@ class WC_Payments_API_Client {
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
 				'site_data'           => $site_data,
-				'create_live_account' => ! WC_Payments::mode()->dev,
+				'create_live_account' => ! WC_Payments::mode()->is_dev(),
 				'actioned_notes'      => $actioned_notes,
 			]
 		);
@@ -1259,7 +1259,7 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[
 				'redirect_url' => $redirect_url,
-				'test_mode'    => WC_Payments::mode()->dev, // only send a test mode request if in dev mode.
+				'test_mode'    => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API . '/login_links',
 			self::POST,
@@ -1986,7 +1986,7 @@ class WC_Payments_API_Client {
 		$params = wp_parse_args(
 			$params,
 			[
-				'test_mode' => WC_Payments::mode()->test,
+				'test_mode' => WC_Payments::mode()->is_test(),
 			]
 		);
 

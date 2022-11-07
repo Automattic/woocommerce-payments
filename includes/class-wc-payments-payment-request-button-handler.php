@@ -505,7 +505,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		}
 
 		// If no SSL, bail.
-		if ( ! WC_Payments::mode()->test && ! is_ssl() ) {
+		if ( ! WC_Payments::mode()->is_test() && ! is_ssl() ) {
 			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
 			return false;
 		}
@@ -730,7 +730,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'ajax_url'           => admin_url( 'admin-ajax.php' ),
 			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'stripe'             => [
-				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->test ),
+				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 				'accountId'      => $this->account->get_stripe_account_id(),
 				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			],

@@ -1156,7 +1156,7 @@ class WC_Payments_Account {
 		}
 
 		// test accounts are valid only when in dev mode.
-		if ( WC_Payments::mode()->dev ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return true;
 		}
 

@@ -418,7 +418,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean True if needs to set up forced ssl in checkout or https
 	 */
 	public function needs_https_setup() {
-		return ! WC_Payments::mode()->test && ! wc_checkout_is_https();
+		return ! WC_Payments::mode()->is_test() && ! wc_checkout_is_https();
 	}
 
 	/**
@@ -813,7 +813,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[
 					'order_id'     => $order->get_id(),
 					'customer_id'  => $customer_id,
-					'is_test_mode' => WC_Payments::mode()->test,
+					'is_test_mode' => WC_Payments::mode()->is_test(),
 					'is_woopay'    => $options['is_woopay'] ?? false,
 				]
 			);
@@ -882,7 +882,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[
 					'payment_method' => $payment_information->get_payment_method(),
 					'order_id'       => $order->get_id(),
-					'is_test_mode'   => WC_Payments::mode()->test,
+					'is_test_mode'   => WC_Payments::mode()->is_test(),
 				]
 			);
 		}
@@ -894,7 +894,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_method = $payment_information->get_payment_method();
 		$order->update_meta_data( '_payment_method_id', $payment_method );
 		$order->update_meta_data( '_stripe_customer_id', $customer_id );
-		$order->update_meta_data( '_wcpay_mode', WC_Payments::mode()->test ? 'test' : 'prod' );
+		$order->update_meta_data( '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
@@ -1528,7 +1528,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return '';
 		}
 
-		$in_dev_mode = WC_Payments::mode()->dev;
+		$in_dev_mode = WC_Payments::mode()->is_dev();
 
 		if ( 'test_mode' === $key && $in_dev_mode ) {
 			$data['custom_attributes']['disabled'] = 'disabled';
@@ -1645,7 +1645,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $is_platform_checkout_enabled !== $current_is_platform_checkout_enabled ) {
 			wc_admin_record_tracks_event(
 				$is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled',
-				[ 'test_mode' => WC_Payments::mode()->test ? 1 : 0 ]
+				[ 'test_mode' => WC_Payments::mode()->is_test() ? 1 : 0 ]
 			);
 			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
 			if ( ! $is_platform_checkout_enabled ) {

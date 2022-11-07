@@ -71,7 +71,7 @@ class WC_Payments_Order_Service {
 			[
 				'order_id'     => $order->get_id(),
 				'intent_id'    => $intent_id,
-				'is_test_mode' => WC_Payments::mode()->test,
+				'is_test_mode' => WC_Payments::mode()->is_test(),
 			]
 		);
 

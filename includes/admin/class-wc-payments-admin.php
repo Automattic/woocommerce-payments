@@ -481,7 +481,7 @@ class WC_Payments_Admin {
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 				'availableStates'    => WC()->countries->get_states(),
 			],
-			'testMode'                   => WC_Payments::mode()->test,
+			'testMode'                   => WC_Payments::mode()->is_test(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'         => WC_Payments_Account::is_on_boarding_disabled(),
 			'errorMessage'               => $error_message,
@@ -577,7 +577,7 @@ class WC_Payments_Admin {
 			'wcpayPaymentRequestParams',
 			[
 				'stripe' => [
-					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->test ),
+					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 					'accountId'      => $this->account->get_stripe_account_id(),
 					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 				],
