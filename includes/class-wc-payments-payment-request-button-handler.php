@@ -1612,7 +1612,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		if (
 			$this->gateway->is_enabled()
 			&& 'yes' === $this->gateway->get_option( 'payment_request' )
-			&& ! WC_Payments::mode()->dev
+			&& ! WC_Payments::mode()->is_dev()
 			&& $this->account->get_is_live()
 		) {
 			$value = wp_rand( 1, 2 );
