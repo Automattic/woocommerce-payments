@@ -41,54 +41,25 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				document.getElementById( 'billing_phone' )?.value || '';
 		}
 
-		setPhoneNumber( phoneFieldValue );
 		return phoneFieldValue;
 	};
 
-	// use extensionCartUpdate for blocks checkout only.
-	useEffect( () => {
-		if ( ! isBlocksCheckout ) {
-			return;
+	const handleCheckboxClick = () => {
+		if ( isSaveDetailsChecked ) {
+			setPhoneNumber( null );
+			if ( isBlocksCheckout ) {
+				extensionCartUpdate( {
+					namespace: 'platform-checkout',
+					data: {},
+				} ).then( () => {
+					setUserDataSent( false );
+				} );
+			}
+		} else {
+			setPhoneNumber( getPhoneFieldValue() );
 		}
-
-		const formSubmitButton = document.querySelector(
-			'button.wc-block-components-checkout-place-order-button'
-		);
-
-		if ( ! formSubmitButton ) {
-			return;
-		}
-
-		// send data to extension endpoint when place order button is clicked.
-		const sendRequestToExtension = () => {
-			extensionCartUpdate( {
-				namespace: 'platform-checkout',
-				data: {
-					save_user_in_platform_checkout: isSaveDetailsChecked,
-					platform_checkout_user_phone_field: {
-						full: phoneNumber,
-					},
-				},
-			} ).then( () => {
-				setUserDataSent( true );
-			} );
-		};
-
-		formSubmitButton.addEventListener( 'click', sendRequestToExtension );
-
-		return () => {
-			// Remove event listener
-			formSubmitButton.removeEventListener(
-				'click',
-				sendRequestToExtension
-			);
-		};
-	}, [
-		isBlocksCheckout,
-		isSaveDetailsChecked,
-		phoneNumber,
-		setUserDataSent,
-	] );
+		setIsSaveDetailsChecked( ( v ) => ! v );
+	};
 
 	useEffect( () => {
 		const formSubmitButton = isBlocksCheckout
@@ -106,6 +77,21 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		const updateFormSubmitButton = () => {
 			if ( isSaveDetailsChecked && isPhoneValid ) {
 				formSubmitButton.removeAttribute( 'disabled' );
+
+				if ( isBlocksCheckout ) {
+					// Set extension data if checkbox is selected and phone number is valid.
+					extensionCartUpdate( {
+						namespace: 'platform-checkout',
+						data: {
+							save_user_in_platform_checkout: isSaveDetailsChecked,
+							platform_checkout_user_phone_field: {
+								full: phoneNumber,
+							},
+						},
+					} ).then( () => {
+						setUserDataSent( true );
+					} );
+				}
 			}
 
 			if ( isSaveDetailsChecked && ! isPhoneValid ) {
@@ -119,7 +105,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			// Clean up
 			formSubmitButton.removeAttribute( 'disabled' );
 		};
-	}, [ isBlocksCheckout, isPhoneValid, isSaveDetailsChecked ] );
+	}, [ isBlocksCheckout, isPhoneValid, isSaveDetailsChecked, phoneNumber ] );
 
 	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
 	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
@@ -153,10 +139,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					<input
 						type="checkbox"
 						checked={ isSaveDetailsChecked }
-						onChange={ () => {
-							setIsSaveDetailsChecked( ( v ) => ! v );
-							setPhoneNumber( null );
-						} }
+						onChange={ handleCheckboxClick }
 						name="save_user_in_platform_checkout"
 						id="save_user_in_platform_checkout"
 						value="true"
