@@ -3,12 +3,6 @@ name: "Handle post-release steps"
 # This action will run when it is triggered manually
 on:
   workflow_dispatch:
-    inputs:
-      allowMerge:
-        description: 'Whether we allow merging trunk back into develop'
-        required: false
-        type: string
-        default: "false"
 
 defaults:
   run:
@@ -81,7 +75,6 @@ jobs:
   merge-trunk-into-develop:
     name: "Merge trunk back into develop"
     needs: get-last-released-version
-    if: ${{ inputs.allowMerge == 'true' }}
     runs-on: ubuntu-20.04
     env:
       RELEASE_VERSION: ${{ needs.get-last-released-version.outputs.releaseVersion }}
