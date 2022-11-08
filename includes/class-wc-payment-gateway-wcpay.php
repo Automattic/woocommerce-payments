@@ -2635,12 +2635,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function create_and_confirm_setup_intent() {
 		$payment_information             = Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification
-		$should_save_in_platform_account = false;
-
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( $this->platform_checkout_util->should_save_platform_customer() ) {
-			$should_save_in_platform_account = true;
-		}
+		$should_save_in_platform_account = $this->platform_checkout_util->should_save_platform_customer();
 
 		// Determine the customer adding the payment method, create one if we don't have one already.
 		$user        = wp_get_current_user();
