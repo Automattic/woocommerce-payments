@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fetch authorization data in payment details page only when the payment needs manual capture
