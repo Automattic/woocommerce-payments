@@ -96,6 +96,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $payments_checkout;
 
 	/**
+	 * @var string
+	 */
+	private $mock_charge_id = 'ch_mock';
+
+	/**
+	 * @var integer
+	 */
+	private $mock_charge_created = 1653076178;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {

@@ -1,0 +1,50 @@
+name: "Create a tag"
+description: "Create a tag if the format is correct"
+
+inputs:
+  version:
+    description: "The version that the action should use to create the tag (e.g. 4.5.0 or 4.5.0-test-2)"
+    required: true
+  is-pre-release:
+    description: "Whether the action runs in the context of a pre-release (default: true)"
+    required: true
+    default: "true"
+    
+outputs:
+  trimmed-version:
+    description: "The trimmed version"
+    value: ${{ steps.version_format_check.outputs.trimmed-version }}
+  tag-message:
+    description: "The tagging message"
+    value: ${{ steps.create_tag.outputs.TAG_MESSAGE }}
+
+runs:
+  using: composite
+  steps:
+    - name: "Check the format of the version"
+      id: version_format_check
+      uses: ./.github/actions/version-check
+      with:
+        version: ${{ inputs.version }}
+        is-pre-release: ${{ inputs.is-pre-release }}    
+    
+    - name: "Create a tag"
+      id: create_tag
+      shell: bash
+      env:
+        IS_PRERELEASE: ${{ inputs.is-pre-release }}
+        VERSION: ${{ steps.version_format_check.outputs.trimmed-version }}
+      run: |
+        if ${{ env.IS_PRERELEASE == 'true' }}; then
+          TAG_MESSAGE="Version for testing $VERSION. Not for Production"
+          echo "Created tag $VERSION." >> $GITHUB_STEP_SUMMARY
+        else
+          TAG_MESSAGE="Version $VERSION"
+          echo ":rocket: Created tag $VERSION. :rocket:" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        git config user.name "${{ github.actor }}"
+        git config user.email "${{ github.actor }}@users.noreply.github.com"
+        git tag -a -m "$TAG_MESSAGE" $VERSION
+        git push origin $VERSION
+        echo "TAG_MESSAGE=$TAG_MESSAGE" >> $GITHUB_OUTPUT

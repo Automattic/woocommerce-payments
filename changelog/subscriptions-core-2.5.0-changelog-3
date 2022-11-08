@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+New data copier class to copy data to subscriptions and related orders in place of direct database queries in prepraration for HPOS support.
