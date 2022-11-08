@@ -137,7 +137,7 @@ export const TransactionsPage = (): JSX.Element => {
 	);
 };
 
-export default () => {
+export default (): JSX.Element => {
 	return (
 		<Page>
 			<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
