@@ -21,8 +21,6 @@ import EmptyStateTable from 'empty-state-table';
 import ListBanner from '../empty-state-table/transactions-banner.svg';
 import Authorizations from './uncaptured';
 import './style.scss';
-
-const displayAuthorizations = false;
 import {
 	useManualCapture,
 	useSettings,
@@ -75,7 +73,7 @@ export const TransactionsPage = (): JSX.Element => {
 		/>
 	);
 
-	if ( displayAuthorizations ) {
+	if ( shouldShowUncapturedTab ) {
 		return (
 			<Page>
 				<TabPanel
