@@ -429,8 +429,8 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 	public function test_should_convert_coupon_amount_return_false_if_false_passed() {
 		// Conditions added to return true, but should return false if false passed.
 		$this->mock_utils
-		->expects( $this->exactly( 0 ) )
-		->method( 'is_call_in_backtrace' );
+			->expects( $this->exactly( 0 ) )
+			->method( 'is_call_in_backtrace' );
 		$this->mock_wcs_cart_contains_renewal( false );
 
 		$this->assertFalse( $this->woocommerce_subscriptions->should_convert_coupon_amount( false, $this->mock_coupon ) );
@@ -456,8 +456,8 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 
 	public function test_should_convert_coupon_amount_return_true_with_no_renewal_in_cart() {
 		$this->mock_utils
-		->expects( $this->exactly( 0 ) )
-		->method( 'is_call_in_backtrace' );
+			->expects( $this->exactly( 0 ) )
+			->method( 'is_call_in_backtrace' );
 
 		$this->mock_wcs_cart_contains_renewal( false );
 		$this->assertTrue( $this->woocommerce_subscriptions->should_convert_coupon_amount( true, $this->mock_coupon ) );
