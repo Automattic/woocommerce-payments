@@ -704,6 +704,7 @@ jQuery( function ( $ ) {
 			return upeComponents.paymentIntentClientSecret;
 		}
 		const { clientSecret } = getPaymentIntentFromSession(
+			paymentMethodsConfig,
 			paymentMethodType
 		);
 		return clientSecret ? clientSecret : null;
