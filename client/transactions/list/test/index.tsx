@@ -520,7 +520,7 @@ describe( 'Transactions list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
 					path:
-						'/wc/v3/payments/transactions/download?user_email=mock%40example.com&user_timezone=-04%3A00',
+						'/wc/v3/payments/transactions/download?user_email=mock%40example.com&user_timezone=-05%3A00',
 				} );
 			} );
 		} );
@@ -575,7 +575,7 @@ describe( 'Transactions list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
 					path:
-						'/wc/v3/payments/transactions/download?user_email=mock%40example.com&deposit_id=po_mock&user_timezone=-04%3A00',
+						'/wc/v3/payments/transactions/download?user_email=mock%40example.com&deposit_id=po_mock&user_timezone=-05%3A00',
 				} );
 			} );
 		} );
