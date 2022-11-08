@@ -36,6 +36,10 @@ class Platform_Checkout_Extension {
 	 * @return void
 	 */
 	public function store_user_consent_for_platform_checkout( array $data ) {
+		// Sets the WC customer session if one is not set.
+		if ( ! ( isset( WC()->session ) && WC()->session->has_session() ) ) {
+			WC()->session->set_customer_session_cookie( true );
+		}
 		WC()->session->set( self::PLATFORM_CHECKOUT_SESSION_KEY, $data );
 	}
 }
