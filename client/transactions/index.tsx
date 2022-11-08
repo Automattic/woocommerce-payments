@@ -23,6 +23,11 @@ import Authorizations from './uncaptured';
 import './style.scss';
 
 const displayAuthorizations = false;
+import {
+	useManualCapture,
+	useSettings,
+	useAuthorizationsSummary,
+} from 'wcpay/data';
 
 const currentQuery = getQuery();
 const initialTab = currentQuery.tab ?? null;
@@ -47,6 +52,18 @@ export const TransactionsPage = (): JSX.Element => {
 			<TransactionsList />
 		</>
 	);
+
+	const [ getIsManualCaptureEnabled ] = useManualCapture();
+	const { isLoading: isLoadingSettings } = useSettings();
+	const { authorizationsSummary } = useAuthorizationsSummary( {} );
+
+	// The Uncaptured authorizations screen will be shown only if:
+	// 1. Manual capture settings are turned on for this store
+	// OR
+	// 2. There are authorizations to capture (even if the manual capture is turned off)
+	const shouldShowUncapturedTab =
+		( ! isLoadingSettings && getIsManualCaptureEnabled ) ||
+		( authorizationsSummary.total && authorizationsSummary.total > 0 );
 
 	const treatmentExperience = wcpaySettings.accountStatus.status ? (
 		defaultExperience
