@@ -107,9 +107,17 @@ const PaymentDetailsSummary = ( {
 		: placeholderValues;
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
+
+	// We should only fetch the authorization data if the payment is marked for manual capture
+	const shouldFetchAuthorization =
+		charge.amount !== charge.amount_captured &&
+		charge.amount_refunded === 0 &&
+		displayCaptureAuthorizationSection;
+
 	const { authorization } = useAuthorization(
 		charge.payment_intent as string,
-		charge.order?.number as number
+		charge.order?.number as number,
+		shouldFetchAuthorization
 	);
 
 	return (
