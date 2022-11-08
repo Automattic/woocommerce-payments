@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Deprecated the "wcs_{type}_meta" dynamic hook used to filter data copied to subscriptions and renewal orders. Third-parties should use wc_subscriptions_{type}_data instead.
