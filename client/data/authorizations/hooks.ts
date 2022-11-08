@@ -71,16 +71,19 @@ export const useAuthorizationsSummary = (
 
 export const useAuthorization = (
 	paymentIntentId: string,
-	orderId: number
+	orderId: number,
+	requiresCapture = true
 ): {
 	isLoading: boolean;
 	doCaptureAuthorization: () => void;
-	authorization: Authorization;
+	authorization?: Authorization;
 } => {
 	const { authorization, isLoading } = useSelect( ( select ) => {
 		const { getAuthorization, isResolving } = select( STORE_NAME );
 		return {
-			authorization: getAuthorization( paymentIntentId ),
+			authorization: requiresCapture
+				? getAuthorization( paymentIntentId )
+				: null,
 			isLoading: isResolving( 'getAuthorization', [ paymentIntentId ] ),
 		};
 	} );
