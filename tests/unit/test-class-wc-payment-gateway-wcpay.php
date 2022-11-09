@@ -2038,6 +2038,38 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * @expectedDeprecated is_in_dev_mode
+	 */
+	public function test_is_in_dev_mode() {
+		$mode = WC_Payments::mode();
+
+		$mode->dev();
+		$this->assertTrue( $this->wcpay_gateway->is_in_dev_mode() );
+
+		$mode->test();
+		$this->assertFalse( $this->wcpay_gateway->is_in_dev_mode() );
+
+		$mode->live();
+		$this->assertFalse( $this->wcpay_gateway->is_in_dev_mode() );
+	}
+
+	/**
+	 * @expectedDeprecated is_in_test_mode
+	 */
+	public function test_is_in_test_mode() {
+		$mode = WC_Payments::mode();
+
+		$mode->dev();
+		$this->assertTrue( $this->wcpay_gateway->is_in_test_mode() );
+
+		$mode->test();
+		$this->assertTrue( $this->wcpay_gateway->is_in_test_mode() );
+
+		$mode->live();
+		$this->assertFalse( $this->wcpay_gateway->is_in_test_mode() );
+	}
+
+	/**
 	 * Create a partial mock for WC_Payment_Gateway_WCPay class.
 	 *
 	 * @param array $methods Method names that need to be mocked.

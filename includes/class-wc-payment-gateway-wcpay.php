@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Core\Mode;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
@@ -2924,6 +2925,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	// Start: Deprecated functions.
+
+	/**
+	 * Check the defined constant to determine the current plugin mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_dev_mode() {
+		wc_deprecated_function( __FUNCTION__, Mode::AVAILABLE_SINCE, 'WC_Payments::mode()->is_dev()' );
+		return WC_Payments::mode()->is_dev();
+	}
+
+	/**
+	 * Returns whether test_mode or dev_mode is active for the gateway
+	 *
+	 * @return boolean Test mode enabled if true, disabled if false
+	 */
+	public function is_in_test_mode() {
+		wc_deprecated_function( __FUNCTION__, Mode::AVAILABLE_SINCE, 'WC_Payments::mode()->is_test()' );
+		return WC_Payments::mode()->is_test();
+	}
 
 	/**
 	 * Whether the current page is the WooCommerce Payments settings page.

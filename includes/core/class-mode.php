@@ -36,6 +36,13 @@ class Mode {
 	private $gateway;
 
 	/**
+	 * Indicates the WCPay version which introduced the class.
+	 *
+	 * @var string
+	 */
+	const AVAILABLE_SINCE = '5.0.0';
+
+	/**
 	 * Environment types, which are used to automatically enter dev mode.
 	 *
 	 * @see wp_get_environment_type()
