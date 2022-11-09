@@ -128,12 +128,20 @@ class WC_Payments_Token_Service {
 				}
 			}
 
-			$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::SEPA ];
-			$payment_methods                  = [];
+			$retrievable_payment_method_types = [ Payment_Method::CARD ];
+
+			if ( in_array( Payment_Method::SEPA, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
+				$retrievable_payment_method_types[] = Payment_Method::SEPA;
+			}
+
+			$payment_methods = [];
+
 			foreach ( $retrievable_payment_method_types as $type ) {
 				$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
 			}
+
 			$payment_methods = array_merge( ...$payment_methods );
+
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch payment methods for customer.' . $e );
 			return $tokens;
