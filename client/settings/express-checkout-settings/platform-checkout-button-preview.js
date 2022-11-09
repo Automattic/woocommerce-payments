@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { sprintf, __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import {
@@ -22,9 +27,11 @@ const PlatformCheckoutButtonPreview = () => {
 			className={ `woopay-express-button ${ buttonType }-${ theme }-${ size }` }
 		>
 			{ 'default' !== buttonType
-				? `${ formatStringValue( buttonType ) } with `
-				: '' }
-			WooPay
+				? sprintf(
+						__( `%s with WooPay`, 'woocommerce-payments' ),
+						formatStringValue( buttonType )
+				  )
+				: 'WooPay' }
 		</button>
 	);
 };
