@@ -32,7 +32,6 @@ import { Charge } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 
-const displayCaptureAuthorizationSection = false;
 declare const window: any;
 
 const placeholderValues = {
@@ -110,11 +109,15 @@ const PaymentDetailsSummary = ( {
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
 
+	const {
+		featureFlags: { isAuthAndCaptureEnabled },
+	} = useContext( WCPaySettingsContext );
+
 	// We should only fetch the authorization data if the payment is marked for manual capture
 	const shouldFetchAuthorization =
 		charge.amount !== charge.amount_captured &&
 		charge.amount_refunded === 0 &&
-		displayCaptureAuthorizationSection;
+		isAuthAndCaptureEnabled;
 
 	const { authorization } = useAuthorization(
 		charge.payment_intent as string,
@@ -245,7 +248,7 @@ const PaymentDetailsSummary = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
-			{ displayCaptureAuthorizationSection &&
+			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
 					<Loadable isLoading={ isLoading } placeholder="">
