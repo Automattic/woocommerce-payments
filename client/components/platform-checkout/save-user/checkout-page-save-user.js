@@ -2,8 +2,10 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
+import { WC_STORE_CART } from '../../../checkout/constants';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -27,6 +29,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
 	);
+	const cart = useDispatch( WC_STORE_CART );
 
 	const getPhoneFieldValue = () => {
 		let phoneFieldValue = '';
@@ -44,16 +47,43 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		return phoneFieldValue;
 	};
 
+	const sendExtensionData = useCallback(
+		( shouldClearData = false ) => {
+			const shippingPhone = document.getElementById( 'shipping-phone' )
+				?.value;
+			const billingPhone = document.getElementById( 'phone' )?.value;
+			const data = shouldClearData
+				? {}
+				: {
+						save_user_in_platform_checkout: isSaveDetailsChecked,
+						platform_checkout_user_phone_field: {
+							full: phoneNumber,
+						},
+				  };
+
+			extensionCartUpdate( {
+				namespace: 'platform-checkout',
+				data: data,
+			} ).then( () => {
+				setUserDataSent( ! shouldClearData );
+				// Cart returned from `extensionCartUpdate` clears these as these fields are not sent to backend by blocks when added.
+				// Setting them explicitly here to the previous user input.
+				cart.setShippingAddress( {
+					phone: shippingPhone,
+				} );
+				cart.setBillingAddress( {
+					phone: billingPhone,
+				} );
+			} );
+		},
+		[ isSaveDetailsChecked, phoneNumber, cart ]
+	);
+
 	const handleCheckboxClick = () => {
 		if ( isSaveDetailsChecked ) {
 			setPhoneNumber( null );
 			if ( isBlocksCheckout ) {
-				extensionCartUpdate( {
-					namespace: 'platform-checkout',
-					data: {},
-				} ).then( () => {
-					setUserDataSent( false );
-				} );
+				sendExtensionData( true );
 			}
 		} else {
 			setPhoneNumber( getPhoneFieldValue() );
@@ -78,19 +108,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			if ( isSaveDetailsChecked && isPhoneValid ) {
 				formSubmitButton.removeAttribute( 'disabled' );
 
+				// Set extension data if checkbox is selected and phone number is valid in blocks checkout.
 				if ( isBlocksCheckout ) {
-					// Set extension data if checkbox is selected and phone number is valid.
-					extensionCartUpdate( {
-						namespace: 'platform-checkout',
-						data: {
-							save_user_in_platform_checkout: isSaveDetailsChecked,
-							platform_checkout_user_phone_field: {
-								full: phoneNumber,
-							},
-						},
-					} ).then( () => {
-						setUserDataSent( true );
-					} );
+					sendExtensionData( false );
 				}
 			}
 
@@ -105,7 +125,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			// Clean up
 			formSubmitButton.removeAttribute( 'disabled' );
 		};
-	}, [ isBlocksCheckout, isPhoneValid, isSaveDetailsChecked, phoneNumber ] );
+	}, [
+		isBlocksCheckout,
+		isPhoneValid,
+		isSaveDetailsChecked,
+		sendExtensionData,
+	] );
 
 	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
 	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
@@ -121,12 +146,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		// Clicking the place order button sets the extension data in backend. If user changes the payment method
 		// due to an error, we need to clear the extension data in backend.
 		if ( isBlocksCheckout && userDataSent ) {
-			extensionCartUpdate( {
-				namespace: 'platform-checkout',
-				data: {},
-			} ).then( () => {
-				setUserDataSent( false );
-			} );
+			sendExtensionData( true );
 		}
 		return null;
 	}
