@@ -29,24 +29,6 @@ final class Create_Charge extends Base_Request {
 	protected $source_id;
 
 	/**
-	 * Get amount.
-	 *
-	 * @return int
-	 */
-	public function get_amount() {
-		return $this->amount;
-	}
-
-	/**
-	 * Get source id
-	 *
-	 * @return string
-	 */
-	public function get_source_id() {
-		return $this->source_id;
-	}
-
-	/**
 	 * Set amount.
 	 *
 	 * @param int $amount Amount to charge.
