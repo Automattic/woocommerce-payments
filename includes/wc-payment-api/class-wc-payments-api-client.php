@@ -7,8 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Core\Contracts\API\Request\Base_Request as WC_Pay_Request;
-use WCPay\Core\DataTransferObjects\Response;
+use WCPay\Core\Contracts\Server\Request\Base_Request as WC_Pay_Request;
+use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -1995,7 +1995,23 @@ class WC_Payments_API_Client {
 	 * @return Response
 	 */
 	public function send_wcpay_request( WC_Pay_Request $request ) {
-		$response = $this->request( $request->get_parameters(), $request->get_route(), $request->get_method(), $request->is_site_specific(), $request->use_user_token(), true );
+		$params = $request->get_parameters();
+
+		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement.
+		if ( ! isset( $params['level3']['line_items'] ) || ! is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
+			$params['level3']['line_items'] = [
+				[
+					'discount_amount'     => 0,
+					'product_code'        => 'empty-order',
+					'product_description' => 'The order is empty',
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'unit_cost'           => 0,
+				],
+			];
+		}
+
+		$response = $this->request( $params, $request->get_route(), $request->get_method(), $request->is_site_specific(), $request->use_user_token(), true );
 		return Response::create_from_wc_pay_response( $response );
 	}
 

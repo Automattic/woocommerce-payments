@@ -5,10 +5,9 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Core\ValueObjects\API\Request;
+namespace WCPay\Core\Server\Request;
 
-use WCPay\Core\Enums\Http_Methods;
-use WCPay\Core\Enums\Wc_Pay_Endpoints;
+use WCPay\Core\Enums\Endpoints;
 
 /**
  * Create charge request.
@@ -55,9 +54,7 @@ final class Create_Charge extends Base_Request {
 	 * @throws \InvalidArgumentException
 	 */
 	public function set_amount( $amount ) {
-		if ( ! is_numeric( $amount ) ) {
-			throw new \InvalidArgumentException( 'Amount is not numeric value' );
-		}
+		$this->is_greater_than( $amount, 0 );
 		$this->amount = $amount;
 		return $this;
 	}
@@ -70,11 +67,9 @@ final class Create_Charge extends Base_Request {
 	 * @throws \InvalidArgumentException
 	 */
 	public function set_source_id( $source_id ) {
-		if ( is_string( $source_id ) && $source_id ) {
-			$this->source_id = $source_id;
-			return $this;
-		}
-		throw new \InvalidArgumentException( 'Source ID is invalid! Source needs to be string type and not empty' );
+		$this->is_string_and_not_empty( $source_id );
+		$this->source_id = $source_id;
+		return $this;
 	}
 
 	/**
@@ -95,7 +90,7 @@ final class Create_Charge extends Base_Request {
 	 * @return string
 	 */
 	public function get_method() {
-		return Http_Methods::POST;
+		return \Requests::POST;
 	}
 
 	/**
@@ -104,7 +99,7 @@ final class Create_Charge extends Base_Request {
 	 * @return string
 	 */
 	public function get_route() {
-		return Wc_Pay_Endpoints::INTENTIONS_API;
+		return Endpoints::INTENTIONS_API;
 	}
 
 

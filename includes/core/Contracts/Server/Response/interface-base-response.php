@@ -7,7 +7,7 @@
 
 namespace WCPay\Core\Contracts\API\Response;
 
-use WCPay\Core\DataTransferObjects\Response;
+use WCPay\Core\Server\Response;
 use WP_Http_Cookie;
 
 /**
@@ -50,19 +50,6 @@ interface Base_Response {
 	 */
 	public function get_cookies();
 
-	/**
-	 * Get response body as array.
-	 *
-	 * @return array|mixed
-	 */
-	public function get_response_data();
-
-	/**
-	 * Determinate does error exists in response data.
-	 *
-	 * @return bool
-	 */
-	public function has_error_in_response_data();
 
 	/**
 	 * Create DTO from WCPay response.

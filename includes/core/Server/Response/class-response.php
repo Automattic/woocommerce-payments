@@ -5,15 +5,16 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Core\DataTransferObjects;
+namespace WCPay\Core\Server;
 
+use ReflectionClass;
 use WCPay\Core\Contracts\API\Response\Base_Response;
 use WP_Http_Cookie;
 
 /**
  * DTO for parsing response from WCPay server API.
  */
-final class Response extends Data_Transfer_Object implements Base_Response {
+class Response implements Base_Response {
 	/**
 	 * Response body.
 	 *
@@ -75,15 +76,6 @@ final class Response extends Data_Transfer_Object implements Base_Response {
 	}
 
 	/**
-	 * Returns true if response is JSON.
-	 *
-	 * @return bool
-	 */
-	public function is_json_response() {
-		return 'application/json' === substr( $this->headers['content-type'] ?? '', 0, strlen( 'application/json' ) );
-	}
-
-	/**
 	 * Get body.
 	 *
 	 * @return string
@@ -133,7 +125,7 @@ final class Response extends Data_Transfer_Object implements Base_Response {
 	 *
 	 * @return array|mixed
 	 */
-	public function get_response_data() {
+	public function data() {
 		$data = $this->response_data;
 		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
 		if ( isset( $data['metadata'] ) && empty( $data['metadata'] ) ) {
@@ -141,100 +133,6 @@ final class Response extends Data_Transfer_Object implements Base_Response {
 		}
 		return $data;
 	}
-
-	/**
-	 * Check if response is error one.
-	 *
-	 * @return bool
-	 */
-	public function is_error_response() {
-		return 400 <= $this->code;
-	}
-
-
-	/**
-	 * Get response message.
-	 *
-	 * @return mixed|null
-	 */
-	public function get_response_message() {
-		return $this->response_data['message'] ?? null;
-	}
-
-	/**
-	 * Get code from response data.
-	 *
-	 * @return mixed|null
-	 */
-	public function get_code_from_response_data() {
-		return $this->response_data['code'] ?? null;
-	}
-
-	/**
-	 * Get value from response by key.
-	 *
-	 * @param string $parameter Parameter in array.
-	 * @param string $key Key in array.
-	 * @return mixed|null
-	 */
-	public function get_value_from_response_by_key( $parameter, $key = 'data' ) {
-		return $this->response_data[ $key ][ $parameter ] ?? null;
-	}
-
-	/**
-	 * Get error code.
-	 *
-	 * @return mixed|null
-	 */
-	public function get_error_code() {
-		return $this->response_data['error']['code'] ?? null;
-	}
-
-	/**
-	 * Get error type
-	 *
-	 * @return mixed|null
-	 */
-	public function get_error_type() {
-		return $this->response_data['error']['type'] ?? null;
-	}
-
-	/**
-	 * Get error message.
-	 *
-	 * @return mixed|null
-	 */
-	public function get_error_message() {
-		return $this->response_data['error']['message'] ?? null;
-	}
-
-	/**
-	 * Determinate does code exists in response data.
-	 *
-	 * @return bool
-	 */
-	public function has_code_in_response_data() {
-		return isset( $this->response_data['code'] );
-	}
-
-	/**
-	 * Determinate does error exists in response data.
-	 *
-	 * @return bool
-	 */
-	public function has_error_in_response_data() {
-		return isset( $this->response_data['error'] );
-	}
-
-	/**
-	 * Determinate is amount to small error presented.
-	 *
-	 * @return bool
-	 */
-	public function has_amount_too_small_error_code() {
-		return $this->has_code_in_response_data() && 'amount_too_small' === $this->response_data['code'];
-	}
-
 
 	/**
 	 * Create DTO from WCPay response.
@@ -249,6 +147,21 @@ final class Response extends Data_Transfer_Object implements Base_Response {
 		$message = wp_remote_retrieve_response_message( $response );
 		$cookies = wp_remote_retrieve_cookies( $response );
 		return new self( $body, $code, $headers, $message, $cookies );
+	}
+
+	/**
+	 * Return array of all properties.
+	 *
+	 * @return array
+	 */
+	public function to_array() {
+		$class = new ReflectionClass( $this );
+		$data  = [];
+		foreach ( $class->getProperties() as $reflectionProperty ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+			$data[ $reflectionProperty->getName() ] = $reflectionProperty->getValue(); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
+		}
+
+		return $data;
 	}
 
 

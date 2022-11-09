@@ -10,7 +10,7 @@ namespace WCPay\Core\Enums;
 /**
  * Endpoints enum class.
  */
-final class Wc_Pay_Endpoints {
+final class Endpoints {
 
 	const ENDPOINT_BASE          = 'https://public-api.wordpress.com/wpcom/v2';
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';

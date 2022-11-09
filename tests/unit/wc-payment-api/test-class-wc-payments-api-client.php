@@ -5,8 +5,9 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Core\DataTransferObjects\Response;
-use WCPay\Core\ValueObjects\API\Request\Create_Charge;
+use WCPay\Core\Server\Request\Create_Charge;
+use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
@@ -2081,7 +2082,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1200, $summary['total'] );
 	}
 
-	public function test_wcpay_request_with_value_object() {
+	public function test_create_charge_request() {
 		$expected_amount = 123;
 
 		$this->set_http_mock_response(
@@ -2099,6 +2100,53 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$create_charge
 			->set_amount( $expected_amount )
 			->set_source_id( 'source_id' );
+		$result = $this->payments_api_client->send_wcpay_request( $create_charge );
+		$this->assertInstanceOf( Response::class, $result );
+	}
+
+	public function test_create_intent_request() {
+		$expected_amount = 123;
+		$expected_status = 'succeeded';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'            => 'test_intention_id',
+				'amount'        => $expected_amount,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
+						],
+					],
+				],
+				'client_secret' => 'test_client_secret',
+				'currency'      => $currency = 'usd',
+			]
+		);
+
+		$create_charge = new Create_Intention();
+		$create_charge
+			->set_amount( $expected_amount )
+			->set_currency_code( $currency )
+			->set_payment_method_id( 'pm_123456789' )
+			->set_manual_capture( false )
+			->set_save_payment_method_to_store( false )
+			->set_save_payment_method_to_platform( false )
+			->set_metadata( [] )
+			->set_level3( [] )
+			->set_off_session( false )
+			->set_additional_parameters( [] )
+			->set_payment_methods( null )
+			->set_cvc_confirmation( null )
+			->confirm_intention();
 		$result = $this->payments_api_client->send_wcpay_request( $create_charge );
 		$this->assertInstanceOf( Response::class, $result );
 	}

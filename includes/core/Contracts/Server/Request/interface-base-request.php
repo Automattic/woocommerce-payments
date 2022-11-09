@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Core\Contracts\API\Request;
+namespace WCPay\Core\Contracts\Server\Request;
 
 /**
  * Base request interface.
