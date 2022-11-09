@@ -73,12 +73,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 
-		// TODO: I'm leaving a lot of these actions in place for now, but I'm not sure if they're all necessary.
-
-		// phpcs:disable
-		// add_action( 'template_redirect', [ $this, 'set_session' ] );
-		// add_action( 'template_redirect', [ $this, 'handle_payment_request_redirect' ] );
-		// add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_html' ], -2 );
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
@@ -88,29 +83,25 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_html' ], -2 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
+	}
 
-		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], -2 );
-		add_action( 'before_woocommerce_pay_form', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
+	/**
+	 * Load public scripts and styles.
+	 */
+	public function scripts() {
+		// Don't load scripts if we should not show the button.
+		if ( ! $this->should_show_platform_checkout_button() ) {
+			return;
+		}
 
-		// add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
-		// add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
-		// add_action( 'wc_ajax_wcpay_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
-		// add_action( 'wc_ajax_wcpay_create_order', [ $this, 'ajax_create_order' ] );
-		// add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
-		// add_action( 'wc_ajax_wcpay_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
-		// add_action( 'wc_ajax_wcpay_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
+		wp_register_style(
+			'wcpay-platform-checkout-express-button-styles',
+			plugins_url( 'includes/platform-checkout/assets/css/platform-checkout-express-button.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WCPAY_VERSION_NUMBER
+		);
 
-		// add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
-		// add_action( 'woocommerce_checkout_order_processed', [ $this, 'add_order_meta' ], 10, 2 );
-		// add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
-		// add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
-
-		// // Add a filter for the value of `wcpay_is_apple_pay_enabled`.
-		// // This option does not get stored in the database at all, and this function
-		// // will be used to calculate it whenever the option value is retrieved instead.
-		// // It's used for displaying inbox notifications.
-		// add_filter( 'pre_option_wcpay_is_apple_pay_enabled', [ $this, 'get_option_is_apple_pay_enabled' ], 10, 1 );
-		// phpcs:enable
+		wp_enqueue_style( 'wcpay-platform-checkout-express-button-styles' );
 	}
 
 	/**
@@ -184,17 +175,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return bool
 	 */
 	public function should_show_platform_checkout_button() {
-		// If account is not connected, then bail.
-		if ( ! $this->account->is_stripe_connected( false ) ) {
-			return false;
-		}
-
-		// If no SSL, bail.
-		if ( ! $this->gateway->is_in_test_mode() && ! is_ssl() ) {
-			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
-			return false;
-		}
-
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
@@ -247,35 +227,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		$button_text     = 'default' !== $button_settings['type'] ? ucfirst( $button_settings['type'] ) . ' with WooPay' : 'WooPay';
 
 		?>
-		<style>
-			.woopay-express-button {
-				font-size: 20px;
-				font-weight: normal;
-				line-height: 42px;
-				background: #fff;
-				border: 1px solid #fff;
-				color: #533582;
-				width: 100%;
-				border-radius: 4px;
-				padding-top: 1px;
-				padding-bottom: 1px;
-			}
-			.woopay-express-button[class*=dark] {
-				background: #533582;
-				color: #fff;
-			}
-			.woopay-express-button[class*=outline] {
-				border-color: #533582;
-			}
-			.woopay-express-button[class*=medium] {
-				font-size: 24px;
-				line-height: 48px;
-			}
-			.woopay-express-button[class*=large] {
-				font-size: 32px;
-				line-height: 56px;
-			}
-		</style>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 			<div id="wcpay-platform-checkout-button">
 				<button class="woopay-express-button <?php echo esc_attr( implode( '-', $this->get_button_settings() ) ); ?>"><?php echo esc_html( $button_text ); ?></button>
