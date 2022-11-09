@@ -1228,10 +1228,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Order     $order        Order being processed.
 	 * @param Payment_Type $payment_type Enum stating whether payment is single or recurring.
+	 * @param string       $fingerprint  User fingerprint.
 	 *
 	 * @return array Array of keyed metadata values.
 	 */
-	protected function get_metadata_from_order( $order, $payment_type ) {
+	protected function get_metadata_from_order( $order, $payment_type, $fingerprint = '' ) {
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
 		$email    = sanitize_email( $order->get_billing_email() );
 		$metadata = [
@@ -1242,6 +1243,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'order_number'   => $order->get_order_number(),
 			'order_key'      => $order->get_order_key(),
 			'payment_type'   => $payment_type,
+			'fingerprint'    => $fingerprint,
 		];
 
 		// If the order belongs to a WCPay Subscription, set the payment context to 'wcpay_subscription' (this helps with associating which fees belong to orders).

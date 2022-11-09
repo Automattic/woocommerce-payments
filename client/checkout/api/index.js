@@ -531,14 +531,16 @@ export default class WCPayAPI {
 	 *
 	 * @param {string} paymentIntentId ID of payment intent to be updated.
 	 * @param {Object} fields Checkout fields.
+	 * @param {string} fingerprint User fingerprint.
 	 * @return {Promise} Promise containing redirect URL for UPE element.
 	 */
-	processCheckout( paymentIntentId, fields ) {
+	processCheckout( paymentIntentId, fields, fingerprint ) {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'checkout', '' ),
 			{
 				...fields,
 				wc_payment_intent_id: paymentIntentId,
+				wc_fingerprint: fingerprint,
 			}
 		)
 			.then( ( response ) => {

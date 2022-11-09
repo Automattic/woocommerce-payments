@@ -1,6 +1,11 @@
 /* global jQuery */
 
 /**
+ * External dependencies
+ */
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
+
+/**
  * Internal dependencies
  */
 import './style.scss';
@@ -55,6 +60,8 @@ jQuery( function ( $ ) {
 	let paymentIntentId = null;
 	let paymentIntentClientSecret = null;
 	let isUPEComplete = false;
+	let fingerprint = null;
+
 	const hiddenBillingFields = {
 		name:
 			enabledBillingFields.includes( 'billing_first_name' ) ||
@@ -175,6 +182,20 @@ jQuery( function ( $ ) {
 		// Do not mount UPE twice.
 		if ( upeElement || paymentIntentId ) {
 			return;
+		}
+
+		if ( ! fingerprint ) {
+			try {
+				const fingerprintPublicAgent = await FingerprintJS.load();
+
+				if ( fingerprintPublicAgent ) {
+					const { visitorId } = await fingerprintPublicAgent.get();
+					fingerprint = visitorId;
+				}
+			} catch ( error ) {
+				// Do not mount element if fingerprinting is not available
+				return;
+			}
 		}
 
 		/*
@@ -504,7 +525,8 @@ jQuery( function ( $ ) {
 		try {
 			const response = await api.processCheckout(
 				paymentIntentId,
-				formFields
+				formFields,
+				fingerprint ? fingerprint : ''
 			);
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {
