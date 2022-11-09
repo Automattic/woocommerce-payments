@@ -186,7 +186,9 @@ jQuery( function ( $ ) {
 
 		if ( ! fingerprint ) {
 			try {
-				const fingerprintPublicAgent = await FingerprintJS.load();
+				const fingerprintPublicAgent = await FingerprintJS.load( {
+					monitoring: false,
+				} );
 
 				if ( fingerprintPublicAgent ) {
 					const { visitorId } = await fingerprintPublicAgent.get();
