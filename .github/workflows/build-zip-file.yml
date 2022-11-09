@@ -1,19 +1,15 @@
 name: "Build zip file"
 
-# This action will run when a pull request targeting `trunk` is closed/merged or when it is triggered manually.
+# This action will run when it is triggered manually.
 on:
-  pull_request_target:
-    branches:
-      - 'trunk'
-    types:
-      - closed
+  pull_request:
+    push:
+      branches: [ trunk ]
   workflow_dispatch:
     
 jobs:
-  # The job runs only if the workflow was triggered manually or if it was triggered by a PR targeting trunk which was merged
   build-zip:
     name: "Build the zip file"
-    if: ${{ github.event_name != 'pull_request_target' || startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true }}
     runs-on: ubuntu-20.04
     steps:
       - name: "Checkout repository"
