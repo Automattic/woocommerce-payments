@@ -50,13 +50,12 @@ export const decryptClientSecret = function (
 	stripeAccountId = null
 ) {
 	if (
+		'1' === getConfig( 'isClientEncryptionEnabled' ) &&
 		3 < encryptedValue.length &&
 		'pi_' !== encryptedValue.slice( 0, 3 ) &&
 		'seti_' !== encryptedValue.slice( 0, 5 )
 	) {
-		stripeAccountId =
-			stripeAccountId ||
-			( window.wcpay_config?.accountId ?? getConfig( 'accountId' ) );
+		stripeAccountId = stripeAccountId || getConfig( 'accountId' );
 		return Utf8.stringify(
 			AES.decrypt(
 				encryptedValue,

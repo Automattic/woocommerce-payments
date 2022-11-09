@@ -815,12 +815,15 @@ class WC_Payments_Utils {
 	 * @return  string                 Encrypted value.
 	 */
 	public static function encrypt_client_secret( string $stripe_account_id, string $client_secret ): string {
-		return openssl_encrypt(
-			$client_secret,
-			'aes-128-cbc',
-			substr( $stripe_account_id, 5 ),
-			0,
-			str_repeat( 'WC', 8 )
-		);
+		if ( \WC_Payments_Features::is_client_secret_encryption_enabled() ) {
+			return openssl_encrypt(
+				$client_secret,
+				'aes-128-cbc',
+				substr( $stripe_account_id, 5 ),
+				0,
+				str_repeat( 'WC', 8 )
+			);
+		}
+		return $client_secret;
 	}
 }

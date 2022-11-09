@@ -55,6 +55,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the client secret encryption feature is enabled.
+	 *
+	 * @return  bool
+	 */
+	public static function is_client_secret_encryption_enabled() {
+		return '1' === get_option( '_wcpay_feature_client_secret_encryption', '0' );
+	}
+
+	/**
 	 * Checks whether Account Overview page is enabled
 	 *
 	 * @return bool

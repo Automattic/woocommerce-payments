@@ -17,6 +17,7 @@ import useToggle from './use-toggle';
 import './style.scss';
 import CardBody from '../card-body';
 import ErrorBoundary from '../../components/error-boundary';
+import ClientSecretEncryptionToggle from './client-secret-encryption-toggle';
 
 const AdvancedSettings = () => {
 	const [ isSectionExpanded, toggleIsSectionExpanded ] = useToggle( false );
@@ -37,6 +38,7 @@ const AdvancedSettings = () => {
 						<Card>
 							<CardBody>
 								<MultiCurrencyToggle />
+								<ClientSecretEncryptionToggle />
 								<WCPaySubscriptionsToggle />
 								<DebugMode />
 							</CardBody>
