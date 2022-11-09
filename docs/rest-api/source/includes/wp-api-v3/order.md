@@ -56,7 +56,7 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/create_termina
 
 _@since v2.4.0_
 
-Given an intent ID and an order ID, add the intent ID to the order and capture it.
+Capture the funds of an in-person payment intent. Given an intent ID and an order ID, add the intent ID to the order and capture it.
 
 ### POST params
 
