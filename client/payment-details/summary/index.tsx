@@ -296,7 +296,10 @@ const PaymentDetailsSummary = ( {
 	);
 };
 
-export default ( props: { charge: Charge; isLoading: boolean } ) => {
+export default ( props: {
+	charge: Charge;
+	isLoading: boolean;
+} ): JSX.Element => {
 	return (
 		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
 			<PaymentDetailsSummary { ...props } />
