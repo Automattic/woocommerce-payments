@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -27,6 +27,12 @@ jest.mock(
 	} ),
 	{ virtual: true }
 );
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn().mockReturnValue( {
+		setBillingAddress: jest.fn(),
+		setShippingAddress: jest.fn(),
+	} ),
+} ) );
 
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
@@ -165,21 +171,70 @@ describe( 'CheckoutPageSaveUser', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'call `extensionCartUpdate` on blocks checkout when `place order` button is clicked', () => {
+	it( 'should not call `extensionCartUpdate` on classic checkout when checkbox is clicked', () => {
+		extensionCartUpdate.mockResolvedValue( {} );
+
+		render( <CheckoutPageSaveUser isBlocksCheckout={ false } /> );
+
+		expect( extensionCartUpdate ).not.toHaveBeenCalled();
+
+		// click on the checkbox
+		userEvent.click(
+			screen.queryByLabelText(
+				'Save my information for faster checkouts'
+			)
+		);
+
+		expect( extensionCartUpdate ).not.toHaveBeenCalled();
+	} );
+
+	it( 'call `extensionCartUpdate` on blocks checkout when checkbox is clicked', async () => {
 		extensionCartUpdate.mockResolvedValue( {} );
 		const placeOrderButton = document.createElement( 'button' );
 		placeOrderButton.classList.add(
 			'wc-block-components-checkout-place-order-button'
 		);
 		document.body.appendChild( placeOrderButton );
+		const phoneField = document.createElement( 'input' );
+		phoneField.setAttribute( 'id', 'phone' );
+		phoneField.value = '+12015555555';
+		document.body.appendChild( phoneField );
 
 		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
 
 		expect( extensionCartUpdate ).not.toHaveBeenCalled();
 
-		// click on the button
-		userEvent.click( placeOrderButton );
+		// click on the checkbox to select
+		userEvent.click(
+			screen.queryByLabelText(
+				'Save my information for faster checkouts'
+			)
+		);
 
-		expect( extensionCartUpdate ).toHaveBeenCalledTimes( 1 );
+		await waitFor( () =>
+			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
+				namespace: 'platform-checkout',
+				data: {
+					save_user_in_platform_checkout: true,
+					platform_checkout_user_phone_field: {
+						full: '+12015555555',
+					},
+				},
+			} )
+		);
+
+		// click on the checkbox to unselect
+		userEvent.click(
+			screen.queryByLabelText(
+				'Save my information for faster checkouts'
+			)
+		);
+
+		await waitFor( () =>
+			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
+				namespace: 'platform-checkout',
+				data: {},
+			} )
+		);
 	} );
 } );
