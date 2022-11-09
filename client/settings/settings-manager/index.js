@@ -50,7 +50,7 @@ const ExpressCheckoutDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/payments/apple-pay/">
+		<ExternalLink href="https://woocommerce.com/document/payments/#section-13">
 			{ __( 'Learn more', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
