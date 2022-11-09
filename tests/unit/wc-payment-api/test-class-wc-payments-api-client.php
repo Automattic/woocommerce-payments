@@ -1707,8 +1707,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
 		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
-							->setMethods( [ 'log' ] )
-							->getMock();
+			->setMethods( [ 'log' ] )
+			->getMock();
 
 		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
 		$logger_ref->setAccessible( true );

@@ -290,13 +290,13 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_get_wcpay_product_id_for_item() {
 		$this->mock_api_client->expects( $this->once() )
-		->method( 'create_product' )
-		->willReturn(
-			[
-				'wcpay_product_id' => 'product_id_test123',
-				'wcpay_price_id'   => 'price_test123',
-			]
-		);
+			->method( 'create_product' )
+			->willReturn(
+				[
+					'wcpay_product_id' => 'product_id_test123',
+					'wcpay_price_id'   => 'price_test123',
+				]
+			);
 
 		// If type is 'Test Tax *&^ name', the result should be _wcpay_product_id_live_test_tax__name.
 		$test_type = 'Test Tax *&^ name';
