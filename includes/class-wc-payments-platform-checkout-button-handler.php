@@ -60,9 +60,11 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		}
 
 		// Checks if WooPay is enabled.
-		$is_platform_checkout_eligible = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		$is_platform_checkout_enabled  = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
-		if ( ! ( $is_platform_checkout_eligible && $is_platform_checkout_enabled ) ) {
+		$is_platform_checkout_eligible               = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
+		$is_platform_checkout_enabled                = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
+		$is_platform_checkout_express_button_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
+
+		if ( ! ( $is_platform_checkout_eligible && $is_platform_checkout_enabled && $is_platform_checkout_express_button_enabled ) ) {
 			return;
 		}
 
