@@ -126,10 +126,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			Ideal_Payment_Method::class,
 			Link_Payment_Method::class,
 		];
-
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $token_service ] )
+				->setConstructorArgs( [ $this->mock_token_service ] )
 				->setMethods( [ 'is_subscription_item_in_cart' ] )
 				->getMock();
 			$mock_payment_method->expects( $this->any() )

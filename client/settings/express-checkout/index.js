@@ -164,8 +164,7 @@ const ExpressCheckout = () => {
 									/* eslint-disable jsx-a11y/anchor-has-content */
 									interpolateComponents( {
 										mixedString: __(
-											'Boost sales by offering a fast, simple, and secure checkout experience.' +
-												'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
+											'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
 												"{{appleLink}}Apple{{/appleLink}}, and {{googleLink}}Google{{/googleLink}}'s terms of use.",
 											'woocommerce-payments'
 										),
@@ -211,79 +210,51 @@ const ExpressCheckout = () => {
 						<li className="express-checkout has-icon-border">
 							<div className="express-checkout__checkbox loadable-checkbox label-hidden">
 								<CheckboxControl
-									label={ __(
-										'Link by Stripe',
-										'woocommerce-payments'
-									) }
+									label={ 'Stripe Link' }
 									checked={ isStripeLinkEnabled }
 									onChange={ updateStripeLinkCheckout }
 								/>
-							</div>
-							<div className="express-checkout__icon">
-								<LinkIcon />
-							</div>
-							<div className="express-checkout__label-container">
-								<div className="express-checkout__label">
-									{ __(
-										'Link by Stripe',
-										'woocommerce-payments'
-									) }
+								<div className="express-checkout__icon">
+									<LinkIcon />
 								</div>
-								<div className="express-checkout__description">
-									{
-										/* eslint-disable jsx-a11y/anchor-has-content */
-										interpolateComponents( {
-											mixedString: __(
-												'Link autofills your customers’ payment and shipping details to ' +
-													'deliver an easy and seamless checkout experience. ' +
-													'New payment experience (UPE) needs to be enabled for Link. ' +
-													'By enabling this feature, you agree to the ' +
-													'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
-													'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
-												'woocommerce-payments'
-											),
-											components: {
-												stripeLinkTerms: (
-													<a
-														target="_blank"
-														rel="noreferrer"
-														href="https://link.co/terms"
-													/>
-												),
-												privacyPolicy: (
-													<a
-														target="_blank"
-														rel="noreferrer"
-														href="https://link.co/privacy"
-													/>
-												),
-											},
-										} )
-										/* eslint-enable jsx-a11y/anchor-has-content */
-									}
-								</div>
-							</div>
-							<div className="express-checkout__link">
-								{
-									/* eslint-disable jsx-a11y/anchor-has-content */
-									interpolateComponents( {
-										mixedString: __(
-											'{{linkDocs}}Read more{{/linkDocs}}',
+								<div className="express-checkout__label-container">
+									<div className="express-checkout__label">
+										{ __(
+											'Stripe Link',
 											'woocommerce-payments'
-										),
-										components: {
-											linkDocs: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													/* eslint-disable-next-line max-len */
-													href="https://woocommerce.com/document/payments/woocommerce-payments-stripe-link/"
-												/>
-											),
-										},
-									} )
-									/* eslint-enable jsx-a11y/anchor-has-content */
-								}
+										) }
+									</div>
+									<div className="express-checkout__description">
+										{
+											/* eslint-disable jsx-a11y/anchor-has-content */
+											interpolateComponents( {
+												mixedString: __(
+													'By enabling this feature, you agree to the ' +
+														'{{stripeLinkTerms}}Link Terms{{/stripeLinkTerms}}, ' +
+														'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}',
+													'woocommerce-payments'
+												),
+												components: {
+													stripeLinkTerms: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://link.co/terms"
+														/>
+													),
+													privacyPolicy: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://link.co/privacy"
+														/>
+													),
+												},
+											} )
+											/* eslint-enable jsx-a11y/anchor-has-content */
+										}
+									</div>
+								</div>
 							</div>
 						</li>
 					) }

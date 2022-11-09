@@ -9,7 +9,7 @@ import {
 	ExternalLink,
 	Notice,
 } from '@wordpress/components';
-import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies
@@ -188,7 +188,7 @@ const DepositsSchedule = () => {
 					target="_blank"
 					rel="external noreferrer noopener"
 				>
-					<HelpOutlineIcon size={ 18 } />
+					<Gridicon icon="help-outline" size={ 18 } />
 				</a>
 			</Notice>
 		);
@@ -215,7 +215,7 @@ const DepositsSchedule = () => {
 					target="_blank"
 					rel="external noreferrer noopener"
 				>
-					<HelpOutlineIcon size={ 18 } />
+					<Gridicon icon="help-outline" size={ 18 } />
 				</a>
 			</Notice>
 		);

@@ -2,9 +2,6 @@
  * External dependencies
  */
 import React from 'react';
-import UserIcon from 'gridicons/dist/user';
-import InstitutionIcon from 'gridicons/dist/institution';
-import CreditCardIcon from 'gridicons/dist/credit-card';
 
 /**
  * Internal dependencies
@@ -33,7 +30,7 @@ const CompanyDetails = ( { keys }: CompanyRequirementsProps ): JSX.Element => {
 
 	return (
 		<RequirementGroup
-			icon={ UserIcon }
+			icon={ 'user' }
 			headline={ headline }
 			subline={ subline }
 		/>
@@ -49,18 +46,18 @@ const CompanyRequirements = ( {
 	return (
 		<>
 			<RequirementGroup
-				icon={ InstitutionIcon }
+				icon={ 'institution' }
 				headline={ groups.companyInfo }
 				subline={ companyList }
 			/>
 			<CompanyDetails keys={ keys } />
 			<RequirementGroup
-				icon={ UserIcon }
+				icon={ 'user' }
 				headline={ groups.representativeDetails }
 				subline={ representativeList }
 			/>
 			<RequirementGroup
-				icon={ CreditCardIcon }
+				icon={ 'credit-card' }
 				headline={ groups.companyBank }
 			/>
 		</>
