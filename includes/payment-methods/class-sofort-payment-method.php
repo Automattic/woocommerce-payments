@@ -34,9 +34,9 @@ class Sofort_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns testing credentials to be printed at checkout in test mode.
 	 *
-	 * @return string|bool
+	 * @return string
 	 */
 	public function get_testing_instructions() {
-		return false;
+		return '';
 	}
 }

@@ -18,7 +18,11 @@ import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import {
+	getTerms,
+	isWCPayChosen,
+	getPaymentIntentFromSession,
+} from '../utils/upe';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
@@ -230,7 +234,10 @@ jQuery( function ( $ ) {
 
 		let { intentId, clientSecret } = isSetupIntent
 			? getSetupIntentFromSession( paymentMethodType )
-			: getPaymentIntentFromSession( paymentMethodType );
+			: getPaymentIntentFromSession(
+					paymentMethodsConfig,
+					paymentMethodType
+			  );
 
 		const $upeContainer = $( upeDOMElement );
 		blockUI( $upeContainer );
@@ -668,30 +675,6 @@ jQuery( function ( $ ) {
 	}
 
 	/**
-	 * Returns the cached payment intent for the current cart state.
-	 *
-	 * @param {string} paymentMethodType Stripe payment method type ID.
-	 * @return {Object} The intent id and client secret required for mounting the UPE element.
-	 */
-	function getPaymentIntentFromSession( paymentMethodType ) {
-		const cartHash = getCookieValue( 'woocommerce_cart_hash' );
-		const upePaymentIntentData =
-			paymentMethodsConfig[ paymentMethodType ].upePaymentIntentData;
-
-		if (
-			cartHash &&
-			upePaymentIntentData &&
-			upePaymentIntentData.startsWith( cartHash )
-		) {
-			const intentId = upePaymentIntentData.split( '-' )[ 1 ];
-			const clientSecret = upePaymentIntentData.split( '-' )[ 2 ];
-			return { intentId, clientSecret };
-		}
-
-		return {};
-	}
-
-	/**
 	 * Returns the cached setup intent.
 	 *
 	 * @param {string} paymentMethodType Stripe payment method type ID.
@@ -721,6 +704,7 @@ jQuery( function ( $ ) {
 			return upeComponents.paymentIntentClientSecret;
 		}
 		const { clientSecret } = getPaymentIntentFromSession(
+			paymentMethodsConfig,
 			paymentMethodType
 		);
 		return clientSecret ? clientSecret : null;

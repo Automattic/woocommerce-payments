@@ -99,24 +99,47 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->icon               = $payment_method->get_icon();
 
 		add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
-		add_action( "wc_ajax_wcpay_update_payment_inten_ $this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
+		add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
 		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
 
 		if ( 'card' !== $this->stripe_id ) {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
 			$this->method_title = "WooCommerce Payments ($this->title)";
-		} else {
-			// Only add these filters once.
+		}
+
+		if ( ! has_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] ) ) {
 			add_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] );
+		}
+
+		if ( ! has_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] ) ) {
 			add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
+		}
+
+		if ( ! has_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] ) ) {
 			add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
+		}
+
+		if ( ! has_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] ) ) {
 			add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
+		}
+
+		if ( ! has_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_upe_appearance_transient' ] ) ) {
 			add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_upe_appearance_transient' ] );
+		}
 
+		if ( ! has_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] ) ) {
 			add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
+		}
 
+		if ( ! has_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ] ) ) {
 			add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ], 10, 0 );
+		}
+
+		if ( ! has_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ] ) ) {
 			add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
+		}
+
+		if ( ! has_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'remove_upe_setup_intent_from_session' ] ) ) {
 			add_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
 		}
 	}
@@ -1069,12 +1092,23 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
+			if ( 'card' === $payment_method_id ) {
+				continue;
+			}
 			$payment_method                 = $this->wc_payments_get_payment_method_by_id( $payment_method_id );
 			$settings[ $payment_method_id ] = [
 				'isReusable'           => $payment_method->is_reusable(),
 				'title'                => $payment_method->get_title(),
 				'upePaymentIntentData' => $this->get_payment_intent_data_from_session( $payment_method_id ),
 				'upeSetupIntentData'   => $this->get_setup_intent_data_from_session( $payment_method_id ),
+				'testingInstructions'  => WC_Payments_Utils::esc_interpolated_html(
+					/* translators: link to Stripe testing page */
+					$payment_method->get_testing_instructions(),
+					[
+						'strong' => '<strong>',
+						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+					]
+				),
 			];
 		}
 

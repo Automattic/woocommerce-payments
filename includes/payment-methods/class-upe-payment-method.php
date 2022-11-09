@@ -151,7 +151,7 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Returns testing credentials to be printed at checkout in test mode.
 	 *
-	 * @return string|bool
+	 * @return string
 	 */
 	abstract public function get_testing_instructions();
 
