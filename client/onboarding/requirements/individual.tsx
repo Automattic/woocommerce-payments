@@ -2,9 +2,6 @@
  * External dependencies
  */
 import React from 'react';
-import UserIcon from 'gridicons/dist/user';
-import InstitutionIcon from 'gridicons/dist/institution';
-import CreditCardIcon from 'gridicons/dist/credit-card';
 
 /**
  * Internal dependencies
@@ -26,19 +23,19 @@ const IndividualRequirements = ( {
 	return (
 		<>
 			<RequirementGroup
-				icon={ UserIcon }
+				icon={ 'user' }
 				headline={ groups.personalDetails }
 				subline={ personalList }
 			/>
 			{ hasTax && (
 				<RequirementGroup
-					icon={ InstitutionIcon }
+					icon={ 'institution' }
 					headline={ groups.taxInfo }
 					subline={ requirements.ssn }
 				/>
 			) }
 			<RequirementGroup
-				icon={ CreditCardIcon }
+				icon={ 'credit-card' }
 				headline={ groups.bankDetails }
 			/>
 		</>

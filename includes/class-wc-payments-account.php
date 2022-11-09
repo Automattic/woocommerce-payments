@@ -569,7 +569,7 @@ class WC_Payments_Account {
 			return false;
 		}
 
-		$is_on_settings_page           = WC_Payments_Admin_Settings::is_current_page_settings();
+		$is_on_settings_page           = WC_Payment_Gateway_WCPay::is_current_page_settings();
 		$should_redirect_to_onboarding = (bool) get_option( 'wcpay_should_redirect_to_onboarding', false );
 
 		if (
@@ -711,7 +711,7 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-reconnect-wpcom'] ) && check_admin_referer( 'wcpay-reconnect-wpcom' ) ) {
-			$this->payments_api_client->start_server_connection( WC_Payments_Admin_Settings::get_settings_url() );
+			$this->payments_api_client->start_server_connection( WC_Payment_Gateway_WCPay::get_settings_url() );
 			return;
 		}
 

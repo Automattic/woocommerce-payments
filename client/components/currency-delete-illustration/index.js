@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import CrossCircleIcon from 'gridicons/dist/cross-circle';
+import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies
@@ -14,7 +14,10 @@ const CurrencyDeleteIllustration = ( { symbol } ) => {
 		<div className="currency-delete-illustration__wrapper">
 			<div className="currency-delete-illustration__illustrations">
 				{ symbol }
-				<CrossCircleIcon className="currency-delete-illustration__currency-cross-icon" />
+				<Gridicon
+					icon="cross-circle"
+					className="currency-delete-illustration__currency-cross-icon"
+				/>
 			</div>
 		</div>
 	);

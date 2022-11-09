@@ -11,7 +11,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import Authorizations, { AuthorizationsList } from '..';
+import Authorizations, { AuthorizationsList } from '../';
 import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import { Authorization } from 'wcpay/types/authorizations';
 
@@ -30,9 +30,6 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useAuthorizations: jest.fn(),
 	useAuthorizationsSummary: jest.fn(),
-	useAuthorization: jest.fn( () => ( {
-		doCaptureAuthorization: jest.fn(),
-	} ) ),
 } ) );
 
 const mockUseAuthorizations = useAuthorizations as jest.MockedFunction<
@@ -69,30 +66,34 @@ declare const global: {
 
 const getMockAuthorizations: () => Authorization[] = () => [
 	{
-		created: '2020-01-02 17:46:02',
-		captured: false,
-		order_id: 24,
-		risk_level: 2,
+		authorization_id: '123',
+		authorized_on: '2020-01-02 17:46:02',
+		capture_by: '2020-01-09 17:46:02',
+		order: {
+			number: 24,
+			customer_url: 'https://doggo.com',
+			url: 'https://doggo.com',
+		},
+		risk_level: 'high',
 		amount: 1455,
 		customer_email: 'good_boy@doge.com',
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
-		payment_intent_id: 'pi_4242',
-		charge_id: 'ch_mock',
-		currency: 'usd',
 	},
 	{
-		created: '2020-01-03 17:46:02',
-		captured: false,
-		order_id: 25,
-		risk_level: 0,
+		authorization_id: '456',
+		authorized_on: '2020-01-03 17:46:02',
+		capture_by: '2020-01-10 17:46:02',
+		order: {
+			number: 25,
+			customer_url: 'https://doggo.com',
+			url: 'https://doggo.com',
+		},
+		risk_level: 'normal',
 		amount: 2010,
 		customer_email: 'good_boy@doge.com',
 		customer_country: 'Kingdom of Dogs',
 		customer_name: 'Good boy',
-		payment_intent_id: 'pi_4243',
-		charge_id: 'ch_mock',
-		currency: 'usd',
 	},
 ];
 
@@ -137,8 +138,9 @@ describe( 'Authorizations list', () => {
 			authorizationsSummary: {
 				count: 3,
 				currency: 'usd',
-				all_currencies: [ 'usd' ],
+				store_currencies: [ 'usd' ],
 				total: 300,
+				totalAmount: 15000,
 			},
 			isLoading: false,
 		} );
@@ -161,8 +163,9 @@ describe( 'Authorizations list', () => {
 				authorizationsSummary: {
 					count: 3,
 					currency: 'usd',
-					all_currencies: [ 'usd' ],
+					store_currencies: [ 'usd' ],
 					total: 300,
+					totalAmount: 15000,
 				},
 				isLoading: false,
 			} );
@@ -188,10 +191,10 @@ describe( 'Authorizations list', () => {
 
 		test( 'sorts by authorized on field', () => {
 			sortBy( 'Authorized on' );
-			expectSortingToBe( 'created', 'asc' );
+			expectSortingToBe( 'authorized_on', 'asc' );
 
 			sortBy( 'Authorized on' );
-			expectSortingToBe( 'created', 'desc' );
+			expectSortingToBe( 'authorized_on', 'desc' );
 		} );
 
 		test( 'sorts by capture by field', () => {
@@ -218,8 +221,9 @@ describe( 'Authorizations list', () => {
 				authorizationsSummary: {
 					count: 3,
 					currency: 'usd',
-					all_currencies: [ 'usd' ],
+					store_currencies: [ 'usd' ],
 					total: 300,
+					totalAmount: 15000,
 				},
 				isLoading: false,
 			} );

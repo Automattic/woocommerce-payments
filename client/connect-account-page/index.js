@@ -187,15 +187,7 @@ const ConnectPageInfoNotice = () => {
 				<img src={ LightbulbIcon } alt="" />
 				<div>
 					{ strings.infoNotice.description }
-					<Button
-						onClick={ () => {
-							wcpayTracks.recordEvent(
-								wcpayTracks.events
-									.CONNECT_ACCOUNT_KYC_MODAL_OPENED
-							);
-							setModalOpen( true );
-						} }
-					>
+					<Button onClick={ () => setModalOpen( true ) }>
 						{ strings.infoNotice.button }
 					</Button>
 				</div>
