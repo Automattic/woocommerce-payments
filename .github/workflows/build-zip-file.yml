@@ -2,6 +2,9 @@ name: "Build zip file"
 
 # This action will run when it is triggered manually.
 on:
+  pull_request:
+    push:
+      branches: [ trunk ]
   workflow_dispatch:
     
 jobs:
