@@ -140,7 +140,7 @@ class Response implements Base_Response {
 	 * @param array $response Server response.
 	 * @return Response
 	 */
-	public static function create_from_wc_pay_response( $response ) {
+	public static function create_from_wc_pay_server_response( $response ) {
 		$body    = wp_remote_retrieve_body( $response );
 		$code    = wp_remote_retrieve_response_code( $response ) ?? 0;
 		$headers = wp_remote_retrieve_headers( $response );

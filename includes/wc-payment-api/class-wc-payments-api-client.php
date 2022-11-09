@@ -2012,7 +2012,7 @@ class WC_Payments_API_Client {
 		}
 
 		$response = $this->request( $params, $request->get_route(), $request->get_method(), $request->is_site_specific(), $request->use_user_token(), true );
-		return Response::create_from_wc_pay_response( $response );
+		return Response::create_from_wc_pay_server_response( $response );
 	}
 
 	/**
