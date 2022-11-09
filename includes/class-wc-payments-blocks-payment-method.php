@@ -6,6 +6,7 @@
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+use WCPay\WC_Payments_Checkout;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
@@ -19,11 +20,19 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	private $gateway;
 
 	/**
+	 * WC Payments Checkout
+	 *
+	 * @var WC_Payments_Checkout
+	 */
+	private $wc_payments_checkout;
+
+	/**
 	 * Initializes the class.
 	 */
 	public function initialize() {
-		$this->name    = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$this->gateway = WC_Payments::get_gateway();
+		$this->name                 = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$this->gateway              = WC_Payments::get_gateway();
+		$this->wc_payments_checkout = WC_Payments::get_wc_payments_checkout();
 	}
 
 	/**
@@ -90,7 +99,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 				'is_admin'    => is_admin(), // Used to display payment method preview in wp-admin.
 			],
 			$platform_checkout_config,
-			$this->gateway->get_payment_fields_js_config()
+			$this->wc_payments_checkout->get_payment_fields_js_config()
 		);
 	}
 }
