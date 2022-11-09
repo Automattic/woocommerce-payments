@@ -61,7 +61,7 @@ const PaymentMethod = ( {
 					checked={ checked }
 					disabled={ disabled }
 					onChange={ handleChange }
-					delayMsOnCheck={ 1500 }
+					delayMsOnCheck={ 500 }
 					delayMsOnUncheck={ 0 }
 					hideLabel
 					isAllowingManualCapture={ isAllowingManualCapture }
