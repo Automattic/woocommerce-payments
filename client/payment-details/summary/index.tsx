@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
 import moment from 'moment';
-import React from 'react';
+import React, { useContext } from 'react';
 
 /**
  * Internal dependencies.
@@ -30,8 +30,10 @@ import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-b
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 
 const displayCaptureAuthorizationSection = false;
+declare const window: any;
 
 const placeholderValues = {
 	amount: 0,
@@ -291,4 +293,10 @@ const PaymentDetailsSummary = ( {
 	);
 };
 
-export default PaymentDetailsSummary;
+export default ( props: { charge: Charge; isLoading: boolean } ) => {
+	return (
+		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+			<PaymentDetailsSummary { ...props } />
+		</WCPaySettingsContext.Provider>
+	);
+};
