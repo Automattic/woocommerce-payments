@@ -24,9 +24,10 @@ Create a new in-person payment intent for the given order ID without confirming 
 </div>
 
 ### Optional parameters
-- `payment_methods` - array with payment methods. Accepted values: `card_present` and `interac_present`
-- `metadata` - metadata that will be attached to the PaymentIntent
-- `customer_id` - customer that will be attached to the PaymentIntent
+
+-   `payment_methods` - array with payment methods. Accepted values: `card_present` and `interac_present`
+-   `metadata` - metadata that will be attached to the PaymentIntent
+-   `customer_id` - customer that will be attached to the PaymentIntent
 
 ```shell
 curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/create_terminal_intent \
@@ -109,6 +110,8 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_termin
 
 _@since v5.1.0_
 
+Capture the funds of an existing uncaptured payment intent that was marked to be captured manually later.
+
 ### POST params
 
 -   payment_intent_id: string
@@ -117,7 +120,7 @@ _@since v5.1.0_
 ### Error codes
 
 -   `wcpay_missing_order` - Order not found
--   `wcpay_refunded_order_uncapturable` -  Payment cannot be captured for partially or fully refunded orders
+-   `wcpay_refunded_order_uncapturable` - Payment cannot be captured for partially or fully refunded orders
 -   `wcpay_payment_uncapturable` - The payment cannot be captured if intent status is not one of 'processing', 'requires_capture', or 'succeeded'
 -   `wcpay_intent_order_mismatch` - Payment cannot be captured because the order id does not match
 -   `wcpay_capture_error` - Unknown error
@@ -144,21 +147,20 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_author
 
 ```json
 {
-  "status": "succeeded",
-  "id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+	"status": "succeeded",
+	"id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
 }
 ```
 
 ```json
 {
-  "code": "wcpay_payment_uncapturable",
-  "message": "The payment cannot be captured",
-  "data": {
-    "status": 409
-  }
+	"code": "wcpay_payment_uncapturable",
+	"message": "The payment cannot be captured",
+	"data": {
+		"status": 409
+	}
 }
 ```
-
 
 ## Create customer
 
