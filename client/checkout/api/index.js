@@ -481,7 +481,7 @@ export default class WCPayAPI {
 			'lock_timeout' === confirmPaymentResult.error.code
 		) {
 			const paymentIntentResult = await stripe.retrievePaymentIntent(
-				paymentIntentSecret
+				decryptClientSecret( paymentIntentSecret )
 			);
 			if (
 				! paymentIntentResult.error &&

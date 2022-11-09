@@ -50,7 +50,7 @@ export const decryptClientSecret = function (
 	stripeAccountId = null
 ) {
 	if (
-		'1' === getConfig( 'isClientEncryptionEnabled' ) &&
+		getConfig( 'isClientEncryptionEnabled' ) &&
 		3 < encryptedValue.length &&
 		'pi_' !== encryptedValue.slice( 0, 3 ) &&
 		'seti_' !== encryptedValue.slice( 0, 5 )
