@@ -205,6 +205,13 @@ class WC_Payments {
 	 */
 	private static $wc_payments_checkout;
 
+	/**
+	 * WC Payments Customer Service API
+	 *
+	 * @var WC_Payments_Customer_Service_API
+	 */
+	private static $customer_service_api;
+
 
 	/**
 	 * Entry point to the initialization logic.
@@ -296,6 +303,7 @@ class WC_Payments {
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
+		include_once __DIR__ . '/core/class-wc-payments-customer-service.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -354,6 +362,8 @@ class WC_Payments {
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
+
+		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$api_client, self::$account, self::$database_cache, self::$customer_service );
 
 		self::maybe_register_platform_checkout_hooks();
 
@@ -886,6 +896,15 @@ class WC_Payments {
 	 */
 	public static function get_customer_service(): WC_Payments_Customer_Service {
 		return self::$customer_service;
+	}
+
+	/**
+	 * Returns the WC_Payments_Customer_Service_API instance
+	 *
+	 * @return WC_Payments_Customer_Service_API  The Customer Service instance.
+	 */
+	public static function get_customer_service_api(): WC_Payments_Customer_Service_API {
+		return self::$customer_service_api;
 	}
 
 	/**
