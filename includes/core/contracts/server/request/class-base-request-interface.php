@@ -53,28 +53,4 @@ interface Base_Request_Interface {
 	 * @return bool
 	 */
 	public function use_user_token();
-
-	/**
-	 * Get headers.
-	 *
-	 * @return bool
-	 */
-	public function get_headers();
-
-	/**
-	 * Set request headers.
-	 *
-	 * @param array $headers Headers.
-	 * @return array
-	 */
-	public function set_headers( $headers );
-
-	/**
-	 * Add header to existing headers.
-	 *
-	 * @param string $name  Name of header.
-	 * @param string $value Value of header.
-	 * @return void
-	 */
-	public function add_header( $name, $value );
 }

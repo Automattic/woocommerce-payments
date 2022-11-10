@@ -14,13 +14,6 @@ use \WCPay\Core\Contracts\Server\Request\Base_Request_Interface;
  */
 abstract class Base_Request implements Base_Request_Interface {
 
-
-	/**
-	 * Request headers.
-	 *
-	 * @var array $headers
-	 */
-	private $headers;
 	/**
 	 * Get request params.
 	 *
@@ -67,33 +60,6 @@ abstract class Base_Request implements Base_Request_Interface {
 		return false;
 	}
 
-	/**
-	 * Get headers.
-	 *
-	 * @return array
-	 */
-	public function get_headers() {
-		return $this->headers;
-	}
-
-	/**
-	 * Set headers.
-	 *
-	 * @param array $headers Headers to set.
-	 */
-	public function set_headers( $headers ) {
-		$this->headers = $headers;
-	}
-
-	/**
-	 * Add custom header.
-	 *
-	 * @param string $name Header name or key.
-	 * @param string $value Header value.
-	 */
-	public function add_header( $name, $value ) {
-		$this->headers[ $name ] = $value;
-	}
 
 	/**
 	 * Return array of all properties.
