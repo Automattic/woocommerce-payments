@@ -120,9 +120,10 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			Ideal_Payment_Method::class,
 			Link_Payment_Method::class,
 		];
+
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $this->mock_token_service ] )
+				->setConstructorArgs( [ $token_service ] )
 				->setMethods( [ 'is_subscription_item_in_cart' ] )
 				->getMock();
 			$mock_payment_method->expects( $this->any() )
@@ -604,8 +605,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		}
 
 		$this->mock_wcpay_account->expects( null === $expected_updates ? $this->never() : $this->once() )
-								->method( 'update_stripe_account' )
-								->with( $expected_updates );
+			->method( 'update_stripe_account' )
+			->with( $expected_updates );
 
 		$this->controller->update_settings( $request );
 	}

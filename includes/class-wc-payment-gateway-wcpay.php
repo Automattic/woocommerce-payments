@@ -19,10 +19,10 @@ use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Constants\Payment_Method;
 use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -74,17 +74,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
-
-	/**
-	 * Set of parameters to build the URL to the gateway's settings page.
-	 *
-	 * @var string[]
-	 */
-	private static $settings_url_params = [
-		'page'    => 'wc-settings',
-		'tab'     => 'checkout',
-		'section' => self::GATEWAY_ID,
-	];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -141,6 +130,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @var array
 	 */
 	protected $payment_method_capability_key_map;
+
+	/**
+	 * Platform checkout utilities.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	protected $platform_checkout_util;
 
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
@@ -355,6 +351,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'link'          => 'link_payments',
 		];
 
+		// Platform checkout utilities.
+		$this->platform_checkout_util = new Platform_Checkout_Utilities();
+
 		// Load the settings.
 		$this->init_settings();
 
@@ -368,8 +367,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
-		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
-		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
@@ -394,50 +391,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Add a new logo column on the right of "method" in the payment methods table.
-	 *
-	 * @param array $columns the columns in the "all payment methods" page.
-	 * @return array
-	 */
-	public function add_all_payment_methods_logos_column( $columns ) {
-		$logos  = [ 'logos' => '' ]; // Setting an ID for the column, but not a label.
-		$offset = array_search( 'name', array_keys( $columns ), true ) + 1;
-
-		return array_merge( array_slice( $columns, 0, $offset ), $logos, array_slice( $columns, $offset ) );
-	}
-
-	/**
-	 * Add a list of payment method logos to WooCommerce Payment in the logo column.
-	 *
-	 * @param WC_Payment_Gateway $gateway the current gateway iterated over to be displayed in the "all payment methods" page.
-	 */
-	public function add_all_payment_methods_icon_logos( $gateway ) {
-		if ( 'woocommerce_payments' !== $gateway->id ) {
-			echo '<td class="logo"></td>';
-
-			return;
-		}
-
-		$icons = [
-			'visa',
-			'mastercard',
-			'amex',
-			'apple-pay',
-			'google-pay',
-		];
-
-		echo '<td class="logo">';
-		?>
-		<div>
-			<?php foreach ( $icons as $icon ) : ?>
-				<span class="payment-method__icon payment-method__brand payment-method__brand--<?php echo esc_attr( $icon ); ?>"/></span>
-			<?php endforeach; ?>
-		</div>
-		<?php
-		echo '</td>';
-	}
-
-	/**
 	 * Proceed with current request using new login session (to ensure consistent nonce).
 	 *
 	 * @param string $cookie New cookie value.
@@ -451,7 +404,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * external plugins to check if a connection has been established.
 	 */
 	public function is_connected() {
-		return $this->account->is_stripe_connected( false );
+		return $this->account->is_stripe_connected();
 	}
 
 	/**
@@ -467,24 +420,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$account_status = $this->account->get_account_status_data();
 		return parent::needs_setup() || ! empty( $account_status['error'] ) || ! $account_status['paymentsEnabled'];
-	}
-
-	/**
-	 * Whether the current page is the WooCommerce Payments settings page.
-	 *
-	 * @return bool
-	 */
-	public static function is_current_page_settings() {
-		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	}
-
-	/**
-	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 *
-	 * @return string URL of the configuration screen for this gateway
-	 */
-	public static function get_settings_url() {
-		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
 	}
 
 	/**
@@ -591,45 +526,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Add notice explaining test mode when it's enabled.
-	 */
-	public function display_test_mode_notice() {
-		if ( $this->is_in_test_mode() && get_class( $this ) === 'WCPay\Payment_Methods\CC_Payment_Gateway' ) {
-			?>
-			<div id="wcpay-test-mode-notice" class="notice notice-warning">
-				<p>
-					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
-					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
-				</p>
-			</div>
-			<?php
-		}
-	}
-
-	/**
-	 * Add notice explaining that the selected currency is not available.
-	 */
-	public function display_not_supported_currency_notice() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return;
-		}
-
-		if ( ! $this->is_available_for_current_currency() && get_class( $this ) === 'WCPay\Payment_Methods\CC_Payment_Gateway' ) {
-			?>
-			<div id="wcpay-unsupported-currency-notice" class="notice notice-warning">
-				<p>
-					<b>
-						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
-						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
-					</b>
-					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
-				</p>
-			</div>
-			<?php
-		}
-	}
-
-	/**
 	 * Admin Panel Options.
 	 */
 	public function admin_options() {
@@ -657,49 +553,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<div id="wcpay-account-settings-container"></div>
 			<?php
 		endif;
-	}
-
-	/**
-	 * Generates the configuration values, needed for payment fields.
-	 *
-	 * Isolated as a separate method in order to be available both
-	 * during the classic checkout, as well as the checkout block.
-	 *
-	 * @return array
-	 */
-	public function get_payment_fields_js_config() {
-		$platform_checkout_util = new Platform_Checkout_Utilities();
-		$wc_checkout            = WC_Checkout::instance();
-
-		return [
-			'publishableKey'                   => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-			'testMode'                         => $this->is_in_test_mode(),
-			'accountId'                        => $this->account->get_stripe_account_id(),
-			'ajaxUrl'                          => admin_url( 'admin-ajax.php' ),
-			'wcAjaxUrl'                        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'createSetupIntentNonce'           => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'createPaymentIntentNonce'         => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
-			'updatePaymentIntentNonce'         => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
-			'saveUPEAppearanceNonce'           => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
-			'logPaymentErrorNonce'             => wp_create_nonce( 'wcpay_log_payment_error_nonce' ),
-			'initPlatformCheckoutNonce'        => wp_create_nonce( 'wcpay_init_platform_checkout_nonce' ),
-			'genericErrorMessage'              => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
-			'fraudServices'                    => $this->account->get_fraud_services_config(),
-			'features'                         => $this->supports,
-			'forceNetworkSavedCards'           => WC_Payments::is_network_saved_cards_enabled() || $this->should_use_stripe_platform_on_checkout_page(),
-			'locale'                           => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			'isUPEEnabled'                     => WC_Payments_Features::is_upe_enabled(),
-			'isSavedCardsEnabled'              => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled'        => $platform_checkout_util->should_enable_platform_checkout( $this ),
-			'platformCheckoutHost'             => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
-			'platformTrackerNonce'             => wp_create_nonce( 'platform_tracks_nonce' ),
-			'accountIdForIntentConfirmation'   => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
-			'wcpayVersionNumber'               => WCPAY_VERSION_NUMBER,
-			'platformCheckoutNeedLogin'        => ! is_user_logged_in() && $wc_checkout->is_registration_required(),
-			'userExistsEndpoint'               => get_rest_url( null, '/wc/v3/users/exists' ),
-			'platformCheckoutRequestSignature' => $platform_checkout_util->get_platform_checkout_request_signature(),
-			'platformCheckoutMerchantId'       => \Jetpack_Options::get_option( 'id' ),
-		];
 	}
 
 	/**
@@ -763,12 +616,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function should_use_stripe_platform_on_checkout_page() {
-		// TODO: Add support for blocks checkout.
 		if (
 			WC_Payments_Features::is_platform_checkout_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
-			is_checkout() &&
-			! has_block( 'woocommerce/checkout' ) &&
+			! WC_Payments_Features::is_upe_enabled() &&
+			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
 			! WC()->cart->is_empty() &&
 			WC()->cart->needs_payment()
@@ -780,143 +632,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
-	 * Customer data is retrieved from order when on Pay for Order.
-	 * Customer data is retrieved from customer when on 'Add Payment Method'.
-	 *
-	 * @return array|null An array with customer data or nothing.
-	 */
-	public function get_prepared_customer_data() {
-		if ( ! isset( $_GET['pay_for_order'] ) && ! is_add_payment_method_page() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return null;
-		}
-
-		global $wp;
-		$user_email = '';
-		$firstname  = '';
-		$lastname   = '';
-
-		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$order_id = absint( $wp->query_vars['order-pay'] );
-			$order    = wc_get_order( $order_id );
-
-			if ( is_a( $order, 'WC_Order' ) ) {
-				$firstname  = $order->get_billing_first_name();
-				$lastname   = $order->get_billing_last_name();
-				$name       = $firstname . ' ' . $lastname;
-				$user_email = $order->get_billing_email();
-			}
-		}
-
-		if ( is_add_payment_method_page() ) {
-			$user = wp_get_current_user();
-
-			if ( $user->ID ) {
-				$firstname  = $user->user_firstname;
-				$lastname   = $user->user_lastname;
-				$user_email = get_user_meta( $user->ID, 'billing_email', true );
-				$user_email = $user_email ? $user_email : $user->user_email;
-			}
-		}
-		$prepared_customer_data = [
-			'name'  => $firstname . ' ' . $lastname,
-			'email' => $user_email,
-		];
-
-		return $prepared_customer_data;
-	}
-	/**
 	 * Renders the credit card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
-		try {
-			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
-
-			add_action( 'wp_footer', [ $this, 'enqueue_payment_scripts' ] );
-
-			$prepared_customer_data = $this->get_prepared_customer_data();
-			if ( ! empty( $prepared_customer_data ) ) {
-				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayCustomerData', $prepared_customer_data );
-			}
-
-			wp_enqueue_style(
-				'WCPAY_CHECKOUT',
-				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
-				[],
-				WC_Payments::get_file_version( 'dist/checkout.css' )
-			);
-
-			// Output the form HTML.
-			?>
-			<?php if ( ! empty( $this->get_description() ) ) : ?>
-				<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
-			<?php endif; ?>
-
-			<?php if ( $this->is_in_test_mode() ) : ?>
-				<p class="testmode-info">
-				<?php
-					echo WC_Payments_Utils::esc_interpolated_html(
-						/* translators: link to Stripe testing page */
-						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
-						[
-							'strong' => '<strong>',
-							'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
-						]
-					);
-				?>
-				</p>
-			<?php endif; ?>
-
-			<?php
-
-			if ( $display_tokenization ) {
-				$this->tokenization_script();
-				echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			}
-			?>
-
-			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form">
-				<div id="wcpay-card-element"></div>
-				<div id="wcpay-errors" role="alert"></div>
-				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
-				<input type="hidden" name="wcpay-is-platform-payment-method" value="<?php echo esc_attr( $this->should_use_stripe_platform_on_checkout_page() ); ?>" />
-			<?php
-			if ( $this->is_saved_cards_enabled() ) {
-				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
-				$this->save_payment_method_checkbox( $force_save_payment );
-			}
-			?>
-
-			</fieldset>
-
-			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
-				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
-			<?php endif; ?>
-
-			<?php
-
-			do_action( 'wcpay_payment_fields_wcpay', $this->id );
-
-		} catch ( Exception $e ) {
-			// Output the error message.
-			?>
-			<div>
-				<?php
-				echo esc_html__( 'An error was encountered when preparing the payment form. Please try again later.', 'woocommerce-payments' );
-				?>
-			</div>
-			<?php
-		}
-	}
-
-	/**
-	 * Enqueues and localizes WCPay's checkout scripts.
-	 */
-	public function enqueue_payment_scripts() {
-		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
-		wp_enqueue_script( 'WCPAY_CHECKOUT' );
+		do_action( 'wc_payments_add_payment_fields' );
 	}
 
 	/**
@@ -1044,8 +765,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information->must_save_payment_method_to_store();
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		if ( ! empty( $_POST['save_user_in_platform_checkout'] ) && filter_var( $_POST['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ) {
+		if ( $this->platform_checkout_util->should_save_platform_customer() ) {
 			do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
 			$payment_information->must_save_payment_method_to_platform();
 		}
@@ -1342,8 +1062,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			} else {
 				$save_user_in_platform_checkout = false;
 
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-				if ( ! empty( $_POST['save_user_in_platform_checkout'] ) && filter_var( $_POST['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ) {
+				if ( $this->platform_checkout_util->should_save_platform_customer() ) {
 					$save_user_in_platform_checkout = true;
 					$metadata_from_order            = apply_filters(
 						'wcpay_metadata_from_order',
@@ -2004,7 +1723,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string Statement descriptor of default value.
 	 */
-	protected function get_account_statement_descriptor( string $empty_value = '' ): string {
+	public function get_account_statement_descriptor( string $empty_value = '' ): string {
 		try {
 			if ( $this->is_connected() ) {
 				return $this->account->get_statement_descriptor();
@@ -2916,12 +2635,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function create_and_confirm_setup_intent() {
 		$payment_information             = Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification
-		$should_save_in_platform_account = false;
-
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( ! empty( $_POST['save_payment_method_in_platform_account'] ) && filter_var( wp_unslash( $_POST['save_payment_method_in_platform_account'] ), FILTER_VALIDATE_BOOLEAN ) ) {
-			$should_save_in_platform_account = true;
-		}
+		$should_save_in_platform_account = $this->platform_checkout_util->should_save_platform_customer();
 
 		// Determine the customer adding the payment method, create one if we don't have one already.
 		$user        = wp_get_current_user();
@@ -3243,6 +2957,63 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $field;
 	}
 
+	// Start: Deprecated functions.
+
+	/**
+	 * Whether the current page is the WooCommerce Payments settings page.
+	 *
+	 * @deprecated 5.0.0
+	 *
+	 * @return bool
+	 */
+	public static function is_current_page_settings() {
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Admin_Settings::is_current_page_settings' );
+		return WC_Payments_Admin_Settings::is_current_page_settings();
+	}
+
+	/**
+	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 *
+	 * @deprecated 5.0.0
+	 *
+	 * @return string URL of the configuration screen for this gateway
+	 */
+	public static function get_settings_url() {
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Admin_Settings::get_settings_url' );
+		return WC_Payments_Admin_Settings::get_settings_url();
+	}
+
+	/**
+	 * Generates the configuration values, needed for payment fields.
+	 *
+	 * Isolated as a separate method in order to be available both
+	 * during the classic checkout, as well as the checkout block.
+	 *
+	 * @deprecated use WC_Payments_Checkout::get_payment_fields_js_config instead.
+	 *
+	 * @return array
+	 */
+	public function get_payment_fields_js_config() {
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Checkout::get_payment_fields_js_config' );
+		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
+	}
+
+	/**
+	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
+	 * Customer data is retrieved from order when on Pay for Order.
+	 * Customer data is retrieved from customer when on 'Add Payment Method'.
+	 *
+	 * @deprecated use WC_Payments_Customer_Service::get_prepared_customer_data() instead.
+	 *
+	 * @return array|null An array with customer data or nothing.
+	 */
+	public function get_prepared_customer_data() {
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Customer_Service::get_prepared_customer_data' );
+		return WC_Payments::get_customer_service()->get_prepared_customer_data();
+	}
+
+	// End: Deprecated functions.
+
 	/**
 	 * Determine if current payment method is a platform payment method.
 	 *
@@ -3251,13 +3022,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean True if it is a platform payment method.
 	 */
 	private function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+		// Return false for express checkout method.
+		if ( isset( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return false;
+		}
+
 		// Make sure the payment method being charged was created in the platform.
 		if (
 			! $is_using_saved_payment_method &&
-			$this->should_use_stripe_platform_on_checkout_page() &&
-			// This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
-			! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
-			filter_var( $_POST['wcpay-is-platform-payment-method'], FILTER_VALIDATE_BOOLEAN ) // phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$this->should_use_stripe_platform_on_checkout_page()
 		) {
 			// This payment method was created under the platform account.
 			return true;

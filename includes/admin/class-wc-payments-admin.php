@@ -23,11 +23,12 @@ class WC_Payments_Admin {
 	const MENU_NOTIFICATION_BADGE = ' <span class="wcpay-menu-badge awaiting-mod count-1"><span class="plugin-count">1</span></span>';
 
 	/**
-	 * Dispute notification badge HTML format (with placeholder for the number of disputes).
+	 * Badge with a count (number of unresolved items) displayed next to a menu item.
+	 * Unresolved refers to items that are unread or need action.
 	 *
 	 * @var string
 	 */
-	const DISPUTE_NOTIFICATION_BADGE_FORMAT = ' <span class="wcpay-menu-badge awaiting-mod count-%1$s"><span class="plugin-count">%1$d</span></span>';
+	const UNRESOLVED_NOTIFICATION_BADGE_FORMAT = ' <span class="wcpay-menu-badge awaiting-mod count-%1$s"><span class="plugin-count">%1$d</span></span>';
 
 	/**
 	 * WC Payments WordPress Admin menu slug.
@@ -90,6 +91,8 @@ class WC_Payments_Admin {
 		$this->account             = $account;
 		$this->database_cache      = $database_cache;
 
+		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
+
 		// Add menu items.
 		add_action( 'admin_menu', [ $this, 'add_payments_menu' ], 0 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
@@ -139,6 +142,29 @@ class WC_Payments_Admin {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Add notice explaining that the selected currency is not available.
+	 */
+	public function display_not_supported_currency_notice() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( ! $this->wcpay_gateway->is_available_for_current_currency() ) {
+			?>
+			<div id="wcpay-unsupported-currency-notice" class="notice notice-warning">
+				<p>
+					<b>
+						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
+						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
+					</b>
+					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
+				</p>
+			</div>
+			<?php
+		}
 	}
 
 	/**
@@ -320,7 +346,7 @@ class WC_Payments_Admin {
 			$submenu[ $last_submenu_key ][] = [ // PHPCS:Ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				$this->get_settings_menu_item_name(),
 				'manage_woocommerce',
-				WC_Payment_Gateway_WCPay::get_settings_url(),
+				WC_Payments_Admin_Settings::get_settings_url(),
 			];
 
 			// Temporary fix to settings menu disappearance is to register the page after settings menu has been manually added.
@@ -395,6 +421,9 @@ class WC_Payments_Admin {
 		$this->add_menu_notification_badge();
 		$this->add_update_business_details_task();
 		$this->add_disputes_notification_badge();
+		if ( \WC_Payments_Features::is_auth_and_capture_enabled() && $this->wcpay_gateway->get_option( 'manual_capture' ) === 'yes' ) {
+			$this->add_transactions_notification_badge();
+		}
 	}
 
 	/**
@@ -530,9 +559,15 @@ class WC_Payments_Admin {
 		wp_register_script(
 			'WCPAY_ADMIN_ORDER_ACTIONS',
 			plugins_url( 'dist/order.js', WCPAY_PLUGIN_FILE ),
-			[ 'jquery-tiptip' ],
+			array_merge( $script_asset['dependencies'], [ 'jquery-tiptip' ] ),
 			WC_Payments::get_file_version( 'dist/order.js' ),
 			true
+		);
+		wp_register_style(
+			'WCPAY_ADMIN_ORDER_ACTIONS',
+			plugins_url( 'dist/order.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/order.css' )
 		);
 
 		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
@@ -639,7 +674,7 @@ class WC_Payments_Admin {
 				'WCPAY_TOS',
 				'wcpay_tos_settings',
 				[
-					'settingsUrl'          => $this->wcpay_gateway->get_settings_url(),
+					'settingsUrl'          => WC_Payments_Admin_Settings::get_settings_url(),
 					'tosAgreementRequired' => $tos_agreement_required,
 					'tosAgreementDeclined' => $tos_agreement_declined,
 					'trackStripeConnected' => $track_stripe_connected,
@@ -666,17 +701,25 @@ class WC_Payments_Admin {
 			$order = wc_get_order();
 
 			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $order->get_payment_method() ) {
+				$refund_amount = $order->get_remaining_refund_amount();
 				wp_localize_script(
 					'WCPAY_ADMIN_ORDER_ACTIONS',
 					'wcpay_order_config',
 					[
-						'disableManualRefunds' => ! $this->wcpay_gateway->has_refund_failed( $order ),
-						'manualRefundsTip'     => __( 'Refunding manually requires reimbursing your customer offline via cash, check, etc. The refund amounts entered here will only be used to balance your analytics.', 'woocommerce-payments' ),
+						'disableManualRefunds'  => ! $this->wcpay_gateway->has_refund_failed( $order ),
+						'manualRefundsTip'      => __( 'Refunding manually requires reimbursing your customer offline via cash, check, etc. The refund amounts entered here will only be used to balance your analytics.', 'woocommerce-payments' ),
+						'refundAmount'          => $refund_amount,
+						'formattedRefundAmount' => wp_strip_all_tags( wc_price( $refund_amount, [ 'currency' => $order->get_currency() ] ) ),
+						'refundedAmount'        => $order->get_total_refunded(),
+						'canRefund'             => $this->wcpay_gateway->can_refund_order( $order ),
 					]
 				);
+
 				wp_enqueue_script( 'WCPAY_ADMIN_ORDER_ACTIONS' );
+				wp_enqueue_style( 'WCPAY_ADMIN_ORDER_ACTIONS' );
 			}
 		}
+
 	}
 
 	/**
@@ -787,7 +830,8 @@ class WC_Payments_Admin {
 	 * This is where the "Are you sure you want to disable WCPay?" confirmation dialog is rendered.
 	 */
 	public function payment_gateways_container() {
-		?><div id="wcpay-payment-gateways-container" />
+		?>
+		<div id="wcpay-payment-gateways-container" />
 		<?php
 	}
 
@@ -917,7 +961,33 @@ class WC_Payments_Admin {
 				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][2] = admin_url( add_query_arg( [ 'filter' => 'awaiting_response' ], 'admin.php?page=' . $menu_item[2] ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 				// Append the dispute notification badge to indicate the number of disputes needing a response.
-				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( self::DISPUTE_NOTIFICATION_BADGE_FORMAT, esc_html( $disputes_needing_response ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( self::UNRESOLVED_NOTIFICATION_BADGE_FORMAT, esc_html( $disputes_needing_response ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Adds a notification badge to the Payments > Transactions admin menu item to
+	 * indicate the number of transactions that need to be captured.
+	 *
+	 * @return void
+	 */
+	public function add_transactions_notification_badge() {
+		global $submenu;
+
+		if ( ! isset( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] ) ) {
+			return;
+		}
+
+		$uncaptured_transactions = $this->get_uncaptured_transactions_count();
+		if ( $uncaptured_transactions <= 0 ) {
+			return;
+		}
+
+		foreach ( $submenu[ self::PAYMENTS_SUBMENU_SLUG ] as $index => $menu_item ) {
+			if ( 'wc-admin&path=/payments/transactions' === $menu_item[2] ) {
+				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( self::UNRESOLVED_NOTIFICATION_BADGE_FORMAT, esc_html( $uncaptured_transactions ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				break;
 			}
 		}
@@ -942,5 +1012,25 @@ class WC_Payments_Admin {
 
 		$needs_response_statuses = [ 'needs_response', 'warning_needs_response' ];
 		return (int) array_sum( array_intersect_key( $disputes_status_counts, array_flip( $needs_response_statuses ) ) );
+	}
+
+	/**
+	 * Gets the number of uncaptured transactions, that is authorizations that need to be captured within 7 days.
+	 *
+	 * @return int The number of uncaptured transactions.
+	 */
+	private function get_uncaptured_transactions_count() {
+		$authorization_summary = $this->database_cache->get_or_add(
+			Database_Cache::AUTHORIZATION_SUMMARY_KEY,
+			[ $this->payments_api_client, 'get_authorizations_summary' ],
+			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
+			'is_array'
+		);
+
+		if ( empty( $authorization_summary ) ) {
+			return 0;
+		}
+
+		return $authorization_summary['count'];
 	}
 }

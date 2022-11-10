@@ -5,7 +5,7 @@ on:
 
 env:
   WP_VERSION:        latest
-  WC_VERSION: 6.8.2  # the min supported version as per L-2 policy
+  WC_L2_VERSION: '6.8.2'  # the min supported version as per L-2 policy
   GUTENBERG_VERSION: latest
 
 jobs:
@@ -53,3 +53,5 @@ jobs:
           coverage:    xdebug2
       # run CI checks
       - run: bash bin/run-ci-tests.bash
+        env:
+          WC_VERSION: ${{ env.WC_L2_VERSION }}

@@ -1,5 +1,0 @@
-{
-	"env": {},
-	"ignore": [],
-	"presets": [ "@wordpress/babel-preset-default" ]
-}

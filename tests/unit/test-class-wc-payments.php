@@ -112,8 +112,8 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
 
 		$mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
-									->disableOriginalConstructor()
-									->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 		$mock_customer_service
 			->expects( $this->once() )
 			->method( 'create_customer_for_user' )
