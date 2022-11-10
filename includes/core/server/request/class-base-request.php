@@ -12,7 +12,7 @@ use \WCPay\Core\Contracts\Server\Request\Base_Request_Interface;
 /**
  * Base request value object.
  */
-class Base_Request implements Base_Request_Interface {
+abstract class Base_Request implements Base_Request_Interface {
 
 
 	/**
@@ -26,27 +26,28 @@ class Base_Request implements Base_Request_Interface {
 	 *
 	 * @return array
 	 */
-	public function get_parameters() {
-		return $this->to_array();
-	}
+	abstract public function get_parameters();
 
 	/**
 	 * Get request method.
 	 *
 	 * @return string
 	 */
-	public function get_method() {
-		return '';
-	}
+	abstract public function get_method();
 
 	/**
 	 * Get request route.
 	 *
 	 * @return string
 	 */
-	public function get_route() {
-		return '';
-	}
+	abstract public function get_route();
+
+	/**
+	 * Validate params of request. Make sure that override this function in child class.
+	 *
+	 * @return bool
+	 */
+	abstract public function is_request_data_valid();
 
 	/**
 	 * Is site specific request.
@@ -104,22 +105,13 @@ class Base_Request implements Base_Request_Interface {
 	}
 
 	/**
-	 * Validate params of request. Make sure that override this function in child class.
-	 *
-	 * @return bool
-	 */
-	public function is_request_data_valid() {
-		return false;
-	}
-
-	/**
 	 * Validate and get request data.
 	 *
 	 * @return array
 	 * @throws \InvalidArgumentException
 	 */
 	final public function get_request_data() {
-		if ( $this->is_request_data_valid() ) {
+		if ( ! $this->is_request_data_valid() ) {
 			throw new \InvalidArgumentException( 'Request data is not valid' );
 		}
 		if ( ! in_array( $this->get_method(), [ \Requests::GET, \Requests::HEAD, \Requests::OPTIONS, \Requests::POST, \Requests::PUT, \Requests::PATCH, \Requests::DELETE ], true ) ) {
@@ -170,14 +162,15 @@ class Base_Request implements Base_Request_Interface {
 	 */
 	public static function new( $arguments = null, $splat_arguments = false ) {
 
+		$class = get_called_class();
 		if ( $arguments ) {
 			if ( is_array( ( $arguments ) ) && $splat_arguments ) {
-				return new self( ... $arguments );
+				return new $class( ... $arguments );
 			} else {
-				return new self( $arguments );
+				return new $class( $arguments );
 			}
 		}
-		return new self();
+		return new $class();
 
 	}
 

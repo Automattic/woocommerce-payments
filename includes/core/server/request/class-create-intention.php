@@ -376,17 +376,17 @@ final class Create_Intention extends Base_Request {
 	 */
 	public function is_request_data_valid() {
 
-		// Make sure that one of the payment method properties exist.
+		// Make sure that one of the payment method properties are not null.
 
-		if ( ! property_exists( $this, 'payment_methods' ) && ! property_exists( $this, 'payment_method_id' ) ) {
+		if ( ! isset( $this->payment_methods ) && ! isset( $this->payment_method_id ) ) {
 			return false;
 		}
 
 		// Make sure that other minimal required properties exist.
-		if ( ! property_exists( $this, 'amount' ) || ! property_exists( $this, 'currency' ) ) {
-			return false;
+		if ( property_exists( $this, 'amount' ) && property_exists( $this, 'currency_code' ) ) {
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 
