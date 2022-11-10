@@ -139,7 +139,7 @@ describe( 'TransactionsPage', () => {
 		} );
 
 		await renderTransactionsPage();
-		expect( screen.queryByText( 'Uncaptured' ) ).toBeInTheDocument();
+		expect( screen.queryByText( /uncaptured/i ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders uncaptured tab if auth&capture is ENABLED and authorizations are present', async () => {
@@ -152,7 +152,7 @@ describe( 'TransactionsPage', () => {
 		} );
 
 		await renderTransactionsPage();
-		expect( screen.queryByText( 'Uncaptured' ) ).toBeInTheDocument();
+		expect( screen.queryByText( /uncaptured/i ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders uncaptured tab if auth&capture is ENABLED and no authorizations are present', async () => {
@@ -165,7 +165,7 @@ describe( 'TransactionsPage', () => {
 		} );
 
 		await renderTransactionsPage();
-		expect( screen.queryByText( 'Uncaptured' ) ).toBeInTheDocument();
+		expect( screen.queryByText( /uncaptured/i ) ).toBeInTheDocument();
 	} );
 
 	test( 'do not render uncaptured tab if auth&capture is DISABLED and no authorizations are present', async () => {
@@ -178,6 +178,6 @@ describe( 'TransactionsPage', () => {
 		} );
 
 		await renderTransactionsPage();
-		expect( screen.queryByText( 'Uncaptured' ) ).not.toBeInTheDocument();
+		expect( screen.queryByText( /uncaptured/i ) ).not.toBeInTheDocument();
 	} );
 } );
