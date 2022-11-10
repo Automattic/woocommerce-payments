@@ -79,16 +79,17 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		[ isSaveDetailsChecked, phoneNumber, cart ]
 	);
 
-	const handleCheckboxClick = () => {
-		if ( isSaveDetailsChecked ) {
+	const handleCheckboxClick = ( e ) => {
+		const isChecked = e.target.checked;
+		if ( isChecked ) {
+			setPhoneNumber( getPhoneFieldValue() );
+		} else {
 			setPhoneNumber( null );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
-		} else {
-			setPhoneNumber( getPhoneFieldValue() );
 		}
-		setIsSaveDetailsChecked( ( v ) => ! v );
+		setIsSaveDetailsChecked( isChecked );
 	};
 
 	useEffect( () => {
