@@ -1,28 +1,29 @@
 name: "Build zip file"
 
-# This action will run when it is triggered manually
+# This action will run when it is triggered manually.
 on:
   workflow_dispatch:
     
 jobs:
   build-zip:
-    name: Build the zip file
+    name: "Build the zip file"
     runs-on: ubuntu-20.04
     steps:
-      - name: Checkout repository
+      - name: "Checkout repository"
         uses: actions/checkout@v3
 
-      - name: Setup Node and PHP with cache
+      - name: "Set up repository"
         uses: ./.github/actions/setup-repo
 
-      - name: Build the plugin
+      - name: "Build the plugin"
+        id: build_plugin
         uses: ./.github/actions/build
       
-      - name: Upload the zip file as an artifact
+      - name: "Upload the zip file as an artifact"
         uses: actions/upload-artifact@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: woocommerce-payments
-          path: 'woocommerce-payments.zip'
+          name: "woocommerce-payments"
+          path: ${{ steps.build_plugin.outputs.release-filename }}
           retention-days: 7
