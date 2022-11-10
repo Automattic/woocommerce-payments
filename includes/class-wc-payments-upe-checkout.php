@@ -88,7 +88,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['addPaymentReturnURL']      = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']                = UPE_Payment_Gateway::GATEWAY_ID;
 		$payment_fields['isCheckout']               = is_checkout();
-		$payment_fields['checkoutTitle']            = $this->title;
+		$payment_fields['checkoutTitle']            = $this->gateway->title;
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
 		$payment_fields['testMode']                 = $this->gateway->is_in_test_mode();
 		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
