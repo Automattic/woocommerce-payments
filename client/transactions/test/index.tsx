@@ -151,14 +151,15 @@ describe( 'TransactionsPage', () => {
 			isLoading: false,
 		} );
 
+		await renderTransactionsPage();
 		expect( screen.queryByText( 'Uncaptured' ) ).toBeInTheDocument();
 	} );
 
 	test( 'renders uncaptured tab if auth&capture is ENABLED and no authorizations are present', async () => {
-		mockUseManualCapture.mockReturnValue( [ false ] );
+		mockUseManualCapture.mockReturnValue( [ true ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
-				total: 5,
+				total: 0,
 			},
 			isLoading: false,
 		} );
