@@ -2,56 +2,52 @@
  * External dependencies
  */
 import config from 'config';
-const customerBilling = config.get( 'addresses.customer.billing' );
 const {
 	shopper,
-	merchant,
 	withRestApi,
 	setCheckbox,
 } = require( '@woocommerce/e2e-utils' );
-
-/**
- * Internal dependencies
- */
 import {
 	RUN_SUBSCRIPTIONS_TESTS,
 	describeif,
 	shopperWCP,
-	merchantWCP,
 } from '../../../utils';
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
-const productName = 'Subscription for manage payments';
-const productSlug = 'subscription-for-manage-payments';
-
+const customerBilling = config.get(
+	'addresses.subscriptions-customer.billing'
+);
+const productSlug = 'subscription-no-signup-fee-product';
 let subscriptionId;
+
+const testSelectors = {
+	subscriptionIdField: '.woocommerce-orders-table__cell-subscription-id > a',
+	subscriptionChangePaymentButton:
+		'.subscription_details a.button.change_payment_method',
+	wcNotice: '.woocommerce .woocommerce-message',
+	pageTitle: 'h1.entry-title',
+	newPaymentMethodCheckbox: 'input#wc-woocommerce_payments-payment-token-new',
+	subscriptionPaymentMethod: '.subscription-payment-method',
+	savedTokensCheckboxes:
+		'.payment_method_woocommerce_payments .woocommerce-SavedPaymentMethods-tokenInput',
+};
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
 	'Shopper > Subscriptions > Manage Payment Methods',
 	() => {
 		beforeAll( async () => {
-			// Create subscription product
-			await merchant.login();
-			await merchantWCP.createSubscriptionProduct(
-				productName,
-				'month',
-				false
-			);
-			await merchant.logout();
-		} );
-
-		afterAll( async () => {
-			// Delete the user created with the subscription
+			// Delete the user, if present
 			await withRestApi.deleteCustomerByEmail( customerBilling.email );
 		} );
+		afterAll( async () => {
+			await shopper.logout();
+		} );
 
-		it( 'should change a default payment method to a new one', async () => {
-			// Purchase recently created subscription as a customer
-			await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
-				waitUntil: 'networkidle0',
-			} );
-			await expect( page ).toClick( '.single_add_to_cart_button' );
-			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+		it( 'should be able to purchase a subscription', async () => {
+			// Open the subscription product & add to cart
+			await shopperWCP.addToCartBySlug( productSlug );
+
+			// Checkout
 			await setupCheckout( customerBilling );
 			const card = config.get( 'cards.basic' );
 			await fillCardDetails( page, card );
@@ -60,82 +56,93 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 
 			// Get the subscription ID
 			const subscriptionIdField = await page.$(
-				'.woocommerce-orders-table__cell-subscription-id > a'
+				testSelectors.subscriptionIdField
 			);
 			subscriptionId = await subscriptionIdField.evaluate(
 				( el ) => el.innerText
 			);
+		} );
 
+		it( 'should change a default payment method to a new one', async () => {
 			await shopperWCP.goToSubscriptions();
-
-			// Try to click on the button "Change payment"
-			// Otherwise click the subscription ID first and then proceed further
-			// Note: This is in case we have multiple subscriptions
-			try {
-				await page.click( 'a.button.change_payment_method' );
-			} catch ( error ) {
-				await page.click(
-					'.woocommerce-orders-table__cell-subscription-id > a',
-					{
-						text: subscriptionId,
-					}
-				);
-				await page.waitForSelector( 'a.button.change_payment_method' );
-				await page.click( 'a.button.change_payment_method' );
-			}
+			await expect( page ).toClick( testSelectors.subscriptionIdField, {
+				text: subscriptionId,
+			} );
+			await page.waitForSelector(
+				testSelectors.subscriptionChangePaymentButton
+			);
+			await expect( page ).toClick(
+				testSelectors.subscriptionChangePaymentButton
+			);
+			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			// Make sure we're on the proper page
 			await page.waitForSelector(
-				'h1.entry-title',
+				testSelectors.pageTitle,
 				'Change payment method'
 			);
 
-			// Check to use a new payment method
-			await setCheckbox( '#wc-woocommerce_payments-payment-token-new' );
+			await page.waitFor( 1000 );
+			await expect( page ).toMatchElement(
+				testSelectors.newPaymentMethodCheckbox
+			);
+			await setCheckbox( testSelectors.newPaymentMethodCheckbox );
 
 			// Fill a new payment details
 			const newCard = config.get( 'cards.basic2' );
 			await fillCardDetails( page, newCard );
-			await Promise.all( [
-				page.click( '#place_order' ),
-				page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			] );
-			await expect( page ).toMatchElement( 'div.woocommerce-message', {
+
+			await shopper.placeOrder();
+			await page.waitForSelector( testSelectors.wcNotice, {
 				text: 'Payment method updated.',
 			} );
 
 			// Verify the new payment method has been set
-			await expect( page ).toMatchElement(
-				'.subscription-payment-method',
-				{ text: 'Visa ending in 1111 (expires 11/25)' }
+			await page.waitForSelector(
+				testSelectors.subscriptionPaymentMethod,
+				{
+					text: 'Visa ending in 1111 (expires 11/25)',
+				}
 			);
 		} );
 
-		it( 'should set a payment method to a different one', async () => {
-			// Click to change a payment method
-			await expect( page ).toClick( 'a.button.change_payment_method' );
+		it( 'should set a payment method to an already saved card', async () => {
+			await shopperWCP.goToSubscriptions();
+			await expect( page ).toClick( testSelectors.subscriptionIdField, {
+				text: subscriptionId,
+			} );
 			await page.waitForSelector(
-				'h1.entry-title',
+				testSelectors.subscriptionChangePaymentButton
+			);
+			await expect( page ).toClick(
+				testSelectors.subscriptionChangePaymentButton
+			);
+			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
+
+			// Make sure we're on the proper page
+			await page.waitForSelector(
+				testSelectors.pageTitle,
 				'Change payment method'
 			);
 
+			await page.waitFor( 1000 );
+
 			// Select a different payment method and save it
 			const checkboxes = await page.$$(
-				'.woocommerce-SavedPaymentMethods-tokenInput'
+				testSelectors.savedTokensCheckboxes
 			);
 			await checkboxes[ 0 ].click();
-			await Promise.all( [
-				page.click( '#place_order' ),
-				page.waitForNavigation( { waitUntil: 'networkidle0' } ),
-			] );
-			await expect( page ).toMatchElement( 'div.woocommerce-message', {
+			await shopper.placeOrder();
+			await page.waitForSelector( testSelectors.wcNotice, {
 				text: 'Payment method updated.',
 			} );
 
 			// Verify the new payment method has been set
-			await expect( page ).toMatchElement(
-				'.subscription-payment-method',
-				{ text: 'Visa ending in 4242 (expires 02/24)' }
+			await page.waitForSelector(
+				testSelectors.subscriptionPaymentMethod,
+				{
+					text: 'Visa ending in 4242 (expires 02/24)',
+				}
 			);
 		} );
 	}

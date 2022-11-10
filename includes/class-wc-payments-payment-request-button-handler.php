@@ -9,13 +9,13 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Payment_Information;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
+use WCPay\Payment_Information;
 
 /**
  * WC_Payments_Payment_Request_Button_Handler class.
@@ -210,21 +210,39 @@ class WC_Payments_Payment_Request_Button_Handler {
 	 *
 	 * @param object $product WC_Product_* object.
 	 * @return mixed Total price.
+	 *
+	 * @throws Invalid_Price_Exception Whenever a product has no price.
 	 */
 	public function get_product_price( $product ) {
-		$product_price = $product->get_price();
-
 		// If prices should include tax, using tax inclusive price.
 		if ( ! $this->prices_exclude_tax() ) {
-			$product_price = wc_get_price_including_tax( $product );
+			$base_price = wc_get_price_including_tax( $product );
+		} else {
+			$base_price = $product->get_price();
 		}
 
 		// Add subscription sign-up fees to product price.
-		if ( 'subscription' === $product->get_type() && class_exists( 'WC_Subscriptions_Product' ) ) {
-			$product_price = $product_price + WC_Subscriptions_Product::get_sign_up_fee( $product );
+		$sign_up_fee        = 0;
+		$subscription_types = [
+			'subscription',
+			'subscription_variation',
+		];
+		if ( in_array( $product->get_type(), $subscription_types, true ) && class_exists( 'WC_Subscriptions_Product' ) ) {
+			// When there is no sign-up fee, `get_sign_up_fee` falls back to an int 0.
+			$sign_up_fee = WC_Subscriptions_Product::get_sign_up_fee( $product );
 		}
 
-		return $product_price;
+		if ( ! is_numeric( $base_price ) || ! is_numeric( $sign_up_fee ) ) {
+			throw new Invalid_Price_Exception(
+				sprintf(
+					// Translators: %d is the numeric ID of the product without a price.
+					__( 'Express checkout does not support products without prices! Please add a price to product #%d', 'woocommerce-payments' ),
+					$product->get_id()
+				)
+			);
+		}
+
+		return $base_price + $sign_up_fee;
 	}
 
 	/**
@@ -262,21 +280,29 @@ class WC_Payments_Payment_Request_Button_Handler {
 			}
 		}
 
-		$data          = [];
-		$items         = [];
-		$product_price = $this->get_product_price( $product );
+		try {
+			$price = $this->get_product_price( $product );
+		} catch ( Invalid_Price_Exception $e ) {
+			Logger::log( $e->getMessage() );
+			return false;
+		}
+
+		$data  = [];
+		$items = [];
 
 		$items[] = [
 			'label'  => $product->get_name(),
-			'amount' => WC_Payments_Utils::prepare_amount( $product_price, $currency ),
+			'amount' => WC_Payments_Utils::prepare_amount( $price, $currency ),
 		];
 
-		$tax = $this->prices_exclude_tax() ? wc_format_decimal( wc_get_price_including_tax( $product ) - $product_price ) : 0;
-		if ( wc_tax_enabled() ) {
+		$total_tax = 0;
+		foreach ( $this->get_taxes( $product, $price ) as $tax ) {
+			$total_tax += $tax;
+
 			$items[] = [
 				'label'   => __( 'Tax', 'woocommerce-payments' ),
 				'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
-				'pending' => ( 0 === $tax ? true : false ),
+				'pending' => 0 === $tax,
 			];
 		}
 
@@ -298,7 +324,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 		$data['displayItems'] = $items;
 		$data['total']        = [
 			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $product_price + $tax, $currency ),
+			'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
 			'pending' => true,
 		];
 
@@ -1029,7 +1055,8 @@ class WC_Payments_Payment_Request_Button_Handler {
 				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
 			}
 
-			$total = $qty * $this->get_product_price( $product ) + $addon_value;
+			$price = $this->get_product_price( $product );
+			$total = $qty * $price + $addon_value;
 
 			$quantity_label = 1 < $qty ? ' (x' . $qty . ')' : '';
 
@@ -1041,11 +1068,14 @@ class WC_Payments_Payment_Request_Button_Handler {
 				'amount' => WC_Payments_Utils::prepare_amount( $total, $currency ),
 			];
 
-			if ( wc_tax_enabled() ) {
+			$total_tax = 0;
+			foreach ( $this->get_taxes( $product, $price ) as $tax ) {
+				$total_tax += $tax;
+
 				$items[] = [
 					'label'   => __( 'Tax', 'woocommerce-payments' ),
-					'amount'  => 0,
-					'pending' => true,
+					'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
+					'pending' => 0 === $tax,
 				];
 			}
 
@@ -1067,7 +1097,7 @@ class WC_Payments_Payment_Request_Button_Handler {
 			$data['displayItems'] = $items;
 			$data['total']        = [
 				'label'   => $this->get_total_label(),
-				'amount'  => WC_Payments_Utils::prepare_amount( $total, $currency ),
+				'amount'  => WC_Payments_Utils::prepare_amount( $price + $total_tax, $currency ),
 				'pending' => true,
 			];
 
@@ -1077,7 +1107,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 
 			wp_send_json( $data );
 		} catch ( Exception $e ) {
-			wp_send_json( [ 'error' => wp_strip_all_tags( $e->getMessage() ) ] );
+			if ( is_a( $e, Invalid_Price_Exception::class ) ) {
+				Logger::log( $e->getMessage() );
+			}
+			wp_send_json( [ 'error' => wp_strip_all_tags( $e->getMessage() ) ], 500 );
 		}
 	}
 
@@ -1629,5 +1662,27 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'message'      => $message,
 			'redirect_url' => $redirect_url,
 		];
+	}
+
+	/**
+	 * Calculates taxes, based on a product and a particular price.
+	 *
+	 * @param WC_Product $product The product, for retrieval of tax classes.
+	 * @param float      $price   The price, which to calculate taxes for.
+	 * @return array              An array of final taxes.
+	 */
+	private function get_taxes( $product, $price ) {
+		if ( ! wc_tax_enabled() || ! $this->prices_exclude_tax() ) {
+			// Only proceed when taxes are enabled, but not included.
+			return [];
+		}
+
+		// Follows the way `WC_Cart_Totals::get_item_tax_rates()` works.
+		$tax_class = $product->get_tax_class();
+		$rates     = WC_Tax::get_rates( $tax_class );
+		// No cart item, `woocommerce_cart_totals_get_item_tax_rates` can't be applied here.
+
+		// Normally there should be a single tax, but `calc_tax` returns an array, let's use it.
+		return WC_Tax::calc_tax( $price, $rates, false );
 	}
 }

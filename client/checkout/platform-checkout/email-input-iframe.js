@@ -7,10 +7,35 @@ import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 
-export const handlePlatformCheckoutEmailInput = ( field, api ) => {
+// Waits for the email field to exist as in the Blocks checkout, sometimes the email field is not immediately available.
+const waitForEmailField = ( selector ) => {
+	return new Promise( ( resolve ) => {
+		if ( document.querySelector( selector ) ) {
+			return resolve( document.querySelector( selector ) );
+		}
+
+		const checkoutBlock = document.querySelector(
+			'[data-block-name="woocommerce/checkout"]'
+		);
+		const observer = new MutationObserver( () => {
+			if ( document.querySelector( selector ) ) {
+				resolve( document.querySelector( selector ) );
+				observer.disconnect();
+			}
+		} );
+
+		observer.observe( checkoutBlock, {
+			childList: true,
+			subtree: true,
+		} );
+	} );
+};
+
+export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = document.querySelector( field );
+	const platformCheckoutEmailInput = await waitForEmailField( field );
+	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
 	if ( ! platformCheckoutEmailInput ) {
@@ -21,16 +46,36 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	const parentDiv = platformCheckoutEmailInput.parentNode;
 	spinner.classList.add( 'wc-block-components-spinner' );
 
-	// Make the iframe wrapper.
+	// Make the login session iframe wrapper.
+	const loginSessionIframeWrapper = document.createElement( 'div' );
+	loginSessionIframeWrapper.setAttribute( 'role', 'dialog' );
+	loginSessionIframeWrapper.setAttribute( 'aria-modal', 'true' );
+
+	// Make the login session iframe.
+	const loginSessionIframe = document.createElement( 'iframe' );
+	loginSessionIframe.title = __(
+		'WooPay Login Session',
+		'woocommerce-payments'
+	);
+	loginSessionIframe.classList.add(
+		'platform-checkout-login-session-iframe'
+	);
+
+	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
+	loginSessionIframe.classList.add( 'intrinsic-ignore' );
+
+	loginSessionIframeWrapper.insertBefore( loginSessionIframe, null );
+
+	// Make the otp iframe wrapper.
 	const iframeWrapper = document.createElement( 'div' );
 	iframeWrapper.setAttribute( 'role', 'dialog' );
 	iframeWrapper.setAttribute( 'aria-modal', 'true' );
-	iframeWrapper.classList.add( 'platform-checkout-sms-otp-iframe-wrapper' );
+	iframeWrapper.classList.add( 'platform-checkout-otp-iframe-wrapper' );
 
-	// Make the iframe.
+	// Make the otp iframe.
 	const iframe = document.createElement( 'iframe' );
 	iframe.title = __( 'WooPay SMS code verification', 'woocommerce-payments' );
-	iframe.classList.add( 'platform-checkout-sms-otp-iframe' );
+	iframe.classList.add( 'platform-checkout-otp-iframe' );
 
 	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
 	iframe.classList.add( 'intrinsic-ignore' );
@@ -168,6 +213,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	// Error message to display when there's an error contacting WooPay.
 	const errorMessage = document.createElement( 'div' );
+	errorMessage.style[ 'white-space' ] = 'normal';
 	errorMessage.textContent = __(
 		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
 		'woocommerce-payments'
@@ -200,7 +246,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
-		) }/sms-otp/?${ urlParams.toString() }`;
+		) }/otp/?${ urlParams.toString() }`;
 
 		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( iframeWrapper, null );
@@ -228,6 +274,22 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	// to remove it when change the e-mail address.
 	let hasPlatformCheckoutSubscriptionLoginError = false;
 
+	// Cancel platform checkout request and close iframe
+	// when user clicks Place Order before it loads.
+	const abortController = new AbortController();
+	const { signal } = abortController;
+
+	signal.addEventListener( 'abort', () => {
+		spinner.remove();
+		closeIframe( false );
+	} );
+
+	document
+		.querySelector( 'form[name="checkout"]' )
+		.addEventListener( 'submit', () => {
+			abortController.abort();
+		} );
+
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
@@ -248,7 +310,8 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					getConfig( 'userExistsEndpoint' ),
 					{
 						email,
-					}
+					},
+					{ signal }
 				);
 
 				if ( userExistsData[ 'user-exists' ] ) {
@@ -262,9 +325,11 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					spinner.remove();
 					return;
 				}
-			} catch {
-				showErrorMessage();
-				spinner.remove();
+			} catch ( err ) {
+				if ( 'AbortError' !== err.name ) {
+					showErrorMessage();
+					spinner.remove();
+				}
 			}
 		}
 
@@ -275,11 +340,22 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			'wcpay_version',
 			getConfig( 'wcpayVersionNumber' )
 		);
+		emailExistsQuery.append(
+			'blog_id',
+			getConfig( 'platformCheckoutMerchantId' )
+		);
+		emailExistsQuery.append(
+			'request_signature',
+			getConfig( 'platformCheckoutRequestSignature' )
+		);
 
 		fetch(
 			`${ getConfig(
 				'platformCheckoutHost'
-			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`
+			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
+			{
+				signal,
+			}
 		)
 			.then( ( response ) => {
 				if ( 200 !== response.status ) {
@@ -308,8 +384,13 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 					);
 				}
 			} )
-			.catch( () => {
-				showErrorMessage();
+			.catch( ( err ) => {
+				// Only show the error if it's not an AbortError,
+				// it occur when the fetch request is aborted because user
+				// clicked the Place Order button while loading.
+				if ( 'AbortError' !== err.name ) {
+					showErrorMessage();
+				}
 			} )
 			.finally( () => {
 				spinner.remove();
@@ -324,6 +405,39 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		);
 		/* eslint-enable */
 		return pattern.test( value );
+	};
+
+	const closeLoginSessionIframe = () => {
+		hasCheckedLoginSession = true;
+
+		loginSessionIframeWrapper.remove();
+		loginSessionIframe.classList.remove( 'open' );
+		platformCheckoutEmailInput.focus();
+
+		// Check the initial value of the email input and trigger input validation.
+		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
+			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+		}
+	};
+
+	const openLoginSessionIframe = () => {
+		loginSessionIframe.src = `${ getConfig(
+			'platformCheckoutHost'
+		) }/login-session`;
+
+		// Insert the wrapper into the DOM.
+		parentDiv.insertBefore( loginSessionIframeWrapper, null );
+
+		// Focus the iframe.
+		loginSessionIframe.focus();
+
+		// fallback to close the login session iframe in case failed to receive event
+		// via postMessage.
+		setTimeout( () => {
+			if ( ! hasCheckedLoginSession ) {
+				closeLoginSessionIframe();
+			}
+		}, 15000 );
 	};
 
 	// Prevent show platform checkout iframe if the page comes from
@@ -342,9 +456,9 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			! historyTraversal &&
 			'true' !== searchParams.get( 'skip_platform_checkout' )
 		) {
-			// Check the initial value of the email input and trigger input validation.
-			if ( validateEmail( platformCheckoutEmailInput.value ) ) {
-				platformCheckoutLocateUser( platformCheckoutEmailInput.value );
+			// Check if user already has a WooPay login session.
+			if ( ! hasCheckedLoginSession ) {
+				openLoginSessionIframe();
 			}
 		} else {
 			searchParams.delete( 'skip_platform_checkout' );
@@ -363,6 +477,10 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	} );
 
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
+		if ( ! hasCheckedLoginSession ) {
+			return;
+		}
+
 		const email = e.currentTarget.value;
 
 		clearTimeout( timer );
@@ -381,6 +499,28 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}
 
 		switch ( e.data.action ) {
+			case 'auto_redirect_to_platform_checkout':
+				api.initPlatformCheckout(
+					'',
+					e.data.platformCheckoutUserSession
+				).then( ( response ) => {
+					if ( 'success' === response.result ) {
+						loginSessionIframeWrapper.classList.add(
+							'platform-checkout-login-session-iframe-wrapper'
+						);
+						loginSessionIframe.classList.add( 'open' );
+						wcpayTracks.recordUserEvent(
+							wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
+						);
+						window.location = response.url;
+					} else {
+						closeLoginSessionIframe();
+					}
+				} );
+				break;
+			case 'close_auto_redirection_modal':
+				closeLoginSessionIframe();
+				break;
 			case 'redirect_to_platform_checkout':
 				wcpayTracks.recordUserEvent(
 					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE

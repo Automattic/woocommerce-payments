@@ -59,6 +59,13 @@ abstract class UPE_Payment_Method {
 	protected $currencies;
 
 	/**
+	 * Payment method icon URL
+	 *
+	 * @var string
+	 */
+	protected $icon_url;
+
+	/**
 	 * Create instance of payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
@@ -144,7 +151,16 @@ abstract class UPE_Payment_Method {
 	/**
 	 * Returns testing credentials to be printed at checkout in test mode.
 	 *
-	 * @return string|bool
+	 * @return string
 	 */
 	abstract public function get_testing_instructions();
+
+	/**
+	 * Returns the payment method icon URL or an empty string.
+	 *
+	 * @return string
+	 */
+	public function get_icon() {
+		return isset( $this->icon_url ) ? $this->icon_url : '';
+	}
 }

@@ -17,7 +17,8 @@ import {
 function getDepositSchedule(
 	schedule,
 	includeLastDeposit = true,
-	disabled = false
+	disabled = false,
+	blocked = false
 ) {
 	const lastDeposit = {
 		id: 'last_deposit',
@@ -29,6 +30,7 @@ function getDepositSchedule(
 		account: {
 			deposits_schedule: schedule,
 			deposits_disabled: disabled,
+			deposits_blocked: blocked,
 		},
 		last_deposit: includeLastDeposit ? lastDeposit : null,
 	} );
@@ -42,6 +44,14 @@ function getDepositSchedule(
 }
 
 describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			featureFlags: {
+				customDepositSchedules: false,
+			},
+		};
+	} );
+
 	test( 'renders temporarily suspended notice for accounts with disabled deposits', () => {
 		const depositSchedule = getDepositSchedule(
 			{ interval: 'daily' },
@@ -53,11 +63,31 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 		);
 	} );
 
+	test( 'renders temporarily suspended notice for accounts with deposits blocked', () => {
+		const depositSchedule = getDepositSchedule(
+			{ interval: 'daily' },
+			true,
+			false,
+			true // blocked
+		);
+		expect( depositSchedule ).toEqual(
+			'Temporarily suspended (learn more)'
+		);
+	} );
+
 	test( 'renders temporarily suspended notice for manual interval', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
 		expect( depositSchedule ).toEqual(
 			'Temporarily suspended (learn more)'
 		);
+	} );
+
+	test( 'renders deposit schedule for manual interval with flag enabled', () => {
+		// Enable custom deposit schedules feature flag.
+		global.wcpaySettings.featureFlags.customDepositSchedules = true;
+
+		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
+		expect( depositSchedule ).toEqual( 'Manual' );
 	} );
 
 	test( 'renders deposit schedule for daily interval', () => {
@@ -98,7 +128,10 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 	} );
 
 	test( 'renders deposit delay notice prior to first deposit', () => {
-		const depositSchedule = getDepositSchedule( {}, false );
+		const depositSchedule = getDepositSchedule(
+			{ interval: 'daily' },
+			false
+		);
 		expect( depositSchedule ).toEqual(
 			'Automatic, every business day – your first deposit is held for seven days (learn more)'
 		);

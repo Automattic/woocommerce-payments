@@ -18,7 +18,11 @@ import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import {
+	getTerms,
+	isWCPayChosen,
+	getPaymentIntentFromSession,
+} from '../utils/upe';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
@@ -41,6 +45,7 @@ jQuery( function ( $ ) {
 			elements: null,
 			upeElement: null,
 			paymentIntentId: null,
+			paymentIntentClientSecret: null,
 			isUPEComplete: null,
 			country: null,
 		};
@@ -229,7 +234,10 @@ jQuery( function ( $ ) {
 
 		let { intentId, clientSecret } = isSetupIntent
 			? getSetupIntentFromSession( paymentMethodType )
-			: getPaymentIntentFromSession( paymentMethodType );
+			: getPaymentIntentFromSession(
+					paymentMethodsConfig,
+					paymentMethodType
+			  );
 
 		const $upeContainer = $( upeDOMElement );
 		blockUI( $upeContainer );
@@ -280,11 +288,18 @@ jQuery( function ( $ ) {
 				api: api,
 				elements: elements,
 				emailId: 'billing_email',
-				complete_billing: true,
+				complete_billing: () => {
+					return true;
+				},
 				complete_shipping: () => {
-					return ! document.getElementById(
-						'ship-to-different-address-checkbox'
-					).checked;
+					return (
+						document.getElementById(
+							'ship-to-different-address-checkbox'
+						) &&
+						document.getElementById(
+							'ship-to-different-address-checkbox'
+						).checked
+					);
 				},
 				shipping_fields: {
 					line1: 'shipping_address_1',
@@ -293,6 +308,8 @@ jQuery( function ( $ ) {
 					state: 'shipping_state',
 					postal_code: 'shipping_postcode',
 					country: 'shipping_country',
+					first_name: 'shipping_first_name',
+					last_name: 'shipping_last_name',
 				},
 				billing_fields: {
 					line1: 'billing_address_1',
@@ -301,6 +318,8 @@ jQuery( function ( $ ) {
 					state: 'billing_state',
 					postal_code: 'billing_postcode',
 					country: 'billing_country',
+					first_name: 'billing_first_name',
+					last_name: 'billing_last_name',
 				},
 			} );
 		}
@@ -419,12 +438,13 @@ jQuery( function ( $ ) {
 		}
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
-			const { error } = await api.getStripe().confirmPayment( {
+			const { error } = await api.handlePaymentConfirmation(
 				elements,
-				confirmParams: {
+				{
 					return_url: returnUrl,
 				},
-			} );
+				null
+			);
 			$form.removeClass( 'processing' ).unblock();
 			showErrorCheckout( error.message );
 			return false;
@@ -471,12 +491,13 @@ jQuery( function ( $ ) {
 				$( '#wcpay_payment_country' ).val()
 			);
 
-			const { error } = await api.getStripe().confirmPayment( {
-				elements: upeComponents.elements,
-				confirmParams: {
+			const { error } = await api.handlePaymentConfirmation(
+				upeComponents.elements,
+				{
 					return_url: returnUrl,
 				},
-			} );
+				getPaymentIntentSecret( paymentMethodType )
+			);
 			if ( error ) {
 				throw error;
 			}
@@ -560,9 +581,11 @@ jQuery( function ( $ ) {
 			};
 			let error;
 			if ( response.payment_needed ) {
-				( { error } = await api
-					.getStripe()
-					.confirmPayment( upeConfig ) );
+				( { error } = await api.handlePaymentConfirmation(
+					upeComponents.elements,
+					upeConfig.confirmParams,
+					getPaymentIntentSecret( paymentMethodType )
+				) );
 			} else {
 				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
 			}
@@ -652,30 +675,6 @@ jQuery( function ( $ ) {
 	}
 
 	/**
-	 * Returns the cached payment intent for the current cart state.
-	 *
-	 * @param {string} paymentMethodType Stripe payment method type ID.
-	 * @return {Object} The intent id and client secret required for mounting the UPE element.
-	 */
-	function getPaymentIntentFromSession( paymentMethodType ) {
-		const cartHash = getCookieValue( 'woocommerce_cart_hash' );
-		const upePaymentIntentData =
-			paymentMethodsConfig[ paymentMethodType ].upePaymentIntentData;
-
-		if (
-			cartHash &&
-			upePaymentIntentData &&
-			upePaymentIntentData.startsWith( cartHash )
-		) {
-			const intentId = upePaymentIntentData.split( '-' )[ 1 ];
-			const clientSecret = upePaymentIntentData.split( '-' )[ 2 ];
-			return { intentId, clientSecret };
-		}
-
-		return {};
-	}
-
-	/**
 	 * Returns the cached setup intent.
 	 *
 	 * @param {string} paymentMethodType Stripe payment method type ID.
@@ -691,6 +690,24 @@ jQuery( function ( $ ) {
 		}
 
 		return {};
+	}
+
+	/**
+	 * Returns stripe intent secret that will be used to confirm payment
+	 *
+	 * @param {string} paymentMethodType Stripe payment method type ID.
+	 * @return {string | null} The intent secret required to confirm payment during the rate limit error.
+	 */
+	function getPaymentIntentSecret( paymentMethodType ) {
+		const upeComponents = gatewayUPEComponents[ paymentMethodType ];
+		if ( upeComponents.paymentIntentClientSecret ) {
+			return upeComponents.paymentIntentClientSecret;
+		}
+		const { clientSecret } = getPaymentIntentFromSession(
+			paymentMethodsConfig,
+			paymentMethodType
+		);
+		return clientSecret ? clientSecret : null;
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.

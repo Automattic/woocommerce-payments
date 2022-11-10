@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a51884b9cc5c6841d02e9502bf1efdf1",
+    "content-hash": "90f58d3cd4e9aee92e9c3b2035ba7658",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1060,16 +1060,16 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "2.1.0",
+            "version": "2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "7eab8aec595c2f511fc9dfdd35d48ac965ae1a37"
+                "reference": "8017438f8e0cfc16494344f783fb134f77284d58"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/7eab8aec595c2f511fc9dfdd35d48ac965ae1a37",
-                "reference": "7eab8aec595c2f511fc9dfdd35d48ac965ae1a37",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/8017438f8e0cfc16494344f783fb134f77284d58",
+                "reference": "8017438f8e0cfc16494344f783fb134f77284d58",
                 "shasum": ""
             },
             "require": {
@@ -1088,7 +1088,9 @@
             },
             "archive": {
                 "exclude": [
-                    "!/build"
+                    "!/build",
+                    "*.zip",
+                    "node_modules"
                 ]
             },
             "scripts": {
@@ -1108,10 +1110,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/2.1.0",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/2.3.0",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2022-06-06T23:53:47+00:00"
+            "time": "2022-10-07T03:45:34+00:00"
         }
     ],
     "packages-dev": [
@@ -2344,24 +2346,24 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v5.9.0",
+            "version": "v6.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "a7204cfbb5fa90720773122cb68530087de5bc78"
+                "reference": "aa70197bc38607e0f25a4de0b39422ab379defd3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/a7204cfbb5fa90720773122cb68530087de5bc78",
-                "reference": "a7204cfbb5fa90720773122cb68530087de5bc78",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/aa70197bc38607e0f25a4de0b39422ab379defd3",
+                "reference": "aa70197bc38607e0f25a4de0b39422ab379defd3",
                 "shasum": ""
             },
             "require": {
-                "php-stubs/wordpress-stubs": "^5.3.0"
+                "php-stubs/wordpress-stubs": "^5.3 || ^6.0"
             },
             "require-dev": {
-                "giacocorsiglia/stubs-generator": "^0.5.0",
-                "php": "~7.1"
+                "php": "~7.1 || ~8.0",
+                "php-stubs/generator": "^0.8.0"
             },
             "suggest": {
                 "symfony/polyfill-php73": "Symfony polyfill backporting some PHP 7.3+ features to lower PHP versions",
@@ -2382,9 +2384,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v5.9.0"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v6.8.0"
             },
-            "time": "2021-11-05T10:02:27+00:00"
+            "time": "2022-08-09T05:06:14+00:00"
         },
         {
             "name": "php-stubs/wordpress-stubs",
@@ -5834,5 +5836,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.2.0"
 }

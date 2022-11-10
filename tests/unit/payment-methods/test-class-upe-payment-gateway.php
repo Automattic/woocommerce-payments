@@ -1543,17 +1543,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertSame(
 			$mock_upe_gateway->get_payment_fields_js_config()['paymentMethodsConfig'],
 			[
-				'card' => [
-					'isReusable'           => true,
-					'title'                => 'Credit card / debit card',
-					'upePaymentIntentData' => null,
-					'upeSetupIntentData'   => null,
-				],
 				'link' => [
 					'isReusable'           => true,
 					'title'                => 'Link',
 					'upePaymentIntentData' => null,
 					'upeSetupIntentData'   => null,
+					'testingInstructions'  => '',
 				],
 			]
 		);

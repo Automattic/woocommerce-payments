@@ -96,26 +96,50 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$this->stripe_id          = $payment_method->get_id();
 		$this->payment_method     = $payment_method;
 		$this->title              = $payment_method->get_title();
+		$this->icon               = $payment_method->get_icon();
 
 		add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
-		add_action( "wc_ajax_wcpay_update_payment_inten_ $this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
+		add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
 		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
-		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
-		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ], 10, 0 );
 
 		if ( 'card' !== $this->stripe_id ) {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
 			$this->method_title = "WooCommerce Payments ($this->title)";
-		} else {
-			// Only add these filters once.
+		}
+
+		if ( ! has_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] ) ) {
 			add_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] );
+		}
+
+		if ( ! has_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] ) ) {
 			add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
+		}
+
+		if ( ! has_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] ) ) {
 			add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
+		}
+
+		if ( ! has_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] ) ) {
 			add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
+		}
+
+		if ( ! has_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_upe_appearance_transient' ] ) ) {
 			add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_upe_appearance_transient' ] );
+		}
 
+		if ( ! has_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] ) ) {
 			add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
+		}
 
+		if ( ! has_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ] ) ) {
+			add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ], 10, 0 );
+		}
+
+		if ( ! has_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ] ) ) {
+			add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
+		}
+
+		if ( ! has_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'remove_upe_setup_intent_from_session' ] ) ) {
 			add_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
 		}
 	}
@@ -985,36 +1009,33 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Returns the list of available payment method types for UPE.
 	 * Filtering out those without configured fees, this will prevent a payment method not supported by the Stripe account's country from being returned.
+	 * Note that we are not taking into account capabilities, which are taken into account when managing payment methods in settings.
 	 * See https://stripe.com/docs/stripe-js/payment-element#web-create-payment-intent for a complete list.
 	 *
 	 * @return string[]
 	 */
 	public function get_upe_available_payment_methods() {
-		$methods = parent::get_upe_available_payment_methods();
-		$fees    = $this->account->get_fees();
+		$available_methods = parent::get_upe_available_payment_methods();
 
-		$methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
-		$methods = array_values(
+		$available_methods = array_values(
 			apply_filters(
 				'wcpay_upe_available_payment_methods',
-				$methods
+				$available_methods
 			)
 		);
+		$methods_with_fees = array_keys( $this->account->get_fees() );
 
-		$methods_with_fees = array_values( array_intersect( $methods, array_keys( $fees ) ) );
-
-		$methods_with_fees[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-
-		return $methods_with_fees;
+		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
 	}
 
 	/**
@@ -1071,12 +1092,23 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
+			if ( 'card' === $payment_method_id ) {
+				continue;
+			}
 			$payment_method                 = $this->wc_payments_get_payment_method_by_id( $payment_method_id );
 			$settings[ $payment_method_id ] = [
 				'isReusable'           => $payment_method->is_reusable(),
 				'title'                => $payment_method->get_title(),
 				'upePaymentIntentData' => $this->get_payment_intent_data_from_session( $payment_method_id ),
 				'upeSetupIntentData'   => $this->get_setup_intent_data_from_session( $payment_method_id ),
+				'testingInstructions'  => WC_Payments_Utils::esc_interpolated_html(
+					/* translators: link to Stripe testing page */
+					$payment_method->get_testing_instructions(),
+					[
+						'strong' => '<strong>',
+						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
+					]
+				),
 			];
 		}
 

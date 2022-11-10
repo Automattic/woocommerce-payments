@@ -246,7 +246,6 @@ class WC_Payments_API_Client {
 		if ( ! empty( $cvc_confirmation ) ) {
 			$request['cvc_confirmation'] = $cvc_confirmation;
 		}
-
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
@@ -497,21 +496,25 @@ class WC_Payments_API_Client {
 	/**
 	 * Create a setup intent.
 	 *
-	 * @param string $payment_method_id        - ID of payment method to be saved.
-	 * @param string $customer_id              - ID of the customer.
-	 * @param bool   $save_in_platform_account - Indicate whether payment method should be stored in platform store.
+	 * @param string $payment_method_id              - ID of payment method to be saved.
+	 * @param string $customer_id                    - ID of the customer.
+	 * @param bool   $save_in_platform_account       - Indicate whether payment method should be stored in platform store.
+	 * @param bool   $is_platform_payment_method     - Indicate whether is using platform payment method.
+	 * @param bool   $save_user_in_platform_checkout - Indicate whether is creating a platform checkout user.
 	 * @param array  $metadata                 - Meta data values to be sent along with setup intent creation.
 	 *
 	 * @return array
 	 * @throws API_Exception - Exception thrown on setup intent creation failure.
 	 */
-	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id, $save_in_platform_account = false, $metadata = [] ) {
+	public function create_and_confirm_setup_intent( $payment_method_id, $customer_id, $save_in_platform_account = false, $is_platform_payment_method = false, $save_user_in_platform_checkout = false, $metadata = [] ) {
 		$request = [
-			'payment_method'           => $payment_method_id,
-			'customer'                 => $customer_id,
-			'save_in_platform_account' => $save_in_platform_account,
-			'confirm'                  => 'true',
-			'metadata'                 => $metadata,
+			'payment_method'                  => $payment_method_id,
+			'customer'                        => $customer_id,
+			'save_in_platform_account'        => $save_in_platform_account,
+			'is_platform_payment_method'      => $is_platform_payment_method,
+			'save_payment_method_to_platform' => $save_user_in_platform_checkout,
+			'metadata'                        => $metadata,
+			'confirm'                         => 'true',
 		];
 
 		return $this->request( $request, self::SETUP_INTENTS_API, self::POST );
@@ -1418,6 +1421,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch an invoice.
+	 *
+	 * @param string $invoice_id ID of the invoice to get.
+	 *
+	 * @return array The invoice.
+	 *
+	 * @throws API_Exception If fetching the invoice fails.
+	 */
+	public function get_invoice( string $invoice_id ) {
+		return $this->request(
+			[],
+			self::INVOICES_API . '/' . $invoice_id,
+			self::GET
+		);
+	}
+
+	/**
 	 * Charges an invoice.
 	 *
 	 * Calling this function charges the customer. Pass the param 'paid_out_of_band' => true to mark the invoice as paid without charging the customer.
@@ -2095,8 +2115,8 @@ class WC_Payments_API_Client {
 			$params['level3']['line_items'] = [
 				[
 					'discount_amount'     => 0,
-					'product_code'        => 'zero-cost-fee',
-					'product_description' => 'Zero cost fee',
+					'product_code'        => 'empty-order',
+					'product_description' => 'The order is empty',
 					'quantity'            => 1,
 					'tax_amount'          => 0,
 					'unit_cost'           => 0,

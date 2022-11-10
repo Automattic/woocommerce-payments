@@ -1547,8 +1547,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 					'line_items'         => [
 						[
 							'discount_amount'     => 0,
-							'product_code'        => 'zero-cost-fee',
-							'product_description' => 'Zero cost fee',
+							'product_code'        => 'empty-order',
+							'product_description' => 'The order is empty',
 							'quantity'            => 1,
 							'tax_amount'          => 0,
 							'unit_cost'           => 0,
@@ -1631,6 +1631,26 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				'Online Payment for Order #100 for example.org blog_id 999',
 			],
 		];
+	}
+
+	/**
+	 * Test a successful fetch of a single invoice.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_invoice_success() {
+		$invoice_id = 'in_test_invoice';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'     => $invoice_id,
+				'object' => 'invoice',
+			]
+		);
+
+		$invoice = $this->payments_api_client->get_invoice( $invoice_id );
+		$this->assertEquals( $invoice_id, $invoice['id'] );
 	}
 
 	/**
