@@ -195,21 +195,11 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return false;
 		}
 
-		// TODO: Does WooPay have any unsupported product types?
-
-		// phpcs:disable
-		// Product page, but has unsupported product type.
-		// if ( $this->is_product() && ! $this->is_product_supported() ) {
-		// 	Logger::log( 'Product page has unsupported product type ( Payment Request button disabled )' );
-		// 	return false;
-		// }
-
-		// Cart has unsupported product type.
-		// if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
-		// 	Logger::log( 'Items in the cart have unsupported product type ( Payment Request button disabled )' );
-		// 	return false;
-		// }
-		// phpcs:enable
+		/**
+		 * TODO: We need to do some research here and see if there are any product types that we
+		 * absolutely cannot support with WooPay at this time. There are some examples in the
+		 * `WC_Payments_Payment_Request_Button_Handler->is_product_supported()` method.
+		 */
 
 		return true;
 	}
