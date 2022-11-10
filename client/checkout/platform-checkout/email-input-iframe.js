@@ -8,10 +8,38 @@ import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 import { buildAjaxURL } from '../../payment-request/utils';
 
-export const handlePlatformCheckoutEmailInput = ( field, api ) => {
+// Waits for the element to exist as in the Blocks checkout, sometimes the field is not immediately available.
+const waitForElement = ( selector ) => {
+	return new Promise( ( resolve ) => {
+		if ( document.querySelector( selector ) ) {
+			return resolve( document.querySelector( selector ) );
+		}
+
+		const checkoutBlock = document.querySelector(
+			'[data-block-name="woocommerce/checkout"]'
+		);
+		const observer = new MutationObserver( ( mutationList, obs ) => {
+			if ( document.querySelector( selector ) ) {
+				resolve( document.querySelector( selector ) );
+				obs.disconnect();
+			}
+		} );
+
+		observer.observe( checkoutBlock, {
+			childList: true,
+			subtree: true,
+		} );
+	} );
+};
+
+export const handlePlatformCheckoutEmailInput = async (
+	field,
+	api,
+	isBlocksCheckout = false
+) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = document.querySelector( field );
+	const platformCheckoutEmailInput = await waitForElement( field );
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
@@ -190,6 +218,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	// Error message to display when there's an error contacting WooPay.
 	const errorMessage = document.createElement( 'div' );
+	errorMessage.style[ 'white-space' ] = 'normal';
 	errorMessage.textContent = __(
 		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
 		'woocommerce-payments'
@@ -260,11 +289,20 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		closeIframe( false );
 	} );
 
-	document
-		.querySelector( 'form[name="checkout"]' )
-		.addEventListener( 'submit', () => {
+	if ( isBlocksCheckout ) {
+		const formSubmitButton = await waitForElement(
+			'button.wc-block-components-checkout-place-order-button'
+		);
+		formSubmitButton.addEventListener( 'click', () => {
 			abortController.abort();
 		} );
+	} else {
+		document
+			.querySelector( 'form[name="checkout"]' )
+			.addEventListener( 'submit', () => {
+				abortController.abort();
+			} );
+	}
 
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );

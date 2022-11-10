@@ -156,6 +156,7 @@ class WC_Payments_Features {
 				'documents'               => self::is_documents_section_enabled(),
 				'customDepositSchedules'  => self::is_custom_deposit_schedules_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
+				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
 			]
 		);
 	}
