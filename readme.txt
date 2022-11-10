@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.0.1 - 2022-xx-xx =
+* Fix - Fix fatal error when non-admin access admin pages.
+
 = 5.0.0 - 2022-11-09 =
 * Add - Add capture authorization support from the list of authorizations
 * Add - Add capture authorization support from the payment details page.
