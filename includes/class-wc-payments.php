@@ -389,14 +389,11 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
 
 		// Add admin screens.
-		if ( is_admin() ) {
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
-		}
-
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$database_cache );
 
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 			new WC_Payments_Admin_Settings( self::get_gateway() );
 
 			add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
