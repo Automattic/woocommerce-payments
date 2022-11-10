@@ -100,12 +100,33 @@ class Base_Request implements Base_Request_Interface {
 	 * @return array
 	 */
 	public function to_array() {
-		$data = [];
-		foreach ( get_object_vars( $this ) as $key => $value ) {
-			$data[ $key ] = $value;
+		return get_object_vars( $this );
+	}
+
+	/**
+	 * Validate params of request. Make sure that override this function in child class.
+	 *
+	 * @return bool
+	 */
+	public function is_request_data_valid() {
+		return false;
+	}
+
+	/**
+	 * Validate and get request data.
+	 *
+	 * @return array
+	 * @throws \InvalidArgumentException
+	 */
+	final public function get_request_data() {
+		if ( $this->is_request_data_valid() ) {
+			throw new \InvalidArgumentException( 'Request data is not valid' );
+		}
+		if ( ! in_array( $this->get_method(), [ \Requests::GET, \Requests::HEAD, \Requests::OPTIONS, \Requests::POST, \Requests::PUT, \Requests::PATCH, \Requests::DELETE ], true ) ) {
+			throw new \InvalidArgumentException( 'Request method is not valid' );
 		}
 
-		return $data;
+		return $this->get_parameters();
 	}
 
 	/**

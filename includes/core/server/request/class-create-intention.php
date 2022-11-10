@@ -326,21 +326,25 @@ final class Create_Intention extends Base_Request {
 		$request                   = [];
 		$request['amount']         = $this->amount;
 		$request['currency']       = $this->currency_code;
-		$request['payment_method'] = $this->payment_method_id;
-		$request['customer']       = $this->customer_id;
 		$request['capture_method'] = $this->manual_capture ? 'manual' : 'automatic';
-		$request['metadata']       = $this->metadata;
-		$request['level3']         = $this->level3;
+		$request['metadata']       = $this->metadata ?? [];
+		$request['level3']         = $this->level3 ?? [];
 		$request['description']    = sprintf(
 			'Online Payment%s for %s%s',
 			0 !== $order_number ? " for Order #$order_number" : '',
 			str_replace( [ 'https://', 'http://' ], '', get_site_url() ),
 			null !== $this->blog_id ? " blog_id $this->blog_id" : ''
 		);
-		$request                   = array_merge( $request, $this->additional_parameters );
+		if ( is_array( $this->additional_parameters ) ) {
+			$request = array_merge( $request, $this->additional_parameters );
+		}
 
 		if ( $this->off_session ) {
 			$request['off_session'] = 'true';
+		}
+
+		if ( $this->payment_method_id ) {
+			$request['payment_method'] = $this->payment_method_id;
 		}
 
 		if ( $this->payment_methods ) {
@@ -365,6 +369,25 @@ final class Create_Intention extends Base_Request {
 		return $request;
 	}
 
+	/**
+	 * Make sure that properties are filled.
+	 *
+	 * @return bool
+	 */
+	public function is_request_data_valid() {
+
+		// Make sure that one of the payment method properties exist.
+
+		if ( ! property_exists( $this, 'payment_methods' ) && ! property_exists( $this, 'payment_method_id' ) ) {
+			return false;
+		}
+
+		// Make sure that other minimal required properties exist.
+		if ( ! property_exists( $this, 'amount' ) || ! property_exists( $this, 'currency' ) ) {
+			return false;
+		}
+		return true;
+	}
 
 
 

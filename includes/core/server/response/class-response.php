@@ -109,7 +109,7 @@ class Response implements Base_Response_Interface {
 	 *
 	 * @return array|mixed
 	 */
-	public function data() {
+	public function get_data() {
 		$data = $this->response_data;
 		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
 		if ( isset( $data['metadata'] ) && empty( $data['metadata'] ) ) {

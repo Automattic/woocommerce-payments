@@ -15,18 +15,18 @@ use WCPay\Core\Enums\Endpoints;
 final class Create_Charge extends Base_Request {
 
 	/**
-	 * AMount to charge.
+	 * Amount to charge.
 	 *
 	 * @var int $amount
 	 */
-	protected $amount;
+	private $amount;
 
 	/**
 	 * ID of the source to associate with charge.
 	 *
 	 * @var string $source_id
 	 */
-	protected $source_id;
+	private $source_id;
 
 	/**
 	 * Set amount.
@@ -82,6 +82,15 @@ final class Create_Charge extends Base_Request {
 	 */
 	public function get_route() {
 		return Endpoints::INTENTIONS_API;
+	}
+
+	/**
+	 * Make sure that properties are filled.
+	 *
+	 * @return bool
+	 */
+	public function is_request_data_valid() {
+		return property_exists( $this, 'amount' ) && property_exists( $this, 'source_id' );
 	}
 
 

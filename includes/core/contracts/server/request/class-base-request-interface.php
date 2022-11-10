@@ -13,11 +13,18 @@ namespace WCPay\Core\Contracts\Server\Request;
 interface Base_Request_Interface {
 
 	/**
-	 * Get request params.
+	 * Get params.
 	 *
 	 * @return array
 	 */
 	public function get_parameters();
+
+	/**
+	 * Validate and get request data.
+	 *
+	 * @return array
+	 */
+	public function get_request_data();
 
 	/**
 	 * Get request method.

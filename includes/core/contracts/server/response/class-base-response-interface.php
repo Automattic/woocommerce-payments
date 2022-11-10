@@ -16,32 +16,18 @@ use WP_Http_Cookie;
 interface Base_Response_Interface {
 
 	/**
-	 * Get status code.
-	 *
-	 * @return int
-	 */
-	public function get_code();
-
-	/**
-	 * Get headers.
+	 * Get response data.
 	 *
 	 * @return array
 	 */
-	public function get_headers();
+	public function get_data();
 
 	/**
-	 * Get message.
+	 * Get response properties in array format.
 	 *
-	 * @return string
+	 * @return array
 	 */
-	public function get_message();
-
-	/**
-	 * Get cookies.
-	 *
-	 * @return WP_Http_Cookie[]
-	 */
-	public function get_cookies();
+	public function to_array();
 
 	/**
 	 * Create DTO from WCPay response.

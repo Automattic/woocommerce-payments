@@ -1992,10 +1992,12 @@ class WC_Payments_API_Client {
 	 * Send WC pay request using value objects.
 	 *
 	 * @param WC_Pay_Request $request - Request object.
+	 *
 	 * @return Response
+	 * @throws InvalidArgumentException|API_Exception
 	 */
 	public function send_wcpay_request( WC_Pay_Request $request ) {
-		$params = $request->get_parameters();
+		$params = $request->get_request_data();
 
 		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement.
 		if ( ! isset( $params['level3']['line_items'] ) || ! is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
