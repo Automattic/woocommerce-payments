@@ -73,11 +73,27 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
+	/**
+	 * @param bool $can_manage_woocommerce
+	 *
+	 * @return Closure
+	 */
+	private function create_can_manage_woocommerce_cap_override( bool $can_manage_woocommerce ) {
+		return function ( $allcaps ) use ( $can_manage_woocommerce ) {
+			$allcaps['manage_woocommerce'] = $can_manage_woocommerce;
+
+			return $allcaps;
+		};
+	}
+
 	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
 		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
@@ -94,6 +110,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
 		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException(
@@ -117,6 +136,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_empty_cache();
 
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new Exception() )
 		);
@@ -133,6 +155,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
 		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
@@ -152,11 +177,30 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
+	public function test_maybe_redirect_to_onboarding_with_non_admin_user() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
+		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( false );
+		add_filter( 'user_has_cap', $cb );
+
+		$this->mock_api_client->expects( $this->never() )->method( 'get_account_data' );
+
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		// The option should be updated.
+		$this->assertTrue( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+	}
+
 	public function test_maybe_redirect_to_onboarding_checks_the_account_once() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
 		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
@@ -210,6 +254,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Simulate the account details cache not being there and then timing out.
 		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
 
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );

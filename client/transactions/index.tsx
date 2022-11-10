@@ -1,7 +1,9 @@
+/** @format **/
+
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { Experiment } from '@woocommerce/explat';
 import { TabPanel } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
@@ -21,8 +23,14 @@ import EmptyStateTable from 'empty-state-table';
 import ListBanner from '../empty-state-table/transactions-banner.svg';
 import Authorizations from './uncaptured';
 import './style.scss';
+import {
+	useManualCapture,
+	useSettings,
+	useAuthorizationsSummary,
+} from 'wcpay/data';
+import WCPaySettingsContext from '../settings/wcpay-settings-context';
 
-const displayAuthorizations = false;
+declare const window: any;
 
 const currentQuery = getQuery();
 const initialTab = currentQuery.tab ?? null;
@@ -48,6 +56,13 @@ export const TransactionsPage = (): JSX.Element => {
 		</>
 	);
 
+	const {
+		featureFlags: { isAuthAndCaptureEnabled },
+	} = useContext( WCPaySettingsContext );
+	const [ getIsManualCaptureEnabled ] = useManualCapture();
+	const { isLoading: isLoadingSettings } = useSettings();
+	const { authorizationsSummary } = useAuthorizationsSummary( {} );
+
 	const treatmentExperience = wcpaySettings.accountStatus.status ? (
 		defaultExperience
 	) : (
@@ -58,7 +73,16 @@ export const TransactionsPage = (): JSX.Element => {
 		/>
 	);
 
-	if ( displayAuthorizations ) {
+	// The Uncaptured authorizations screen will be shown only if:
+	// 1. The feature is turned on for all accounts
+	// 2. Manual capture settings are turned on for this store
+	// OR
+	// 2'. There are authorizations to capture (even if the manual capture is turned off)
+	const shouldShowUncapturedTab =
+		( ! isLoadingSettings && getIsManualCaptureEnabled ) ||
+		( authorizationsSummary.total && authorizationsSummary.total > 0 );
+
+	if ( isAuthAndCaptureEnabled && shouldShowUncapturedTab ) {
 		return (
 			<Page>
 				<TabPanel
@@ -113,4 +137,12 @@ export const TransactionsPage = (): JSX.Element => {
 	);
 };
 
-export default TransactionsPage;
+export default (): JSX.Element => {
+	return (
+		<Page>
+			<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+				<TransactionsPage />
+			</WCPaySettingsContext.Provider>
+		</Page>
+	);
+};
