@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-woocommerce_new_subscription_data hook will only work with CPT datastore and so has been deprecated.
