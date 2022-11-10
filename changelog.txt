@@ -1,6 +1,6 @@
 *** WooCommerce Payments Changelog ***
 
-= 5.0.1 - 2022-xx-xx =
+= 5.0.1 - 2022-11-10 =
 * Fix - Fix fatal error when non-admin access admin pages.
 
 = 5.0.0 - 2022-11-09 =
