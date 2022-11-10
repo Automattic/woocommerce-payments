@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.8
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 5.0.0
+Stable tag: 5.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,9 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 5.0.1 - 2022-11-10 =
+* Fix - Fix fatal error when non-admin access admin pages.
 
 = 5.0.0 - 2022-11-09 =
 * Add - Add capture authorization support from the list of authorizations
