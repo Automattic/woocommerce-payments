@@ -296,7 +296,19 @@ class WC_Payments {
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
-		include_once __DIR__ . '/core/class-loader.php';
+
+		// Load core files.
+		require_once WCPAY_CORE_PATH . '/contracts/server/request/class-base-request-interface.php';
+		require_once WCPAY_CORE_PATH . '/contracts/server/response/class-base-response-interface.php';
+
+		/** Load enums. */
+		require_once WCPAY_CORE_PATH . '/enums/class-endpoints.php';
+
+		/** Load Core Server files */
+		require_once WCPAY_CORE_PATH . '/server/request/class-base-request.php';
+		require_once WCPAY_CORE_PATH . '/server/request/class-create-charge.php';
+		require_once WCPAY_CORE_PATH . '/server/request/class-create-intention.php';
+		require_once WCPAY_CORE_PATH . '/server/response/class-response.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {

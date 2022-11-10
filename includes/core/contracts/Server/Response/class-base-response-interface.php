@@ -43,13 +43,12 @@ interface Base_Response_Interface {
 	 */
 	public function get_cookies();
 
-
 	/**
 	 * Create DTO from WCPay response.
 	 *
 	 * @param array $response Server response.
 	 * @return Response
 	 */
-	public static function create_from_wc_pay_server_response( $response);
+	public static function create_from_wc_pay_server_response( $response );
 
 }

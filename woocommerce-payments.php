@@ -23,6 +23,7 @@ define( 'WCPAY_PLUGIN_FILE', __FILE__ );
 define( 'WCPAY_ABSPATH', __DIR__ . '/' );
 define( 'WCPAY_MIN_WC_ADMIN_VERSION', '0.23.2' );
 define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscriptions-core/' );
+define( 'WCPAY_CORE_PATH', __DIR__ . '/includes/core' );
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
