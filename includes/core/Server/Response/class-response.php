@@ -8,13 +8,13 @@
 namespace WCPay\Core\Server;
 
 use ReflectionClass;
-use WCPay\Core\Contracts\API\Response\Base_Response;
+use WCPay\Core\Contracts\API\Response\Base_Response_Interface;
 use WP_Http_Cookie;
 
 /**
  * DTO for parsing response from WCPay server API.
  */
-class Response implements Base_Response {
+class Response implements Base_Response_Interface {
 	/**
 	 * Response body.
 	 *

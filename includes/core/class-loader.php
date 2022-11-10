@@ -7,8 +7,8 @@
 
 /** Load contracts. */
 
-require_once __DIR__ . '/Contracts/Server/Request/interface-base-request.php';
-require_once __DIR__ . '/Contracts/Server/Response/interface-base-response.php';
+require_once __DIR__ . '/Contracts/Server/Request/class-base-request-interface.php';
+require_once __DIR__ . '/Contracts/Server/Response/class-base-response-interface.php';
 
 
 /** Load enums. */

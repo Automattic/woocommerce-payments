@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Core\Contracts\Server\Request\Base_Request as WC_Pay_Request;
+use WCPay\Core\Contracts\Server\Request\Base_Request_Interface as WC_Pay_Request;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;

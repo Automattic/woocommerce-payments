@@ -7,12 +7,12 @@
 
 namespace WCPay\Core\Server\Request;
 
-use \WCPay\Core\Contracts\Server\Request\Base_Request as Base_Request_Contract;
+use \WCPay\Core\Contracts\Server\Request\Base_Request_Interface;
 
 /**
  * Base request value object.
  */
-class Base_Request implements Base_Request_Contract {
+class Base_Request implements Base_Request_Interface {
 
 
 	/**

@@ -10,7 +10,7 @@ namespace WCPay\Core\Contracts\Server\Request;
 /**
  * Base request interface.
  */
-interface Base_Request {
+interface Base_Request_Interface {
 
 	/**
 	 * Get request params.

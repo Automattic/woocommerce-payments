@@ -13,7 +13,7 @@ use WP_Http_Cookie;
 /**
  * Base response interface.
  */
-interface Base_Response {
+interface Base_Response_Interface {
 
 	/**
 	 * Get body.
