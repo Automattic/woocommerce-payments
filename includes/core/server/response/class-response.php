@@ -15,12 +15,6 @@ use WP_Http_Cookie;
  * DTO for parsing response from WCPay server API.
  */
 class Response implements Base_Response_Interface {
-	/**
-	 * Response body.
-	 *
-	 * @var string $body
-	 */
-	private $body;
 
 	/**
 	 * Status code.
@@ -67,21 +61,11 @@ class Response implements Base_Response_Interface {
 	 * @param WP_Http_Cookie[] $cookies Response cookies.
 	 */
 	public function __construct( $body, $code, $headers, $message, $cookies ) {
-		$this->body          = $body;
 		$this->code          = $code;
 		$this->headers       = $headers;
 		$this->message       = $message;
 		$this->cookies       = $cookies;
 		$this->response_data = json_decode( $body, true );
-	}
-
-	/**
-	 * Get body.
-	 *
-	 * @return string
-	 */
-	public function get_body() {
-		return $this->body;
 	}
 
 	/**

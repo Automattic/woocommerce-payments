@@ -16,13 +16,6 @@ use WP_Http_Cookie;
 interface Base_Response_Interface {
 
 	/**
-	 * Get body.
-	 *
-	 * @return string
-	 */
-	public function get_body();
-
-	/**
 	 * Get status code.
 	 *
 	 * @return int
