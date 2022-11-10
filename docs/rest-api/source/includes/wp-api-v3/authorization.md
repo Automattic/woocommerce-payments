@@ -137,7 +137,7 @@ curl -X GET https://example.com/wp-json/wc/v3/payments/authorizations/pi_123 \
 
 _@since v4.9.0_
 
-Return a high-level summary of all authorization data.
+Return a high-level summary for all active authorizations.
 
 ### HTTP request
 
