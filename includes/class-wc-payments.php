@@ -369,7 +369,7 @@ class WC_Payments {
 			}
 
 			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
-			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
+			self::$wc_payments_checkout = new WC_Payments_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		} else {
 			self::$card_gateway         = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 			self::$wc_payments_checkout = new WC_Payments_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
