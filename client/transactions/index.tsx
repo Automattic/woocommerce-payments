@@ -4,9 +4,8 @@
 import React from 'react';
 import { Experiment } from '@woocommerce/explat';
 import { TabPanel } from '@wordpress/components';
-import { getQuery } from '@woocommerce/navigation';
-import { __ } from '@wordpress/i18n';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -78,10 +77,14 @@ export const TransactionsPage = (): JSX.Element => {
 						},
 						{
 							name: 'uncaptured-page',
-							// TODO: Find way to show a proper badge (as in menu) and convert back to translated string.
-							title: `Uncaptured (${
+							title: sprintf(
+								/* translators: %1: number of uncaptured authorizations */
+								__(
+									'Uncaptured (%1$s)',
+									'woocommerce-payments'
+								),
 								authorizationsSummary.count ?? '...'
-							})`,
+							),
 							className: 'authorizations-list',
 						},
 					] }
