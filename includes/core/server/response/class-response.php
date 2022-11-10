@@ -7,7 +7,6 @@
 
 namespace WCPay\Core\Server;
 
-use ReflectionClass;
 use WCPay\Core\Contracts\API\Response\Base_Response_Interface;
 use WP_Http_Cookie;
 
@@ -139,13 +138,7 @@ class Response implements Base_Response_Interface {
 	 * @return array
 	 */
 	public function to_array() {
-		$class = new ReflectionClass( $this );
-		$data  = [];
-		foreach ( $class->getProperties() as $reflectionProperty ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
-			$data[ $reflectionProperty->getName() ] = $reflectionProperty->getValue(); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
-		}
-
-		return $data;
+		return get_object_vars( $this );
 	}
 
 
