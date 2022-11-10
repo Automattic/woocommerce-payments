@@ -94,12 +94,13 @@ export default class WCPayAPI {
 	/**
 	 * Load Stripe for payment request button.
 	 *
+	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
-	loadStripe() {
+	loadStripe( forceAccountRequest = false ) {
 		return new Promise( ( resolve ) => {
 			try {
-				resolve( this.getStripe() );
+				resolve( this.getStripe( forceAccountRequest ) );
 			} catch ( error ) {
 				// In order to avoid showing console error publicly to users,
 				// we resolve instead of rejecting when there is an error.
