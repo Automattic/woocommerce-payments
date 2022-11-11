@@ -153,4 +153,26 @@ describe( 'ExpressCheckoutSettings', () => {
 		} );
 		expect( label ).toBeInTheDocument();
 	} );
+
+	test( 'renders WooPay express button appearance settings if feature flag is enabled and confirm its first heading', () => {
+		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
+
+		expect(
+			screen.queryByRole( 'heading', {
+				name: 'Show express checkouts on',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	test( 'does not render WooPay express button appearance settings if feature flag is disabled', () => {
+		global.wcpaySettings.featureFlags.woopayExpressCheckout = false;
+
+		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
+
+		expect(
+			screen.queryByRole( 'heading', {
+				name: 'Show express checkouts on',
+			} )
+		).not.toBeInTheDocument();
+	} );
 } );
