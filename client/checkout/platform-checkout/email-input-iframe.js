@@ -93,6 +93,14 @@ export const handlePlatformCheckoutEmailInput = async (
 	// Maybe we could make this a configurable option defined in PHP so it could be filtered by merchants.
 	const fullScreenModalBreakpoint = 768;
 
+	//Checks if customer has clicked the back button to prevent auto redirect
+	const searchParams = new URLSearchParams( window.location.search );
+	const customerClickedBackButton =
+		( 'undefined' !== typeof performance &&
+			'back_forward' ===
+				performance.getEntriesByType( 'navigation' )[ 0 ].type ) ||
+		'true' === searchParams.get( 'skip_platform_checkout' );
+
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
 	let iframeHeaderValue = true;
@@ -485,46 +493,6 @@ export const handlePlatformCheckoutEmailInput = async (
 		}, 15000 );
 	};
 
-	// Prevent show platform checkout iframe if the page comes from
-	// the back button on platform checkout itself.
-	window.addEventListener( 'pageshow', function ( event ) {
-		// Detect browser back button.
-		const historyTraversal =
-			event.persisted ||
-			( 'undefined' !== typeof performance &&
-				'back_forward' ===
-					performance.getEntriesByType( 'navigation' )[ 0 ].type );
-
-		const searchParams = new URLSearchParams( window.location.search );
-
-		if (
-			! historyTraversal &&
-			'true' !== searchParams.get( 'skip_platform_checkout' )
-		) {
-			// Check if user already has a WooPay login session.
-			if ( ! hasCheckedLoginSession ) {
-				openLoginSessionIframe( platformCheckoutEmailInput.value );
-			}
-		} else {
-			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
-			);
-
-			searchParams.delete( 'skip_platform_checkout' );
-
-			let { pathname } = window.location;
-
-			if ( '' !== searchParams.toString() ) {
-				pathname += '?' + searchParams.toString();
-			}
-
-			history.replaceState( null, null, pathname );
-
-			// Safari needs to close iframe with this.
-			closeIframe( false );
-		}
-	} );
-
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
 		if ( ! hasCheckedLoginSession ) {
 			return;
@@ -631,4 +599,28 @@ export const handlePlatformCheckoutEmailInput = async (
 			// do nothing, only respond to expected actions.
 		}
 	} );
+
+	if ( ! customerClickedBackButton ) {
+		// Check if user already has a WooPay login session.
+		if ( ! hasCheckedLoginSession ) {
+			openLoginSessionIframe( platformCheckoutEmailInput.value );
+		}
+	} else {
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
+		);
+
+		searchParams.delete( 'skip_platform_checkout' );
+
+		let { pathname } = window.location;
+
+		if ( '' !== searchParams.toString() ) {
+			pathname += '?' + searchParams.toString();
+		}
+
+		history.replaceState( null, null, pathname );
+
+		// Safari needs to close iframe with this.
+		closeIframe( false );
+	}
 };
