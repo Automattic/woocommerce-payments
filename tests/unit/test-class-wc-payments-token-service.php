@@ -104,7 +104,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
 
-		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 'woocommerce_payments_sepa_debit', $token->get_gateway_id() );
 		$this->assertEquals( 1, $token->get_user_id() );
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
