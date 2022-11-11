@@ -116,7 +116,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	public function maybe_add_card_testing_token( $content ) {
 		$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( $fraud_prevention_service->is_enabled() ) {
+		if ( $fraud_prevention_service->is_enabled() && wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) ) {
 			$content .= '<input type="hidden" name="wcpay-fraud-prevention-token" id="wcpay-fraud-prevention-token" value="' . esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ) . '">';
 		}
 		return $content;
