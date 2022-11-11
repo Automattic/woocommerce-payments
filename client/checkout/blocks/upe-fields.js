@@ -232,6 +232,10 @@ const WCPayUPEFields = ( {
 					};
 				}
 
+				const fraudPreventionToken = document
+					.querySelector( '#wcpay-fraud-prevention-token' )
+					?.getAttribute( 'value' );
+
 				return {
 					type: 'success',
 					meta: {
@@ -239,6 +243,8 @@ const WCPayUPEFields = ( {
 							paymentMethod: paymentMethodId,
 							wc_payment_intent_id: paymentIntentId,
 							wcpay_selected_upe_payment_type: selectedUPEPaymentType,
+							'wcpay-fraud-prevention-token':
+								fraudPreventionToken ?? '',
 						},
 					},
 				};
