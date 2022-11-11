@@ -91,6 +91,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_rate_limiter;
 
 	/**
+	 * Mock Session_Rate_Limiter.
+	 *
+	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_upe_gateway;
+
+	/**
 	 * WC_Payments_Order_Service.
 	 *
 	 * @var WC_Payments_Order_Service
@@ -297,10 +304,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$this->mock_wcpay_account,
 			$this->mock_customer_service
 		);
-		foreach ( $this->mock_payment_gateways as $payment_method_id => $mock_payment_gateway ) {
-			$mock_payment_gateway
-				->method( 'get_payment_method_ids_enabled_at_checkout' )
-				->willReturn( [] );
 
 			/**
 			* This tests each payment method output separately without concatenating the output
@@ -312,7 +315,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			ob_end_clean();
 
 			$this->assertStringContainsString( '<div class="wcpay-upe-element" data-payment-method-type="' . $payment_method_id . '"></div>', $actual_output );
-		}
 	}
 
 	public function test_update_payment_intent_adds_customer_save_payment_and_level3_data() {
