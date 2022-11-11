@@ -69,8 +69,9 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$this->platform_checkout_util = $platform_checkout_util;
 		$this->account                = $account;
 		$this->customer_service       = $customer_service;
+		$stripe_id                    = $this->gateway->get_selected_stripe_payment_type_id();
 
-		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
+		add_action( "wc_payments_add_upe_payment_fields_$stripe_id", [ $this, 'payment_fields' ] );
 	}
 
 	/**
@@ -216,7 +217,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			<?php if ( $this->gateway->is_in_test_mode() ) : ?>
 				<p class="testmode-info">
 					<?php
-						$testing_instructions = $this->payment_method->get_testing_instructions();
+						$testing_instructions = $this->gateway->payment_method->get_testing_instructions();
 					if ( false !== $testing_instructions ) {
 						echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
@@ -240,12 +241,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			?>
 
 			<fieldset id="wc-<?php echo esc_attr( $this->gateway->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
-				<div id="wcpay-upe-element"></div>
-				<div id="wcpay-upe-errors" role="alert"></div>
-				<input id="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" />
-				<input id="wcpay_selected_upe_payment_type" type="hidden" name="wcpay_selected_upe_payment_type" />
-				<input id="wcpay_payment_country" type="hidden" name="wcpay_payment_country" />
-
+				<div class="wcpay-upe-element" data-payment-method-type="<?php echo esc_attr( $this->gateway->get_selected_stripe_payment_type_id() ); ?>"></div>
 				<?php
 					$is_enabled_for_saved_payments = $this->gateway->is_enabled_for_saved_payments();
 				if ( $this->gateway->is_saved_cards_enabled() && $is_enabled_for_saved_payments ) {

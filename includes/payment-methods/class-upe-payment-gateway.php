@@ -60,7 +60,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 *
 	 * @var UPE_Payment_Method
 	 */
-	protected $payment_method;
+	public $payment_method;
 
 	/**
 	 * Stripe payment method type ID.
@@ -445,7 +445,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
-		do_action( 'wc_payments_add_upe_payment_fields' );
+		do_action( 'wc_payments_add_upe_payment_fields_' . $this->stripe_id );
 	}
 
 	/**
