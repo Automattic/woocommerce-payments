@@ -559,7 +559,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates customer Multi-Currency feature status.
+	 * Updates the client secret encryption feature status.
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
@@ -572,8 +572,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		update_option( '_wcpay_feature_client_secret_encryption', $is_client_secret_encryption_enabled ? '1' : '0' );
 	}
-
-
 
 	/**
 	 * Updates the WCPay Subscriptions feature status.

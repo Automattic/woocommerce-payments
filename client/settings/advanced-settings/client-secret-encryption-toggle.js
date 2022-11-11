@@ -35,7 +35,7 @@ const ClientSecretEncryptionToggle = () => {
 				'woocommerce-payments'
 			) }
 			help={ __(
-				'Encrypt the public keys used in the checkout form to harden card testing on your store.',
+				'Encrypt the public keys used in the checkout form to harden your store against card testing attacks.',
 				'woocommerce-payments'
 			) }
 			checked={ isClientSecretEncryptionEnabled }
