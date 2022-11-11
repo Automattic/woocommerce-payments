@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Core\Contracts\Server\Request\Base_Request_Interface as WC_Pay_Request;
+use WCPay\Core\Contracts\Server\Request\Base_Request_Interface;
 use WCPay\Core\Server\Response;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -1991,12 +1991,12 @@ class WC_Payments_API_Client {
 	/**
 	 * Send WC pay request using value objects.
 	 *
-	 * @param WC_Pay_Request $request - Request object.
+	 * @param Base_Request_Interface $request - Request object.
 	 *
 	 * @return Response
 	 * @throws InvalidArgumentException|API_Exception
 	 */
-	public function send_wcpay_request( WC_Pay_Request $request ) {
+	public function send_wcpay_request( Base_Request_Interface $request ) {
 		$params = $request->get_request_data();
 
 		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement.
