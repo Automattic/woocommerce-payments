@@ -122,7 +122,7 @@ class WC_Payments_Checkout {
 			'platformCheckoutNeedLogin'      => ! is_user_logged_in() && $wc_checkout->is_registration_required(),
 			'userExistsEndpoint'             => get_rest_url( null, '/wc/v3/users/exists' ),
 			'platformCheckoutSignatureNonce' => wp_create_nonce( 'platform_checkout_signature_nonce' ),
-			'platformCheckoutMerchantId'     => Jetpack_Options::get_option( 'id' ),
+			'wcpayFraudPreventionToken'      => Fraud_Prevention_Service::get_instance()->is_enabled() ? Fraud_Prevention_Service::get_instance()->get_token() : null,
 		];
 	}
 
