@@ -230,10 +230,9 @@ const WCPayUPEFields = ( {
 					};
 				}
 
-				const fraudPreventionToken =
-					document
-						.querySelector( '#wcpay-fraud-prevention-token' )
-						?.getAttribute( 'value' ) ?? null;
+				const fraudPreventionToken = document
+					.querySelector( '#wcpay-fraud-prevention-token' )
+					?.getAttribute( 'value' );
 
 				return {
 					type: 'success',
@@ -242,7 +241,8 @@ const WCPayUPEFields = ( {
 							paymentMethod: PAYMENT_METHOD_NAME_CARD,
 							wc_payment_intent_id: paymentIntentId,
 							wcpay_selected_upe_payment_type: selectedUPEPaymentType,
-							'wcpay-fraud-prevention-token': fraudPreventionToken,
+							'wcpay-fraud-prevention-token':
+								fraudPreventionToken ?? '',
 						},
 					},
 				};
