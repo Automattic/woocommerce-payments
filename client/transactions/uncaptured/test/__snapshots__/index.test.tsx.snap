@@ -295,7 +295,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4242"
                     tabindex="-1"
                   >
-                    #24 from Good boy
+                    #24 Good boy
                   </a>
                 </td>
                 <td
@@ -372,7 +372,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_4243"
                     tabindex="-1"
                   >
-                    #25 from Good boy
+                    #25 Good boy
                   </a>
                 </td>
                 <td
