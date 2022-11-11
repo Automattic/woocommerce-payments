@@ -12,7 +12,7 @@ use \WCPay\Core\Contracts\Server\Request\Base_Request_Interface;
 /**
  * Base request value object.
  */
-abstract class Base_Request implements Base_Request_Interface {
+abstract class Base_Server_Request implements Base_Request_Interface {
 
 	/**
 	 * Get request params.
@@ -124,7 +124,7 @@ abstract class Base_Request implements Base_Request_Interface {
 	 *
 	 * @param mixed $arguments Constructor arguments (if any).
 	 * @param bool  $splat_arguments Split arguments if needed. Used to pass arguments as an array where elements will be used as a arguments for constructor.
-	 * @return Base_Request
+	 * @return Base_Server_Request
 	 */
 	public static function new( $arguments = null, $splat_arguments = false ) {
 

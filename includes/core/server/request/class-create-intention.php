@@ -12,7 +12,7 @@ use WCPay\Core\Enums\Endpoints;
 /**
  * Create intention request.
  */
-final class Create_Intention extends Base_Request {
+final class Create_Intention extends Base_Server_Request {
 
 	/**
 	 * Amount to charge.
@@ -383,7 +383,7 @@ final class Create_Intention extends Base_Request {
 		}
 
 		// Make sure that other minimal required properties exist.
-		if ( property_exists( $this, 'amount' ) && property_exists( $this, 'currency_code' ) ) {
+		if ( isset( $this->amount ) && isset( $this->currency_code ) ) {
 			return true;
 		}
 		return false;

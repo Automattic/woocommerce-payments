@@ -305,7 +305,7 @@ class WC_Payments {
 		require_once WCPAY_CORE_PATH . '/enums/class-endpoints.php';
 
 		/** Load Core Server files */
-		require_once WCPAY_CORE_PATH . '/server/request/class-base-request.php';
+		require_once WCPAY_CORE_PATH . '/server/request/class-base-server-request.php';
 		require_once WCPAY_CORE_PATH . '/server/request/class-create-charge.php';
 		require_once WCPAY_CORE_PATH . '/server/request/class-create-intention.php';
 		require_once WCPAY_CORE_PATH . '/server/response/class-response.php';

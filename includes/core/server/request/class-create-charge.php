@@ -12,7 +12,7 @@ use WCPay\Core\Enums\Endpoints;
 /**
  * Create charge request.
  */
-final class Create_Charge extends Base_Request {
+final class Create_Charge extends Base_Server_Request {
 
 	/**
 	 * Amount to charge.
@@ -90,7 +90,7 @@ final class Create_Charge extends Base_Request {
 	 * @return bool
 	 */
 	public function is_request_data_valid() {
-		return property_exists( $this, 'amount' ) && property_exists( $this, 'source_id' );
+		return isset( $this->amount ) && isset( $this->source_id );
 	}
 
 
