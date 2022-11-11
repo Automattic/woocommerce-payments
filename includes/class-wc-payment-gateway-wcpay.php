@@ -896,7 +896,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$order_id = $order->get_id();
 		$amount   = $order->get_total();
-		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
+		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type(), $payment_information->get_fingerprint() );
 
 		$customer_details_options   = [
 			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),

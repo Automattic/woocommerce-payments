@@ -1,6 +1,11 @@
 /* global jQuery */
 
 /**
+ * External dependencies
+ */
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
+
+/**
  * Internal dependencies
  */
 import './style.scss';
@@ -176,7 +181,7 @@ jQuery( function ( $ ) {
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
-	$( document.body ).on( 'updated_checkout', () => {
+	$( document.body ).on( 'updated_checkout', async () => {
 		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
 		// We also don't re-mount if already mounted in DOM.
 		if (
@@ -184,6 +189,21 @@ jQuery( function ( $ ) {
 			! $( '#wcpay-card-element' ).children().length
 		) {
 			cardElement.unmount();
+
+			try {
+				const fingerprintPublicAgent = await FingerprintJS.load( {
+					monitoring: false,
+				} );
+
+				if ( fingerprintPublicAgent ) {
+					const { visitorId } = await fingerprintPublicAgent.get();
+					$( '#wcpay-fingerprint' ).val( visitorId );
+				}
+			} catch ( error ) {
+				// Do not mount element if fingerprinting is not available
+				return;
+			}
+
 			cardElement.mount( '#wcpay-card-element' );
 		}
 
