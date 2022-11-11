@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Remove unnecessary babel plugins after IE11 support drop.

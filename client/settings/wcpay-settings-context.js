@@ -7,7 +7,9 @@ const WCPaySettingsContext = createContext( {
 	accountFees: {},
 	accountLoans: {},
 	accountStatus: {},
-	featureFlags: {},
+	featureFlags: {
+		isAuthAndCaptureEnabled: false,
+	},
 } );
 
 export default WCPaySettingsContext;

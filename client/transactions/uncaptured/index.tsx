@@ -20,6 +20,7 @@ import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'utils/currency';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import wcpayTracks from 'tracks';
+import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 
 interface Column extends TableCardColumn {
 	key:
@@ -37,12 +38,6 @@ interface Column extends TableCardColumn {
 
 const getColumns = (): Column[] =>
 	[
-		{
-			key: 'authorization_id',
-			label: __( 'Authorization Id', 'woocommerce-payments' ),
-			visible: false,
-			isLeftAligned: true,
-		},
 		{
 			key: 'created',
 			label: __( 'Authorized on', 'woocommerce-payments' ),
@@ -100,6 +95,13 @@ const getColumns = (): Column[] =>
 			screenReaderLabel: __( 'Country', 'woocommerce-payments' ),
 			visible: false,
 			isLeftAligned: true,
+		},
+		{
+			key: 'action',
+			label: __( 'Action', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Action', 'woocommerce-payments' ),
+			visible: true,
+			required: true,
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
@@ -165,7 +167,7 @@ export const AuthorizationsList = (): JSX.Element => {
 			order: {
 				value: auth.order_id,
 				display: clickable(
-					`#${ auth.order_id } from ${ auth.customer_name }`
+					`#${ auth.order_id } ${ auth.customer_name }`
 				),
 			},
 			risk_level: {
@@ -185,6 +187,22 @@ export const AuthorizationsList = (): JSX.Element => {
 			customer_country: {
 				value: auth.customer_country,
 				display: clickable( auth.customer_country ),
+			},
+			action: {
+				display: (
+					<CaptureAuthorizationButton
+						orderId={ auth.order_id }
+						paymentIntentId={ auth.payment_intent_id }
+						onClick={ () => {
+							wcpayTracks.recordEvent(
+								'payments_transactions_uncaptured_list_capture_charge_button_click',
+								{
+									payment_intent_id: auth.payment_intent_id,
+								}
+							);
+						} }
+					/>
+				),
 			},
 		};
 
@@ -213,6 +231,8 @@ export const AuthorizationsList = (): JSX.Element => {
 		];
 
 		if (
+			authorizationsSummary.count &&
+			authorizationsSummary.count > 0 &&
 			authorizationsSummary.all_currencies &&
 			authorizationsSummary.all_currencies.length === 1
 		) {
