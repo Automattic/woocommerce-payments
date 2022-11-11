@@ -221,6 +221,9 @@ class WC_Payments {
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
 		include_once __DIR__ . '/core/class-mode.php';
+		include_once __DIR__ . '/core/server/class-request.php';
+		include_once __DIR__ . '/core/server/class-response.php';
+		include_once __DIR__ . '/core/server/request/class-generic.php';
 
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
@@ -1304,17 +1307,33 @@ class WC_Payments {
 }
 
 /**
- * API examples.
- */
-require_once __DIR__ . '/core/server/class-request.php';
-require_once __DIR__ . '/core/server/class-response.php';
-
-/**
  * Examples here.
  */
+// phpcs:disable
 function requests_example() {
-	echo 'Doing stuff';
+	class Rados_HTTP_Client extends WC_Payments_Http {
+		public function remote_request( $args, $body = null, $is_site_specific = true, $use_user_token = false ) {
+			return [
+				'id' => 'obj_XYZ',
+			];
+		}
+	}
+
+	$http_class = add_filter( 'wc_payments_http', function() {
+		return new Rados_HTTP_Client( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
+	} );
+
+	$request = new WCPay\Core\Server\Request(
+		[
+			'amount' => 1000,
+		]
+	);
+
+	var_dump($request);
+
+	/////
 	exit;
 }
+// phpcs:enable
 
 add_action( 'template_redirect', 'requests_example' );
