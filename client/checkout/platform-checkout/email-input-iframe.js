@@ -494,7 +494,11 @@ export const handlePlatformCheckoutEmailInput = async (
 	};
 
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
-		if ( ! hasCheckedLoginSession ) {
+		if ( ! hasCheckedLoginSession && ! customerClickedBackButton ) {
+			if ( customerClickedBackButton ) {
+				openLoginSessionIframe( platformCheckoutEmailInput.value );
+			}
+
 			return;
 		}
 
