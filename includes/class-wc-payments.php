@@ -1310,26 +1310,37 @@ class WC_Payments {
  * Examples here.
  */
 // phpcs:disable
-function requests_example() {
+add_filter( 'wc_payments_http', function() {
 	class Rados_HTTP_Client extends WC_Payments_Http {
 		public function remote_request( $args, $body = null, $is_site_specific = true, $use_user_token = false ) {
 			return [
-				'id' => 'obj_XYZ',
+				'code' => 200,
+				'body' => json_encode( [
+					'id' => 'obj_XYZ',
+				] )
 			];
 		}
 	}
 
-	$http_class = add_filter( 'wc_payments_http', function() {
-		return new Rados_HTTP_Client( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
-	} );
+	return new Rados_HTTP_Client( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
+} );
 
-	$request = new WCPay\Core\Server\Request(
+function requests_example() {
+
+	$request = new WCPay\Core\Server\Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API, 'GET' );
+	$request->use_user_token();
+
+	var_dump(
 		[
-			'amount' => 1000,
+			$request,
+			'api'                 => $request->get_api(),
+			'method'              => $request->get_method(),
+			'site_specific'       => $request->is_site_specific(),
+			'use_user_token'      => $request->should_use_user_token(),
+			'return_raw_response' => $request->should_return_raw_response(),
+			WC_Payments::get_payments_api_client()->send_request( $request ),
 		]
 	);
-
-	var_dump($request);
 
 	/////
 	exit;

@@ -1969,6 +1969,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Sends a request object.
+	 *
+	 * @param \WCPay\Core\Server\Request $request The request to send.
+	 * @return mixed
+	 */
+	public function send_request( \WCPay\Core\Server\Request $request ) {
+		return $this->request(
+			$request->get_params(),
+			$request->get_api(),
+			$request->get_method(),
+			$request->is_site_specific(),
+			$request->should_use_user_token(),
+			$request->should_return_raw_response()
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.

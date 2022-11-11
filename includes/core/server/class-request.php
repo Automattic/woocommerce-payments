@@ -46,7 +46,7 @@ abstract class Request {
 	 * @return bool
 	 */
 	public function is_site_specific(): bool {
-		return false;
+		return true;
 	}
 
 	/**
@@ -54,7 +54,7 @@ abstract class Request {
 	 *
 	 * @return bool
 	 */
-	public function use_user_token(): bool {
+	public function should_use_user_token(): bool {
 		return false;
 	}
 
@@ -65,5 +65,14 @@ abstract class Request {
 	 */
 	public function should_return_raw_response(): bool {
 		return false;
+	}
+
+	/**
+	 * Returns all of the parameters for the request.
+	 *
+	 * @return array
+	 */
+	public function get_params() {
+		return $this->params;
 	}
 }
