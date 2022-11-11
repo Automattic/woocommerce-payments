@@ -338,3 +338,24 @@ add_action(
 		}
 	}
 );
+
+add_action(
+	'template_redirect',
+	function() {
+		include_once __DIR__ . '/includes/core/class-customer.php';
+
+		$customer_by_user_id   = WCPay\Core\Customer::from_user_id( 1 );
+		$customer_by_stripe_id = WCPay\Core\Customer::from_stripe_id( 'cus_MIxF8rLJeITK7E' );
+		$payment_methods       = $customer_by_user_id->get_payment_methods();
+
+		var_dump(
+			compact(
+				'customer_by_user_id',
+				'customer_by_stripe_id',
+				'payment_methods',
+			)
+		);
+
+		exit;
+	}
+);
