@@ -100,7 +100,6 @@ module.exports = {
 			),
 		},
 		fallback: {
-			buffer: require.resolve( 'buffer' ),
 			crypto: require.resolve( 'crypto-browserify' ),
 			stream: require.resolve( 'stream-browserify' ),
 			util: require.resolve( 'util' ),
@@ -109,7 +108,6 @@ module.exports = {
 	plugins: [
 		new ProvidePlugin( {
 			process: 'process/browser',
-			Buffer: [ 'buffer', 'Buffer' ],
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {
