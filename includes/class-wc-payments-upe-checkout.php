@@ -50,6 +50,12 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 */
 	protected $customer_service;
 
+	/**
+	 * WC Payments Checkout non-UPE checkout to render the legacy card
+	 *
+	 * @var WC_Payments_Checkout
+	 */
+	protected $legacy_card_checkout;
 
 	/**
 	 * Construct.
@@ -58,20 +64,22 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 * @param Platform_Checkout_Utilities  $platform_checkout_util Platform Checkout Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
+	 * @param WC_Payments_Checkout         $legacy_card_checkout WC Payments Checkout.
 	 */
 	public function __construct(
 		UPE_Payment_Gateway $gateway,
 		Platform_Checkout_Utilities $platform_checkout_util,
 		WC_Payments_Account $account,
-		WC_Payments_Customer_Service $customer_service
+		WC_Payments_Customer_Service $customer_service,
+		WC_Payments_Checkout $legacy_card_checkout
 	) {
 		$this->gateway                = $gateway;
 		$this->platform_checkout_util = $platform_checkout_util;
 		$this->account                = $account;
 		$this->customer_service       = $customer_service;
-		$stripe_id                    = $this->gateway->get_selected_stripe_payment_type_id();
+		$this->legacy_card_checkout   = $legacy_card_checkout;
 
-		add_action( "wc_payments_add_upe_payment_fields_$stripe_id", [ $this, 'payment_fields' ] );
+		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields_for_gateway' ] );
 	}
 
 	/**
@@ -174,6 +182,17 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	}
 
 	/**
+	 * Sets the gateway to work wirh and renders payment fields
+	 *
+	 * @param UPE_Payment_Gateway $gateway The UPE gateway to render payment fields for.
+	 * @return void
+	 */
+	public function payment_fields_for_gateway( $gateway ) {
+		$this->set_gateway( $gateway );
+		$this->payment_fields();
+	}
+
+	/**
 	 * Renders the UPE input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
@@ -273,6 +292,16 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			</div>
 			<?php
 		}
+	}
+
+	/**
+	 * Set gateway
+	 *
+	 * @param UPE_Payment_Gateway $gateway UPE gateway.
+	 * @return void
+	 */
+	private function set_gateway( $gateway ) {
+		$this->gateway = $gateway;
 	}
 
 }
