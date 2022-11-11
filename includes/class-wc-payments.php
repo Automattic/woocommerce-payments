@@ -1302,3 +1302,19 @@ class WC_Payments {
 		}
 	}
 }
+
+/**
+ * API examples.
+ */
+require_once __DIR__ . '/core/server/class-request.php';
+require_once __DIR__ . '/core/server/class-response.php';
+
+/**
+ * Examples here.
+ */
+function requests_example() {
+	echo 'Doing stuff';
+	exit;
+}
+
+add_action( 'template_redirect', 'requests_example' );
