@@ -19,6 +19,7 @@ import {
 	getIsPlatformCheckoutEnabled,
 	getPlatformCheckoutCustomMessage,
 	getPlatformCheckoutStoreLogo,
+	getIsClientSecretEncryptionEnabled,
 } from '../selectors';
 
 describe( 'Settings selectors tests', () => {
@@ -63,6 +64,29 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: { data: {} } } ],
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
 			expect( getIsWCPayEnabled( state ) ).toBeFalsy();
+		} );
+	} );
+
+	describe( 'getIsClientSecretEncryptionEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_client_secret_encryption_enabled', () => {
+			const state = {
+				settings: {
+					data: {
+						is_client_secret_encryption_enabled: true,
+					},
+				},
+			};
+
+			expect( getIsClientSecretEncryptionEnabled( state ) ).toBeTruthy();
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns false if missing (tested state: %j)', ( state ) => {
+			expect( getIsClientSecretEncryptionEnabled( state ) ).toBeFalsy();
 		} );
 	} );
 

@@ -18,6 +18,7 @@ import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
 	usePlatformCheckoutStoreLogo,
+	useClientSecretEncryption,
 } from '../hooks';
 import { STORE_NAME } from '../../constants';
 
@@ -265,6 +266,39 @@ describe( 'Settings hooks tests', () => {
 			expect(
 				actions.updatePaymentRequestLocations
 			).toHaveBeenCalledWith( locationsAfterUpdate );
+		} );
+	} );
+
+	describe( 'useClientSecretEncryption()', () => {
+		test( 'returns and updates client secret encryption settings', () => {
+			const clientSecretEncryptionBeforeUpdate = false;
+			const clientSecretEncryptionAfterUpdate = true;
+
+			actions = {
+				updateIsClientSecretEncryptionEnabled: jest.fn(),
+			};
+
+			selectors = {
+				getIsClientSecretEncryptionEnabled: jest.fn(
+					() => clientSecretEncryptionBeforeUpdate
+				),
+			};
+
+			const [
+				isClientEncryptionEnabled,
+				updateIsClientSecretEncryptionEnabled,
+			] = useClientSecretEncryption();
+
+			updateIsClientSecretEncryptionEnabled(
+				clientSecretEncryptionAfterUpdate
+			);
+
+			expect( isClientEncryptionEnabled ).toEqual(
+				clientSecretEncryptionBeforeUpdate
+			);
+			expect(
+				actions.updateIsClientSecretEncryptionEnabled
+			).toHaveBeenCalledWith( clientSecretEncryptionAfterUpdate );
 		} );
 	} );
 
