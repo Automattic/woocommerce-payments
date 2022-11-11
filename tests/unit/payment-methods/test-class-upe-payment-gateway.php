@@ -33,7 +33,9 @@ use WC_Subscriptions_Cart;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPAY_UnitTestCase;
 use Exception;
+use WC_Payments;
 use WCPay\Constants\Payment_Method;
+use WCPay\WC_Payments_Checkout;
 
 /**
  * Overriding global function within namespace for testing
@@ -108,6 +110,14 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @var array
 	 */
 	private $mock_payment_gateways;
+
+	/**
+	 * WC_Payments_Checkout.
+	 *
+	 * @var WC_Payments_Checkout
+	 */
+	private $mock_legacy_checkout;
+
 
 	/**
 	 * WC_Payments_Account instance.
@@ -211,6 +221,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_legacy_checkout = $this->getMockBuilder( WC_Payments_Checkout::class )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 		$this->order_service     = new WC_Payments_Order_Service( $this->mock_api_client );
 
@@ -276,6 +290,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_payment_fields_outputs_fields() {
+		// Add the UPE Checkout action.
+		new WC_Payments_UPE_Checkout(
+			$this->mock_upe_gateway,
+			$this->mock_platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
 		foreach ( $this->mock_payment_gateways as $payment_method_id => $mock_payment_gateway ) {
 			$mock_payment_gateway
 				->method( 'get_payment_method_ids_enabled_at_checkout' )
@@ -1510,7 +1531,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$mock_upe_gateway,
 			$this->mock_platform_checkout_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->mock_legacy_checkout
 		);
 
 		$this->assertSame( $upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'], [] );
@@ -1570,7 +1592,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$mock_upe_gateway,
 			$this->mock_platform_checkout_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service
+			$this->mock_customer_service,
+			$this->mock_legacy_checkout
 		);
 
 		$this->assertSame(
