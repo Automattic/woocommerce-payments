@@ -533,10 +533,12 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooCommerce Payments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$gateways[]         = self::$legacy_card_gateway;
-		$reusable_methods[] = self::$legacy_card_gateway;
+		$gateways[] = self::$legacy_card_gateway;
 
 		if ( WC_Payments_Features::is_upe_enabled() ) {
+			$all_upe_gateways = [];
+			$reusable_methods = [];
+
 			foreach ( self::$card_gateway->get_payment_method_ids_enabled_at_checkout() as $payment_method_id ) {
 				if ( 'card' === $payment_method_id ) {
 					continue;
@@ -548,13 +550,15 @@ class WC_Payments {
 					$reusable_methods[] = $upe_gateway;
 				}
 
-				$gateways[] = $upe_gateway;
+				$all_upe_gateways[] = $upe_gateway;
 
 			}
 
 			if ( is_add_payment_method_page() ) {
-				return $reusable_methods;
+				return array_merge( $gateways, $reusable_methods );
 			}
+
+			return array_merge( $gateways, $all_upe_gateways );
 		}
 
 		return $gateways;

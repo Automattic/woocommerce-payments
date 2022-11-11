@@ -19,6 +19,8 @@ use WCPay\Constants\Payment_Method;
  */
 class WC_Payments_Token_Service {
 
+	const REUSABLE_GATEWAYS = [ WC_Payment_Gateway_WCPay::GATEWAY_ID, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA ];
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -63,7 +65,7 @@ class WC_Payments_Token_Service {
 		switch ( $payment_method['type'] ) {
 			case Payment_Method::SEPA:
 				$token = new WC_Payment_Token_WCPay_SEPA();
-				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+				$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
 				$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
 				break;
 			case Payment_Method::LINK:
@@ -108,7 +110,8 @@ class WC_Payments_Token_Service {
 	 * @return array
 	 */
 	public function woocommerce_get_customer_payment_tokens( $tokens, $user_id, $gateway_id ) {
-		if ( ( ! empty( $gateway_id ) && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $gateway_id ) || ! is_user_logged_in() ) {
+
+		if ( ( ! empty( $gateway_id ) && ! in_array( $gateway_id, self::REUSABLE_GATEWAYS, true ) ) || ! is_user_logged_in() ) {
 			return $tokens;
 		}
 
@@ -128,16 +131,25 @@ class WC_Payments_Token_Service {
 			$stored_tokens = [];
 
 			foreach ( $tokens as $token ) {
-				if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+				if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS, true ) ) {
 					$stored_tokens[ $token->get_token() ] = $token;
 				}
 			}
 
-			$payment_methods = [ [] ];
-			foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
+			$retrievable_payment_method_types = [ Payment_Method::CARD ];
+
+			if ( in_array( Payment_Method::SEPA, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
+				$retrievable_payment_method_types[] = Payment_Method::SEPA;
+			}
+
+			$payment_methods = [];
+
+			foreach ( $retrievable_payment_method_types as $type ) {
 				$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
 			}
+
 			$payment_methods = array_merge( ...$payment_methods );
+
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch payment methods for customer.' . $e );
 			return $tokens;
@@ -145,12 +157,17 @@ class WC_Payments_Token_Service {
 
 		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
 		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+
 		foreach ( $payment_methods as $payment_method ) {
 			if ( ! isset( $payment_method['type'] ) ) {
 				continue;
 			}
 
-			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) ) {
+			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) && (
+					( Payment_Method::CARD === $payment_method['type'] && WC_Payment_Gateway_WCPay::GATEWAY_ID === $gateway_id ) ||
+					( Payment_Method::SEPA === $payment_method['type'] && WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA === $gateway_id ) ) ||
+					empty( $gateway_id )
+				) {
 				$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
 				$tokens[ $token->get_id() ] = $token;
 			} else {
@@ -177,7 +194,8 @@ class WC_Payments_Token_Service {
 	 * @param WC_Payment_Token $token    Token object.
 	 */
 	public function woocommerce_payment_token_deleted( $token_id, $token ) {
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+
+		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS, true ) ) {
 			try {
 				$this->payments_api_client->detach_payment_method( $token->get_token() );
 				// Clear cached payment methods.
@@ -195,7 +213,8 @@ class WC_Payments_Token_Service {
 	 * @param WC_Payment_Token $token    Token object.
 	 */
 	public function woocommerce_payment_token_set_default( $token_id, $token ) {
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+
+		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS, true ) ) {
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
 			if ( $customer_id ) {
 				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
