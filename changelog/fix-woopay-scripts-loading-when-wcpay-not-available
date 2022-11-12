@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Don't load WooPay scripts and styles when the WCPay payment gateway isn't available.
