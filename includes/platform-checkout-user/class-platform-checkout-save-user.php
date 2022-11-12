@@ -36,6 +36,12 @@ class Platform_Checkout_Save_User {
 	 * Load scripts and styles for checkout page.
 	 */
 	public function register_checkout_page_scripts() {
+		// Don't enqueue checkout page scripts when WCPay isn't available.
+		$gateways = WC()->payment_gateways->get_available_payment_gateways();
+		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
+			return;
+		}
+
 		$script_src_url    = plugins_url( 'dist/platform-checkout.js', WCPAY_PLUGIN_FILE );
 		$style_url         = plugins_url( 'dist/platform-checkout.css', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/platform-checkout.asset.php';
