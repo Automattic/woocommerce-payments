@@ -148,13 +148,18 @@ class Create_And_Confirm_Intention extends Request {
 	}
 
 	/**
-	 * Off-sesstion setter.
+	 * Off-session setter.
 	 *
 	 * @param  bool $off_session Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 * @return static            Instance of the class for method chaining.
 	 */
 	public function set_off_session( $off_session = true ) {
-		return $this->set_param( 'off_session', $off_session );
+		// This one is tricky. We can have `true`, but otherwise we need to get rid of the parameter.
+		if ( $off_session ) {
+			return $this->set_param( 'off_session', true );
+		} else {
+			return $this->unset_param( 'off_session' );
+		}
 	}
 
 	/**

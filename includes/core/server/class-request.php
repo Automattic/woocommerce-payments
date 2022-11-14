@@ -181,6 +181,24 @@ abstract class Request {
 	}
 
 	/**
+	 * Unsets an existing parameter if it was set before.
+	 *
+	 * @param  string $key The key of the parameter.
+	 * @return static      The instance of the class for method chaining.
+	 */
+	final protected function unset_param( string $key ) {
+		if ( $this->protected_mode && in_array( $key, $this->get_immutable_params(), true ) ) {
+			$this->throw_immutable_exception( $key );
+		}
+
+		if ( isset( $this->params[ $key ] ) ) {
+			unset( $this->params[ $key ] );
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Replaces all internal parameters of the class.
 	 * Only accessible from methods of this class, used for the `extend` method.
 	 *
