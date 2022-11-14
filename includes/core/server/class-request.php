@@ -88,4 +88,37 @@ abstract class Request {
 	protected function set_param( string $key, $value ) {
 		$this->params[ $key ] = $value;
 	}
+
+	/**
+	 * Replaces all internal parameters of the class.
+	 * Only accessible from this class, this method is used for `extend`.
+	 *
+	 * @param array $params The new parameters to use.
+	 */
+	private function set_params( $params ) {
+		$this->params = $params;
+	}
+
+	/**
+	 * Creates a new instance of a sub-class, ad sets the same internal props.
+	 *
+	 * @param  string $extended_class The class name of the new object.
+	 * @return static                 An instance of the extended class.
+	 */
+	public function extend( string $extended_class ) {
+		if ( ! is_subclass_of( $extended_class, get_class( $this ) ) ) {
+			throw new \Exception(
+				sprintf(
+					'Failed to extend request. %s is not a subclass of %s',
+					$extended_class,
+					get_class( $this )
+				)
+			);
+		}
+
+		$obj = new $extended_class();
+		$obj->set_params( $this->params );
+
+		return $obj;
+	}
 }

@@ -1335,8 +1335,10 @@ if ( true ) {
 		// $request = new WCPay\Core\Server\Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API, 'GET' );
 		// $request->use_user_token();
 
-		$request = new WCPay\Core\Server\Request\WooPay_Create_Intent();
-		$request->set_amount( 100 );
+		$base_request = new WCPay\Core\Server\Request\Create_Intent();
+		$base_request->set_amount( 100 );
+
+		$request = $base_request->extend( WCPay\Core\Server\Request\WooPay_Create_Intent::class );
 		$request->set_save_payment_method_to_platform( true );
 
 		var_dump(
