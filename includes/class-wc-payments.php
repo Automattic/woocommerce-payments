@@ -224,6 +224,8 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/class-request.php';
 		include_once __DIR__ . '/core/server/class-response.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
+		include_once __DIR__ . '/core/server/request/class-create-intent.php';
+		include_once __DIR__ . '/core/server/request/class-woopay-create-intent.php';
 
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
@@ -1310,41 +1312,50 @@ class WC_Payments {
  * Examples here.
  */
 // phpcs:disable
-add_filter( 'wc_payments_http', function() {
-	class Rados_HTTP_Client extends WC_Payments_Http {
-		public function remote_request( $args, $body = null, $is_site_specific = true, $use_user_token = false ) {
-			return [
-				'code' => 200,
-				'body' => json_encode( [
-					'id' => 'obj_XYZ',
-				] )
-			];
+if ( true ) {
+	add_filter( 'wc_payments_http', function() {
+		if ( ! class_exists( 'Rados_HTTP_Client' ) ) {
+			class Rados_HTTP_Client extends WC_Payments_Http {
+				public function remote_request( $args, $body = null, $is_site_specific = true, $use_user_token = false ) {
+					return [
+						'code' => 200,
+						'body' => json_encode( [
+							'id' => 'obj_XYZ',
+						] )
+					];
+				}
+			}
 		}
+
+		return new Rados_HTTP_Client( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
+	} );
+
+	function requests_example() {
+
+		// $request = new WCPay\Core\Server\Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API, 'GET' );
+		// $request->use_user_token();
+
+		$request = new WCPay\Core\Server\Request\WooPay_Create_Intent();
+		$request->set_amount( 100 );
+		$request->set_save_payment_method_to_platform( true );
+
+		var_dump(
+			[
+				$request,
+				'params'              => $request->get_params(),
+				'api'                 => $request->get_api(),
+				'method'              => $request->get_method(),
+				'site_specific'       => $request->is_site_specific(),
+				'use_user_token'      => $request->should_use_user_token(),
+				'return_raw_response' => $request->should_return_raw_response(),
+				WC_Payments::get_payments_api_client()->send_request( $request ),
+			]
+		);
+
+		/////
+		exit;
 	}
+	// phpcs:enable
 
-	return new Rados_HTTP_Client( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
-} );
-
-function requests_example() {
-
-	$request = new WCPay\Core\Server\Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API, 'GET' );
-	$request->use_user_token();
-
-	var_dump(
-		[
-			$request,
-			'api'                 => $request->get_api(),
-			'method'              => $request->get_method(),
-			'site_specific'       => $request->is_site_specific(),
-			'use_user_token'      => $request->should_use_user_token(),
-			'return_raw_response' => $request->should_return_raw_response(),
-			WC_Payments::get_payments_api_client()->send_request( $request ),
-		]
-	);
-
-	/////
-	exit;
+	add_action( 'template_redirect', 'requests_example' );
 }
-// phpcs:enable
-
-add_action( 'template_redirect', 'requests_example' );

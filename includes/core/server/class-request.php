@@ -16,7 +16,7 @@ abstract class Request {
 	 *
 	 * @var mixed[]
 	 */
-	protected $params = [];
+	private $params = [];
 
 	/**
 	 * Prevents the class from being constructed directly.
@@ -74,5 +74,18 @@ abstract class Request {
 	 */
 	public function get_params() {
 		return $this->params;
+	}
+
+	/**
+	 * Stores a parameter within the internal props.
+	 *
+	 * Use this method within child classes in order to allow
+	 * those properties to be protected by overwriting.
+	 *
+	 * @param string $key   The name of the parameter.
+	 * @param mixed  $value And the value to set.
+	 */
+	protected function set_param( string $key, $value ) {
+		$this->params[ $key ] = $value;
 	}
 }

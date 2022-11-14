@@ -50,6 +50,7 @@ final class Generic extends Request {
 
 		if ( $parameters ) {
 			// We'll get to that later.
+			return;
 		}
 	}
 
