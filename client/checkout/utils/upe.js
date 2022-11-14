@@ -1,10 +1,8 @@
 /**
  * External dependencies
  */
-import Utf8 from 'crypto-js/enc-utf8';
-import AES from 'crypto-js/aes';
-import Pkcs7 from 'crypto-js/pad-pkcs7';
 import { getConfig } from 'wcpay/utils/checkout';
+import aesjs from 'aes-js';
 
 /**
  * Generates terms parameter for UPE, with value set for reusable payment methods
@@ -56,14 +54,17 @@ export const decryptClientSecret = function (
 		'seti_' !== encryptedValue.slice( 0, 5 )
 	) {
 		stripeAccountId = stripeAccountId || getConfig( 'accountId' );
-		return Utf8.stringify(
-			AES.decrypt(
-				encryptedValue,
-				Utf8.parse( stripeAccountId.slice( 5 ) ),
-				{
-					iv: Utf8.parse( 'WC'.repeat( 8 ) ),
-					padding: Pkcs7,
-				}
+		return aesjs.utils.utf8.fromBytes(
+			aesjs.padding.pkcs7.strip(
+				/* eslint-disable-next-line */
+				new aesjs.ModeOfOperation.cbc(
+					aesjs.utils.utf8.toBytes( stripeAccountId.slice( 5 ) ),
+					aesjs.utils.utf8.toBytes( 'WC'.repeat( 8 ) )
+				).decrypt(
+					Uint16Array.from( atob( encryptedValue ), ( c ) =>
+						c.charCodeAt( 0 )
+					)
+				)
 			)
 		);
 	}
