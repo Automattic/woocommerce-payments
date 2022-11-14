@@ -17,27 +17,6 @@ defined( 'ABSPATH' ) || exit;
 class WC_Payments_Customer_Service_API {
 
 	/**
-	 * Client for making requests to the WooCommerce Payments API
-	 *
-	 * @var WC_Payments_API_Client
-	 */
-	private $payments_api_client;
-
-	/**
-	 * WC_Payments_Account instance to get information about the account
-	 *
-	 * @var WC_Payments_Account
-	 */
-	private $account;
-
-	/**
-	 * Database_Cache instance to get information about the account
-	 *
-	 * @var Database_Cache
-	 */
-	private $database_cache;
-
-	/**
 	 * Internal Customer_Service instance to invoke.
 	 *
 	 * @var WC_Payments_Customer_Service
@@ -51,11 +30,8 @@ class WC_Payments_Customer_Service_API {
 	 * @param WC_Payments_Account    $account             WC_Payments_Account instance.
 	 * @param Database_Cache         $database_cache       Database_Cache instance.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, Database_Cache $database_cache, WC_Payments_Customer_Service $customer_service ) {
-		$this->payments_api_client = $payments_api_client;
-		$this->account             = $account;
-		$this->database_cache      = $database_cache;
-		$this->customer_service    = $customer_service;
+	public function __construct( WC_Payments_Customer_Service $customer_service ) {
+		$this->customer_service = $customer_service;
 	}
 
 	/**
