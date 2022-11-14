@@ -44,14 +44,31 @@ final class Generic extends Request {
 	 * @param string $method     The request method. See the `Requests` class.
 	 * @param array  $parameters The parameters for the request.
 	 */
-	public function __construct( $api, $method, $parameters = null ) {
+	public function __construct( $api, $method, array $parameters = null ) {
 		$this->api    = $api; // ToDo: Verify.
 		$this->method = $method; // ToDo: Verify.
 
-		if ( $parameters ) {
-			// We'll get to that later.
+		if ( empty( $parameters ) ) {
 			return;
 		}
+
+		foreach ( $parameters as $key => $value ) {
+			$this->set( $key, $value );
+		}
+	}
+
+	/**
+	 * Generic setter for parameters.
+	 *
+	 * @param  string $key   Key of the parameter.
+	 * @param  mixed  $value Value of the parameter.
+	 * @return Generic       Instance of the class for method chaining.
+	 */
+	public function set( $key, $value ) {
+		// Use the `Request` setter here.
+		$this->set_param( $key, $value );
+
+		return $this;
 	}
 
 	/**

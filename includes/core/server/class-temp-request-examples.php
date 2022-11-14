@@ -19,14 +19,7 @@ class Temp_Request_Examples {
 	}
 
 	public function example() {
-		if ( true ) {
-			echo "===== GENERIC REQUEST =====\n";
-			$request = new WCPay\Core\Server\Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API, 'POST' );
-			$request->use_user_token();
-			$this->dump_request( $request );
-		}
-
-		if ( true ) {
+		if ( false ) {
 			echo "===== CREATE INTENT REQUEST =====\n";
 			$request = new Request\Create_Intent();
 			$request->set_amount( 100 );
@@ -34,7 +27,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			// Make sure extending the request does not work outside of `apply_filters`.
 			echo "===== EXTEND WITHOUT FILTERS =====\n";
 			$request = new Request\Create_Intent();
@@ -46,7 +39,7 @@ class Temp_Request_Examples {
 			}
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== EXTEND TEMPLATE =====\n";
 
 			$callback = function ( Request\Create_Intent $base_request ): Request\WooPay_Create_Intent {
@@ -67,7 +60,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== UPDATING VALUES =====\n";
 			$request = new Request\Create_Intent();
 			$request->set_amount( 100 );
@@ -88,7 +81,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== PROTECTING IMMUTABLE VALUES =====\n";
 			$request = new Request\Create_Intent();
 			$request->set_amount( 100 );
@@ -108,7 +101,7 @@ class Temp_Request_Examples {
 			remove_filter( 'wcpay_create_intent_request', $callback );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== ENSURING INITIALIZED REQUESTS =====\n";
 			$request = new Request\Create_Intent();
 			$request->set_amount( 100 );
@@ -117,6 +110,28 @@ class Temp_Request_Examples {
 			} catch ( Exception $e ) {
 				echo 'Exception message: ' . $e->getMessage() . "\n\n";
 			}
+		}
+
+		if ( true ) {
+			echo "===== GENERIC GET REQUEST =====\n";
+			// ToDo: Make sure IDs are properly set somehow.
+			$request = new WCPay\Core\Server\Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API . '/pm_abc123', 'GET' );
+			$request->use_user_token();
+			$this->dump_request( $request );
+		}
+
+		if ( true ) {
+			echo "===== GENERIC POST REQUEST =====\n";
+			$request = new WCPay\Core\Server\Request\Generic(
+				WC_Payments_API_Client::CUSTOMERS_API,
+				'POST',
+				[
+					'first_name' => 'John',
+					'last_name'  => 'Doe',
+				]
+			);
+			$request->use_user_token();
+			$this->dump_request( $request );
 		}
 
 		exit;
