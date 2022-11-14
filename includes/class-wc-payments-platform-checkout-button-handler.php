@@ -220,7 +220,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		) : 'WooPay';
 
 		?>
-		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;display:none;">
+		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
 			<div id="wcpay-platform-checkout-button">
 				<button class="woopay-express-button <?php echo esc_attr( implode( '-', $this->get_button_settings() ) ); ?>"><?php echo esc_html( $button_text ); ?></button>
 			</div>
@@ -236,7 +236,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 		?>
-		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
+		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php
 	}
 
