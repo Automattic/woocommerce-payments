@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.0.2 - 2022-xx-xx =
+* Fix - Fixed rest api error for payment_gateways endpoint
+
 = 5.0.1 - 2022-11-10 =
 * Fix - Fix fatal error when non-admin access admin pages.
 
