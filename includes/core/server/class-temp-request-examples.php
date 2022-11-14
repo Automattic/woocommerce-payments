@@ -115,14 +115,14 @@ class Temp_Request_Examples {
 		if ( true ) {
 			echo "===== GENERIC GET REQUEST =====\n";
 			// ToDo: Make sure IDs are properly set somehow.
-			$request = new WCPay\Core\Server\Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API . '/pm_abc123', 'GET' );
+			$request = new Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API . '/pm_abc123', 'GET' );
 			$request->use_user_token();
 			$this->dump_request( $request );
 		}
 
 		if ( true ) {
 			echo "===== GENERIC POST REQUEST =====\n";
-			$request = new WCPay\Core\Server\Request\Generic(
+			$request = new Request\Generic(
 				WC_Payments_API_Client::CUSTOMERS_API,
 				'POST',
 				[
@@ -131,6 +131,29 @@ class Temp_Request_Examples {
 				]
 			);
 			$request->use_user_token();
+			$this->dump_request( $request );
+		}
+
+		if ( true ) {
+			echo "===== GENERIC POST REQUEST MODIFICATIONS =====\n";
+			$request = new Request\Generic(
+				WC_Payments_API_Client::CUSTOMERS_API,
+				'POST',
+				[
+					'first_name' => 'John',
+					'last_name'  => 'Doe',
+				]
+			);
+
+			$callback = function( Request\Generic $request ) {
+				$request->set( 'age', 42 );
+				return $request;
+			};
+
+			add_filter( 'wcpay_create_customer_request', $callback );
+			$request->apply_filters( 'wcpay_create_customer_request' );
+			remove_filter( 'wcpay_create_customer_request', $callback );
+
 			$this->dump_request( $request );
 		}
 
