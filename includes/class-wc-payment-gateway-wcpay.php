@@ -1409,7 +1409,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string|array|int|bool|null The value specified for the option or a default value for the option.
 	 */
 	public function get_option( $key, $empty_value = null ) {
-		if ( in_array( $key, Settings::OPTIONS, true ) ) {
+		if ( in_array( $key, Settings::SETTINGS, true ) ) {
 			return $this->wc_pay_settings->get_option( $key );
 		}
 

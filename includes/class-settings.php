@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Settings {
 
-	const OPTIONS = [
+	const SETTINGS = [
 		'account_statement_descriptor',
 		'account_business_name',
 		'account_business_url',
