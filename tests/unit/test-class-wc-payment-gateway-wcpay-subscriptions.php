@@ -7,6 +7,7 @@
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Settings;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -103,7 +104,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$this->order_service     = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
-		$this->payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
+		$this->payments_settings = new Settings( $this->mock_wcpay_account );
 
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

@@ -7,6 +7,7 @@
 
 use WCPay\Session_Rate_Limiter;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Settings;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -114,7 +115,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
-		$payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
+		$payments_settings = new Settings( $this->mock_wcpay_account );
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.

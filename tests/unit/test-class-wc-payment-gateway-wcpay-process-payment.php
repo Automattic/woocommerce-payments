@@ -8,6 +8,7 @@
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Settings;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -135,7 +136,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			)
 			->getMock();
 
-		$payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
+		$payments_settings = new Settings( $this->mock_wcpay_account );
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.

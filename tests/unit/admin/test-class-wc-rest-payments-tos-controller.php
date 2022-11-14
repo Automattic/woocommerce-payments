@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Database_Cache;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Settings;
 
 /**
  * WC_REST_Payments_Tos_Controller unit tests.
@@ -59,7 +60,7 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $mock_api_client );
 		$order_service            = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ), $customer_service, $action_scheduler_service );
 
-		$payments_settings = new WC_Payments_Gateway_WCPay_Settings( $mock_wcpay_account );
+		$payments_settings = new Settings( $mock_wcpay_account );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$mock_api_client,

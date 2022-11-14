@@ -20,6 +20,7 @@ use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Settings;
 
 /**
  * WC_REST_Payments_Settings_Controller_Test unit tests.
@@ -102,7 +103,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
 		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client, $customer_service, $action_scheduler_service );
 
-		$payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
+		$payments_settings = new Settings( $this->mock_wcpay_account );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

@@ -13,6 +13,7 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Information;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Settings;
 use WCPay\WC_Payments_Checkout;
 
 // Need to use WC_Mock_Data_Store.
@@ -106,7 +107,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $mock_charge_created = 1653076178;
 
 	/**
-	 * @var WC_Payments_Gateway_WCPay_Settings instance.
+	 * @var Settings instance.
 	 */
 	private $gateway_settings;
 
@@ -160,7 +161,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
 
-		$this->gateway_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
+		$this->gateway_settings = new Settings( $this->mock_wcpay_account );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

@@ -5,8 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Settings;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -106,7 +106,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			->disableOriginalConstructor()
 			->getMock();
 
-		$payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
+		$payments_settings = new Settings( $this->mock_wcpay_account );
 
 		$this->wcpay_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

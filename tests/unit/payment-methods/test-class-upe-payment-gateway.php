@@ -7,7 +7,7 @@
 
 namespace WCPay\Payment_Methods;
 
-use WC_Payments_Gateway_WCPay_Settings;
+use WCPay\Settings;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
@@ -145,7 +145,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	/**
 	 * WC_Payments_Gateway_WCPay_Settings instance.
 	 *
-	 * @var WC_Payments_Gateway_WCPay_Settings
+	 * @var Settings
 	 */
 	private $payments_settings;
 
@@ -234,7 +234,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			)
 			->getMock();
 
-		$this->payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
+		$this->payments_settings = new Settings( $this->mock_wcpay_account );
 
 		// Arrange: Mock UPE_Payment_Gateway so that some of its methods can be
 		// mocked, and their return values can be used for testing.

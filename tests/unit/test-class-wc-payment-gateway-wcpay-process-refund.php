@@ -7,6 +7,7 @@
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Settings;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -82,7 +83,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$this->mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$this->mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 
-		$payments_settings = new WC_Payments_Gateway_WCPay_Settings( $this->mock_wcpay_account );
+		$payments_settings = new Settings( $this->mock_wcpay_account );
 
 		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

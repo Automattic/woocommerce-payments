@@ -7,6 +7,7 @@
 
 use WCPay\Database_Cache;
 use WCPay\Session_Rate_Limiter;
+use WCPay\Settings;
 
 /**
  * WC_REST_UPE_Flag_Toggle_Controller unit tests.
@@ -53,7 +54,7 @@ class WC_REST_UPE_Flag_Toggle_Controller_Test extends WCPAY_UnitTestCase {
 		$rate_limiter             = new Session_Rate_Limiter( 'wcpay_card_declined_registry', 5, 60 );
 		$order_service            = new WC_Payments_Order_Service( $mock_api_client, $customer_service, $action_scheduler_service );
 
-		$payments_settings = new WC_Payments_Gateway_WCPay_Settings( $mock_wcpay_account );
+		$payments_settings = new Settings( $mock_wcpay_account );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$mock_api_client,

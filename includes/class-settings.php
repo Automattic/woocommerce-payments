@@ -1,11 +1,14 @@
 <?php
 /**
- * Class WC_Payments_Gateway_WCPay_Settings.
+ * Class Settings.
  *
  * @package WooCommerce\Payments
  */
 
-use WCPay\Logger;
+namespace WCPay;
+
+use WC_Payments_Account;
+use WC_Payments_Utils;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -14,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Gateway settings class for WooCommerce Payments.
  */
-class WC_Payments_Gateway_WCPay_Settings {
+class Settings {
 
 	const OPTIONS = [
 		'account_statement_descriptor',
@@ -43,7 +46,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 	private $account;
 
 	/**
-	 * WC_Payments_Gateway_WCPay_Settings Constructor.
+	 * Settings Constructor.
 	 *
 	 * @param WC_Payments_Account $account - Account class instance.
 	 */
@@ -265,7 +268,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_statement_descriptor();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get account statement descriptor.' . $e );
 		}
 		return $empty_value;
@@ -283,7 +286,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_business_name();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get account business name.' . $e );
 		}
 
@@ -302,7 +305,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_business_url();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get account business name.' . $e );
 		}
 
@@ -321,7 +324,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_business_support_address();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get account business name.' . $e );
 		}
 
@@ -340,7 +343,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_business_support_email();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get account business name.' . $e );
 		}
 
@@ -359,7 +362,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_business_support_phone();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get account business name.' . $e );
 		}
 
@@ -378,7 +381,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_branding_logo();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get account business name.' . $e );
 		}
 
@@ -397,7 +400,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_branding_icon();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get account business name.' . $e );
 		}
 
@@ -416,7 +419,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_branding_primary_color();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get account business name.' . $e );
 		}
 
@@ -435,7 +438,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_branding_secondary_color();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get account business name.' . $e );
 		}
 
@@ -454,7 +457,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_deposit_schedule_interval();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get deposit schedule interval.' . $e );
 		}
 		return $empty_value;
@@ -472,7 +475,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_deposit_schedule_weekly_anchor();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get deposit schedule weekly anchor.' . $e );
 		}
 		return $empty_value;
@@ -490,7 +493,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_deposit_schedule_monthly_anchor();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
 		}
 		return null === $empty_value ? null : (int) $empty_value;
@@ -508,7 +511,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_deposit_delay_days() ?? $default_value;
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get deposit delay days.' . $e );
 		}
 		return $default_value;
@@ -526,7 +529,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_deposit_status();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get deposit status.' . $e );
 		}
 		return $empty_value;
@@ -544,7 +547,7 @@ class WC_Payments_Gateway_WCPay_Settings {
 			if ( $this->account->is_stripe_connected() ) {
 				return $this->account->get_deposit_completed_waiting_period();
 			}
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
 		}
 		return $empty_value;
