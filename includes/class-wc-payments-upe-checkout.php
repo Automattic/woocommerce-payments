@@ -51,33 +51,23 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	protected $customer_service;
 
 	/**
-	 * WC Payments Checkout non-UPE checkout to render the legacy card
-	 *
-	 * @var WC_Payments_Checkout
-	 */
-	protected $legacy_card_checkout;
-
-	/**
 	 * Construct.
 	 *
 	 * @param UPE_Payment_Gateway          $gateway                WC Payment Gateway.
 	 * @param Platform_Checkout_Utilities  $platform_checkout_util Platform Checkout Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
-	 * @param WC_Payments_Checkout         $legacy_card_checkout WC Payments Checkout.
 	 */
 	public function __construct(
 		UPE_Payment_Gateway $gateway,
 		Platform_Checkout_Utilities $platform_checkout_util,
 		WC_Payments_Account $account,
-		WC_Payments_Customer_Service $customer_service,
-		WC_Payments_Checkout $legacy_card_checkout
+		WC_Payments_Customer_Service $customer_service
 	) {
 		$this->gateway                = $gateway;
 		$this->platform_checkout_util = $platform_checkout_util;
 		$this->account                = $account;
 		$this->customer_service       = $customer_service;
-		$this->legacy_card_checkout   = $legacy_card_checkout;
 
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields_for_gateway' ] );
 	}
