@@ -34,7 +34,7 @@ class Create_And_Confirm_Intention extends Request {
 	];
 
 	const DEFAULT_PARAMS = [
-		'confirm'        => 'true', // By the definition of the request.
+		'confirm'        => true, // By the definition of the request.
 		'capture_method' => 'automatic',
 		'level3'         => [],
 	];
@@ -62,8 +62,7 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static      Instance of the class for method chaining.
 	 */
 	public function set_amount( $amount ) {
-		$this->set_param( 'amount', $amount );
-		return $this;
+		return $this->set_param( 'amount', $amount );
 	}
 
 	/**
@@ -73,8 +72,7 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static                Instance of the class for method chaining.
 	 */
 	public function set_currency_code( $currency_code ) {
-		$this->set_param( 'currency', $currency_code );
-		return $this;
+		return $this->set_param( 'currency', $currency_code );
 	}
 
 	/**
@@ -84,8 +82,7 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static                    Instance of the class for method chaining.
 	 */
 	public function set_payment_method( $payment_method_id ) {
-		$this->set_param( 'payment_method', $payment_method_id );
-		return $this;
+		return $this->set_param( 'payment_method', $payment_method_id );
 	}
 
 	/**
@@ -95,8 +92,7 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static              Instance of the class for method chaining.
 	 */
 	public function set_customer( $customer_id ) {
-		$this->set_param( 'customer', $customer_id );
-		return $this;
+		return $this->set_param( 'customer', $customer_id );
 	}
 
 	/**
@@ -106,8 +102,7 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static               Instance of the class for method chaining.
 	 */
 	public function set_capture_method( $manual_capture = false ) {
-		$this->set_param( 'capture_method', $manual_capture ? 'manual' : 'automatic' );
-		return $this;
+		return $this->set_param( 'capture_method', $manual_capture ? 'manual' : 'automatic' );
 	}
 
 	/**
@@ -116,20 +111,7 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static Instance of the class for method chaining.
 	 */
 	public function setup_future_usage() {
-		$this->set_param( 'setup_future_usage', 'off_session' );
-		return $this;
-	}
-
-	/**
-	 * Save payment method to platform setter.
-	 *
-	 * @param  bool $save_payment_method_to_platform Whether to save payment method to platform.
-	 * @return static                                Instance of the class for method chaining.
-	 */
-	public function save_payment_method_to_platform( $save_payment_method_to_platform ) {
-		$flag = $save_payment_method_to_platform ? 'true' : '';
-		$this->set_param( 'save_payment_method_to_platform', $flag );
-		return $this;
+		return $this->set_param( 'setup_future_usage', 'off_session' );
 	}
 
 	/**
@@ -162,22 +144,17 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static        Instance of the class for method chaining.
 	 */
 	public function set_level3( $level3 ) {
-		$this->set_param( 'level3', $level3 );
-		return $this;
+		return $this->set_param( 'level3', $level3 );
 	}
 
 	/**
-	 * AAAA setter.
+	 * Off-sesstion setter.
 	 *
 	 * @param  bool $off_session Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 * @return static            Instance of the class for method chaining.
 	 */
 	public function set_off_session( $off_session = true ) {
-		if ( $off_session ) {
-			// @todo: Convert boolean values to `true` automatically?
-			$this->set_param( 'off_session', 'true' );
-		}
-		return $this;
+		return $this->set_param( 'off_session', $off_session );
 	}
 
 	/**
@@ -187,8 +164,7 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static                 Instance of the class for method chaining.
 	 */
 	public function set_payment_methods( $payment_methods ) {
-		$this->set_param( 'payment_methods_types', $payment_methods );
-		return $this;
+		return $this->set_param( 'payment_methods_types', $payment_methods );
 	}
 
 	/**
@@ -198,8 +174,7 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static                   Instance of the class for method chaining.
 	 */
 	public function set_cvc_confirmation( $cvc_confirmation ) {
-		$this->set_param( 'cvc_confirmation', $cvc_confirmation );
-		return $this;
+		return $this->set_param( 'cvc_confirmation', $cvc_confirmation );
 	}
 
 	/**

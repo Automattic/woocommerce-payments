@@ -140,6 +140,13 @@ abstract class Request {
 			);
 		}
 
+		foreach ( $params as $key => $value ) {
+			if ( is_bool( $value ) ) {
+				// The WCPay server requires the string 'true'.
+				$params[ $key ] = $value ? 'true' : false;
+			}
+		}
+
 		return $params;
 	}
 
@@ -159,8 +166,9 @@ abstract class Request {
 	 * Use this method within child classes in order to allow
 	 * those properties to be protected by overwriting.
 	 *
-	 * @param string $key   The name of the parameter.
-	 * @param mixed  $value And the value to set.
+	 * @param  string $key   The name of the parameter.
+	 * @param  mixed  $value And the value to set.
+	 * @return static        The instance of the class, ready for method chaining.
 	 */
 	final protected function set_param( string $key, $value ) {
 		if ( $this->protected_mode && in_array( $key, $this->get_immutable_params(), true ) ) {
@@ -168,6 +176,8 @@ abstract class Request {
 		}
 
 		$this->params[ $key ] = $value;
+
+		return $this;
 	}
 
 	/**
