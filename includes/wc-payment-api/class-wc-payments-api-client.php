@@ -1989,26 +1989,6 @@ class WC_Payments_API_Client {
 		);
 	}
 
-	/**
-	 * Temporary method for level3 data requests.
-	 *
-	 * @todo Replace this method with something more meangingful.
-	 * @param  Request $request The request to send.
-	 * @return Response         A response object.
-	 */
-	public function send_request_with_level3_data( Request $request ) {
-		$params = $request->get_params();
-		return $request->format_response(
-			$this->request_with_level3_data(
-				$params,
-				$request->get_api(),
-				$request->get_method(),
-				$request->is_site_specific(),
-				$request->should_use_user_token(),
-				$request->should_return_raw_response()
-			)
-		);
-	}
 
 	/**
 	 * Send the request to the WooCommerce Payment API

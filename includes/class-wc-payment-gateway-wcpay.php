@@ -990,7 +990,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$is_platform_payment_method = $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() );
 
 				$request = $request->apply_filters( 'wcpay_create_and_confirm_intention_request', $order, $is_platform_payment_method );
-				$intent  = $this->payments_api_client->send_request_with_level3_data( $request );
+				$intent  = $this->payments_api_client->send_request( $request );
 			}
 
 			$intent_id     = $intent->get_id();
