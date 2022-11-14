@@ -303,7 +303,7 @@ class WC_Payments {
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
-		include_once __DIR__ . '/core/class-wc-payments-customer-service.php';
+		include_once __DIR__ . '/core/class-wc-payments-customer-service-api.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
