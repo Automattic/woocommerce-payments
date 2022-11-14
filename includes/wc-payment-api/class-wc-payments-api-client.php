@@ -2103,9 +2103,30 @@ class WC_Payments_API_Client {
 			$use_user_token
 		);
 
-		$response = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+		try {
+			$response = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+			$this->check_response_for_errors( $response );
+		} catch ( API_Exception $e ) {
+			if ( ! isset( $params['level3'] ) || 'invalid_request_error' !== $e->get_error_code() ) {
+				throw $e;
+			}
 
-		$this->check_response_for_errors( $response );
+			// phpcs:disable WordPress.PHP.DevelopmentFunctions
+
+			// Log the issue so we could debug it.
+			Logger::error(
+				'Level3 data error: ' . PHP_EOL
+				. print_r( $e->getMessage(), true ) . PHP_EOL
+				. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
+				. print_r( $params['level3'], true )
+			);
+
+			// phpcs:enable WordPress.PHP.DevelopmentFunctions
+
+			// Retry without level3 data.
+			unset( $params['level3'] );
+			return $this->request( $params, $api, $method, $is_site_specific, $use_user_token, $raw_response );
+		}
 
 		if ( ! $raw_response ) {
 			$response_body = $this->extract_response_body( $response );
@@ -2152,29 +2173,11 @@ class WC_Payments_API_Client {
 			];
 		}
 
-		try {
-			return $this->request( $params, $api, $method, $is_site_specific );
-		} catch ( API_Exception $e ) {
-			if ( 'invalid_request_error' !== $e->get_error_code() ) {
-				throw $e;
-			}
-
-			// phpcs:disable WordPress.PHP.DevelopmentFunctions
-
-			// Log the issue so we could debug it.
-			Logger::error(
-				'Level3 data error: ' . PHP_EOL
-				. print_r( $e->getMessage(), true ) . PHP_EOL
-				. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
-				. print_r( $params['level3'], true )
-			);
-
-			// phpcs:enable WordPress.PHP.DevelopmentFunctions
-
-			// Retry without level3 data.
-			unset( $params['level3'] );
-			return $this->request( $params, $api, $method, $is_site_specific );
-		}
+		/**
+		 * In case of invalid request errors, level3 data is now removed,
+		 * and the request is retried within `request()` instead of here.
+		 */
+		return $this->request( $params, $api, $method, $is_site_specific );
 	}
 
 	/**
