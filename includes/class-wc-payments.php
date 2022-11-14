@@ -1338,7 +1338,7 @@ if ( true ) {
 		$base_request = new WCPay\Core\Server\Request\Create_Intent();
 		$base_request->set_amount( 100 );
 
-		$request = $base_request->extend( WCPay\Core\Server\Request\WooPay_Create_Intent::class );
+		$request = WCPay\Core\Server\Request\WooPay_Create_Intent::extend( $base_request );
 		$request->set_save_payment_method_to_platform( true );
 
 		var_dump(

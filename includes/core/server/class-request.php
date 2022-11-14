@@ -100,24 +100,25 @@ abstract class Request {
 	}
 
 	/**
-	 * Creates a new instance of a sub-class, ad sets the same internal props.
+	 * Creates a new instance the class with the same props as the parent.
 	 *
-	 * @param  string $extended_class The class name of the new object.
-	 * @return static                 An instance of the extended class.
+	 * @param  Request $base_request The request to extend.
+	 * @return static                An instance of the class.
+	 * @throws \Exception            In case this is not a subclass of the base request.
 	 */
-	public function extend( string $extended_class ) {
-		if ( ! is_subclass_of( $extended_class, get_class( $this ) ) ) {
+	final public static function extend( Request $base_request ) {
+		if ( ! is_subclass_of( static::class, get_class( $base_request ) ) ) {
 			throw new \Exception(
 				sprintf(
 					'Failed to extend request. %s is not a subclass of %s',
-					$extended_class,
-					get_class( $this )
+					static::class,
+					get_class( $base_request )
 				)
 			);
 		}
 
-		$obj = new $extended_class();
-		$obj->set_params( $this->params );
+		$obj = new static();
+		$obj->set_params( $base_request->params );
 
 		return $obj;
 	}
