@@ -223,9 +223,12 @@ class WC_Payments {
 		include_once __DIR__ . '/core/class-mode.php';
 		include_once __DIR__ . '/core/server/class-request.php';
 		include_once __DIR__ . '/core/server/class-response.php';
+		include_once __DIR__ . '/core/server/request/trait-intention.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
 		include_once __DIR__ . '/core/server/request/class-create-intent.php';
 		include_once __DIR__ . '/core/server/request/class-woopay-create-intent.php';
+		include_once __DIR__ . '/core/server/request/class-create-and-confirm-intention.php';
+		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-intention.php';
 
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
@@ -683,7 +686,7 @@ class WC_Payments {
 	 *
 	 * @return WC_Payments_Http_Interface
 	 */
-	private static function get_wc_payments_http() {
+	public static function get_wc_payments_http() {
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
 

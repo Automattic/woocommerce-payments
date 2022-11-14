@@ -1972,7 +1972,7 @@ class WC_Payments_API_Client {
 	 * Sends a request object.
 	 *
 	 * @param \WCPay\Core\Server\Request $request The request to send.
-	 * @return mixed
+	 * @return \WCPay\Core\Server\Response A response object.
 	 */
 	public function send_request( \WCPay\Core\Server\Request $request ) {
 		return $request->format_response(
