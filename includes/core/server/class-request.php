@@ -94,8 +94,26 @@ abstract class Request {
 	 * Returns all of the parameters for the request.
 	 *
 	 * @return array
+	 * @throws \Exception If the request has not been initialized yet.
 	 */
 	public function get_params() {
+		$missing_params = [];
+		foreach ( $this->get_required_params() as $name ) {
+			if ( ! isset( $this->params[ $name ] ) ) {
+				$missing_params[] = $name;
+			}
+		}
+
+		if ( ! empty( $missing_params ) ) {
+			throw new \Exception(
+				sprintf(
+					'Trying to access the parameters of a request which is not (fully) initialized yet. Missing parameter(s) for %s: %s',
+					get_class( $this ),
+					implode( ', ', $missing_params )
+				)
+			);
+		}
+
 		return $this->params;
 	}
 
@@ -118,7 +136,7 @@ abstract class Request {
 
 	/**
 	 * Replaces all internal parameters of the class.
-	 * Only accessible from this class, used for the `extend` method.
+	 * Only accessible from methods of this class, used for the `extend` method.
 	 *
 	 * @param array $params The new parameters to use.
 	 */
@@ -232,11 +250,35 @@ abstract class Request {
 	 * @return string[] The names of those params.
 	 */
 	private function get_immutable_params() {
+		return $this->traverse_class_constants( 'IMMUTABLE_PARAMS' );
+	}
+
+	/**
+	 * Returns an array with the names of params, which are required.
+	 *
+	 * @return string[] The names of those params.
+	 */
+	private function get_required_params() {
+		return $this->traverse_class_constants( 'REQUIRED_PARAMS' );
+	}
+
+	/**
+	 * Combines array constants from a class's tree.
+	 *
+	 * @param  string $constant_name The name of the constant to load.
+	 * @return string[] The unique combined values from the arrays.
+	 */
+	private function traverse_class_constants( string $constant_name ) {
 		$immutable  = [];
 		$class_name = get_class( $this );
 
 		do {
-			$immutable  = array_merge( $immutable, $class_name::IMMUTABLE_PARAMS );
+			$constant = "$class_name::$constant_name";
+
+			if ( defined( $constant ) ) {
+				$immutable = array_merge( $immutable, constant( $constant ) );
+			}
+
 			$class_name = get_parent_class( $class_name );
 		} while ( $class_name );
 

@@ -30,6 +30,7 @@ class Temp_Request_Examples {
 			echo "===== CREATE INTENT REQUEST =====\n";
 			$request = new Request\Create_Intent();
 			$request->set_amount( 100 );
+			$request->set_currency( 'eur' );
 			$this->dump_request( $request );
 		}
 
@@ -58,6 +59,7 @@ class Temp_Request_Examples {
 
 			$request = new Request\Create_Intent();
 			$request->set_amount( 100 );
+			$request->set_currency( 'eur' );
 			$request = $request->apply_filters( 'wcpay_create_intent_request' );
 
 			remove_filter( 'wcpay_create_intent_request', $callback );
@@ -90,6 +92,7 @@ class Temp_Request_Examples {
 			echo "===== PROTECTING IMMUTABLE VALUES =====\n";
 			$request = new Request\Create_Intent();
 			$request->set_amount( 100 );
+			$request->set_currency( 'eur' );
 
 			$callback = function ( Request\Create_Intent $request ) {
 				try {
@@ -103,6 +106,17 @@ class Temp_Request_Examples {
 			add_filter( 'wcpay_create_intent_request', $callback, 10 );
 			$request->apply_filters( 'wcpay_create_intent_request' );
 			remove_filter( 'wcpay_create_intent_request', $callback );
+		}
+
+		if ( true ) {
+			echo "===== ENSURING INITIALIZED REQUESTS =====\n";
+			$request = new Request\Create_Intent();
+			$request->set_amount( 100 );
+			try {
+				$request->get_params();
+			} catch ( Exception $e ) {
+				echo 'Exception message: ' . $e->getMessage() . "\n\n";
+			}
 		}
 
 		exit;
