@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+New wcs_get_orders_with_meta_query() helper function to query for orders and subscriptions.
