@@ -1975,13 +1975,15 @@ class WC_Payments_API_Client {
 	 * @return mixed
 	 */
 	public function send_request( \WCPay\Core\Server\Request $request ) {
-		return $this->request(
-			$request->get_params(),
-			$request->get_api(),
-			$request->get_method(),
-			$request->is_site_specific(),
-			$request->should_use_user_token(),
-			$request->should_return_raw_response()
+		return $request->format_response(
+			$this->request(
+				$request->get_params(),
+				$request->get_api(),
+				$request->get_method(),
+				$request->is_site_specific(),
+				$request->should_use_user_token(),
+				$request->should_return_raw_response()
+			)
 		);
 	}
 

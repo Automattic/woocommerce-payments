@@ -162,10 +162,12 @@ class Temp_Request_Examples {
 
 
 	function dump_request( $request ) {
+		$response = WC_Payments::get_payments_api_client()->send_request( $request );
+
 		var_dump(
 			[
 				'object'   => $request,
-				'response' => WC_Payments::get_payments_api_client()->send_request( $request ),
+				'response' => $response['id'],
 				'getters'  => [
 					'params'              => $request->get_params(),
 					'api'                 => $request->get_api(),

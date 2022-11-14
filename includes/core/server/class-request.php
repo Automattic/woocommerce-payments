@@ -127,6 +127,16 @@ abstract class Request {
 	}
 
 	/**
+	 * Formats the response from the server.
+	 *
+	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
+	 * @return mixed           Either the same response, or the correct object.
+	 */
+	public function format_response( $response ) {
+		return new Response( $response );
+	}
+
+	/**
 	 * Stores a parameter within the internal props.
 	 *
 	 * Use this method within child classes in order to allow
