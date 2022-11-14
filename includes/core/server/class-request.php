@@ -105,7 +105,7 @@ abstract class Request {
 	 * @return array
 	 * @throws \Exception If the request has not been initialized yet.
 	 */
-	public function get_params() {
+	final public function get_params() {
 		$missing_params = [];
 		foreach ( $this->get_required_params() as $name ) {
 			if ( ! isset( $this->params[ $name ] ) ) {
@@ -145,7 +145,7 @@ abstract class Request {
 	 * @param string $key   The name of the parameter.
 	 * @param mixed  $value And the value to set.
 	 */
-	protected function set_param( string $key, $value ) {
+	final protected function set_param( string $key, $value ) {
 		if ( $this->protected_mode && in_array( $key, $this->get_immutable_params(), true ) ) {
 			$this->throw_immutable_exception( $key );
 		}
