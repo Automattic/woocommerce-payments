@@ -12,7 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\RoutesController;
 use WCPay\Core\Mode;
-use WCPay\Core\Server\Request;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -433,6 +432,8 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
+
+		include_once __DIR__ . '/core/server/class-temp-request-examples.php';
 	}
 
 	/**
@@ -1307,73 +1308,4 @@ class WC_Payments {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
 	}
-}
-
-/**
- * Examples here.
- */
-// phpcs:disable
-if ( true ) {
-	add_filter( 'wc_payments_http', function() {
-		if ( ! class_exists( 'Rados_HTTP_Client' ) ) {
-			class Rados_HTTP_Client extends WC_Payments_Http {
-				public function remote_request( $args, $body = null, $is_site_specific = true, $use_user_token = false ) {
-					return [
-						'code' => 200,
-						'body' => json_encode( [
-							'id' => 'obj_XYZ',
-						] )
-					];
-				}
-			}
-		}
-
-		return new Rados_HTTP_Client( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
-	} );
-
-	function requests_example() {
-		// $request = new WCPay\Core\Server\Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API, 'GET' );
-		// $request->use_user_token();
-
-		$request = new Request\Create_Intent();
-		$request->set_amount( 100 );
-		$suggested_amount = 200; // Something that might come from context, and extensions might use.
-		$request = $request->apply_filters( 'wcpay_create_intent_request', $suggested_amount );
-
-		var_dump(
-			[
-				$request,
-				'params'              => $request->get_params(),
-				'api'                 => $request->get_api(),
-				'method'              => $request->get_method(),
-				'site_specific'       => $request->is_site_specific(),
-				'use_user_token'      => $request->should_use_user_token(),
-				'return_raw_response' => $request->should_return_raw_response(),
-				WC_Payments::get_payments_api_client()->send_request( $request ),
-			]
-		);
-
-		/////
-		exit;
-	}
-
-	// Example how the request can be extended and values updated.
-	// add_filter( 'wcpay_create_intent_request', 'requests_extention_example', 10, 2 );
-	function requests_extention_example( Request\Create_Intent $base_request, int $replacement_amount ): Request\WooPay_Create_Intent {
-		$request = Request\WooPay_Create_Intent::extend( $base_request );
-		$request->set_amount( $replacement_amount );
-		$request->set_save_payment_method_to_platform( true );
-		return $request;
-	}
-
-	// Example how some properties can be updated.
-	add_filter( 'wcpay_create_intent_request', 'requests_value_update', 10, 2 );
-	function requests_value_update( Request\Create_Intent $base_request, int $replacement_amount ): Request\Create_Intent {
-		$base_request->set_amount( $replacement_amount );
-		return $base_request;
-	}
-
-	// phpcs:enable
-
-	add_action( 'template_redirect', 'requests_example' );
 }
