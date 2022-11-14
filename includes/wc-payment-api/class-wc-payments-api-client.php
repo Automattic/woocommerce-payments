@@ -1988,6 +1988,26 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Temporary method for level3 data requests.
+	 *
+	 * @todo Replace this method with something more meangingful.
+	 * @param \WCPay\Core\Server\Request $request The request to send.
+	 * @return \WCPay\Core\Server\Response A response object.
+	 */
+	public function send_request_with_level3_data( \WCPay\Core\Server\Request $request ) {
+		return $request->format_response(
+			$this->request_with_level3_data(
+				$request->get_params(),
+				$request->get_api(),
+				$request->get_method(),
+				$request->is_site_specific(),
+				$request->should_use_user_token(),
+				$request->should_return_raw_response()
+			)
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -2437,7 +2457,7 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Unable to deserialize intention array.
 	 */
-	private function deserialize_intention_object_from_array( array $intention_array ) {
+	public function deserialize_intention_object_from_array( array $intention_array ) {
 		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );

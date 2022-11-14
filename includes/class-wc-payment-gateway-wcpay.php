@@ -978,22 +978,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( empty( $intent ) ) {
-				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
-				$intent = $this->payments_api_client->create_and_confirm_intention(
-					$converted_amount,
-					$currency,
-					$payment_information->get_payment_method(),
-					$customer_id,
-					$payment_information->is_using_manual_capture(),
-					$save_payment_method_to_store,
-					$payment_information->should_save_payment_method_to_platform(),
-					$metadata,
-					$this->get_level3_data_from_order( $order ),
-					$payment_information->is_merchant_initiated(),
-					$additional_api_parameters,
-					$payment_methods,
-					$payment_information->get_cvc_confirmation()
-				);
+				// This is temporary, those method calls can now be in the right place instead of being stored as variables.
+				$request = \WCPay\Core\Server\Request\Create_And_Confirm_Intention::create()
+					->set_amount( $converted_amount )
+					->set_currency_code( $currency )
+					->set_payment_method( $payment_information->get_payment_method() )
+					->set_customer( $customer_id )
+					->set_capture_method( $payment_information->is_using_manual_capture() )
+					->set_metadata( $metadata )
+					->set_level3( $this->get_level3_data_from_order( $order ) )
+					->set_off_session( $payment_information->is_merchant_initiated() )
+					->set_payment_methods( $payment_methods )
+					->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
+
+				if ( $save_payment_method_to_store ) {
+					$request->setup_future_usage();
+				}
+
+				$request = $request->apply_filters( 'wcpay_create_and_confirm_intention_request' );
+				$intent  = $this->payments_api_client->send_request_with_level3_data( $request );
 			}
 
 			$intent_id     = $intent->get_id();

@@ -10,8 +10,8 @@ use WCPay\Core\Server\Request;
 
 class Temp_Request_Examples {
 	public function __construct() {
-		add_action( 'template_redirect', [ $this, 'example' ] );
-		add_filter( 'wc_payments_http', [ $this, 'mock_http_class' ] );
+		// add_action( 'template_redirect', [ $this, 'example' ] );
+		// add_filter( 'wc_payments_http', [ $this, 'mock_http_class' ] );
 	}
 
 	public function mock_http_class() {
@@ -157,12 +157,22 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== CREATE AND CONFIRM INTENTION REQUEST =====\n";
 			$request = Request\Create_And_Confirm_Intention::create()
 				->set_amount( 300 )
 				->set_currency_code( 'eur' )
-				->set_metadata( [ 'order_number' => 420 ] );
+				->set_metadata( [ 'order_number' => 420 ] )
+				->set_payment_method( 'pm_XYZ' )
+				->set_customer( 'cus_ZYX' )
+				->set_capture_method( true )
+				->setup_future_usage()
+				->set_level3( [ 'level3' => 'level3' ] )
+				->set_off_session()
+				->set_payment_methods( [ 'card' ] )
+				->set_cvc_confirmation( 'something_uknown' )
+
+				;
 
 			var_dump( $request->get_params() );
 		}

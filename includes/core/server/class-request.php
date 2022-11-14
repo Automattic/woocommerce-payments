@@ -249,7 +249,7 @@ abstract class Request {
 		}
 
 		// NB: `array_diff` will only pick up updated props, not new ones.
-		$difference = array_diff( $this->get_params(), $replacement->get_params() );
+		$difference = $this->array_diff( $this->get_params(), $replacement->get_params() );
 		if ( empty( $difference ) ) {
 			// Nothing got overwritten, it's the same request, or one with only new props.
 			return $replacement;
@@ -312,19 +312,37 @@ abstract class Request {
 	 * @return string[] The unique combined values from the arrays.
 	 */
 	private function traverse_class_constants( string $constant_name ) {
-		$immutable  = [];
+		$keys       = [];
 		$class_name = get_class( $this );
 
 		do {
 			$constant = "$class_name::$constant_name";
 
 			if ( defined( $constant ) ) {
-				$immutable = array_merge( $immutable, constant( $constant ) );
+				$keys = array_merge( $keys, constant( $constant ) );
 			}
 
 			$class_name = get_parent_class( $class_name );
 		} while ( $class_name );
 
-		return array_unique( $immutable );
+		return $keys;
+	}
+
+	/**
+	 * Generates the difference between two arrays.
+	 *
+	 * @param array $array1 The first array.
+	 * @param array $array2 The second array.
+	 * @return array        The difference between the two arrays.
+	 */
+	private function array_diff( $array1, $array2 ) {
+		$arr_to_json = function( $item ) {
+			return is_array( $item ) ? wp_json_encode( $item ) : $item;
+		};
+
+		return array_diff_assoc(
+			array_map( $arr_to_json, $array1 ),
+			array_map( $arr_to_json, $array2 )
+		);
 	}
 }

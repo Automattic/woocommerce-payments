@@ -8,6 +8,7 @@
 namespace WCPay\Core\Server\Request;
 
 use Exception;
+use WC_Payments;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
@@ -17,10 +18,25 @@ use WC_Payments_API_Client;
 class Create_And_Confirm_Intention extends Request {
 	use Intention;
 
-	const IMMUTABLE_PARAMS = [ 'amount' ];
-	const REQUIRED_PARAMS  = [ 'amount', 'currency' ];
-	const DEFAULT_PARAMS   = [
-		'confirm' => 'true',
+	const IMMUTABLE_PARAMS = [
+		// Those are up to us, we have to decide.
+		'amount',
+		'currency',
+		'payment_method',
+	];
+
+	const REQUIRED_PARAMS = [
+		'amount',
+		'currency',
+		'payment_method',
+		'customer',
+		'metadata',
+	];
+
+	const DEFAULT_PARAMS = [
+		'confirm'        => 'true', // By the definition of the request.
+		'capture_method' => 'automatic',
+		'level3'         => [],
 	];
 
 	/**
@@ -157,8 +173,10 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static            Instance of the class for method chaining.
 	 */
 	public function set_off_session( $off_session = true ) {
-		// @todo: Convert boolean values to `true` automatically?
-		$this->set_param( 'off_session', $off_session ? 'true' : '' );
+		if ( $off_session ) {
+			// @todo: Convert boolean values to `true` automatically?
+			$this->set_param( 'off_session', 'true' );
+		}
 		return $this;
 	}
 
@@ -182,5 +200,15 @@ class Create_And_Confirm_Intention extends Request {
 	public function set_cvc_confirmation( $cvc_confirmation ) {
 		$this->set_param( 'cvc_confirmation', $cvc_confirmation );
 		return $this;
+	}
+
+	/**
+	 * Formats the response from the server.
+	 *
+	 * @param  mixed $intention_array The response from `WC_Payments_API_Client::request`.
+	 * @return mixed                  Either the same response, or the correct object.
+	 */
+	public function format_response( $intention_array ) {
+		return WC_Payments::get_payments_api_client()->deserialize_intention_object_from_array( $intention_array );
 	}
 }
