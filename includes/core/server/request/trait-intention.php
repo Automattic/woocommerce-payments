@@ -11,7 +11,7 @@ use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WC_Payments;
 
 /**
- * Request class for creating intents.
+ * Trait for intention helpers.
  */
 trait Intention {
 	/**

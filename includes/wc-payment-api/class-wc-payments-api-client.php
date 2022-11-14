@@ -16,6 +16,8 @@ use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Database_Cache;
+use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Response;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -1971,10 +1973,10 @@ class WC_Payments_API_Client {
 	/**
 	 * Sends a request object.
 	 *
-	 * @param \WCPay\Core\Server\Request $request The request to send.
-	 * @return \WCPay\Core\Server\Response A response object.
+	 * @param  Request $request The request to send.
+	 * @return Response         A response object.
 	 */
-	public function send_request( \WCPay\Core\Server\Request $request ) {
+	public function send_request( Request $request ) {
 		return $request->format_response(
 			$this->request(
 				$request->get_params(),
@@ -1991,13 +1993,14 @@ class WC_Payments_API_Client {
 	 * Temporary method for level3 data requests.
 	 *
 	 * @todo Replace this method with something more meangingful.
-	 * @param \WCPay\Core\Server\Request $request The request to send.
-	 * @return \WCPay\Core\Server\Response A response object.
+	 * @param  Request $request The request to send.
+	 * @return Response         A response object.
 	 */
-	public function send_request_with_level3_data( \WCPay\Core\Server\Request $request ) {
+	public function send_request_with_level3_data( Request $request ) {
+		$params = $request->get_params();
 		return $request->format_response(
 			$this->request_with_level3_data(
-				$request->get_params(),
+				$params,
 				$request->get_api(),
 				$request->get_method(),
 				$request->is_site_specific(),

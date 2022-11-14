@@ -17,6 +17,7 @@ use WC_Payments_API_Client;
  */
 class Create_And_Confirm_Intention extends Request {
 	use Intention;
+	use Level3;
 
 	const IMMUTABLE_PARAMS = [
 		// Those are up to us, we have to decide.
@@ -36,7 +37,6 @@ class Create_And_Confirm_Intention extends Request {
 	const DEFAULT_PARAMS = [
 		'confirm'        => true, // By the definition of the request.
 		'capture_method' => 'automatic',
-		'level3'         => [],
 	];
 
 	/**
@@ -144,7 +144,11 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static        Instance of the class for method chaining.
 	 */
 	public function set_level3( $level3 ) {
-		return $this->set_param( 'level3', $level3 );
+		if ( empty( $params['level3'] ) || ! is_array( $params['level3'] ) ) {
+			return $this;
+		}
+
+		return $this->set_param( 'level3', $this->fix_level3_data( $level3 ) );
 	}
 
 	/**

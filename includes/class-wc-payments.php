@@ -224,6 +224,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/class-request.php';
 		include_once __DIR__ . '/core/server/class-response.php';
 		include_once __DIR__ . '/core/server/request/trait-intention.php';
+		include_once __DIR__ . '/core/server/request/trait-level3.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
 		include_once __DIR__ . '/core/server/request/class-create-intent.php';
 		include_once __DIR__ . '/core/server/request/class-woopay-create-intent.php';
