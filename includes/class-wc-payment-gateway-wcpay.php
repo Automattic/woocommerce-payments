@@ -711,9 +711,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$customer_details_options   = [
 			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
-			'test_mode' => $this->is_in_test_mode(),
 		];
-		list( $user, $customer_id ) = $this->order_service->manage_customer_details_for_order( $order, $customer_details_options );
+		list( $user, $customer_id ) = $this->order_service->manage_customer_details_for_order( $order, $this->is_in_test_mode(), $customer_details_options );
 
 		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
@@ -2719,9 +2718,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function manage_customer_details_for_order( $order, $options = [] ) {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Order_Service::manage_customer_details_for_order' );
 
-		$options['test_mode'] = $this->is_in_test_mode();
-
-		return $this->order_service->manage_customer_details_for_order( $order, $options );
+		return $this->order_service->manage_customer_details_for_order( $order, $this->is_in_test_mode(), $options );
 	}
 
 	// End: Deprecated functions.
