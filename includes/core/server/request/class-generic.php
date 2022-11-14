@@ -7,7 +7,9 @@
 
 namespace WCPay\Core\Server\Request;
 
+use Exception;
 use WCPay\Core\Server\Request;
+use Requests;
 
 /**
  * Generic WCPay Server Request.
@@ -38,23 +40,37 @@ final class Generic extends Request {
 	private $should_use_user_token = false;
 
 	/**
+	 * Creates a new instance of the class.
+	 *
+	 * @throws \Exception
+	 */
+	public static function create() {
+		throw new \Exception( 'Generic requests should be constructed normally using the `new` keyword.' );
+	}
+
+	/**
 	 * Instantiates the request object.
 	 *
-	 * @param string $api        The API to use. See WCPay\Core\Server\APIs.
-	 * @param string $method     The request method. See the `Requests` class.
-	 * @param array  $parameters The parameters for the request.
+	 * @param  string $api        The API to use. See WCPay\Core\Server\APIs.
+	 * @param  string $method     The request method. See the `Requests` class.
+	 * @param  array  $parameters The parameters for the request.
+	 * @throws \Exception         An exception if there are invalid properties.
 	 */
-	public function __construct( $api, $method, array $parameters = null ) {
-		$this->api    = $api; // ToDo: Verify.
-		$this->method = $method; // ToDo: Verify.
-
-		if ( empty( $parameters ) ) {
-			return;
+	public function __construct( string $api, string $method, array $parameters = null ) {
+		if ( ! defined( 'Requests::' . $method ) ) {
+			throw new \Exception( 'Invalid generic request method' );
 		}
 
-		foreach ( $parameters as $key => $value ) {
-			$this->set( $key, $value );
+		$this->api    = $api;
+		$this->method = $method;
+
+		if ( ! empty( $parameters ) ) {
+			foreach ( $parameters as $key => $value ) {
+				$this->set( $key, $value );
+			}
 		}
+
+		return $this;
 	}
 
 	/**

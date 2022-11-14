@@ -17,15 +17,6 @@ class Create_Intent extends Request {
 	const REQUIRED_PARAMS  = [ 'amount', 'currency' ];
 
 	/**
-	 * Allows the class to be constructed.
-	 *
-	 * @todo This could be replaced by static methods.
-	 */
-	public function __construct() {
-		// Nothing to do here yet.
-	}
-
-	/**
 	 * Returns the request's API.
 	 *
 	 * @return string

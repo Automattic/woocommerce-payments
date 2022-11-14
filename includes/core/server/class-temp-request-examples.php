@@ -19,19 +19,19 @@ class Temp_Request_Examples {
 	}
 
 	public function example() {
-		if ( false ) {
+		if ( true ) {
 			echo "===== CREATE INTENT REQUEST =====\n";
-			$request = new Request\Create_Intent();
-			$request->set_amount( 100 );
-			$request->set_currency( 'eur' );
+			$request = Request\Create_Intent::create()
+				->set_amount( 100 )
+				->set_currency( 'eur' );
 			$this->dump_request( $request );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			// Make sure extending the request does not work outside of `apply_filters`.
 			echo "===== EXTEND WITHOUT FILTERS =====\n";
-			$request = new Request\Create_Intent();
-			$request->set_amount( 100 );
+			$request = Request\Create_Intent::create()
+				->set_amount( 100 );
 			try {
 				Request\WooPay_Create_Intent::extend( $request );
 			} catch ( Exception $e ) {
@@ -39,20 +39,20 @@ class Temp_Request_Examples {
 			}
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== EXTEND TEMPLATE =====\n";
 
 			$callback = function ( Request\Create_Intent $base_request ): Request\WooPay_Create_Intent {
-				$request = Request\WooPay_Create_Intent::extend( $base_request );
-				$request->set_save_payment_method_to_platform( true );
+				$request = Request\WooPay_Create_Intent::extend( $base_request )
+					->set_save_payment_method_to_platform( true );
 				return $request;
 			};
 
 			add_filter( 'wcpay_create_intent_request', $callback );
 
-			$request = new Request\Create_Intent();
-			$request->set_amount( 100 );
-			$request->set_currency( 'eur' );
+			$request = Request\Create_Intent::create()
+				->set_amount( 100 )
+				->set_currency( 'eur' );
 			$request = $request->apply_filters( 'wcpay_create_intent_request' );
 
 			remove_filter( 'wcpay_create_intent_request', $callback );
@@ -60,11 +60,11 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== UPDATING VALUES =====\n";
-			$request = new Request\Create_Intent();
-			$request->set_amount( 100 );
-			$request->set_currency( 'eur' );
+			$request = Request\Create_Intent::create()
+				->set_amount( 100 )
+				->set_currency( 'eur' );
 
 			$callback = function ( Request\Create_Intent $request, string $new_currency ) {
 				$request->set_currency( $new_currency );
@@ -81,11 +81,11 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== PROTECTING IMMUTABLE VALUES =====\n";
-			$request = new Request\Create_Intent();
-			$request->set_amount( 100 );
-			$request->set_currency( 'eur' );
+			$request = Request\Create_Intent::create()
+				->set_amount( 100 )
+				->set_currency( 'eur' );
 
 			$callback = function ( Request\Create_Intent $request ) {
 				try {
@@ -101,10 +101,10 @@ class Temp_Request_Examples {
 			remove_filter( 'wcpay_create_intent_request', $callback );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== ENSURING INITIALIZED REQUESTS =====\n";
-			$request = new Request\Create_Intent();
-			$request->set_amount( 100 );
+			$request = Request\Create_Intent::create()
+				->set_amount( 100 );
 			try {
 				$request->get_params();
 			} catch ( Exception $e ) {
@@ -115,7 +115,7 @@ class Temp_Request_Examples {
 		if ( true ) {
 			echo "===== GENERIC GET REQUEST =====\n";
 			// ToDo: Make sure IDs are properly set somehow.
-			$request = new Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API . '/pm_abc123', 'GET' );
+			$request = new Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API . '/pm_abc123', REQUESTS::GET );
 			$request->use_user_token();
 			$this->dump_request( $request );
 		}
@@ -124,7 +124,7 @@ class Temp_Request_Examples {
 			echo "===== GENERIC POST REQUEST =====\n";
 			$request = new Request\Generic(
 				WC_Payments_API_Client::CUSTOMERS_API,
-				'POST',
+				Requests::POST,
 				[
 					'first_name' => 'John',
 					'last_name'  => 'Doe',
@@ -138,7 +138,7 @@ class Temp_Request_Examples {
 			echo "===== GENERIC POST REQUEST MODIFICATIONS =====\n";
 			$request = new Request\Generic(
 				WC_Payments_API_Client::CUSTOMERS_API,
-				'POST',
+				Requests::POST,
 				[
 					'first_name' => 'John',
 					'last_name'  => 'Doe',

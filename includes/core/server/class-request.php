@@ -42,6 +42,15 @@ abstract class Request {
 	private $protected_mode = false;
 
 	/**
+	 * Creates a new instance of the class.
+	 *
+	 * @return static
+	 */
+	public static function create() {
+		return new static();
+	}
+
+	/**
 	 * Prevents the class from being constructed directly.
 	 */
 	protected function __construct() {
