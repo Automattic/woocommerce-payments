@@ -209,7 +209,10 @@ abstract class Request {
 	}
 
 	/**
-	 * Creates a new instance the class with the same props as the parent.
+	 * Creates a new instance of the called class with the same props
+	 * as an existing request, which must be of a parent class.
+	 *
+	 * This method is only available within `apply_filters()`.
 	 *
 	 * @param  Request $base_request The request to extend.
 	 * @return static                An instance of the class.
@@ -237,15 +240,18 @@ abstract class Request {
 	}
 
 	/**
-	 * Allows the request to be changed via a hook.
+	 * Allows the request to be altered/replaced through a filter.
 	 *
-	 * Supposedly this method will verify the protected params of parents.
+	 * Call this method when the request has been completely prepared,
+	 * and is ready to be sent to the server. At this point functions,
+	 * which hook into the filter cannot alter the IMMUTABLE_PARAMS
+	 * of the request anymore. Instead they can either modify the other
+	 * mutable params, or extend the request.
 	 *
 	 * @param string $hook    The filter to use.
 	 * @param mixed  ...$args Other parameters for the hook.
 	 * @return static         Either the same instance, or an object from a sub-class.
 	 * @throws \Exception     In case a class does not exists, or immutable properties are modified.
-	 * @todo                  Add proper exceptions here.
 	 */
 	final public function apply_filters( $hook, ...$args ) {
 		// Lock the class in order to prevent `set_param` for protected props.
