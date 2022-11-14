@@ -144,6 +144,10 @@ abstract class Request {
 			);
 		}
 
+		if ( ! $base_request->protected_mode ) {
+			throw new \Exception( get_class( $base_request ) . ' can only be extended within its ->apply_filters() method.' );
+		}
+
 		$obj = new static();
 		$obj->set_params( $base_request->params );
 

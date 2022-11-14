@@ -432,8 +432,6 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
-
-		include_once __DIR__ . '/core/server/class-temp-request-examples.php';
 	}
 
 	/**
@@ -688,6 +686,8 @@ class WC_Payments {
 	private static function get_wc_payments_http() {
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
+
+		include_once __DIR__ . '/core/server/class-temp-request-examples.php';
 
 		$http_class = apply_filters( 'wc_payments_http', null );
 
