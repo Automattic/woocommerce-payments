@@ -445,7 +445,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
-		do_action( 'wc_payments_add_upe_payment_fields', $this );
+		do_action( 'wc_payments_set_gateway', $this->get_selected_stripe_payment_type_id() );
+		do_action( 'wc_payments_add_upe_payment_fields' );
 	}
 
 	/**

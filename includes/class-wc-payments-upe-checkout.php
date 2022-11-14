@@ -51,25 +51,36 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	protected $customer_service;
 
 	/**
+	 * List of the available payment gateways.
+	 *
+	 * @var array $gateway_map
+	 */
+	protected $gateway_map = [];
+
+	/**
 	 * Construct.
 	 *
 	 * @param UPE_Payment_Gateway          $gateway                WC Payment Gateway.
 	 * @param Platform_Checkout_Utilities  $platform_checkout_util Platform Checkout Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
+	 * @param array                        $gateway_map            WC Payment Gateway list.
 	 */
 	public function __construct(
 		UPE_Payment_Gateway $gateway,
 		Platform_Checkout_Utilities $platform_checkout_util,
 		WC_Payments_Account $account,
-		WC_Payments_Customer_Service $customer_service
+		WC_Payments_Customer_Service $customer_service,
+		array $gateway_map
 	) {
 		$this->gateway                = $gateway;
 		$this->platform_checkout_util = $platform_checkout_util;
 		$this->account                = $account;
 		$this->customer_service       = $customer_service;
+		$this->gateway_map            = $gateway_map;
 
-		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields_for_gateway' ] );
+		add_action( 'wc_payments_set_gateway', [ $this, 'set_gateway' ] );
+		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
 	}
 
 	/**
@@ -169,17 +180,6 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		}
 
 		return $settings;
-	}
-
-	/**
-	 * Sets the gateway to work wirh and renders payment fields
-	 *
-	 * @param UPE_Payment_Gateway $gateway The UPE gateway to render payment fields for.
-	 * @return void
-	 */
-	public function payment_fields_for_gateway( $gateway ) {
-		$this->set_gateway( $gateway );
-		$this->payment_fields();
 	}
 
 	/**
@@ -287,11 +287,13 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	/**
 	 * Set gateway
 	 *
-	 * @param UPE_Payment_Gateway $gateway UPE gateway.
+	 * @param string $gateway_id UPE gateway ID.
 	 * @return void
 	 */
-	private function set_gateway( $gateway ) {
-		$this->gateway = $gateway;
+	public function set_gateway( $gateway_id ) {
+		if ( null !== $gateway_id ) {
+			$this->gateway = $this->gateway_map[ $gateway_id ];
+		}
 	}
 
 }

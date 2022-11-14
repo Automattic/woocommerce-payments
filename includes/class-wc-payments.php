@@ -377,7 +377,7 @@ class WC_Payments {
 			}
 
 			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
-			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service, $payments_checkout );
+			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service, self::$upe_payment_gateway_map );
 		} else {
 			self::$card_gateway         = self::$legacy_card_gateway;
 			self::$wc_payments_checkout = $payments_checkout;
