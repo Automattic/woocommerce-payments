@@ -30,6 +30,18 @@ abstract class Request {
 	private $params = [];
 
 	/**
+	 * True when `->apply_filters()` is called to protect read-only props.
+	 *
+	 * In protected mode, if somebody tries to change an immutable param,
+	 * as declared in `IMMUTABLE_PARAMS`, an exception will be thrown.
+	 *
+	 * This way important params can be safe from modifications by extensions.
+	 *
+	 * @var bool
+	 */
+	private $protected_mode = false;
+
+	/**
 	 * Prevents the class from being constructed directly.
 	 */
 	protected function __construct() {
@@ -97,12 +109,16 @@ abstract class Request {
 	 * @param mixed  $value And the value to set.
 	 */
 	protected function set_param( string $key, $value ) {
+		if ( $this->protected_mode && in_array( $key, $this->get_immutable_params(), true ) ) {
+			$this->throw_immutable_exception( $key );
+		}
+
 		$this->params[ $key ] = $value;
 	}
 
 	/**
 	 * Replaces all internal parameters of the class.
-	 * Only accessible from this class, this method is used for `extend`.
+	 * Only accessible from this class, used for the `extend` method.
 	 *
 	 * @param array $params The new parameters to use.
 	 */
@@ -146,7 +162,8 @@ abstract class Request {
 	 * @todo                  Add proper exceptions here.
 	 */
 	final public function apply_filters( $hook, ...$args ) {
-		$cloned = clone $this; // Work with a clone to avoid mutations of parameters.
+		// Lock the class in order to prevent `set_param` for protected props.
+		$this->protected_mode = true;
 
 		/**
 		 * Allows a request to be modified, extended or replaced.
@@ -155,22 +172,22 @@ abstract class Request {
 		 * @param mixed   ...$args Other provided parameters for the hook.
 		 * @return Request         Either the same request, or a sub-class.
 		 */
-		$replacement = apply_filters( $hook, $cloned, ...$args );
+		$replacement = apply_filters( $hook, $this, ...$args );
+
+		// Exit protected mode right after `apply_filters`.
+		$this->protected_mode = false;
 
 		// Make sure the replacement is either the same class, or a sub-class.
-		if ( get_class( $replacement ) !== get_class( $this ) && ! is_subclass_of( $replacement, get_class( $this ) ) ) {
+		$my_class  = get_class( $this );
+		$new_class = get_class( $replacement );
+		if ( $new_class !== $my_class && ! is_subclass_of( $replacement, $my_class ) ) {
 			throw new \Exception(
 				sprintf(
 					'Failed to modify request. The provided %s is not a subclass of %s',
-					get_class( $replacement ),
-					get_class( $this )
+					$new_class,
+					$my_class
 				)
 			);
-		}
-
-		if ( $replacement->get_params() === $this->get_params() ) {
-			// Nothing was replaced, nothing to check.
-			return $this;
 		}
 
 		// NB: `array_diff` will only pick up updated props, not new ones.
@@ -182,17 +199,27 @@ abstract class Request {
 
 		foreach ( $this->get_immutable_params() as $param ) {
 			if ( isset( $difference[ $param ] ) ) {
-				throw new \Exception(
-					sprintf(
-						'The value of %s::%s is immutable and cannot be changed.',
-						get_class( $this ),
-						$param
-					)
-				);
+				$this->throw_immutable_exception( $param );
 			}
 		}
 
 		return $replacement;
+	}
+
+	/**
+	 * Throws an exception upon attempts to mutate an immutable parameter.
+	 *
+	 * @param string $param The name of the param.
+	 * @throws \Exception   An exception, which indicates which property is immutable.
+	 */
+	private function throw_immutable_exception( string $param ) {
+		throw new \Exception(
+			sprintf(
+				'The value of %s::%s is immutable and cannot be changed.',
+				get_class( $this ),
+				$param
+			)
+		);
 	}
 
 	/**

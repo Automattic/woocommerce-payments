@@ -1357,12 +1357,20 @@ if ( true ) {
 		exit;
 	}
 
-	add_filter( 'wcpay_create_intent_request', 'requests_filter_example', 10, 2 );
-	function requests_filter_example( Request\Create_Intent $base_request, int $replacement_amount ): Request\WooPay_Create_Intent {
+	// Example how the request can be extended and values updated.
+	// add_filter( 'wcpay_create_intent_request', 'requests_extention_example', 10, 2 );
+	function requests_extention_example( Request\Create_Intent $base_request, int $replacement_amount ): Request\WooPay_Create_Intent {
 		$request = Request\WooPay_Create_Intent::extend( $base_request );
 		$request->set_amount( $replacement_amount );
 		$request->set_save_payment_method_to_platform( true );
 		return $request;
+	}
+
+	// Example how some properties can be updated.
+	add_filter( 'wcpay_create_intent_request', 'requests_value_update', 10, 2 );
+	function requests_value_update( Request\Create_Intent $base_request, int $replacement_amount ): Request\Create_Intent {
+		$base_request->set_amount( $replacement_amount );
+		return $base_request;
 	}
 
 	// phpcs:enable
