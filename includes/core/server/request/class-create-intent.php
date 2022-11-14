@@ -51,4 +51,17 @@ class Create_Intent extends Request {
 		$this->set_param( 'amount', $amount );
 		return $this;
 	}
+
+	/**
+	 * Updates the currency of the intent.
+	 *
+	 * This is an example of a non-protected property.
+	 *
+	 * @param string $currency The currency to use.
+	 * @return Create_Intent The instance of the class for method chaining.
+	 */
+	public function set_currency( string $currency ) {
+		$this->set_param( 'currency', $currency );
+		return $this;
+	}
 }

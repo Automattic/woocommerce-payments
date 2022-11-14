@@ -67,12 +67,42 @@ class Temp_Request_Examples {
 
 		if ( true ) {
 			echo "===== UPDATING VALUES =====\n";
-			// TBD
-			// add_filter( 'wcpay_create_intent_request', [ $this, 'value_update' ], 10, 2 );
-			// function value_update( Request\Create_Intent $base_request, int $replacement_amount ): Request\Create_Intent {
-			// 	$base_request->set_amount( $replacement_amount );
-			// 	return $base_request;
-			// }
+			$request = new Request\Create_Intent();
+			$request->set_amount( 100 );
+			$request->set_currency( 'eur' );
+
+			$callback = function ( Request\Create_Intent $request, string $new_currency ) {
+				$request->set_currency( $new_currency );
+				return $request;
+			};
+			add_filter( 'wcpay_create_intent_request', $callback, 10, 2 );
+
+			// This is an example of a variable, which comes from somewhere else, and how it can be passed to filters.
+			$other_currency = 'usd';
+			$request->apply_filters( 'wcpay_create_intent_request', $other_currency );
+
+			remove_filter( 'wcpay_create_intent_request', $callback );
+
+			$this->dump_request( $request );
+		}
+
+		if ( true ) {
+			echo "===== PROTECTING IMMUTABLE VALUES =====\n";
+			$request = new Request\Create_Intent();
+			$request->set_amount( 100 );
+
+			$callback = function ( Request\Create_Intent $request ) {
+				try {
+					$request->set_amount( 200 );
+				} catch ( Exception $e ) {
+					echo 'Exception message: ' . $e->getMessage() . "\n\n";
+				}
+				return $request;
+			};
+
+			add_filter( 'wcpay_create_intent_request', $callback, 10 );
+			$request->apply_filters( 'wcpay_create_intent_request' );
+			remove_filter( 'wcpay_create_intent_request', $callback );
 		}
 
 		exit;
