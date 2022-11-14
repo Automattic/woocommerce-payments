@@ -162,6 +162,21 @@ abstract class Request {
 	}
 
 	/**
+	 * Allows the request to be modified, and then sends it.
+	 *
+	 * @param string $hook    The filter to use.
+	 * @param mixed  ...$args Other parameters for the hook.
+	 * @return mixed          Either the response array, or the correct object.
+	 */
+	final public function send( $hook, ...$args ) {
+		$request = $this->apply_filters( $hook, ...$args );
+
+		return $this->format_response(
+			$this->api_client->send_request( $request )
+		);
+	}
+
+	/**
 	 * Formats the response from the server.
 	 *
 	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.

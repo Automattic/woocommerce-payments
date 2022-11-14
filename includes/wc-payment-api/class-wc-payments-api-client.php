@@ -1977,18 +1977,15 @@ class WC_Payments_API_Client {
 	 * @return Response         A response object.
 	 */
 	public function send_request( Request $request ) {
-		return $request->format_response(
-			$this->request(
-				$request->get_params(),
-				$request->get_api(),
-				$request->get_method(),
-				$request->is_site_specific(),
-				$request->should_use_user_token(),
-				$request->should_return_raw_response()
-			)
+		return $this->request(
+			$request->get_params(),
+			$request->get_api(),
+			$request->get_method(),
+			$request->is_site_specific(),
+			$request->should_use_user_token(),
+			$request->should_return_raw_response()
 		);
 	}
-
 
 	/**
 	 * Send the request to the WooCommerce Payment API
