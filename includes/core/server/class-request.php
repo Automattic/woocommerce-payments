@@ -8,6 +8,8 @@
 namespace WCPay\Core\Server;
 
 use Exception;
+use WC_Payments_Http_Interface;
+use WC_Payments_API_Client;
 
 /**
  * Base for requests to the WCPay server.
@@ -56,19 +58,28 @@ abstract class Request {
 	private $protected_mode = false;
 
 	/**
-	 * Creates a new instance of the class.
+	 * Holds the API client of WCPay.
 	 *
-	 * @return static
+	 * @var WC_Payments_API_Client
 	 */
-	public static function create() {
-		return new static();
-	}
+	protected $api_client;
+
+	/**
+	 * Holds the HTTP interface of WCPay.
+	 *
+	 * @var WC_Payments_Http_Interface
+	 */
+	protected $http_interface;
 
 	/**
 	 * Prevents the class from being constructed directly.
+	 *
+	 * @param WC_Payments_API_Client     $api_client     The API client to use to send requests.
+	 * @param WC_Payments_Http_Interface $http_interface The HTTP interface for the server.
 	 */
-	protected function __construct() {
-		// Nothing to do here yet.
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_Http_Interface $http_interface ) {
+		$this->api_client     = $api_client;
+		$this->http_interface = $http_interface;
 	}
 
 	/**
@@ -233,7 +244,7 @@ abstract class Request {
 			throw new \Exception( get_class( $base_request ) . ' can only be extended within its ->apply_filters() method.' );
 		}
 
-		$obj = new static();
+		$obj = new static( $base_request->api_client, $base_request->http_interface );
 		$obj->set_params( $base_request->params );
 
 		return $obj;

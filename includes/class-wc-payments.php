@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\RoutesController;
 use WCPay\Core\Mode;
+use WCPay\Core\Server\Request;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -687,7 +688,7 @@ class WC_Payments {
 	 *
 	 * @return WC_Payments_Http_Interface
 	 */
-	public static function get_wc_payments_http() {
+	private static function get_wc_payments_http() {
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
 
@@ -1311,5 +1312,29 @@ class WC_Payments {
 		if ( ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) && file_exists( WCPAY_ABSPATH . 'dist/runtime.js' ) ) {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
+	}
+
+	/**
+	 * Creates a new request object for a server call.
+	 *
+	 * @param  string $class_name The name of the request class. Must extend WCPay\Core\Server\Request.
+	 * @return Request
+	 * @throws Exception          If the request class is not really a request.
+	 */
+	public static function create_request( $class_name ) {
+		if ( ! is_subclass_of( $class_name, Request::class ) ) {
+			throw new Exception(
+				sprintf(
+					'WC_Payments::create_request() requires a class, which extends %s, %s provided instead',
+					Request::class,
+					$class_name
+				)
+			);
+		}
+
+		$request = new $class_name( self::get_payments_api_client(), self::get_wc_payments_http() );
+
+		return $request;
+
 	}
 }

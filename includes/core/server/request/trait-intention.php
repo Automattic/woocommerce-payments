@@ -53,7 +53,7 @@ trait Intention {
 	 * @return integer|NULL Current WPCOM blog ID, or NULL if not connected yet.
 	 */
 	private function get_blog_id() {
-		return $this->is_server_connected() ? WC_Payments::get_wc_payments_http()->get_blog_id() : null;
+		return $this->is_server_connected() ? $this->http_interface->get_blog_id() : null;
 	}
 
 	/**
@@ -62,6 +62,6 @@ trait Intention {
 	 * @return bool
 	 */
 	private function is_server_connected() {
-		return WC_Payments::get_wc_payments_http()->is_connected();
+		return $this->http_interface->is_connected();
 	}
 }

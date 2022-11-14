@@ -970,7 +970,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( empty( $intent ) ) {
 				// This is temporary, those method calls can now be in the right place instead of being stored as variables.
-				$request = \WCPay\Core\Server\Request\Create_And_Confirm_Intention::create()
+				$request = WC_Payments::create_request( \WCPay\Core\Server\Request\Create_And_Confirm_Intention::class )
 					->set_amount( $converted_amount )
 					->set_currency_code( $currency )
 					->set_payment_method( $payment_information->get_payment_method() )
