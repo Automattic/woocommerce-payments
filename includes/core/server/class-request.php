@@ -23,6 +23,20 @@ abstract class Request {
 	const IMMUTABLE_PARAMS = [];
 
 	/**
+	 * Indicates which parameters are required (keys only).
+	 *
+	 * @var string[]
+	 */
+	const REQUIRED_PARAMS = [];
+
+	/**
+	 * Contains default values for parameters, which are not set automatically.
+	 *
+	 * @var string[]
+	 */
+	const DEFAULT_PARAMS = [];
+
+	/**
 	 * Holds the parameters of the request.
 	 *
 	 * @var mixed[]
