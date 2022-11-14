@@ -8,6 +8,7 @@
 namespace WCPay\Core\Server\Request;
 
 use WCPay\Core\Server\Request;
+use WC_Payments_API_Client;
 
 /**
  * Request class for creating intents.
@@ -22,7 +23,7 @@ class Create_Intent extends Request {
 	 * @return string
 	 */
 	public function get_api(): string {
-		return 'intents';
+		return WC_Payments_API_Client::INTENTIONS_API;
 	}
 
 	/**
