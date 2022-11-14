@@ -19,8 +19,7 @@ class Create_And_Confirm_Intention extends Request {
 
 	const IMMUTABLE_PARAMS = [ 'amount' ];
 	const REQUIRED_PARAMS  = [ 'amount', 'currency' ];
-
-	const DEFAULTS = [
+	const DEFAULT_PARAMS   = [
 		'confirm' => 'true',
 	];
 

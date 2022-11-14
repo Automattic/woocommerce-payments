@@ -106,9 +106,12 @@ abstract class Request {
 	 * @throws \Exception If the request has not been initialized yet.
 	 */
 	final public function get_params() {
+		$defaults = $this->get_default_params();
+		$params   = array_merge( $defaults, $this->params );
+
 		$missing_params = [];
 		foreach ( $this->get_required_params() as $name ) {
-			if ( ! isset( $this->params[ $name ] ) ) {
+			if ( ! isset( $params[ $name ] ) ) {
 				$missing_params[] = $name;
 			}
 		}
@@ -123,7 +126,7 @@ abstract class Request {
 			);
 		}
 
-		return $this->params;
+		return $params;
 	}
 
 	/**
@@ -279,6 +282,13 @@ abstract class Request {
 	 */
 	private function get_required_params() {
 		return $this->traverse_class_constants( 'REQUIRED_PARAMS' );
+	}
+
+	/**
+	 * Returns an array with the combined default params from all classes.
+	 */
+	private function get_default_params() {
+		return $this->traverse_class_constants( 'DEFAULT_PARAMS' );
 	}
 
 	/**

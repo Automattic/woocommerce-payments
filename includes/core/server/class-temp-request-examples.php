@@ -161,9 +161,10 @@ class Temp_Request_Examples {
 			echo "===== CREATE AND CONFIRM INTENTION REQUEST =====\n";
 			$request = Request\Create_And_Confirm_Intention::create()
 				->set_amount( 300 )
+				->set_currency_code( 'eur' )
 				->set_metadata( [ 'order_number' => 420 ] );
 
-			var_dump( $request );
+			var_dump( $request->get_params() );
 		}
 
 		exit;
