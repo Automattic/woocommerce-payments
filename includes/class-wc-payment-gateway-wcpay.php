@@ -946,15 +946,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 
-			$additional_api_parameters['is_platform_payment_method'] = $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() );
-
-			// This meta is only set by WooPay.
-			// We want to handle the intention creation differently when there are subscriptions.
-			// We're using simple products on WooPay so the current logic for WCPay subscriptions won't work there.
-			if ( '1' === $order->get_meta( '_woopay_has_subscription' ) ) {
-				$additional_api_parameters['woopay_has_subscription'] = 'true';
-			}
-
 			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
 			// for a string that will only contain latin alphanumeric characters and underscores.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -995,7 +986,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$request->setup_future_usage();
 				}
 
-				$request = $request->apply_filters( 'wcpay_create_and_confirm_intention_request' );
+				// This method requires `is_platform_payment_method`, which should be moved out of this class as well.
+				$is_platform_payment_method = $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() );
+
+				$request = $request->apply_filters( 'wcpay_create_and_confirm_intention_request', $order, $is_platform_payment_method );
 				$intent  = $this->payments_api_client->send_request_with_level3_data( $request );
 			}
 

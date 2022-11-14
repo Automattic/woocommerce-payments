@@ -12,6 +12,29 @@ class Temp_Request_Examples {
 	public function __construct() {
 		// add_action( 'template_redirect', [ $this, 'example' ] );
 		// add_filter( 'wc_payments_http', [ $this, 'mock_http_class' ] );
+		add_filter( 'wcpay_create_and_confirm_intention_request', [ $this, 'woopay_intention_request'], 10, 3 );
+	}
+
+	/**
+	 * Example what consumers like WooPay should do to extend the request.
+	 *
+	 * @param Request\Create_And_Confirm_Intention $base_request   The request that's being modified.
+	 * @param WC_Order                             $order          The order which needs payment.
+	 * @param bool                                 $is_platform_pm A pre-calculated flag.
+	 * @return Request\WooPay_Create_And_Confirm_Intention
+	 */
+	public function woopay_intention_request( Request\Create_And_Confirm_Intention $base_request, $order, $is_platform_pm ) {
+		$request = Request\WooPay_Create_And_Confirm_Intention::extend( $base_request );
+
+		// This meta is only set by WooPay.
+		// We want to handle the intention creation differently when there are subscriptions.
+		// We're using simple products on WooPay so the current logic for WCPay subscriptions won't work there.
+		$woopay_has_subscription = '1' === $order->get_meta( '_woopay_has_subscription' );
+
+		$request->set_is_platform_payment_method( $is_platform_pm );
+		$request->set_has_woopay_subscription( $woopay_has_subscription );
+
+		return $request;
 	}
 
 	public function mock_http_class() {
@@ -19,7 +42,7 @@ class Temp_Request_Examples {
 	}
 
 	public function example() {
-		if ( false ) {
+		if ( true ) {
 			echo "===== CREATE INTENT REQUEST =====\n";
 			$request = Request\Create_Intent::create()
 				->set_amount( 100 )
@@ -27,7 +50,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			// Make sure extending the request does not work outside of `apply_filters`.
 			echo "===== EXTEND WITHOUT FILTERS =====\n";
 			$request = Request\Create_Intent::create()
@@ -39,7 +62,7 @@ class Temp_Request_Examples {
 			}
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== EXTEND TEMPLATE =====\n";
 
 			$callback = function ( Request\Create_Intent $base_request ): Request\WooPay_Create_Intent {
@@ -60,7 +83,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== UPDATING VALUES =====\n";
 			$request = Request\Create_Intent::create()
 				->set_amount( 100 )
@@ -81,7 +104,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== PROTECTING IMMUTABLE VALUES =====\n";
 			$request = Request\Create_Intent::create()
 				->set_amount( 100 )
@@ -101,7 +124,7 @@ class Temp_Request_Examples {
 			remove_filter( 'wcpay_create_intent_request', $callback );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== ENSURING INITIALIZED REQUESTS =====\n";
 			$request = Request\Create_Intent::create()
 				->set_amount( 100 );
@@ -112,7 +135,7 @@ class Temp_Request_Examples {
 			}
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== GENERIC GET REQUEST =====\n";
 			// ToDo: Make sure IDs are properly set somehow.
 			$request = new Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API . '/pm_abc123', REQUESTS::GET );
@@ -120,7 +143,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== GENERIC POST REQUEST =====\n";
 			$request = new Request\Generic(
 				WC_Payments_API_Client::CUSTOMERS_API,
@@ -134,7 +157,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== GENERIC POST REQUEST MODIFICATIONS =====\n";
 			$request = new Request\Generic(
 				WC_Payments_API_Client::CUSTOMERS_API,
@@ -157,7 +180,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( false ) {
+		if ( true ) {
 			echo "===== CREATE AND CONFIRM INTENTION REQUEST =====\n";
 			$request = Request\Create_And_Confirm_Intention::create()
 				->set_amount( 300 )
