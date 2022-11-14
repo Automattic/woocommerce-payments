@@ -320,7 +320,7 @@ abstract class Request {
 	 * @return string[] The names of those params.
 	 */
 	private function get_immutable_params() {
-		return $this->traverse_class_constants( 'IMMUTABLE_PARAMS' );
+		return $this->traverse_class_constants( 'IMMUTABLE_PARAMS', true );
 	}
 
 	/**
@@ -329,7 +329,7 @@ abstract class Request {
 	 * @return string[] The names of those params.
 	 */
 	private function get_required_params() {
-		return $this->traverse_class_constants( 'REQUIRED_PARAMS' );
+		return $this->traverse_class_constants( 'REQUIRED_PARAMS', true );
 	}
 
 	/**
@@ -343,9 +343,10 @@ abstract class Request {
 	 * Combines array constants from a class's tree.
 	 *
 	 * @param  string $constant_name The name of the constant to load.
+	 * @param  bool   $unique        Whether to return unique items. Useful with numeric keys.
 	 * @return string[] The unique combined values from the arrays.
 	 */
-	private function traverse_class_constants( string $constant_name ) {
+	private function traverse_class_constants( string $constant_name, bool $unique = false ) {
 		$keys       = [];
 		$class_name = get_class( $this );
 
@@ -358,6 +359,10 @@ abstract class Request {
 
 			$class_name = get_parent_class( $class_name );
 		} while ( $class_name );
+
+		if ( $unique ) {
+			$keys = array_unique( $keys );
+		}
 
 		return $keys;
 	}
