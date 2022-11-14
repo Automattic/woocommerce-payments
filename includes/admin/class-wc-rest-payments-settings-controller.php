@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Settings;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -47,18 +49,24 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
 	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
+	 * @param Settings                 $gateway_settings Settings instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $wcpay_gateway ) {
+	public function __construct(
+		WC_Payments_API_Client $api_client,
+		WC_Payment_Gateway_WCPay $wcpay_gateway,
+		Settings $gateway_settings
+	) {
 		parent::__construct( $api_client );
 
-		$this->wcpay_gateway = $wcpay_gateway;
+		$this->wcpay_gateway    = $wcpay_gateway;
+		$this->gateway_settings = $gateway_settings;
 	}
 
 	/**
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
-		$wcpay_form_fields = WC_Payments::get_gateway_settings()->get_form_fields();
+		$wcpay_form_fields = $this->gateway_settings->get_form_fields();
 
 		register_rest_route(
 			$this->namespace,

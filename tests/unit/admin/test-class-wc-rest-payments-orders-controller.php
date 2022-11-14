@@ -65,8 +65,8 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway                  = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$this->mock_customer_service         = $this->createMock( WC_Payments_Customer_Service::class );
 		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
-													->disableOriginalConstructor()
-													->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client, $this->mock_customer_service, $this->mock_action_scheduler_service );
 
