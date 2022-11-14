@@ -1338,7 +1338,7 @@ if ( true ) {
 		$request = new Request\Create_Intent();
 		$request->set_amount( 100 );
 		$suggested_amount = 200; // Something that might come from context, and extensions might use.
-		$request = $request->announce( 'wcpay_create_intent_request', $suggested_amount );
+		$request = $request->apply_filters( 'wcpay_create_intent_request', $suggested_amount );
 
 		var_dump(
 			[

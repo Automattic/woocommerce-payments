@@ -145,7 +145,7 @@ abstract class Request {
 	 * @throws \Exception     In case a class does not exists, or immutable properties are modified.
 	 * @todo                  Add proper exceptions here.
 	 */
-	final public function announce( $hook, ...$args ) {
+	final public function apply_filters( $hook, ...$args ) {
 		$cloned = clone $this; // Work with a clone to avoid mutations of parameters.
 
 		/**
