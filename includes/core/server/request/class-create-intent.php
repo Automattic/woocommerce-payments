@@ -13,6 +13,8 @@ use WCPay\Core\Server\Request;
  * Request class for creating intents.
  */
 class Create_Intent extends Request {
+	const IMMUTABLE_PARAMS = [ 'amount' ];
+
 	/**
 	 * Allows the class to be constructed.
 	 *

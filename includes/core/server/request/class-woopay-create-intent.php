@@ -11,6 +11,8 @@ namespace WCPay\Core\Server\Request;
  * Extended create intent request for WooPay.
  */
 class WooPay_Create_Intent extends Create_Intent {
+	const IMMUTABLE_PARAMS = [ 'save_payment_method_to_platform' ];
+
 	/**
 	 * Indicates whether the payment method needs to be stored with the platform.
 	 *

@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\RoutesController;
 use WCPay\Core\Mode;
+use WCPay\Core\Server\Request;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -1331,15 +1332,13 @@ if ( true ) {
 	} );
 
 	function requests_example() {
-
 		// $request = new WCPay\Core\Server\Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API, 'GET' );
 		// $request->use_user_token();
 
-		$base_request = new WCPay\Core\Server\Request\Create_Intent();
-		$base_request->set_amount( 100 );
-
-		$request = WCPay\Core\Server\Request\WooPay_Create_Intent::extend( $base_request );
-		$request->set_save_payment_method_to_platform( true );
+		$request = new Request\Create_Intent();
+		$request->set_amount( 100 );
+		$suggested_amount = 200; // Something that might come from context, and extensions might use.
+		$request = $request->announce( 'wcpay_create_intent_request', $suggested_amount );
 
 		var_dump(
 			[
@@ -1357,6 +1356,15 @@ if ( true ) {
 		/////
 		exit;
 	}
+
+	add_filter( 'wcpay_create_intent_request', 'requests_filter_example', 10, 2 );
+	function requests_filter_example( Request\Create_Intent $base_request, int $replacement_amount ): Request\WooPay_Create_Intent {
+		$request = Request\WooPay_Create_Intent::extend( $base_request );
+		$request->set_amount( $replacement_amount );
+		$request->set_save_payment_method_to_platform( true );
+		return $request;
+	}
+
 	// phpcs:enable
 
 	add_action( 'template_redirect', 'requests_example' );

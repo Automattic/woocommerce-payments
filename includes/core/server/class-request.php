@@ -7,10 +7,21 @@
 
 namespace WCPay\Core\Server;
 
+use Exception;
+
 /**
  * Base for requests to the WCPay server.
  */
 abstract class Request {
+	/**
+	 * Contains a set of params, which the class considers immutable by others.
+	 *
+	 * Overwrite this in your class for individual properties.
+	 *
+	 * @var string[]
+	 */
+	const IMMUTABLE_PARAMS = [];
+
 	/**
 	 * Holds the parameters of the request.
 	 *
@@ -121,5 +132,83 @@ abstract class Request {
 		$obj->set_params( $base_request->params );
 
 		return $obj;
+	}
+
+	/**
+	 * Allows the request to be changed via a hook.
+	 *
+	 * Supposedly this method will verify the protected params of parents.
+	 *
+	 * @param string $hook    The filter to use.
+	 * @param mixed  ...$args Other parameters for the hook.
+	 * @return static         Either the same instance, or an object from a sub-class.
+	 * @throws \Exception     In case a class does not exists, or immutable properties are modified.
+	 * @todo                  Add proper exceptions here.
+	 */
+	final public function announce( $hook, ...$args ) {
+		$cloned = clone $this; // Work with a clone to avoid mutations of parameters.
+
+		/**
+		 * Allows a request to be modified, extended or replaced.
+		 *
+		 * @param Request $request The request to modify.
+		 * @param mixed   ...$args Other provided parameters for the hook.
+		 * @return Request         Either the same request, or a sub-class.
+		 */
+		$replacement = apply_filters( $hook, $cloned, ...$args );
+
+		// Make sure the replacement is either the same class, or a sub-class.
+		if ( get_class( $replacement ) !== get_class( $this ) && ! is_subclass_of( $replacement, get_class( $this ) ) ) {
+			throw new \Exception(
+				sprintf(
+					'Failed to modify request. The provided %s is not a subclass of %s',
+					get_class( $replacement ),
+					get_class( $this )
+				)
+			);
+		}
+
+		if ( $replacement->get_params() === $this->get_params() ) {
+			// Nothing was replaced, nothing to check.
+			return $this;
+		}
+
+		// NB: `array_diff` will only pick up updated props, not new ones.
+		$difference = array_diff( $this->get_params(), $replacement->get_params() );
+		if ( empty( $difference ) ) {
+			// Nothing got overwritten, it's the same request, or one with only new props.
+			return $replacement;
+		}
+
+		foreach ( $this->get_immutable_params() as $param ) {
+			if ( isset( $difference[ $param ] ) ) {
+				throw new \Exception(
+					sprintf(
+						'The value of %s::%s is immutable and cannot be changed.',
+						get_class( $this ),
+						$param
+					)
+				);
+			}
+		}
+
+		return $replacement;
+	}
+
+	/**
+	 * Returns an array with the names of params, which should not be modified.
+	 *
+	 * @return string[] The names of those params.
+	 */
+	private function get_immutable_params() {
+		$immutable  = [];
+		$class_name = get_class( $this );
+
+		do {
+			$immutable  = array_merge( $immutable, $class_name::IMMUTABLE_PARAMS );
+			$class_name = get_parent_class( $class_name );
+		} while ( $class_name );
+
+		return array_unique( $immutable );
 	}
 }
