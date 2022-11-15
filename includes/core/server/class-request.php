@@ -7,9 +7,9 @@
 
 namespace WCPay\Core\Server;
 
-use Exception;
 use WC_Payments_Http_Interface;
 use WC_Payments_API_Client;
+use WCPay\Core\Exceptions\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
 
@@ -130,7 +130,7 @@ abstract class Request {
 	 * Returns all of the parameters for the request.
 	 *
 	 * @return array
-	 * @throws \Exception If the request has not been initialized yet.
+	 * @throws Invalid_Request_Parameter_Exception If the request has not been initialized yet.
 	 */
 	final public function get_params() {
 		$defaults = $this->get_default_params();
@@ -144,12 +144,13 @@ abstract class Request {
 		}
 
 		if ( ! empty( $missing_params ) ) {
-			throw new \Exception(
+			throw new Invalid_Request_Parameter_Exception(
 				sprintf(
 					'Trying to access the parameters of a request which is not (fully) initialized yet. Missing parameter(s) for %s: %s',
 					get_class( $this ),
 					implode( ', ', $missing_params )
-				)
+				),
+				'wcpay_core_invalid_request_parameter_missing_parameters'
 			);
 		}
 
@@ -242,23 +243,27 @@ abstract class Request {
 	 *
 	 * This method is only available within `apply_filters()`.
 	 *
-	 * @param  Request $base_request The request to extend.
-	 * @return static                An instance of the class.
-	 * @throws \Exception            In case this is not a subclass of the base request.
+	 * @param  Request $base_request    The request to extend.
+	 * @return static                   An instance of the class.
+	 * @throws Extend_Request_Exception In case this is not a subclass of the base request.
 	 */
 	final public static function extend( Request $base_request ) {
 		if ( ! is_subclass_of( static::class, get_class( $base_request ) ) ) {
-			throw new \Exception(
+			throw new Extend_Request_Exception(
 				sprintf(
 					'Failed to extend request. %s is not a subclass of %s',
 					static::class,
 					get_class( $base_request )
-				)
+				),
+				'wcpay_core_extend_class_not_subclass'
 			);
 		}
 
 		if ( ! $base_request->protected_mode ) {
-			throw new \Exception( get_class( $base_request ) . ' can only be extended within its ->apply_filters() method.' );
+			throw new Extend_Request_Exception(
+				get_class( $base_request ) . ' can only be extended within its ->apply_filters() method.',
+				'wcpay_core_extend_class_incorrectly'
+			);
 		}
 
 		$obj = new static( $base_request->api_client, $base_request->http_interface );
@@ -276,10 +281,12 @@ abstract class Request {
 	 * of the request anymore. Instead they can either modify the other
 	 * mutable params, or extend the request.
 	 *
-	 * @param string $hook    The filter to use.
-	 * @param mixed  ...$args Other parameters for the hook.
-	 * @return static         Either the same instance, or an object from a sub-class.
-	 * @throws \Exception     In case a class does not exists, or immutable properties are modified.
+	 * @param string $hook                             The filter to use.
+	 * @param mixed  ...$args                          Other parameters for the hook.
+	 * @return static                                  Either the same instance, or an object from a sub-class.
+	 * @throws Extend_Request_Exception                In case a class does not exist.
+	 * @throws Immutable_Parameter_Exception           In case an immutable propery is tried to change.
+	 * @throws Invalid_Request_Parameter_Exception     In case an invalid property is passed.
 	 */
 	final public function apply_filters( $hook, ...$args ) {
 		// Lock the class in order to prevent `set_param` for protected props.
@@ -301,12 +308,13 @@ abstract class Request {
 		$my_class  = get_class( $this );
 		$new_class = get_class( $replacement );
 		if ( $new_class !== $my_class && ! is_subclass_of( $replacement, $my_class ) ) {
-			throw new \Exception(
+			throw new Extend_Request_Exception(
 				sprintf(
 					'Failed to modify request. The provided %s is not a subclass of %s',
 					$new_class,
 					$my_class
-				)
+				),
+				'wcpay_core_extend_class_not_subclass'
 			);
 		}
 
