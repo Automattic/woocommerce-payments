@@ -161,11 +161,11 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return array
 	 */
 	public function get_button_settings() {
-		$button_type = $this->gateway->get_option( 'platform_checkout_button_type' );
+		$button_type = $this->gateway->get_option( 'platform_checkout_button_type', 'default' );
 		return [
 			'type'   => $button_type,
-			'theme'  => $this->gateway->get_option( 'platform_checkout_button_theme' ),
-			'height' => $this->gateway->get_option( 'platform_checkout_button_size' ),
+			'theme'  => $this->gateway->get_option( 'platform_checkout_button_theme', 'dark' ),
+			'height' => $this->gateway->get_option( 'platform_checkout_button_size', 'default' ),
 		];
 	}
 
