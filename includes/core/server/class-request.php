@@ -10,6 +10,7 @@ namespace WCPay\Core\Server;
 use Exception;
 use WC_Payments_Http_Interface;
 use WC_Payments_API_Client;
+use WCPay\Core\Exceptions\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Invalid_Request_Param;
 
 /**
@@ -329,15 +330,16 @@ abstract class Request {
 	 * Throws an exception upon attempts to mutate an immutable parameter.
 	 *
 	 * @param string $param The name of the param.
-	 * @throws \Exception   An exception, which indicates which property is immutable.
+	 * @throws Immutable_Parameter_Exception   An exception, which indicates which property is immutable.
 	 */
 	private function throw_immutable_exception( string $param ) {
-		throw new \Exception(
+		throw new Immutable_Parameter_Exception(
 			sprintf(
 				'The value of %s::%s is immutable and cannot be changed.',
 				get_class( $this ),
 				$param
-			)
+			),
+			'wcpay_core_immutable_parameter_changed'
 		);
 	}
 
