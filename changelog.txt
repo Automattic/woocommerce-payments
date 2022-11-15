@@ -1,5 +1,11 @@
 *** WooCommerce Payments Changelog ***
 
+= 5.0.3 - 2022-11-15 =
+* Fix - Purchasing a synced subscription with WCPay Subscriptions correctly sets the next payment date to the sync date in Stripe.
+
+= 5.0.2 - 2022-11-14 =
+* Fix - Fixed rest api error for payment_gateways endpoint
+
 = 5.0.1 - 2022-11-10 =
 * Fix - Fix fatal error when non-admin access admin pages.
 
