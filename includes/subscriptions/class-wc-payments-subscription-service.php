@@ -212,10 +212,6 @@ class WC_Payments_Subscription_Service {
 			remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $add_meta_query, 10 );
 		}
 
-		if ( empty( $subscription_ids ) ) {
-			return false;
-		}
-
 		return wcs_get_subscription( array_shift( $subscription_ids ) );
 	}
 
