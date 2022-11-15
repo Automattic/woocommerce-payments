@@ -8,6 +8,7 @@
 namespace WCPay\Core\Server;
 
 use ArrayAccess;
+use WCPay\Core\Exceptions\Server_Response_Exception;
 
 /**
  * Represents responses from the WCPay server.
@@ -52,21 +53,21 @@ class Response implements ArrayAccess {
 	/**
 	 * Attempts to set a value in the response.
 	 *
-	 * @param mixed $offset The key of the value.
-	 * @param mixed $value  The value.
-	 * @throws \Exception   It is not possible.
+	 * @param mixed $offset              The key of the value.
+	 * @param mixed $value               The value.
+	 * @throws Server_Response_Exception It is not possible.
 	 */
 	public function offsetSet( $offset, $value ) {
-		throw new \Exception( 'Server responses cannot be mutated.' );
+		throw new Server_Response_Exception( 'Server responses cannot be mutated.', 'wcpay_core_server_response_malformed' );
 	}
 
 	/**
 	 * Removes a value from the response.
 	 *
-	 * @param mixed $offset The offset to remove.
-	 * @throws \Exception   It is not possible.
+	 * @param mixed $offset                The offset to remove.
+	 * @throws Server_Response_Exception   It is not possible.
 	 */
 	public function offsetUnset( $offset ) {
-		throw new \Exception( 'Server responses cannot be mutated.' );
+		throw new Server_Response_Exception( 'Server responses cannot be mutated.', 'wcpay_core_server_response_malformed' );
 	}
 }

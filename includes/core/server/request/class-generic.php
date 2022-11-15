@@ -7,7 +7,7 @@
 
 namespace WCPay\Core\Server\Request;
 
-use Exception;
+use WCPay\Core\Exceptions\Server_Response_Exception;
 use WCPay\Core\Server\Request;
 use Requests;
 
@@ -42,10 +42,10 @@ final class Generic extends Request {
 	/**
 	 * Creates a new instance of the class.
 	 *
-	 * @throws \Exception
+	 * @throws Server_Response_Exception
 	 */
 	public static function create() {
-		throw new \Exception( 'Generic requests should be constructed normally using the `new` keyword.' );
+		throw new Server_Response_Exception( 'Server responses cannot be mutated.', 'wcpay_core_server_response_invalid_function' );
 	}
 
 	/**
