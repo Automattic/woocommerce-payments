@@ -604,6 +604,13 @@ export const handlePlatformCheckoutEmailInput = async (
 		}
 	} );
 
+	window.addEventListener( 'pageshow', function ( event ) {
+		if ( event.persisted ) {
+			// Safari needs to close iframe with this.
+			closeIframe( false );
+		}
+	} );
+
 	if ( ! customerClickedBackButton ) {
 		// Check if user already has a WooPay login session.
 		if ( ! hasCheckedLoginSession ) {
