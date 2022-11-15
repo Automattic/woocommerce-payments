@@ -805,4 +805,13 @@ class WC_Payments_Utils {
 
 		return $formatted_amount;
 	}
+
+	/**
+	 * Checks if the HPOS order tables are being used.
+	 *
+	 * @return bool True if HPOS tables are enabled and being used.
+	 */
+	public static function is_hpos_tables_usage_enabled() {
+		return class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+	}
 }
