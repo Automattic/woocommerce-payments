@@ -51,33 +51,23 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	protected $customer_service;
 
 	/**
-	 * List of the available payment gateways.
-	 *
-	 * @var array $gateway_map
-	 */
-	protected $gateway_map = [];
-
-	/**
 	 * Construct.
 	 *
 	 * @param UPE_Payment_Gateway          $gateway                WC Payment Gateway.
 	 * @param Platform_Checkout_Utilities  $platform_checkout_util Platform Checkout Utilities.
 	 * @param WC_Payments_Account          $account                WC Payments Account.
 	 * @param WC_Payments_Customer_Service $customer_service       WC Payments Customer Service.
-	 * @param array                        $gateway_map            WC Payment Gateway list.
 	 */
 	public function __construct(
 		UPE_Payment_Gateway $gateway,
 		Platform_Checkout_Utilities $platform_checkout_util,
 		WC_Payments_Account $account,
-		WC_Payments_Customer_Service $customer_service,
-		array $gateway_map
+		WC_Payments_Customer_Service $customer_service
 	) {
 		$this->gateway                = $gateway;
 		$this->platform_checkout_util = $platform_checkout_util;
 		$this->account                = $account;
 		$this->customer_service       = $customer_service;
-		$this->gateway_map            = $gateway_map;
 
 		add_action( 'wc_payments_set_gateway', [ $this, 'set_gateway' ] );
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
@@ -98,7 +88,6 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['addPaymentReturnURL']      = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']                = UPE_Payment_Gateway::GATEWAY_ID;
 		$payment_fields['isCheckout']               = is_checkout();
-		$payment_fields['checkoutTitle']            = $this->gateway->title;
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
 		$payment_fields['testMode']                 = $this->gateway->is_in_test_mode();
 		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
@@ -226,7 +215,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			<?php if ( $this->gateway->is_in_test_mode() ) : ?>
 				<p class="testmode-info">
 					<?php
-						$testing_instructions = $this->gateway->payment_method->get_testing_instructions();
+						$testing_instructions = $this->gateway->get_payment_method()->get_testing_instructions();
 					if ( false !== $testing_instructions ) {
 						echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
@@ -287,12 +276,12 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	/**
 	 * Set gateway
 	 *
-	 * @param string $gateway_id UPE gateway ID.
+	 * @param string $payment_method_id Payment method ID.
 	 * @return void
 	 */
-	public function set_gateway( $gateway_id ) {
-		if ( null !== $gateway_id ) {
-			$this->gateway = $this->gateway_map[ $gateway_id ];
+	public function set_gateway( $payment_method_id ) {
+		if ( null !== $payment_method_id ) {
+			$this->gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
 		}
 	}
 
