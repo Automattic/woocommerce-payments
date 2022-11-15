@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.0.3 - 2022-xx-xx =
+* Fix - Purchasing a synced subscription with WCPay Subscriptions correctly sets the next payment date to the sync date in Stripe.
+
 = 5.0.2 - 2022-11-14 =
 * Fix - Fixed rest api error for payment_gateways endpoint
 
