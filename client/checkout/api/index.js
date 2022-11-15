@@ -9,7 +9,7 @@ import {
 	getPaymentRequestAjaxURL,
 	buildAjaxURL,
 } from '../../payment-request/utils';
-import { decryptClientSecret } from '../utils/upe';
+import { decryptClientSecret } from '../utils/encryption';
 
 /**
  * Handles generic connections to the server and Stripe.

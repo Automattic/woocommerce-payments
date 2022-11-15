@@ -12,12 +12,8 @@ import { getConfig, getCustomGatewayTitle } from 'utils/checkout';
 import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
-import {
-	getTerms,
-	getCookieValue,
-	isWCPayChosen,
-	decryptClientSecret,
-} from '../utils/upe';
+import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
