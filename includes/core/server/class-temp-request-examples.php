@@ -44,7 +44,7 @@ class Temp_Request_Examples {
 	public function example() {
 		if ( true ) {
 			echo "===== CREATE INTENT REQUEST =====\n";
-			$request = Request\Create_Intent::create()
+			$request = WC_Payments::create_request( Request\Create_Intent::class )
 				->set_amount( 100 )
 				->set_currency( 'eur' );
 			$this->dump_request( $request );
@@ -53,7 +53,7 @@ class Temp_Request_Examples {
 		if ( true ) {
 			// Make sure extending the request does not work outside of `apply_filters`.
 			echo "===== EXTEND WITHOUT FILTERS =====\n";
-			$request = Request\Create_Intent::create()
+			$request = WC_Payments::create_request( Request\Create_Intent::class )
 				->set_amount( 100 );
 			try {
 				Request\WooPay_Create_Intent::extend( $request );
@@ -73,7 +73,7 @@ class Temp_Request_Examples {
 
 			add_filter( 'wcpay_create_intent_request', $callback );
 
-			$request = Request\Create_Intent::create()
+			$request = WC_Payments::create_request( Request\Create_Intent::class )
 				->set_amount( 100 )
 				->set_currency( 'eur' );
 			$request = $request->apply_filters( 'wcpay_create_intent_request' );
@@ -85,7 +85,7 @@ class Temp_Request_Examples {
 
 		if ( true ) {
 			echo "===== UPDATING VALUES =====\n";
-			$request = Request\Create_Intent::create()
+			$request = WC_Payments::create_request( Request\Create_Intent::class )
 				->set_amount( 100 )
 				->set_currency( 'eur' );
 
@@ -106,7 +106,7 @@ class Temp_Request_Examples {
 
 		if ( true ) {
 			echo "===== PROTECTING IMMUTABLE VALUES =====\n";
-			$request = Request\Create_Intent::create()
+			$request = WC_Payments::create_request( Request\Create_Intent::class )
 				->set_amount( 100 )
 				->set_currency( 'eur' );
 
@@ -126,7 +126,7 @@ class Temp_Request_Examples {
 
 		if ( true ) {
 			echo "===== ENSURING INITIALIZED REQUESTS =====\n";
-			$request = Request\Create_Intent::create()
+			$request = WC_Payments::create_request( Request\Create_Intent::class )
 				->set_amount( 100 );
 			try {
 				$request->get_params();
@@ -182,7 +182,7 @@ class Temp_Request_Examples {
 
 		if ( true ) {
 			echo "===== CREATE AND CONFIRM INTENTION REQUEST =====\n";
-			$request = Request\Create_And_Confirm_Intention::create()
+			$request = WC_Payments::create_request( Request\Create_And_Confirm_Intention::class )
 				->set_amount( 300 )
 				->set_currency_code( 'eur' )
 				->set_metadata( [ 'order_number' => 420 ] )
