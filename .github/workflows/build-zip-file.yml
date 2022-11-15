@@ -18,6 +18,12 @@ jobs:
       - name: "Build the plugin"
         id: build_plugin
         uses: ./.github/actions/build
+
+      - name: "Unzip the file (prevents double zip issue)"
+        run: |
+          echo ":information_source: Unzipping the zip file to a folder. This is to prevent a double-zip issue (known limitation: https://github.com/actions/upload-artifact#zipped-artifact-downloads)" >> $GITHUB_STEP_SUMMARY
+          unzip ${{ steps.build_plugin.outputs.release-filename }} -d zipfile
+          echo ":warning: Uploading the folder instead of the built zip. Don't worry about the artefact's size. Check the downloaded zip's size instead." >> $GITHUB_STEP_SUMMARY
       
       - name: "Upload the zip file as an artifact"
         uses: actions/upload-artifact@v3
@@ -25,5 +31,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: "woocommerce-payments"
-          path: ${{ steps.build_plugin.outputs.release-filename }}
+          path: zipfile
           retention-days: 7
