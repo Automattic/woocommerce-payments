@@ -21,7 +21,7 @@ jobs:
 
       - name: "Unzip the file (prevents double zip issue)"
         run: |
-          echo ":information_source: Unzipping the zip file to a folder. This is to prevent a double-zip issue ([known limitation](https://github.com/actions/upload-artifact#zipped-artifact-downloads)). The increase of the artefact's size is expected since we're uploading the folder instead of a zip." >> $GITHUB_STEP_SUMMARY
+          echo ":information_source: Unzipping to a folder to prevent double-zip issue ([known limitation](https://github.com/actions/upload-artifact#zipped-artifact-downloads)). Increase in artifact size is expected since we're uploading the folder." >> $GITHUB_STEP_SUMMARY
           unzip ${{ steps.build_plugin.outputs.release-filename }} -d zipfile
       
       - name: "Upload the zip file as an artifact"
