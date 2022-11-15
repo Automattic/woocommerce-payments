@@ -55,12 +55,27 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Returns if the encryption libraries are loaded and the encrypt method exists.
+	 *
+	 * @return bool
+	 */
+	public static function is_client_secret_encryption_eligible() {
+		return extension_loaded( 'openssl' ) && function_exists( 'openssl_encrypt' );
+	}
+
+	/**
 	 * Checks whether the client secret encryption feature is enabled.
 	 *
 	 * @return  bool
 	 */
 	public static function is_client_secret_encryption_enabled() {
-		return '1' === get_option( '_wcpay_feature_client_secret_encryption', '0' );
+		$enabled = '1' === get_option( '_wcpay_feature_client_secret_encryption', '0' );
+		// Check if it can be enabled when it's enabled, it needs openssl to operate.
+		if ( $enabled && ! self::is_client_secret_encryption_eligible() ) {
+			update_option( '_wcpay_feature_client_secret_encryption', '0' );
+			$enabled = false;
+		}
+		return $enabled;
 	}
 
 	/**
@@ -164,6 +179,7 @@ class WC_Payments_Features {
 				'platformCheckout'        => self::is_platform_checkout_eligible(),
 				'documents'               => self::is_documents_section_enabled(),
 				'customDepositSchedules'  => self::is_custom_deposit_schedules_enabled(),
+				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
 			]
 		);

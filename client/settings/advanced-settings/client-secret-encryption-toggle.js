@@ -31,7 +31,7 @@ const ClientSecretEncryptionToggle = () => {
 	return (
 		<CheckboxControl
 			label={ __(
-				'Enable UPE Public Key Encryption',
+				'Enable Public Key Encryption',
 				'woocommerce-payments'
 			) }
 			help={ __(

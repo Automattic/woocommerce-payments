@@ -25,7 +25,7 @@ describe( 'ClientSecretEncryptionToggle', () => {
 		render( <ClientSecretEncryptionToggle /> );
 
 		expect(
-			screen.queryByLabelText( 'Enable UPE Public Key Encryption' )
+			screen.queryByLabelText( 'Enable Public Key Encryption' )
 		).toBeInTheDocument();
 	} );
 
@@ -41,7 +41,7 @@ describe( 'ClientSecretEncryptionToggle', () => {
 			render( <ClientSecretEncryptionToggle /> );
 
 			const enableClientSecretEncryptionCheckbox = screen.getByLabelText(
-				'Enable UPE Public Key Encryption'
+				'Enable Public Key Encryption'
 			);
 
 			userEvent.click( enableClientSecretEncryptionCheckbox );

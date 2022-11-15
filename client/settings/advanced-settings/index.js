@@ -38,7 +38,9 @@ const AdvancedSettings = () => {
 						<Card>
 							<CardBody>
 								<MultiCurrencyToggle />
-								<ClientSecretEncryptionToggle />
+								{ wcpaySettings.isClientEncryptionEligible && (
+									<ClientSecretEncryptionToggle />
+								) }
 								<WCPaySubscriptionsToggle />
 								<DebugMode />
 							</CardBody>
