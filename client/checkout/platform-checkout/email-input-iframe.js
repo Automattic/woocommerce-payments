@@ -8,10 +8,38 @@ import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 import { buildAjaxURL } from '../../payment-request/utils';
 
-export const handlePlatformCheckoutEmailInput = ( field, api ) => {
+// Waits for the element to exist as in the Blocks checkout, sometimes the field is not immediately available.
+const waitForElement = ( selector ) => {
+	return new Promise( ( resolve ) => {
+		if ( document.querySelector( selector ) ) {
+			return resolve( document.querySelector( selector ) );
+		}
+
+		const checkoutBlock = document.querySelector(
+			'[data-block-name="woocommerce/checkout"]'
+		);
+		const observer = new MutationObserver( ( mutationList, obs ) => {
+			if ( document.querySelector( selector ) ) {
+				resolve( document.querySelector( selector ) );
+				obs.disconnect();
+			}
+		} );
+
+		observer.observe( checkoutBlock, {
+			childList: true,
+			subtree: true,
+		} );
+	} );
+};
+
+export const handlePlatformCheckoutEmailInput = async (
+	field,
+	api,
+	isBlocksCheckout = false
+) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = document.querySelector( field );
+	const platformCheckoutEmailInput = await waitForElement( field );
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
@@ -64,6 +92,14 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	// Maybe we could make this a configurable option defined in PHP so it could be filtered by merchants.
 	const fullScreenModalBreakpoint = 768;
+
+	//Checks if customer has clicked the back button to prevent auto redirect
+	const searchParams = new URLSearchParams( window.location.search );
+	const customerClickedBackButton =
+		( 'undefined' !== typeof performance &&
+			'back_forward' ===
+				performance.getEntriesByType( 'navigation' )[ 0 ].type ) ||
+		'true' === searchParams.get( 'skip_platform_checkout' );
 
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
@@ -190,6 +226,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	// Error message to display when there's an error contacting WooPay.
 	const errorMessage = document.createElement( 'div' );
+	errorMessage.style[ 'white-space' ] = 'normal';
 	errorMessage.textContent = __(
 		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
 		'woocommerce-payments'
@@ -260,11 +297,20 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		closeIframe( false );
 	} );
 
-	document
-		.querySelector( 'form[name="checkout"]' )
-		.addEventListener( 'submit', () => {
+	if ( isBlocksCheckout ) {
+		const formSubmitButton = await waitForElement(
+			'button.wc-block-components-checkout-place-order-button'
+		);
+		formSubmitButton.addEventListener( 'click', () => {
 			abortController.abort();
 		} );
+	} else {
+		document
+			.querySelector( 'form[name="checkout"]' )
+			.addEventListener( 'submit', () => {
+				abortController.abort();
+			} );
+	}
 
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
@@ -447,48 +493,12 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}, 15000 );
 	};
 
-	// Prevent show platform checkout iframe if the page comes from
-	// the back button on platform checkout itself.
-	window.addEventListener( 'pageshow', function ( event ) {
-		// Detect browser back button.
-		const historyTraversal =
-			event.persisted ||
-			( 'undefined' !== typeof performance &&
-				'back_forward' ===
-					performance.getEntriesByType( 'navigation' )[ 0 ].type );
-
-		const searchParams = new URLSearchParams( window.location.search );
-
-		if (
-			! historyTraversal &&
-			'true' !== searchParams.get( 'skip_platform_checkout' )
-		) {
-			// Check if user already has a WooPay login session.
-			if ( ! hasCheckedLoginSession ) {
+	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
+		if ( ! hasCheckedLoginSession && ! customerClickedBackButton ) {
+			if ( customerClickedBackButton ) {
 				openLoginSessionIframe( platformCheckoutEmailInput.value );
 			}
-		} else {
-			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
-			);
 
-			searchParams.delete( 'skip_platform_checkout' );
-
-			let { pathname } = window.location;
-
-			if ( '' !== searchParams.toString() ) {
-				pathname += '?' + searchParams.toString();
-			}
-
-			history.replaceState( null, null, pathname );
-
-			// Safari needs to close iframe with this.
-			closeIframe( false );
-		}
-	} );
-
-	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
-		if ( ! hasCheckedLoginSession ) {
 			return;
 		}
 
@@ -593,4 +603,28 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			// do nothing, only respond to expected actions.
 		}
 	} );
+
+	if ( ! customerClickedBackButton ) {
+		// Check if user already has a WooPay login session.
+		if ( ! hasCheckedLoginSession ) {
+			openLoginSessionIframe( platformCheckoutEmailInput.value );
+		}
+	} else {
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
+		);
+
+		searchParams.delete( 'skip_platform_checkout' );
+
+		let { pathname } = window.location;
+
+		if ( '' !== searchParams.toString() ) {
+			pathname += '?' + searchParams.toString();
+		}
+
+		history.replaceState( null, null, pathname );
+
+		// Safari needs to close iframe with this.
+		closeIframe( false );
+	}
 };

@@ -387,11 +387,11 @@ class WC_Payments {
 		WC_Payments_Explicit_Price_Formatter::init();
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
@@ -1117,6 +1117,7 @@ class WC_Payments {
 				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
+				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
