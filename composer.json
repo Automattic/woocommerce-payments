@@ -29,7 +29,7 @@
       "automattic/jetpack-sync": "1.30.5",
       "automattic/jetpack-tracking": "1.14.5",
       "myclabs/php-enum": "1.7.7",
-      "woocommerce/subscriptions-core": "2.5.1"
+      "woocommerce/subscriptions-core": "2.5.2"
     },
     "require-dev": {
       "composer/installers": "1.10.0",
