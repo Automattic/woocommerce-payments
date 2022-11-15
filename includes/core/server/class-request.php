@@ -10,6 +10,7 @@ namespace WCPay\Core\Server;
 use Exception;
 use WC_Payments_Http_Interface;
 use WC_Payments_API_Client;
+use WCPay\Core\Exceptions\Invalid_Request_Param;
 
 /**
  * Base for requests to the WCPay server.
@@ -408,6 +409,48 @@ abstract class Request {
 		return array_diff_assoc(
 			array_map( $arr_to_json, $array1 ),
 			array_map( $arr_to_json, $array2 )
+		);
+	}
+
+	/**
+	 * Validates Stripe identifiers.
+	 *
+	 * @param  string     $id        The identifier to validate.
+	 * @param  mixed|null $prefixes  A prefix or an array of them (Optional).
+	 * @throws Invalid_Request_Param An exception if the format is not matched.
+	 * @return void
+	 */
+	protected function validate_stripe_id( $id, $prefixes = null ) {
+		if ( is_null( $prefixes ) ) {
+			$prefixes = '[a-z]+';
+		} else {
+			if ( ! is_array( $prefixes ) ) {
+				$prefixes = [ $prefixes ];
+			}
+
+			$prefixes = '('
+				. implode( '|', array_map( 'preg_quote', $prefixes ) )
+				. ')';
+		}
+
+		/**
+		 * IDs include a prefix (a few characters), and are up to 255 characters long.
+		 *
+		 * @see https://stripe.com/docs/upgrades#what-changes-does-stripe-consider-to-be-backwards-compatible
+		 */
+		$regex = "/^{$prefixes}_\w{1,250}$/";
+
+		if ( preg_match( $regex, $id ) ) {
+			return;
+		}
+
+		throw new Invalid_Request_Param(
+			sprintf(
+				// Translators: %s is a Stripe ID.
+				__( '%s is not a valid Stripe identifier', 'woocommerce-payments' ),
+				$id
+			),
+			'invalid_stripe_id'
 		);
 	}
 }

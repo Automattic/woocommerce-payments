@@ -8,7 +8,6 @@
 namespace WCPay\Core\Server\Request;
 
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
-use WC_Payments;
 
 /**
  * Trait for intention helpers.

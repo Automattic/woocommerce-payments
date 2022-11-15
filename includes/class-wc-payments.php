@@ -221,16 +221,6 @@ class WC_Payments {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
-		include_once __DIR__ . '/core/class-mode.php';
-		include_once __DIR__ . '/core/server/class-request.php';
-		include_once __DIR__ . '/core/server/class-response.php';
-		include_once __DIR__ . '/core/server/request/trait-intention.php';
-		include_once __DIR__ . '/core/server/request/trait-level3.php';
-		include_once __DIR__ . '/core/server/request/class-generic.php';
-		include_once __DIR__ . '/core/server/request/class-create-intent.php';
-		include_once __DIR__ . '/core/server/request/class-woopay-create-intent.php';
-		include_once __DIR__ . '/core/server/request/class-create-and-confirm-intention.php';
-		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-intention.php';
 
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
@@ -254,6 +244,17 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-base-exception.php';
 		include_once __DIR__ . '/exceptions/class-api-exception.php';
 		include_once __DIR__ . '/exceptions/class-connection-exception.php';
+		include_once __DIR__ . '/core/class-mode.php';
+		include_once __DIR__ . '/core/exceptions/class-invalid-request-param.php';
+		include_once __DIR__ . '/core/server/class-request.php';
+		include_once __DIR__ . '/core/server/class-response.php';
+		include_once __DIR__ . '/core/server/request/trait-intention.php';
+		include_once __DIR__ . '/core/server/request/trait-level3.php';
+		include_once __DIR__ . '/core/server/request/class-generic.php';
+		include_once __DIR__ . '/core/server/request/class-create-intent.php';
+		include_once __DIR__ . '/core/server/request/class-woopay-create-intent.php';
+		include_once __DIR__ . '/core/server/request/class-create-and-confirm-intention.php';
+		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-intention.php';
 
 		self::$api_client = self::create_api_client();
 

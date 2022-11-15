@@ -10,8 +10,11 @@ use WCPay\Core\Server\Request;
 
 class Temp_Request_Examples {
 	public function __construct() {
-		// add_action( 'template_redirect', [ $this, 'example' ] );
-		// add_filter( 'wc_payments_http', [ $this, 'mock_http_class' ] );
+		if ( isset( $_GET['show_basic_examples'] ) ) {
+			add_action( 'template_redirect', [ $this, 'example' ] );
+			add_filter( 'wc_payments_http', [ $this, 'mock_http_class' ] );
+		}
+
 		add_filter( 'wcpay_create_and_confirm_intention_request', [ $this, 'woopay_intention_request'], 10, 3 );
 	}
 
@@ -42,7 +45,9 @@ class Temp_Request_Examples {
 	}
 
 	public function example() {
-		if ( true ) {
+		echo "<pre>\n";
+
+		if ( false ) {
 			echo "===== CREATE INTENT REQUEST =====\n";
 			$request = WC_Payments::create_request( Request\Create_Intent::class )
 				->set_amount( 100 )
@@ -50,7 +55,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			// Make sure extending the request does not work outside of `apply_filters`.
 			echo "===== EXTEND WITHOUT FILTERS =====\n";
 			$request = WC_Payments::create_request( Request\Create_Intent::class )
@@ -62,7 +67,7 @@ class Temp_Request_Examples {
 			}
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== EXTEND TEMPLATE =====\n";
 
 			$callback = function ( Request\Create_Intent $base_request ): Request\WooPay_Create_Intent {
@@ -83,7 +88,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== UPDATING VALUES =====\n";
 			$request = WC_Payments::create_request( Request\Create_Intent::class )
 				->set_amount( 100 )
@@ -104,7 +109,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== PROTECTING IMMUTABLE VALUES =====\n";
 			$request = WC_Payments::create_request( Request\Create_Intent::class )
 				->set_amount( 100 )
@@ -124,7 +129,7 @@ class Temp_Request_Examples {
 			remove_filter( 'wcpay_create_intent_request', $callback );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== ENSURING INITIALIZED REQUESTS =====\n";
 			$request = WC_Payments::create_request( Request\Create_Intent::class )
 				->set_amount( 100 );
@@ -135,7 +140,7 @@ class Temp_Request_Examples {
 			}
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== GENERIC GET REQUEST =====\n";
 			// ToDo: Make sure IDs are properly set somehow.
 			$request = new Request\Generic( WC_Payments_API_Client::PAYMENT_METHODS_API . '/pm_abc123', REQUESTS::GET );
@@ -143,7 +148,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== GENERIC POST REQUEST =====\n";
 			$request = new Request\Generic(
 				WC_Payments_API_Client::CUSTOMERS_API,
@@ -157,7 +162,7 @@ class Temp_Request_Examples {
 			$this->dump_request( $request );
 		}
 
-		if ( true ) {
+		if ( false ) {
 			echo "===== GENERIC POST REQUEST MODIFICATIONS =====\n";
 			$request = new Request\Generic(
 				WC_Payments_API_Client::CUSTOMERS_API,
