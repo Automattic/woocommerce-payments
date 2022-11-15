@@ -69,6 +69,18 @@ function wcs_create_renewal_order( $subscription ) {
 	return ( WC_Subscriptions::$wcs_create_renewal_order )( $subscription );
 }
 
+function wcs_get_subscription_statuses() {
+	return [
+		'wc-pending'        => 'Pending',
+		'wc-active'         => 'Active',
+		'wc-on-hold'        => 'On hold',
+		'wc-cancelled'      => 'Cancelled',
+		'wc-switched'       => 'Switched',
+		'wc-expired'        => 'Expired',
+		'wc-pending-cancel' => 'Pending Cancellation',
+	];
+}
+
 /**
  * Class WC_Subscriptions.
  *
