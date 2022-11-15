@@ -7,6 +7,7 @@
 
 namespace WCPay\Core\Server\Request;
 
+use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Exceptions\Server_Response_Exception;
 use WCPay\Core\Server\Request;
 use Requests;
@@ -51,14 +52,14 @@ final class Generic extends Request {
 	/**
 	 * Instantiates the request object.
 	 *
-	 * @param  string $api        The API to use. See WCPay\Core\Server\APIs.
-	 * @param  string $method     The request method. See the `Requests` class.
-	 * @param  array  $parameters The parameters for the request.
-	 * @throws \Exception         An exception if there are invalid properties.
+	 * @param  string $api                                 The API to use. See WCPay\Core\Server\APIs.
+	 * @param  string $method                              The request method. See the `Requests` class.
+	 * @param  array  $parameters                          The parameters for the request.
+	 * @throws Invalid_Request_Parameter_Exception         An exception if there are invalid properties.
 	 */
 	public function __construct( string $api, string $method, array $parameters = null ) {
 		if ( ! defined( 'Requests::' . $method ) ) {
-			throw new \Exception( 'Invalid generic request method' );
+			throw new Invalid_Request_Parameter_Exception( 'Invalid generic request method', 'wcpay_core_invalid_request_parameter_method_not_defined' );
 		}
 
 		$this->api    = $api;
