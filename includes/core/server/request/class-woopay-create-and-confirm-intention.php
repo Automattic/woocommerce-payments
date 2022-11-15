@@ -37,4 +37,5 @@ class WooPay_Create_And_Confirm_Intention extends Create_And_Confirm_Intention {
 		$this->set_param( 'woopay_has_subscription', $has );
 		return $this;
 	}
+
 }

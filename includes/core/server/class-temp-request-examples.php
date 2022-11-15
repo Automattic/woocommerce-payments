@@ -6,6 +6,7 @@
  */
 
 // phpcs:disable
+use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 
 class Temp_Request_Examples {
@@ -25,17 +26,29 @@ class Temp_Request_Examples {
 	 * @param WC_Order                             $order          The order which needs payment.
 	 * @param bool                                 $is_platform_pm A pre-calculated flag.
 	 * @return Request\WooPay_Create_And_Confirm_Intention
+	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function woopay_intention_request( Request\Create_And_Confirm_Intention $base_request, $order, $is_platform_pm ) {
+	public function woopay_intention_request( Request\Create_And_Confirm_Intention $base_request, $is_using_saved_payment_method, $used_stripe_on_checkout ) {
 		$request = Request\WooPay_Create_And_Confirm_Intention::extend( $base_request );
 
+		$is_platform_payment_method = ! $is_using_saved_payment_method &&
+		                              $used_stripe_on_checkout &&
+		                              // This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
+		                              ! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
+		                              filter_var( $_POST['wcpay-is-platform-payment-method'], FILTER_VALIDATE_BOOLEAN );
 		// This meta is only set by WooPay.
 		// We want to handle the intention creation differently when there are subscriptions.
 		// We're using simple products on WooPay so the current logic for WCPay subscriptions won't work there.
-		$woopay_has_subscription = '1' === $order->get_meta( '_woopay_has_subscription' );
+		$order = $request->get_param( 'order' );
 
-		$request->set_is_platform_payment_method( $is_platform_pm );
-		$request->set_has_woopay_subscription( $woopay_has_subscription );
+		if ( ! $order instanceof  WC_Order) {
+			throw new Invalid_Request_Parameter_Exception(
+				'Invalid order passed',
+				'wcpay_core_invalid_request_parameter_order'
+			);
+		}
+		$request->set_has_woopay_subscription( '1' === $order->get_meta( '_woopay_has_subscription' ) );
+		$request->set_is_platform_payment_method( $is_platform_payment_method );
 
 		return $request;
 	}

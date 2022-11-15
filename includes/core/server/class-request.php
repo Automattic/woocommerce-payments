@@ -43,7 +43,7 @@ abstract class Request {
 	/**
 	 * Holds the parameters of the request.
 	 *
-	 * @var mixed[]
+	 * @var []
 	 */
 	private $params = [];
 
@@ -162,6 +162,21 @@ abstract class Request {
 		}
 
 		return $params;
+	}
+
+	/**
+	 * Get request param by key.
+	 *
+	 * @param string $key Key to get.
+	 *
+	 * @return mixed
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	final public function get_param( $key ) {
+		if ( array_key_exists( $key, $this->params ) ) {
+			return $this->params['key'];
+		}
+		throw new Invalid_Request_Parameter_Exception( 'The passed key does not exist in Request class', 'wcpay_core_invalid_request_parameter_uninitialized_param' );
 	}
 
 	/**
@@ -461,6 +476,24 @@ abstract class Request {
 				$id
 			),
 			'wcpay_core_invalid_request_parameter_stripe_id'
+		);
+	}
+
+	/**
+	 * Validatesis valid order.
+	 *
+	 * @param  \WC_Order $order Order object to validate.
+	 * @throws Invalid_Request_Parameter_Exception An exception if the format is not matched.
+	 * @return void
+	 */
+	protected function validate_order( $order ) {
+		if ( $order instanceof \WC_Order ) {
+			return;
+		}
+
+		throw new Invalid_Request_Parameter_Exception(
+			'Invalid order passed',
+			'wcpay_core_invalid_request_parameter_order'
 		);
 	}
 }

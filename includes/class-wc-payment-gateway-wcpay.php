@@ -972,12 +972,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// This is temporary, those method calls can now be in the right place instead of being stored as variables.
 				$request = WC_Payments::create_request( \WCPay\Core\Server\Request\Create_And_Confirm_Intention::class )
 					->set_amount( $converted_amount )
+					->set_order( $order )
 					->set_currency_code( $currency )
 					->set_payment_method( $payment_information->get_payment_method() )
 					->set_customer( $customer_id )
 					->set_capture_method( $payment_information->is_using_manual_capture() )
 					->set_metadata( $metadata )
-					->set_level3( $this->get_level3_data_from_order( $order ) )
+					->set_level3( $this->get_level3_data_from_order( $order ) ) // Could be moved to class since we have order now.
 					->set_off_session( $payment_information->is_merchant_initiated() )
 					->set_payment_methods( $payment_methods )
 					->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
@@ -985,11 +986,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $save_payment_method_to_store ) {
 					$request->setup_future_usage();
 				}
-
-				// This method requires `is_platform_payment_method`, which should be moved out of this class as well.
-				$is_platform_payment_method = $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() );
-
-				$intent = $request->send( 'wcpay_create_and_confirm_intention_request', $order, $is_platform_payment_method );
+				$intent = $request->send( 'wcpay_create_and_confirm_intention_request', $payment_information->is_using_saved_payment_method(), $this->should_use_stripe_platform_on_checkout_page() );
 			}
 
 			$intent_id     = $intent->get_id();

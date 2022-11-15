@@ -67,6 +67,17 @@ class Create_And_Confirm_Intention extends Request {
 	}
 
 	/**
+	 * Order setter.
+	 *
+	 * @param  \WC_Order $order Order to set.
+	 * @return static      Instance of the class for method chaining.
+	 */
+	public function set_order( $order ) {
+		$this->validate_order( $order );
+		return $this->set_param( 'order', $order );
+	}
+
+	/**
 	 * Currency code setter.
 	 *
 	 * @param  string $currency_code Currency to charge in.
