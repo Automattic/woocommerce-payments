@@ -247,7 +247,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/class-mode.php';
 
 		// Include core exceptions.
-		include_once __DIR__ . '/core/exceptions/class-invalid-request-param.php';
+		include_once __DIR__ . '/core/exceptions/class-invalid-request-parameter-exception.php';
 		include_once __DIR__ . '/core/exceptions/class-immutable-parameter-exception.php';
 
 		include_once __DIR__ . '/core/server/class-request.php';

@@ -11,7 +11,7 @@ use Exception;
 use WC_Payments_Http_Interface;
 use WC_Payments_API_Client;
 use WCPay\Core\Exceptions\Immutable_Parameter_Exception;
-use WCPay\Core\Exceptions\Invalid_Request_Param;
+use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
 
 /**
  * Base for requests to the WCPay server.
@@ -419,7 +419,7 @@ abstract class Request {
 	 *
 	 * @param  string     $id        The identifier to validate.
 	 * @param  mixed|null $prefixes  A prefix or an array of them (Optional).
-	 * @throws Invalid_Request_Param An exception if the format is not matched.
+	 * @throws Invalid_Request_Parameter_Exception An exception if the format is not matched.
 	 * @return void
 	 */
 	protected function validate_stripe_id( $id, $prefixes = null ) {
@@ -446,13 +446,13 @@ abstract class Request {
 			return;
 		}
 
-		throw new Invalid_Request_Param(
+		throw new Invalid_Request_Parameter_Exception(
 			sprintf(
 				// Translators: %s is a Stripe ID.
 				__( '%s is not a valid Stripe identifier', 'woocommerce-payments' ),
 				$id
 			),
-			'invalid_stripe_id'
+			'wcpay_core_invalid_request_parameter_stripe_id'
 		);
 	}
 }

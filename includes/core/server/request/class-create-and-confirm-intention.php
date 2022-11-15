@@ -9,8 +9,8 @@ namespace WCPay\Core\Server\Request;
 
 use Exception;
 use WC_Payments;
+use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
-use WCPay\Core\Exceptions\Invalid_Request_Param;
 use WC_Payments_API_Client;
 
 /**
@@ -71,19 +71,19 @@ class Create_And_Confirm_Intention extends Request {
 	 *
 	 * @param  string $currency_code Currency to charge in.
 	 * @return static                Instance of the class for method chaining.
-	 * @throws Invalid_Request_Param When the currency code is invalid.
+	 * @throws Invalid_Request_Parameter_Exception When the currency code is invalid.
 	 */
 	public function set_currency_code( string $currency_code ) {
 		// No checks needed, account data should not be empty when creating intents.
 		$account_data = WC_Payments::get_account_service()->get_cached_account_data();
 		if ( ! in_array( $currency_code, $account_data['customer_currencies']['supported'], true ) ) {
-			throw new Invalid_Request_Param(
+			throw new Invalid_Request_Parameter_Exception(
 				sprintf(
 					// Translators: %s is a currency code.
 					__( '%s is not a supported currency for payments.', 'woocommerce-payments' ),
 					$currency_code
 				),
-				'currency_not_available'
+				'wcpay_core_invalid_request_parameter_currency_not_available'
 			);
 		}
 
@@ -134,15 +134,15 @@ class Create_And_Confirm_Intention extends Request {
 	/**
 	 * Metadata setter.
 	 *
-	 * @param  array $metadata       Meta data values to be sent along with payment intent creation.
-	 * @return static                Instance of the class for method chaining.
-	 * @throws Invalid_Request_Param In case there is no order number provided.
+	 * @param  array $metadata                     Meta data values to be sent along with payment intent creation.
+	 * @return static                              Instance of the class for method chaining.
+	 * @throws Invalid_Request_Parameter_Exception In case there is no order number provided.
 	 */
 	public function set_metadata( $metadata ) {
 		if ( ! isset( $metadata['order_number'] ) ) {
-			throw new Invalid_Request_Param(
+			throw new Invalid_Request_Parameter_Exception(
 				__( 'An order number is required!', 'woocommerce-payments' ),
-				'missing_metadata_order_number'
+				'wcpay_core_invalid_request_parameter_metadata_order_number'
 			);
 		}
 
@@ -189,16 +189,16 @@ class Create_And_Confirm_Intention extends Request {
 	/**
 	 * Payment methods setter.
 	 *
-	 * @param  array $payment_methods An array of payment methods that might be used for the payment.
-	 * @return static                 Instance of the class for method chaining.
-	 * @throws Invalid_Request_Param  When there are no payment methods provided.
+	 * @param  array $payment_methods               An array of payment methods that might be used for the payment.
+	 * @return static                               Instance of the class for method chaining.
+	 * @throws Invalid_Request_Parameter_Exception  When there are no payment methods provided.
 	 */
 	public function set_payment_methods( array $payment_methods ) {
 		// Hard to validate without hardcoding a list here.
 		if ( empty( $payment_methods ) ) {
-			throw new Invalid_Request_Param(
+			throw new Invalid_Request_Parameter_Exception(
 				__( 'Intentions require at least one payment method', 'woocommerce-payments' ),
-				'missing_payment_method_types'
+				'wcpay_core_invalid_request_parameter_missing_payment_method_types'
 			);
 		}
 
