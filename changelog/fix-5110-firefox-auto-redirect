@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed bug that would not allow customers using firefox to log in to WooPay sometimes
