@@ -232,7 +232,7 @@ export const handlePlatformCheckoutEmailInput = async (
 		'woocommerce-payments'
 	);
 
-	const closeIframe = ( focus = true ) => {
+	const closeLoginIframe = ( focus = true ) => {
 		window.removeEventListener( 'resize', getWindowSize );
 		window.removeEventListener( 'resize', setPopoverPosition );
 
@@ -246,11 +246,11 @@ export const handlePlatformCheckoutEmailInput = async (
 		document.body.style.overflow = '';
 	};
 
-	iframeWrapper.addEventListener( 'click', closeIframe );
+	iframeWrapper.addEventListener( 'click', closeLoginIframe );
 
-	const openIframe = ( email ) => {
+	const openLoginIframe = () => {
 		const urlParams = new URLSearchParams();
-		urlParams.append( 'email', email );
+		urlParams.append( 'email', platformCheckoutEmailInput.value );
 		urlParams.append(
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
@@ -278,7 +278,7 @@ export const handlePlatformCheckoutEmailInput = async (
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
-		if ( 'Escape' === event.key && closeIframe() ) {
+		if ( 'Escape' === event.key && closeLoginIframe() ) {
 			event.stopPropagation();
 		}
 	} );
@@ -289,13 +289,22 @@ export const handlePlatformCheckoutEmailInput = async (
 
 	// Cancel platform checkout request and close iframe
 	// when user clicks Place Order before it loads.
-	const abortController = new AbortController();
-	const { signal } = abortController;
+	let abortController = new AbortController();
+	let { signal } = abortController;
 
-	signal.addEventListener( 'abort', () => {
+	const onSignalAbort = () => {
 		spinner.remove();
-		closeIframe( false );
-	} );
+		closeLoginIframe( false );
+
+		signal.removeEventListener( 'abort', onSignalAbort );
+
+		abortController = new AbortController();
+		signal = abortController.signal;
+
+		signal.addEventListener( 'abort', onSignalAbort );
+	};
+
+	signal.addEventListener( 'abort', onSignalAbort );
 
 	if ( isBlocksCheckout ) {
 		const formSubmitButton = await waitForElement(
@@ -311,6 +320,40 @@ export const handlePlatformCheckoutEmailInput = async (
 				abortController.abort();
 			} );
 	}
+
+	const closeRedirectIframe = () => {
+		loginSessionIframeWrapper.remove();
+		loginSessionIframe.classList.remove( 'open' );
+		platformCheckoutEmailInput.focus();
+	};
+
+	const openRedirectIframe = () => {
+		const email = platformCheckoutEmailInput.value;
+		const emailParam = new URLSearchParams();
+
+		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
+		emailParam.append( 'email', email );
+		emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
+
+		loginSessionIframe.src = `${ getConfig(
+			'platformCheckoutHost'
+		) }/login-session?${ emailParam.toString() }`;
+
+		// Insert the wrapper into the DOM.
+		parentDiv.insertBefore( loginSessionIframeWrapper, null );
+
+		// Focus the iframe.
+		loginSessionIframe.focus();
+
+		// fallback to close the login session iframe in case failed to receive event
+		// via postMessage.
+		setTimeout( () => {
+			if ( ! hasCheckedLoginSession ) {
+				closeRedirectIframe();
+				openLoginIframe();
+			}
+		}, 15000 );
+	};
 
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
@@ -424,11 +467,14 @@ export const handlePlatformCheckoutEmailInput = async (
 				window.dispatchEvent( PlatformCheckoutUserCheckEvent );
 
 				if ( data[ 'user-exists' ] ) {
-					openIframe( email );
+					if ( ! hasCheckedLoginSession ) {
+						openRedirectIframe();
+					}
 				} else if ( 'rest_invalid_param' !== data.code ) {
 					wcpayTracks.recordUserEvent(
 						wcpayTracks.events.PLATFORM_CHECKOUT_OFFERED
 					);
+					spinner.remove();
 				}
 			} )
 			.catch( ( err ) => {
@@ -438,8 +484,6 @@ export const handlePlatformCheckoutEmailInput = async (
 				if ( 'AbortError' !== err.name ) {
 					showErrorMessage();
 				}
-			} )
-			.finally( () => {
 				spinner.remove();
 			} );
 	};
@@ -454,53 +498,10 @@ export const handlePlatformCheckoutEmailInput = async (
 		return pattern.test( value );
 	};
 
-	const closeLoginSessionIframe = () => {
-		loginSessionIframeWrapper.remove();
-		loginSessionIframe.classList.remove( 'open' );
-		platformCheckoutEmailInput.focus();
-
-		// Check the initial value of the email input and trigger input validation.
-		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
-			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
-		}
-	};
-
-	const openLoginSessionIframe = ( email ) => {
-		const emailParam = new URLSearchParams();
-
-		if ( validateEmail( email ) ) {
-			parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
-			emailParam.append( 'email', email );
-			emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
-		}
-
-		loginSessionIframe.src = `${ getConfig(
-			'platformCheckoutHost'
-		) }/login-session?${ emailParam.toString() }`;
-
-		// Insert the wrapper into the DOM.
-		parentDiv.insertBefore( loginSessionIframeWrapper, null );
-
-		// Focus the iframe.
-		loginSessionIframe.focus();
-
-		// fallback to close the login session iframe in case failed to receive event
-		// via postMessage.
-		setTimeout( () => {
-			if ( ! hasCheckedLoginSession ) {
-				closeLoginSessionIframe();
-			}
-		}, 15000 );
-	};
-
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
-		if ( ! hasCheckedLoginSession && ! customerClickedBackButton ) {
-			if ( customerClickedBackButton ) {
-				openLoginSessionIframe( platformCheckoutEmailInput.value );
-			}
-
-			return;
-		}
+		abortController.abort();
+		closeLoginIframe();
+		closeRedirectIframe();
 
 		const email = e.currentTarget.value;
 
@@ -537,13 +538,15 @@ export const handlePlatformCheckoutEmailInput = async (
 						spinner.remove();
 						window.location = response.url;
 					} else {
-						closeLoginSessionIframe();
+						closeRedirectIframe();
+						openLoginIframe();
 					}
 				} );
 				break;
 			case 'close_auto_redirection_modal':
 				hasCheckedLoginSession = true;
-				closeLoginSessionIframe();
+				closeRedirectIframe();
+				openLoginIframe();
 				break;
 			case 'redirect_to_platform_checkout':
 				wcpayTracks.recordUserEvent(
@@ -557,7 +560,7 @@ export const handlePlatformCheckoutEmailInput = async (
 						window.location = response.url;
 					} else {
 						showErrorMessage();
-						closeIframe( false );
+						closeLoginIframe( false );
 					}
 				} );
 				break;
@@ -567,7 +570,7 @@ export const handlePlatformCheckoutEmailInput = async (
 				);
 				break;
 			case 'close_modal':
-				closeIframe();
+				closeLoginIframe();
 				break;
 			case 'iframe_height':
 				if ( 300 < e.data.height ) {
@@ -607,14 +610,16 @@ export const handlePlatformCheckoutEmailInput = async (
 	window.addEventListener( 'pageshow', function ( event ) {
 		if ( event.persisted ) {
 			// Safari needs to close iframe with this.
-			closeIframe( false );
+			closeRedirectIframe();
 		}
 	} );
 
 	if ( ! customerClickedBackButton ) {
-		// Check if user already has a WooPay login session.
-		if ( ! hasCheckedLoginSession ) {
-			openLoginSessionIframe( platformCheckoutEmailInput.value );
+		if (
+			! hasCheckedLoginSession &&
+			validateEmail( platformCheckoutEmailInput.value )
+		) {
+			platformCheckoutLocateUser( platformCheckoutEmailInput.value );
 		}
 	} else {
 		wcpayTracks.recordUserEvent(
@@ -632,6 +637,6 @@ export const handlePlatformCheckoutEmailInput = async (
 		history.replaceState( null, null, pathname );
 
 		// Safari needs to close iframe with this.
-		closeIframe( false );
+		closeLoginIframe( false );
 	}
 };
