@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { useEffect, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import confirmCardPayment from './confirm-card-payment.js';
+import { getFingerprint } from '../utils/fingerprint.js';
 
 export const usePaymentCompleteHandler = (
 	api,
@@ -40,26 +40,15 @@ export const useFingerprint = () => {
 	const [ error, setError ] = useState( null );
 
 	useEffect( () => {
-		const getFingerprint = async () => {
+		( async () => {
 			try {
-				const fingerprintPublicAgent = await FingerprintJS.load( {
-					monitoring: false,
-				} );
-
-				// Do not mount element if fingerprinting is not available
-				if ( ! fingerprintPublicAgent ) {
-					throw new Error( 'Unable to generate a fingerprint' );
-				}
-
-				const { visitorId } = await fingerprintPublicAgent.get();
+				const { visitorId } = await getFingerprint();
 				setFingerprint( visitorId );
 			} catch ( err ) {
 				console.log( { err } );
 				setError( err );
 			}
-		};
-
-		getFingerprint();
+		} )();
 	}, [] );
 
 	return [ fingerprint, error ];

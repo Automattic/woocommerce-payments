@@ -1,11 +1,6 @@
 /* global jQuery */
 
 /**
- * External dependencies
- */
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
-
-/**
  * Internal dependencies
  */
 import './style.scss';
@@ -21,6 +16,7 @@ import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-inp
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { isWCPayChosen } from '../utils/upe';
+import { getFingerprint } from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -191,14 +187,8 @@ jQuery( function ( $ ) {
 			cardElement.unmount();
 
 			try {
-				const fingerprintPublicAgent = await FingerprintJS.load( {
-					monitoring: false,
-				} );
-
-				if ( fingerprintPublicAgent ) {
-					const { visitorId } = await fingerprintPublicAgent.get();
-					$( '#wcpay-fingerprint' ).val( visitorId );
-				}
+				const { visitorId } = await getFingerprint();
+				$( '#wcpay-fingerprint' ).val( visitorId );
 			} catch ( error ) {
 				// Do not mount element if fingerprinting is not available
 				return;

@@ -1,11 +1,6 @@
 /* global jQuery */
 
 /**
- * External dependencies
- */
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
-
-/**
  * Internal dependencies
  */
 import './style.scss';
@@ -22,6 +17,7 @@ import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
+import { getFingerprint } from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -186,14 +182,8 @@ jQuery( function ( $ ) {
 
 		if ( ! fingerprint ) {
 			try {
-				const fingerprintPublicAgent = await FingerprintJS.load( {
-					monitoring: false,
-				} );
-
-				if ( fingerprintPublicAgent ) {
-					const { visitorId } = await fingerprintPublicAgent.get();
-					fingerprint = visitorId;
-				}
+				const { visitorId } = await getFingerprint();
+				fingerprint = visitorId;
 			} catch ( error ) {
 				// Do not mount element if fingerprinting is not available
 				return;
