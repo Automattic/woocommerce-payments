@@ -14,6 +14,7 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from '@wordpress/element';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 /**
  * Internal dependencies
@@ -77,6 +78,7 @@ const WCPayUPEFields = ( {
 		''
 	);
 	const [ paymentCountry, setPaymentCountry ] = useState( null );
+	const [ fingerprint, setFingerprint ] = useState( '' );
 
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const testMode = getConfig( 'testMode' );
@@ -89,6 +91,28 @@ const WCPayUPEFields = ( {
 
 	const gatewayConfig = getPaymentMethods()[ PAYMENT_METHOD_NAME_CARD ];
 	const customerData = useCustomerData();
+
+	useEffect( () => {
+		const generateFingerprint = async () => {
+			try {
+				const fingerprintPublicAgent = await FingerprintJS.load( {
+					monitoring: false,
+				} );
+
+				// Do not mount element if fingerprinting is not available
+				if ( ! fingerprintPublicAgent ) {
+					throw new Error( 'Unable to generate a fingerprint' );
+				}
+
+				const { visitorId } = await fingerprintPublicAgent.get();
+				setFingerprint( visitorId );
+			} catch ( error ) {
+				console.log( { error } );
+			}
+		};
+
+		generateFingerprint();
+	}, [] );
 
 	useEffect( () => {
 		if (
@@ -244,6 +268,7 @@ const WCPayUPEFields = ( {
 							wcpay_selected_upe_payment_type: selectedUPEPaymentType,
 							'wcpay-fraud-prevention-token':
 								fraudPreventionToken ?? '',
+							'wcpay-fingerprint': fingerprint,
 						},
 					},
 				};
@@ -269,7 +294,8 @@ const WCPayUPEFields = ( {
 							orderId,
 							shouldSavePayment ? 'yes' : 'no',
 							selectedUPEPaymentType,
-							paymentCountry
+							paymentCountry,
+							fingerprint
 						);
 
 						return confirmUPEPayment(

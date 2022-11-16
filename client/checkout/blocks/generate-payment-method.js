@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
+
+/**
  * Internal dependencies
  */
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
@@ -12,6 +17,7 @@ import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
  * @return {Object} The `onPaymentProcessing` response object, including a type and meta data/error message.
  */
 const generatePaymentMethod = async ( api, elements, billingData ) => {
+	let fingerprint = '';
 	const request = api.generatePaymentMethodRequest( elements );
 
 	request.setBillingDetail(
@@ -36,6 +42,22 @@ const generatePaymentMethod = async ( api, elements, billingData ) => {
 			.querySelector( '#wcpay-fraud-prevention-token' )
 			?.getAttribute( 'value' );
 
+		try {
+			const fingerprintPublicAgent = await FingerprintJS.load( {
+				monitoring: false,
+			} );
+
+			// Do not mount element if fingerprinting is not available
+			if ( ! fingerprintPublicAgent ) {
+				throw new Error( 'Unable to generate a fingerprint' );
+			}
+
+			const { visitorId } = await fingerprintPublicAgent.get();
+			fingerprint = visitorId;
+		} catch ( error ) {
+			console.log( { error } );
+		}
+
 		return {
 			type: 'success',
 			meta: {
@@ -43,6 +65,7 @@ const generatePaymentMethod = async ( api, elements, billingData ) => {
 					paymentMethod: PAYMENT_METHOD_NAME_CARD,
 					'wcpay-payment-method': id,
 					'wcpay-fraud-prevention-token': fraudPreventionToken ?? '',
+					'wcpay-fingerprint': fingerprint,
 				},
 			},
 		};
