@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed bug that would redirect customers not logged in the merchant store to WooPay
