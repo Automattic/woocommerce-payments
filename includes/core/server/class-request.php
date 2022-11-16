@@ -155,9 +155,9 @@ abstract class Request {
 		}
 
 		foreach ( $params as $key => $value ) {
-			if ( is_bool( $value ) ) {
+			if ( true === $value ) {
 				// The WCPay server requires the string 'true'.
-				$params[ $key ] = $value ? 'true' : false;
+				$params[ $key ] = 'true';
 			}
 		}
 
@@ -174,7 +174,7 @@ abstract class Request {
 	 */
 	final public function get_param( $key ) {
 		if ( array_key_exists( $key, $this->params ) ) {
-			return $this->params['key'];
+			return $this->params[ $key ];
 		}
 		throw new Invalid_Request_Parameter_Exception( 'The passed key does not exist in Request class', 'wcpay_core_invalid_request_parameter_uninitialized_param' );
 	}
@@ -487,7 +487,7 @@ abstract class Request {
 	 * @return void
 	 */
 	protected function validate_order( $order ) {
-		if ( $order instanceof \WC_Order ) {
+		if ( is_a( $order, \WC_Order::class ) ) {
 			return;
 		}
 

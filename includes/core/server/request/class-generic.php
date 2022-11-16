@@ -8,7 +8,7 @@
 namespace WCPay\Core\Server\Request;
 
 use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
-use WCPay\Core\Exceptions\Server_Response_Exception;
+use WCPay\Core\Exceptions\Server_Request_Exception;
 use WCPay\Core\Server\Request;
 use Requests;
 
@@ -43,10 +43,10 @@ final class Generic extends Request {
 	/**
 	 * Creates a new instance of the class.
 	 *
-	 * @throws Server_Response_Exception
+	 * @throws Server_Request_Exception
 	 */
 	public static function create() {
-		throw new Server_Response_Exception( 'Server responses cannot be mutated.', 'wcpay_core_server_response_invalid_function' );
+		throw new Server_Request_Exception( 'You cannot create request this way.', 'wcpay_core_server_request_invalid_method_call' );
 	}
 
 	/**
