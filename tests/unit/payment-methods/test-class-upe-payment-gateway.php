@@ -269,6 +269,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						'get_upe_enabled_payment_method_statuses',
 						'is_payment_recurring',
 						'get_payment_method_ids_enabled_at_checkout',
+						'wc_payments_get_payment_gateway_by_id',
 					]
 				)
 				->getMock();
@@ -297,17 +298,21 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_payment_fields_outputs_fields() {
-		new WC_Payments_UPE_Checkout(
-			$this->mock_payment_gateways['card'],
-			$this->mock_platform_checkout_utilities,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_payment_gateways
-		);
 		foreach ( $this->mock_payment_gateways as $payment_method_id => $mock_payment_gateway ) {
+			new WC_Payments_UPE_Checkout(
+				$mock_payment_gateway,
+				$this->mock_platform_checkout_utilities,
+				$this->mock_wcpay_account,
+				$this->mock_customer_service
+			);
+
 			$mock_payment_gateway
 				->method( 'get_payment_method_ids_enabled_at_checkout' )
 				->willReturn( [] );
+
+			$mock_payment_gateway
+				->method( 'wc_payments_get_payment_gateway_by_id' )
+				->willReturn( $mock_payment_gateway );
 
 			/**
 			* This tests each payment method output separately without concatenating the output
@@ -1538,8 +1543,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$mock_upe_gateway,
 			$this->mock_platform_checkout_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			[]
+			$this->mock_customer_service
 		);
 
 		$this->assertSame( $upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'], [] );
@@ -1599,8 +1603,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$mock_upe_gateway,
 			$this->mock_platform_checkout_utilities,
 			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			[]
+			$this->mock_customer_service
 		);
 
 		$this->assertSame(

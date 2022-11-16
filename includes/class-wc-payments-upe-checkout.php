@@ -281,7 +281,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 */
 	public function set_gateway( $payment_method_id ) {
 		if ( null !== $payment_method_id ) {
-			$this->gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			$this->gateway = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 		}
 	}
 
