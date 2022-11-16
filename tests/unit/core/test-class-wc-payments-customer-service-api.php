@@ -15,7 +15,6 @@ use WCPay\Exceptions\API_Exception;
 class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 
 	const CUSTOMER_LIVE_META_KEY = '_wcpay_customer_id_live';
-	const CUSTOMER_TEST_META_KEY = '_wcpay_customer_id_test';
 
 	/**
 	 * System under test.
@@ -37,6 +36,14 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_http_client;
 
+	/**
+	 * Filter callback to return the mock http client
+	 *
+	 * @return void
+	 */
+	public function replace_http_client() {
+		return $this->mock_http_client;
+	}
 
 	/**
 	 * Pre-test setup
@@ -51,9 +58,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 			->getMock();
 		add_filter(
 			'wc_payments_http',
-			function() {
-				return $this->mock_http_client;
-			}
+			[ $this, 'replace_http_client' ]
 		);
 		$this->customer_service     = new WC_Payments_Customer_Service( WC_Payments::create_api_client(), WC_Payments::get_account_service(), WC_Payments::get_database_cache() );
 		$this->customer_service_api = new WC_Payments_Customer_Service_API( $this->customer_service );
@@ -65,6 +70,10 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	 */
 	public function tear_down() {
 		parent::tear_down();
+		remove_filter(
+			'wc_payments_http',
+			[ $this, 'replace_http_client' ]
+		);
 	}
 
 	/**
