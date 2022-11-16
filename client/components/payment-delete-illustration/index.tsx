@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import Gridicon from 'gridicons';
+import CrossCircleIcon from 'gridicons/dist/cross-circle';
 import classNames from 'classnames';
 
 /**
@@ -26,10 +26,7 @@ const PaymentDeleteIllustration: React.FunctionComponent< {
 						}
 					) }
 				/>
-				<Gridicon
-					icon="cross-circle"
-					className="payment-delete-illustration__payment-cross-icon"
-				/>
+				<CrossCircleIcon className="payment-delete-illustration__payment-cross-icon" />
 			</div>
 		</div>
 	);

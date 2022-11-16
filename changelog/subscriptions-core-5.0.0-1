@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Replace instances of `get_posts()` across codebase with new wcs_get_orders_with_meta_query() function.

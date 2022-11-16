@@ -82,21 +82,21 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		parent::set_up();
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
-									->disableOriginalConstructor()
-									->setMethods(
-										[
-											'get_account_data',
-											'is_server_connected',
-											'capture_intention',
-											'cancel_intention',
-											'get_intent',
-											'create_and_confirm_setup_intent',
-											'get_setup_intent',
-											'get_payment_method',
-											'refund_charge',
-										]
-									)
-									->getMock();
+			->disableOriginalConstructor()
+			->setMethods(
+				[
+					'get_account_data',
+					'is_server_connected',
+					'capture_intention',
+					'cancel_intention',
+					'get_intent',
+					'create_and_confirm_setup_intent',
+					'get_setup_intent',
+					'get_payment_method',
+					'refund_charge',
+				]
+			)
+			->getMock();
 		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 

@@ -39,6 +39,10 @@ export const topics = {
 		'Viewing test loans. To view live loans, disable test mode in WooCommerce Payments settings.',
 		'woocommerce-payments'
 	),
+	authorizations: __(
+		'Viewing test uncaptured transactions. To view live uncaptured transactions, disable test mode in WooCommerce Payments settings.',
+		'woocommerce-payments'
+	),
 };
 
 // These are all the topics used for details pages where the notice is slightly different.

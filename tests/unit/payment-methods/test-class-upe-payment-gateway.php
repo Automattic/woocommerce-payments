@@ -9,6 +9,12 @@ namespace WCPay\Payment_Methods;
 
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Connection_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Logger;
+use WCPay\MultiCurrency\Currency;
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
 
 use WC_Payment_Gateway_WCPay;
@@ -21,9 +27,15 @@ use WC_Payments_Order_Service;
 use WC_Helper_Order;
 use WC_Helper_Intention;
 use WC_Helper_Token;
+use WC_Payments_Utils;
+use WC_Subscriptions;
+use WC_Subscriptions_Cart;
+use WCPay\WC_Payments_UPE_Checkout;
 use WCPAY_UnitTestCase;
 use Exception;
+use WC_Payments;
 use WCPay\Constants\Payment_Method;
+use WCPay\WC_Payments_Checkout;
 
 /**
  * Overriding global function within namespace for testing
@@ -79,6 +91,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_rate_limiter;
 
 	/**
+	 * Mock Session_Rate_Limiter.
+	 *
+	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_upe_gateway;
+
+	/**
 	 * WC_Payments_Order_Service.
 	 *
 	 * @var WC_Payments_Order_Service
@@ -100,11 +119,26 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_payment_gateways;
 
 	/**
+	 * WC_Payments_Checkout.
+	 *
+	 * @var WC_Payments_Checkout
+	 */
+	private $mock_legacy_checkout;
+
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
 	 */
 	private $mock_wcpay_account;
+
+	/**
+	 * Platform_Checkout_Utilities instance.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	private $mock_platform_checkout_utilities;
 
 	/**
 	 * Mocked value of return_url.
@@ -176,6 +210,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 
+		$this->mock_platform_checkout_utilities = $this->createMock( Platform_Checkout_Utilities::class );
+
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
 			->disableOriginalConstructor()
@@ -189,6 +225,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		// Arrange: Mock WC_Payments_Action_Scheduler_Service so its methods aren't called directly.
 		$this->mock_action_scheduler_service = $this->getMockBuilder( 'WC_Payments_Action_Scheduler_Service' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->mock_legacy_checkout = $this->getMockBuilder( WC_Payments_Checkout::class )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -229,6 +269,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 						'get_upe_enabled_payment_method_statuses',
 						'is_payment_recurring',
 						'get_payment_method_ids_enabled_at_checkout',
+						'wc_payments_get_payment_gateway_by_id',
 					]
 				)
 				->getMock();
@@ -258,9 +299,20 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_payment_fields_outputs_fields() {
 		foreach ( $this->mock_payment_gateways as $payment_method_id => $mock_payment_gateway ) {
+			new WC_Payments_UPE_Checkout(
+				$mock_payment_gateway,
+				$this->mock_platform_checkout_utilities,
+				$this->mock_wcpay_account,
+				$this->mock_customer_service
+			);
+
 			$mock_payment_gateway
 				->method( 'get_payment_method_ids_enabled_at_checkout' )
 				->willReturn( [] );
+
+			$mock_payment_gateway
+				->method( 'wc_payments_get_payment_gateway_by_id' )
+				->willReturn( $mock_payment_gateway );
 
 			/**
 			* This tests each payment method output separately without concatenating the output
@@ -1487,7 +1539,14 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->with( Payment_Method::LINK )
 			->willReturn( $this->mock_payment_methods[ Payment_Method::LINK ] );
 
-		$this->assertSame( $mock_upe_gateway->get_payment_fields_js_config()['paymentMethodsConfig'], [] );
+		$upe_checkout = new WC_Payments_UPE_Checkout(
+			$mock_upe_gateway,
+			$this->mock_platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
+
+		$this->assertSame( $upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'], [] );
 	}
 
 	public function test_link_payment_method_if_card_enabled() {
@@ -1540,8 +1599,15 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
+		$upe_checkout = new WC_Payments_UPE_Checkout(
+			$mock_upe_gateway,
+			$this->mock_platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
+
 		$this->assertSame(
-			$mock_upe_gateway->get_payment_fields_js_config()['paymentMethodsConfig'],
+			$upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'],
 			[
 				'link' => [
 					'isReusable'           => true,

@@ -86,7 +86,7 @@ class WC_Payments_Remote_Note_Service {
 				}
 
 				if ( 'wcpay_settings' === $action['url'] ) {
-					$url = WC_Payment_Gateway_WCPay::get_settings_url();
+					$url = WC_Payments_Admin_Settings::get_settings_url();
 				} elseif ( isset( $action['url_is_admin'] ) && (bool) $action['url_is_admin'] ) {
 					$url = admin_url( $action['url'] );
 				} else {

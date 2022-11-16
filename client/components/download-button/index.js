@@ -6,7 +6,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import Gridicon from 'gridicons';
+import CloudDownloadIcon from 'gridicons/dist/cloud-download';
 
 /**
  * Internal dependencies
@@ -19,7 +19,7 @@ const DownloadButton = ( { isDisabled, onClick } ) => (
 		disabled={ isDisabled }
 		onClick={ onClick }
 	>
-		<Gridicon icon={ 'cloud-download' } />
+		<CloudDownloadIcon />
 		<span className="woocommerce-table__download-button__label">
 			{ __( 'Download', 'woocommerce-payments' ) }
 		</span>

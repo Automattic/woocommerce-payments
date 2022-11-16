@@ -31,6 +31,13 @@ class Database_Cache {
 	const DISPUTE_STATUS_COUNTS_KEY = 'wcpay_dispute_status_counts_cache';
 
 	/**
+	 * Cache key for authorization summary data like count, total amount, etc.
+	 *
+	 * @var string
+	 */
+	const AUTHORIZATION_SUMMARY_KEY = 'wcpay_authorization_summary_cache';
+
+	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
 	 *
 	 * @var bool

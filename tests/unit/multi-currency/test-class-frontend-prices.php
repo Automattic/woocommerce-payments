@@ -55,7 +55,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	 */
 	public function test_registers_woocommerce_filter( $filter, $function_name ) {
 		$this->assertGreaterThan(
-			10,
+			500,
 			has_filter( $filter, [ $this->frontend_prices, $function_name ] ),
 			"Filter '$filter' was not registered with '$function_name' with a priority higher than the default"
 		);
@@ -90,8 +90,8 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 
 		$this->frontend_prices->register_free_shipping_filters();
 
-		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $default_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
-		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $new_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
+		$this->assertGreaterThan( 500, has_filter( 'option_woocommerce_free_shipping_' . $default_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
+		$this->assertGreaterThan( 500, has_filter( 'option_woocommerce_free_shipping_' . $new_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
 	}
 
 	public function test_get_product_price_returns_empty_price() {
