@@ -565,7 +565,7 @@ class WC_Payments_Account {
 	 * @return bool True if the redirection happened.
 	 */
 	public function maybe_redirect_to_onboarding() {
-		if ( wp_doing_ajax() ) {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
 
