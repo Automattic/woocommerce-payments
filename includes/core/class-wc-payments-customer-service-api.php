@@ -5,9 +5,10 @@
  * @package WooCommerce Payments
  */
 
+namespace WCPay\Core;
+
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
-use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
 
