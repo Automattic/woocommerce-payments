@@ -14,7 +14,7 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from '@wordpress/element';
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
+import { useDispatch, useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -26,8 +26,8 @@ import { getTerms } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
 import { PAYMENT_METHOD_NAME_CARD, WC_STORE_CART } from '../constants.js';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
-import { useDispatch, useSelect } from '@wordpress/data';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
+import { useFingerprint } from './hooks';
 
 const useCustomerData = () => {
 	const { customerData, isInitialized } = useSelect( ( select ) => {
@@ -72,13 +72,13 @@ const WCPayUPEFields = ( {
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
+	const [ fingerprint ] = useFingerprint();
 
 	const [ isUPEComplete, setIsUPEComplete ] = useState( false );
 	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
 		''
 	);
 	const [ paymentCountry, setPaymentCountry ] = useState( null );
-	const [ fingerprint, setFingerprint ] = useState( '' );
 
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
 	const testMode = getConfig( 'testMode' );
@@ -91,28 +91,6 @@ const WCPayUPEFields = ( {
 
 	const gatewayConfig = getPaymentMethods()[ PAYMENT_METHOD_NAME_CARD ];
 	const customerData = useCustomerData();
-
-	useEffect( () => {
-		const generateFingerprint = async () => {
-			try {
-				const fingerprintPublicAgent = await FingerprintJS.load( {
-					monitoring: false,
-				} );
-
-				// Do not mount element if fingerprinting is not available
-				if ( ! fingerprintPublicAgent ) {
-					throw new Error( 'Unable to generate a fingerprint' );
-				}
-
-				const { visitorId } = await fingerprintPublicAgent.get();
-				setFingerprint( visitorId );
-			} catch ( error ) {
-				console.log( { error } );
-			}
-		};
-
-		generateFingerprint();
-	}, [] );
 
 	useEffect( () => {
 		if (

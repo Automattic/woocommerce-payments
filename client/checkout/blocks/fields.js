@@ -14,7 +14,7 @@ import { useEffect, useState } from '@wordpress/element';
 import './style.scss';
 import generatePaymentMethod from './generate-payment-method.js';
 import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
-import { usePaymentCompleteHandler } from './hooks';
+import { useFingerprint, usePaymentCompleteHandler } from './hooks';
 
 const WCPayFields = ( {
 	api,
@@ -30,6 +30,7 @@ const WCPayFields = ( {
 	shouldSavePayment,
 } ) => {
 	const [ errorMessage, setErrorMessage ] = useState( null );
+	const [ fingerprint ] = useFingerprint();
 
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(
@@ -55,7 +56,8 @@ const WCPayFields = ( {
 				return generatePaymentMethod(
 					api,
 					paymentElements,
-					billingData
+					billingData,
+					fingerprint
 				);
 			} ),
 		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
