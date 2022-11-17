@@ -124,6 +124,7 @@ declare module '@woocommerce/navigation' {
 		document_id?: string;
 		document_type?: string;
 		filter?: string;
+		tab?: string;
 	}
 
 	const onQueryChange: unknown;

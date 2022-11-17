@@ -10,6 +10,7 @@ import { render, screen, within } from '@testing-library/react';
  */
 import ExpressCheckoutSettings from '..';
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
+import PlatformCheckoutButtonPreview from '../platform-checkout-button-preview';
 
 jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {} ),
@@ -31,6 +32,12 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+	usePlatformCheckoutButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
+	usePlatformCheckoutButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
+	usePlatformCheckoutButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+	usePlatformCheckoutLocations: jest
+		.fn()
+		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -39,6 +46,9 @@ jest.mock( '@wordpress/data', () => ( {
 
 jest.mock( '../payment-request-button-preview' );
 PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
+
+jest.mock( '../platform-checkout-button-preview' );
+PlatformCheckoutButtonPreview.mockImplementation( () => '<></>' );
 
 jest.mock( '@stripe/react-stripe-js', () => ( {
 	Elements: jest.fn().mockReturnValue( null ),
@@ -59,6 +69,9 @@ describe( 'ExpressCheckoutSettings', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
 			restUrl: 'http://example.com/wp-json/',
+			featureFlags: {
+				woopayExpressCheckout: true,
+			},
 		};
 	} );
 
@@ -139,5 +152,27 @@ describe( 'ExpressCheckoutSettings', () => {
 			name: 'Enable WooPay',
 		} );
 		expect( label ).toBeInTheDocument();
+	} );
+
+	test( 'renders WooPay express button appearance settings if feature flag is enabled and confirm its first heading', () => {
+		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
+
+		expect(
+			screen.queryByRole( 'heading', {
+				name: 'Show express checkouts on',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	test( 'does not render WooPay express button appearance settings if feature flag is disabled', () => {
+		global.wcpaySettings.featureFlags.woopayExpressCheckout = false;
+
+		render( <ExpressCheckoutSettings methodId="platform_checkout" /> );
+
+		expect(
+			screen.queryByRole( 'heading', {
+				name: 'Show express checkouts on',
+			} )
+		).not.toBeInTheDocument();
 	} );
 } );

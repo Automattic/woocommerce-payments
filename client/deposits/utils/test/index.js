@@ -59,7 +59,7 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 			true
 		);
 		expect( depositSchedule ).toEqual(
-			'Temporarily suspended (learn more)'
+			'Deposits temporarily suspended (learn more).'
 		);
 	} );
 
@@ -71,14 +71,14 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 			true // blocked
 		);
 		expect( depositSchedule ).toEqual(
-			'Temporarily suspended (learn more)'
+			'Deposits temporarily suspended (learn more).'
 		);
 	} );
 
 	test( 'renders temporarily suspended notice for manual interval', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
 		expect( depositSchedule ).toEqual(
-			'Temporarily suspended (learn more)'
+			'Deposits temporarily suspended (learn more).'
 		);
 	} );
 
@@ -87,12 +87,12 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 		global.wcpaySettings.featureFlags.customDepositSchedules = true;
 
 		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
-		expect( depositSchedule ).toEqual( 'Manual' );
+		expect( depositSchedule ).toEqual( 'Deposits set to manual.' );
 	} );
 
 	test( 'renders deposit schedule for daily interval', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'daily' } );
-		expect( depositSchedule ).toEqual( 'Automatic, every business day' );
+		expect( depositSchedule ).toEqual( 'Deposits set to daily.' );
 	} );
 
 	test( 'renders deposit schedule for weekly interval', () => {
@@ -100,7 +100,7 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 			interval: 'weekly',
 			weekly_anchor: 'monday',
 		} );
-		expect( depositSchedule ).toEqual( 'Automatic, every week on Monday' );
+		expect( depositSchedule ).toEqual( 'Deposits set to every Monday.' );
 	} );
 
 	test( 'renders deposit schedule for monthly interval', () => {
@@ -109,7 +109,7 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 			monthly_anchor: 26,
 		} );
 		expect( depositSchedule ).toEqual(
-			'Automatic, every month on the 26th'
+			'Deposits set to monthly on the 26th.'
 		);
 	} );
 
@@ -120,9 +120,7 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 			weekly_anchor: 'tuesday',
 		} );
 		// without resetting the locale to en the anchor monday would become Sonntag, instead of Dienstag
-		expect( depositSchedule ).toEqual(
-			'Automatic, every week on Dienstag'
-		);
+		expect( depositSchedule ).toEqual( 'Deposits set to every Dienstag.' );
 		// the default locale should not have changed
 		expect( momentLib.locale() ).toEqual( 'de' );
 	} );
@@ -133,7 +131,7 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 			false
 		);
 		expect( depositSchedule ).toEqual(
-			'Automatic, every business day – your first deposit is held for seven days (learn more)'
+			'Deposits set to daily. Your first deposit is held for seven days (learn more).'
 		);
 	} );
 } );

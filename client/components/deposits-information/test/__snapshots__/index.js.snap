@@ -87,9 +87,12 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Automatic, every week on Thursday
+          Deposits set to every Thursday. 
+          <a
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
+          >
+            Change
+          </a>
         </p>
       </div>
     </div>
@@ -225,9 +228,12 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Automatic, every week on Thursday
+          Deposits set to every Thursday. 
+          <a
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
+          >
+            Change
+          </a>
         </p>
       </div>
     </div>
@@ -368,9 +374,12 @@ exports[`Deposits information renders instant deposit button only where applicab
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Automatic, every week on Thursday
+          Deposits set to every Thursday. 
+          <a
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
+          >
+            Change
+          </a>
         </p>
       </div>
     </div>
@@ -513,9 +522,12 @@ exports[`Deposits information renders instant deposit button only where applicab
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Automatic, every week on Thursday
+          Deposits set to every Thursday. 
+          <a
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
+          >
+            Change
+          </a>
         </p>
       </div>
     </div>

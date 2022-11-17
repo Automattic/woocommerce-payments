@@ -13,6 +13,7 @@ includes:
     - wp-api-v3/introduction
     - wp-api-v3/authentication
     - wp-api-v3/order
+    - wp-api-v3/authorization
 
 search: false
 ---
