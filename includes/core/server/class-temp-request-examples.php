@@ -28,29 +28,10 @@ class Temp_Request_Examples {
 	 * @return Request\WooPay_Create_And_Confirm_Intention
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function woopay_intention_request( Request\Create_And_Confirm_Intention $base_request, $is_using_saved_payment_method, $used_stripe_on_checkout ) {
+	public function woopay_intention_request( Request\Create_And_Confirm_Intention $base_request, $is_using_saved_payment_method, $used_stripe_on_checkout, $order ) {
 		$request = Request\WooPay_Create_And_Confirm_Intention::extend( $base_request );
 
-		$is_platform_payment_method = ! $is_using_saved_payment_method &&
-		                              $used_stripe_on_checkout &&
-		                              // This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
-		                              ! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
-		                              filter_var( $_POST['wcpay-is-platform-payment-method'], FILTER_VALIDATE_BOOLEAN );
-		// This meta is only set by WooPay.
-		// We want to handle the intention creation differently when there are subscriptions.
-		// We're using simple products on WooPay so the current logic for WCPay subscriptions won't work there.
-		$order = $request->get_param( 'order' );
 
-		if ( ! $order instanceof  WC_Order) {
-			throw new Invalid_Request_Parameter_Exception(
-				'Invalid order passed',
-				'wcpay_core_invalid_request_parameter_order'
-			);
-		}
-		$request->set_has_woopay_subscription( '1' === $order->get_meta( '_woopay_has_subscription' ) );
-		$request->set_is_platform_payment_method( $is_platform_payment_method );
-
-		return $request;
 	}
 
 	public function mock_http_class() {
@@ -76,7 +57,25 @@ class Temp_Request_Examples {
 			try {
 				Request\WooPay_Create_Intent::extend( $request );
 			} catch ( Exception $e ) {
-				echo 'Exception message: ' . $e->getMessage() . "\n\n";
+				echo 'Exception message: ' . $e->getMessage() . "\n\n";$is_platform_payment_method = ! $is_using_saved_payment_method &&
+				                                                                                     $used_stripe_on_checkout &&
+				                                                                                     // This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
+				                                                                                     ! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
+				                                                                                     filter_var( $_POST['wcpay-is-platform-payment-method'], FILTER_VALIDATE_BOOLEAN );
+				// This meta is only set by WooPay.
+				// We want to handle the intention creation differently when there are subscriptions.
+				// We're using simple products on WooPay so the current logic for WCPay subscriptions won't work there.
+
+				if ( ! $order  ) {
+					throw new Invalid_Request_Parameter_Exception(
+						'Invalid order passed',
+						'wcpay_core_invalid_request_parameter_order'
+					);
+				}
+				$request->set_has_woopay_subscription( '1' === $order->get_meta( '_woopay_has_subscription' ) );
+				$request->set_is_platform_payment_method( $is_platform_payment_method );
+
+				return $request;
 			}
 		}
 

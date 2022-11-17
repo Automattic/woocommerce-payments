@@ -263,6 +263,8 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-create-and-confirm-intention.php';
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-intention.php';
 
+		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
+
 		self::$api_client = self::create_api_client();
 
 		include_once __DIR__ . '/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php';

@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Core\Mode;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -23,6 +24,7 @@ use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
+use WCPay\WooPay\Service\Checkout_Service;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -859,7 +861,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception                   Error processing the payment.
 	 * @throws Add_Payment_Method_Exception    When $0 order processing failed.
-	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
+	 * @throws Intent_Authentication_Exception|WC_Data_Exception When the payment intent could not be authenticated.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
 		$order                                       = $payment_information->get_order();
@@ -969,16 +971,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( empty( $intent ) ) {
-				// This is temporary, those method calls can now be in the right place instead of being stored as variables.
-				$request = WC_Payments::create_request( \WCPay\Core\Server\Request\Create_And_Confirm_Intention::class )
+				add_filter( 'woopay_create_and_confirm_intention_request_from_base_intent_request', [ Checkout_Service::class, 'create_woopay_intention_request' ], 10, 3 );
+				$request = WC_Payments::create_request( Create_And_Confirm_Intention::class )
 					->set_amount( $converted_amount )
-					->set_order( $order )
 					->set_currency_code( $currency )
 					->set_payment_method( $payment_information->get_payment_method() )
 					->set_customer( $customer_id )
 					->set_capture_method( $payment_information->is_using_manual_capture() )
 					->set_metadata( $metadata )
-					->set_level3( $this->get_level3_data_from_order( $order ) ) // Could be moved to class since we have order now.
+					->set_level3( $this->get_level3_data_from_order( $order ) )
 					->set_off_session( $payment_information->is_merchant_initiated() )
 					->set_payment_methods( $payment_methods )
 					->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
@@ -986,7 +987,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $save_payment_method_to_store ) {
 					$request->setup_future_usage();
 				}
-				$intent = $request->send( 'wcpay_create_and_confirm_intention_request', $payment_information->is_using_saved_payment_method(), $this->should_use_stripe_platform_on_checkout_page() );
+				$intent = $request->send( 'create_woopay_intention_request', $order, $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ) );
 			}
 
 			$intent_id     = $intent->get_id();
