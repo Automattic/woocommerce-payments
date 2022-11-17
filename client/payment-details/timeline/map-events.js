@@ -4,18 +4,12 @@
  * External dependencies
  */
 import { flatMap } from 'lodash';
+import Gridicon from 'gridicons';
 import { __, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
-import SyncIcon from 'gridicons/dist/sync';
-import PlusIcon from 'gridicons/dist/plus';
-import MinusIcon from 'gridicons/dist/minus';
-import InfoOutlineIcon from 'gridicons/dist/info-outline';
-import CheckmarkIcon from 'gridicons/dist/checkmark';
-import CrossIcon from 'gridicons/dist/cross';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
  * Internal dependencies
@@ -30,6 +24,18 @@ import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
 
 /**
+ * Creates a Gridicon
+ *
+ * @param {string} icon Icon to render
+ * @param {string} className Extra class name, defaults to empty
+ *
+ * @return {Gridicon} Gridicon component
+ */
+const getIcon = ( icon, className = '' ) => (
+	<Gridicon icon={ icon } className={ className } />
+);
+
+/**
  * Creates a timeline item about a payment status change
  *
  * @param {Object} event An event triggering the status change
@@ -40,7 +46,7 @@ import { getAdminUrl } from 'wcpay/utils';
 const getStatusChangeTimelineItem = ( event, status ) => {
 	return {
 		date: new Date( event.datetime * 1000 ),
-		icon: <SyncIcon />,
+		icon: getIcon( 'sync' ),
 		headline: sprintf(
 			// translators: %s new status, for example Authorized, Refunded, etc
 			__( 'Payment status changed to %s.', 'woocommerce-payments' ),
@@ -116,7 +122,7 @@ const getDepositTimelineItem = (
 
 	return {
 		date: new Date( event.datetime * 1000 ),
-		icon: isPositive ? <PlusIcon /> : <MinusIcon />,
+		icon: getIcon( isPositive ? 'plus' : 'minus' ),
 		headline,
 		body,
 	};
@@ -169,7 +175,7 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 
 	return {
 		date: new Date( event.datetime * 1000 ),
-		icon: <MinusIcon />,
+		icon: getIcon( 'minus' ),
 		headline,
 		body,
 	};
@@ -180,15 +186,22 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
  *
  * @param {Object} event Event object
  * @param {string | Object} headline Headline describing the event
- * @param {JSX.Element} icon Icon component to render for this event
+ * @param {string} icon Icon to render for this event
+ * @param {string} iconClass Icon class
  * @param {Array} body Body to include in this item, defaults to empty
  *
  * @return {Object} Formatted main item
  */
-const getMainTimelineItem = ( event, headline, icon, body = [] ) => ( {
-	date: new Date( event.datetime * 1000 ),
+const getMainTimelineItem = (
+	event,
 	headline,
 	icon,
+	iconClass,
+	body = []
+) => ( {
+	date: new Date( event.datetime * 1000 ),
+	headline,
+	icon: getIcon( icon, iconClass ),
 	body,
 } );
 
@@ -530,7 +543,8 @@ const mapEventToTimelineItems = ( event ) => {
 						event.amount,
 						true
 					),
-					<CheckmarkIcon className="is-warning" />
+					'checkmark',
+					'is-warning'
 				),
 			];
 		case 'authorization_voided':
@@ -550,7 +564,8 @@ const mapEventToTimelineItems = ( event ) => {
 						event.amount,
 						true
 					),
-					<CheckmarkIcon className="is-warning" />
+					'checkmark',
+					'is-warning'
 				),
 			];
 		case 'authorization_expired':
@@ -570,7 +585,8 @@ const mapEventToTimelineItems = ( event ) => {
 						event.amount,
 						true
 					),
-					<CrossIcon className="is-error" />
+					'cross',
+					'is-error'
 				),
 			];
 		case 'captured':
@@ -592,7 +608,8 @@ const mapEventToTimelineItems = ( event ) => {
 						event.amount,
 						true
 					),
-					<CheckmarkIcon className="is-success" />,
+					'checkmark',
+					'is-success',
 					[
 						composeFXString( event ),
 						composeFeeString( event ),
@@ -631,7 +648,8 @@ const mapEventToTimelineItems = ( event ) => {
 						),
 						formattedAmount
 					),
-					<CheckmarkIcon className="is-success" />,
+					'checkmark',
+					'is-success',
 					[
 						composeFXString( event ),
 						getRefundTrackingDetails( event ),
@@ -655,7 +673,8 @@ const mapEventToTimelineItems = ( event ) => {
 						formattedRefundFailureAmount,
 						getRefundFailureReason( event )
 					),
-					<NoticeOutlineIcon className="is-error" />,
+					'notice-outline',
+					'is-error',
 					[ getRefundTrackingDetails( event ) ]
 				),
 			];
@@ -673,7 +692,8 @@ const mapEventToTimelineItems = ( event ) => {
 						event.amount,
 						true
 					),
-					<CrossIcon className="is-error" />
+					'cross',
+					'is-error'
 				),
 			];
 		case 'dispute_needs_response':
@@ -699,7 +719,7 @@ const mapEventToTimelineItems = ( event ) => {
 			if ( null === event.amount ) {
 				depositTimelineItem = {
 					date: new Date( event.datetime * 1000 ),
-					icon: <InfoOutlineIcon />,
+					icon: getIcon( 'info-outline' ),
 					headline: __(
 						'No funds have been withdrawn yet.',
 						'woocommerce-payments'
@@ -752,7 +772,8 @@ const mapEventToTimelineItems = ( event ) => {
 				getMainTimelineItem(
 					event,
 					reasonHeadline,
-					<CrossIcon className="is-error" />,
+					'cross',
+					'is-error',
 					[
 						// eslint-disable-next-line react/jsx-key
 						<Link
@@ -776,7 +797,8 @@ const mapEventToTimelineItems = ( event ) => {
 						'Challenge evidence submitted.',
 						'woocommerce-payments'
 					),
-					<CheckmarkIcon className="is-success" />
+					'checkmark',
+					'is-success'
 				),
 			];
 		case 'dispute_won':
@@ -807,7 +829,8 @@ const mapEventToTimelineItems = ( event ) => {
 						'Dispute won! The bank ruled in your favor.',
 						'woocommerce-payments'
 					),
-					<NoticeOutlineIcon className="is-success" />
+					'notice-outline',
+					'is-success'
 				),
 			];
 		case 'dispute_lost':
@@ -822,7 +845,8 @@ const mapEventToTimelineItems = ( event ) => {
 						'Dispute lost. The bank ruled in favor of your customer.',
 						'woocommerce-payments'
 					),
-					<CrossIcon className="is-error" />
+					'cross',
+					'is-error'
 				),
 			];
 		case 'dispute_warning_closed':
@@ -833,7 +857,8 @@ const mapEventToTimelineItems = ( event ) => {
 						'Dispute inquiry closed. The bank chose not to pursue this dispute.',
 						'woocommerce-payments'
 					),
-					<NoticeOutlineIcon className="is-success" />
+					'notice-outline',
+					'is-success'
 				),
 			];
 		case 'dispute_charge_refunded':
@@ -844,7 +869,8 @@ const mapEventToTimelineItems = ( event ) => {
 						'The disputed charge has been refunded.',
 						'woocommerce-payments'
 					),
-					<NoticeOutlineIcon className="is-success" />
+					'notice-outline',
+					'is-success'
 				),
 			];
 		case 'financing_paydown':

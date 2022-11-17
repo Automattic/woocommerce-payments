@@ -10,7 +10,6 @@ import { render, useState, useEffect } from '@wordpress/element';
  * Internal dependencies
  */
 import OnboardingLocationCheckModal from './modal';
-import OnboardingMoreInfoModal from './info-modal';
 import Page from 'components/page';
 import strings from './strings';
 import wcpayTracks from 'tracks';
@@ -24,7 +23,6 @@ import Discover from './cards/discover.js';
 import GPay from './cards/gpay.js';
 import JCB from './cards/jcb.js';
 import UnionPay from './cards/unionpay.js';
-import LightbulbIcon from '../../assets/images/icons/lightbulb.svg';
 import './style.scss';
 
 const LearnMore = () => {
@@ -178,42 +176,10 @@ const ConnectPageOnboarding = () => {
 	);
 };
 
-const ConnectPageInfoNotice = () => {
-	const [ isModalOpen, setModalOpen ] = useState( false );
-
-	return (
-		<>
-			<div className="wcpay-connect-info-notice">
-				<img src={ LightbulbIcon } alt="" />
-				<div>
-					{ strings.infoNotice.description }
-					<Button
-						onClick={ () => {
-							wcpayTracks.recordEvent(
-								wcpayTracks.events
-									.CONNECT_ACCOUNT_KYC_MODAL_OPENED
-							);
-							setModalOpen( true );
-						} }
-					>
-						{ strings.infoNotice.button }
-					</Button>
-				</div>
-			</div>
-			{ isModalOpen && (
-				<OnboardingMoreInfoModal
-					handleModalClose={ () => setModalOpen( false ) }
-				/>
-			) }
-		</>
-	);
-};
-
 const ConnectPageOnboardingSteps = () => {
 	return (
 		<>
 			<h2>{ strings.stepsHeading }</h2>
-			<ConnectPageInfoNotice />
 			<div className="connect-page-onboarding-steps">
 				<div className="connect-page-onboarding-steps-item">
 					<StepNumber>1</StepNumber>

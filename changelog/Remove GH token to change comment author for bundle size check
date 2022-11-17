@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: This removes the GH token so that the bundle size check comment author changes to GH actions bot.
+
+

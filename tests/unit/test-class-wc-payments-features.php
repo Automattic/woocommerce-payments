@@ -17,7 +17,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		'_wcpay_feature_documents'                  => 'documents',
 		'_wcpay_feature_account_overview_task_list' => 'accountOverviewTaskList',
 		'_wcpay_feature_custom_deposit_schedules'   => 'customDepositSchedules',
-		'_wcpay_feature_auth_and_capture'           => 'isAuthAndCaptureEnabled',
 	];
 
 	public function set_up() {
@@ -119,45 +118,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->mock_cache->method( 'get' )->willReturn( null );
 		$this->assertFalse( WC_Payments_Features::is_documents_section_enabled() );
 		$this->assertArrayNotHasKey( 'documents', WC_Payments_Features::to_array() );
-	}
-
-	public function test_is_woopay_express_checkout_enabled_returns_true() {
-		add_filter(
-			'pre_option__wcpay_feature_woopay_express_checkout',
-			function ( $pre_option, $option, $default ) {
-				return '1';
-			},
-			10,
-			3
-		);
-		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
-		$this->assertTrue( WC_Payments_Features::is_woopay_express_checkout_enabled() );
-	}
-
-	public function test_is_woopay_express_checkout_enabled_returns_false_when_flag_is_false() {
-		add_filter(
-			'pre_option__wcpay_feature_woopay_express_checkout',
-			function ( $pre_option, $option, $default ) {
-				return '0';
-			},
-			10,
-			3
-		);
-		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
-		$this->assertFalse( WC_Payments_Features::is_woopay_express_checkout_enabled() );
-	}
-
-	public function test_is_woopay_express_checkout_enabled_returns_false_when_platform_checkout_eligible_is_false() {
-		add_filter(
-			'pre_option__wcpay_feature_woopay_express_checkout',
-			function ( $pre_option, $option, $default ) {
-				return '1';
-			},
-			10,
-			3
-		);
-		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
-		$this->assertFalse( WC_Payments_Features::is_woopay_express_checkout_enabled() );
 	}
 
 	private function setup_enabled_flags( array $enabled_flags ) {

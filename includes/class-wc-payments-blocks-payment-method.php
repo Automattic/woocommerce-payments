@@ -6,8 +6,6 @@
  */
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\WC_Payments_Checkout;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
@@ -21,21 +19,11 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	private $gateway;
 
 	/**
-	 * WC Payments Checkout
-	 *
-	 * @var WC_Payments_Checkout
-	 */
-	private $wc_payments_checkout;
-
-	/**
 	 * Initializes the class.
 	 */
 	public function initialize() {
-		$this->name                 = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$this->gateway              = WC_Payments::get_gateway();
-		$this->wc_payments_checkout = WC_Payments::get_wc_payments_checkout();
-
-		add_filter( 'the_content', [ $this, 'maybe_add_card_testing_token' ] );
+		$this->name    = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$this->gateway = WC_Payments::get_gateway();
 	}
 
 	/**
@@ -102,23 +90,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 				'is_admin'    => is_admin(), // Used to display payment method preview in wp-admin.
 			],
 			$platform_checkout_config,
-			$this->wc_payments_checkout->get_payment_fields_js_config()
+			$this->gateway->get_payment_fields_js_config()
 		);
-	}
-
-	/**
-	 * Adds the hidden input containing the card testing prevention token to the blocks checkout page.
-	 *
-	 * @param   string $content  The content that's going to be flushed to the browser.
-	 *
-	 * @return  string
-	 */
-	public function maybe_add_card_testing_token( $content ) {
-		$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( $fraud_prevention_service->is_enabled() && wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) ) {
-			$content .= '<input type="hidden" name="wcpay-fraud-prevention-token" id="wcpay-fraud-prevention-token" value="' . esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ) . '">';
-		}
-		return $content;
 	}
 }

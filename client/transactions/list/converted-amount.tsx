@@ -6,7 +6,7 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Tooltip } from '@wordpress/components';
-import SyncIcon from 'gridicons/dist/sync';
+import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies
@@ -36,7 +36,7 @@ const ConversionIndicator = ( {
 			className="conversion-indicator"
 			data-testid="conversion-indicator"
 		>
-			<SyncIcon size={ 18 } />
+			<Gridicon icon="sync" size={ 18 } />
 		</span>
 	</Tooltip>
 );

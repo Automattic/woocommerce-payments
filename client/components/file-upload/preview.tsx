@@ -4,6 +4,7 @@
  * External dependencies
  */
 import * as React from 'react';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies.
@@ -19,8 +20,9 @@ const FileUploadPreview = ( {
 	fileName,
 	showPreview,
 }: FileUploadProps ): JSX.Element => {
-	const url =
+	let url =
 		wcpaySettings.restUrl + NAMESPACE.substring( 1 ) + '/file/' + fileName;
+	url = addQueryArgs( url, { as_account: 0 } );
 
 	return (
 		<>

@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import HelpIcon from 'gridicons/dist/help';
+import Gridicon from 'gridicons';
 import classNames from 'classnames';
 
 /**
@@ -26,7 +26,10 @@ const PaymentConfirmIllustration: React.FunctionComponent< {
 						}
 					) }
 				/>
-				<HelpIcon className="payment-confirm-illustration__payment-question-mark-icon" />
+				<Gridicon
+					icon="help"
+					className="payment-confirm-illustration__payment-question-mark-icon"
+				/>
 			</div>
 		</div>
 	);

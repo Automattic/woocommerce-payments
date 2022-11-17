@@ -19,9 +19,6 @@ declare const global: {
 		connect: {
 			country: string;
 		};
-		featureFlags: {
-			isAuthAndCaptureEnabled: boolean;
-		};
 	};
 };
 
@@ -81,9 +78,6 @@ describe( 'PaymentDetailsSummary', () => {
 			zeroDecimalCurrencies: [],
 			connect: {
 				country: 'US',
-			},
-			featureFlags: {
-				isAuthAndCaptureEnabled: false,
 			},
 			currencyData: {
 				US: {
