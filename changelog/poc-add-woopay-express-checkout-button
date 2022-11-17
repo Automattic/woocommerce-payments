@@ -1,0 +1,5 @@
+Significance: patch
+Type: add
+Comment: Added support for a WooPay express checkout button. This feature is behind a feature flag right and is not yet publicly available.
+
+

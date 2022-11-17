@@ -53,7 +53,7 @@ registerPaymentMethod( {
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 
 if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
-	handlePlatformCheckoutEmailInput( '#email', api );
+	handlePlatformCheckoutEmailInput( '#email', api, true );
 }
 
 window.addEventListener( 'load', () => {

@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { Card, CardHeader, Flex } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
-import Gridicon from 'gridicons';
+import CalendarIcon from 'gridicons/dist/calendar';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
@@ -98,12 +98,10 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 					</h3>
 
 					<p className="wcpay-deposits-information-header__schedule">
-						<Gridicon
-							icon="calendar"
+						<CalendarIcon
 							size={ 24 }
 							className="wcpay-deposits-information-header__icon"
 						/>
-						{ __( 'Deposit schedule:', 'woocommerce-payments' ) }{ ' ' }
 						{ scheduleDescriptor }
 					</p>
 				</div>

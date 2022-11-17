@@ -79,12 +79,12 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 
 	public function test_should_modify_cart_item_deposit_amount_metas_when_item_is_not_a_plan_type_deposit() {
 		$this->mock_multi_currency
-		->method( 'get_price' )
-		->willReturnCallback(
-			function( $input ) {
-				return $input * 2;
-			}
-		);
+			->method( 'get_price' )
+			->willReturnCallback(
+				function( $input ) {
+					return $input * 2;
+				}
+			);
 
 		$this->mock_utils->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )

@@ -201,7 +201,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			function () {
 				return 'DEFAULT';
 			},
-			100
+			901
 		);
 
 		$this->init_multi_currency();

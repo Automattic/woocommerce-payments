@@ -17,10 +17,11 @@
       "iti/utils": [ "../node_modules/intl-tel-input/build/js/utils" ]
     },
     "types": [
-      "node", 
+      "node",
       "jest",
       "@testing-library/jest-dom",
-    ]
+    ],
+    "resolveJsonModule": true,
   },
   "include": [
     "./client/"

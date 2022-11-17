@@ -54,14 +54,14 @@ class WC_Payments_Webhook_Reliability_Service_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
-								->disableOriginalConstructor()
-								->setMethods( [ 'get_failed_webhook_events' ] )
-								->getMock();
+			->disableOriginalConstructor()
+			->setMethods( [ 'get_failed_webhook_events' ] )
+			->getMock();
 
 		$this->mock_action_scheduler_service = $this->getMockBuilder( WC_Payments_Action_Scheduler_Service::class )
-												->disableOriginalConstructor()
-												->setMethods( [ 'schedule_job' ] )
-												->getMock();
+			->disableOriginalConstructor()
+			->setMethods( [ 'schedule_job' ] )
+			->getMock();
 
 		$this->mock_webhook_processing_service = $this->createMock( WC_Payments_Webhook_Processing_Service::class );
 
