@@ -850,14 +850,15 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * The note includes the charge attempt date and let the merchant know the need of an off-session step by the customer.
 	 *
 	 * @param WC_Order $order The renew order.
-	 * @param ?array   $next_action Next action intent content from Stripe's response.
+	 * @param array    $processing Processing state from Stripe's intent response.
 	 * @return void
 	 */
-	public function maybe_add_card_await_notification_note( WC_Order $order, array $next_action = null ) {
-		if ( isset( $next_action['type'] ) && 'card_await_notification' === $next_action['type'] ) {
-			$charge_attempt_at = $next_action['card_await_notification']['charge_attempt_at'];
-			$attempt_date      = wp_date( get_option( 'date_format', 'F j, Y' ), $charge_attempt_at, wp_timezone() );
-			$attempt_time      = wp_date( get_option( 'time_format', 'g:i a' ), $charge_attempt_at, wp_timezone() );
+	public function maybe_add_customer_notification_note( WC_Order $order, array $processing = [] ) {
+		$approval_requested = $processing['card']['customer_notification']['approval_requested'] ?? false;
+		$completes_at       = $processing['card']['customer_notification']['completes_at'] ?? null;
+		if ( $approval_requested && $completes_at ) {
+			$attempt_date = wp_date( get_option( 'date_format', 'F j, Y' ), $completes_at, wp_timezone() );
+			$attempt_time = wp_date( get_option( 'time_format', 'g:i a' ), $completes_at, wp_timezone() );
 
 			$note = sprintf(
 			/* translators: 1) date in date_format or 'F j, Y'; 2) time in time_format or 'g:i a' */

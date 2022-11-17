@@ -2455,6 +2455,7 @@ class WC_Payments_API_Client {
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 		$customer           = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method     = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+		$processing         = $intention_array['processing'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 
@@ -2470,7 +2471,8 @@ class WC_Payments_API_Client {
 			$charge,
 			$next_action,
 			$last_payment_error,
-			$metadata
+			$metadata,
+			$processing
 		);
 
 		return $intent;
