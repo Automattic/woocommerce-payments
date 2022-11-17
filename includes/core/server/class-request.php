@@ -7,6 +7,7 @@
 
 namespace WCPay\Core\Server;
 
+use WC_Payments;
 use WC_Payments_Http_Interface;
 use WC_Payments_API_Client;
 use WCPay\Core\Exceptions\Extend_Request_Exception;
@@ -480,20 +481,43 @@ abstract class Request {
 	}
 
 	/**
-	 * Validatesis valid order.
+	 * Validate is number larger than passed compared number.
 	 *
-	 * @param  \WC_Order $order Order object to validate.
+	 * @param  float $value_to_validate Value to validate.
+	 * @param  float $value_to_compare Value to compare.
 	 * @throws Invalid_Request_Parameter_Exception An exception if the format is not matched.
 	 * @return void
 	 */
-	protected function validate_order( $order ) {
-		if ( is_a( $order, \WC_Order::class ) ) {
+	protected function validate_is_larger_then( float $value_to_validate, float $value_to_compare ) {
+		if ( $value_to_validate > $value_to_compare ) {
 			return;
 		}
 
 		throw new Invalid_Request_Parameter_Exception(
-			'Invalid order passed',
+			"Invalid number passed. Number $value_to_compare needs to be larger than $value_to_compare",
 			'wcpay_core_invalid_request_parameter_order'
 		);
+	}
+
+	/**
+	 * Currency code validator.
+	 *
+	 * @param string $currency_code Currency code.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function validate_currency_code( string $currency_code ) {
+		$account_data = WC_Payments::get_account_service()->get_cached_account_data();
+		if ( isset( $account_data['customer_currencies']['supported'] ) && ! in_array( $currency_code, $account_data['customer_currencies']['supported'], true ) ) {
+			throw new Invalid_Request_Parameter_Exception(
+				sprintf(
+				// Translators: %s is a currency code.
+					__( '%s is not a supported currency for payments.', 'woocommerce-payments' ),
+					$currency_code
+				),
+				'wcpay_core_invalid_request_parameter_currency_not_available'
+			);
+		}
 	}
 }

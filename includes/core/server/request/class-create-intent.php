@@ -7,6 +7,7 @@
 
 namespace WCPay\Core\Server\Request;
 
+use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
@@ -36,11 +37,13 @@ class Create_Intent extends Request {
 	/**
 	 * Stores the amount for the intent.
 	 *
-	 * @param  int $amount   The amount in ToDo units.
+	 * @param int $amount The amount in ToDo units.
+	 *
 	 * @return Create_Intent The instance of the class for method chaining.
+	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	final public function set_amount( int $amount ) {
-		// Validation here...
+		$this->validate_is_larger_then( $amount, 0 );
 		$this->set_param( 'amount', $amount );
 		return $this;
 	}

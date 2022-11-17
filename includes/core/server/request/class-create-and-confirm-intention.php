@@ -63,18 +63,8 @@ class Create_And_Confirm_Intention extends Request {
 	 * @return static      Instance of the class for method chaining.
 	 */
 	public function set_amount( int $amount ) {
+		$this->validate_is_larger_then( $amount, 0 );
 		return $this->set_param( 'amount', $amount );
-	}
-
-	/**
-	 * Order setter.
-	 *
-	 * @param  \WC_Order $order Order to set.
-	 * @return static      Instance of the class for method chaining.
-	 */
-	public function set_order( $order ) {
-		$this->validate_order( $order );
-		return $this->set_param( 'order', $order );
 	}
 
 	/**
@@ -85,18 +75,7 @@ class Create_And_Confirm_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception When the currency code is invalid.
 	 */
 	public function set_currency_code( string $currency_code ) {
-		// No checks needed, account data should not be empty when creating intents.
-		$account_data = WC_Payments::get_account_service()->get_cached_account_data();
-		if ( ! in_array( $currency_code, $account_data['customer_currencies']['supported'], true ) ) {
-			throw new Invalid_Request_Parameter_Exception(
-				sprintf(
-					// Translators: %s is a currency code.
-					__( '%s is not a supported currency for payments.', 'woocommerce-payments' ),
-					$currency_code
-				),
-				'wcpay_core_invalid_request_parameter_currency_not_available'
-			);
-		}
+		$this->validate_currency_code( $currency_code );
 
 		return $this->set_param( 'currency', $currency_code );
 	}
