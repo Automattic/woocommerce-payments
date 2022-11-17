@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Refactor the saving of subscription dates in the subscription datastore to separate fetching changes and saving. Enables backfilling subscription dates when HPOS syncing is enabled.
