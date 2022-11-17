@@ -1005,6 +1005,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
+			$idempotency_key                              = hash( 'md5', (string) $order->get_id() . '-' . $this->account->get_stripe_account_id(), false ) . '-' . WC()->cart->get_cart_hash();
+			$additional_api_parameters['idempotency_key'] = $idempotency_key;
+
 			if ( empty( $intent ) ) {
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 				$intent = $this->payments_api_client->create_and_confirm_intention(
@@ -2600,6 +2603,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic', array $metadata = [], string $customer_id = null ) {
 		$currency         = strtolower( $order->get_currency() );
 		$converted_amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
+		$idempotency_key  = hash( 'md5', (string) $order->get_id() . '-' . $this->account->get_stripe_account_id(), false ) . '-' . WC()->cart->get_cart_hash();
 
 		try {
 			$intent = $this->payments_api_client->create_intention(
@@ -2609,7 +2613,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->get_order_number(),
 				$capture_method,
 				$metadata,
-				$customer_id
+				$customer_id,
+				$idempotency_key
 			);
 
 			return [

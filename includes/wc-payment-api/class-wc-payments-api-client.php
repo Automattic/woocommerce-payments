@@ -214,16 +214,17 @@ class WC_Payments_API_Client {
 		$cvc_confirmation = null
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
-		$request                   = [];
-		$request['amount']         = $amount;
-		$request['currency']       = $currency_code;
-		$request['confirm']        = 'true';
-		$request['payment_method'] = $payment_method_id;
-		$request['customer']       = $customer_id;
-		$request['capture_method'] = $manual_capture ? 'manual' : 'automatic';
-		$request['metadata']       = $metadata;
-		$request['level3']         = $level3;
-		$request['description']    = $this->get_intent_description( $metadata['order_number'] ?? 0 );
+		$request                    = [];
+		$request['amount']          = $amount;
+		$request['currency']        = $currency_code;
+		$request['confirm']         = 'true';
+		$request['payment_method']  = $payment_method_id;
+		$request['customer']        = $customer_id;
+		$request['capture_method']  = $manual_capture ? 'manual' : 'automatic';
+		$request['metadata']        = $metadata;
+		$request['level3']          = $level3;
+		$request['description']     = $this->get_intent_description( $metadata['order_number'] ?? 0 );
+		$request['idempotency_key'] = $additional_parameters['idempotency_key'];
 
 		if ( ! empty( $payment_methods ) ) {
 			$request['payment_method_types'] = $payment_methods;
@@ -263,6 +264,7 @@ class WC_Payments_API_Client {
 	 * @param string      $capture_method  - optional capture method (either `automatic` or `manual`).
 	 * @param array       $metadata        - A list of intent metadata.
 	 * @param string|null $customer_id     - Customer id for intent.
+	 * @param string|null $idempotency_key - Idempotency key to be used in the header if passed.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -274,7 +276,8 @@ class WC_Payments_API_Client {
 		$order_number,
 		$capture_method = 'automatic',
 		array $metadata = [],
-		$customer_id = null
+		$customer_id = null,
+		$idempotency_key = null
 	) {
 		$request                         = [];
 		$request['amount']               = $amount;
@@ -286,6 +289,7 @@ class WC_Payments_API_Client {
 		if ( $customer_id ) {
 			$request['customer'] = $customer_id;
 		}
+		$request['idempotency_key'] = $idempotency_key;
 
 		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
 
@@ -2029,7 +2033,7 @@ class WC_Payments_API_Client {
 			$url          .= '?' . http_build_query( $params );
 			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
-			$headers['Idempotency-Key'] = $this->uuid();
+			$headers['Idempotency-Key'] = $params['idempotency_key'] ?? $this->uuid();
 			$body                       = wp_json_encode( $params );
 			if ( ! $body ) {
 				throw new API_Exception(
