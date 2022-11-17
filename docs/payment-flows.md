@@ -37,15 +37,16 @@ graph TB
 		block_form --> payment_method[<code>handlePaymentMethodCreation</code> retrieves<br>the payment method ID from Stripe.js<br>and stores it in a hidden field.]:::JS
 		payment_method --> resubmit[Re-submit the form]:::JS
 	end
-	resubmit --> create_and_confirm_intent[<code>$gateway->process_payment_for_order</code><br>performs a <a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L1010'><b><code>create_and_confirm_intent</code></b></a> call.]:::PHP
+	resubmit --> create_and_confirm_intent
+	
+  subgraph "Confirmation stage (where payments happen)"
+    create_and_confirm_intent[<code>$gateway->process_payment_for_order</code><br>performs a <a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L1010'><b><code>create_and_confirm_intent</code></b></a> call.]:::PHP
+    upe_confirm_intent["Call <a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/client/checkout/classic/upe.js#L520'><code>stripe.confirmPayment()</code></a><br>to finalize the payment."]:::JS
+  end
 
 	%% Classic successful `create_and_confirm_intent` processing to redirect
 	create_and_confirm_intent -->|<code>status: succeeded</code>| intent_is_successful(Payment is successful)
 	intent_is_successful --> attach_info_to_order
-	subgraph Non-UPE Non-3DS Success
-		attach_info_to_order["<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L1174'><code>attach_intent_info_to_order()</code></a><br>stores the intent and charge IDs"]:::PHP
-		attach_info_to_order ---> mark_payment_completed["Mark order as complete through<br /><a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L1176'><code>$order_service->mark_payment_completed()</code></a>"]:::PHP
-	end
 	mark_payment_completed --> php_redirect[<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L1206'>Redirect to the Order Received page</a>]:::PHP
 	
 	%% Classic `requires_action` to both marking the order as completed, and a redirect.
@@ -53,10 +54,6 @@ graph TB
 	return_to_checkout --> confirm_payment["Use the client secret to confirm the intent<br>through <a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/client/checkout/classic/index.js#L393'><code>stripe.confirmCardPayment()</code></a>"]:::JS
 	confirm_payment --> update_order_status_request[AJAX <a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/client/checkout/api/index.js#L284'><code>update_order_status</code></a> call]:::JS
 	update_order_status_request --->|Intent & Order IDs| attach_info_to_order_2
-	subgraph Non-UPE success after 3DS confirmation
-		attach_info_to_order_2["<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L2404'><code>attach_intent_info_to_order()</code></a><br>stores the intent and charge IDs"]:::PHP
-		attach_info_to_order_2 ---> mark_payment_completed_2["Mark order as complete through<br /><a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L2414'><code>$order_service->mark_payment_completed</code></a>"]:::PHP
-	end
 	mark_payment_completed_2 -->|Return URL| js_redirect[<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/client/checkout/classic/index.js#L420'>Redirect to the Order Received page</a>]:::JS
 
 	%% Classic webhook on the side.
@@ -64,10 +61,6 @@ graph TB
 	intent_is_successful --> stripe_webhook(Stripe sends a webhook<br><code>payment_intent.succeeded</code>):::Stripe
 	stripe_webhook --> webhook_handler["<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payments-webhook-processing-service.php#L398'><code>WC_Payments_Webhook_Processing_Service::<br>process_webhook_payment_intent_succeeded()</code></a>"]:::PHP
 	webhook_handler --> webhook_meta_update
-	subgraph Webhook success
-		webhook_meta_update[<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payments-webhook-processing-service.php#L414-L428'>Manual metadata update</a>]:::asyncPHP
-		webhook_meta_update --> webhook_mark_payment_completed["Mark order as complete through<br /><a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payments-webhook-processing-service.php#L430'><code>$order_service->mark_payment_completed()</code></a>"]:::asyncPHP
-	end
 
 	%% UPE intent creation
 	create_intent_first[<a href='https://github.com/Automattic/woocommerce-payments/blob/develop/client/checkout/api/index.js#L379-L401'>Create intent in advance through a<br><code>create_payment_intent</code> AJAX call</a>]:::JS
@@ -81,7 +74,7 @@ graph TB
 	upe_attach_info --> upe_update_order["Because of the <code>requires_payment_method</code> intent status,<br><a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/payment-methods/class-upe-payment-gateway.php#L490'><code>update_order_status_from_intent()</code></a> adds a payment started note."]:::PHP
 	upe_update_order --> upe_proceed_in_js[PHP sends a <a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/payment-methods/class-upe-payment-gateway.php#L506'><code>payment_needed</code></a> flag back to JS]:::PHP
 	upe_proceed_in_js -->|payment_needed, return_url| upe_handle_confirmation["<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/client/checkout/classic/upe.js#L504-L517'>Data for <code>handlePaymentConfirmation()</code><br>gets prepared, and it is called to confirm the intention</a>"]:::JS
-	upe_handle_confirmation --> upe_confirm_intent["Call <a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/client/checkout/classic/upe.js#L520'><code>stripe.confirmPayment()</code></a><br>to finalize the payment."]:::JS
+	upe_handle_confirmation --> upe_confirm_intent
 	upe_confirm_intent --> upe_check_intent_status[<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/client/checkout/api/index.js#L472-L474'>Check the status of the intent</a>]:::asyncJS
 	upe_confirm_intent --> stripe_webhook
 	upe_check_intent_status --> upe_redirect_to_thank_you_page[<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/client/checkout/api/index.js#L475-L481'>Redirect to the Order Received page</a>]:::JS
@@ -89,11 +82,21 @@ graph TB
 	upe_handle_redirect --> upe_process_upe_redirect_order{<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/payment-methods/class-upe-payment-gateway.php#L600'>Order is pending payment?</a><br>It could have been completed<br>through a webhook}:::PHP
 	upe_process_upe_redirect_order -->|No| upe_display_page[Display the Order Received page as usual]:::PHP
 	upe_process_upe_redirect_order -->|Yes| upe_attach_info_to_order
-	subgraph UPE sync success;
-		upe_attach_info_to_order["<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/payment-methods/class-upe-payment-gateway.php#L657'><code>attach_intent_info_to_order()</code></a><br>stores the intent and charge IDs"]:::PHP
-		upe_attach_info_to_order ---> upe_mark_payment_completed["Mark order as complete through<br /><a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/payment-methods/class-upe-payment-gateway.php#L659'><code>$order_service->mark_payment_completed()</code></a>"]:::PHP
-	end
 	upe_mark_payment_completed --> upe_display_page
+
+  subgraph "Order status updates and attachment of data"
+    attach_info_to_order_2["<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L2404'><code>attach_intent_info_to_order()</code></a><br>stores the intent and charge IDs"]:::PHP
+    attach_info_to_order_2 ---> mark_payment_completed_2["Mark order as complete through<br /><a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L2414'><code>$order_service->mark_payment_completed</code></a>"]:::PHP
+
+    webhook_meta_update[<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payments-webhook-processing-service.php#L414-L428'>Manual metadata update</a>]:::asyncPHP
+		webhook_meta_update --> webhook_mark_payment_completed["Mark order as complete through<br /><a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payments-webhook-processing-service.php#L430'><code>$order_service->mark_payment_completed()</code></a>"]:::asyncPHP
+
+    attach_info_to_order["<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L1174'><code>attach_intent_info_to_order()</code></a><br>stores the intent and charge IDs"]:::PHP
+		attach_info_to_order ---> mark_payment_completed["Mark order as complete through<br /><a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/class-wc-payment-gateway-wcpay.php#L1176'><code>$order_service->mark_payment_completed()</code></a>"]:::PHP
+
+    upe_attach_info_to_order["<a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/payment-methods/class-upe-payment-gateway.php#L657'><code>attach_intent_info_to_order()</code></a><br>stores the intent and charge IDs"]:::PHP
+		upe_attach_info_to_order ---> upe_mark_payment_completed["Mark order as complete through<br /><a href='https://github.com/Automattic/woocommerce-payments/blob/472fd4fbc29a4cd33e6f8870bd8f6612a8a113f4/includes/payment-methods/class-upe-payment-gateway.php#L659'><code>$order_service->mark_payment_completed()</code></a>"]:::PHP
+  end
 
 	%% At the end
 	done(<b>Done:</b><br >Customer sees the order received page.)
