@@ -32,17 +32,12 @@ const generatePaymentMethod = async ( api, elements, billingData ) => {
 			paymentMethod: { id },
 		} = await request.send();
 
-		const fraudPreventionToken = document
-			.querySelector( '#wcpay-fraud-prevention-token' )
-			?.getAttribute( 'value' );
-
 		return {
 			type: 'success',
 			meta: {
 				paymentMethodData: {
 					paymentMethod: PAYMENT_METHOD_NAME_CARD,
 					'wcpay-payment-method': id,
-					'wcpay-fraud-prevention-token': fraudPreventionToken ?? '',
 				},
 			},
 		};

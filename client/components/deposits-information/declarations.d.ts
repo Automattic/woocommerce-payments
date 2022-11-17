@@ -58,6 +58,17 @@ declare namespace AccountOverview {
 	}
 }
 
+declare module 'gridicons' {
+	type GridiconParams = {
+		icon: string;
+		size?: number;
+		className?: string;
+	};
+	const Gridicon: ( props: GridiconParams ) => JSX.Element;
+
+	export = Gridicon;
+}
+
 declare module '@woocommerce/components' {
 	type LinkParams = {
 		href: string;

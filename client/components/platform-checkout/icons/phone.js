@@ -13,7 +13,7 @@ const PhoneIcon = ( props ) => (
 		{ ...props }
 	>
 		<mask
-			id="phone-icon"
+			id="phone"
 			style={ { maskType: 'alpha' } }
 			maskUnits="userSpaceOnUse"
 			x={ 4 }
@@ -28,7 +28,7 @@ const PhoneIcon = ( props ) => (
 				fill="#fff"
 			/>
 		</mask>
-		<g mask="url(#phone-icon)">
+		<g mask="url(#phone)">
 			<path fill="currentColor" d="M0 5h16v16H0z" />
 		</g>
 	</svg>

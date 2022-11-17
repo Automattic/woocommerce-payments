@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Move One Time Shipping metabox fields to use the woocommerce_product_options_shipping_product_data hook introduced in WC 6.0.

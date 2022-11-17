@@ -6,10 +6,9 @@ import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
-import { buildAjaxURL } from '../../payment-request/utils';
 
-// Waits for the element to exist as in the Blocks checkout, sometimes the field is not immediately available.
-const waitForElement = ( selector ) => {
+// Waits for the email field to exist as in the Blocks checkout, sometimes the email field is not immediately available.
+const waitForEmailField = ( selector ) => {
 	return new Promise( ( resolve ) => {
 		if ( document.querySelector( selector ) ) {
 			return resolve( document.querySelector( selector ) );
@@ -18,10 +17,10 @@ const waitForElement = ( selector ) => {
 		const checkoutBlock = document.querySelector(
 			'[data-block-name="woocommerce/checkout"]'
 		);
-		const observer = new MutationObserver( ( mutationList, obs ) => {
+		const observer = new MutationObserver( () => {
 			if ( document.querySelector( selector ) ) {
 				resolve( document.querySelector( selector ) );
-				obs.disconnect();
+				observer.disconnect();
 			}
 		} );
 
@@ -32,14 +31,10 @@ const waitForElement = ( selector ) => {
 	} );
 };
 
-export const handlePlatformCheckoutEmailInput = async (
-	field,
-	api,
-	isBlocksCheckout = false
-) => {
+export const handlePlatformCheckoutEmailInput = async ( field, api ) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = await waitForElement( field );
+	const platformCheckoutEmailInput = await waitForEmailField( field );
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
@@ -92,14 +87,6 @@ export const handlePlatformCheckoutEmailInput = async (
 
 	// Maybe we could make this a configurable option defined in PHP so it could be filtered by merchants.
 	const fullScreenModalBreakpoint = 768;
-
-	//Checks if customer has clicked the back button to prevent auto redirect
-	const searchParams = new URLSearchParams( window.location.search );
-	const customerClickedBackButton =
-		( 'undefined' !== typeof performance &&
-			'back_forward' ===
-				performance.getEntriesByType( 'navigation' )[ 0 ].type ) ||
-		'true' === searchParams.get( 'skip_platform_checkout' );
 
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
@@ -297,20 +284,11 @@ export const handlePlatformCheckoutEmailInput = async (
 		closeIframe( false );
 	} );
 
-	if ( isBlocksCheckout ) {
-		const formSubmitButton = await waitForElement(
-			'button.wc-block-components-checkout-place-order-button'
-		);
-		formSubmitButton.addEventListener( 'click', () => {
+	document
+		.querySelector( 'form[name="checkout"]' )
+		.addEventListener( 'submit', () => {
 			abortController.abort();
 		} );
-	} else {
-		document
-			.querySelector( 'form[name="checkout"]' )
-			.addEventListener( 'submit', () => {
-				abortController.abort();
-			} );
-	}
 
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
@@ -355,55 +333,30 @@ export const handlePlatformCheckoutEmailInput = async (
 			}
 		}
 
-		request(
-			buildAjaxURL(
-				getConfig( 'wcAjaxUrl' ),
-				'get_platform_checkout_signature'
-			),
+		const emailExistsQuery = new URLSearchParams();
+		emailExistsQuery.append( 'email', email );
+		emailExistsQuery.append( 'test_mode', !! getConfig( 'testMode' ) );
+		emailExistsQuery.append(
+			'wcpay_version',
+			getConfig( 'wcpayVersionNumber' )
+		);
+		emailExistsQuery.append(
+			'blog_id',
+			getConfig( 'platformCheckoutMerchantId' )
+		);
+		emailExistsQuery.append(
+			'request_signature',
+			getConfig( 'platformCheckoutRequestSignature' )
+		);
+
+		fetch(
+			`${ getConfig(
+				'platformCheckoutHost'
+			) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
 			{
-				_ajax_nonce: getConfig( 'platformCheckoutSignatureNonce' ),
+				signal,
 			}
 		)
-			.then( ( response ) => {
-				if ( response.success ) {
-					return response.data;
-				}
-
-				throw new Error( 'Request for signature failed.' );
-			} )
-			.then( ( data ) => {
-				if ( data.signature ) {
-					return data.signature;
-				}
-
-				throw new Error( 'Signature not found.' );
-			} )
-			.then( ( signature ) => {
-				const emailExistsQuery = new URLSearchParams();
-				emailExistsQuery.append( 'email', email );
-				emailExistsQuery.append(
-					'test_mode',
-					!! getConfig( 'testMode' )
-				);
-				emailExistsQuery.append(
-					'wcpay_version',
-					getConfig( 'wcpayVersionNumber' )
-				);
-				emailExistsQuery.append(
-					'blog_id',
-					getConfig( 'platformCheckoutMerchantId' )
-				);
-				emailExistsQuery.append( 'request_signature', signature );
-
-				return fetch(
-					`${ getConfig(
-						'platformCheckoutHost'
-					) }/wp-json/platform-checkout/v1/user/exists?${ emailExistsQuery.toString() }`,
-					{
-						signal,
-					}
-				);
-			} )
 			.then( ( response ) => {
 				if ( 200 !== response.status ) {
 					showErrorMessage();
@@ -455,6 +408,8 @@ export const handlePlatformCheckoutEmailInput = async (
 	};
 
 	const closeLoginSessionIframe = () => {
+		hasCheckedLoginSession = true;
+
 		loginSessionIframeWrapper.remove();
 		loginSessionIframe.classList.remove( 'open' );
 		platformCheckoutEmailInput.focus();
@@ -465,18 +420,10 @@ export const handlePlatformCheckoutEmailInput = async (
 		}
 	};
 
-	const openLoginSessionIframe = ( email ) => {
-		const emailParam = new URLSearchParams();
-
-		if ( validateEmail( email ) ) {
-			parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
-			emailParam.append( 'email', email );
-			emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
-		}
-
+	const openLoginSessionIframe = () => {
 		loginSessionIframe.src = `${ getConfig(
 			'platformCheckoutHost'
-		) }/login-session?${ emailParam.toString() }`;
+		) }/login-session`;
 
 		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( loginSessionIframeWrapper, null );
@@ -493,12 +440,44 @@ export const handlePlatformCheckoutEmailInput = async (
 		}, 15000 );
 	};
 
-	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
-		if ( ! hasCheckedLoginSession && ! customerClickedBackButton ) {
-			if ( customerClickedBackButton ) {
-				openLoginSessionIframe( platformCheckoutEmailInput.value );
+	// Prevent show platform checkout iframe if the page comes from
+	// the back button on platform checkout itself.
+	window.addEventListener( 'pageshow', function ( event ) {
+		// Detect browser back button.
+		const historyTraversal =
+			event.persisted ||
+			( 'undefined' !== typeof performance &&
+				'back_forward' ===
+					performance.getEntriesByType( 'navigation' )[ 0 ].type );
+
+		const searchParams = new URLSearchParams( window.location.search );
+
+		if (
+			! historyTraversal &&
+			'true' !== searchParams.get( 'skip_platform_checkout' )
+		) {
+			// Check if user already has a WooPay login session.
+			if ( ! hasCheckedLoginSession ) {
+				openLoginSessionIframe();
+			}
+		} else {
+			searchParams.delete( 'skip_platform_checkout' );
+
+			let { pathname } = window.location;
+
+			if ( '' !== searchParams.toString() ) {
+				pathname += '?' + searchParams.toString();
 			}
 
+			history.replaceState( null, null, pathname );
+
+			// Safari needs to close iframe with this.
+			closeIframe( false );
+		}
+	} );
+
+	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
+		if ( ! hasCheckedLoginSession ) {
 			return;
 		}
 
@@ -521,7 +500,6 @@ export const handlePlatformCheckoutEmailInput = async (
 
 		switch ( e.data.action ) {
 			case 'auto_redirect_to_platform_checkout':
-				hasCheckedLoginSession = true;
 				api.initPlatformCheckout(
 					'',
 					e.data.platformCheckoutUserSession
@@ -534,7 +512,6 @@ export const handlePlatformCheckoutEmailInput = async (
 						wcpayTracks.recordUserEvent(
 							wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
 						);
-						spinner.remove();
 						window.location = response.url;
 					} else {
 						closeLoginSessionIframe();
@@ -542,7 +519,6 @@ export const handlePlatformCheckoutEmailInput = async (
 				} );
 				break;
 			case 'close_auto_redirection_modal':
-				hasCheckedLoginSession = true;
 				closeLoginSessionIframe();
 				break;
 			case 'redirect_to_platform_checkout':
@@ -603,35 +579,4 @@ export const handlePlatformCheckoutEmailInput = async (
 			// do nothing, only respond to expected actions.
 		}
 	} );
-
-	window.addEventListener( 'pageshow', function ( event ) {
-		if ( event.persisted ) {
-			// Safari needs to close iframe with this.
-			closeIframe( false );
-		}
-	} );
-
-	if ( ! customerClickedBackButton ) {
-		// Check if user already has a WooPay login session.
-		if ( ! hasCheckedLoginSession ) {
-			openLoginSessionIframe( platformCheckoutEmailInput.value );
-		}
-	} else {
-		wcpayTracks.recordUserEvent(
-			wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
-		);
-
-		searchParams.delete( 'skip_platform_checkout' );
-
-		let { pathname } = window.location;
-
-		if ( '' !== searchParams.toString() ) {
-			pathname += '?' + searchParams.toString();
-		}
-
-		history.replaceState( null, null, pathname );
-
-		// Safari needs to close iframe with this.
-		closeIframe( false );
-	}
 };

@@ -56,12 +56,8 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
         </div>
       </div>
     </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
@@ -281,12 +277,8 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
         </div>
       </div>
     </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
@@ -536,12 +528,8 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
         </div>
       </div>
     </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
@@ -768,12 +756,8 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
         </div>
       </div>
     </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <span
         aria-busy="true"
@@ -849,12 +833,8 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
         </div>
       </div>
     </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
         class="woocommerce-list woocommerce-list--horizontal"
@@ -1077,12 +1057,8 @@ exports[`PaymentDetailsSummary renders the information of a disputed charge 1`] 
         </div>
       </div>
     </div>
-    <hr
-      class="components-card__divider css-lh2anh-DividerUI e1q7k77g5"
-      role="separator"
-    />
     <div
-      class="components-card__body is-size-medium css-xmjzce-BodyUI e1q7k77g3"
+      class="components-flex components-card__footer is-size-medium e1q7k77g4 css-oliaol-Flex-FooterUI eboqfv50"
     >
       <ul
         class="woocommerce-list woocommerce-list--horizontal"

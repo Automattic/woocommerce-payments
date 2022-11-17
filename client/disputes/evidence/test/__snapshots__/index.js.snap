@@ -122,7 +122,8 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
           <input
             class="components-text-control__input"
             id="inspector-text-control-1"
-            type="text"
+            max="2021-06-24"
+            type="date"
             value=""
           />
         </div>
@@ -185,7 +186,26 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     <div
       class="components-card__body is-size-large css-xmjzce-BodyUI e1q7k77g3"
     >
-      
+      <div
+        class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+      >
+        <div
+          class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+        >
+          <label
+            class="components-base-control__label css-pezhm9-StyledLabel e1puf3u2"
+            for="inspector-textarea-control-1"
+          >
+            Product description
+          </label>
+          <textarea
+            class="components-textarea-control__input css-gw3wbu-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+            disabled=""
+            id="inspector-textarea-control-1"
+            rows="4"
+          />
+        </div>
+      </div>
       <div
         class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
       >
@@ -203,7 +223,7 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
             disabled=""
             id="inspector-text-control-2"
             type="text"
-            value="No information submitted"
+            value=""
           />
         </div>
       </div>
@@ -219,11 +239,48 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
           >
             Customer signature
           </label>
-          <span
-            class="upload-message"
+          <div
+            class="components-drop-zone__provider"
           >
-            : Evidence file was not uploaded
-          </span>
+            <div
+              class="components-drop-zone"
+            />
+          </div>
+          <div
+            class="file-upload"
+          >
+            <div
+              class="components-form-file-upload"
+            >
+              <button
+                class="components-button is-secondary has-text has-icon"
+                disabled=""
+                id="form-file-upload-customer_signature"
+                type="button"
+              >
+                <svg
+                  class="gridicon gridicons-add-outline"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <g>
+                    <path
+                      d="M12 4c4.41 0 8 3.59 8 8s-3.59 8-8 8-8-3.59-8-8 3.59-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm5 9h-4V7h-2v4H7v2h4v4h2v-4h4v-2z"
+                    />
+                  </g>
+                </svg>
+                Upload file
+              </button>
+              <input
+                accept=".pdf, image/png, image/jpeg"
+                style="display: none;"
+                type="file"
+              />
+            </div>
+            
+          </div>
         </div>
       </div>
       <div
@@ -242,8 +299,9 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
             class="components-text-control__input"
             disabled=""
             id="inspector-text-control-3"
-            type="text"
-            value="Date not submitted"
+            max="2021-06-24"
+            type="date"
+            value=""
           />
         </div>
       </div>

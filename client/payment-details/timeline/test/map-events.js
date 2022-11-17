@@ -4,14 +4,6 @@
  */
 import mapTimelineEvents from '../map-events';
 
-jest.mock( 'gridicons/dist/sync', () => 'SyncIcon' );
-jest.mock( 'gridicons/dist/plus', () => 'PlusIcon' );
-jest.mock( 'gridicons/dist/minus', () => 'MinusIcon' );
-jest.mock( 'gridicons/dist/info-outline', () => 'InfoOutlineIcon' );
-jest.mock( 'gridicons/dist/checkmark', () => 'CheckmarkIcon' );
-jest.mock( 'gridicons/dist/cross', () => 'CrossIcon' );
-jest.mock( 'gridicons/dist/notice-outline', () => 'NoticeOutlineIcon' );
-
 describe( 'mapTimelineEvents', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();

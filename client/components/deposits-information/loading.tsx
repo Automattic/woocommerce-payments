@@ -3,7 +3,7 @@
  */
 import * as React from 'react';
 import { Card, CardHeader, CardBody } from '@wordpress/components';
-import CalendarIcon from 'gridicons/dist/calendar';
+import Gridicon from 'gridicons';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -25,7 +25,8 @@ const DepositsInformationLoading = (): JSX.Element => {
 					</h3>
 
 					<p className="wcpay-deposits-information-header__schedule">
-						<CalendarIcon
+						<Gridicon
+							icon="calendar"
 							size={ 24 }
 							className="wcpay-deposits-information-header__icon"
 						/>

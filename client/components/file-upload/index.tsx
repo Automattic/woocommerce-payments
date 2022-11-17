@@ -10,14 +10,12 @@ import {
 	FormFileUpload,
 	Button,
 } from '@wordpress/components';
-import CheckmarkIcon from 'gridicons/dist/checkmark';
-import AddOutlineIcon from 'gridicons/dist/add-outline';
-import TrashIcon from 'gridicons/dist/trash';
+import Gridicon from 'gridicons';
 
 /**
  * Internal dependencies.
  */
-import type { FileUploadControlProps } from 'wcpay/types/disputes';
+import type { DisputeFileUpload } from 'wcpay/types/disputes';
 import FileUploadError from './upload-error';
 import FileUploadPreview from './preview';
 
@@ -34,10 +32,15 @@ export const FileUploadControl = ( {
 	help,
 	showPreview,
 	uploadButtonLabel,
-}: FileUploadControlProps ): JSX.Element => {
+}: DisputeFileUpload ): JSX.Element => {
 	const hasError = ( error && 0 < error.length ) || false;
 
-	const Icon = isDone && ! hasError ? CheckmarkIcon : AddOutlineIcon;
+	const getIcon = (
+		<Gridicon
+			icon={ isDone && ! hasError ? 'checkmark' : 'add-outline' }
+			size={ 18 }
+		/>
+	);
 
 	const handleButtonClick = (
 		event: React.MouseEvent< HTMLButtonElement >,
@@ -96,7 +99,7 @@ export const FileUploadControl = ( {
 							isDestructive={ hasError }
 							isBusy={ isLoading }
 							disabled={ disabled || isLoading }
-							icon={ <Icon size={ 18 } /> }
+							icon={ getIcon }
 							onClick={ (
 								event: React.MouseEvent< HTMLButtonElement >
 							) => handleButtonClick( event, openFileDialog ) }
@@ -123,37 +126,11 @@ export const FileUploadControl = ( {
 							'Remove file',
 							'woocommerce-payments'
 						) }
-						icon={ <TrashIcon size={ 18 } /> }
+						icon={ <Gridicon icon="trash" size={ 18 } /> }
 						onClick={ () => onFileRemove( field.key ) }
 					/>
 				) : null }
 			</div>
-		</BaseControl>
-	);
-};
-
-// Hide upload button and show file name for cases like submitted dispute form
-export const UploadedReadOnly = ( {
-	field,
-	fileName,
-	showPreview,
-}: FileUploadControlProps ): JSX.Element => {
-	return (
-		<BaseControl
-			id={ `form-file-upload-base-control-${ field.key }` }
-			label={ field.label }
-		>
-			<FileUploadPreview
-				fileName={
-					fileName
-						? `: ${ fileName }`
-						: __(
-								': Evidence file was not uploaded',
-								'woocommerce-payments'
-						  )
-				}
-				showPreview={ showPreview }
-			/>
 		</BaseControl>
 	);
 };

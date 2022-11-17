@@ -59,7 +59,6 @@ const events = {
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
-	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
 	UPE_ENABLED: 'wcpay_upe_enabled',
 	UPE_DISABLED: 'wcpay_upe_disabled',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
@@ -83,7 +82,6 @@ const events = {
 	PLATFORM_CHECKOUT_OTP_COMPLETE: 'platform_checkout_otp_prompt_complete',
 	PLATFORM_CHECKOUT_OTP_FAILED: 'platform_checkout_otp_prompt_failed',
 	PLATFORM_CHECKOUT_AUTO_REDIRECT: 'platform_checkout_auto_redirect',
-	PLATFORM_CHECKOUT_SKIPPED: 'platform_checkout_skipped',
 };
 
 export default {
