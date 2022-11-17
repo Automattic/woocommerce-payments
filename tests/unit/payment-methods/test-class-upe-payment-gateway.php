@@ -322,6 +322,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'   => $order_number,
 					'order_key'      => $order->get_order_key(),
 					'payment_type'   => Payment_Type::SINGLE(),
+					'fingerprint'    => '',
 				],
 				[
 					'merchant_reference' => (string) $order_id,
@@ -394,6 +395,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'   => $order_number,
 					'order_key'      => $order->get_order_key(),
 					'payment_type'   => Payment_Type::SINGLE(),
+					'fingerprint'    => '',
 				],
 				[
 					'merchant_reference' => (string) $order_id,
@@ -462,6 +464,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'order_number'   => $order_number,
 					'order_key'      => $order->get_order_key(),
 					'payment_type'   => Payment_Type::SINGLE(),
+					'fingerprint'    => '',
 				],
 				[
 					'merchant_reference' => (string) $order_id,
