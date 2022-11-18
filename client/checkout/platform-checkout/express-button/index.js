@@ -1,4 +1,3 @@
-/* global jQuery */
 /**
  * External dependencies
  */
@@ -24,12 +23,4 @@ const renderPlatformCheckoutExpressButton = () => {
 
 window.addEventListener( 'load', () => {
 	renderPlatformCheckoutExpressButton();
-} );
-
-// mount component again if parent fragment if re-rendered after ajax request by woocommerce core
-// https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/legacy/js/frontend/checkout.js#L372
-jQuery( function ( $ ) {
-	$( document ).ajaxComplete( function () {
-		renderPlatformCheckoutExpressButton();
-	} );
 } );
