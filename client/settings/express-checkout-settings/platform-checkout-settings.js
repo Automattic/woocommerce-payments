@@ -27,7 +27,7 @@ import {
 	usePlatformCheckoutButtonTheme,
 	usePlatformCheckoutLocations,
 } from 'wcpay/data';
-import { WoopayExpressCheckoutButton } from 'wcpay/checkout/platform-checkout/woopay-express-checkout-button';
+import { WoopayExpressCheckoutButton } from 'wcpay/checkout/platform-checkout/express-button/woopay-express-checkout-button';
 
 const CUSTOM_MESSAGE_MAX_LENGTH = 100;
 

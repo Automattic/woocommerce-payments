@@ -73,7 +73,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 
-		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ], PHP_INT_MAX );
+		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_html' ], -2 );
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
@@ -98,11 +98,11 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			'button' => $this->get_button_settings(),
 		];
 
-		$script_src_url    = plugins_url( 'dist/platform-checkout-express.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/platform-checkout-express.asset.php';
+		$script_src_url    = plugins_url( 'dist/platform-checkout-express-button.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path = WCPAY_ABSPATH . 'dist/platform-checkout-express-button.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
 
-		wp_register_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', $script_src_url, $script_asset['dependencies'], WC_Payments::get_file_version( 'dist/platform-checkout-express.js' ), true );
+		wp_register_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', $script_src_url, $script_asset['dependencies'], WC_Payments::get_file_version( 'dist/platform-checkout-express-button.js' ), true );
 
 		wp_localize_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'wcpayWooPayExpressParams', $platform_express_button_params );
 
