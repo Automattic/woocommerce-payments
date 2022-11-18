@@ -98,6 +98,13 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	private $metadata;
 
 	/**
+	 * The details on the state of the payment.
+	 *
+	 * @var array
+	 */
+	private $processing;
+
+	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
 	 * @param string                 $id                 - ID of the intention.

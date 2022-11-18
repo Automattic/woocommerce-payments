@@ -661,11 +661,9 @@ class WC_Payments_Webhook_Processing_Service {
 					case 'transaction_not_approved':
 						return __( 'For recurring payment greater than mandate amount or INR 15000, payment was not approved by the card holder.', 'woocommerce-payments' );
 				}
-				break;
-
-			default:
-				// translators: %s Stripe error message.
-				return sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), $message );
 		}
+
+		// translators: %s Stripe error message.
+		return sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), $message );
 	}
 }
