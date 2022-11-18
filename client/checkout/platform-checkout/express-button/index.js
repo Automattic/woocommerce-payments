@@ -13,12 +13,14 @@ const renderPlatformCheckoutExpressButton = () => {
 		'wcpay-platform-checkout-button'
 	);
 
-	ReactDOM.render(
-		<WoopayExpressCheckoutButton
-			buttonSettings={ global.wcpayWooPayExpressParams.button }
-		/>,
-		platformCheckoutContainer
-	);
+	if ( platformCheckoutContainer ) {
+		ReactDOM.render(
+			<WoopayExpressCheckoutButton
+				buttonSettings={ global.wcpayWooPayExpressParams.button }
+			/>,
+			platformCheckoutContainer
+		);
+	}
 };
 
 window.addEventListener( 'load', () => {
