@@ -27,7 +27,7 @@ import {
 	usePlatformCheckoutButtonTheme,
 	usePlatformCheckoutLocations,
 } from 'wcpay/data';
-import PlatformCheckoutButtonPreview from './platform-checkout-button-preview';
+import { WoopayExpressCheckoutButton } from 'wcpay/checkout/platform-checkout/express-button/woopay-express-checkout-button';
 
 const CUSTOM_MESSAGE_MAX_LENGTH = 100;
 
@@ -165,6 +165,43 @@ const PlatformCheckoutSettings = ( { section } ) => {
 				)
 			);
 		}
+	};
+
+	const getButtonSettings = () => {
+		let text = '';
+		switch ( buttonType ) {
+			case 'buy':
+				text = 'Buy';
+				break;
+			case 'donate':
+				text = 'Donate';
+				break;
+			case 'book':
+				text = 'Book';
+				break;
+			default:
+				text = '';
+		}
+
+		let height = 0;
+		switch ( size ) {
+			case 'medium':
+				height = 48;
+				break;
+			case 'large':
+				height = 56;
+				break;
+			default:
+				height = 40;
+		}
+
+		return {
+			type: buttonType,
+			text,
+			theme,
+			height,
+			size,
+		};
 	};
 
 	return (
@@ -345,7 +382,10 @@ const PlatformCheckoutSettings = ( { section } ) => {
 							onChange={ setTheme }
 						/>
 						<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
-						<PlatformCheckoutButtonPreview />
+						<WoopayExpressCheckoutButton
+							isPreview={ true }
+							buttonSettings={ getButtonSettings() }
+						/>
 					</CardBody>
 				</Card>
 			) }
