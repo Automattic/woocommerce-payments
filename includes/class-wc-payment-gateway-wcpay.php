@@ -1005,7 +1005,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			$idempotency_key                              = hash( 'md5', (string) $order->get_id() . '-' . $this->account->get_stripe_account_id(), false ) . '-' . WC()->cart->get_cart_hash();
+			$idempotency_key                              = hash( 'md5', (string) $order->get_id() . '-' . $payment_method . '-' . $this->account->get_stripe_account_id(), false ) . '-' . WC()->cart->get_cart_hash();
 			$additional_api_parameters['idempotency_key'] = $idempotency_key;
 
 			if ( empty( $intent ) ) {
@@ -2601,9 +2601,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception - When an error occurs in intent creation.
 	 */
 	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic', array $metadata = [], string $customer_id = null ) {
-		$currency         = strtolower( $order->get_currency() );
-		$converted_amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-		$idempotency_key  = hash( 'md5', (string) $order->get_id() . '-' . $this->account->get_stripe_account_id(), false ) . '-' . WC()->cart->get_cart_hash();
+		$currency            = strtolower( $order->get_currency() );
+		$converted_amount    = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
+		$payment_information = $this->prepare_payment_information( $order );
+		$idempotency_key     = hash( 'md5', (string) $order->get_id() . '-' . $payment_information->get_payment_method() . $this->account->get_stripe_account_id(), false ) . '-' . WC()->cart->get_cart_hash();
 
 		try {
 			$intent = $this->payments_api_client->create_intention(
