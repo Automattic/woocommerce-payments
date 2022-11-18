@@ -28,17 +28,26 @@ export const getTasks = ( {
 	const isDisputeTaskVisible = 0 < numDisputesNeedingResponse;
 
 	if ( accountRestrictedSoon ) {
-		accountDetailsTaskDescription = sprintf(
-			/* translators: %s - formatted requirements current deadline (date) */
-			__(
-				'Update by %s to avoid a disruption in deposits.',
-				'woocommerce-payments'
-			),
-			dateI18n(
-				'ga M j, Y',
-				moment( currentDeadline * 1000 ).toISOString()
-			)
-		);
+		if ( ! currentDeadline ) {
+			accountDetailsTaskDescription = sprintf(
+				__(
+					'Update soon to avoid a disruption in deposits.',
+					'woocommerce-payments'
+				)
+			);
+		} else {
+			accountDetailsTaskDescription = sprintf(
+				/* translators: %s - formatted requirements current deadline (date) */
+				__(
+					'Update by %s to avoid a disruption in deposits.',
+					'woocommerce-payments'
+				),
+				dateI18n(
+					'ga M j, Y',
+					moment( currentDeadline * 1000 ).toISOString()
+				)
+			);
+		}
 	} else if ( accountDetailsPastDue ) {
 		accountDetailsTaskDescription =
 			/* translators: <a> - dashboard login URL */
