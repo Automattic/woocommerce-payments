@@ -69,10 +69,10 @@ const WCPayUPEFields = ( {
 	paymentIntentSecret,
 	errorMessage,
 	shouldSavePayment,
+	fingerprint,
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
-	const [ fingerprint ] = useFingerprint();
 
 	const [ isUPEComplete, setIsUPEComplete ] = useState( false );
 	const [ selectedUPEPaymentType, setSelectedUPEPaymentType ] = useState(
@@ -375,6 +375,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		getConfig( 'wcBlocksUPEAppearance' )
 	);
 	const [ fontRules ] = useState( getFontRulesFromPage() );
+	const [ fingerprint ] = useFingerprint();
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
@@ -389,13 +390,13 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 			generateUPEAppearance();
 		}
 
-		if ( paymentIntentId || hasRequestedIntent ) {
+		if ( paymentIntentId || hasRequestedIntent || ! fingerprint ) {
 			return;
 		}
 
 		async function createIntent() {
 			try {
-				const response = await api.createIntent();
+				const response = await api.createIntent( fingerprint );
 				setPaymentIntentId( response.id );
 				setClientSecret( response.client_secret );
 			} catch ( error ) {
@@ -408,7 +409,14 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		}
 		setHasRequestedIntent( true );
 		createIntent();
-	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage, appearance ] );
+	}, [
+		paymentIntentId,
+		hasRequestedIntent,
+		api,
+		errorMessage,
+		appearance,
+		fingerprint,
+	] );
 
 	if ( ! clientSecret ) {
 		if ( errorMessage ) {
@@ -439,6 +447,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 				paymentIntentId={ paymentIntentId }
 				paymentIntentSecret={ clientSecret }
 				errorMessage={ errorMessage }
+				fingerprint={ fingerprint }
 				{ ...props }
 			/>
 		</Elements>

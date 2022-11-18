@@ -384,16 +384,18 @@ export default class WCPayAPI {
 	/**
 	 * Creates an intent based on a payment method.
 	 *
-	 * @param {int} orderId The id of the order if creating the intent on Order Pay page.
+	 * @param {string} fingerprint User fingerprint.
+	 * @param {int?} orderId The id of the order if creating the intent on Order Pay page.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	createIntent( orderId ) {
+	createIntent( fingerprint = '', orderId ) {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'create_payment_intent' ),
 			{
 				wcpay_order_id: orderId,
 				_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
+				'wcpay-fingerprint': fingerprint,
 			}
 		)
 			.then( ( response ) => {

@@ -196,11 +196,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param boolean $save_payment_method       True if saving the payment method.
 	 * @param string  $selected_upe_payment_type The name of the selected UPE payment type or empty string.
 	 * @param ?string $payment_country           The payment two-letter iso country code or null.
-	 * @param string  $fingerprint               User fingerprint.
 	 *
 	 * @return array|null An array with result of the update, or nothing
 	 */
-	public function update_payment_intent( $payment_intent_id = '', $order_id = null, $save_payment_method = false, $selected_upe_payment_type = '', $payment_country = null, $fingerprint = '' ) {
+	public function update_payment_intent( $payment_intent_id = '', $order_id = null, $save_payment_method = false, $selected_upe_payment_type = '', $payment_country = null ) {
 		$order = wc_get_order( $order_id );
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
@@ -218,7 +217,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				$save_payment_method,
 				$customer_id,
-				$this->get_metadata_from_order( $order, $payment_type, $fingerprint ),
+				$this->get_metadata_from_order( $order, $payment_type ),
 				$this->get_level3_data_from_order( $order ),
 				$selected_upe_payment_type,
 				$payment_country
@@ -246,9 +245,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			// If paying from order, we need to get the total from the order instead of the cart.
-			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
+			$order_id    = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
+			$fingerprint = isset( $_POST['wcpay-fingerprint'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fingerprint'] ) ) : '';
 
-			$response = $this->create_payment_intent( $order_id );
+			$response = $this->create_payment_intent( $order_id, $fingerprint );
 
 			// Encrypt client secret before exposing it to the browser.
 			if ( $response['client_secret'] ) {
@@ -276,10 +276,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * Creates payment intent using current cart or order and store details.
 	 *
 	 * @param int|null $order_id The id of the order if intent created from Order.
+	 * @param string   $fingerprint User fingerprint.
 	 *
 	 * @return array
 	 */
-	public function create_payment_intent( $order_id = null ) {
+	public function create_payment_intent( $order_id = null, $fingerprint = '' ) {
 		$amount   = WC()->cart->get_total( '' );
 		$currency = get_woocommerce_currency();
 		$number   = 0;
@@ -310,7 +311,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				array_values( $enabled_payment_methods ),
 				$number,
-				$capture_method
+				$capture_method,
+				[ 'fingerprint' => $fingerprint ]
 			);
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$minimum_amount = $e->get_minimum_amount();
@@ -329,7 +331,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				array_values( $enabled_payment_methods ),
 				$number,
-				$capture_method
+				$capture_method,
+				[ 'fingerprint' => $fingerprint ]
 			);
 		}
 
@@ -432,7 +435,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function process_payment( $order_id ) {
 		$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$fingerprint               = isset( $_POST['wcpay-fingerprint'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fingerprint'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$order                     = wc_get_order( $order_id );
 		$amount                    = $order->get_total();
 		$currency                  = $order->get_currency();
@@ -476,7 +478,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						strtolower( $currency ),
 						$save_payment_method,
 						$customer_id,
-						$this->get_metadata_from_order( $order, $payment_type, $fingerprint ),
+						$this->get_metadata_from_order( $order, $payment_type ),
 						$this->get_level3_data_from_order( $order ),
 						$selected_upe_payment_type,
 						$payment_country
