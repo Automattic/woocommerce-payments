@@ -1189,7 +1189,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'order_number'   => $order->get_order_number(),
 			'order_key'      => $order->get_order_key(),
 			'payment_type'   => Payment_Type::SINGLE(),
-			'fingerprint'    => '',
 		];
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_intent' )->with( $intent_id )->will(
