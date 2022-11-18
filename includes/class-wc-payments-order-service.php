@@ -387,6 +387,55 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * The gateway's `process_payment_for_order` takes time with server calls,
+	 * especially `create_and_confirm_(intention|setup_intent)`, which involve webhooks.
+	 *
+	 * Let's make sure we are not failing an order, which already succeeded.
+	 *
+	 * @param  WC_Order  $order Order to check.
+	 * @param  Exception $e     The exception that was thrown.
+	 * @return bool             An indicator if the order was paid.
+	 */
+	public function is_order_paid_regardless_of_exception( WC_Order $order, Exception $e ) {
+		/**
+		 * If this was not an API exception, the gateway would have received
+		 * the intent and performed the correct actions already.
+		 */
+		if ( ! ( $e instanceof API_Exception ) ) {
+			return $this->is_order_paid( $order );
+		}
+
+		/**
+		 * The typical webhook arrives simultaneously with the exception.
+		 * Give it time to either process the order, or at least lock it.
+		 */
+		sleep( 5 );
+
+		/**
+		 * If the order is locked, this means a webhook is processing it! 🎉
+		 *
+		 * At this point it's worth waiting, because changing the order status,
+		 * especially to a successful one, can take a while as extensions may
+		 * use the status change as a trigger for related actions.
+		 *
+		 * If we did not wait, the gateway will display an error message,
+		 * and the customer might retry the payment. With a bit of patience,
+		 * they might be redirected straight to the "Thank you!" page.
+		 */
+		$total_sleep = 0;
+		while ( $this->is_order_locked( $order ) ) {
+			if ( $total_sleep >= 15 ) { // Don't wait too long.
+				break;
+			}
+
+			sleep( 1 );
+			$total_sleep++;
+		}
+
+		return $this->is_order_paid( $order );
+	}
+
+	/**
 	 * Get content for the success order note.
 	 *
 	 * @param string $intent_id        The payment intent ID related to the intent/order.
