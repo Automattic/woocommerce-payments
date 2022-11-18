@@ -7,6 +7,7 @@
 
 use WCPay\Logger;
 use WCPay\Constants\Payment_Method;
+use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -659,6 +660,34 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Retrieves a transient always making sure it's fresh.
+	 *
+	 * We use transients as a mutex to in the order locking mechanism
+	 * to ensure that two processes are not updating the same order.
+	 * However, transients in WordPress are very stubborn, and cached
+	 * on multiple stages, iregardless of whether they exist or not.
+	 *
+	 * @param string $transient_name The name of the transient.
+	 * @return mixed                 The value of the transient.
+	 */
+	private function get_transient( $transient_name ) {
+		// WP will look in cache for the transient first.
+		wp_cache_delete( $transient_name, 'transient' );
+
+		// If the transient is not cached, WP will look in all cached options.
+		wp_cache_delete( 'alloptions', 'options' );
+
+		// If the transient is not in all options, WP will look for an individual one.
+		wp_cache_delete( '_transient_' . $transient_name, 'options' );
+		wp_cache_delete( '_transient_timeout_' . $transient_name, 'options' );
+
+		// If the transient options did not exist before, they were cached as inexistent.
+		wp_cache_delete( 'notoptions', 'options' );
+
+		return get_transient( $transient_name );
+	}
+
+	/**
 	 * Check if order is locked for payment processing
 	 *
 	 * @param WC_Order $order  The order that is being paid.
@@ -669,7 +698,9 @@ class WC_Payments_Order_Service {
 	private function is_order_locked( $order, $intent_id = null ) {
 		$order_id       = $order->get_id();
 		$transient_name = 'wcpay_processing_intent_' . $order_id;
-		$processing     = get_transient( $transient_name );
+
+		// Load a fresh transient.
+		$processing = $this->get_transient( $transient_name );
 
 		// Block the process if the same intent is already being handled.
 		return ( '-1' === $processing || ( isset( $intent_id ) && $processing === $intent_id ) );
