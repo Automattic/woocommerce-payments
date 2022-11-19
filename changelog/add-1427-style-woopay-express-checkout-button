@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: Updating the styling of the WooPay Express Checkout button which is currently behind a feature flag and not yet available to the public.
+
+
