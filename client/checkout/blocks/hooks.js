@@ -45,7 +45,6 @@ export const useFingerprint = () => {
 				const { visitorId } = await getFingerprint();
 				setFingerprint( visitorId );
 			} catch ( err ) {
-				console.log( { err } );
 				setError( err );
 			}
 		} )();
