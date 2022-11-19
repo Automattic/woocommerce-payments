@@ -587,7 +587,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				[ 'card' ],
 				$order_id,
 				'automatic',
-				[ 'fingerprint' => $fingerprint ],
+				[ 'fingerprint' => $fingerprint ]
 			)
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
@@ -608,7 +608,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				[ 'card' ],
 				$order_id,
 				'automatic',
-				[ 'fingerprint' => '' ],
+				[ 'fingerprint' => '' ]
 			)
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
