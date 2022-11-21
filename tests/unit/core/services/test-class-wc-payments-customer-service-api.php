@@ -351,7 +351,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 						'code'    => 200,
 						'message' => 'OK',
 					],
-				],
+				]
 			);
 
 		$this->customer_service_api->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
