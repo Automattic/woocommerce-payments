@@ -1,8 +1,8 @@
 === WooCommerce Payments - Fully Integrated Solution Built and Supported by Woo ===
 Contributors: woocommerce, automattic
 Tags: payment gateway, payment, apple pay, credit card, google pay
-Requires at least: 5.8
-Tested up to: 6.0
+Requires at least: 5.9
+Tested up to: 6.1
 Requires PHP: 7.0
 Stable tag: 5.0.3
 License: GPLv2 or later
@@ -38,8 +38,8 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* WordPress 5.8 or newer.
-* WooCommerce 6.6 or newer.
+* WordPress 5.9 or newer.
+* WooCommerce 6.9 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
