@@ -7,7 +7,6 @@
 
 namespace WCPay\Core;
 
-use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -27,9 +26,7 @@ class WC_Payments_Customer_Service_API {
 	/**
 	 * Class constructor
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
-	 * @param WC_Payments_Account    $account             WC_Payments_Account instance.
-	 * @param Database_Cache         $database_cache       Database_Cache instance.
+	 * @param WC_Payments_Customer_Service $customer_service Customer Service instance.
 	 */
 	public function __construct( WC_Payments_Customer_Service $customer_service ) {
 		$this->customer_service = $customer_service;
