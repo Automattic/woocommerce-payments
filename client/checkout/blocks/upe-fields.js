@@ -27,6 +27,7 @@ import {
 	getCookieValue,
 } from '../utils/upe';
 import { WC_STORE_CART } from '../constants.js';
+import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { useDispatch, useSelect } from '@wordpress/data';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
@@ -462,15 +463,16 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		return null;
 	}
 
-	const options = {
-		clientSecret,
-		appearance,
-		fonts: fontRules,
-		loader: 'never',
-	};
-
 	return (
-		<Elements stripe={ stripe } options={ options }>
+		<Elements
+			stripe={ stripe }
+			options={ {
+				clientSecret: decryptClientSecret( clientSecret ),
+				appearance,
+				fonts: fontRules,
+				loader: 'never',
+			} }
+		>
 			<WCPayUPEFields
 				api={ api }
 				paymentIntentId={ paymentIntentId }

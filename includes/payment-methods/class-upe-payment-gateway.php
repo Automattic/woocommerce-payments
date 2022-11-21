@@ -273,6 +273,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$response = $this->create_payment_intent( $order_id );
 
+			// Encrypt client secret before exposing it to the browser.
+			if ( $response['client_secret'] ) {
+				$response['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $response['client_secret'] );
+			}
+
 			if ( strpos( $response['id'], 'pi_' ) === 0 ) { // response is a payment intent (could possibly be a setup intent).
 				$this->add_upe_payment_intent_to_session( $response['id'], $response['client_secret'] );
 			}
@@ -380,6 +385,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			$response = $this->create_setup_intent();
+
+			// Encrypt client secret before exposing it to the browser.
+			if ( $response['client_secret'] ) {
+				$response['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $response['client_secret'] );
+			}
 
 			$this->add_upe_setup_intent_to_session( $response['id'], $response['client_secret'] );
 
@@ -710,7 +720,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							$client_secret,
+							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						);
 						wp_safe_redirect( $redirect_url );

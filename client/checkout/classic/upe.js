@@ -23,6 +23,7 @@ import {
 	isWCPayChosen,
 	getPaymentIntentFromSession,
 } from '../utils/upe';
+import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
@@ -276,7 +277,7 @@ jQuery( function ( $ ) {
 		}
 
 		const elements = api.getStripe().elements( {
-			clientSecret,
+			clientSecret: decryptClientSecret( clientSecret ),
 			appearance,
 			fonts: getFontRulesFromPage(),
 			loader: 'never',
