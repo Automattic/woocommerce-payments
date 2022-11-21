@@ -971,7 +971,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( empty( $intent ) ) {
-				add_filter( 'woopay_create_and_confirm_intention_request_from_base_intent_request', [ Checkout_Service::class, 'create_woopay_intention_request' ], 10, 3 );
 				$request = WC_Payments::create_request( Create_And_Confirm_Intention::class )
 					->set_amount( $converted_amount )
 					->set_currency_code( $currency )
@@ -987,7 +986,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $save_payment_method_to_store ) {
 					$request->setup_future_usage();
 				}
-				$intent = $request->send( 'create_woopay_intention_request', $order, $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ) );
+				$intent = $request->send( 'create_woopay_intention_request', $order, $payment_information->is_using_saved_payment_method() );
 			}
 
 			$intent_id     = $intent->get_id();
