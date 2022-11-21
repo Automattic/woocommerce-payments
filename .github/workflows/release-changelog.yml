@@ -1,0 +1,81 @@
+name: "Release - Changelog"
+
+# This action will run when it is triggered manually
+on:
+  workflow_dispatch:
+    inputs:
+      release-version:
+        description: "The release version for which the action should process the changelog (e.g. 4.5.0)"
+        required: true
+        type: string
+      release-date:
+        description: "The release date in human-readable format (default: 'today')."
+        required: false
+        default: "today"
+        type: string
+      action-type:
+        description: "Whether this is to amend or generate the changelog entries (default: 'amend')."
+        required: true
+        default: "amend"
+        type: choice
+        options:
+          - amend
+          - generate
+
+defaults:
+  run:
+    shell: bash
+
+jobs:    
+  process-changelog:
+    name: "Process the changelog"
+    runs-on: ubuntu-20.04
+    env:
+      CHANGELOG_ACTION: ${{ inputs.action-type }}
+      RELEASE_VERSION: ${{ inputs.release-version }}
+      RELEASE_DATE: ${{ inputs.release-date }}
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+        
+      - name: "Format the release date"
+        id: format_date
+        run: |
+          RELEASE_DATE=$( date "+%Y-%m-%d" -d "$RELEASE_DATE" ) # Release date formatted as YYYY-MM-DD
+          echo "RELEASE_DATE=$RELEASE_DATE" >> $GITHUB_OUTPUT
+          
+      - name: "Retrieve old changelog"
+        id: get_old_changelog
+        if: ${{ env.CHANGELOG_ACTION == 'amend' }}
+        run: |
+          OLD_CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
+          OLD_CHANGELOG="${OLD_CHANGELOG//$'\n'/\\n}"
+          echo "OLD_CHANGELOG=$OLD_CHANGELOG" >> $GITHUB_OUTPUT      
+      
+      - name: "Process changelog"
+        id: process_changelog
+        uses: ./.github/actions/process-changelog
+        with:
+          release-version: ${{ env.RELEASE_VERSION }}
+          release-date: ${{ steps.format_date.outputs.RELEASE_DATE }}
+          action-type: ${{ env.CHANGELOG_ACTION }}
+        
+      - name: "Update readme.txt"
+        env:
+          RELEASE_DATE: ${{ steps.format_date.outputs.RELEASE_DATE }}
+          CHANGELOG: ${{ steps.process_changelog.outputs.changelog }}
+          OLD_CHANGELOG: ${{ steps.get_old_changelog.outputs.OLD_CHANGELOG }}
+        run: |
+          if ${{ env.CHANGELOG_ACTION == 'amend' }}; then
+            sed -i "s|= $RELEASE_VERSION - .* =|= $RELEASE_VERSION - $RELEASE_DATE =|" readme.txt
+            sed -i "s|$OLD_CHANGELOG|$CHANGELOG|" readme.txt
+          else
+            sed -ri "s|(== Changelog ==)|\1\n\n= $RELEASE_VERSION - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
+          fi
+                    
+      - name: "Commit and push the changes"
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git commit -am "Process changelog entries for release $RELEASE_VERSION"
+          git push
