@@ -10,6 +10,8 @@ namespace WCPay\Core;
 use WCPay\Exceptions\API_Exception;
 use WC_Payments_Customer_Service;
 use WP_User;
+use \WC_Customer;
+use \WC_Order;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -124,7 +126,7 @@ class WC_Payments_Customer_Service_API {
 	 *
 	 * @return array Customer data.
 	 */
-	public static function map_customer_data( WC_Order $wc_order, WC_Customer $wc_customer ): array {
+	public static function map_customer_data( WC_Order $wc_order = null, WC_Customer $wc_customer = null ): array {
 		return WC_Payments_Customer_Service::map_customer_data( $wc_order, $wc_customer );
 	}
 
