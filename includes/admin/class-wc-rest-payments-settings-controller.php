@@ -394,6 +394,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_test_mode_enabled'                => $this->wcpay_gateway->is_in_test_mode(),
 				'is_dev_mode_enabled'                 => $this->wcpay_gateway->is_in_dev_mode(),
 				'is_multi_currency_enabled'           => WC_Payments_Features::is_customer_multi_currency_enabled(),
+				'is_client_secret_encryption_enabled' => WC_Payments_Features::is_client_secret_encryption_enabled(),
 				'is_wcpay_subscriptions_enabled'      => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
 				'is_wcpay_subscriptions_eligible'     => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
 				'is_subscriptions_plugin_active'      => $this->wcpay_gateway->is_subscriptions_plugin_active(),
@@ -444,6 +445,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_test_mode_enabled( $request );
 		$this->update_is_debug_log_enabled( $request );
 		$this->update_is_multi_currency_enabled( $request );
+		$this->update_is_client_secret_encryption_enabled( $request );
 		$this->update_is_wcpay_subscriptions_enabled( $request );
 		$this->update_is_payment_request_enabled( $request );
 		$this->update_payment_request_enabled_locations( $request );
@@ -600,6 +602,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_multi_currency_enabled = $request->get_param( 'is_multi_currency_enabled' );
 
 		update_option( '_wcpay_feature_customer_multi_currency', $is_multi_currency_enabled ? '1' : '0' );
+	}
+
+	/**
+	 * Updates the client secret encryption feature status.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_client_secret_encryption_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_client_secret_encryption_enabled' ) ) {
+			return;
+		}
+
+		$is_client_secret_encryption_enabled = $request->get_param( 'is_client_secret_encryption_enabled' );
+
+		update_option( '_wcpay_feature_client_secret_encryption', $is_client_secret_encryption_enabled ? '1' : '0' );
 	}
 
 	/**
