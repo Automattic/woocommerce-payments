@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Core\WC_Payments_Customer_Service_API;
 
 /**
  * WC_Payments_Customer_Service unit tests.
@@ -106,7 +107,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 			->willReturn(
 				[
 					'body'     =>
-					json_encode(
+					wp_json_encode(
 						[
 							'id'   => 'cus_test12345',
 							'type' => 'customer',
@@ -158,7 +159,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 			->method( 'remote_request' )
 			->willReturnOnConsecutiveCalls(
 				[
-					'body'     => json_encode(
+					'body'     => wp_json_encode(
 						[
 							'error' => [
 								'code'    => 'resource_missing',
@@ -173,7 +174,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 				],
 				[
 					'body'     =>
-					json_encode(
+					wp_json_encode(
 						[
 							'id'   => 'cus_test123456',
 							'type' => 'customer',
@@ -212,7 +213,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 						return true;
 					}
 				),
-				wp_json_encode(
+				wp_wp_json_encode(
 					[
 						'test_mode'        => false,
 						'invoice_settings' => [
@@ -250,7 +251,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 				)
 			)->willReturn(
 				[
-					'body'     => json_encode( [ 'data' => $mock_payment_methods ] ),
+					'body'     => wp_json_encode( [ 'data' => $mock_payment_methods ] ),
 					'response' => [
 						'code'    => 200,
 						'message' => 'OK',
@@ -284,7 +285,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 				)
 			)->willReturn(
 				[
-					'body'     => json_encode(
+					'body'     => wp_json_encode(
 						[
 							'error' => [
 								'code'    => 'resource_missing',
@@ -324,7 +325,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 						return true;
 					}
 				),
-				wp_json_encode(
+				wp_wp_json_encode(
 					[
 						'test_mode'       => false,
 						'billing_details' => [
@@ -345,7 +346,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 				false
 			)->willReturn(
 				[
-					'body'     => json_encode( [] ),
+					'body'     => wp_json_encode( [] ),
 					'response' => [
 						'code'    => 200,
 						'message' => 'OK',
@@ -376,7 +377,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 				)
 			)->willReturn(
 				[
-					'body'     => json_encode(
+					'body'     => wp_json_encode(
 						[
 							'error' => [
 								'code'    => 'resource_missing',
@@ -403,7 +404,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	 * @return void
 	 */
 	public function test_clear_cached_payment_methods_for_user() {
-		// get payment methods for a customer so that it gets cached
+		// get payment methods for a customer so that it gets cached.
 		$mock_payment_methods = [
 			[ 'id' => 'pm_mock1' ],
 			[ 'id' => 'pm_mock2' ],
@@ -421,7 +422,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 				)
 			)->willReturn(
 				[
-					'body'     => json_encode( [ 'data' => $mock_payment_methods ] ),
+					'body'     => wp_json_encode( [ 'data' => $mock_payment_methods ] ),
 					'response' => [
 						'code'    => 200,
 						'message' => 'OK',
@@ -431,18 +432,18 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 		$response = $this->customer_service_api->get_payment_methods_for_customer( 'cus_123' );
 		$this->assertEquals( $mock_payment_methods, $response );
 
-		// check if can retrieve from cache
+		// check if can retrieve from cache.
 		$db_cache       = WC_Payments::get_database_cache();
 		$cache_response = $db_cache->get( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . 'cus_123_card' );
 		$this->assertEquals( $mock_payment_methods, $cache_response );
 
-		// set up the user for customer
+		// set up the user for customer.
 		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_test123' );
 
-		// run the method
+		// run the method.
 		$this->customer_service_api->clear_cached_payment_methods_for_user( 'cus_123' );
 
-		// check that cache is empty
+		// check that cache is empty.
 		$cache_response = $db_cache->get( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . 'cus_12345_card' );
 		$this->assertEquals( null, $cache_response );
 	}

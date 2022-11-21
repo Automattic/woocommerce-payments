@@ -32,6 +32,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
+use WCPay\Core\WC_Payments_Customer_Service_API;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.

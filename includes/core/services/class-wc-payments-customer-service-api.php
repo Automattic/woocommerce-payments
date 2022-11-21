@@ -8,6 +8,8 @@
 namespace WCPay\Core;
 
 use WCPay\Exceptions\API_Exception;
+use WC_Payments_Customer_Service;
+use WP_User;
 
 defined( 'ABSPATH' ) || exit;
 
