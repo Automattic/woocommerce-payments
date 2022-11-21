@@ -122,7 +122,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 
 		$customer_id = $this->customer_service_api->create_customer_for_user(
 			$user,
-			$this->get_mock_customer_data(),
+			$this->get_mock_customer_data()
 		);
 
 		$this->assertEquals( 'cus_test12345', $customer_id );
