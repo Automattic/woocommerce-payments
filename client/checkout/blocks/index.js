@@ -22,6 +22,7 @@ import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
+import wooPayExpressCheckoutPaymentMethod from '../platform-checkout/express-button/woopay-express-checkout-payment-method';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -54,6 +55,9 @@ registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 
 if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
 	handlePlatformCheckoutEmailInput( '#email', api, true );
+	if ( getConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
+		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
+	}
 }
 
 window.addEventListener( 'load', () => {
