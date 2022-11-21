@@ -126,7 +126,7 @@ class WC_Payments_Customer_Service_API {
 	 *
 	 * @return array Customer data.
 	 */
-	public static function map_customer_data( WC_Order $wc_order = null, WC_Customer $wc_customer = null ): array {
+	public static function map_customer_data( WC_Order $wc_order, WC_Customer $wc_customer ): array {
 		return WC_Payments_Customer_Service::map_customer_data( $wc_order, $wc_customer );
 	}
 

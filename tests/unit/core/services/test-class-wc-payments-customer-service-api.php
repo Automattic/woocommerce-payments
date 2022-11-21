@@ -213,7 +213,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 						return true;
 					}
 				),
-				wp_wp_json_encode(
+				wp_json_encode(
 					[
 						'test_mode'        => false,
 						'invoice_settings' => [
@@ -325,7 +325,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 						return true;
 					}
 				),
-				wp_wp_json_encode(
+				wp_json_encode(
 					[
 						'test_mode'       => false,
 						'billing_details' => [
