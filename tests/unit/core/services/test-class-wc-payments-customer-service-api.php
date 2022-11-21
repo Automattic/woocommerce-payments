@@ -297,7 +297,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 						'code'    => 404,
 						'message' => 'OK',
 					],
-				],
+				]
 			);
 
 		$response = $this->customer_service_api->get_payment_methods_for_customer( 'cus_12345' );
