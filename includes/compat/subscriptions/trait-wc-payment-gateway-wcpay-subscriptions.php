@@ -846,7 +846,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Add an order note if the renew intent next action requires the merchant to authenticate the payment.
+	 * Add an order note if the renew intent customer notification requires the merchant to authenticate the payment.
 	 * The note includes the charge attempt date and let the merchant know the need of an off-session step by the customer.
 	 *
 	 * @param WC_Order $order The renew order.
@@ -873,7 +873,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Add mandate ID parameter to renewal payment if exists.
+	 * Get mandate ID parameter to renewal payment if exists.
 	 * Only required for subscriptions renewals for cards issued in India.
 	 * More details https://wp.me/pc4etw-ky
 	 *
