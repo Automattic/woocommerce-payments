@@ -181,17 +181,13 @@ abstract class Request {
 	}
 
 	/**
-	 * Allows the request to be modified, and then sends it.
+	 * Allows the request to be executed and formatted.
 	 *
-	 * @param string $hook    The filter to use.
-	 * @param mixed  ...$args Other parameters for the hook.
 	 * @return mixed          Either the response array, or the correct object.
 	 */
-	final public function send( $hook, ...$args ) {
-		$request = $this->apply_filters( $hook, ...$args );
-
+	final public function send() {
 		return $this->format_response(
-			$this->api_client->send_request( $request )
+			$this->api_client->send_request( $this )
 		);
 	}
 

@@ -146,7 +146,7 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 			->set_level3( [ 'level3' => 'level3' ] )
 			->set_off_session()
 			->set_payment_methods( [ 'pm' => '1' ] )
-			->set_cvc_confirmation();
+			->set_cvc_confirmation( $cvc );
 		$this->assertInstanceOf( Create_And_Confirm_Intention::class, $request );
 		$params = $request->get_params();
 
