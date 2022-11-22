@@ -52,10 +52,9 @@ export const expressCheckoutIframe = async ( api ) => {
 	};
 
 	/**
-	 * Handles setting the iframe popover position based on the input field.
-	 * It tries to be positioned at the right of the input field unless the
-	 * window is too narrow, then it sticks 50px from the right edge of the
-	 * screen.
+	 * Handles setting the iframe position based on the window size.
+	 * It tries to be positioned at the center of the screen unless
+	 * window is smaller than breakpoint which makes it full window size.
 	 */
 	const setPopoverPosition = () => {
 		// If for some reason the iframe is not loaded, just return.
@@ -63,17 +62,18 @@ export const expressCheckoutIframe = async ( api ) => {
 			return;
 		}
 
-		// If the window width is less than the breakpoint, reset the styles and return.
+		// If the window width is less than the breakpoint, set iframe to full window
 		if ( fullScreenModalBreakpoint >= window.innerWidth ) {
 			iframe.style.left = '0';
 			iframe.style.right = '';
+			iframe.style.top = '0';
 			return;
 		}
 
 		// Get references to the iframe bounding rects.
 		const iframeRect = iframe.getBoundingClientRect();
 
-		// Set the iframe top.
+		// Set the iframe top and left to be centered.
 		iframe.style.top =
 			Math.floor( window.innerHeight / 2 - iframeRect.height / 2 ) + 'px';
 		iframe.style.left =
@@ -96,7 +96,7 @@ export const expressCheckoutIframe = async ( api ) => {
 		);
 	} );
 
-	// Add the iframe and iframe arrow to the wrapper.
+	// Add the iframe to the wrapper.
 	iframeWrapper.insertBefore( iframe, null );
 
 	// Error message to display when there's an error contacting WooPay.
@@ -191,11 +191,10 @@ export const expressCheckoutIframe = async ( api ) => {
 			case 'iframe_height':
 				if ( 300 < e.data.height ) {
 					if ( fullScreenModalBreakpoint <= window.innerWidth ) {
-						// attach iframe to right side of platformCheckoutEmailInput.
-
+						// set height to given value
 						iframe.style.height = e.data.height + 'px';
 
-						// iframe top is the input top minus the iframe height.
+						// center top in window
 						iframe.style.top =
 							Math.floor(
 								window.innerHeight / 2 - e.data.height / 2
