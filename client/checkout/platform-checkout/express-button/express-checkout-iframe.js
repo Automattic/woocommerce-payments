@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { getConfig } from 'wcpay/utils/checkout';
+import { getWooPayExpressData } from './utils';
 import wcpayTracks from 'tracks';
 
 export const expressCheckoutIframe = async ( api ) => {
@@ -43,7 +43,7 @@ export const expressCheckoutIframe = async ( api ) => {
 					action: 'setHeader',
 					value: iframeHeaderValue,
 				},
-				getConfig( 'platformCheckoutHost' )
+				getWooPayExpressData( 'platformCheckoutHost' )
 			);
 		}
 
@@ -126,9 +126,12 @@ export const expressCheckoutIframe = async ( api ) => {
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
 		);
-		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
+		urlParams.append(
+			'wcpayVersion',
+			getWooPayExpressData( 'wcpayVersionNumber' )
+		);
 
-		iframe.src = `${ getConfig(
+		iframe.src = `${ getWooPayExpressData(
 			'platformCheckoutHost'
 		) }/otp/?${ urlParams.toString() }`;
 
@@ -152,7 +155,11 @@ export const expressCheckoutIframe = async ( api ) => {
 	} );
 
 	window.addEventListener( 'message', ( e ) => {
-		if ( ! getConfig( 'platformCheckoutHost' ).startsWith( e.origin ) ) {
+		if (
+			! getWooPayExpressData( 'platformCheckoutHost' ).startsWith(
+				e.origin
+			)
+		) {
 			return;
 		}
 
@@ -162,7 +169,7 @@ export const expressCheckoutIframe = async ( api ) => {
 					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
 				);
 				api.initPlatformCheckout(
-					'',
+					e.data.userEmail,
 					e.data.platformCheckoutUserSession
 				).then( ( response ) => {
 					if ( 'success' === response.result ) {

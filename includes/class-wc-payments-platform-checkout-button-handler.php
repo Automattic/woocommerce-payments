@@ -103,7 +103,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 
 		wp_register_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', $script_src_url, $script_asset['dependencies'], WC_Payments::get_file_version( 'dist/platform-checkout-express-button.js' ), true );
 
-		wp_localize_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'wcpay_config', $params );
+		wp_localize_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'wcpayWooPayExpressParams', $params );
 
 		wp_set_script_translations( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'woocommerce-payments' );
 
