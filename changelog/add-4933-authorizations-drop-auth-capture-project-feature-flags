@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Enable the improvements to the authorization and capture workflow, that were hidden behind a feature flag.
