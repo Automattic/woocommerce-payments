@@ -18,6 +18,11 @@ const waitForElement = ( selector ) => {
 		const checkoutBlock = document.querySelector(
 			'[data-block-name="woocommerce/checkout"]'
 		);
+
+		if ( ! checkoutBlock ) {
+			return resolve( null );
+		}
+
 		const observer = new MutationObserver( ( mutationList, obs ) => {
 			if ( document.querySelector( selector ) ) {
 				resolve( document.querySelector( selector ) );
