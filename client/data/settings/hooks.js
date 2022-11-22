@@ -30,6 +30,19 @@ export const useCardPresentEligible = () => {
 	return [ isCardPresentEligible, updateIsCardPresentEligible ];
 };
 
+export const useClientSecretEncryption = () => {
+	const { updateIsClientSecretEncryptionEnabled } = useDispatch( STORE_NAME );
+
+	const isClientSecretEncryptionEnabled = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsClientSecretEncryptionEnabled();
+	}, [] );
+
+	return [
+		isClientSecretEncryptionEnabled,
+		updateIsClientSecretEncryptionEnabled,
+	];
+};
+
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
@@ -482,4 +495,56 @@ export const usePlatformCheckoutStoreLogo = () => {
 		},
 		[ updatePlatformCheckoutStoreLogo ]
 	);
+};
+
+export const usePlatformCheckoutLocations = () => {
+	const { updatePlatformCheckoutLocations } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getPlatformCheckoutLocations } = select( STORE_NAME );
+
+		return [
+			getPlatformCheckoutLocations(),
+			updatePlatformCheckoutLocations,
+		];
+	} );
+};
+
+export const usePlatformCheckoutButtonType = () => {
+	const { updatePlatformCheckoutButtonType } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getPlatformCheckoutButtonType } = select( STORE_NAME );
+
+		return [
+			getPlatformCheckoutButtonType(),
+			updatePlatformCheckoutButtonType,
+		];
+	} );
+};
+
+export const usePlatformCheckoutButtonSize = () => {
+	const { updatePlatformCheckoutButtonSize } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getPlatformCheckoutButtonSize } = select( STORE_NAME );
+
+		return [
+			getPlatformCheckoutButtonSize(),
+			updatePlatformCheckoutButtonSize,
+		];
+	} );
+};
+
+export const usePlatformCheckoutButtonTheme = () => {
+	const { updatePlatformCheckoutButtonTheme } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getPlatformCheckoutButtonTheme } = select( STORE_NAME );
+
+		return [
+			getPlatformCheckoutButtonTheme(),
+			updatePlatformCheckoutButtonTheme,
+		];
+	} );
 };

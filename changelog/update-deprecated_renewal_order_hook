@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Replace the use of the deprecated wcs_renewal_order_meta_query hook with wc_subscription_renewal_order_data

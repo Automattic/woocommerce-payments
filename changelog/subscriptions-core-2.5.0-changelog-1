@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-New WCS_Orders_Table_Subscription_Data_Store class to support subscriptions stored in High-Performance Order Storage (HPOS).

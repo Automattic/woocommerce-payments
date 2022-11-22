@@ -9,6 +9,7 @@ import {
 	getPaymentRequestAjaxURL,
 	buildAjaxURL,
 } from '../../payment-request/utils';
+import { decryptClientSecret } from '../utils/encryption';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -93,12 +94,13 @@ export default class WCPayAPI {
 	/**
 	 * Load Stripe for payment request button.
 	 *
+	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
-	loadStripe() {
+	loadStripe( forceAccountRequest = false ) {
 		return new Promise( ( resolve ) => {
 			try {
-				resolve( this.getStripe() );
+				resolve( this.getStripe( forceAccountRequest ) );
 			} catch ( error ) {
 				// In order to avoid showing console error publicly to users,
 				// we resolve instead of rejecting when there is an error.
@@ -242,7 +244,9 @@ export default class WCPayAPI {
 			// If this is a setup intent we're not processing a platform checkout payment so we can
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
-				return this.getStripe().confirmCardSetup( clientSecret );
+				return this.getStripe().confirmCardSetup(
+					decryptClientSecret( clientSecret )
+				);
 			}
 
 			// For platform checkout we need the capability to switch up the account ID specifically for
@@ -252,12 +256,19 @@ export default class WCPayAPI {
 					publishableKey,
 					locale,
 					accountIdForIntentConfirmation
-				).confirmCardPayment( clientSecret );
+				).confirmCardPayment(
+					decryptClientSecret(
+						clientSecret,
+						accountIdForIntentConfirmation
+					)
+				);
 			}
 
 			// When not dealing with a setup intent or platform checkout we need to force an account
 			// specific request in Stripe.
-			return this.getStripe( true ).confirmCardPayment( clientSecret );
+			return this.getStripe( true ).confirmCardPayment(
+				decryptClientSecret( clientSecret )
+			);
 		};
 
 		const confirmAction = confirmPaymentOrSetup();
@@ -356,7 +367,9 @@ export default class WCPayAPI {
 			}
 
 			return this.getStripe()
-				.confirmCardSetup( response.data.client_secret )
+				.confirmCardSetup(
+					decryptClientSecret( response.data.client_secret )
+				)
 				.then( ( confirmedSetupIntent ) => {
 					const { setupIntent, error } = confirmedSetupIntent;
 					if ( error ) {
@@ -469,7 +482,7 @@ export default class WCPayAPI {
 			'lock_timeout' === confirmPaymentResult.error.code
 		) {
 			const paymentIntentResult = await stripe.retrievePaymentIntent(
-				paymentIntentSecret
+				decryptClientSecret( paymentIntentSecret )
 			);
 			if (
 				! paymentIntentResult.error &&

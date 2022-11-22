@@ -299,8 +299,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		// provide a separate mock instance for this test case.
 		$mock_subscription = $this->createMock( WC_Order::class );
 		$mock_subscription->expects( $this->once() )
-				->method( 'get_payment_tokens' )
-				->will( $this->returnValue( [ $this->token1->get_id(), $this->token2->get_id() ] ) );
+			->method( 'get_payment_tokens' )
+			->will( $this->returnValue( [ $this->token1->get_id(), $this->token2->get_id() ] ) );
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -323,8 +323,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		// should not change.
 		$mock_subscription = $this->createMock( WC_Order::class );
 		$mock_subscription->expects( $this->once() )
-				->method( 'get_payment_tokens' )
-				->will( $this->returnValue( [ $this->token1->get_id() ] ) );
+			->method( 'get_payment_tokens' )
+			->will( $this->returnValue( [ $this->token1->get_id() ] ) );
 
 		$old_payment_method_title_modified = (string) apply_filters( 'woocommerce_subscription_note_old_payment_method_title', $old_payment_method_title, $old_payment_method, $mock_subscription );
 		$this->assertEquals( $old_payment_method_title, $old_payment_method_title_modified );

@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Update Docker image to wordpress:php7.4 so client dev environment runs with PHP 7.4

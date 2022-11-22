@@ -1,5 +1,68 @@
 *** WooCommerce Payments Changelog ***
 
+= 5.0.3 - 2022-11-15 =
+* Fix - Purchasing a synced subscription with WCPay Subscriptions correctly sets the next payment date to the sync date in Stripe.
+
+= 5.0.2 - 2022-11-14 =
+* Fix - Fixed rest api error for payment_gateways endpoint
+
+= 5.0.1 - 2022-11-10 =
+* Fix - Fix fatal error when non-admin access admin pages.
+
+= 5.0.0 - 2022-11-09 =
+* Add - Add capture authorization support from the list of authorizations
+* Add - Add capture authorization support from the payment details page.
+* Add - Added a Refund Confirmation modal on Edit Order screen status change
+* Add - Add endpoint to get platform checkout signature at time of request
+* Add - Add event when skipped the platform checkout
+* Add - Add Stripe Link set up inbox notification
+* Add - New data copier class to copy data to subscriptions and related orders in place of direct database queries in prepraration for HPOS support.
+* Add - New WCS_Orders_Table_Data_Store_Controller class to load the proper subscriptions data store when the store has HPOS enabled.
+* Add - New WCS_Orders_Table_Subscription_Data_Store class to support subscriptions stored in High-Performance Order Storage (HPOS).
+* Add - Pass the value of 'woocommerce_tax_display_cart' option from the merchant's store to WooPay
+* Add - Updated the wording in the balance component header and added a link to the settings page.
+* Add - Wire authorizations data to the transactions > uncaptured screen
+* Fix - Adjust regex to check the format of a tag for a pre-release in our GitHub workflow
+* Fix - Currency switcher block padding while editing it
+* Fix - Enable Link to support authorization/capture scenarios.
+* Fix - Fetch authorization data in payment details page only when the payment needs manual capture
+* Fix - Fixed error when visiting the plugins page
+* Fix - Fix platform checkout auto redirection for user with pre-populated email when they land on the checkout page.
+* Fix - Prevent proceeding to WooPay when in a preview context.
+* Fix - Update Stripe Link inbox notification wording.
+* Fix - When saving sync meta data on a new subscription, use 'woocommerce_new_subscription' instead of 'save_post'. This is to prevent errors when purchasing a subscription on stores that have HPOS enabled.[.
+* Update - Adjust texts and links in WC admin express checkout section.
+* Update - Hide upload buttons and minor UI improvements on submitted dispute form.
+* Update - Improve maybe_add_subscription_meta() and subscription_contains_synced_product() inside our WC_Subscriptions_Synchroniser class to use CRUD methods.
+* Update - Improve wcs_copy_order_address() to use modern APIs for setting address fields.
+* Update - Remove IE11 support.
+* Update - The subscription creation function `wcs_create_subscription` has been updated to use WooCommerce CRUD methods in preparation for supporting High Performance Order Storage (HPOS).
+* Update - Update priority for Multi-Currency filters for frontend prices and currency to later priority to avoid plugin conflicts.
+* Dev - Add filter to record wcpay server api response time
+* Dev - Add new GH workflow for post-release steps and improve formatting/naming in recent workflow files introduced
+* Dev - Add new GitHub workflows for release management (pre-release and release packages)
+* Dev - Add php unit tests watcher
+* Dev - Adds a new tracking event when the new KYC informational modal is opened.
+* Dev - Change mocked data in Authorizations store with actual data from API
+* Dev - Deprecated the "wcs_{type}_meta" dynamic hook used to filter data copied to subscriptions and renewal orders. Third-parties should use wc_subscriptions_{type}_data instead.
+* Dev - Deprecated the "wcs_{type}_meta_query" dynamic hook used to alter the database query used to fetch the meta data to copy between subscriptions and renewal orders. There is no direct replacement. Third-parties should use the "wc_subscriptions_{type}_data" or "wc_subscriptions_object_data" hooks instead.
+* Dev - Fix tests with WordPress 6.1
+* Dev - i18n usage of strftime has been deprecated for subscription titles. Date is now formatted using woocommerce standard date formatting.
+* Dev - Refactor WC_Payment_Gateway_WCPay part 1
+* Dev - Remove unnecessary babel plugins after IE11 support drop.
+* Dev - Replace the use of the deprecated wcs_renewal_order_meta hook with wc_subscription_renewal_order_data in the WCS_Related_Order_Store_Cached_CPT class.
+* Dev - Replace the use of the deprecated wcs_renewal_order_meta_query hook with wc_subscription_renewal_order_data
+* Dev - Switch to @woocommerce/dependency-extraction-webpack-plugin
+* Dev - Update a few workflows to use an env variable for the L-2 version of WC/WP
+* Dev - Update Docker image to wordpress:php7.4 so client dev environment runs with PHP 7.4
+* Dev - Update Gridicons imports to be indivuals, reducing our bundle size.
+* Dev - Update husky to v 8.0.1.
+* Dev - Update lodash to version 4.17.21
+* Dev - Update subscriptions-core to 2.5.1.
+* Dev - Update the deprecated interpolate-components npm package with the @automattic/interpolate-components package, and update to v1.2.1.
+* Dev - wcs_get_objects_property and wcs_set_objects_property have been marked as deprecated. Getters/Setters should be used on the objects instead.
+* Dev - woocommerce_new_subscription_data hook will only work with CPT datastore and so has been deprecated.
+
 = 4.9.0 - 2022-10-20 =
 * Add - Adds new notice and modal informing users about verifying their account during onboarding.
 * Add - Declare WooCommerce Payments incompatible with COT

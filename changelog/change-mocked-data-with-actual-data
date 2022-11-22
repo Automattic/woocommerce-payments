@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Change mocked data in Authorizations store with actual data from API

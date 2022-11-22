@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Adds a new tracking event when the new KYC informational modal is opened.

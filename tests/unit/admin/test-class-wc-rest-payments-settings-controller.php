@@ -605,8 +605,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		}
 
 		$this->mock_wcpay_account->expects( null === $expected_updates ? $this->never() : $this->once() )
-								->method( 'update_stripe_account' )
-								->with( $expected_updates );
+			->method( 'update_stripe_account' )
+			->with( $expected_updates );
 
 		$this->controller->update_settings( $request );
 	}

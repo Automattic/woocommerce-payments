@@ -87,8 +87,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		/** @var WC_Payments_API_Client|MockObject $mock_api_client */
 		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
-								->disableOriginalConstructor()
-								->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 
 		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
@@ -97,9 +97,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
-									->disableOriginalConstructor()
-									->setMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
-									->getMock();
+			->disableOriginalConstructor()
+			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
+			->getMock();
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
 
