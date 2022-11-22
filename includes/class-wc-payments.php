@@ -56,7 +56,7 @@ class WC_Payments {
 	 *
 	 * @var WC_Payments_DB
 	 */
-	private static $db_helper;
+	public static $db_helper;
 
 	/**
 	 * Instance of WC_Payments_Account, created in init function.

@@ -2492,7 +2492,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return string
 	 */
-	private function uuid() {
+	public function uuid() {
 		$arr    = array_values( unpack( 'N1a/n4b/N1c', random_bytes( 16 ) ) );
 		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
 		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
