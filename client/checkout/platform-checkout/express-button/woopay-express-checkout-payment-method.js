@@ -16,6 +16,7 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 	edit: (
 		<WoopayExpressCheckoutButton
 			buttonSettings={ wcpayWooPayExpressParams?.button }
+			isPreview={ true }
 		/>
 	),
 	canMakePayment: () => true,
