@@ -23,6 +23,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\Core\WC_Payments_Order;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -2948,6 +2949,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$field = str_replace( '</span>', '<button class="wcpay-stripelink-modal-trigger"></button></span>', $field );
 		}
 		return $field;
+	}
+
+
+	/**
+	 * Get the WC_Payments_Order from order id.
+	 *
+	 * @param  mixed $order the order_id or order object.
+	 * @return WC_Payments_Order order object with additional methods.
+	 */
+	public function wcpay_get_order( $order ) {
+		return new WC_Payments_Order( $order );
 	}
 
 	/**
