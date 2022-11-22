@@ -76,6 +76,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
 
 	/**
+	 * The cookie name for storing intent keys.
+	 *
+	 * @var string
+	 */
+	const INTENT_COOKIE = 'wcpay_intent_key';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -672,7 +679,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 
 			$payment_information = $this->prepare_payment_information( $order );
-			return $this->process_payment_for_order( WC()->cart, $payment_information );
+			$response            = $this->process_payment_for_order( WC()->cart, $payment_information );
+			$this->clear_intent_key_cookie();
+			return $response;
 		} catch ( Exception $e ) {
 			/**
 			 * TODO: Determine how to do this update with Order_Service.
@@ -878,6 +887,82 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if there is another existing order, which was already paid (ex. by a webhook).
+	 *
+	 * @param  WC_Order $current_order The order that a customer is about to pay for.
+	 * @param  WC_Cart  $cart          The current cart.
+	 * @return array|null              A successful response in case there was another order, null if none.
+	 */
+	protected function check_for_existing_paid_order( WC_Order $current_order, WC_Cart $cart ) {
+		$intent_key = $this->get_intent_key_cookie();
+		if ( empty( $intent_key ) ) {
+			return;
+		}
+
+		// Try to retrieve an order with the same key.
+		$order = WC_Payments::$db_helper->order_from_intent_key( $intent_key );
+		if ( ! $order ) {
+			return;
+		}
+
+		// Is it the same order, and has it been paid already?
+		if (
+			( $order->get_cart_hash() !== $cart->get_cart_hash() )
+			|| ! $order->has_status( wc_get_is_paid_statuses() )
+		) {
+			return;
+		}
+
+		// Delete the new order, we'll use the old one.
+		$current_order->delete();
+
+		// Clear the cookie to avoid future confusion.
+		$this->clear_intent_key_cookie();
+
+		$return_url = $this->get_return_url( $order );
+
+		// We'll need to add a notice, indicating that a previous order was completed.
+		$return_url = add_query_arg( 'wcpay_paid_for_previous_order', 'yes', $return_url );
+
+		return [
+			'result'   => 'success',
+			'redirect' => $return_url,
+		];
+	}
+
+	/**
+	 * Sets the intent key cookie.
+	 *
+	 * @param string $intent_key The key that was used for the intent.
+	 */
+	protected function set_intent_key_cookie( $intent_key ) {
+		setcookie( self::INTENT_COOKIE, $intent_key, time() + DAY_IN_SECONDS );
+	}
+
+	/**
+	 * Retrieves the intent key cookie.
+	 *
+	 * @return string|null Retrieves the intent key from the cookie.
+	 */
+	protected function get_intent_key_cookie() {
+		if (
+			isset( $_COOKIE[ self::INTENT_COOKIE ] )
+			&& is_string( $_COOKIE[ self::INTENT_COOKIE ] )
+		) {
+			return sanitize_key( $_COOKIE[ self::INTENT_COOKIE ] );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Removes the intent key cookie.
+	 */
+	protected function clear_intent_key_cookie() {
+		setcookie( self::INTENT_COOKIE, false );
+	}
+
+	/**
 	 * Process the payment for a given order.
 	 *
 	 * @param WC_Cart|null              $cart Cart.
@@ -902,6 +987,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
 		];
 		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
+
+		if ( $cart ) {
+			$existing_response = $this->check_for_existing_paid_order( $order, $cart );
+			if ( is_array( $existing_response ) ) {
+				return $existing_response;
+			}
+		}
 
 		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
@@ -1006,6 +1098,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( empty( $intent ) ) {
+				$intent_key = $order_id . $this->payments_api_client->uuid();
+
+				// Store the key with the order, intent meta, and as a cookie.
+				$order->update_meta_data( '_intent_key', $intent_key );
+				$metadata['intent_key'] = $intent_key;
+				$this->set_intent_key_cookie( $intent_key );
+
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 				$intent = $this->payments_api_client->create_and_confirm_intention(
 					$converted_amount,
