@@ -1,0 +1,215 @@
+/**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+import { getConfig } from 'wcpay/utils/checkout';
+import wcpayTracks from 'tracks';
+
+export const expressCheckoutIframe = async ( api ) => {
+	const spinner = document.createElement( 'div' );
+	const parentDiv = document.body;
+	spinner.classList.add( 'wc-block-components-spinner' );
+
+	// Make the otp iframe wrapper.
+	const iframeWrapper = document.createElement( 'div' );
+	iframeWrapper.setAttribute( 'role', 'dialog' );
+	iframeWrapper.setAttribute( 'aria-modal', 'true' );
+	iframeWrapper.classList.add( 'platform-checkout-otp-iframe-wrapper' );
+
+	// Make the otp iframe.
+	const iframe = document.createElement( 'iframe' );
+	iframe.title = __( 'WooPay SMS code verification', 'woocommerce-payments' );
+	iframe.classList.add( 'platform-checkout-otp-iframe' );
+
+	// To prevent twentytwenty.intrinsicRatioVideos from trying to resize the iframe.
+	iframe.classList.add( 'intrinsic-ignore' );
+
+	// Maybe we could make this a configurable option defined in PHP so it could be filtered by merchants.
+	const fullScreenModalBreakpoint = 768;
+
+	// Track the current state of the header. This default
+	// value should match the default state on the platform.
+	let iframeHeaderValue = true;
+	const getWindowSize = () => {
+		if (
+			( fullScreenModalBreakpoint <= window.innerWidth &&
+				iframeHeaderValue ) ||
+			( fullScreenModalBreakpoint > window.innerWidth &&
+				! iframeHeaderValue )
+		) {
+			iframeHeaderValue = ! iframeHeaderValue;
+			iframe.contentWindow.postMessage(
+				{
+					action: 'setHeader',
+					value: iframeHeaderValue,
+				},
+				getConfig( 'platformCheckoutHost' )
+			);
+		}
+
+		// Prevent scrolling when the iframe is open.
+		document.body.style.overflow = 'hidden';
+	};
+
+	/**
+	 * Handles setting the iframe popover position based on the input field.
+	 * It tries to be positioned at the right of the input field unless the
+	 * window is too narrow, then it sticks 50px from the right edge of the
+	 * screen.
+	 */
+	const setPopoverPosition = () => {
+		// If for some reason the iframe is not loaded, just return.
+		if ( ! iframe ) {
+			return;
+		}
+
+		// If the window width is less than the breakpoint, reset the styles and return.
+		if ( fullScreenModalBreakpoint >= window.innerWidth ) {
+			iframe.style.left = '0';
+			iframe.style.right = '';
+			return;
+		}
+
+		// Get references to the iframe bounding rects.
+		const iframeRect = iframe.getBoundingClientRect();
+
+		// Set the iframe top.
+		iframe.style.top =
+			Math.floor( window.innerHeight / 2 - iframeRect.height / 2 ) + 'px';
+		iframe.style.left =
+			Math.floor( window.innerWidth / 2 - iframeRect.width / 2 ) + 'px';
+	};
+
+	iframe.addEventListener( 'load', () => {
+		// Set the initial value.
+		iframeHeaderValue = true;
+
+		getWindowSize();
+		window.addEventListener( 'resize', getWindowSize );
+
+		setPopoverPosition();
+		window.addEventListener( 'resize', setPopoverPosition );
+
+		iframe.classList.add( 'open' );
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.PLATFORM_CHECKOUT_OTP_START
+		);
+	} );
+
+	// Add the iframe and iframe arrow to the wrapper.
+	iframeWrapper.insertBefore( iframe, null );
+
+	// Error message to display when there's an error contacting WooPay.
+	const errorMessage = document.createElement( 'div' );
+	errorMessage.style[ 'white-space' ] = 'normal';
+	errorMessage.textContent = __(
+		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
+		'woocommerce-payments'
+	);
+
+	const closeIframe = () => {
+		window.removeEventListener( 'resize', getWindowSize );
+		window.removeEventListener( 'resize', setPopoverPosition );
+
+		iframeWrapper.remove();
+		iframe.classList.remove( 'open' );
+
+		document.body.style.overflow = '';
+	};
+
+	iframeWrapper.addEventListener( 'click', closeIframe );
+
+	const openIframe = ( email ) => {
+		const urlParams = new URLSearchParams();
+		urlParams.append( 'email', email );
+		urlParams.append(
+			'needsHeader',
+			fullScreenModalBreakpoint > window.innerWidth
+		);
+		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
+
+		iframe.src = `${ getConfig(
+			'platformCheckoutHost'
+		) }/otp/?${ urlParams.toString() }`;
+
+		// Insert the wrapper into the DOM.
+		parentDiv.insertBefore( iframeWrapper, null );
+
+		setPopoverPosition();
+
+		// Focus the iframe.
+		iframe.focus();
+	};
+
+	const showErrorMessage = () => {
+		parentDiv.insertBefore( errorMessage );
+	};
+
+	document.addEventListener( 'keyup', ( event ) => {
+		if ( 'Escape' === event.key && closeIframe() ) {
+			event.stopPropagation();
+		}
+	} );
+
+	window.addEventListener( 'message', ( e ) => {
+		if ( ! getConfig( 'platformCheckoutHost' ).startsWith( e.origin ) ) {
+			return;
+		}
+
+		switch ( e.data.action ) {
+			case 'redirect_to_platform_checkout':
+				wcpayTracks.recordUserEvent(
+					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_COMPLETE
+				);
+				api.initPlatformCheckout(
+					'',
+					e.data.platformCheckoutUserSession
+				).then( ( response ) => {
+					if ( 'success' === response.result ) {
+						window.location = response.url;
+					} else {
+						showErrorMessage();
+						closeIframe( false );
+					}
+				} );
+				break;
+			case 'otp_validation_failed':
+				wcpayTracks.recordUserEvent(
+					wcpayTracks.events.PLATFORM_CHECKOUT_OTP_FAILED
+				);
+				break;
+			case 'close_modal':
+				closeIframe();
+				break;
+			case 'iframe_height':
+				if ( 300 < e.data.height ) {
+					if ( fullScreenModalBreakpoint <= window.innerWidth ) {
+						// attach iframe to right side of platformCheckoutEmailInput.
+
+						iframe.style.height = e.data.height + 'px';
+
+						// iframe top is the input top minus the iframe height.
+						iframe.style.top =
+							Math.floor(
+								window.innerHeight / 2 - e.data.height / 2
+							) + 'px';
+					} else {
+						iframe.style.height = '';
+						iframe.style.top = '';
+					}
+				}
+				break;
+			default:
+			// do nothing, only respond to expected actions.
+		}
+	} );
+
+	window.addEventListener( 'pageshow', function ( event ) {
+		if ( event.persisted ) {
+			// Safari needs to close iframe with this.
+			closeIframe( false );
+		}
+	} );
+
+	openIframe();
+};
