@@ -11,8 +11,9 @@ defined( 'ABSPATH' ) || exit;
  * Wrapper class for accessing the database.
  */
 class WC_Payments_DB {
-	const META_KEY_INTENT_ID = '_intent_id';
-	const META_KEY_CHARGE_ID = '_charge_id';
+	const META_KEY_INTENT_ID  = '_intent_id';
+	const META_KEY_CHARGE_ID  = '_charge_id';
+	const META_KEY_INTENT_KEY = '_intent_key';
 
 	/**
 	 * Retrieve an order from the DB using a corresponding Stripe charge ID.
@@ -23,6 +24,21 @@ class WC_Payments_DB {
 	 */
 	public function order_from_charge_id( $charge_id ) {
 		$order_id = $this->order_id_from_meta_key_value( self::META_KEY_CHARGE_ID, $charge_id );
+
+		if ( $order_id ) {
+			return $this->order_from_order_id( $order_id );
+		}
+		return false;
+	}
+
+	/**
+	 * Retrieves an order based on its intent key.
+	 *
+	 * @param string $intent_key The key of the intent.
+	 * @return boolean|WC_Order
+	 */
+	public function order_from_intent_key( $intent_key ) {
+		$order_id = $this->order_id_from_meta_key_value( self::META_KEY_INTENT_KEY, $intent_key );
 
 		if ( $order_id ) {
 			return $this->order_from_order_id( $order_id );
