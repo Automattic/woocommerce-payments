@@ -4,6 +4,7 @@
 import React, { useEffect } from 'react';
 import { render, waitFor } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -17,6 +18,11 @@ import { useEnabledPaymentMethodIds } from '../../../data';
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 jest.mock( '../../../data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
+} ) );
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest
+		.fn()
+		.mockReturnValue( { updateAvailablePaymentMethodIds: jest.fn() } ),
 } ) );
 
 describe( 'WcPayUpeContextProvider', () => {
@@ -134,6 +140,8 @@ describe( 'WcPayUpeContextProvider', () => {
 			[ 'card', 'giropay' ],
 			setEnabledPaymentMethodIds,
 		] );
+		const updateAvailablePaymentMethodIds = jest.fn();
+		useDispatch.mockReturnValue( { updateAvailablePaymentMethodIds } );
 
 		const UpdateUpeDisabledFlagMock = () => {
 			const [ , setIsUpeEnabled ] = useIsUpeEnabled();
@@ -182,5 +190,8 @@ describe( 'WcPayUpeContextProvider', () => {
 			status: 'resolved',
 		} );
 		expect( setEnabledPaymentMethodIds ).toHaveBeenCalledWith( [ 'card' ] );
+		expect( updateAvailablePaymentMethodIds ).toHaveBeenCalledWith( [
+			'card',
+		] );
 	} );
 } );

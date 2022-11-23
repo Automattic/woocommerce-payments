@@ -239,6 +239,14 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		);
 		$order->add_payment_token( $this->token );
 
+		$mock_subscription = new WC_Subscription();
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $id ) use ( $mock_subscription ) {
+				return [ '1' => $mock_subscription ];
+			}
+		);
+
 		$intent = WC_Helper_Intention::create_intention();
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -263,5 +271,39 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 			->will( $this->returnValue( $intent ) );
 
 		$this->mock_wcpay_gateway->scheduled_subscription_payment( 100, $order );
+	}
+
+	/**
+	 * Test the scheduled_subscription_payment method is halted before payment when the renewal order is linked to a WCPay Subscription.
+	 */
+	public function test_scheduled_subscription_payment_skipped() {
+		$order = WC_Helper_Order::create_order();
+		$this->mock_wcs_order_contains_subscription( true );
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function( $parent_order ) use ( $order ) {
+				return $order;
+			}
+		);
+		$order->add_payment_token( $this->token );
+
+		// Mock a subscription that is a WCPay Subscription.
+		$mock_subscription                 = new WC_Subscription();
+		$mock_subscription->payment_method = 'woocommerce_payments';
+
+		$mock_subscription->update_meta_data( '_wcpay_subscription_id', 'test_is_wcpay_subscription' );
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $id ) use ( $mock_subscription ) {
+				return [ '1' => $mock_subscription ];
+			}
+		);
+
+		// Make sure the payment is skipped for WCPay Subscriptions.
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'create_and_confirm_intention' );
+
+		$this->mock_wcpay_gateway->scheduled_subscription_payment( 100, $order );
+
 	}
 }

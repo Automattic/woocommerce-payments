@@ -1,6 +1,7 @@
 declare namespace AccountOverview {
 	interface Account {
 		default_currency: string;
+		deposits_blocked: boolean;
 		deposits_disabled: boolean;
 		deposits_schedule: {
 			delay_days: number;
@@ -55,17 +56,6 @@ declare namespace AccountOverview {
 		};
 		isLoading: boolean;
 	}
-}
-
-declare module 'gridicons' {
-	type GridiconParams = {
-		icon: string;
-		size?: number;
-		className?: string;
-	};
-	const Gridicon: ( props: GridiconParams ) => JSX.Element;
-
-	export = Gridicon;
 }
 
 declare module '@woocommerce/components' {

@@ -48,8 +48,8 @@ class WC_Payments_Notes_Set_Https_For_Checkout {
 		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
 		$note       = new $note_class();
 
-		$note->set_title( __( 'Force secure checkout', 'woocommerce-payments' ) );
-		$note->set_content( __( 'Protect your customers data and increase trustworthiness of your store by forcing HTTPS on checkout pages.', 'woocommerce-payments' ) );
+		$note->set_title( __( 'Enable secure checkout', 'woocommerce-payments' ) );
+		$note->set_content( __( 'Enable HTTPS on your checkout pages to display all available payment methods and protect your customers data.', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
 		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );

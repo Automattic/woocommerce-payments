@@ -117,7 +117,7 @@ exports[`AccountStatus renders normal status 1`] = `
                 />
               </g>
             </svg>
-            Weekly
+            Automatic
           </span>
         </div>
       </div>
@@ -131,9 +131,9 @@ exports[`AccountStatus renders normal status 1`] = `
       Euro 
       (EUR) 
       <s>
-        2.9% + 0,00&nbsp;€ per transaction
+        2.9% + 0,00 € per transaction
       </s>
-       2.9% + 0,30&nbsp;€ per transaction
+       2.9% + 0,30 € per transaction
       <p>
         <a
           href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"

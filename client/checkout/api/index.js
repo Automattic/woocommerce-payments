@@ -9,6 +9,7 @@ import {
 	getPaymentRequestAjaxURL,
 	buildAjaxURL,
 } from '../../payment-request/utils';
+import { decryptClientSecret } from '../utils/encryption';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -35,10 +36,6 @@ export default class WCPayAPI {
 		}
 		if ( betas ) {
 			options.betas = betas;
-		}
-
-		if ( betas.includes( 'link_beta_2' ) ) {
-			options.apiVersion = '2020-08-27;link_beta=v1';
 		}
 
 		return new Stripe( publishableKey, options );
@@ -74,10 +71,7 @@ export default class WCPayAPI {
 			if ( isUPEEnabled ) {
 				let betas = [ 'card_country_event_beta_1' ];
 				if ( isStripeLinkEnabled ) {
-					betas = betas.concat( [
-						'link_autofill_modal_beta_1',
-						'link_beta_2',
-					] );
+					betas = betas.concat( [ 'link_autofill_modal_beta_1' ] );
 				}
 
 				this.stripe = this.createStripe(
@@ -100,12 +94,13 @@ export default class WCPayAPI {
 	/**
 	 * Load Stripe for payment request button.
 	 *
+	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
-	loadStripe() {
+	loadStripe( forceAccountRequest = false ) {
 		return new Promise( ( resolve ) => {
 			try {
-				resolve( this.getStripe() );
+				resolve( this.getStripe( forceAccountRequest ) );
 			} catch ( error ) {
 				// In order to avoid showing console error publicly to users,
 				// we resolve instead of rejecting when there is an error.
@@ -249,7 +244,9 @@ export default class WCPayAPI {
 			// If this is a setup intent we're not processing a platform checkout payment so we can
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
-				return this.getStripe().confirmCardSetup( clientSecret );
+				return this.getStripe().confirmCardSetup(
+					decryptClientSecret( clientSecret )
+				);
 			}
 
 			// For platform checkout we need the capability to switch up the account ID specifically for
@@ -259,12 +256,19 @@ export default class WCPayAPI {
 					publishableKey,
 					locale,
 					accountIdForIntentConfirmation
-				).confirmCardPayment( clientSecret );
+				).confirmCardPayment(
+					decryptClientSecret(
+						clientSecret,
+						accountIdForIntentConfirmation
+					)
+				);
 			}
 
 			// When not dealing with a setup intent or platform checkout we need to force an account
 			// specific request in Stripe.
-			return this.getStripe( true ).confirmCardPayment( clientSecret );
+			return this.getStripe( true ).confirmCardPayment(
+				decryptClientSecret( clientSecret )
+			);
 		};
 
 		const confirmAction = confirmPaymentOrSetup();
@@ -363,7 +367,9 @@ export default class WCPayAPI {
 			}
 
 			return this.getStripe()
-				.confirmCardSetup( response.data.client_secret )
+				.confirmCardSetup(
+					decryptClientSecret( response.data.client_secret )
+				)
 				.then( ( confirmedSetupIntent ) => {
 					const { setupIntent, error } = confirmedSetupIntent;
 					if ( error ) {
@@ -407,7 +413,7 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Updates a payment intent with data from order: customer, level3 data and and maybe sets the payment for future use.
+	 * Updates a payment intent with data from order: customer, level3 data and maybe sets the payment for future use.
 	 *
 	 * @param {string} paymentIntentId The id of the payment intent.
 	 * @param {int} orderId The id of the order.
@@ -449,6 +455,45 @@ export default class WCPayAPI {
 					throw new Error( error.statusText );
 				}
 			} );
+	}
+
+	/**
+	 * Confirm Stripe payment with fallback for rate limit error.
+	 *
+	 * @param {Object|StripeElements} elements Stripe elements.
+	 * @param {Object} confirmParams Confirm payment request parameters.
+	 * @param {string|null} paymentIntentSecret Payment intent secret used to validate payment on rate limit error
+	 *
+	 * @return {Promise} The payment confirmation promise.
+	 */
+	async handlePaymentConfirmation(
+		elements,
+		confirmParams,
+		paymentIntentSecret
+	) {
+		const stripe = this.getStripe();
+		const confirmPaymentResult = await stripe.confirmPayment( {
+			elements,
+			confirmParams,
+		} );
+		if (
+			paymentIntentSecret &&
+			confirmPaymentResult.error &&
+			'lock_timeout' === confirmPaymentResult.error.code
+		) {
+			const paymentIntentResult = await stripe.retrievePaymentIntent(
+				decryptClientSecret( paymentIntentSecret )
+			);
+			if (
+				! paymentIntentResult.error &&
+				'succeeded' === paymentIntentResult.paymentIntent.status
+			) {
+				window.location.href = confirmParams.redirect_url;
+				return paymentIntentResult; //To prevent returning an error during the redirection.
+			}
+		}
+
+		return confirmPaymentResult;
 	}
 
 	/**
@@ -610,6 +655,14 @@ export default class WCPayAPI {
 				user_session: platformCheckoutUserSession,
 			}
 		);
+	}
+
+	paymentRequestPayForOrder( order, paymentData ) {
+		return this.request( getPaymentRequestAjaxURL( 'pay_for_order' ), {
+			_wpnonce: getPaymentRequestData( 'nonce' )?.pay_for_order,
+			order,
+			...paymentData,
+		} );
 	}
 
 	/**

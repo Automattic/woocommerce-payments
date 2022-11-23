@@ -4,16 +4,11 @@
  * External dependencies
  */
 import { apiFetch, dispatch } from '@wordpress/data-controls';
-import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { acceptDispute, updateDispute } from '../actions';
-
-jest.mock( '@woocommerce/navigation', () => ( {
-	getHistory: jest.fn( () => ( { push: () => {} } ) ),
-} ) );
 
 describe( 'acceptDispute action', () => {
 	const mockDispute = {
@@ -21,6 +16,14 @@ describe( 'acceptDispute action', () => {
 		reason: 'product_unacceptable',
 		status: 'lost',
 	};
+
+	beforeEach( () => {
+		Object.defineProperty( window, 'location', {
+			value: {
+				replace: jest.fn(),
+			},
+		} );
+	} );
 
 	test( 'should close dispute and update state with dispute data', () => {
 		const generator = acceptDispute( 'dp_mock1' );
@@ -46,7 +49,7 @@ describe( 'acceptDispute action', () => {
 		);
 
 		const noticeAction = generator.next().value;
-		expect( getHistory.mock.calls.length ).toEqual( 1 );
+		expect( window.location.replace ).toHaveBeenCalledTimes( 1 );
 		expect( noticeAction ).toEqual(
 			dispatch(
 				'core/notices',

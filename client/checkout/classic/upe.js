@@ -13,8 +13,10 @@ import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
+import showErrorCheckout from '../utils/show-error-checkout';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -51,6 +53,7 @@ jQuery( function ( $ ) {
 	let elements = null;
 	let upeElement = null;
 	let paymentIntentId = null;
+	let paymentIntentClientSecret = null;
 	let isUPEComplete = false;
 	const hiddenBillingFields = {
 		name:
@@ -108,48 +111,6 @@ jQuery( function ( $ ) {
 	 */
 	const unblockUI = ( $form ) => {
 		$form.removeClass( 'processing' ).unblock();
-	};
-
-	// Show error notice at top of checkout form.
-	const showError = ( errorMessage ) => {
-		let messageWrapper = '';
-		if ( errorMessage.includes( 'woocommerce-error' ) ) {
-			messageWrapper = errorMessage;
-		} else {
-			messageWrapper =
-				'<ul class="woocommerce-error" role="alert">' +
-				errorMessage +
-				'</ul>';
-		}
-		const $container = $(
-			'.woocommerce-notices-wrapper, form.checkout'
-		).first();
-
-		if ( ! $container.length ) {
-			return;
-		}
-
-		// Adapted from WooCommerce core @ ea9aa8c, assets/js/frontend/checkout.js#L514-L529
-		$(
-			'.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message'
-		).remove();
-		$container.prepend(
-			'<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout">' +
-				messageWrapper +
-				'</div>'
-		);
-		$container
-			.find( '.input-text, select, input:checkbox' )
-			.trigger( 'validate' )
-			.blur();
-
-		let scrollElement = $( '.woocommerce-NoticeGroup-checkout' );
-		if ( ! scrollElement.length ) {
-			scrollElement = $container;
-		}
-
-		$.scroll_to_notices( scrollElement );
-		$( document.body ).trigger( 'checkout_error' );
 	};
 
 	// Show or hide save payment information checkbox
@@ -251,7 +212,7 @@ jQuery( function ( $ ) {
 				clientSecret = newIntent.client_secret;
 			} catch ( error ) {
 				unblockUI( $upeContainer );
-				showError( error.message );
+				showErrorCheckout( error.message );
 				const gatewayErrorMessage =
 					'<div>An error was encountered when preparing the payment form. Please try again later.</div>';
 				$( '.payment_box.payment_method_woocommerce_payments' ).html(
@@ -267,6 +228,7 @@ jQuery( function ( $ ) {
 		}
 
 		paymentIntentId = intentId;
+		paymentIntentClientSecret = clientSecret;
 
 		let appearance = getConfig( 'upeAppearance' );
 
@@ -276,7 +238,7 @@ jQuery( function ( $ ) {
 		}
 
 		elements = api.getStripe().elements( {
-			clientSecret,
+			clientSecret: decryptClientSecret( clientSecret ),
 			appearance,
 			fonts: getFontRulesFromPage(),
 			loader: 'never',
@@ -287,11 +249,18 @@ jQuery( function ( $ ) {
 				api: api,
 				elements: elements,
 				emailId: 'billing_email',
-				complete_billing: true,
+				complete_billing: () => {
+					return true;
+				},
 				complete_shipping: () => {
-					return ! document.getElementById(
-						'ship-to-different-address-checkbox'
-					).checked;
+					return (
+						document.getElementById(
+							'ship-to-different-address-checkbox'
+						) &&
+						document.getElementById(
+							'ship-to-different-address-checkbox'
+						).checked
+					);
 				},
 				shipping_fields: {
 					line1: 'shipping_address_1',
@@ -300,6 +269,8 @@ jQuery( function ( $ ) {
 					state: 'shipping_state',
 					postal_code: 'shipping_postcode',
 					country: 'shipping_country',
+					first_name: 'shipping_first_name',
+					last_name: 'shipping_last_name',
 				},
 				billing_fields: {
 					line1: 'billing_address_1',
@@ -308,6 +279,8 @@ jQuery( function ( $ ) {
 					state: 'billing_state',
 					postal_code: 'billing_postcode',
 					country: 'billing_country',
+					first_name: 'billing_first_name',
+					last_name: 'billing_last_name',
 				},
 			} );
 		}
@@ -404,19 +377,20 @@ jQuery( function ( $ ) {
 	 */
 	const checkUPEForm = async ( $form, returnUrl = '#' ) => {
 		if ( ! upeElement ) {
-			showError( 'Your payment information is incomplete.' );
+			showErrorCheckout( 'Your payment information is incomplete.' );
 			return false;
 		}
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
-			const { error } = await api.getStripe().confirmPayment( {
+			const { error } = await api.handlePaymentConfirmation(
 				elements,
-				confirmParams: {
+				{
 					return_url: returnUrl,
 				},
-			} );
+				null
+			);
 			$form.removeClass( 'processing' ).unblock();
-			showError( error.message );
+			showErrorCheckout( error.message );
 			return false;
 		}
 		return true;
@@ -459,18 +433,19 @@ jQuery( function ( $ ) {
 				$( '#wcpay_payment_country' ).val()
 			);
 
-			const { error } = await api.getStripe().confirmPayment( {
+			const { error } = await api.handlePaymentConfirmation(
 				elements,
-				confirmParams: {
+				{
 					return_url: returnUrl,
 				},
-			} );
+				getPaymentIntentSecret()
+			);
 			if ( error ) {
 				throw error;
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
-			showError( error.message );
+			showErrorCheckout( error.message );
 		}
 	};
 
@@ -503,7 +478,7 @@ jQuery( function ( $ ) {
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
-			showError( error.message );
+			showErrorCheckout( error.message );
 		}
 	};
 
@@ -543,9 +518,11 @@ jQuery( function ( $ ) {
 			};
 			let error;
 			if ( response.payment_needed ) {
-				( { error } = await api
-					.getStripe()
-					.confirmPayment( upeConfig ) );
+				( { error } = await api.handlePaymentConfirmation(
+					elements,
+					upeConfig.confirmParams,
+					getPaymentIntentSecret()
+				) );
 			} else {
 				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
 			}
@@ -558,7 +535,7 @@ jQuery( function ( $ ) {
 			}
 		} catch ( error ) {
 			$form.removeClass( 'processing' ).unblock();
-			showError( error.message );
+			showErrorCheckout( error.message );
 		}
 	};
 
@@ -613,7 +590,7 @@ jQuery( function ( $ ) {
 					errorMessage = getConfig( 'genericErrorMessage' );
 				}
 
-				showError( errorMessage );
+				showErrorCheckout( errorMessage );
 			} );
 	};
 
@@ -663,6 +640,19 @@ jQuery( function ( $ ) {
 		}
 
 		return {};
+	}
+
+	/**
+	 * Returns stripe intent secret that will be used to confirm payment
+	 *
+	 * @return {string | null} The intent secret required to confirm payment during the rate limit error.
+	 */
+	function getPaymentIntentSecret() {
+		if ( paymentIntentClientSecret ) {
+			return paymentIntentClientSecret;
+		}
+		const { clientSecret } = getPaymentIntentFromSession();
+		return clientSecret ? clientSecret : null;
 	}
 
 	// Handle the checkout form when WooCommerce Payments is chosen.

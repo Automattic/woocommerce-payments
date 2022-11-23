@@ -2,9 +2,7 @@
  * External dependencies
  */
 import config from 'config';
-
 const { merchant } = require( '@woocommerce/e2e-utils' );
-
 import { RUN_SUBSCRIPTIONS_TESTS, describeif } from '../../../utils';
 
 describeif( RUN_SUBSCRIPTIONS_TESTS )(
@@ -16,7 +14,6 @@ describeif( RUN_SUBSCRIPTIONS_TESTS )(
 			} );
 			await merchant.login();
 		} );
-
 		afterAll( async () => {
 			await merchant.logout();
 		} );

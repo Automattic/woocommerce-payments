@@ -28,6 +28,12 @@ export function updateIsCardPresentEligible( isEnabled ) {
 	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
 }
 
+export function updateIsClientSecretEncryptionEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_client_secret_encryption_enabled: isEnabled,
+	} );
+}
+
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
@@ -58,6 +64,12 @@ export function updateIsPaymentRequestEnabled( isEnabled ) {
 export function updateEnabledPaymentMethodIds( methodIds ) {
 	return updateSettingsValues( {
 		enabled_payment_method_ids: [ ...methodIds ],
+	} );
+}
+
+export function updateAvailablePaymentMethodIds( methodIds ) {
+	return updateSettingsValues( {
+		available_payment_method_ids: [ ...methodIds ],
 	} );
 }
 
@@ -139,6 +151,29 @@ export function updateAccountBrandingLogo( accountBrandingLogo ) {
 	} );
 }
 
+export function updateDepositScheduleInterval( depositScheduleInterval ) {
+	return updateSettingsValues( {
+		deposit_schedule_interval: depositScheduleInterval,
+	} );
+}
+export function updateDepositScheduleWeeklyAnchor(
+	depositScheduleWeeklyAnchor
+) {
+	return updateSettingsValues( {
+		deposit_schedule_weekly_anchor: depositScheduleWeeklyAnchor,
+	} );
+}
+export function updateDepositScheduleMonthlyAnchor(
+	depositScheduleMonthlyAnchor
+) {
+	return updateSettingsValues( {
+		deposit_schedule_monthly_anchor:
+			'' === depositScheduleMonthlyAnchor
+				? null
+				: parseInt( depositScheduleMonthlyAnchor, 10 ),
+	} );
+}
+
 export function* saveSettings() {
 	let error = null;
 	try {
@@ -186,5 +221,23 @@ export function updatePlatformCheckoutCustomMessage( message ) {
 export function updatePlatformCheckoutStoreLogo( storeLogo ) {
 	return updateSettingsValues( {
 		platform_checkout_store_logo: storeLogo,
+	} );
+}
+
+export function updatePlatformCheckoutButtonType( type ) {
+	return updateSettingsValues( { platform_checkout_button_type: type } );
+}
+
+export function updatePlatformCheckoutButtonSize( size ) {
+	return updateSettingsValues( { platform_checkout_button_size: size } );
+}
+
+export function updatePlatformCheckoutButtonTheme( theme ) {
+	return updateSettingsValues( { platform_checkout_button_theme: theme } );
+}
+
+export function updatePlatformCheckoutLocations( locations ) {
+	return updateSettingsValues( {
+		platform_checkout_enabled_locations: [ ...locations ],
 	} );
 }

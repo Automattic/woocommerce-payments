@@ -140,7 +140,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
 
 		// Used to filter out unwanted metadata on new renewal orders.
-		add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
+		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
+			add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
+		} else {
+			add_filter( 'wc_subscriptions_renewal_order_data', [ $this, 'remove_data_renewal_order' ], 10, 3 );
+		}
 
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
@@ -211,8 +215,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return false;
 		}
 
-		$js_config                     = $this->get_payment_fields_js_config();
-		$js_config['intentSecret']     = $intent->get_client_secret();
+		$js_config                     = WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
+		$js_config['intentSecret']     = WC_Payments_Utils::encrypt_client_secret( $intent->get_stripe_account_id(), $intent->get_client_secret() );
 		$js_config['updateOrderNonce'] = wp_create_nonce( 'wcpay_update_order_status_nonce' );
 		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $js_config );
 		wp_enqueue_script( 'WCPAY_CHECKOUT' );
@@ -262,6 +266,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
+			return;
+		}
+
+		// Exit early if the order belongs to a WCPay Subscription. The payment will be processed by the subscription via webhooks.
+		if ( $this->is_wcpay_subscription_renewal_order( $renewal_order ) ) {
 			return;
 		}
 
@@ -729,6 +738,18 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Removes the data that we don't need to copy to renewal orders.
+	 *
+	 * @param array $order_data Renewal order data.
+	 *
+	 * @return array The renewal order data with the data we don't want copied removed
+	 */
+	public function remove_data_renewal_order( $order_data ) {
+		unset( $order_data['_new_order_tracking_complete'] );
+		return $order_data;
+	}
+
+	/**
 	 * Adds the failed SCA auth email to WooCommerce.
 	 *
 	 * @param WC_Email[] $email_classes All existing emails.
@@ -762,5 +783,28 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( isset( $this->order_pay_var ) ) {
 			$wp->query_vars['order-pay'] = $this->order_pay_var;
 		}
+	}
+
+	/**
+	 * Checks if a renewal order is linked to a WCPay subscription.
+	 *
+	 * @param WC_Order $renewal_order The renewal order to check.
+	 * @return bool True if the renewal order is linked to a renewal order. Otherwise false.
+	 */
+	private function is_wcpay_subscription_renewal_order( WC_Order $renewal_order ) {
+
+		// Exit early if WCPay subscriptions functionality isn't enabled.
+		if ( ! WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
+			return false;
+		}
+
+		// Check if the renewal order is linked to a subscription which is a WCPay Subscription.
+		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
+			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

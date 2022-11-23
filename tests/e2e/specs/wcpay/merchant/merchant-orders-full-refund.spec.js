@@ -95,7 +95,7 @@ describe( 'Order > Full refund', () => {
 
 			// Verify system note was added
 			expect( page ).toMatchElement( '.system-note', {
-				text: `A refund of ${ orderAmount } USD was successfully processed using WooCommerce Payments. Reason: No longer wanted`,
+				text: `A refund of ${ orderAmount } was successfully processed using WooCommerce Payments. Reason: No longer wanted`,
 			} ),
 		] );
 		await takeScreenshot( 'merchant-orders-full-refund_refunded' );
@@ -114,7 +114,7 @@ describe( 'Order > Full refund', () => {
 		// Verify the transaction timeline reflects the refund events
 		await Promise.all( [
 			expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
-				text: `A payment of ${ orderAmount } USD was successfully refunded.`,
+				text: `A payment of ${ orderAmount } was successfully refunded.`,
 			} ),
 			expect( page ).toMatchElement( 'li.woocommerce-timeline-item', {
 				text: 'Payment status changed to Refunded.',

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import Gridicon from 'gridicons';
+import type Gridicon from 'gridicons/dist/';
 
 /**
  * Internal dependencies
@@ -10,7 +10,7 @@ import Gridicon from 'gridicons';
 import './style.scss';
 
 interface RequirementGroupProps {
-	icon: string;
+	icon: typeof Gridicon;
 	headline: string;
 	subline?: string;
 }
@@ -22,7 +22,7 @@ const RequirementGroup = ( {
 }: RequirementGroupProps ): JSX.Element => {
 	return (
 		<div className="onboarding__requirement-group">
-			<Gridicon icon={ icon } size={ 18 } />
+			{ icon( { size: 18 } ) }
 			<div className="headline">{ headline }</div>
 			{ subline && <div className="subline">{ subline }</div> }
 		</div>

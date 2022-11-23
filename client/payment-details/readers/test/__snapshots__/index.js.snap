@@ -178,7 +178,7 @@ exports[`RenderPaymentCardReaderChargeDetails renders reader charges 1`] = `
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  $3.00 USD
+                  $3.00
                 </td>
               </tr>
               <tr>
@@ -201,7 +201,7 @@ exports[`RenderPaymentCardReaderChargeDetails renders reader charges 1`] = `
                 <td
                   class="woocommerce-table__item is-left-aligned"
                 >
-                  $0.00 USD
+                  $0.00
                 </td>
               </tr>
             </tbody>

@@ -105,3 +105,18 @@ export const normalizeShippingAddress = ( shippingAddress ) => {
 		postcode: shippingAddress?.postalCode?.replace( ' ', '' ) ?? '',
 	};
 };
+
+export const normalizePayForOrderData = ( paymentData ) => {
+	let paymentRequestType = 'payment_request_api';
+	if ( 'applePay' === paymentData?.walletName ) {
+		paymentRequestType = 'apple_pay';
+	} else if ( 'googlePay' === paymentData?.walletName ) {
+		paymentRequestType = 'google_pay';
+	}
+
+	return {
+		payment_method: 'woocommerce_payments',
+		'wcpay-payment-method': paymentData?.paymentMethod?.id,
+		payment_request_type: paymentRequestType,
+	};
+};

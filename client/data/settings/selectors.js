@@ -23,6 +23,10 @@ export const getIsWCPayEnabled = ( state ) => {
 	return getSettings( state ).is_wcpay_enabled || false;
 };
 
+export const getIsClientSecretEncryptionEnabled = ( state ) => {
+	return getSettings( state ).is_client_secret_encryption_enabled || false;
+};
+
 export const getEnabledPaymentMethodIds = ( state ) => {
 	return getSettings( state ).enabled_payment_method_ids || EMPTY_ARR;
 };
@@ -89,6 +93,30 @@ export const getAccountBusinessSupportPhone = ( state ) => {
 
 export const getAccountBrandingLogo = ( state ) => {
 	return getSettings( state ).account_branding_logo || '';
+};
+
+export const getDepositScheduleInterval = ( state ) => {
+	return getSettings( state ).deposit_schedule_interval || '';
+};
+
+export const getDepositScheduleWeeklyAnchor = ( state ) => {
+	return getSettings( state ).deposit_schedule_weekly_anchor || '';
+};
+
+export const getDepositScheduleMonthlyAnchor = ( state ) => {
+	return getSettings( state ).deposit_schedule_monthly_anchor || '';
+};
+
+export const getDepositDelayDays = ( state ) => {
+	return getSettings( state ).deposit_delay_days || '7'; // default to 7 days
+};
+
+export const getCompletedWaitingPeriod = ( state ) => {
+	return getSettings( state ).deposit_completed_waiting_period || false;
+};
+
+export const getDepositStatus = ( state ) => {
+	return getSettings( state ).deposit_status || '';
 };
 
 export const getIsManualCaptureEnabled = ( state ) => {
@@ -165,4 +193,22 @@ export const getPlatformCheckoutCustomMessage = ( state ) => {
 
 export const getPlatformCheckoutStoreLogo = ( state ) => {
 	return getSettings( state ).platform_checkout_store_logo || '';
+};
+
+export const getPlatformCheckoutLocations = ( state ) => {
+	return (
+		getSettings( state ).platform_checkout_enabled_locations || EMPTY_ARR
+	);
+};
+
+export const getPlatformCheckoutButtonType = ( state ) => {
+	return getSettings( state ).platform_checkout_button_type || 'default';
+};
+
+export const getPlatformCheckoutButtonSize = ( state ) => {
+	return getSettings( state ).platform_checkout_button_size || 'default';
+};
+
+export const getPlatformCheckoutButtonTheme = ( state ) => {
+	return getSettings( state ).platform_checkout_button_theme || 'dark';
 };

@@ -40,6 +40,13 @@ class WC_Subscriptions_Product extends WC_Product {
 	public static $one_time_shipping = false;
 
 	/**
+	 * Stores a temporary mock sign-up fee.
+	 *
+	 * @var mixed
+	 */
+	public static $sign_up_fee = 0;
+
+	/**
 	 * Mock for static get_period.
 	 *
 	 * @param Product $product WC Product.
@@ -61,9 +68,10 @@ class WC_Subscriptions_Product extends WC_Product {
 	 * Mock for static get_sign_up_fee.
 	 *
 	 * @param Product $product WC Product.
+	 * @return mixed The sign-up fee.
 	 */
 	public static function get_sign_up_fee( $product ) {
-		return 0;
+		return self::$sign_up_fee;
 	}
 
 	/**
@@ -118,5 +126,14 @@ class WC_Subscriptions_Product extends WC_Product {
 	 */
 	public static function set_needs_one_time_shipping( $result ) {
 		self::$one_time_shipping = $result;
+	}
+
+	/**
+	 * Setter for sign_up_fee.
+	 *
+	 * @param mixed $fee The fee to use.
+	 */
+	public static function set_sign_up_fee( $fee ) {
+		self::$sign_up_fee = $fee;
 	}
 }

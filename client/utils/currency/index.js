@@ -111,10 +111,12 @@ export const formatCurrency = (
 
 	try {
 		return 'function' === typeof currency.formatAmount
-			? currency.formatAmount( amount )
-			: currency.formatCurrency( amount );
+			? htmlDecode( currency.formatAmount( amount ) )
+			: htmlDecode( currency.formatCurrency( amount ) );
 	} catch ( err ) {
-		return composeFallbackCurrency( amount, currencyCode, isZeroDecimal );
+		return htmlDecode(
+			composeFallbackCurrency( amount, currencyCode, isZeroDecimal )
+		);
 	}
 };
 
@@ -134,7 +136,7 @@ const appendCurrencyCode = ( formatted, currencyCode ) => {
 };
 
 /**
- * Formats amount according to the given currency.
+ * Formats amount according to the given currency. Falls back to `formatCurrency` when no additional currencies are enabled.
  *
  * @param {number} amount       Amount
  * @param {string} currencyCode Currency code
@@ -150,6 +152,7 @@ export const formatExplicitCurrency = (
 	baseCurrencyCode = null
 ) => {
 	let formatted = formatCurrency( amount, currencyCode, baseCurrencyCode );
+	if ( ! wcpaySettings.shouldUseExplicitPrice ) return formatted;
 	if ( skipSymbol ) {
 		formatted = removeCurrencySymbol( formatted );
 	}
@@ -260,4 +263,9 @@ function trimEndingZeroes( formattedCurrencyAmount = '' ) {
 			endsWith( chunk, '0' ) ? trimEnd( chunk, '0' ) : chunk
 		)
 		.join( ' ' );
+}
+
+function htmlDecode( input ) {
+	const doc = new DOMParser().parseFromString( input, 'text/html' );
+	return doc.documentElement.textContent;
 }

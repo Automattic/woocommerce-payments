@@ -600,13 +600,28 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the correct id to be used on the transaction URL
+	 * The Payment Intent ID is prioritized and it fallbacks to the charge ID
+	 *
+	 * @param string $intent_id Payment intent ID.
+	 * @param string $charge_id Charge ID.
+	 *
+	 * @return string
+	 */
+	public static function get_transaction_url_id( $intent_id, $charge_id ) {
+		return ! empty( $intent_id ) ? $intent_id : $charge_id;
+	}
+
+	/**
 	 * Composes url for transaction details page.
 	 *
-	 * @param  string $charge_id Charge id.
-	 * @return string            Transaction details page url.
+	 * @param string $intent_id Payment Intent ID.
+	 * @param string $charge_id Charge ID.
+	 *
+	 * @return string Transaction details page url.
 	 */
-	public static function compose_transaction_url( $charge_id ) {
-		if ( empty( $charge_id ) ) {
+	public static function compose_transaction_url( $intent_id, $charge_id ) {
+		if ( empty( $charge_id ) && empty( $intent_id ) ) {
 			return '';
 		}
 
@@ -614,7 +629,7 @@ class WC_Payments_Utils {
 			[
 				'page' => 'wc-admin',
 				'path' => '/payments/transactions/details',
-				'id'   => $charge_id,
+				'id'   => self::get_transaction_url_id( $intent_id, $charge_id ),
 			],
 			admin_url( 'admin.php' )
 		);
@@ -789,5 +804,26 @@ class WC_Payments_Utils {
 		}
 
 		return $formatted_amount;
+	}
+
+	/**
+	 * Encrypts client secret of intents created on Stripe.
+	 *
+	 * @param   string $stripe_account_id Stripe account ID.
+	 * @param   string $client_secret     Client secret string.
+	 *
+	 * @return  string                 Encrypted value.
+	 */
+	public static function encrypt_client_secret( string $stripe_account_id, string $client_secret ): string {
+		if ( \WC_Payments_Features::is_client_secret_encryption_enabled() ) {
+			return openssl_encrypt(
+				$client_secret,
+				'aes-128-cbc',
+				substr( $stripe_account_id, 5 ),
+				0,
+				str_repeat( 'WC', 8 )
+			);
+		}
+		return $client_secret;
 	}
 }

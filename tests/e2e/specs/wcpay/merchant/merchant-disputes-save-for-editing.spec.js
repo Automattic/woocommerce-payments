@@ -81,7 +81,7 @@ describe( 'Disputes > Save dispute for editing', () => {
 		await merchantWCP.openChallengeDispute();
 
 		await page.waitForSelector(
-			'div.components-flex.components-card__header.is-size-large',
+			'div.wcpay-dispute-evidence .components-flex.components-card__header.is-size-large',
 			{
 				timeout: 10000,
 			}
@@ -89,7 +89,7 @@ describe( 'Disputes > Save dispute for editing', () => {
 
 		// Verify we're on the challenge dispute page
 		await expect( page ).toMatchElement(
-			'div.components-flex.components-card__header.is-size-large',
+			'div.wcpay-dispute-evidence .components-flex.components-card__header.is-size-large',
 			{
 				text: 'Challenge dispute',
 			}
@@ -108,13 +108,19 @@ describe( 'Disputes > Save dispute for editing', () => {
 			'Offline service'
 		);
 
-		await page.waitForSelector( 'button.components-button.is-secondary', {
-			timeout: 10000,
-		} );
+		await page.waitForSelector(
+			'div.wcpay-dispute-evidence button.components-button.is-secondary',
+			{
+				timeout: 10000,
+			}
+		);
 
-		await expect( page ).toClick( 'button.components-button.is-secondary', {
-			text: 'Save for later',
-		} );
+		await expect( page ).toClick(
+			'div.wcpay-dispute-evidence button.components-button.is-secondary',
+			{
+				text: 'Save for later',
+			}
+		);
 
 		// Re-open the dispute to view the details
 		await merchantWCP.openDisputeDetails( disputeDetailsLink );

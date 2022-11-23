@@ -12,10 +12,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	const EXPECTED_PLATFORM_CHECKOUT_HOOKS = [
 		'wc_ajax_wcpay_init_platform_checkout' => [ WC_Payments::class, 'ajax_init_platform_checkout' ],
-		'determine_current_user'               => [
-			WC_Payments::class,
-			'determine_current_user_for_platform_checkout',
-		],
 	];
 
 	public function set_up() {
@@ -116,8 +112,8 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
 
 		$mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
-									->disableOriginalConstructor()
-									->getMock();
+			->disableOriginalConstructor()
+			->getMock();
 		$mock_customer_service
 			->expects( $this->once() )
 			->method( 'create_customer_for_user' )

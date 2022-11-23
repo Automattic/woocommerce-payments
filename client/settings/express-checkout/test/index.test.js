@@ -128,7 +128,7 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		expect( screen.queryByText( 'Stripe Link' ) ).toBeNull();
+		expect( screen.queryByText( 'Link by Stripe' ) ).toBeNull();
 	} );
 
 	it( 'show link payment if card payment method is active', async () => {
@@ -142,7 +142,7 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		expect( screen.getByLabelText( 'Stripe Link' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeInTheDocument();
 	} );
 
 	it( 'test stripe link checkbox checked', async () => {
@@ -155,7 +155,7 @@ describe( 'ExpressCheckout', () => {
 				<ExpressCheckout />
 			</WCPaySettingsContext.Provider>
 		);
-		const linkCheckbox = container.getByLabelText( 'Stripe Link' );
+		const linkCheckbox = container.getByLabelText( 'Link by Stripe' );
 		expect( linkCheckbox ).toBeChecked();
 	} );
 
@@ -169,7 +169,7 @@ describe( 'ExpressCheckout', () => {
 				<ExpressCheckout />
 			</WCPaySettingsContext.Provider>
 		);
-		const linkCheckbox = container.getByLabelText( 'Stripe Link' );
+		const linkCheckbox = container.getByLabelText( 'Link by Stripe' );
 		expect( linkCheckbox ).not.toBeChecked();
 	} );
 } );

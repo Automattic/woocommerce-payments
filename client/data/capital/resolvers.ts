@@ -16,7 +16,8 @@ import {
 	updateErrorForLoans,
 	updateLoans,
 } from './actions';
-import { ApiError, Summary, LoansList } from './types';
+import { Summary, LoansList } from './types';
+import { ApiError } from '../../types/errors';
 
 /**
  * Retrieve the summary data for the currently active loan.

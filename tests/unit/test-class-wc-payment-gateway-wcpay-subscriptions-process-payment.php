@@ -81,10 +81,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	 * @var array
 	 */
 	private $setup_intent = [
-		'id'            => self::SETUP_INTENT_ID,
-		'status'        => 'succeeded',
-		'client_secret' => 'test_client_secret',
-		'next_action'   => [],
+		'id'             => self::SETUP_INTENT_ID,
+		'status'         => 'succeeded',
+		'client_secret'  => 'test_client_secret',
+		'next_action'    => [],
+		'payment_method' => self::PAYMENT_METHOD_ID,
 	];
 
 	/**
@@ -155,11 +156,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->with( get_current_user_id() )
-			->willReturn( self::CUSTOMER_ID );
-
-		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'update_customer_for_user' )
 			->willReturn( self::CUSTOMER_ID );
 
 		$this->token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );

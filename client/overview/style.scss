@@ -39,6 +39,14 @@
 			margin-left: 16px;
 		}
 	}
+
+	.wcpay-task-list.woocommerce-experimental-list {
+		position: relative;
+
+		.woocommerce-experimental-list__item {
+			position: initial;
+		}
+	}
 }
 
 .wcpay-overview {

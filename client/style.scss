@@ -105,6 +105,11 @@
 	background-color: $studio-yellow-5;
 }
 
+.wcpay-test-mode-notice.components-notice.is-informational {
+	margin: 24px 0;
+	padding: 12px;
+}
+
 .wcpay-connect-error-notice.components-notice {
 	margin: 24px 0;
 	padding: 12px;
@@ -120,6 +125,10 @@
 
 	&__column {
 		flex: 0 0 50%;
+	}
+
+	&-list-item {
+		display: inline-flex;
 	}
 }
 
@@ -143,6 +152,7 @@
 		color: $studio-gray-80;
 		line-height: 20px;
 		padding: 4px 0;
+		word-break: break-word;
 	}
 }
 

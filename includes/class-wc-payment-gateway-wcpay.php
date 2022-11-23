@@ -19,10 +19,10 @@ use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Constants\Payment_Method;
 use WCPay\Tracker;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -51,6 +51,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		'account_branding_icon'            => 'branding_icon',
 		'account_branding_primary_color'   => 'branding_primary_color',
 		'account_branding_secondary_color' => 'branding_secondary_color',
+
+		'deposit_schedule_interval'        => 'deposit_schedule_interval',
+		'deposit_schedule_weekly_anchor'   => 'deposit_schedule_weekly_anchor',
+		'deposit_schedule_monthly_anchor'  => 'deposit_schedule_monthly_anchor',
 	];
 
 	/**
@@ -60,16 +64,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	const SUCCESSFUL_INTENT_STATUS = [ 'succeeded', 'requires_capture', 'processing' ];
 
+	const UPDATE_SAVED_PAYMENT_METHOD     = 'wcpay_update_saved_payment_method';
+	const UPDATE_CUSTOMER_WITH_ORDER_DATA = 'wcpay_update_customer_with_order_data';
+
 	/**
-	 * Set of parameters to build the URL to the gateway's settings page.
+	 * Set a large limit argument for retrieving user tokens.
 	 *
-	 * @var string[]
+	 * @type int
 	 */
-	private static $settings_url_params = [
-		'page'    => 'wc-settings',
-		'tab'     => 'checkout',
-		'section' => self::GATEWAY_ID,
-	];
+
+	const USER_FORMATTED_TOKENS_LIMIT = 100;
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -126,6 +130,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @var array
 	 */
 	protected $payment_method_capability_key_map;
+
+	/**
+	 * Platform checkout utilities.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	protected $platform_checkout_util;
 
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
@@ -340,6 +351,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'link'          => 'link_payments',
 		];
 
+		// Platform checkout utilities.
+		$this->platform_checkout_util = new Platform_Checkout_Utilities();
+
 		// Load the settings.
 		$this->init_settings();
 
@@ -353,8 +367,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
-		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
-		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
 		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
@@ -371,52 +383,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Update the current request logged_in cookie after a guest user is created to avoid nonce inconsistencies.
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
+		add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 3 );
+		add_action( self::UPDATE_CUSTOMER_WITH_ORDER_DATA, [ $this, 'update_customer_with_order_data' ], 10, 4 );
+
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
-	}
-
-	/**
-	 * Add a new logo column on the right of "method" in the payment methods table.
-	 *
-	 * @param array $columns the columns in the "all payment methods" page.
-	 * @return array
-	 */
-	public function add_all_payment_methods_logos_column( $columns ) {
-		$logos  = [ 'logos' => '' ]; // Setting an ID for the column, but not a label.
-		$offset = array_search( 'name', array_keys( $columns ), true ) + 1;
-
-		return array_merge( array_slice( $columns, 0, $offset ), $logos, array_slice( $columns, $offset ) );
-	}
-
-	/**
-	 * Add a list of payment method logos to WooCommerce Payment in the logo column.
-	 *
-	 * @param WC_Payment_Gateway $gateway the current gateway iterated over to be displayed in the "all payment methods" page.
-	 */
-	public function add_all_payment_methods_icon_logos( $gateway ) {
-		if ( 'woocommerce_payments' !== $gateway->id ) {
-			echo '<td class="logo"></td>';
-
-			return;
-		}
-
-		$icons = [
-			'visa',
-			'mastercard',
-			'amex',
-			'apple-pay',
-			'google-pay',
-		];
-
-		echo '<td class="logo">';
-		?>
-		<div>
-			<?php foreach ( $icons as $icon ) : ?>
-				<span class="payment-method__icon payment-method__brand payment-method__brand--<?php echo esc_attr( $icon ); ?>"/></span>
-			<?php endforeach; ?>
-		</div>
-		<?php
-		echo '</td>';
 	}
 
 	/**
@@ -433,7 +404,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * external plugins to check if a connection has been established.
 	 */
 	public function is_connected() {
-		return $this->account->is_stripe_connected( false );
+		return $this->account->is_stripe_connected();
 	}
 
 	/**
@@ -449,24 +420,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$account_status = $this->account->get_account_status_data();
 		return parent::needs_setup() || ! empty( $account_status['error'] ) || ! $account_status['paymentsEnabled'];
-	}
-
-	/**
-	 * Whether the current page is the WooCommerce Payments settings page.
-	 *
-	 * @return bool
-	 */
-	public static function is_current_page_settings() {
-		return count( self::$settings_url_params ) === count( array_intersect_assoc( $_GET, self::$settings_url_params ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-	}
-
-	/**
-	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
-	 *
-	 * @return string URL of the configuration screen for this gateway
-	 */
-	public static function get_settings_url() {
-		return admin_url( add_query_arg( self::$settings_url_params, 'admin.php' ) );
 	}
 
 	/**
@@ -573,45 +526,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Add notice explaining test mode when it's enabled.
-	 */
-	public function display_test_mode_notice() {
-		if ( $this->is_in_test_mode() ) {
-			?>
-			<div id="wcpay-test-mode-notice" class="notice notice-warning">
-				<p>
-					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
-					<?php esc_html_e( "All transactions are simulated. Customers can't make real purchases through WooCommerce Payments.", 'woocommerce-payments' ); ?>
-				</p>
-			</div>
-			<?php
-		}
-	}
-
-	/**
-	 * Add notice explaining that the selected currency is not available.
-	 */
-	public function display_not_supported_currency_notice() {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return;
-		}
-
-		if ( ! $this->is_available_for_current_currency() ) {
-			?>
-			<div id="wcpay-unsupported-currency-notice" class="notice notice-warning">
-				<p>
-					<b>
-						<?php esc_html_e( 'Unsupported currency:', 'woocommerce-payments' ); ?>
-						<?php esc_html( ' ' . get_woocommerce_currency() ); ?>
-					</b>
-					<?php esc_html_e( 'The selected currency is not available for the country set in your WooCommerce Payments account.', 'woocommerce-payments' ); ?>
-				</p>
-			</div>
-			<?php
-		}
-	}
-
-	/**
 	 * Admin Panel Options.
 	 */
 	public function admin_options() {
@@ -639,42 +553,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			<div id="wcpay-account-settings-container"></div>
 			<?php
 		endif;
-	}
-
-	/**
-	 * Generates the configuration values, needed for payment fields.
-	 *
-	 * Isolated as a separate method in order to be available both
-	 * during the classic checkout, as well as the checkout block.
-	 *
-	 * @return array
-	 */
-	public function get_payment_fields_js_config() {
-		$platform_checkout_util = new Platform_Checkout_Utilities();
-
-		return [
-			'publishableKey'                 => $this->account->get_publishable_key( $this->is_in_test_mode() ),
-			'testMode'                       => $this->is_in_test_mode(),
-			'accountId'                      => $this->account->get_stripe_account_id(),
-			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
-			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'createPaymentIntentNonce'       => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
-			'updatePaymentIntentNonce'       => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
-			'initPlatformCheckoutNonce'      => wp_create_nonce( 'wcpay_init_platform_checkout_nonce' ),
-			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
-			'fraudServices'                  => $this->account->get_fraud_services_config(),
-			'features'                       => $this->supports,
-			'forceNetworkSavedCards'         => WC_Payments::is_network_saved_cards_enabled() || $this->should_use_stripe_platform_on_checkout_page(),
-			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
-			'isSavedCardsEnabled'            => $this->is_saved_cards_enabled(),
-			'isPlatformCheckoutEnabled'      => $platform_checkout_util->should_enable_platform_checkout( $this ),
-			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
-			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
-			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
-			'wcpayVersionNumber'             => WCPAY_VERSION_NUMBER,
-		];
 	}
 
 	/**
@@ -738,163 +616,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function should_use_stripe_platform_on_checkout_page() {
-		// TODO: Add support for blocks checkout.
 		if (
 			WC_Payments_Features::is_platform_checkout_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
 			! WC_Payments_Features::is_upe_enabled() &&
-			is_checkout() &&
-			! has_block( 'woocommerce/checkout' ) &&
+			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
-			! WC()->cart->is_empty()
+			! WC()->cart->is_empty() &&
+			WC()->cart->needs_payment()
 		) {
-			$cart_total = WC_Payments_Utils::prepare_amount( WC()->cart->get_total( '' ), get_woocommerce_currency() );
-			// We currently can't support setup intents, so free trial subscriptions
-			// or pre-orders with charge upon release are not supported.
-			return $cart_total > 0;
+			return true;
 		}
 
 		return false;
 	}
 
 	/**
-	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
-	 * Customer data is retrieved from order when on Pay for Order.
-	 * Customer data is retrieved from customer when on 'Add Payment Method'.
-	 *
-	 * @return array|null An array with customer data or nothing.
-	 */
-	public function get_prepared_customer_data() {
-		if ( ! isset( $_GET['pay_for_order'] ) && ! is_add_payment_method_page() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return null;
-		}
-
-		global $wp;
-		$user_email = '';
-		$firstname  = '';
-		$lastname   = '';
-
-		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$order_id = absint( $wp->query_vars['order-pay'] );
-			$order    = wc_get_order( $order_id );
-
-			if ( is_a( $order, 'WC_Order' ) ) {
-				$firstname  = $order->get_billing_first_name();
-				$lastname   = $order->get_billing_last_name();
-				$name       = $firstname . ' ' . $lastname;
-				$user_email = $order->get_billing_email();
-			}
-		}
-
-		if ( is_add_payment_method_page() ) {
-			$user = wp_get_current_user();
-
-			if ( $user->ID ) {
-				$firstname  = $user->user_firstname;
-				$lastname   = $user->user_lastname;
-				$user_email = get_user_meta( $user->ID, 'billing_email', true );
-				$user_email = $user_email ? $user_email : $user->user_email;
-			}
-		}
-		$prepared_customer_data = [
-			'name'  => $firstname . ' ' . $lastname,
-			'email' => $user_email,
-		];
-
-		return $prepared_customer_data;
-	}
-	/**
 	 * Renders the credit card input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
 	 */
 	public function payment_fields() {
-		try {
-			$display_tokenization = $this->supports( 'tokenization' ) && ( is_checkout() || is_add_payment_method_page() );
-
-			add_action( 'wp_footer', [ $this, 'enqueue_payment_scripts' ] );
-
-			$prepared_customer_data = $this->get_prepared_customer_data();
-			if ( ! empty( $prepared_customer_data ) ) {
-				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayCustomerData', $prepared_customer_data );
-			}
-
-			wp_enqueue_style(
-				'WCPAY_CHECKOUT',
-				plugins_url( 'dist/checkout.css', WCPAY_PLUGIN_FILE ),
-				[],
-				WC_Payments::get_file_version( 'dist/checkout.css' )
-			);
-
-			// Output the form HTML.
-			?>
-			<?php if ( ! empty( $this->get_description() ) ) : ?>
-				<p><?php echo wp_kses_post( $this->get_description() ); ?></p>
-			<?php endif; ?>
-
-			<?php if ( $this->is_in_test_mode() ) : ?>
-				<p class="testmode-info">
-				<?php
-					echo WC_Payments_Utils::esc_interpolated_html(
-						/* translators: link to Stripe testing page */
-						__( '<strong>Test mode:</strong> use the test VISA card 4242424242424242 with any expiry date and CVC, or any test card numbers listed <a>here</a>.', 'woocommerce-payments' ),
-						[
-							'strong' => '<strong>',
-							'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
-						]
-					);
-				?>
-				</p>
-			<?php endif; ?>
-
-			<?php
-
-			if ( $display_tokenization ) {
-				$this->tokenization_script();
-				echo $this->saved_payment_methods(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			}
-			?>
-
-			<fieldset id="wc-<?php echo esc_attr( $this->id ); ?>-cc-form" class="wc-credit-card-form wc-payment-form">
-				<div id="wcpay-card-element"></div>
-				<div id="wcpay-errors" role="alert"></div>
-				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
-				<input type="hidden" name="wcpay-is-platform-payment-method" value="<?php echo esc_attr( $this->should_use_stripe_platform_on_checkout_page() ); ?>" />
-			<?php
-			if ( $this->is_saved_cards_enabled() ) {
-				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
-				$this->save_payment_method_checkbox( $force_save_payment );
-			}
-			?>
-
-			</fieldset>
-
-			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
-				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
-			<?php endif; ?>
-
-			<?php
-
-			do_action( 'wcpay_payment_fields_wcpay', $this->id );
-
-		} catch ( Exception $e ) {
-			// Output the error message.
-			?>
-			<div>
-				<?php
-				echo esc_html__( 'An error was encountered when preparing the payment form. Please try again later.', 'woocommerce-payments' );
-				?>
-			</div>
-			<?php
-		}
-	}
-
-	/**
-	 * Enqueues and localizes WCPay's checkout scripts.
-	 */
-	public function enqueue_payment_scripts() {
-		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
-		wp_enqueue_script( 'WCPAY_CHECKOUT' );
+		do_action( 'wc_payments_add_payment_fields' );
 	}
 
 	/**
@@ -1022,8 +765,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information->must_save_payment_method_to_store();
 		}
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		if ( ! empty( $_POST['save_user_in_platform_checkout'] ) && filter_var( $_POST['save_user_in_platform_checkout'], FILTER_VALIDATE_BOOLEAN ) ) {
+		if ( $this->platform_checkout_util->should_save_platform_customer() ) {
 			do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
 			$payment_information->must_save_payment_method_to_platform();
 		}
@@ -1032,32 +774,107 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Update the customer details with the incoming order data, in a CRON job.
+	 *
+	 * @param int    $order_id     WC order id.
+	 * @param string $customer_id  The customer id to update details for.
+	 * @param bool   $is_test_mode Whether to run the CRON job in test mode.
+	 * @param bool   $is_woopay    Whether CRON job was queued from WooPay.
+	 */
+	public function update_customer_with_order_data( $order_id, $customer_id, $is_test_mode = false, $is_woopay = false ) {
+		// Since this CRON job may have been created in test_mode, when the CRON job runs, it
+		// may lose the test_mode context. So, instead, we pass that context when creating
+		// the CRON job and apply the context here.
+		$apply_test_mode_context = function () use ( $is_test_mode ) {
+			return $is_test_mode;
+		};
+		add_filter( 'wcpay_test_mode', $apply_test_mode_context );
+
+		$order = wc_get_order( $order_id );
+		$user  = $order->get_user();
+		if ( false === $user ) {
+			$user = wp_get_current_user();
+		}
+
+		// Since this function will run in a CRON job, "wp_get_current_user()" will default
+		// to user with ID of 0. So, instead, we replace it with the user from the $order,
+		// when updating a WooPay user.
+		$apply_order_user_email = function ( $params ) use ( $user, $is_woopay ) {
+			if ( $is_woopay ) {
+				$params['email'] = $user->user_email;
+			}
+
+			return $params;
+		};
+		add_filter( 'wcpay_api_request_params', $apply_order_user_email, 20, 1 );
+
+		// Update the existing customer with the current order details.
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+		$this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
+	}
+
+	/**
 	 * Manages customer details held on WCPay server for WordPress user associated with an order.
 	 *
-	 * @param WC_Order $order WC Order object.
+	 * @param WC_Order $order   WC Order object.
+	 * @param array    $options Additional options to apply.
 	 *
 	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
 	 */
-	protected function manage_customer_details_for_order( $order ) {
+	protected function manage_customer_details_for_order( $order, $options = [] ) {
 		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
 		}
 
 		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id   = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
 
 		if ( null === $customer_id ) {
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 			// Create a new customer.
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		} else {
-			// Update the existing customer with the current details. In the event the old customer can't be
-			// found a new one is created, so we update the customer ID here as well.
-			$customer_id = $this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
+			// Update the customer with order data async.
+			$this->action_scheduler_service->schedule_job(
+				time(),
+				self::UPDATE_CUSTOMER_WITH_ORDER_DATA,
+				[
+					'order_id'     => $order->get_id(),
+					'customer_id'  => $customer_id,
+					'is_test_mode' => $this->is_in_test_mode(),
+					'is_woopay'    => $options['is_woopay'] ?? false,
+				]
+			);
 		}
 
 		return [ $user, $customer_id ];
+	}
+
+	/**
+	 * Update the saved payment method information with checkout values, in a CRON job.
+	 *
+	 * @param string $payment_method The payment method to update.
+	 * @param int    $order_id       WC order id.
+	 * @param bool   $is_test_mode   Whether to run the CRON job in test mode.
+	 */
+	public function update_saved_payment_method( $payment_method, $order_id, $is_test_mode = false ) {
+		// Since this CRON job may have been created in test_mode, when the CRON job runs, it
+		// may lose the test_mode context. So, instead, we pass that context when creating
+		// the CRON job and apply the context here.
+		$apply_test_mode_context = function () use ( $is_test_mode ) {
+			return $is_test_mode;
+		};
+		add_filter( 'wcpay_test_mode', $apply_test_mode_context );
+
+		$order = wc_get_order( $order_id );
+
+		try {
+			$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_method, $order );
+		} catch ( Exception $e ) {
+			// If updating the payment method fails, log the error message.
+			Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
+		}
 	}
 
 	/**
@@ -1067,9 +884,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WCPay\Payment_Information $payment_information Payment info.
 	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
 	 *
-	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
-	 * @throws API_Exception                Error processing the payment.
-	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
+	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
+	 * @throws API_Exception                   Error processing the payment.
+	 * @throws Add_Payment_Method_Exception    When $0 order processing failed.
+	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
 		$order                                       = $payment_information->get_order();
@@ -1080,16 +898,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount   = $order->get_total();
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
-		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+		$customer_details_options   = [
+			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+		];
+		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
 
-		// Update saved payment method information with checkout values, as some saved methods might not have billing details.
+		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
-			try {
-				$this->customer_service->update_payment_method_with_billing_details_from_order( $payment_information->get_payment_method(), $order );
-			} catch ( Exception $e ) {
-				// If updating the payment method fails, log the error message but catch the error to avoid crashing the checkout flow.
-				Logger::log( 'Error when updating saved payment method: ' . $e->getMessage() );
-			}
+			$this->action_scheduler_service->schedule_job(
+				time(),
+				self::UPDATE_SAVED_PAYMENT_METHOD,
+				[
+					'payment_method' => $payment_information->get_payment_method(),
+					'order_id'       => $order->get_id(),
+					'is_test_mode'   => $this->is_in_test_mode(),
+				]
+			);
 		}
 
 		$intent_failed  = false;
@@ -1102,7 +926,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( '_wcpay_mode', $this->is_in_test_mode() ? 'test' : 'prod' );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
-		if ( ! $payment_needed && ! $save_payment_method_to_store ) {
+		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
 			$order->payment_complete();
 
 			if ( $payment_information->is_using_saved_payment_method() ) {
@@ -1150,16 +974,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 
-			// Make sure the payment method being charged was created in the platform.
-			if (
-				! $payment_information->is_using_saved_payment_method() &&
-				$this->should_use_stripe_platform_on_checkout_page() &&
-				// This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
-				! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
-				filter_var( $_POST['wcpay-is-platform-payment-method'], FILTER_VALIDATE_BOOLEAN ) // phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			) {
-				// This payment method was created under the platform account.
-				$additional_api_parameters['is_platform_payment_method'] = 'true';
+			$additional_api_parameters['is_platform_payment_method'] = $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() );
+
+			// This meta is only set by WooPay.
+			// We want to handle the intention creation differently when there are subscriptions.
+			// We're using simple products on WooPay so the current logic for WCPay subscriptions won't work there.
+			if ( '1' === $order->get_meta( '_woopay_has_subscription' ) ) {
+				$additional_api_parameters['woopay_has_subscription'] = 'true';
 			}
 
 			// The sanitize_user call here is deliberate: it seems the most appropriate sanitization function
@@ -1167,10 +988,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
 
+			// Initializing the intent variable here to ensure we don't try to use an undeclared
+			// variable later.
+			$intent = null;
 			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the intent is included in the request use that intent.
-				$intent = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
-			} else {
+				$intent                   = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
+				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
+				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+				if ( $intent_meta_order_id !== $order_id ) {
+					throw new Intent_Authentication_Exception(
+						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						'order_id_mismatch'
+					);
+				}
+			}
+
+			if ( empty( $intent ) ) {
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
 				$intent = $this->payments_api_client->create_and_confirm_intention(
 					$converted_amount,
@@ -1209,11 +1044,49 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
 			}
 		} else {
-			// For $0 orders, we need to save the payment method using a setup intent.
-			$intent = $this->payments_api_client->create_and_confirm_setup_intent(
-				$payment_information->get_payment_method(),
-				$customer_id
-			);
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$platform_checkout_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
+
+			if ( ! empty( $platform_checkout_intent_id ) ) {
+				// If the setup intent is included in the request use that intent.
+				$intent = $this->payments_api_client->get_setup_intent( $platform_checkout_intent_id );
+
+				$intent_meta_order_id_raw = ! empty( $intent['metadata'] ) ? $intent['metadata']['order_id'] ?? '' : '';
+				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+				if ( $intent_meta_order_id !== $order_id ) {
+					throw new Intent_Authentication_Exception(
+						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
+						'order_id_mismatch'
+					);
+				}
+			} else {
+				$save_user_in_platform_checkout = false;
+
+				if ( $this->platform_checkout_util->should_save_platform_customer() ) {
+					$save_user_in_platform_checkout = true;
+					$metadata_from_order            = apply_filters(
+						'wcpay_metadata_from_order',
+						[
+							'customer_email' => $order->get_billing_email(),
+						],
+						$order
+					);
+					$metadata                       = array_merge( (array) $metadata_from_order, (array) $metadata ); // prioritize metadata from mobile app.
+
+					do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
+				}
+
+				// For $0 orders, we need to save the payment method using a setup intent.
+				$intent = $this->payments_api_client->create_and_confirm_setup_intent(
+					$payment_information->get_payment_method(),
+					$customer_id,
+					false,
+					$this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ),
+					$save_user_in_platform_checkout,
+					$metadata
+				);
+			}
 
 			$intent_id     = $intent['id'];
 			$status        = $intent['status'];
@@ -1230,12 +1103,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $save_payment_method_to_store && ! $intent_failed ) {
 				try {
-					// Setup intents are currently not deserialized as payment intents are, so check if it's an array first.
-					// For payment intents, we may provide a platform payment method from `$payment_information`, but we need
-					// to return a connected payment method. So we should always retrieve the payment method from the intent.
-					$payment_method_id = is_array( $intent ) ? $payment_information->get_payment_method() : $intent->get_payment_method_id();
+					$token = null;
 
-					$token = $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
+					// Setup intents are currently not deserialized as payment intents are, so check if it's an array first.
+					// For WooPay checkouts, we may provide a platform payment method from `$payment_information`, but we need
+					// to return a connected payment method. So we should always retrieve the payment method from the intent.
+					$payment_method_id = is_array( $intent ) ? $intent['payment_method'] : $intent->get_payment_method_id();
+
+					// Handle orders that are paid via WooPay and contain subscriptions.
+					if ( $order->get_meta( 'is_woopay' ) && function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order ) ) {
+
+						$customer_tokens = WC_Payment_Tokens::get_customer_tokens( $order->get_user_id(), self::GATEWAY_ID );
+
+						// Use the existing token if we already have one for the incoming payment method.
+						foreach ( $customer_tokens as $saved_token ) {
+							if ( $saved_token->get_token() === $payment_method_id ) {
+								$token = $saved_token;
+								break;
+							}
+						}
+					}
+
+					// Store a new token if we're not paying for a subscription in WooPay,
+					// or if we are, but we didn't find a stored token for the selected payment method.
+					if ( empty( $token ) ) {
+						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, $user );
+					}
 					$payment_information->set_token( $token );
 				} catch ( Exception $e ) {
 					// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
@@ -1246,6 +1139,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $payment_information->is_using_saved_payment_method() ) {
 				$token = $payment_information->get_payment_token();
 				$this->add_token_to_order( $order, $token );
+
+				if ( $order->get_meta( '_woopay_has_subscription' ) ) {
+					$token->update_meta_data( 'is_attached_to_subscription', '1' );
+					$token->save_meta_data();
+				}
 			}
 
 			if ( 'requires_action' === $status ) {
@@ -1263,7 +1161,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							'#wcpay-confirm-%s:%s:%s:%s',
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
-							$client_secret,
+							WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $client_secret ),
 							wp_create_nonce( 'wcpay_update_order_status_nonce' )
 						),
 						// Include the payment method ID so the Blocks integration can save cards.
@@ -1694,9 +1592,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * Overrides parent method to retrieve some options from connected account.
 	 *
-	 * @param  string $key         Option key.
-	 * @param  mixed  $empty_value Value when empty.
-	 * @return string|array        The value specified for the option or a default value for the option.
+	 * @param  string $key           Option key.
+	 * @param  mixed  $empty_value   Value when empty.
+	 * @return string|array|int|bool The value specified for the option or a default value for the option.
 	 */
 	public function get_option( $key, $empty_value = null ) {
 		switch ( $key ) {
@@ -1722,6 +1620,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_branding_primary_color();
 			case 'account_branding_secondary_color':
 				return $this->get_account_branding_secondary_color();
+			case 'deposit_schedule_interval':
+				return $this->get_deposit_schedule_interval();
+			case 'deposit_schedule_weekly_anchor':
+				return $this->get_deposit_schedule_weekly_anchor();
+			case 'deposit_schedule_monthly_anchor':
+				return $this->get_deposit_schedule_monthly_anchor();
+			case 'deposit_delay_days':
+				return $this->get_deposit_delay_days();
+			case 'deposit_status':
+				return $this->get_deposit_status();
+			case 'deposit_completed_waiting_period':
+				return $this->get_deposit_completed_waiting_period();
+
 			default:
 				return parent::get_option( $key, $empty_value );
 		}
@@ -1813,7 +1724,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return string Statement descriptor of default value.
 	 */
-	protected function get_account_statement_descriptor( string $empty_value = '' ): string {
+	public function get_account_statement_descriptor( string $empty_value = '' ): string {
 		try {
 			if ( $this->is_connected() ) {
 				return $this->account->get_statement_descriptor();
@@ -1993,6 +1904,114 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $default_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule interval.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule.
+	 *
+	 * @return string Interval or default value.
+	 */
+	protected function get_deposit_schedule_interval( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_schedule_interval();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule interval.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule weekly anchor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule weekly anchor.
+	 *
+	 * @return string Weekly anchor or default value.
+	 */
+	protected function get_deposit_schedule_weekly_anchor( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_schedule_weekly_anchor();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule weekly anchor.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule monthly anchor.
+	 *
+	 * @param int|null $empty_value Empty value to return when not connected or fails to fetch deposit schedule monthly anchor.
+	 *
+	 * @return int|null Monthly anchor or default value.
+	 */
+	protected function get_deposit_schedule_monthly_anchor( $empty_value = null ) {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_schedule_monthly_anchor();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
+		}
+		return null === $empty_value ? null : (int) $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit delay days.
+	 *
+	 * @param int $default_value Value to return when not connected or fails to fetch deposit delay days. Default is 7 days.
+	 *
+	 * @return int number of days.
+	 */
+	protected function get_deposit_delay_days( int $default_value = 7 ): int {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_delay_days() ?? $default_value;
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit delay days.' . $e );
+		}
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account deposit status.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit status.
+	 *
+	 * @return string deposit status or default value.
+	 */
+	protected function get_deposit_status( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_status();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit status.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets the completed deposit waiting period value.
+	 *
+	 * @param bool $empty_value Empty value to return when not connected or fails to fetch the completed deposit waiting period value.
+	 *
+	 * @return bool The completed deposit waiting period value or default value.
+	 */
+	protected function get_deposit_completed_waiting_period( bool $empty_value = false ): bool {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_completed_waiting_period();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
+		}
+		return $empty_value;
 	}
 
 	/**
@@ -2196,7 +2215,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$charge    = $intent->get_charge();
 			$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
 
-			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status, $charge_id );
+			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status );
 			return;
 		} elseif ( ! empty( $error_message ) ) {
 			$note = sprintf(
@@ -2248,13 +2267,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$process_item  = static function( $item ) use ( $currency ) {
 			// Check to see if it is a WC_Order_Item_Product or a WC_Order_Item_Fee.
 			if ( is_a( $item, 'WC_Order_Item_Product' ) ) {
-				$subtotal   = $item->get_subtotal();
-				$product_id = $item->get_variation_id()
+				$subtotal     = $item->get_subtotal();
+				$product_id   = $item->get_variation_id()
 					? $item->get_variation_id()
 					: $item->get_product_id();
+				$product_code = substr( $product_id, 0, 12 );
 			} else {
-				$subtotal   = $item->get_total();
-				$product_id = substr( sanitize_title( $item->get_name() ), 0, 12 );
+				$subtotal     = $item->get_total();
+				$product_code = substr( sanitize_title( $item->get_name() ), 0, 12 );
 			}
 
 			$description = substr( $item->get_name(), 0, 26 );
@@ -2270,7 +2290,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			return (object) [
-				'product_code'        => (string) $product_id, // Up to 12 characters that uniquely identify the product.
+				'product_code'        => (string) $product_code, // Up to 12 characters that uniquely identify the product.
 				'product_description' => $description, // Up to 26 characters long describing the product.
 				'unit_cost'           => $unit_cost, // Cost of the product, in cents, as a non-negative integer.
 				'quantity'            => $quantity, // The number of items of this type sold, as a non-negative integer.
@@ -2614,8 +2634,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception - When an error occurs in setup intent creation.
 	 */
 	public function create_and_confirm_setup_intent() {
+		$payment_information             = Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification
+		$should_save_in_platform_account = false;
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_information = Payment_Information::from_payment_request( $_POST );
+		if ( ! empty( $_POST['save_payment_method_in_platform_account'] ) && filter_var( wp_unslash( $_POST['save_payment_method_in_platform_account'] ), FILTER_VALIDATE_BOOLEAN ) ) {
+			$should_save_in_platform_account = true;
+		}
 
 		// Determine the customer adding the payment method, create one if we don't have one already.
 		$user        = wp_get_current_user();
@@ -2627,7 +2652,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		return $this->payments_api_client->create_and_confirm_setup_intent(
 			$payment_information->get_payment_method(),
-			$customer_id
+			$customer_id,
+			$should_save_in_platform_account,
+			$this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() )
 		);
 	}
 
@@ -2647,6 +2674,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$setup_intent = $this->create_and_confirm_setup_intent();
+
+			if ( $setup_intent['client_secret'] ) {
+				$setup_intent['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $setup_intent['client_secret'] );
+			}
 
 			wp_send_json_success( $setup_intent, 200 );
 		} catch ( Exception $e ) {
@@ -2670,29 +2701,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_transaction_url( $order ) {
-		$charge_id = $order->get_meta( '_charge_id' );
-		return $this->compose_transaction_url( $charge_id );
-	}
+		$intent_id = $order->get_meta( '_intent_id', true );
+		$charge_id = $order->get_meta( '_charge_id', true );
 
-	/**
-	 * Composes url for transaction details page.
-	 *
-	 * @param  string $charge_id Charge id.
-	 * @return string            Transaction details page url.
-	 */
-	protected function compose_transaction_url( $charge_id ) {
-		if ( empty( $charge_id ) ) {
-			return '';
-		}
-
-		return add_query_arg(
-			[
-				'page' => 'wc-admin',
-				'path' => '/payments/transactions/details',
-				'id'   => $charge_id,
-			],
-			admin_url( 'admin.php' )
-		);
+		return WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 	}
 
 	/**
@@ -2705,8 +2717,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			[
 				'user_id'    => $user_id,
 				'gateway_id' => self::GATEWAY_ID,
+				'limit'      => self::USER_FORMATTED_TOKENS_LIMIT,
 			]
 		);
+
 		return array_map(
 			static function ( WC_Payment_Token $token ): array {
 				return [
@@ -2918,11 +2932,105 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Add extra `wcpay-checkout-email-field` class.
 			$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
 
-			// Append StripeLink modal trigger button for logged in users.
-			$fields['billing_email']['label'] = $fields['billing_email']['label']
-				. ' <button class="wcpay-stripelink-modal-trigger"></button>';
+			add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * Append StripeLink button within email field for logged in users.
+	 *
+	 * @param string $field    - HTML content within email field.
+	 * @param string $key      - Key.
+	 * @param array  $args     - Arguments.
+	 * @param string $value    - Default value.
+	 *
+	 * @return string $field    - Updated email field content with the button appended.
+	 */
+	public function append_stripelink_button( $field, $key, $args, $value ) {
+		if ( 'billing_email' === $key ) {
+			$field = str_replace( '</span>', '<button class="wcpay-stripelink-modal-trigger"></button></span>', $field );
+		}
+		return $field;
+	}
+
+	/**
+	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
+	 *
+	 * @return string URL of the configuration screen for this gateway
+	 */
+	public static function get_settings_url() {
+		return WC_Payments_Admin_Settings::get_settings_url();
+	}
+
+	// Start: Deprecated functions.
+
+	/**
+	 * Whether the current page is the WooCommerce Payments settings page.
+	 *
+	 * @deprecated 5.0.0
+	 *
+	 * @return bool
+	 */
+	public static function is_current_page_settings() {
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Admin_Settings::is_current_page_settings' );
+		return WC_Payments_Admin_Settings::is_current_page_settings();
+	}
+
+	/**
+	 * Generates the configuration values, needed for payment fields.
+	 *
+	 * Isolated as a separate method in order to be available both
+	 * during the classic checkout, as well as the checkout block.
+	 *
+	 * @deprecated use WC_Payments_Checkout::get_payment_fields_js_config instead.
+	 *
+	 * @return array
+	 */
+	public function get_payment_fields_js_config() {
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Checkout::get_payment_fields_js_config' );
+		return WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
+	}
+
+	/**
+	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
+	 * Customer data is retrieved from order when on Pay for Order.
+	 * Customer data is retrieved from customer when on 'Add Payment Method'.
+	 *
+	 * @deprecated use WC_Payments_Customer_Service::get_prepared_customer_data() instead.
+	 *
+	 * @return array|null An array with customer data or nothing.
+	 */
+	public function get_prepared_customer_data() {
+		wc_deprecated_function( __FUNCTION__, '5.0.0', 'WC_Payments_Customer_Service::get_prepared_customer_data' );
+		return WC_Payments::get_customer_service()->get_prepared_customer_data();
+	}
+
+	// End: Deprecated functions.
+
+	/**
+	 * Determine if current payment method is a platform payment method.
+	 *
+	 * @param boolean $is_using_saved_payment_method If it is using saved payment method.
+	 *
+	 * @return boolean True if it is a platform payment method.
+	 */
+	private function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+		// Return false for express checkout method.
+		if ( isset( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return false;
+		}
+
+		// Make sure the payment method being charged was created in the platform.
+		if (
+			! $is_using_saved_payment_method &&
+			$this->should_use_stripe_platform_on_checkout_page()
+		) {
+			// This payment method was created under the platform account.
+			return true;
+		}
+
+		return false;
 	}
 }

@@ -18,12 +18,20 @@ function addAdvancedFilter( filter: string ) {
 	user.click( screen.getByRole( 'button', { name: filter } ) );
 }
 
+const storeCurrencies = [ 'eur', 'usd' ];
+const customerCurrencies = [ 'eur', 'usd', 'gbp' ];
+
 describe( 'Transactions filters', () => {
 	beforeEach( () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
-		const { rerender } = render( <TransactionsFilters /> );
+		const { rerender } = render(
+			<TransactionsFilters
+				storeCurrencies={ storeCurrencies }
+				customerCurrencies={ customerCurrencies }
+			/>
+		);
 
 		// select advanced filter view
 		user.click(
@@ -32,7 +40,12 @@ describe( 'Transactions filters', () => {
 		user.click(
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
 		);
-		rerender( <TransactionsFilters /> );
+		rerender(
+			<TransactionsFilters
+				storeCurrencies={ storeCurrencies }
+				customerCurrencies={ customerCurrencies }
+			/>
+		);
 	} );
 
 	describe( 'when filtering by date', () => {
@@ -140,6 +153,52 @@ describe( 'Transactions filters', () => {
 			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().type_is ).toEqual( 'refund' );
+		} );
+	} );
+
+	describe( 'when filtering by customer currency', () => {
+		let ruleSelector: HTMLElement;
+
+		beforeEach( () => {
+			addAdvancedFilter( 'Customer currency' );
+			ruleSelector = screen.getByRole( 'combobox', {
+				name: /transaction customer currency filter/i,
+			} );
+		} );
+
+		test( 'should render all types', () => {
+			const typeSelect = screen.getByRole( 'combobox', {
+				name: /customer currency$/i,
+			} ) as HTMLSelectElement;
+			expect( typeSelect.options ).toMatchSnapshot();
+		} );
+
+		test( 'should filter by is', () => {
+			user.selectOptions( ruleSelector, 'is' );
+
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /Select a customer currency/i,
+				} ),
+				'eur'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().customer_currency_is ).toEqual( 'eur' );
+		} );
+
+		test( 'should filter by is_not', () => {
+			user.selectOptions( ruleSelector, 'is_not' );
+
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /Select a customer currency/i,
+				} ),
+				'eur'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().customer_currency_is_not ).toEqual( 'eur' );
 		} );
 	} );
 } );

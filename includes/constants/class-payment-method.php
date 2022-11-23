@@ -26,6 +26,7 @@ class Payment_Method extends Enum {
 	const US_BANK_ACCOUNT = 'us_bank_account';
 	const BECS            = 'au_becs_debit';
 	const INTERAC_PRESENT = 'interac_present';
+	const LINK            = 'link';
 
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,

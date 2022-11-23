@@ -1,0 +1,40 @@
+name: "Generate the changelog for WooCommerce Payments"
+description: "Generate the changelog from the version provided"
+
+inputs:
+  release-version:
+    description: "The release version for which the action should generate the changelog (e.g. 4.5.0)"
+    required: true
+  release-date:
+    description: "The release date (format: YYYY-MM-DD) for which the action should generate the changelog (default: unreleased)"
+    required: false
+    default: "unreleased"
+    
+outputs: 
+  changelog:
+    description: "The escaped changelog content generated from the release version provided"
+    value: ${{ steps.get_changelog.outputs.CHANGELOG }}
+
+runs:
+  using: composite
+  steps:
+    - name: "Generate changelog"
+      id: get_changelog
+      shell: bash
+      env:
+        VERSION: ${{ inputs.release-version }}
+        RELEASE_DATE: ${{ inputs.release-date }}
+      run: |
+        # Install this dev package globally to gather changelog entries while not including it into the release package
+        composer global require automattic/jetpack-changelogger:^3.0.7
+        
+        # Gather changelog entries
+        ~/.composer/vendor/bin/changelogger write --use-version="$VERSION" --release-date="$RELEASE_DATE"
+        
+        echo "Picking up changelog for version '$VERSION'..."
+        CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
+        echo "$CHANGELOG"
+        
+        # New line characters need to be escaped because set-output doesn't support multi-line strings out of the box
+        CHANGELOG="${CHANGELOG//$'\n'/\\n}"  
+        echo "CHANGELOG=$CHANGELOG" >> $GITHUB_OUTPUT

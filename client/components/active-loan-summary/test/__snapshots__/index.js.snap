@@ -44,9 +44,9 @@ exports[`Active loan summary renders correctly 1`] = `
             <span
               class="is-big"
             >
-              $12.34 USD
+              $12.34
             </span>
-             of $1,150.00 USD
+             of $1,150.00
           </div>
         </div>
         <div
@@ -63,9 +63,9 @@ exports[`Active loan summary renders correctly 1`] = `
             <span
               class="is-big"
             >
-              $1.23 USD
+              $1.23
             </span>
-             of $24.68 USD minimum
+             of $24.68 minimum
           </div>
         </div>
       </div>
@@ -97,7 +97,7 @@ exports[`Active loan summary renders correctly 1`] = `
           <div
             class="wcpay-loan-summary-block__value"
           >
-            $1,000.00 USD
+            $1,000.00
           </div>
         </div>
         <div
@@ -111,7 +111,7 @@ exports[`Active loan summary renders correctly 1`] = `
           <div
             class="wcpay-loan-summary-block__value"
           >
-            $150.00 USD
+            $150.00
           </div>
         </div>
         <div

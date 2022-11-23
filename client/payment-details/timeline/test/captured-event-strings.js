@@ -18,6 +18,7 @@ describe( 'Strings in captured events', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
+			shouldUseExplicitPrice: true,
 			zeroDecimalCurrencies: [ 'vnd' ],
 			connect: {
 				country: 'US',

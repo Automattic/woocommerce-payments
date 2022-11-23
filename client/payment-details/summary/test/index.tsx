@@ -19,6 +19,9 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		featureFlags: {
+			isAuthAndCaptureEnabled: boolean;
+		};
 	};
 };
 
@@ -79,6 +82,9 @@ describe( 'PaymentDetailsSummary', () => {
 			connect: {
 				country: 'US',
 			},
+			featureFlags: {
+				isAuthAndCaptureEnabled: false,
+			},
 			currencyData: {
 				US: {
 					code: 'USD',
@@ -100,7 +106,7 @@ describe( 'PaymentDetailsSummary', () => {
 		const charge = getBaseCharge();
 		charge.refunded = false;
 		charge.amount_refunded = 1200;
-		charge.refunds.data.push( {
+		charge.refunds?.data.push( {
 			balance_transaction: {
 				amount: -charge.amount_refunded,
 				currency: 'usd',
@@ -114,7 +120,7 @@ describe( 'PaymentDetailsSummary', () => {
 		const charge = getBaseCharge();
 		charge.refunded = true;
 		charge.amount_refunded = 2000;
-		charge.refunds.data.push( {
+		charge.refunds?.data.push( {
 			balance_transaction: {
 				amount: -charge.amount_refunded,
 				currency: 'usd',

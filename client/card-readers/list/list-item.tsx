@@ -5,17 +5,14 @@
 import classNames from 'classnames';
 import { __ } from '@wordpress/i18n';
 import React from 'react';
+import { CardReader } from 'wcpay/types/card-readers';
 
 /*eslint-disable camelcase*/
 const CardReaderListItem: React.FunctionComponent< {
-	reader: {
-		id: string;
-		device_type: string;
-		is_active: boolean;
-	};
-} > = ( {
-	reader: { id, device_type: deviceType, is_active: isActive },
-} ): JSX.Element => {
+	reader: CardReader;
+} > = ( { reader } ): JSX.Element => {
+	const { id, device_type: deviceType, is_active: isActive } = reader;
+
 	const status = isActive
 		? __( 'Active', 'woocomerce-payments' )
 		: __( 'Inactive', 'woocomerce-payments' );

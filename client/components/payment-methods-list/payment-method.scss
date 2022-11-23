@@ -104,7 +104,7 @@
 		box-shadow: 0 0 0 1px #ddd;
 	}
 
-	&.has-overlay {
+	&.overlay {
 		position: relative;
 		&::after {
 			content: '';

@@ -41,30 +41,30 @@ class FrontendPrices {
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Simple product price hooks.
-			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price_string' ], 50, 2 );
-			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price_string' ], 50, 2 );
-			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price_string' ], 50, 2 );
+			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price_string' ], 900, 2 );
+			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price_string' ], 900, 2 );
+			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price_string' ], 900, 2 );
 
 			// Variation price hooks.
-			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price_string' ], 50, 2 );
-			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price_string' ], 50, 2 );
-			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price_string' ], 50, 2 );
+			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price_string' ], 900, 2 );
+			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price_string' ], 900, 2 );
+			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price_string' ], 900, 2 );
 
 			// Variation price range hooks.
-			add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 50 );
-			add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 50 );
+			add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 900 );
+			add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 900 );
 
 			// Shipping methods hooks.
-			add_filter( 'woocommerce_package_rates', [ $this, 'convert_package_rates_prices' ], 50 );
-			add_action( 'init', [ $this, 'register_free_shipping_filters' ], 50 );
+			add_action( 'init', [ $this, 'register_free_shipping_filters' ], 900 );
+			add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'convert_shipping_method_rate_cost' ], 900 );
 
 			// Coupon hooks.
-			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 50, 2 );
-			add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
-			add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 50 );
+			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 900, 2 );
+			add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 900 );
+			add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 900 );
 
 			// Order hooks.
-			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 50, 2 );
+			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 900, 2 );
 		}
 	}
 
@@ -128,33 +128,21 @@ class FrontendPrices {
 	}
 
 	/**
-	 * Returns the shipping rates with their prices converted.
-	 * Creates new rate objects to avoid issues with extensions that cache
-	 * them before this hook is called.
+	 * Returns the shipping add rate args with cost converted.
 	 *
-	 * @param array $rates Shipping rates.
+	 * @param array $args Shipping rate args.
 	 *
-	 * @return array Shipping rates with converted costs.
+	 * @return array Shipping rate args with converted cost.
 	 */
-	public function convert_package_rates_prices( $rates ) {
-		return array_map(
-			function ( $rate ) {
-				$rate = clone $rate;
-				if ( $rate->cost ) {
-					$rate->cost = $this->multi_currency->get_price( $rate->cost, 'shipping' );
-				}
-				if ( $rate->taxes ) {
-					$rate->taxes = array_map(
-						function ( $tax ) {
-							return $this->multi_currency->get_price( $tax, 'tax' );
-						},
-						$rate->taxes
-					);
-				}
-				return $rate;
-			},
-			$rates
+	public function convert_shipping_method_rate_cost( $args ) {
+		$cost = is_array( $args['cost'] ) ? array_sum( $args['cost'] ) : $args['cost'];
+		$args = wp_parse_args(
+			[
+				'cost' => $this->multi_currency->get_price( $cost, 'shipping' ),
+			],
+			$args
 		);
+		return $args;
 	}
 
 	/**
@@ -227,7 +215,7 @@ class FrontendPrices {
 			foreach ( $shipping_zone['shipping_methods'] as $shipping_method ) {
 				if ( 'free_shipping' === $shipping_method->id ) {
 					$option_name = 'option_woocommerce_' . trim( $shipping_method->id ) . '_' . (int) $shipping_method->instance_id . '_settings';
-					add_filter( $option_name, [ $this, 'get_free_shipping_min_amount' ], 50 );
+					add_filter( $option_name, [ $this, 'get_free_shipping_min_amount' ], 900 );
 				}
 			}
 		}

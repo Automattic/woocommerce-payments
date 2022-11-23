@@ -50,18 +50,6 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 			return rest_ensure_response( new WP_Error( 'wcpay_get_charge', $e->getMessage() ) );
 		}
 
-		$raw_details     = $charge['billing_details']['address'];
-		$billing_details = [];
-
-		$billing_details['city']      = ( ! empty( $raw_details['city'] ) ) ? $raw_details['city'] : '';
-		$billing_details['country']   = ( ! empty( $raw_details['country'] ) ) ? $raw_details['country'] : '';
-		$billing_details['address_1'] = ( ! empty( $raw_details['line1'] ) ) ? $raw_details['line1'] : '';
-		$billing_details['address_2'] = ( ! empty( $raw_details['line2'] ) ) ? $raw_details['line2'] : '';
-		$billing_details['postcode']  = ( ! empty( $raw_details['postal_code'] ) ) ? $raw_details['postal_code'] : '';
-		$billing_details['state']     = ( ! empty( $raw_details['state'] ) ) ? $raw_details['state'] : '';
-
-		$charge['billing_details']['formatted_address'] = WC()->countries->get_formatted_address( $billing_details );
-
 		return rest_ensure_response( $charge );
 	}
 }

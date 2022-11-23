@@ -83,10 +83,6 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 		step "Disable Xdebug on server container"
 		docker exec "$SERVER_CONTAINER" \
 		sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
-
-		step "Starting webhook listener in background"
-		docker-compose exec -d -u www-data wordpress \
-		stripe listen --api-key "$E2E_WCPAY_STRIPE_TEST_SECRET_KEY" --forward-to http://localhost/wp-json/wpcom/v2/wcpay/webhook/dev
 	fi
 fi
 
@@ -173,8 +169,8 @@ fi
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
 
-echo "Installing and activating Gutenberg & WordPress Importer..."
-cli wp plugin install gutenberg wordpress-importer --activate
+echo "Installing and activating WordPress Importer..."
+cli wp plugin install wordpress-importer --activate
 
 # Install WooCommerce
 if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
@@ -279,6 +275,10 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	cli wp plugin activate woocommerce-subscriptions
 
 	rm -rf woocommerce-subscriptions-source
+
+	echo "Import WooCommerce Subscription products"
+	cli wp import wp-content/plugins/woocommerce-payments/tests/e2e/env/wc-subscription-products.xml --authors=skip
+
 else
 	echo "Skipping install of WooCommerce Subscriptions"
 fi

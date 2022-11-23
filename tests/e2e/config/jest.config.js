@@ -4,6 +4,7 @@ const { useE2EJestConfig } = require( '@woocommerce/e2e-environment' );
 const fs = require( 'fs' );
 
 config( { path: path.resolve( __dirname, '.env' ) } );
+config( { path: path.resolve( __dirname, 'e2e-default.env' ) } );
 config( { path: path.resolve( __dirname, 'local.env' ) } );
 
 // Define paths to look for E2E tests.

@@ -5,14 +5,18 @@
  */
 import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { Card, CardBody, CardFooter } from '@wordpress/components';
+import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
 import moment from 'moment';
-import React from 'react';
+import React, { useContext } from 'react';
 
 /**
  * Internal dependencies.
  */
-import { getChargeAmounts, getChargeStatus } from 'utils/charge';
+import {
+	getChargeAmounts,
+	getChargeStatus,
+	getChargeChannel,
+} from 'utils/charge';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
 import HorizontalList from 'components/horizontal-list';
@@ -21,8 +25,14 @@ import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
 import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
 import CustomerLink from 'components/customer-link';
+import { useAuthorization } from 'wcpay/data';
+import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
+import wcpayTracks from 'tracks';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
+
+declare const window: any;
 
 const placeholderValues = {
 	amount: 0,
@@ -42,6 +52,14 @@ const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 						moment( charge.created * 1000 ).toISOString()
 				  )
 				: '–',
+		},
+		{
+			title: __( 'Channel', 'woocommerce-payments' ),
+			content: (
+				<span>
+					{ getChargeChannel( charge.payment_method_details?.type ) }
+				</span>
+			),
 		},
 		{
 			title: __( 'Customer', 'woocommerce-payments' ),
@@ -90,6 +108,22 @@ const PaymentDetailsSummary = ( {
 		: placeholderValues;
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
+
+	const {
+		featureFlags: { isAuthAndCaptureEnabled },
+	} = useContext( WCPaySettingsContext );
+
+	// We should only fetch the authorization data if the payment is marked for manual capture
+	const shouldFetchAuthorization =
+		charge.amount !== charge.amount_captured &&
+		charge.amount_refunded === 0 &&
+		isAuthAndCaptureEnabled;
+
+	const { authorization } = useAuthorization(
+		charge.payment_intent as string,
+		charge.order?.number as number,
+		shouldFetchAuthorization
+	);
 
 	return (
 		<Card>
@@ -206,15 +240,69 @@ const PaymentDetailsSummary = ( {
 					</div>
 				</div>
 			</CardBody>
-			<CardFooter>
+			<CardDivider />
+			<CardBody>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
 						items={ composePaymentSummaryItems( { charge } ) }
 					/>
 				</LoadableBlock>
-			</CardFooter>
+			</CardBody>
+			{ isAuthAndCaptureEnabled &&
+				authorization &&
+				! authorization.captured && (
+					<Loadable isLoading={ isLoading } placeholder="">
+						<CardFooter className="payment-details-capture-notice">
+							<div className="payment-details-capture-notice__section">
+								<div className="payment-details-capture-notice__text">
+									{ `${ __(
+										'You need to capture this charge before',
+										'woocommerce-payments'
+									) } ` }
+									<b>
+										{ dateI18n(
+											'M j, Y / g:iA',
+											moment
+												.utc( authorization.created )
+												.add( 7, 'days' )
+												.toISOString()
+										) }
+									</b>
+								</div>
+								<div className="payment-details-capture-notice__button">
+									<CaptureAuthorizationButton
+										orderId={ charge.order?.number || 0 }
+										paymentIntentId={
+											charge.payment_intent || ''
+										}
+										buttonIsPrimary={ true }
+										buttonIsSmall={ false }
+										onClick={ () => {
+											wcpayTracks.recordEvent(
+												'payments_transactions_details_capture_charge_button_click',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+										} }
+									/>
+								</div>
+							</div>
+						</CardFooter>
+					</Loadable>
+				) }
 		</Card>
 	);
 };
 
-export default PaymentDetailsSummary;
+export default ( props: {
+	charge: Charge;
+	isLoading: boolean;
+} ): JSX.Element => {
+	return (
+		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+			<PaymentDetailsSummary { ...props } />
+		</WCPaySettingsContext.Provider>
+	);
+};

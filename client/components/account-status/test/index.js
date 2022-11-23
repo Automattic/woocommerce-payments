@@ -43,7 +43,10 @@ describe( 'AccountStatus', () => {
 			{
 				status: 'complete',
 				paymentsEnabled: 1,
-				depositsStatus: 'weekly',
+				deposits: {
+					status: 'enabled',
+					interval: 'weekly',
+				},
 			},
 			[
 				{

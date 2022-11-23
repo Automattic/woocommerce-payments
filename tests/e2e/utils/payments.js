@@ -154,9 +154,9 @@ export async function confirmCardAuthentication(
 		);
 		challengeFrame = await acsFrameHandle.contentFrame();
 	}
-	const button = await challengeFrame.waitForSelector( target );
 	// Need to wait for the CSS animations to complete.
 	await page.waitFor( 500 );
+	const button = await challengeFrame.waitForSelector( target );
 	await button.click();
 }
 

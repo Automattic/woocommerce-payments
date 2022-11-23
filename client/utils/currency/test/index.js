@@ -12,6 +12,7 @@ describe( 'Currency utilities', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {
+			shouldUseExplicitPrice: true,
 			zeroDecimalCurrencies: [ 'vnd', 'jpy' ],
 			connect: {
 				country: 'US',
@@ -99,7 +100,7 @@ describe( 'Currency utilities', () => {
 
 	test( 'getCurrency with baseCurrencyCode should not use store country currency', () => {
 		expect( utils.formatCurrency( 100000, 'USD', 'EUR' ) ).toEqual(
-			'1 000,00&nbsp;$'
+			'1 000,00 $'
 		);
 	} );
 

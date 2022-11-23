@@ -9,10 +9,11 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Constants\Payment_Type;
-use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Information;
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\WC_Payments_Checkout;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -82,6 +83,29 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $order_service;
 
 	/**
+	 * Platform_Checkout_Utilities instance.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	private $platform_checkout_utilities;
+
+	/**
+	 * WC_Payments_Checkout instance.
+	 * @var WC_Payments_Checkout
+	 */
+	private $payments_checkout;
+
+	/**
+	 * @var string
+	 */
+	private $mock_charge_id = 'ch_mock';
+
+	/**
+	 * @var integer
+	 */
+	private $mock_charge_created = 1653076178;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -139,6 +163,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$this->mock_rate_limiter,
 			$this->order_service
+		);
+
+		$this->platform_checkout_utilities = new Platform_Checkout_Utilities();
+
+		$this->payments_checkout = new WC_Payments_Checkout(
+			$this->wcpay_gateway,
+			$this->platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
 		);
 	}
 
@@ -271,6 +304,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_save_card_checkbox_not_displayed_when_saved_cards_disabled() {
 		$this->wcpay_gateway->update_option( 'saved_cards', 'no' );
 
+		$this->refresh_payments_checkout();
+
 		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
 		$this->setOutputCallback(
 			function ( $output ) {
@@ -295,6 +330,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_token' )
 			->willReturn( $token_value );
 
+		$this->refresh_payments_checkout();
+
 		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
 		$this->setOutputCallback(
 			function ( $output ) use ( $token_value ) {
@@ -310,20 +347,20 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	protected function create_mock_item( $name, $quantity, $subtotal, $total_tax, $product_id ) {
 		// Setup the item.
 		$mock_item = $this
-		->getMockBuilder( WC_Order_Item_Product::class )
-		->disableOriginalConstructor()
-		->setMethods(
-			[
-				'get_name',
-				'get_quantity',
-				'get_subtotal',
-				'get_total_tax',
-				'get_total',
-				'get_variation_id',
-				'get_product_id',
-			]
-		)
-		->getMock();
+			->getMockBuilder( WC_Order_Item_Product::class )
+			->disableOriginalConstructor()
+			->setMethods(
+				[
+					'get_name',
+					'get_quantity',
+					'get_subtotal',
+					'get_total_tax',
+					'get_total',
+					'get_variation_id',
+					'get_product_id',
+				]
+			)
+			->getMock();
 
 		$mock_item
 			->method( 'get_name' )
@@ -356,8 +393,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return $mock_item;
 	}
 
-	protected function mock_level_3_order( $shipping_postcode, $with_fee = false, $with_negative_price_product = false, $quantity = 1, $basket_size = 1 ) {
-		$mock_items[] = $this->create_mock_item( 'Beanie with Logo', $quantity, 18, 2.7, 30 );
+	protected function mock_level_3_order(
+			$shipping_postcode,
+			$with_fee = false,
+			$with_negative_price_product = false,
+			$quantity = 1,
+			$basket_size = 1,
+			$product_id = 30
+	) {
+		$mock_items[] = $this->create_mock_item( 'Beanie with Logo', $quantity, 18, 2.7, $product_id );
 
 		if ( $with_fee ) {
 			// Setup the fee.
@@ -461,6 +505,34 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 		$mock_order   = $this->mock_level_3_order( '98012' );
+		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
+
+		$this->assertEquals( $expected_data, $level_3_data );
+	}
+
+	public function test_full_level3_data_with_product_id_longer_than_12_characters() {
+		$expected_data = [
+			'merchant_reference'   => '210',
+			'customer_reference'   => '210',
+			'shipping_amount'      => 3800,
+			'line_items'           => [
+				(object) [
+					'product_code'        => 123456789123,
+					'product_description' => 'Beanie with Logo',
+					'unit_cost'           => 1800,
+					'quantity'            => 1,
+					'tax_amount'          => 270,
+					'discount_amount'     => 0,
+				],
+			],
+			'shipping_address_zip' => '98012',
+			'shipping_from_zip'    => '94110',
+		];
+
+		update_option( 'woocommerce_store_postcode', '94110' );
+
+		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
+		$mock_order   = $this->mock_level_3_order( '98012', false, false, 1, 1, 123456789123456 );
 		$level_3_data = $this->wcpay_gateway->get_level3_data_from_order( $mock_order );
 
 		$this->assertEquals( $expected_data, $level_3_data );
@@ -1572,16 +1644,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// need to delete the existing options to ensure nothing is in the DB from the `setUp` phase, where the method is instantiated.
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 
-		$this->wcpay_gateway = new WC_Payment_Gateway_WCPay(
-			$this->mock_api_client,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_token_service,
-			$this->mock_action_scheduler_service,
-			$this->mock_rate_limiter,
-			$this->order_service
-		);
-
 		$this->assertEquals(
 			[
 				'product',
@@ -1932,7 +1994,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_is_platform_checkout_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertTrue( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
 	public function test_force_network_saved_cards_is_returned_as_true_if_should_use_stripe_platform() {
@@ -1943,17 +2005,24 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'should_use_stripe_platform_on_checkout_page' )
 			->willReturn( true );
 
-		$this->assertTrue( $mock_wcpay_gateway->get_payment_fields_js_config()['forceNetworkSavedCards'] );
+		$payments_checkout = new WC_Payments_Checkout(
+			$mock_wcpay_gateway,
+			$this->platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
+
+		$this->assertTrue( $payments_checkout->get_payment_fields_js_config()['forceNetworkSavedCards'] );
 	}
 
 	public function test_is_platform_checkout_enabled_returns_false_if_ineligible() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
-		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
 	public function test_is_platform_checkout_enabled_returns_false_if_ineligible_and_enabled() {
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
-		$this->assertFalse( $this->wcpay_gateway->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
 	public function is_platform_checkout_falsy_value_provider() {
@@ -2011,5 +2080,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$created->setTimestamp( $this->mock_charge_created );
 
 		return new WC_Payments_API_Charge( $this->mock_charge_id, 1500, $created );
+	}
+
+	private function refresh_payments_checkout() {
+		remove_all_actions( 'wc_payments_add_payment_fields' );
+
+		$this->payments_checkout = new WC_Payments_Checkout(
+			$this->wcpay_gateway,
+			$this->platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
 	}
 }

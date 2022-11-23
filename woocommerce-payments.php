@@ -8,11 +8,11 @@
  * Woo: 5278104:bf3cf30871604e15eec560c962593c1f
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
- * WC requires at least: 5.8
- * WC tested up to: 6.6.0
- * Requires at least: 5.7
+ * WC requires at least: 6.9
+ * WC tested up to: 7.1.0
+ * Requires at least: 5.9
  * Requires PHP: 7.0
- * Version: 4.3.0
+ * Version: 5.0.3
  *
  * @package WooCommerce\Payments
  */
@@ -26,6 +26,16 @@ define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscripti
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
+require_once __DIR__ . '/includes/platform-checkout-user/class-platform-checkout-extension.php';
+require_once __DIR__ . '/includes/platform-checkout/class-platform-checkout-session.php';
+
+use \WCPay\Platform_Checkout\Platform_Checkout_Session;
+
+/**
+ * Needs to be loaded as soon as possible
+ * Check https://github.com/Automattic/woocommerce-payments/issues/4759
+ */
+Platform_Checkout_Session::init();
 
 /**
  * Plugin activation hook.
@@ -160,14 +170,24 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 		$is_plugin_active = function( $plugin_name ) {
 			$plugin_slug = "$plugin_name/$plugin_name.php";
 
+			// Check if specified $plugin_name is in the process of being activated via the Admin > Plugins screen.
 			if ( isset( $_GET['action'], $_GET['plugin'] ) && 'activate' === $_GET['action'] && $plugin_slug === $_GET['plugin'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				return true;
 			}
 
-			if ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) && 4 >= count( $GLOBALS['argv'] ) && 'plugin' === $GLOBALS['argv'][1] && 'activate' === $GLOBALS['argv'][2] && $plugin_name === $GLOBALS['argv'][3] ) {
-				return true;
+			// Check if specified $plugin_name is in the process of being activated via the WP CLI.
+			if ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) ) {
+				$expected_arguments = [
+					'plugin',
+					'activate',
+					$plugin_name,
+				];
+				if ( array_intersect( $expected_arguments, $GLOBALS['argv'] ) === $expected_arguments ) {
+					return true;
+				}
 			}
 
+			// Check if specified $plugin_name is active on a multisite installation via site wide plugins.
 			if ( is_multisite() ) {
 				$plugins = get_site_option( 'active_sitewide_plugins' );
 				if ( isset( $plugins[ $plugin_slug ] ) ) {
@@ -175,6 +195,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 				}
 			}
 
+			// Finally check if specified $plugin_name is active.
 			if ( class_exists( 'Automattic\WooCommerce\Admin\PluginsHelper' ) ) {
 				return Automattic\WooCommerce\Admin\PluginsHelper::is_plugin_active( $plugin_slug );
 			} else {
@@ -287,3 +308,42 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 
 	return $custom_content;
 }
+
+/**
+ * Initialize WC_Payments tasks. This exists outside of wcpay_init()
+ * to ensure hooks run in time to be included in WooCommerce TaskLists.
+ *
+ * Note that this gets called on the "plugins_loaded" filter,
+ * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
+ */
+function wcpay_tasks_init() {
+	if ( class_exists( 'Automattic\WooCommerce\Admin\Features\OnboardingTasks\Task' ) ) {
+		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-tasks.php';
+		WC_Payments_Tasks::init();
+	}
+}
+
+add_action( 'plugins_loaded', 'wcpay_tasks_init' );
+
+/**
+ * Register blocks extension for platform checkout.
+ */
+function register_platform_checkout_extension() {
+	( new Platform_Checkout_Extension() )->register_extend_rest_api_update_callback();
+}
+
+add_action( 'woocommerce_blocks_loaded', 'register_platform_checkout_extension' );
+
+/**
+ * As the class is defined in later versions of WC, Psalm infers error.
+ *
+ * @psalm-suppress UndefinedClass
+ */
+add_action(
+	'before_woocommerce_init',
+	function() {
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woocommerce-payments/woocommerce-payments.php', false );
+		}
+	}
+);

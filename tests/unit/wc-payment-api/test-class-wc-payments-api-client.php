@@ -508,7 +508,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test a successful fetch of a single transaction.
+	 * Test a successful fetch of a list of transactions.
 	 *
 	 * @throws Exception In case of test failure.
 	 */
@@ -955,6 +955,48 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$result = $this->payments_api_client->get_capital_link( 'capital_financing_offer', 'https://return.url', 'https://refresh.url' );
 
 		$this->assertEquals( [ 'url' => 'https://capital.url' ], $result );
+	}
+
+	public function test_get_link() {
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/links', 'POST' );
+						$this->assertSame( 'POST', $data['method'] );
+						return true;
+					}
+				),
+				wp_json_encode(
+					[
+						'test_mode' => false,
+						'type'      => 'login_link',
+						'param'     => 'some_other_param',
+					]
+				),
+				true,
+				true // get_link should use user token auth.
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'url' => 'https://login.url' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->get_link(
+			[
+				'type'  => 'login_link',
+				'param' => 'some_other_param',
+			]
+		);
+
+		$this->assertEquals( [ 'url' => 'https://login.url' ], $result );
 	}
 
 	public function test_add_tos_agreement() {
@@ -1505,8 +1547,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 					'line_items'         => [
 						[
 							'discount_amount'     => 0,
-							'product_code'        => 'zero-cost-fee',
-							'product_description' => 'Zero cost fee',
+							'product_code'        => 'empty-order',
+							'product_description' => 'The order is empty',
 							'quantity'            => 1,
 							'tax_amount'          => 0,
 							'unit_cost'           => 0,
@@ -1592,6 +1634,26 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful fetch of a single invoice.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_invoice_success() {
+		$invoice_id = 'in_test_invoice';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'     => $invoice_id,
+				'object' => 'invoice',
+			]
+		);
+
+		$invoice = $this->payments_api_client->get_invoice( $invoice_id );
+		$this->assertEquals( $invoice_id, $invoice['id'] );
+	}
+
+	/**
 	 * Test a successful call to cancel subscription.
 	 *
 	 * @throws Exception - In the event of test failure.
@@ -1645,8 +1707,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
 		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
-							->setMethods( [ 'log' ] )
-							->getMock();
+			->setMethods( [ 'log' ] )
+			->getMock();
 
 		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
 		$logger_ref->setAccessible( true );
@@ -1923,6 +1985,98 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->expectExceptionMessage( 'Error: Document not found' );
 
 		$this->payments_api_client->get_document( 'someDocument' );
+	}
+
+	/**
+	 * Test a successful fetch of a single authorization.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_authorization_success() {
+		$payment_intent_id = 'pi_123smtm';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'payment_intent_id' => $payment_intent_id,
+			]
+		);
+
+		$authorization = $this->payments_api_client->get_authorization( $payment_intent_id );
+		$this->assertSame( $payment_intent_id, $authorization['payment_intent_id'] );
+	}
+
+	/**
+	 * Test fetching of non existing authorization.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_authorization_not_found() {
+		$payment_intent_id = 'pi_123smtm';
+		$error_message     = 'The authorization you asked for does not exist';
+
+		$this->set_http_mock_response(
+			404,
+			[
+				'error' => [
+					'code'    => 'authorization_missing',
+					'message' => $error_message,
+				],
+			]
+		);
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( "Error: $error_message" );
+
+		$this->payments_api_client->get_authorization( $payment_intent_id );
+	}
+
+	/**
+	 * Test a successful fetch of a list of authorizations.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_list_authorizations_success() {
+		$payment_intent_id_1 = 'pi_123dytycd';
+		$payment_intent_id_2 = 'pi_123dbap';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					[
+						'payment_intent_id' => $payment_intent_id_1,
+					],
+					[
+						'payment_intent_id' => $payment_intent_id_2,
+					],
+				],
+			]
+		);
+
+		$authorizations = $this->payments_api_client->list_authorizations();
+
+		$this->assertSame( $payment_intent_id_1, $authorizations['data'][0]['payment_intent_id'] );
+		$this->assertSame( $payment_intent_id_2, $authorizations['data'][1]['payment_intent_id'] );
+	}
+
+	/**
+	 * Test a successful fetch of authorizations summary.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_authorizations_summary_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'count' => 123,
+				'total' => 1200,
+			]
+		);
+
+		$summary = $this->payments_api_client->get_authorizations_summary();
+
+		$this->assertSame( 123, $summary['count'] );
+		$this->assertSame( 1200, $summary['total'] );
 	}
 
 	/**

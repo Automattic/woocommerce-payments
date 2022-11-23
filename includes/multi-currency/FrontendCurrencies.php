@@ -102,18 +102,18 @@ class FrontendCurrencies {
 
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Currency hooks.
-			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 50 );
-			add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 50 );
-			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 50 );
-			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 50 );
-			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 50 );
+			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 900 );
+			add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );
+			add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
+			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
 			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
 		add_action( 'woocommerce_account_view-order_endpoint', [ $this, 'init_order_currency' ], 9 );
-		add_filter( 'woocommerce_cart_hash', [ $this, 'add_currency_to_cart_hash' ], 50 );
-		add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'fix_price_decimals_for_shipping_rates' ], 50, 2 );
+		add_filter( 'woocommerce_cart_hash', [ $this, 'add_currency_to_cart_hash' ], 900 );
+		add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'fix_price_decimals_for_shipping_rates' ], 900, 2 );
 	}
 
 	/**
