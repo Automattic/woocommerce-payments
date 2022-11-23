@@ -6,4 +6,6 @@ export const PAYMENT_METHOD_NAME_SOFORT = 'woocommerce_payments_sofort';
 export const PAYMENT_METHOD_NAME_UPE = 'woocommerce_payments_upe';
 export const PAYMENT_METHOD_NAME_PAYMENT_REQUEST =
 	'woocommerce_payments_payment_request';
+export const PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT =
+	'woocommerce_payments_woopay_express_checkout';
 export const WC_STORE_CART = 'wc/store/cart';

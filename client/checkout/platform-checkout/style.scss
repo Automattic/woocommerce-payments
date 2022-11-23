@@ -138,6 +138,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	white-space: nowrap;
 
 	svg {
 		fill: $studio-woocommerce-purple-60;
