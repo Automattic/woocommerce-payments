@@ -40,7 +40,7 @@ const generatePaymentMethod = async ( api, elements, billingData ) => {
 			type: 'success',
 			meta: {
 				paymentMethodData: {
-					paymentMethod: PAYMENT_METHOD_NAME_CARD,
+					payment_method: PAYMENT_METHOD_NAME_CARD,
 					'wcpay-payment-method': id,
 					'wcpay-fraud-prevention-token': fraudPreventionToken ?? '',
 				},
