@@ -806,40 +806,41 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function get_mandate_params_for_order( WC_Order $order ): array {
 		$result = [];
 
-		if ( $this->is_subscriptions_enabled() ) {
-			$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
-			$subscription  = reset( $subscriptions );
+		if ( ! $this->is_subscriptions_enabled() ) {
+			return $result;
+		}
+		$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
+		$subscription  = reset( $subscriptions );
 
-			if ( ! $subscription ) {
-				return $result;
-			}
+		if ( ! $subscription ) {
+			return $result;
+		}
 
-			// Get total by adding only subscriptions and get rid of any other product or fee.
-			$subs_amount = 0;
-			foreach ( $subscriptions as $sub ) {
-				$subs_amount += $sub->get_total();
-			}
+		// Get total by adding only subscriptions and get rid of any other product or fee.
+		$subs_amount = 0;
+		foreach ( $subscriptions as $sub ) {
+			$subs_amount += $sub->get_total();
+		}
 
-			$result['setup_future_usage']                                = 'off_session';
-			$result['payment_method_options']['card']['mandate_options'] = [
-				'reference'       => $order->get_id(),
-				'amount'          => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
-				'amount_type'     => 'fixed',
-				'start_date'      => $subscription->get_time( 'date_created' ),
-				'interval'        => $subscription->get_billing_period(),
-				'interval_count'  => $subscription->get_billing_interval(),
-				'supported_types' => [ 'india' ],
-			];
+		$result['setup_future_usage']                                = 'off_session';
+		$result['payment_method_options']['card']['mandate_options'] = [
+			'reference'       => $order->get_id(),
+			'amount'          => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
+			'amount_type'     => 'fixed',
+			'start_date'      => $subscription->get_time( 'date_created' ),
+			'interval'        => $subscription->get_billing_period(),
+			'interval_count'  => $subscription->get_billing_interval(),
+			'supported_types' => [ 'india' ],
+		];
 
-			// Multiple subscriptions per order needs:
-			// - Set amount type to maximum, to allow renews of any amount under the order total.
-			// - Set interval to sporadic, to not follow any specific interval.
-			// - Unset interval count, because it doesn't apply anymore.
-			if ( 1 < count( $subscriptions ) ) {
-				$result['payment_method_options']['card']['mandate_options']['amount_type'] = 'maximum';
-				$result['payment_method_options']['card']['mandate_options']['interval']    = 'sporadic';
-				unset( $result['payment_method_options']['card']['mandate_options']['interval_count'] );
-			}
+		// Multiple subscriptions per order needs:
+		// - Set amount type to maximum, to allow renews of any amount under the order total.
+		// - Set interval to sporadic, to not follow any specific interval.
+		// - Unset interval count, because it doesn't apply anymore.
+		if ( 1 < count( $subscriptions ) ) {
+			$result['payment_method_options']['card']['mandate_options']['amount_type'] = 'maximum';
+			$result['payment_method_options']['card']['mandate_options']['interval']    = 'sporadic';
+			unset( $result['payment_method_options']['card']['mandate_options']['interval_count'] );
 		}
 
 		return $result;

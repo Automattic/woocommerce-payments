@@ -256,13 +256,13 @@ class WC_Payments_API_Client {
 	/**
 	 * Create an intention, without confirming it.
 	 *
-	 * @param int         $amount          - Amount to charge.
-	 * @param string      $currency_code   - Currency to charge in.
-	 * @param array       $payment_methods - Payment methods to include.
-	 * @param string      $order_number    - The order number.
-	 * @param string      $capture_method  - optional capture method (either `automatic` or `manual`).
-	 * @param array       $metadata        - A list of intent metadata.
-	 * @param string|null $customer_id     - Customer id for intent.
+	 * @param int         $amount                 - Amount to charge.
+	 * @param string      $currency_code          - Currency to charge in.
+	 * @param array       $payment_methods        - Payment methods to include.
+	 * @param string      $order_number           - The order number.
+	 * @param string      $capture_method         - optional capture method (either `automatic` or `manual`).
+	 * @param array       $metadata               - A list of intent metadata.
+	 * @param string|null $customer_id            - Customer id for intent.
 	 * @param array       $additional_parameters  - An array of any additional request parameters, particularly for additional payment methods.
 	 *
 	 * @return WC_Payments_API_Intention
