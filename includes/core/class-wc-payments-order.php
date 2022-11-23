@@ -24,7 +24,6 @@ class WC_Payments_Order {
 	 */
 	private $order;
 
-
 	/**
 	 * Constructor when order_id is provided.
 	 *
@@ -53,6 +52,25 @@ class WC_Payments_Order {
 	 */
 	public function set_payment_intent_id( $intent_id ) {
 		return $this->order->update_meta_data( '_intent_id', $intent_id );
+	}
+
+	/**
+	 * Get the payment metadata for key _payment_method_id.
+	 *
+	 * @return string
+	 */
+	public function get_payment_method_id() : string {
+		return $this->order->get_meta( '_payment_method_id', true );
+	}
+
+	/**
+	 * Set the payment metadata for key _payment_method_id.
+	 *
+	 * @param  string $payment_method_id
+	 * @return void
+	 */
+	public function set_payment_method_id( $payment_method_id ) {
+		return $this->order->update_meta_data( '_payment_method_id', $payment_method_id );
 	}
 
 	/**
