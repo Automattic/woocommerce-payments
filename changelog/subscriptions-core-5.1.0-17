@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Set payment tokens when copying data between orders and subscriptions in a CRUD compatible way. Fixes PHP notices during renewal order process.

@@ -1017,7 +1017,12 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception
 	 */
 	public function get_file_contents( string $file_id, bool $as_account = true ) : array {
-		return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id . '/contents', self::GET );
+		try {
+			return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id . '/contents', self::GET );
+		} catch ( API_Exception $e ) {
+			Logger::error( 'Error retrieving file contents for ' . $file_id . '. ' . $e->getMessage() );
+			return [];
+		}
 	}
 
 	/**
