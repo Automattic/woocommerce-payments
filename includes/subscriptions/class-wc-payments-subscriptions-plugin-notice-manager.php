@@ -69,11 +69,12 @@ class WC_Payments_Subscriptions_Plugin_Notice_Manager {
 	}
 
 	/**
-	 * Outputs the notice template on the admin plugin screen.
+	 * Enqueues templates for plugin deactivation warnings on the admin plugin screen.
 	 */
 	public function output_notice_template() {
 		if ( $this->is_admin_plugins_screen() ) {
 			wc_get_template( 'html-subscriptions-plugin-notice.php', [], '', dirname( __DIR__ ) . '/subscriptions/templates/' );
+			wc_get_template( 'html-wcpay-deactivate-warning.php', [], '', dirname( __DIR__ ) . '/subscriptions/templates/' );
 		}
 	}
 }
