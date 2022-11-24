@@ -81,6 +81,13 @@ export function updateIsSavingSettings( isSaving, error ) {
 	};
 }
 
+export function updateSelectedPaymentMethod( id ) {
+	return {
+		type: ACTION_TYPES.SET_SELECTED_PAYMENT_METHOD,
+		id,
+	};
+}
+
 export function updateIsManualCaptureEnabled( isEnabled ) {
 	return updateSettingsValues( { is_manual_capture_enabled: isEnabled } );
 }

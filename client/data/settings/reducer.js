@@ -38,6 +38,17 @@ export const receiveSettings = (
 				isSaving: action.isSaving,
 				savingError: action.error,
 			};
+
+		case ACTION_TYPES.SET_SELECTED_PAYMENT_METHOD:
+			return {
+				...state,
+				data: {
+					...state.data,
+					enabled_payment_method_ids: state.data.enabled_payment_method_ids.concat(
+						action.id
+					),
+				},
+			};
 	}
 
 	return state;
