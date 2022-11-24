@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Refactor `WCS_Meta_Box_Schedule::save` to support HPOS stores, fixing a PHP warning notice when updating an order via the Edit Order screen.
