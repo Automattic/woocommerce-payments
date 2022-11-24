@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Use supported CRUD apis to determine if subscriptions are present on store (`wcs_do_subscriptions_exist`)
