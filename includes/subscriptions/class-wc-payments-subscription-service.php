@@ -1011,9 +1011,10 @@ class WC_Payments_Subscription_Service {
 	 * @return bool True if store has active WCPay subscriptions, otherwise false.
 	 */
 	public static function store_has_active_wcpay_subscriptions() {
-		$store_has_active_wcpay_subscriptions = wcs_get_subscriptions(
+		$results = wcs_get_subscriptions(
 			[
 				'subscriptions_per_page' => 1,
+				'fields'                 => 'ids',
 				'subscription_status'    => 'active',
 				// Ignoring phpcs warning, we need to search meta.
 				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
@@ -1021,6 +1022,8 @@ class WC_Payments_Subscription_Service {
 				],
 			]
 		);
+
+		$store_has_active_wcpay_subscriptions = count( $results ) > 0;
 		return $store_has_active_wcpay_subscriptions;
 	}
 }
