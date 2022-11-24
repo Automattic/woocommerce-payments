@@ -100,6 +100,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account
 			->method( 'get_account_default_currency' )
 			->willReturn( 'USD' );
+		$this->mock_wcpay_account
+			->method( 'get_stripe_account_id' )
+			->willReturn( 'acct_test' );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
 		$this->mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
@@ -794,7 +797,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals(
-			'#wcpay-confirm-pi:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+			'#wcpay-confirm-pi:' . $order_id . ':' . WC_Payments_Utils::encrypt_client_secret( $this->mock_wcpay_account->get_stripe_account_id(), $secret ) . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
 			$result['redirect']
 		);
 	}
@@ -913,7 +916,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertEquals(
-			'#wcpay-confirm-si:' . $order_id . ':' . $secret . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+			'#wcpay-confirm-si:' . $order_id . ':' . WC_Payments_Utils::encrypt_client_secret( $this->mock_wcpay_account->get_stripe_account_id(), $secret ) . ':' . wp_create_nonce( 'wcpay_update_order_status_nonce' ),
 			$result['redirect']
 		);
 	}

@@ -22,6 +22,7 @@ import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
 import { getTerms } from '../utils/upe';
+import { decryptClientSecret } from '../utils/encryption';
 import { PAYMENT_METHOD_NAME_CARD, WC_STORE_CART } from '../constants.js';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { useDispatch, useSelect } from '@wordpress/data';
@@ -230,6 +231,10 @@ const WCPayUPEFields = ( {
 					};
 				}
 
+				const fraudPreventionToken = document
+					.querySelector( '#wcpay-fraud-prevention-token' )
+					?.getAttribute( 'value' );
+
 				return {
 					type: 'success',
 					meta: {
@@ -237,6 +242,8 @@ const WCPayUPEFields = ( {
 							paymentMethod: PAYMENT_METHOD_NAME_CARD,
 							wc_payment_intent_id: paymentIntentId,
 							wcpay_selected_upe_payment_type: selectedUPEPaymentType,
+							'wcpay-fraud-prevention-token':
+								fraudPreventionToken ?? '',
 						},
 					},
 				};
@@ -413,15 +420,16 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		return null;
 	}
 
-	const options = {
-		clientSecret,
-		appearance,
-		fonts: fontRules,
-		loader: 'never',
-	};
-
 	return (
-		<Elements stripe={ stripe } options={ options }>
+		<Elements
+			stripe={ stripe }
+			options={ {
+				clientSecret: decryptClientSecret( clientSecret ),
+				appearance,
+				fonts: fontRules,
+				loader: 'never',
+			} }
+		>
 			<WCPayUPEFields
 				api={ api }
 				paymentIntentId={ paymentIntentId }

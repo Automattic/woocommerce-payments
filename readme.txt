@@ -1,10 +1,10 @@
 === WooCommerce Payments - Fully Integrated Solution Built and Supported by Woo ===
 Contributors: woocommerce, automattic
 Tags: payment gateway, payment, apple pay, credit card, google pay
-Requires at least: 5.8
-Tested up to: 6.0
+Requires at least: 5.9
+Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 5.0.1
+Stable tag: 5.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,8 +38,8 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* WordPress 5.8 or newer.
-* WooCommerce 6.6 or newer.
+* WordPress 5.9 or newer.
+* WooCommerce 6.9 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -97,6 +97,12 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 5.0.3 - 2022-11-15 =
+* Fix - Purchasing a synced subscription with WCPay Subscriptions correctly sets the next payment date to the sync date in Stripe.
+
+= 5.0.2 - 2022-11-14 =
+* Fix - Fixed rest api error for payment_gateways endpoint
 
 = 5.0.1 - 2022-11-10 =
 * Fix - Fix fatal error when non-admin access admin pages.
