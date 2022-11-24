@@ -258,6 +258,7 @@ const WCPayUPEFields = ( {
 			isUPEComplete,
 			selectedUPEPaymentType,
 			shouldSavePayment,
+			fingerprint,
 		]
 	);
 
