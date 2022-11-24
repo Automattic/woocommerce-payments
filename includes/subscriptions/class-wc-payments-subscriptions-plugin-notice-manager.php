@@ -58,6 +58,13 @@ class WC_Payments_Subscriptions_Plugin_Notice_Manager {
 
 		wp_enqueue_script( 'wcpay-subscriptions-plugin' );
 
+		// Enqueue script data - does this store have active WCPay subscriptions?
+		// TODO: actually check for active subs!
+		$script_data = [
+			'store_has_active_wcpay_subscriptions' => true,
+		];
+		wp_localize_script( 'wcpay-subscriptions-plugin', 'wcpay_subscriptions_plugin_screen_data', $script_data );
+
 		wp_register_style(
 			'wcpay-subscriptions-plugin-styles',
 			plugins_url( 'includes/subscriptions/assets/css/plugin-page.css', WCPAY_PLUGIN_FILE ),

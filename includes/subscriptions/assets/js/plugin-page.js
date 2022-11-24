@@ -9,6 +9,13 @@ jQuery( function ( $ ) {
 
 		// Initialise handlers for WC Pay deactivate warning.
 		init_deactivate_wcpay_warning() {
+			// If the store doesn't have active WCPay (Stripe Billing) subscriptions, no warning needed.
+			if (
+				! wcpay_subscriptions_plugin_screen_data.store_has_active_wcpay_subscriptions
+			) {
+				return;
+			}
+
 			// Intercept click on WCPay deactivate link to show modal.
 			$( '#deactivate-woocommerce-payments' ).on(
 				'click',
@@ -25,7 +32,6 @@ jQuery( function ( $ ) {
 		display_wcpay_warning: function ( event ) {
 			event.preventDefault();
 
-			// TODO: only show the modal if the store has live WCPay subscriptions (Stripe Billing renewal).
 			$( this ).WCBackboneModal( {
 				template: 'wcpay-plugin-deactivate-warning',
 			} );
