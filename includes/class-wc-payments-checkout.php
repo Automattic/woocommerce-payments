@@ -184,7 +184,6 @@ class WC_Payments_Checkout {
 				<div id="wcpay-card-element"></div>
 				<div id="wcpay-errors" role="alert"></div>
 				<input id="wcpay-payment-method" type="hidden" name="wcpay-payment-method" />
-				<input id="wcpay-fingerprint" type="hidden" name="wcpay-fingerprint" />
 				<input type="hidden" name="wcpay-is-platform-payment-method" value="<?php echo esc_attr( $this->gateway->should_use_stripe_platform_on_checkout_page() ); ?>" />
 				<?php
 				if ( $this->gateway->is_saved_cards_enabled() ) {

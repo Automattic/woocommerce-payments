@@ -17,7 +17,10 @@ import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
-import { getFingerprint } from '../utils/fingerprint';
+import {
+	getFingerprint,
+	appendFingerprintInputToForm,
+} from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -684,6 +687,8 @@ jQuery( function ( $ ) {
 				return false;
 			}
 		}
+
+		appendFingerprintInputToForm( $( this ), fingerprint );
 	} );
 
 	// Handle the add payment method form for WooCommerce Payments.

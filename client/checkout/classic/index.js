@@ -16,11 +16,15 @@ import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-inp
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { isWCPayChosen } from '../utils/upe';
-import { getFingerprint } from '../utils/fingerprint';
+import {
+	getFingerprint,
+	appendFingerprintInputToForm,
+} from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 
+	let fingerprint = '';
 	const publishableKey = getConfig( 'publishableKey' );
 
 	if ( ! publishableKey ) {
@@ -186,12 +190,14 @@ jQuery( function ( $ ) {
 		) {
 			cardElement.unmount();
 
-			try {
-				const { visitorId } = await getFingerprint();
-				$( '#wcpay-fingerprint' ).val( visitorId );
-			} catch ( error ) {
-				// Do not mount element if fingerprinting is not available
-				return;
+			if ( ! fingerprint ) {
+				try {
+					const { visitorId } = await getFingerprint();
+					fingerprint = visitorId;
+				} catch ( error ) {
+					// Do not mount element if fingerprinting is not available
+					return;
+				}
 			}
 
 			cardElement.mount( '#wcpay-card-element' );
@@ -483,6 +489,8 @@ jQuery( function ( $ ) {
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
+		appendFingerprintInputToForm( $( this ), fingerprint );
+
 		if ( ! isUsingSavedPaymentMethod() ) {
 			let paymentMethodDetails = cardPayment;
 			if ( isWCPaySepaChosen() ) {
