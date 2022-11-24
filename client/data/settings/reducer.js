@@ -49,6 +49,17 @@ export const receiveSettings = (
 					),
 				},
 			};
+
+		case ACTION_TYPES.SET_UNSELECTED_PAYMENT_METHOD:
+			return {
+				...state,
+				data: {
+					...state.data,
+					enabled_payment_method_ids: state.data.enabled_payment_method_ids.filter(
+						( id ) => id !== action.id
+					),
+				},
+			};
 	}
 
 	return state;

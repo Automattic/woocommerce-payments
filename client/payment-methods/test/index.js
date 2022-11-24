@@ -17,6 +17,7 @@ import {
 	useGetPaymentMethodStatuses,
 	useManualCapture,
 	useSelectedPaymentMethod,
+	useUnselectedPaymentMethod,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
@@ -31,6 +32,7 @@ jest.mock( '../../data', () => ( {
 	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 	useManualCapture: jest.fn(),
 	useSelectedPaymentMethod: jest.fn(),
+	useUnselectedPaymentMethod: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -42,6 +44,8 @@ jest.mock( '@wordpress/data', () => ( {
 describe( 'PaymentMethods', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
+		useSelectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
+		useUnselectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'au_becs_debit',
@@ -71,7 +75,7 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	test( 'payment methods are rendered correctly', () => {
-		useSelectedPaymentMethod.mockReturnValue( [
+		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'card', 'sepa_debit' ],
 		] );
 
