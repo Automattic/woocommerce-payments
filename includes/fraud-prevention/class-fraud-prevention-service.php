@@ -117,6 +117,13 @@ class Fraud_Prevention_Service {
 	 * @return bool
 	 */
 	public function verify_token( string $token = null ): bool {
-		return null !== $token && hash_equals( $this->session->get( self::TOKEN_NAME ), $token );
+		$session_token = $this->session->get( self::TOKEN_NAME );
+
+		// Check if the tokens are both strings.
+		if ( ! is_string( $session_token ) || ! is_string( $token ) ) {
+			return false;
+		}
+		// Compare the hashes to check request validity.
+		return hash_equals( $session_token, $token );
 	}
 }
