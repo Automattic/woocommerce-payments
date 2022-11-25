@@ -161,7 +161,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_auth_and_capture_enabled() {
-		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '0' );
+		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
 	}
 
 	/**

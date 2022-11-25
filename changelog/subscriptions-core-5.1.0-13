@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+When viewing My Account > Subscriptions, fix an issue where no subscriptions were listed when HPOS is enabled.
