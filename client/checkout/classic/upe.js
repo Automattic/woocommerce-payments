@@ -17,6 +17,10 @@ import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
+import {
+	getFingerprint,
+	appendFingerprintInputToForm,
+} from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -55,6 +59,8 @@ jQuery( function ( $ ) {
 	let paymentIntentId = null;
 	let paymentIntentClientSecret = null;
 	let isUPEComplete = false;
+	let fingerprint = null;
+
 	const hiddenBillingFields = {
 		name:
 			enabledBillingFields.includes( 'billing_first_name' ) ||
@@ -177,6 +183,16 @@ jQuery( function ( $ ) {
 			return;
 		}
 
+		if ( ! fingerprint ) {
+			try {
+				const { visitorId } = await getFingerprint();
+				fingerprint = visitorId;
+			} catch ( error ) {
+				// Do not mount element if fingerprinting is not available
+				return;
+			}
+		}
+
 		/*
 		 * Trigger this event to ensure the tokenization-form.js init
 		 * is executed.
@@ -207,7 +223,7 @@ jQuery( function ( $ ) {
 			try {
 				const newIntent = isSetupIntent
 					? await api.initSetupIntent()
-					: await api.createIntent( orderId );
+					: await api.createIntent( fingerprint, orderId );
 				intentId = newIntent.id;
 				clientSecret = newIntent.client_secret;
 			} catch ( error ) {
@@ -504,7 +520,8 @@ jQuery( function ( $ ) {
 		try {
 			const response = await api.processCheckout(
 				paymentIntentId,
-				formFields
+				formFields,
+				fingerprint ? fingerprint : ''
 			);
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {
@@ -670,6 +687,8 @@ jQuery( function ( $ ) {
 				return false;
 			}
 		}
+
+		appendFingerprintInputToForm( $( this ), fingerprint );
 	} );
 
 	// Handle the add payment method form for WooCommerce Payments.
