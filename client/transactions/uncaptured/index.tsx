@@ -55,10 +55,8 @@ const getColumns = (): Column[] =>
 			screenReaderLabel: __( 'Capture by', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
-			defaultOrder: 'desc',
 			cellClassName: 'date-time',
 			isSortable: true,
-			defaultSort: true,
 		},
 		{
 			key: 'order',
