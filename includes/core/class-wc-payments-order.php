@@ -51,7 +51,12 @@ class WC_Payments_Order {
 	public function set_intent_id( $intent_id ) {
 		$this->order->update_meta_data( '_intent_id', $intent_id );
 		$this->order->save_meta_data();
-		do_action( 'wcpay_payment_intent_id_updated' );
+		/**
+		 * Hook: When the order meta data _intent_id is updated.
+		 *
+		 * @since 5.4.0
+		 */
+		do_action( 'wcpay_order_intent_id_updated' );
 	}
 
 	/**
@@ -71,7 +76,12 @@ class WC_Payments_Order {
 	public function set_payment_method_id( $payment_method_id ) {
 		$this->order->update_meta_data( '_payment_method_id', $payment_method_id );
 		$this->order->save_meta_data();
-		do_action( 'wcpay_payment_method_id_updated' );
+		/**
+		 * Hook: When the order meta data _payment_method_id is updated.
+		 *
+		 * @since 5.4.0
+		 */
+		do_action( 'wcpay_order_payment_method_id_updated' );
 	}
 
 	/**
