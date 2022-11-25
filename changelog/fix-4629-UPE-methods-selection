@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix UPE checkboxes getting deselected
+Fix - Prevent `Additional Payment Methods` (UPE) checkboxes within `Payments > Settings` , from getting unchecked and checked automatically while selecting multiple items quickly.
