@@ -1332,6 +1332,17 @@ class WC_Payments {
 	 * @throws Exception          If the request class is not really a request.
 	 */
 	public static function create_request( $class_name ) {
+		/**
+		 * Used for unit tests only, as requests have dependencies, which are not publicly available in live mode.
+		 *
+		 * @param Request $request    Null, but if the filter returns a request, it will be used.
+		 * @param string  $class_name The name of the request class.
+		 */
+		$request = apply_filters( 'wcpay_create_request', null, $class_name );
+		if ( $request instanceof Request ) {
+			return $request;
+		}
+
 		if ( ! is_subclass_of( $class_name, Request::class ) ) {
 			throw new Exception(
 				sprintf(

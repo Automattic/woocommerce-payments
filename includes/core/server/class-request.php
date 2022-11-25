@@ -75,6 +75,15 @@ abstract class Request {
 	protected $http_interface;
 
 	/**
+	 * Creates a new request, loading dependencies in there.
+	 *
+	 * @return static
+	 */
+	final public static function create() {
+		return WC_Payments::create_request( static::class );
+	}
+
+	/**
 	 * Prevents the class from being constructed directly.
 	 *
 	 * @param WC_Payments_API_Client     $api_client     The API client to use to send requests.
@@ -325,7 +334,8 @@ abstract class Request {
 		}
 
 		// NB: `array_diff` will only pick up updated props, not new ones.
-		$difference = $this->array_diff( $this->get_params(), $replacement->get_params() );
+		$difference = $this->array_diff( $this->params, $replacement->params );
+
 		if ( empty( $difference ) ) {
 			// Nothing got overwritten, it's the same request, or one with only new props.
 			return $replacement;
