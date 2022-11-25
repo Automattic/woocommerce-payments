@@ -9,7 +9,7 @@ namespace WCPay\Core;
 
 defined( 'ABSPATH' ) || exit;
 
-use \WC_Order;
+use WC_Order;
 use WC_Payments_Utils;
 
 /**
@@ -27,10 +27,10 @@ class WC_Payments_Order {
 	/**
 	 * Constructor when order_id is provided.
 	 *
-	 * @param WC_Order|int $order The order Id.
+	 * @param int $order_id The order Id.
 	 */
-	public function __construct( $order ) {
-		$this->order = wc_get_order( $order );
+	public function __construct( int $order_id ) {
+		$this->order = wc_get_order( $order_id );
 	}
 
 	/**
@@ -50,7 +50,8 @@ class WC_Payments_Order {
 	 */
 	public function set_payment_intent_id( $intent_id ) {
 		$this->order->update_meta_data( '_intent_id', $intent_id );
-		 do_action( 'wcpay_payment_intent_id_updated' );
+		$this->order->save_meta_data();
+		do_action( 'wcpay_payment_intent_id_updated' );
 	}
 
 	/**
@@ -69,6 +70,7 @@ class WC_Payments_Order {
 	 */
 	public function set_payment_method_id( $payment_method_id ) {
 		$this->order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$this->order->save_meta_data();
 		do_action( 'wcpay_payment_method_id_updated' );
 	}
 
