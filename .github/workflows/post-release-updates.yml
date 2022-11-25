@@ -85,11 +85,12 @@ jobs:
         with:
           ref: 'trunk'
           fetch-depth: 0
+          token: ${{ SECRETS.BOTWOO_TOKEN }}
 
       - name: "Merge trunk back into develop"
         run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git config user.name "botwoo"
+          git config user.email "botwoo@users.noreply.github.com"
           git checkout develop && git pull
           git merge trunk --no-ff -m "Merge trunk v$RELEASE_VERSION into develop"
           git push
