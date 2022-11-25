@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Manual renewal orders created with HPOS and data syncing enabled are properly linked to the subscription by its `_subscription_renewal` meta and backfilled to posts table.

@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added support for a WooPay express checkout button on checkout blocks. This feature is currently behind a feature flag and is not yet publicly available.

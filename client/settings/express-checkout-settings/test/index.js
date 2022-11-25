@@ -10,7 +10,6 @@ import { render, screen, within } from '@testing-library/react';
  */
 import ExpressCheckoutSettings from '..';
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
-import PlatformCheckoutButtonPreview from '../platform-checkout-button-preview';
 
 jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {} ),
@@ -46,9 +45,6 @@ jest.mock( '@wordpress/data', () => ( {
 
 jest.mock( '../payment-request-button-preview' );
 PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
-
-jest.mock( '../platform-checkout-button-preview' );
-PlatformCheckoutButtonPreview.mockImplementation( () => '<></>' );
 
 jest.mock( '@stripe/react-stripe-js', () => ( {
 	Elements: jest.fn().mockReturnValue( null ),

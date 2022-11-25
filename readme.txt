@@ -1,7 +1,7 @@
 === WooCommerce Payments - Fully Integrated Solution Built and Supported by Woo ===
 Contributors: woocommerce, automattic
 Tags: payment gateway, payment, apple pay, credit card, google pay
-Requires at least: 5.8
+Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.0
 Stable tag: 5.0.3
