@@ -79,7 +79,7 @@ abstract class Request {
 	 *
 	 * @return static
 	 */
-	final public static function create() {
+	public static function create() {
 		return WC_Payments::create_request( static::class );
 	}
 
