@@ -56,7 +56,6 @@ jobs:
         env:
           RELEASE_DATE: ${{ steps.format_date.outputs.RELEASE_DATE }}
           CHANGELOG: ${{ steps.process_changelog.outputs.changelog }}
-          OLD_CHANGELOG: ${{ steps.get_old_changelog.outputs.OLD_CHANGELOG }}
         run: |
           if ${{ env.CHANGELOG_ACTION == 'amend' }}; then
             perl -i -p0e "s/= $RELEASE_VERSION.*?(\n){2}//s" readme.txt # Delete the existing changelog for the release version
