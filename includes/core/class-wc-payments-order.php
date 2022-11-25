@@ -15,7 +15,7 @@ use WC_Payments_Utils;
 /**
  * WC_Payments_Order
  */
-class WC_Payments_Order {
+class Order {
 
 	/**
 	 * The WC_Order corresponding to this WC_Payments_Order.
