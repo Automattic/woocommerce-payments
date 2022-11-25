@@ -43,17 +43,17 @@ class Temp_Request_Examples {
 
 		if ( false ) {
 			echo "===== CREATE INTENT REQUEST =====\n";
-			$request = WC_Payments::create_request( Request\Create_Intent::class )
-				->set_amount( 100 )
-				->set_currency( 'eur' );
+			$request = WC_Payments::create_request( Request\Create_Intent::class );
+			$request->set_amount( 100 );
+			$request->set_currency( 'eur' );
 			$this->dump_request( $request );
 		}
 
 		if ( false ) {
 			// Make sure extending the request does not work outside of `apply_filters`.
 			echo "===== EXTEND WITHOUT FILTERS =====\n";
-			$request = WC_Payments::create_request( Request\Create_Intent::class )
-				->set_amount( 100 );
+			$request = WC_Payments::create_request( Request\Create_Intent::class );
+			$request->set_amount( 100 );
 			try {
 				Request\WooPay_Create_Intent::extend( $request );
 			} catch ( Exception $e ) {
@@ -90,9 +90,9 @@ class Temp_Request_Examples {
 
 			add_filter( 'wcpay_create_intent_request', $callback );
 
-			$request = WC_Payments::create_request( Request\Create_Intent::class )
-				->set_amount( 100 )
-				->set_currency( 'eur' );
+			$request = WC_Payments::create_request( Request\Create_Intent::class );
+			$request->set_amount( 100 );
+			$request->set_currency( 'eur' );
 			$request = $request->apply_filters( 'wcpay_create_intent_request' );
 
 			remove_filter( 'wcpay_create_intent_request', $callback );
@@ -102,9 +102,9 @@ class Temp_Request_Examples {
 
 		if ( false ) {
 			echo "===== UPDATING VALUES =====\n";
-			$request = WC_Payments::create_request( Request\Create_Intent::class )
-				->set_amount( 100 )
-				->set_currency( 'eur' );
+			$request = WC_Payments::create_request( Request\Create_Intent::class );
+			$request->set_amount( 100 );
+			$request->set_currency( 'eur' );
 
 			$callback = function ( Request\Create_Intent $request, string $new_currency ) {
 				$request->set_currency( $new_currency );
@@ -123,9 +123,9 @@ class Temp_Request_Examples {
 
 		if ( false ) {
 			echo "===== PROTECTING IMMUTABLE VALUES =====\n";
-			$request = WC_Payments::create_request( Request\Create_Intent::class )
-				->set_amount( 100 )
-				->set_currency( 'eur' );
+			$request = WC_Payments::create_request( Request\Create_Intent::class );
+			$request->set_amount( 100 );
+			$request->set_currency( 'eur' );
 
 			$callback = function ( Request\Create_Intent $request ) {
 				try {
@@ -143,8 +143,8 @@ class Temp_Request_Examples {
 
 		if ( false ) {
 			echo "===== ENSURING INITIALIZED REQUESTS =====\n";
-			$request = WC_Payments::create_request( Request\Create_Intent::class )
-				->set_amount( 100 );
+			$request = WC_Payments::create_request( Request\Create_Intent::class );
+			$request->set_amount( 100 );
 			try {
 				$request->get_params();
 			} catch ( Exception $e ) {
@@ -199,20 +199,18 @@ class Temp_Request_Examples {
 
 		if ( true ) {
 			echo "===== CREATE AND CONFIRM INTENTION REQUEST =====\n";
-			$request = WC_Payments::create_request( Request\Create_And_Confirm_Intention::class )
-				->set_amount( 300 )
-				->set_currency_code( 'eur' )
-				->set_metadata( [ 'order_number' => 420 ] )
-				->set_payment_method( 'pm_XYZ' )
-				->set_customer( 'cus_ZYX' )
-				->set_capture_method( true )
-				->setup_future_usage()
-				->set_level3( [ 'level3' => 'level3' ] )
-				->set_off_session()
-				->set_payment_methods( [ 'card' ] )
-				->set_cvc_confirmation( 'something_uknown' )
-
-				;
+			$request = WC_Payments::create_request( Request\Create_And_Confirm_Intention::class );
+			$request->set_amount( 300 );
+			$request->set_currency_code( 'eur' );
+			$request->set_metadata( [ 'order_number' => 420 ] );
+			$request->set_payment_method( 'pm_XYZ' );
+			$request->set_customer( 'cus_ZYX' );
+			$request->set_capture_method( true );
+			$request->setup_future_usage();
+			$request->set_level3( [ 'level3' => 'level3' ] );
+			$request->set_off_session();
+			$request->set_payment_methods( [ 'card' ] );
+			$request->set_cvc_confirmation( 'something_uknown' );
 
 			var_dump( $request->get_params() );
 		}

@@ -207,9 +207,8 @@ abstract class Request {
 	 * Use this method within child classes in order to allow
 	 * those properties to be protected by overwriting.
 	 *
-	 * @param  string $key   The name of the parameter.
-	 * @param  mixed  $value And the value to set.
-	 * @return static        The instance of the class, ready for method chaining.
+	 * @param string $key   The name of the parameter.
+	 * @param mixed  $value And the value to set.
 	 */
 	final protected function set_param( string $key, $value ) {
 		if ( $this->protected_mode && in_array( $key, $this->get_immutable_params(), true ) ) {
@@ -217,15 +216,12 @@ abstract class Request {
 		}
 
 		$this->params[ $key ] = $value;
-
-		return $this;
 	}
 
 	/**
 	 * Unsets an existing parameter if it was set before.
 	 *
-	 * @param  string $key The key of the parameter.
-	 * @return static      The instance of the class for method chaining.
+	 * @param string $key The key of the parameter.
 	 */
 	final protected function unset_param( string $key ) {
 		if ( $this->protected_mode && in_array( $key, $this->get_immutable_params(), true ) ) {
@@ -235,8 +231,6 @@ abstract class Request {
 		if ( isset( $this->params[ $key ] ) ) {
 			unset( $this->params[ $key ] );
 		}
-
-		return $this;
 	}
 
 	/**

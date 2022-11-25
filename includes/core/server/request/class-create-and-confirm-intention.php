@@ -7,7 +7,6 @@
 
 namespace WCPay\Core\Server\Request;
 
-use Exception;
 use WC_Payments;
 use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
@@ -59,73 +58,64 @@ class Create_And_Confirm_Intention extends Request {
 	/**
 	 * Amount setter.
 	 *
-	 * @param  int $amount Amount to charge.
-	 * @return static      Instance of the class for method chaining.
+	 * @param int $amount Amount to charge.
 	 */
 	public function set_amount( int $amount ) {
 		$this->validate_is_larger_then( $amount, 0 );
-		return $this->set_param( 'amount', $amount );
+		$this->set_param( 'amount', $amount );
 	}
 
 	/**
 	 * Currency code setter.
 	 *
 	 * @param  string $currency_code Currency to charge in.
-	 * @return static                Instance of the class for method chaining.
 	 * @throws Invalid_Request_Parameter_Exception When the currency code is invalid.
 	 */
 	public function set_currency_code( string $currency_code ) {
 		$this->validate_currency_code( $currency_code );
-
-		return $this->set_param( 'currency', $currency_code );
+		$this->set_param( 'currency', $currency_code );
 	}
 
 	/**
 	 * Payment method setter.
 	 *
-	 * @param  string $payment_method_id ID of payment method to process charge with.
-	 * @return static                    Instance of the class for method chaining.
+	 * @param string $payment_method_id ID of payment method to process charge with.
 	 */
 	public function set_payment_method( $payment_method_id ) {
 		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src' ] );
-		return $this->set_param( 'payment_method', $payment_method_id );
+		$this->set_param( 'payment_method', $payment_method_id );
 	}
 
 	/**
 	 * Customer setter.
 	 *
-	 * @param  string $customer_id ID of the customer making the payment.
-	 * @return static              Instance of the class for method chaining.
+	 * @param string $customer_id ID of the customer making the payment.
 	 */
 	public function set_customer( string $customer_id ) {
 		$this->validate_stripe_id( $customer_id, 'cus' );
-		return $this->set_param( 'customer', $customer_id );
+		$this->set_param( 'customer', $customer_id );
 	}
 
 	/**
 	 * Capture method setter.
 	 *
-	 * @param  bool $manual_capture Whether to capture funds via manual action.
-	 * @return static               Instance of the class for method chaining.
+	 * @param bool $manual_capture Whether to capture funds via manual action.
 	 */
 	public function set_capture_method( bool $manual_capture = false ) {
-		return $this->set_param( 'capture_method', $manual_capture ? 'manual' : 'automatic' );
+		$this->set_param( 'capture_method', $manual_capture ? 'manual' : 'automatic' );
 	}
 
 	/**
 	 * If the payment method should be saved to the store, this enables future usage.
-	 *
-	 * @return static Instance of the class for method chaining.
 	 */
 	public function setup_future_usage() {
-		return $this->set_param( 'setup_future_usage', 'off_session' );
+		$this->set_param( 'setup_future_usage', 'off_session' );
 	}
 
 	/**
 	 * Metadata setter.
 	 *
 	 * @param  array $metadata                     Meta data values to be sent along with payment intent creation.
-	 * @return static                              Instance of the class for method chaining.
 	 * @throws Invalid_Request_Parameter_Exception In case there is no order number provided.
 	 */
 	public function set_metadata( $metadata ) {
@@ -143,36 +133,32 @@ class Create_And_Confirm_Intention extends Request {
 		// Combine the metadata with the fingerprint.
 		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata() );
 		$this->set_param( 'metadata', $metadata );
-
-		return $this;
 	}
 
 	/**
 	 * Level 3 data setter.
 	 *
-	 * @param  array $level3 Level 3 data.
-	 * @return static        Instance of the class for method chaining.
+	 * @param array $level3 Level 3 data.
 	 */
 	public function set_level3( $level3 ) {
 		if ( empty( $level3 ) || ! is_array( $level3 ) ) {
-			return $this;
+			return;
 		}
 
-		return $this->set_param( 'level3', $this->fix_level3_data( $level3 ) );
+		$this->set_param( 'level3', $this->fix_level3_data( $level3 ) );
 	}
 
 	/**
 	 * Off-session setter.
 	 *
-	 * @param  bool $off_session Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
-	 * @return static            Instance of the class for method chaining.
+	 * @param bool $off_session Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
 	 */
 	public function set_off_session( bool $off_session = true ) {
 		// This one is tricky. We can have `true`, but otherwise we need to get rid of the parameter.
 		if ( $off_session ) {
-			return $this->set_param( 'off_session', true );
+			$this->set_param( 'off_session', true );
 		} else {
-			return $this->unset_param( 'off_session' );
+			$this->unset_param( 'off_session' );
 		}
 	}
 
@@ -180,7 +166,6 @@ class Create_And_Confirm_Intention extends Request {
 	 * Payment methods setter.
 	 *
 	 * @param  array $payment_methods               An array of payment methods that might be used for the payment.
-	 * @return static                               Instance of the class for method chaining.
 	 * @throws Invalid_Request_Parameter_Exception  When there are no payment methods provided.
 	 */
 	public function set_payment_methods( array $payment_methods ) {
@@ -192,17 +177,16 @@ class Create_And_Confirm_Intention extends Request {
 			);
 		}
 
-		return $this->set_param( 'payment_methods_types', $payment_methods );
+		$this->set_param( 'payment_methods_types', $payment_methods );
 	}
 
 	/**
 	 * CVC confirmation setter.
 	 *
-	 * @param  string $cvc_confirmation The CVC confirmation for this payment method (Optional).
-	 * @return static                   Instance of the class for method chaining.
+	 * @param string $cvc_confirmation The CVC confirmation for this payment method (Optional).
 	 */
 	public function set_cvc_confirmation( $cvc_confirmation = null ) {
-		return $this->set_param( 'cvc_confirmation', $cvc_confirmation );
+		$this->set_param( 'cvc_confirmation', $cvc_confirmation );
 	}
 
 	/**

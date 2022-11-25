@@ -38,14 +38,11 @@ class Create_Intent extends Request {
 	 * Stores the amount for the intent.
 	 *
 	 * @param int $amount The amount in ToDo units.
-	 *
-	 * @return Create_Intent The instance of the class for method chaining.
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	final public function set_amount( int $amount ) {
 		$this->validate_is_larger_then( $amount, 0 );
 		$this->set_param( 'amount', $amount );
-		return $this;
 	}
 
 	/**
@@ -54,10 +51,8 @@ class Create_Intent extends Request {
 	 * This is an example of a non-protected property.
 	 *
 	 * @param string $currency The currency to use.
-	 * @return Create_Intent The instance of the class for method chaining.
 	 */
 	public function set_currency( string $currency ) {
 		$this->set_param( 'currency', $currency );
-		return $this;
 	}
 }

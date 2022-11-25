@@ -972,18 +972,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( empty( $intent ) ) {
-				$request = WC_Payments::create_request( Create_And_Confirm_Intention::class )
-					->set_amount( $converted_amount )
-					->set_currency_code( $currency )
-					->set_payment_method( $payment_information->get_payment_method() )
-					->set_customer( $customer_id )
-					->set_capture_method( $payment_information->is_using_manual_capture() )
-					->set_metadata( $metadata )
-					->set_level3( $this->get_level3_data_from_order( $order ) )
-					->set_off_session( $payment_information->is_merchant_initiated() )
-					->set_payment_methods( $payment_methods )
-					->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
-
+				$request = Create_And_Confirm_Intention::create();
+				$request->set_amount( $converted_amount );
+				$request->set_currency_code( $currency );
+				$request->set_payment_method( $payment_information->get_payment_method() );
+				$request->set_customer( $customer_id );
+				$request->set_capture_method( $payment_information->is_using_manual_capture() );
+				$request->set_metadata( $metadata );
+				$request->set_level3( $this->get_level3_data_from_order( $order ) );
+				$request->set_off_session( $payment_information->is_merchant_initiated() );
+				$request->set_payment_methods( $payment_methods );
+				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
 				if ( $save_payment_method_to_store ) {
 					$request->setup_future_usage();
 				}
