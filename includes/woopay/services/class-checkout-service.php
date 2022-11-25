@@ -93,6 +93,8 @@ class Checkout_Service {
 	 * @return void
 	 */
 	public static function init() {
-		add_filter( 'create_woopay_intention_request', [ __CLASS__, 'create_woopay_intention_request' ], 10, 3 );
+		if ( ! defined( 'WCPAY_TEST_ENV' ) ) { // This should be tested manually.
+			add_filter( 'create_woopay_intention_request', [ __CLASS__, 'create_woopay_intention_request' ], 10, 3 );
+		}
 	}
 }
