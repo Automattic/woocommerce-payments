@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+On HPOS stores, when a subscription is loaded from the database, make sure all core subscription properties are read directly from meta.
