@@ -12,23 +12,23 @@ use WCPay\Core\WC_Payments_Order;
  */
 class WC_Payments_Order_Test extends WCPAY_UnitTestCase {
 
-	public function test_set_payment_intent_id() {
+	public function test_set_intent_id() {
 		$order       = WC_Helper_Order::create_order();
 		$wcpay_order = new WC_Payments_Order( $order->get_id() );
 		$intent_id   = 'pi_mock_123';
-		$wcpay_order->set_payment_intent_id( $intent_id );
+		$wcpay_order->set_intent_id( $intent_id );
 		$this->assertEquals( $wcpay_order->get_wc_order()->get_meta( '_intent_id', true ), $intent_id );
 		$this->assertSame( 1, did_action( 'wcpay_payment_intent_id_updated' ) );
 		$this->assertSame( 0, did_action( 'wcpay_payment_method_id_updated' ) );
 	}
 
-	public function test_get_payment_intent_id() {
+	public function test_get_intent_id() {
 		$intent_id = 'pi_mock';
 		$order     = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->save_meta_data();
 		$wcpay_order = new WC_Payments_Order( $order->get_id() );
-		$this->assertEquals( $wcpay_order->get_payment_intent_id(), $intent_id );
+		$this->assertEquals( $wcpay_order->get_intent_id(), $intent_id );
 	}
 
 	public function test_set_payment_method_id() {

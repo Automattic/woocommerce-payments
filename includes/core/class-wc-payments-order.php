@@ -38,7 +38,7 @@ class WC_Payments_Order {
 	 *
 	 * @return string
 	 */
-	public function get_payment_intent_id() : string {
+	public function get_intent_id() : string {
 		return $this->order->get_meta( '_intent_id', true );
 	}
 
@@ -48,7 +48,7 @@ class WC_Payments_Order {
 	 *
 	 * @param  string $intent_id
 	 */
-	public function set_payment_intent_id( $intent_id ) {
+	public function set_intent_id( $intent_id ) {
 		$this->order->update_meta_data( '_intent_id', $intent_id );
 		$this->order->save_meta_data();
 		do_action( 'wcpay_payment_intent_id_updated' );
@@ -96,7 +96,7 @@ class WC_Payments_Order {
 	public function attach_intent_info_to_order( $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
 		// first, let's save all the metadata that needed for refunds, required for status change etc.
 		$this->order->set_transaction_id( $intent_id );
-		$this->set_payment_intent_id( $intent_id );
+		$this->set_intent_id( $intent_id );
 		$this->order->update_meta_data( '_charge_id', $charge_id );
 		$this->order->update_meta_data( '_intention_status', $intent_status );
 		$this->order->update_meta_data( '_payment_method_id', $payment_method );
