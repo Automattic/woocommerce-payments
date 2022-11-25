@@ -43,14 +43,6 @@ jobs:
         run: |
           RELEASE_DATE=$( date "+%Y-%m-%d" -d "$RELEASE_DATE" ) # Release date formatted as YYYY-MM-DD
           echo "RELEASE_DATE=$RELEASE_DATE" >> $GITHUB_OUTPUT
-          
-      - name: "Retrieve old changelog"
-        id: get_old_changelog
-        if: ${{ env.CHANGELOG_ACTION == 'amend' }}
-        run: |
-          OLD_CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
-          OLD_CHANGELOG="${OLD_CHANGELOG//$'\n'/\\n}"
-          echo "OLD_CHANGELOG=$OLD_CHANGELOG" >> $GITHUB_OUTPUT      
       
       - name: "Process changelog"
         id: process_changelog
@@ -67,11 +59,10 @@ jobs:
           OLD_CHANGELOG: ${{ steps.get_old_changelog.outputs.OLD_CHANGELOG }}
         run: |
           if ${{ env.CHANGELOG_ACTION == 'amend' }}; then
-            sed -i "s|= $RELEASE_VERSION - .* =|= $RELEASE_VERSION - $RELEASE_DATE =|" readme.txt
-            sed -i "s|$OLD_CHANGELOG|$CHANGELOG|" readme.txt
-          else
-            sed -ri "s|(== Changelog ==)|\1\n\n= $RELEASE_VERSION - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
+            perl -i -p0e "s/= $RELEASE_VERSION.*?(\n){2}//s" readme.txt # Delete the existing changelog for the release version
           fi
+            
+          sed -ri "s|(== Changelog ==)|\1\n\n= $RELEASE_VERSION - $RELEASE_DATE =\n$CHANGELOG|" readme.txt
                     
       - name: "Commit and push the changes"
         run: |
