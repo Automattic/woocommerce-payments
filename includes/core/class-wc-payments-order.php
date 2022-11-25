@@ -42,11 +42,10 @@ class WC_Payments_Order {
 		return $this->order->get_meta( '_intent_id', true );
 	}
 
-
 	/**
 	 * Set the payment metadata for key _intent_id.
 	 *
-	 * @param  string $intent_id
+	 * @param string $intent_id The value to be set.
 	 */
 	public function set_intent_id( $intent_id ) {
 		$this->order->update_meta_data( '_intent_id', $intent_id );
@@ -71,7 +70,7 @@ class WC_Payments_Order {
 	/**
 	 * Set the payment metadata for key _payment_method_id.
 	 *
-	 * @param  string $payment_method_id
+	 * @param  string $payment_method_id The value to be set.
 	 */
 	public function set_payment_method_id( $payment_method_id ) {
 		$this->order->update_meta_data( '_payment_method_id', $payment_method_id );
