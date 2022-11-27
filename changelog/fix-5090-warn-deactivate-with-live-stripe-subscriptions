@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Warn merchant if attempting to disable WCPay with active WCPay subscriptions (built-in).
