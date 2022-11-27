@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-On HPOS stores, make sure the links in the related-orders table redirect to the new Edit Order URL.
