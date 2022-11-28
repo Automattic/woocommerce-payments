@@ -10,6 +10,9 @@ const babelLoader = {
 module.exports = {
 	optimization: {
 		runtimeChunk: 'single',
+		splitChunks: {
+			minSize: 1,
+		},
 	},
 	module: {
 		rules: [

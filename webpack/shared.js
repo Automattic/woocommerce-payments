@@ -34,6 +34,9 @@ module.exports = {
 	},
 	output: {
 		clean: true,
+		chunkFilename: ( pathData ) => {
+			return 'chunks/chunk-[name].js';
+		},
 	},
 	module: {
 		rules: [
