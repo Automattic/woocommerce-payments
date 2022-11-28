@@ -565,7 +565,7 @@ class WC_Payments_Account {
 	 * @return bool True if the redirection happened.
 	 */
 	public function maybe_redirect_to_onboarding() {
-		if ( wp_doing_ajax() ) {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
 
@@ -1416,16 +1416,6 @@ class WC_Payments_Account {
 	public function is_card_testing_protection_eligible(): bool {
 		$account = $this->get_cached_account_data();
 		return $account['card_testing_protection_eligible'] ?? false;
-	}
-
-	/**
-	 * Returns the default and supported store currencies.
-	 *
-	 * @return array
-	 */
-	public function get_store_currencies(): array {
-		$account = $this->get_cached_account_data();
-		return $account['store_currencies'] ?? [];
 	}
 
 	/**

@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { useSelect } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 import type { Query } from '@woocommerce/navigation';
 
 /**
@@ -12,6 +12,7 @@ import { STORE_NAME } from '../constants';
 import {
 	AuthorizationsSummary,
 	Authorizations,
+	Authorization,
 } from 'wcpay/types/authorizations';
 
 export const useAuthorizations = ( {
@@ -67,3 +68,29 @@ export const useAuthorizationsSummary = (
 			isLoading: isResolving( 'getAuthorizationsSummary', [ query ] ),
 		};
 	} );
+
+export const useAuthorization = (
+	paymentIntentId: string,
+	orderId: number,
+	requiresCapture = true
+): {
+	isLoading: boolean;
+	doCaptureAuthorization: () => void;
+	authorization?: Authorization;
+} => {
+	const { authorization, isLoading } = useSelect( ( select ) => {
+		const { getAuthorization, isResolving } = select( STORE_NAME );
+		return {
+			authorization: requiresCapture
+				? getAuthorization( paymentIntentId )
+				: null,
+			isLoading: isResolving( 'getAuthorization', [ paymentIntentId ] ),
+		};
+	} );
+
+	const { submitCaptureAuthorization } = useDispatch( STORE_NAME );
+	const doCaptureAuthorization = () =>
+		submitCaptureAuthorization( paymentIntentId, orderId );
+
+	return { authorization, isLoading, doCaptureAuthorization };
+};

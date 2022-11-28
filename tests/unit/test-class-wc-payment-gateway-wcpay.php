@@ -347,20 +347,20 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	protected function create_mock_item( $name, $quantity, $subtotal, $total_tax, $product_id ) {
 		// Setup the item.
 		$mock_item = $this
-		->getMockBuilder( WC_Order_Item_Product::class )
-		->disableOriginalConstructor()
-		->setMethods(
-			[
-				'get_name',
-				'get_quantity',
-				'get_subtotal',
-				'get_total_tax',
-				'get_total',
-				'get_variation_id',
-				'get_product_id',
-			]
-		)
-		->getMock();
+			->getMockBuilder( WC_Order_Item_Product::class )
+			->disableOriginalConstructor()
+			->setMethods(
+				[
+					'get_name',
+					'get_quantity',
+					'get_subtotal',
+					'get_total_tax',
+					'get_total',
+					'get_variation_id',
+					'get_product_id',
+				]
+			)
+			->getMock();
 
 		$mock_item
 			->method( 'get_name' )

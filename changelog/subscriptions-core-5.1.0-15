@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+On HPOS stores, when saving a subscription make sure subscription properties (ie `_requires_manual_renewal`) are saved to the database.

@@ -463,7 +463,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->mock_api_client->expects( $this->never() )
-							->method( 'update_subscription' );
+			->method( 'update_subscription' );
 
 		$this->subscription_service->maybe_update_date_for_subscription( $mock_subscription_id );
 	}
@@ -646,8 +646,8 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $mock_wcpay_subscription_id );
 
 		$this->mock_api_client->expects( $this->once() )
-							->method( 'update_subscription' )
-							->with( $mock_wcpay_subscription_id, [ 'trial_end' => 'now' ] );
+			->method( 'update_subscription' )
+			->with( $mock_wcpay_subscription_id, [ 'trial_end' => 'now' ] );
 
 		PHPUnit_Utils::call_method(
 			$this->subscription_service,

@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Send merchant's setting for ship_to_billing_address_only to platform checkout
