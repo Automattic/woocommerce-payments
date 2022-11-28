@@ -224,19 +224,19 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-		->expects( $this->exactly( 3 ) )
-		->method( 'update_meta_data' )
-		->withConsecutive(
-			[ '_stripe_customer_id', $customer_id ],
-			[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
-			[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
-		);
+			->expects( $this->exactly( 3 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_stripe_customer_id', $customer_id ],
+				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
+			);
 
 		// Assert: The Order_Service is called correctly.
 		$this->mock_order_service
-		->expects( $this->once() )
-		->method( 'set_payment_method_id_for_order' )
-		->with( $mock_order, 'pm_mock' );
+			->expects( $this->once() )
+			->method( 'set_payment_method_id_for_order' )
+			->with( $mock_order, 'pm_mock' );
 
 		$this->mock_order_service
 			->expects( $this->once() )
@@ -388,19 +388,19 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-		->expects( $this->exactly( 3 ) )
-		->method( 'update_meta_data' )
-		->withConsecutive(
-			[ '_stripe_customer_id', $customer_id ],
-			[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
-			[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
-		);
+			->expects( $this->exactly( 3 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_stripe_customer_id', $customer_id ],
+				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
+			);
 
 		// Assert: The Order_Service is called correctly.
 		$this->mock_order_service
-		->expects( $this->once() )
-		->method( 'set_payment_method_id_for_order' )
-		->with( $mock_order, 'pm_mock' );
+			->expects( $this->once() )
+			->method( 'set_payment_method_id_for_order' )
+			->with( $mock_order, 'pm_mock' );
 
 		$this->mock_order_service
 			->expects( $this->once() )
@@ -754,19 +754,19 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-		->expects( $this->exactly( 3 ) )
-		->method( 'update_meta_data' )
-		->withConsecutive(
-			[ '_stripe_customer_id', $customer_id ],
-			[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
-			[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
-		);
+			->expects( $this->exactly( 3 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_stripe_customer_id', $customer_id ],
+				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
+			);
 
 		// Assert: The Order_Service is called correctly.
 		$this->mock_order_service
-		->expects( $this->once() )
-		->method( 'set_payment_method_id_for_order' )
-		->with( $mock_order, 'pm_mock' );
+			->expects( $this->once() )
+			->method( 'set_payment_method_id_for_order' )
+			->with( $mock_order, 'pm_mock' );
 
 		$this->mock_order_service
 			->expects( $this->once() )
@@ -869,18 +869,18 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// There's an issue open for that here:
 		// https://github.com/sebastianbergmann/phpunit/issues/4026.
 		$mock_order
-		->expects( $this->exactly( 2 ) )
-		->method( 'update_meta_data' )
-		->withConsecutive(
-			[ '_stripe_customer_id', $customer_id ],
-			[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
-		);
+			->expects( $this->exactly( 2 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_stripe_customer_id', $customer_id ],
+				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+			);
 
 		// Assert: The Order_Service is called correctly.
 		$this->mock_order_service
-		->expects( $this->once() )
-		->method( 'set_payment_method_id_for_order' )
-		->with( $mock_order, 'pm_mock' );
+			->expects( $this->once() )
+			->method( 'set_payment_method_id_for_order' )
+			->with( $mock_order, 'pm_mock' );
 
 		$this->mock_order_service
 			->expects( $this->once() )
