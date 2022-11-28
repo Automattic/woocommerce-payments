@@ -92,8 +92,8 @@ jobs:
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
         run: |
           npm install # To update package-lock.json with the new version of the plugin
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -am "Update version and add changelog entries for release $RELEASE_VERSION"
           git push --set-upstream origin $BRANCH_NAME
 
