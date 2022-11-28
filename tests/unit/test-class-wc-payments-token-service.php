@@ -488,6 +488,41 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'pm_222', $result_tokens[1]->get_token() );
 	}
 
+	public function test_woocommerce_get_customer_payment_tokens_payment_methods_only_for_retrievable_types() {
+		$enabled_upe_payment_methods = [
+			Payment_Method::CARD,
+			Payment_Method::SEPA,
+			Payment_Method::LINK,
+			Payment_Method::BECS,
+			Payment_Method::EPS,
+			Payment_Method::GIROPAY,
+			Payment_Method::IDEAL,
+			Payment_Method::P24,
+			Payment_Method::SOFORT,
+		];
+		$gateway                     = WC_Payments::get_gateway();
+		$gateway->settings['upe_enabled_payment_method_ids'] = $enabled_upe_payment_methods;
+		$tokens      = [];
+		$gateway_id  = 'woocommerce_payments';
+		$customer_id = 'cus_12345';
+
+		$this->mock_customer_service
+			->expects( $this->any() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( $customer_id );
+
+		$this->mock_customer_service
+			->expects( $this->exactly( 3 ) )
+			->method( 'get_payment_methods_for_customer' )
+			->withConsecutive(
+				[ $customer_id, Payment_Method::CARD ],
+				[ $customer_id, Payment_Method::SEPA ],
+				[ $customer_id, Payment_Method::LINK ]
+			);
+
+		$this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
+	}
+
 	private function generate_card_pm_response( $stripe_id ) {
 		return [
 			'type' => Payment_Method::CARD,
