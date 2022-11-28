@@ -254,7 +254,7 @@ class WC_Payments_Invoice_Service {
 
 		$charge = $intent_object->get_charge();
 
-		$this->gateway->attach_intent_info_to_order(
+		$this->order_service->attach_intent_info_to_order(
 			$order,
 			$intent_id,
 			$intent_object->get_status(),

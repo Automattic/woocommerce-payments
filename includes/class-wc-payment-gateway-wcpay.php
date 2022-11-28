@@ -1172,7 +1172,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
+		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 		$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
 
@@ -1293,22 +1293,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->save_meta_data();
 			}
 		}
-	}
-
-	/**
-	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added
-	 *
-	 * @param WC_Order $order The order to update.
-	 * @param string   $intent_id The intent ID.
-	 * @param string   $intent_status Intent status.
-	 * @param string   $payment_method Payment method ID.
-	 * @param string   $customer_id Customer ID.
-	 * @param string   $charge_id Charge ID.
-	 * @param string   $currency Currency code.
-	 */
-	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
-		// temp - to avoid breaking all the extended gateways and their tests.
-		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
 	}
 
 	/**
@@ -2395,7 +2379,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
 
 				$this->attach_exchange_info_to_order( $order, $charge_id );
-				$this->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
+				$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $intent->get_payment_method_id(), $intent->get_customer_id(), $charge_id, $intent->get_currency() );
 			} else {
 				// For $0 orders, fetch the Setup Intent instead.
 				$intent    = $this->payments_api_client->get_setup_intent( $intent_id );
