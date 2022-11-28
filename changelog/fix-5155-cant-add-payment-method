@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fixed bug that would not allow customers to add new payment methods to WooPay
