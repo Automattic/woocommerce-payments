@@ -94,14 +94,30 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 
+		$platform_express_button_params = [
+			'button' => $this->get_button_settings(),
+		];
+
+		$script_src_url    = plugins_url( 'dist/platform-checkout-express-button.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path = WCPAY_ABSPATH . 'dist/platform-checkout-express-button.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+
+		wp_register_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', $script_src_url, $script_asset['dependencies'], WC_Payments::get_file_version( 'dist/platform-checkout-express-button.js' ), true );
+
+		wp_localize_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'wcpayWooPayExpressParams', $platform_express_button_params );
+
+		wp_set_script_translations( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'woocommerce-payments' );
+
+		wp_enqueue_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON' );
+
 		wp_register_style(
-			'wcpay-platform-checkout-express-button-styles',
-			plugins_url( 'includes/platform-checkout/assets/css/platform-checkout-express-button.css', WCPAY_PLUGIN_FILE ),
+			'WCPAY_PLATFORM_CHECKOUT',
+			plugins_url( 'dist/platform-checkout.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WCPAY_VERSION_NUMBER
 		);
 
-		wp_enqueue_style( 'wcpay-platform-checkout-express-button-styles' );
+		wp_enqueue_style( 'WCPAY_PLATFORM_CHECKOUT' );
 	}
 
 	/**
@@ -164,9 +180,30 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		$button_type = $this->gateway->get_option( 'platform_checkout_button_type', 'default' );
 		return [
 			'type'   => $button_type,
+			'text'   => ucfirst( $button_type ),
 			'theme'  => $this->gateway->get_option( 'platform_checkout_button_theme', 'dark' ),
-			'height' => $this->gateway->get_option( 'platform_checkout_button_size', 'default' ),
+			'height' => $this->get_button_height(),
+			'size'   => $this->gateway->get_option( 'platform_checkout_button_size' ),
 		];
+	}
+
+	/**
+	 * Gets the button height.
+	 *
+	 * @return string
+	 */
+	public function get_button_height() {
+		$height = $this->gateway->get_option( 'platform_checkout_button_size' );
+		if ( 'medium' === $height ) {
+			return '48';
+		}
+
+		if ( 'large' === $height ) {
+			return '56';
+		}
+
+		// for the "default" and "catch-all" scenarios.
+		return '40';
 	}
 
 	/**
@@ -222,7 +259,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
 			<div id="wcpay-platform-checkout-button">
-				<button class="woopay-express-button <?php echo esc_attr( implode( '-', $this->get_button_settings() ) ); ?>"><?php echo esc_html( $button_text ); ?></button>
+				<?php // The WooPay express checkout button React component will go here. ?>
 			</div>
 		</div>
 		<?php
