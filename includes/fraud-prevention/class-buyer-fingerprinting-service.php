@@ -57,12 +57,14 @@ class Buyer_Fingerprinting_Service {
 	/**
 	 * Returns fraud prevention data for an order.
 	 *
+	 * @param string $fingerprint User fingerprint.
+	 *
 	 * @return string[] An array of hashed data for an order.
 	 */
-	public function get_hashed_data_for_customer(): array {
+	public function get_hashed_data_for_customer( $fingerprint ): array {
 		return [
 			'fraud_prevention_data_shopper_ip_hash' => $this->hash_data_for_fraud_prevention( WC_Geolocation::get_ip_address() ),
-			'fraud_prevention_data_shopper_ua_hash' => $this->hash_data_for_fraud_prevention( strtolower( wc_get_user_agent() ) ),
+			'fraud_prevention_data_shopper_ua_hash' => $fingerprint,
 		];
 	}
 }
