@@ -518,6 +518,17 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 				[ $customer_id, Payment_Method::CARD ],
 				[ $customer_id, Payment_Method::SEPA ],
 				[ $customer_id, Payment_Method::LINK ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					$this->generate_card_pm_response( 'pm_mock0' ),
+				],
+				[
+					$this->generate_sepa_pm_response( 'pm_mock_2' ),
+				],
+				[
+					$this->generate_link_pm_response( 'pm_mock_3' ),
+				]
 			);
 
 		$this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
