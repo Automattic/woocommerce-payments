@@ -386,6 +386,86 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Get the payment metadata for key _intent_id.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 * @return string
+	 */
+	public function get_intent_id_for_order( $order ) : string {
+		$order = wc_get_order( $order );
+		return $order->get_meta( '_intent_id', true );
+	}
+
+	/**
+	 * Set the payment metadata for key _intent_id for the order
+	 *
+	 * @param  WC_Order $order The order object.
+	 * @param  mixed    $intent_id The value to be set.
+	 */
+	public function set_intent_id_for_order( $order, $intent_id ) {
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save_meta_data();
+		/**
+		 * Hook: When the order meta data _intent_id is updated.
+		 *
+		 * @since 5.4.0
+		 */
+		do_action( 'wcpay_order_intent_id_updated' );
+	}
+
+
+	/**
+	 * Get the payment metadata for key _payment_method_id for the order.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 * @return string
+	 */
+	public function get_payment_method_id_for_order( $order ) : string {
+		$order = wc_get_order( $order );
+		return $order->get_meta( '_payment_method_id', true );
+	}
+
+	/**
+	 * Set the payment metadata for key _payment_method_id for the order
+	 *
+	 * @param  mixed $order The order.
+	 * @param  mixed $payment_method_id The value to be set.
+	 */
+	public function set_payment_method_id_for_order( $order, $payment_method_id ) {
+		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->save_meta_data();
+		/**
+		 * Hook: When the order meta data _payment_method_id is updated.
+		 *
+		 * @since 5.4.0
+		 */
+		do_action( 'wcpay_order_payment_method_id_updated' );
+	}
+
+	/**
+	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added
+	 *
+	 * @param WC_Order $order The order.
+	 * @param string   $intent_id The intent ID.
+	 * @param string   $intent_status Intent status.
+	 * @param string   $payment_method Payment method ID.
+	 * @param string   $customer_id Customer ID.
+	 * @param string   $charge_id Charge ID.
+	 * @param string   $currency Currency code.
+	 */
+	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
+		// first, let's save all the metadata that needed for refunds, required for status change etc.
+		$order->set_transaction_id( $intent_id );
+		$this->set_intent_id_for_order( $order, $intent_id );
+		$this->set_payment_method_id_for_order( $order, $payment_method );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_meta_data( '_intention_status', $intent_status );
+		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
+		$order->save();
+	}
+
+	/**
 	 * Get content for the success order note.
 	 *
 	 * @param string $intent_id        The payment intent ID related to the intent/order.

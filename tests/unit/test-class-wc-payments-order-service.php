@@ -574,4 +574,53 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'Note exists at the end'                     => [ [ 'note 1', 'note 2', 'check_string' ], 'check_string', true ],
 		];
 	}
+
+	public function test_set_intent_id_for_order() {
+		$order     = WC_Helper_Order::create_order();
+		$intent_id = 'pi_mock_123';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+		$this->assertEquals( $order->get_meta( '_intent_id', true ), $intent_id );
+		$this->assertSame( 1, did_action( 'wcpay_order_intent_id_updated' ) );
+		$this->assertSame( 0, did_action( 'wcpay_order_payment_method_id_updated' ) );
+	}
+
+	public function test_get_intent_id_for_order() {
+		$intent_id = 'pi_mock';
+		$order     = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save_meta_data();
+		$intent_id_from_service = $this->order_service->get_intent_id_for_order( $order->get_id() );
+		$this->assertEquals( $intent_id_from_service, $intent_id );
+	}
+
+	public function test_set_payment_method_id() {
+		$order          = WC_Helper_Order::create_order();
+		$payment_method = 'pm_mock';
+		$this->order_service->set_payment_method_id_for_order( $order, $payment_method );
+		$this->assertEquals( $order->get_meta( '_payment_method_id', true ), $payment_method );
+		$this->assertSame( 0, did_action( 'wcpay_order_intent_id_updated' ) );
+		$this->assertSame( 1, did_action( 'wcpay_order_payment_method_id_updated' ) );
+	}
+
+	public function test_get_payment_method_id() {
+		$payment_method_id = 'pm_mock_123';
+		$order             = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->save_meta_data();
+		$payment_method_from_service = $this->order_service->get_payment_method_id_for_order( $order->get_id() );
+		$this->assertEquals( $payment_method_from_service, $payment_method_id );
+	}
+
+	public function test_attach_intent_info_to_order() {
+		$order          = WC_Helper_Order::create_order();
+		$intent_id      = 'pi_mock';
+		$intent_status  = 'succeeded';
+		$payment_method = 'woocommerce_payments';
+		$customer_id    = 'cus_12345';
+		$charge_id      = 'ch_mock';
+		$currency       = 'USD';
+		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+
+		$this->assertEquals( $intent_id, $order->get_meta( '_intent_id', true ) );
+	}
 }
