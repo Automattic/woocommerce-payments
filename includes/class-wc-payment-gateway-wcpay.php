@@ -921,7 +921,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Make sure that we attach the payment method and the customer ID to the order meta data.
 		$payment_method = $payment_information->get_payment_method();
-		$order->update_meta_data( '_payment_method_id', $payment_method );
+		$this->order_service->set_payment_method_id_for_order( $order, $payment_method );
 		$order->update_meta_data( '_stripe_customer_id', $customer_id );
 		$order->update_meta_data( '_wcpay_mode', $this->is_in_test_mode() ? 'test' : 'prod' );
 
@@ -1306,15 +1306,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param string   $currency Currency code.
 	 */
 	public function attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency ) {
-		// first, let's save all the metadata that needed for refunds, required for status change etc.
-		$order->set_transaction_id( $intent_id );
-		$order->update_meta_data( '_intent_id', $intent_id );
-		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', $intent_status );
-		$order->update_meta_data( '_payment_method_id', $payment_method );
-		$order->update_meta_data( '_stripe_customer_id', $customer_id );
-		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
-		$order->save();
+		//temp - to avoid breaking all the extended gateways and their tests.
+		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
 	}
 
 	/**
