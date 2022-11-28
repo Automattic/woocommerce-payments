@@ -1895,9 +1895,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$intent_status  = 'succeeded';
 		$currency       = 'USD';
 
-		$order->expects( $this->atLeast( 2 ) )->method( 'update_meta_data' )->withConsecutive(
+		$order->expects( $this->atLeast( 5 ) )->method( 'update_meta_data' )->withConsecutive(
 			[ '_intent_id', $intent_id ],
-			[ '_charge_id', $charge_id ]
+			[ '_payment_method_id', $payment_method ],
+			[ '_charge_id', $charge_id ],
+			[ '_intention_status', $intent_status ],
+			[ '_stripe_customer_id', $customer_id ]
 		);
 
 		$this->wcpay_gateway->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
