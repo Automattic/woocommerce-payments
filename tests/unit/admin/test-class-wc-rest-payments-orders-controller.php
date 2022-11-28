@@ -66,7 +66,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
 		$this->order_service         = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->mock_api_client ] )
-			->onlyMethods( [ 'attach_intent_info_to_order' ] )
+			->setMethods( [ 'attach_intent_info_to_order' ] )
 			->getMock();
 
 		$this->controller = new WC_REST_Payments_Orders_Controller(

@@ -57,7 +57,6 @@ class WC_Payments_Subscriptions {
 	 * @param WC_Payment_Gateway_WCPay     $gateway          WCPay Payment Gateway.
 	 * @param WC_Payments_Account          $account          WC_Payments_Account.
 	 */
-
 	public static function init( WC_Payments_API_Client $api_client, WC_Payments_Customer_Service $customer_service, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Account $account ) {
 		// Load Services.
 		include_once __DIR__ . '/class-wc-payments-product-service.php';
