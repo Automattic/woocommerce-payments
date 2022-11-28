@@ -1020,7 +1020,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_information->is_merchant_initiated(),
 					$additional_api_parameters,
 					$payment_methods,
-					$payment_information->get_cvc_confirmation()
+					$payment_information->get_cvc_confirmation(),
+					$payment_information->get_fingerprint()
 				);
 			}
 
