@@ -64,7 +64,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_gateway          = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$this->mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
-		$this->order_service         = new WC_Payments_Order_Service( $this->mock_api_client );
+		$this->order_service         = $this->getMockBuilder( 'WC_Payments_Order_Service' )
+			->setConstructorArgs( [ $this->mock_api_client ] )
+			->onlyMethods( [ 'attach_intent_info_to_order' ] )
+			->getMock();
 
 		$this->controller = new WC_REST_Payments_Orders_Controller(
 			$this->mock_api_client,
@@ -101,7 +104,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$this->mock_gateway
+		$this->order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
 			->with(
@@ -157,7 +160,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'get_intent' )
 			->willReturn( $mock_intent );
 
-		$this->mock_gateway
+		$this->order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
 			->with(
@@ -229,7 +232,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'get_intent' )
 			->willReturn( $mock_intent );
 
-		$this->mock_gateway
+		$this->order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' )
 			->with(
@@ -296,7 +299,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'capture_charge' );
 
-		$this->mock_gateway
+		$this->order_service
 			->expects( $this->never() )
 			->method( 'attach_intent_info_to_order' );
 
@@ -330,7 +333,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'capture_charge' );
 
-		$this->mock_gateway
+		$this->order_service
 			->expects( $this->never() )
 			->method( 'attach_intent_info_to_order' );
 
@@ -370,7 +373,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'capture_charge' );
 
-		$this->mock_gateway
+		$this->order_service
 			->expects( $this->never() )
 			->method( 'attach_intent_info_to_order' );
 
@@ -407,7 +410,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'get_intent' )
 			->willReturn( $mock_intent );
 
-		$this->mock_gateway
+		$this->order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' );
 
@@ -455,7 +458,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'get_intent' )
 			->willReturn( $mock_intent );
 
-		$this->mock_gateway
+		$this->order_service
 			->expects( $this->once() )
 			->method( 'attach_intent_info_to_order' );
 
@@ -655,7 +658,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'capture_charge' );
 
-		$this->mock_gateway
+		$this->order_service
 			->expects( $this->never() )
 			->method( 'attach_intent_info_to_order' );
 
@@ -693,7 +696,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'capture_charge' );
 
-		$this->mock_gateway
+		$this->order_service
 			->expects( $this->never() )
 			->method( 'attach_intent_info_to_order' );
 
