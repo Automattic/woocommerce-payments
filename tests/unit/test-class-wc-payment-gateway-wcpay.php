@@ -1881,31 +1881,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_attach_intent_info_to_order() {
-		$order = $this
-			->getMockBuilder( WC_Order::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'update_meta_data', 'save' ] )
-			->getMock();
-
-		$intent_id      = 'pi_mock';
-		$charge_id      = 'ch_mock';
-		$customer_id    = 'cus_12345';
-		$payment_method = 'woocommerce_payments';
-		$intent_status  = 'succeeded';
-		$currency       = 'USD';
-
-		$order->expects( $this->atLeast( 5 ) )->method( 'update_meta_data' )->withConsecutive(
-			[ '_intent_id', $intent_id ],
-			[ '_payment_method_id', $payment_method ],
-			[ '_charge_id', $charge_id ],
-			[ '_intention_status', $intent_status ],
-			[ '_stripe_customer_id', $customer_id ]
-		);
-
-		$this->wcpay_gateway->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
-	}
-
 	public function test_update_order_status_from_intent_success_payment_complete() {
 		$order = $this
 			->getMockBuilder( WC_Order::class )
