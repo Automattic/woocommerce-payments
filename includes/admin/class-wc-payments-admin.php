@@ -817,11 +817,13 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$account  = $this->account->get_account_status_data();
-		$status   = $account['status'] ?? '';
-		$past_due = $account['has_overdue_requirements'] ?? false;
+		$account          = $this->account->get_account_status_data();
+		$status           = $account['status'] ?? '';
+		$current_deadline = $account['currentDeadline'] ?? false;
+		$past_due         = $account['pastDue'] ?? false;
 
-		if ( 'restricted_soon' === $status || ( 'restricted' === $status && $past_due ) ) {
+		// If the account is restricted_soon, but there's no current deadline, no action is needed.
+		if ( ( 'restricted_soon' === $status && $current_deadline ) || ( 'restricted' === $status && $past_due ) ) {
 			update_option( 'wcpay_show_update_business_details_task', 'yes' );
 		}
 	}
