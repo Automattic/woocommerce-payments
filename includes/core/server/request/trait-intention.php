@@ -17,8 +17,6 @@ trait Intention {
 	 * Returns a list of fingerprinting metadata to attach to order.
 	 *
 	 * @return array List of fingerprinting metadata.
-	 *
-	 * @throws API_Exception If an error occurs.
 	 */
 	private function get_fingerprint_metadata(): array {
 		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();

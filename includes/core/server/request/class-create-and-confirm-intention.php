@@ -192,10 +192,10 @@ class Create_And_Confirm_Intention extends Request {
 	/**
 	 * Formats the response from the server.
 	 *
-	 * @param  mixed $intention_array The response from `WC_Payments_API_Client::request`.
-	 * @return mixed                  Either the same response, or the correct object.
+	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
+	 * @return mixed           Either the same response, or the correct object.
 	 */
-	public function format_response( $intention_array ) {
-		return WC_Payments::get_payments_api_client()->deserialize_intention_object_from_array( $intention_array );
+	public function format_response( $response ) {
+		return WC_Payments::get_payments_api_client()->deserialize_intention_object_from_array( $response );
 	}
 }

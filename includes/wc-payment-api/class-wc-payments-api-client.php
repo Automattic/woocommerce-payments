@@ -1974,7 +1974,7 @@ class WC_Payments_API_Client {
 	 * Sends a request object.
 	 *
 	 * @param  Request $request The request to send.
-	 * @return Response         A response object.
+	 * @return array            A response object.
 	 */
 	public function send_request( Request $request ) {
 		return $this->request(
