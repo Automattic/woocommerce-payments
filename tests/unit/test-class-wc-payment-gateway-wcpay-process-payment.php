@@ -196,7 +196,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Arrange: Set a good return value for customer ID.
 		$this->mock_customer_service->expects( $this->once() )
-			->method( 'create_customer_for_user' )
+			->method( 'get_customer_id_by_user_id' )
 			->willReturn( $customer_id );
 
 		// Arrange: Create a mock cart.
@@ -205,12 +205,16 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Return a successful response from create_and_confirm_intention().
 		$intent = WC_Helper_Intention::create_intention();
 
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->will(
-				$this->returnValue( $intent )
-			);
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		// Assert: Order has correct charge id meta data.
 		// Assert: Order has correct intention status meta data.
@@ -298,12 +302,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Return a successful response from create_and_confirm_intention().
 		$intent = WC_Helper_Intention::create_intention();
 
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->will(
-				$this->returnValue( $intent )
-			);
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		// Assert: customer_service should still be called with a WP_User object (representing a logged-out user).
 		$this->mock_customer_service
@@ -366,12 +369,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Return a 'requires_capture' response from create_and_confirm_intention().
 		$intent = WC_Helper_Intention::create_intention( [ 'status' => $status ] );
 
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->will(
-				$this->returnValue( $intent )
-			);
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		// Assert: Order has correct charge id meta data.
 		// Assert: Order has correct intention status meta data.
@@ -760,12 +762,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Return a 'requires_action' response from create_and_confirm_intention().
 		$intent = WC_Helper_Intention::create_intention( [ 'status' => $status ] );
 
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->will(
-				$this->returnValue( $intent )
-			);
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		// Assert: Order charge id meta data was updated with `update_meta_data()`.
 		// Assert: Order does not have intention status meta data.
@@ -949,11 +950,16 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention();
 
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, $this->anything(), $this->anything(), $this->anything() )
-			->will( $this->returnValue( $intent ) );
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$this->mock_token_service
 			->expects( $this->once() )
@@ -971,11 +977,16 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention();
 
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), false, $this->anything(), $this->anything() )
-			->will( $this->returnValue( $intent ) );
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$this->mock_token_service
 			->expects( $this->never() )
@@ -989,10 +1000,16 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention();
 
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->will( $this->returnValue( $intent ) );
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$this->mock_customer_service
 			->expects( $this->never() )
@@ -1010,10 +1027,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention();
 
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
-			->will( $this->returnValue( $intent ) );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
@@ -1089,12 +1107,16 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$_POST['save_user_in_platform_checkout'] = 'true';
 
-		$this->mock_api_client
+		$this->mock_customer_service
 			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
-			->with( $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), $this->anything(), true, $this->anything(), $this->anything() )
-			->will( $this->returnValue( $intent ) );
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
 
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
