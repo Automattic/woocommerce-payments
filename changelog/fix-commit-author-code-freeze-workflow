@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Set commit author as github-actions bot for the code freeze workflow
