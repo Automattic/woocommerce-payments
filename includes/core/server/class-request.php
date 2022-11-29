@@ -263,12 +263,14 @@ abstract class Request {
 	 * @throws Extend_Request_Exception In case this is not a subclass of the base request.
 	 */
 	final public static function extend( Request $base_request ) {
-		if ( ! is_subclass_of( static::class, get_class( $base_request ) ) ) {
+		$class_name    = get_class( $base_request );
+		$current_class = static::class;
+		if ( ! is_subclass_of( $current_class, $class_name ) ) {
 			throw new Extend_Request_Exception(
 				sprintf(
 					'Failed to extend request. %s is not a subclass of %s',
-					static::class,
-					get_class( $base_request )
+					$current_class,
+					$class_name
 				),
 				'wcpay_core_extend_class_not_subclass'
 			);
@@ -281,7 +283,7 @@ abstract class Request {
 			);
 		}
 
-		$obj = new static( $base_request->api_client, $base_request->http_interface );
+		$obj = new $current_class( $base_request->api_client, $base_request->http_interface );
 		$obj->set_params( $base_request->params );
 
 		return $obj;
