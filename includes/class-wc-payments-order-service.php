@@ -26,6 +26,48 @@ class WC_Payments_Order_Service {
 	const ADD_FEE_BREAKDOWN_TO_ORDER_NOTES = 'wcpay_add_fee_breakdown_to_order_notes';
 
 	/**
+	 * Meta key used to store intent Id.
+	 *
+	 * @const string
+	 */
+	const INTENT_ID_META_KEY = '_intent_id';
+
+	/**
+	 * Meta key used to store payment method Id.
+	 *
+	 * @const string
+	 */
+	const PAYMENT_METHOD_ID_META_KEY = '_payment_method_id';
+
+	/**
+	 * Meta key used to store charge Id.
+	 *
+	 * @const string
+	 */
+	const CHARGE_ID_META_KEY = '_charge_id';
+
+	/**
+	 * Meta key used to store intention status.
+	 *
+	 * @const string
+	 */
+	const INTENTION_STATUS_META_KEY = '_intention_status';
+
+	/**
+	 * Meta key used to store customer Id.
+	 *
+	 * @const string
+	 */
+	const CUSTOMER_ID_META_KEY = '_stripe_customer_id';
+
+	/**
+	 * Meta key used to store WCPay intent currency.
+	 *
+	 * @const string
+	 */
+	const WCPAY_INTENT_CURRENCY_META_KEY = '_wcpay_intent_currency';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -386,24 +428,24 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Get the payment metadata for key _intent_id.
+	 * Get the payment metadata for intent id.
 	 *
 	 * @param  mixed $order The order Id or order object.
 	 * @return string
 	 */
 	public function get_intent_id_for_order( $order ) : string {
 		$order = wc_get_order( $order );
-		return $order->get_meta( '_intent_id', true );
+		return $order->get_meta( self::INTENT_ID_META_KEY, true );
 	}
 
 	/**
-	 * Set the payment metadata for key _intent_id for the order
+	 * Set the payment metadata for intent id.
 	 *
 	 * @param  WC_Order $order The order object.
 	 * @param  mixed    $intent_id The value to be set.
 	 */
 	public function set_intent_id_for_order( $order, $intent_id ) {
-		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( self::INTENT_ID_META_KEY, $intent_id );
 		$order->save_meta_data();
 		/**
 		 * Hook: When the order meta data _intent_id is updated.
@@ -415,24 +457,24 @@ class WC_Payments_Order_Service {
 
 
 	/**
-	 * Get the payment metadata for key _payment_method_id for the order.
+	 * Get the payment metadata for payment method id.
 	 *
 	 * @param  mixed $order The order Id or order object.
 	 * @return string
 	 */
 	public function get_payment_method_id_for_order( $order ) : string {
 		$order = wc_get_order( $order );
-		return $order->get_meta( '_payment_method_id', true );
+		return $order->get_meta( self::PAYMENT_METHOD_ID_META_KEY, true );
 	}
 
 	/**
-	 * Set the payment metadata for key _payment_method_id for the order
+	 * Set the payment metadata for payment method id.
 	 *
 	 * @param  mixed $order The order.
 	 * @param  mixed $payment_method_id The value to be set.
 	 */
 	public function set_payment_method_id_for_order( $order, $payment_method_id ) {
-		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->update_meta_data( self::PAYMENT_METHOD_ID_META_KEY, $payment_method_id );
 		$order->save_meta_data();
 		/**
 		 * Hook: When the order meta data _payment_method_id is updated.
@@ -440,6 +482,94 @@ class WC_Payments_Order_Service {
 		 * @since 5.4.0
 		 */
 		do_action( 'wcpay_order_payment_method_id_updated' );
+	}
+
+	/**
+	 * Set the payment metadata for charge id.
+	 *
+	 * @param  mixed $order The order.
+	 * @param  mixed $charge_id The value to be set.
+	 */
+	public function set_charge_id_for_order( $order, $charge_id ) {
+		$order->update_meta_data( self::CHARGE_ID_META_KEY, $charge_id );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the payment metadata for charge id.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 * @return string
+	 */
+	public function get_charge_id_for_order( $order ) : string {
+		$order = wc_get_order( $order );
+		return $order->get_meta( self::CHARGE_ID_META_KEY, true );
+	}
+
+	/**
+	 * Set the payment metadata for intention status.
+	 *
+	 * @param  mixed $order The order.
+	 * @param  mixed $intention_status The value to be set.
+	 */
+	public function set_intention_status_for_order( $order, $intention_status ) {
+		$order->update_meta_data( self::INTENTION_STATUS_META_KEY, $intention_status );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the payment metadata for intention status.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 * @return string
+	 */
+	public function get_intention_status_for_order( $order ) : string {
+		$order = wc_get_order( $order );
+		return $order->get_meta( self::INTENTION_STATUS_META_KEY, true );
+	}
+
+	/**
+	 * Set the payment metadata for customer id.
+	 *
+	 * @param  mixed $order The order.
+	 * @param  mixed $customer_id The value to be set.
+	 */
+	public function set_customer_id_for_order( $order, $customer_id ) {
+		$order->update_meta_data( self::CUSTOMER_ID_META_KEY, $customer_id );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the payment metadata for customer id.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 * @return string
+	 */
+	public function get_customer_id_for_order( $order ) : string {
+		$order = wc_get_order( $order );
+		return $order->get_meta( self::CUSTOMER_ID_META_KEY, true );
+	}
+
+	/**
+	 * Set the payment metadata for intent currency.
+	 *
+	 * @param  mixed $order The order.
+	 * @param  mixed $wcpay_intent_currency The value to be set.
+	 */
+	public function set_wcpay_intent_currency_for_order( $order, $wcpay_intent_currency ) {
+		$order->update_meta_data( self::WCPAY_INTENT_CURRENCY_META_KEY, $wcpay_intent_currency );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the payment metadata for intent currency.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 * @return string
+	 */
+	public function get_wcpay_intent_currency_for_order( $order ) : string {
+		$order = wc_get_order( $order );
+		return $order->get_meta( self::WCPAY_INTENT_CURRENCY_META_KEY, true );
 	}
 
 	/**

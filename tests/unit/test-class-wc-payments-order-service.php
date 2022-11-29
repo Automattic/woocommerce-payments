@@ -611,6 +611,70 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $payment_method_from_service, $payment_method_id );
 	}
 
+	public function test_set_charge_id() {
+		$order     = WC_Helper_Order::create_order();
+		$charge_id = 'ch_mock';
+		$this->order_service->set_charge_id_for_order( $order, $charge_id );
+		$this->assertEquals( $order->get_meta( '_charge_id', true ), $charge_id );
+	}
+
+	public function test_get_charge_id() {
+		$charge_id = 'ch_mock';
+		$order     = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save_meta_data();
+		$charge_id_from_service = $this->order_service->get_charge_id_for_order( $order->get_id() );
+		$this->assertEquals( $charge_id_from_service, $charge_id );
+	}
+
+	public function test_set_intention_status() {
+		$order            = WC_Helper_Order::create_order();
+		$intention_status = 'mock_status';
+		$this->order_service->set_intention_status_for_order( $order, $intention_status );
+		$this->assertEquals( $order->get_meta( '_intention_status', true ), $intention_status );
+	}
+
+	public function test_get_intention_status() {
+		$intention_status = 'succeeded';
+		$order            = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intention_status', $intention_status );
+		$order->save_meta_data();
+		$intention_status_from_service = $this->order_service->get_intention_status_for_order( $order->get_id() );
+		$this->assertEquals( $intention_status_from_service, $intention_status );
+	}
+
+	public function test_set_customer_id() {
+		$order       = WC_Helper_Order::create_order();
+		$customer_id = 'cus_123';
+		$this->order_service->set_customer_id_for_order( $order, $customer_id );
+		$this->assertEquals( $order->get_meta( '_stripe_customer_id', true ), $customer_id );
+	}
+
+	public function test_get_customer_id() {
+		$customer_id = 'cus_mock';
+		$order       = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+		$order->save_meta_data();
+		$customer_id_from_service = $this->order_service->get_customer_id_for_order( $order->get_id() );
+		$this->assertEquals( $customer_id_from_service, $customer_id );
+	}
+
+	public function test_set_wcpay_intent_currency() {
+		$order                 = WC_Helper_Order::create_order();
+		$wcpay_intent_currency = 'mock_curr';
+		$this->order_service->set_wcpay_intent_currency_for_order( $order, $wcpay_intent_currency );
+		$this->assertEquals( $order->get_meta( '_wcpay_intent_currency', true ), $wcpay_intent_currency );
+	}
+
+	public function test_get_wcpay_intent_currency() {
+		$wcpay_intent_currency = 'EUR';
+		$order                 = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_intent_currency', $wcpay_intent_currency );
+		$order->save_meta_data();
+		$wcpay_intent_currency_from_service = $this->order_service->get_wcpay_intent_currency_for_order( $order->get_id() );
+		$this->assertEquals( $wcpay_intent_currency_from_service, $wcpay_intent_currency );
+	}
+
 	public function test_attach_intent_info_to_order() {
 		$order          = WC_Helper_Order::create_order();
 		$intent_id      = 'pi_mock';
