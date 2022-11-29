@@ -385,16 +385,18 @@ export default class WCPayAPI {
 	/**
 	 * Creates an intent based on a payment method.
 	 *
-	 * @param {int} orderId The id of the order if creating the intent on Order Pay page.
+	 * @param {string} fingerprint User fingerprint.
+	 * @param {int?} orderId The id of the order if creating the intent on Order Pay page.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	createIntent( orderId ) {
+	createIntent( fingerprint = '', orderId ) {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'create_payment_intent' ),
 			{
 				wcpay_order_id: orderId,
 				_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
+				'wcpay-fingerprint': fingerprint,
 			}
 		)
 			.then( ( response ) => {
@@ -421,6 +423,7 @@ export default class WCPayAPI {
 	 * @param {string} savePaymentMethod 'yes' if saving.
 	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type or empty string.
 	 * @param {string?} paymentCountry The payment two-letter iso country code or null.
+	 * @param {string?} fingerprint User fingerprint.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
@@ -429,7 +432,8 @@ export default class WCPayAPI {
 		orderId,
 		savePaymentMethod,
 		selectedUPEPaymentType,
-		paymentCountry
+		paymentCountry,
+		fingerprint
 	) {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'update_payment_intent' ),
@@ -440,6 +444,7 @@ export default class WCPayAPI {
 				wcpay_selected_upe_payment_type: selectedUPEPaymentType,
 				wcpay_payment_country: paymentCountry,
 				_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
+				'wcpay-fingerprint': fingerprint,
 			}
 		)
 			.then( ( response ) => {
@@ -532,14 +537,16 @@ export default class WCPayAPI {
 	 *
 	 * @param {string} paymentIntentId ID of payment intent to be updated.
 	 * @param {Object} fields Checkout fields.
+	 * @param {string} fingerprint User fingerprint.
 	 * @return {Promise} Promise containing redirect URL for UPE element.
 	 */
-	processCheckout( paymentIntentId, fields ) {
+	processCheckout( paymentIntentId, fields, fingerprint ) {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'checkout', '' ),
 			{
 				...fields,
 				wc_payment_intent_id: paymentIntentId,
+				'wcpay-fingerprint': fingerprint,
 			}
 		)
 			.then( ( response ) => {

@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Add new workflow to amend (or generate) the changelog for the release
