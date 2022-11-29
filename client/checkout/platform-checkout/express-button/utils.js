@@ -1,4 +1,4 @@
-/* global wcpayWooPayExpressParams, wc */
+/* global wcpayWooPayExpressParams */
 
 /**
  * Retrieves a configuration value.
@@ -7,10 +7,5 @@
  * @return {*}         The value of the parameter of null.
  */
 export const getWooPayExpressData = ( name ) => {
-	// Config for the Edit Order screen.
-	const config =
-		wcpayWooPayExpressParams ??
-		wc.wcSettings.getSetting( 'woocommerce_payments_data' );
-
-	return config?.[ name ];
+	return wcpayWooPayExpressParams?.[ name ];
 };
