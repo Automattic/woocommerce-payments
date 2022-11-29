@@ -1730,22 +1730,67 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
 		delete_transient( 'wcpay_minimum_amount_usd' );
 
+		$amount   = 0.45;
+		$customer = 'cus_12345';
+
 		$order = WC_Helper_Order::create_order();
-		$order->set_total( 0.45 );
+		$order->set_total( $amount );
 		$order->save();
 
-		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( $customer ) );
+
+		$_POST = [ 'wcpay-payment-method' => $pm = 'pm_mock' ];
 
 		$this->get_fraud_prevention_service_mock()
 			->expects( $this->once() )
 			->method( 'is_enabled' )
 			->willReturn( false );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
-			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( (int) ( $amount * 100 ) )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( $pm )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( $customer )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
+			->with(
+				$this->callback(
+					function( $metadata ) {
+						$required_keys = [ 'customer_name', 'customer_email', 'site_url', 'order_id', 'order_number', 'order_key', 'payment_type' ];
+						foreach ( $required_keys as $key ) {
+							if ( ! array_key_exists( $key, $metadata ) ) {
+								return false;
+							}
+						}
+						return true;
+					}
+				)
+			)
+				->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
 		$this->expectException( Exception::class );
 		$price   = html_entity_decode( wp_strip_all_tags( wc_price( 60, [ 'currency' => 'USD' ] ) ) );
 		$message = 'The selected payment method requires a total amount of at least ' . $price . '.';

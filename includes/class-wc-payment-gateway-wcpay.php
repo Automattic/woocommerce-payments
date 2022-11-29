@@ -986,8 +986,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( $save_payment_method_to_store ) {
 					$request->setup_future_usage();
 				}
+
 				$request = $request->apply_filters( 'create_woopay_intention_request', $order, $payment_information->is_using_saved_payment_method() );
-				$intent  = $this->send_request( $request );
+				$intent  = $request->send();
 			}
 
 			$intent_id     = $intent->get_id();
@@ -3016,18 +3017,5 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Used for sending a request to wcpay server.
-	 *
-	 * @param Request $request Request class.
-	 *
-	 * @return mixed|\WCPay\Core\Server\Response
-	 */
-	protected function send_request( Request $request ) {
-
-		// Maybe add some logging and could be useful for mocking and testing.
-		return $request->send();
 	}
 }

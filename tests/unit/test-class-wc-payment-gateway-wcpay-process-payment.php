@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
@@ -139,7 +140,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					'mark_payment_complete_for_order',
 					'get_level3_data_from_order', // To avoid needing to mock the order items.
 					'should_use_stripe_platform_on_checkout_page',
-					'send_request', // To mock wcpay requests.
 				]
 			)
 			->getMock();
@@ -442,9 +442,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( 'cus_mock' );
 
 		// Arrange: Throw an exception in create_and_confirm_intention.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'send_request' )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->will(
 				$this->throwException(
 					new API_Exception(
@@ -454,8 +455,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					)
 				)
 			);
-
-		// Arrange: Prepare for the upcoming exception.
 		$this->expectException( 'Exception' );
 
 		// Act: process payment.
@@ -503,9 +502,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( 'cus_mock' );
 
 		// Arrange: Throw an exception in create_and_confirm_intention.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'send_request' )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->will(
 				$this->throwException(
 					new Connection_Exception(
@@ -515,7 +515,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					)
 				)
 			);
-
 		// Arrange: Prepare for the upcoming exception.
 		$this->expectException( 'Exception' );
 
@@ -560,9 +559,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( 'cus_mock' );
 
 		// Arrange: Throw an exception in create_and_confirm_intention.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'send_request' )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->will(
 				$this->throwException(
 					new API_Exception(
@@ -631,9 +631,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
 
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'send_request' )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->will(
 				$this->throwException(
 					new API_Exception(
@@ -681,10 +682,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
 
-		// Arrange: Throw an exception in create_and_confirm_intention.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'send_request' )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->will(
 				$this->throwException(
 					new API_Exception(
@@ -1144,10 +1145,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
 
-		$this->mock_wcpay_gateway
-			->expects( $this->any() )
-			->method( 'send_request' )
-			->will( $this->returnValue( $intent ) );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
@@ -1159,6 +1161,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_process_payment_for_subscription_in_woopay_adds_subscription_flag_to_request() {
+
+		$customer = 'cus_12345';
+
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
 
@@ -1170,32 +1175,53 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Arrange: Return a successful response from create_and_confirm_intention().
 		$intent = WC_Helper_Intention::create_intention();
-
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( $customer ) );
 		// Assert: API is called with additional flag.
-		$this->mock_api_client
-			->expects( $this->any() )
-			->method( 'create_and_confirm_intention' )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( 5000 )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( 'pm_mock' )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( $customer )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
 			->with(
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
 				$this->callback(
-					function( $additional_api_parameters ) {
-						return 'true' === $additional_api_parameters['woopay_has_subscription'];
+					function( $metadata ) {
+						$required_keys = [ 'customer_name', 'customer_email', 'site_url', 'order_id', 'order_number', 'order_key', 'payment_type' ];
+						foreach ( $required_keys as $key ) {
+							if ( ! array_key_exists( $key, $metadata ) ) {
+								return false;
+							}
+						}
+						return true;
 					}
 				)
 			)
-			->will(
-				$this->returnValue( $intent )
-			);
+				->willReturn( $request );
 
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Act: process a successful payment.
@@ -1253,10 +1279,15 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
 
-		$this->mock_wcpay_gateway
-			->expects( $this->any() )
-			->method( 'send_request' )
-			->will( $this->returnValue( $intent ) );
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->will( $this->returnValue( 'cus_12345' ) );
+		// Assert: API is called with additional flag.
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
@@ -1295,12 +1326,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( 'cus_mock' );
 
 		// Arrange: Throw an exception in create_and_confirm_intention.
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'send_request' )
-			->will(
-				$this->returnValue( $intent )
-			);
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information->must_save_payment_method_to_store();
@@ -1342,10 +1372,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$intent = WC_Helper_Intention::create_intention( [ 'payment_method_id' => 'pm_new_mock' ] );
 
 		// Arrange: Return a successful response from create_and_confirm_intention().
-		$this->mock_wcpay_gateway
-			->expects( $this->any() )
-			->method( 'send_request' )
-			->will( $this->returnValue( $intent ) );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information->must_save_payment_method_to_store();
