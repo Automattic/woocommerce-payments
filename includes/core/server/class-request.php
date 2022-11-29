@@ -447,6 +447,12 @@ abstract class Request {
 	 * @return void
 	 */
 	protected function validate_stripe_id( $id, $prefixes = null ) {
+		if ( empty( $id ) ) {
+			throw new Invalid_Request_Parameter_Exception(
+				__( 'Empty parameter is not allowed', 'woocommerce-payments' ),
+				'wcpay_core_invalid_request_parameter_stripe_id'
+			);
+		}
 		if ( is_null( $prefixes ) ) {
 			$prefixes = '[a-z]+';
 		} else {
