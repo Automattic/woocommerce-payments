@@ -609,6 +609,49 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	/**
+	 * Tests that a draft order is updated to "pending" when the $_POST 'is-woopay-preflight-check` is present.
+	 */
+	public function test_draft_order_is_set_to_pending_for_woopay_preflight_check_request() {
+		$_POST['is-woopay-preflight-check'] = true;
+
+		// Arrange: Create an order to test with.
+		$order_data = [
+			'status' => 'draft',
+			'total'  => '100',
+		];
+
+		$order = wc_create_order( $order_data );
+
+		// Act: process payment.
+		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+
+		// Assert: Order status was updated.
+		$this->assertEquals( 'pending', $order->get_status() );
+	}
+
+	/**
+	 * Tests that a success response and no redirect is returned when the $_POST 'is-woopay-preflight-check` is present.
+	 */
+	public function test_successful_result_no_redirect_for_woopay_preflight_check_request() {
+		$_POST['is-woopay-preflight-check'] = true;
+
+		// Arrange: Create an order to test with.
+		$order_data = [
+			'status' => 'draft',
+			'total'  => '100',
+		];
+
+		$order = wc_create_order( $order_data );
+
+		// Act: process payment.
+		$response = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
+
+		// Assert: No payment was processed.
+		$this->assertEquals( $response['result'], 'success' );
+		$this->assertEmpty( $response['redirect'] );
+	}
+
 	public function test_bad_request_exception_thrown() {
 		$error_message = 'Test error.';
 		$error_notice  = 'We\'re not able to process this request. Please refresh the page and try again.';
