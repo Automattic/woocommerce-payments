@@ -8,22 +8,36 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { shopperWCP } from '../../../utils/flows';
+import { merchantWCP, shopperWCP } from '../../../utils/flows';
+import { merchant } from '@woocommerce/e2e-utils';
 
 const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
 const cards = Object.entries( config.get( 'cards' ) );
 const validCards = cards.filter( ( [ cardType ] ) =>
 	[ 'basic', '3ds', '3ds2' ].includes( cardType )
 );
+const sepaPaymentMethod = '#inspector-checkbox-control-8';
 
 describe( 'Payment Methods', () => {
 	beforeAll( async () => {
+		await merchant.login();
+		await merchantWCP.activateUpe();
+		// enable SEPA
+		await merchantWCP.enablePaymentMethod( sepaPaymentMethod );
+		await merchant.logout();
 		await shopper.login();
+		await shopperWCP.changeAccountCurrencyTo( 'EUR' );
 		await shopperWCP.goToPaymentMethods();
 	} );
 
 	afterAll( async () => {
+		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 		await shopperWCP.logout();
+		await merchant.login();
+		//disable SEPA
+		await merchantWCP.disablePaymentMethod( sepaPaymentMethod );
+		await merchantWCP.deactivateUpe();
+		await merchant.logout();
 	} );
 
 	describe.each( validCards )( 'when using a %s card', ( cardType, card ) => {
