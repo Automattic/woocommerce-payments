@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -173,10 +174,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$subscriptions = [ WC_Helper_Order::create_order( self::USER_ID ) ];
 		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
-			->with( $this->anything(), $this->anything(), self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, $this->anything(), true, false, $this->anything(), $this->anything(), false )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $this->payment_intent );
 
 		$this->mock_token_service
@@ -282,10 +282,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$subscriptions = [ WC_Helper_Order::create_order( self::USER_ID ) ];
 		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
-			->with( $this->anything(), $this->anything(), self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, $this->anything(), false, false, $this->anything(), $this->anything(), false )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $this->payment_intent );
 
 		$this->mock_token_service

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
 
@@ -226,10 +227,10 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->with( self::USER_ID )
 			->willReturn( self::CUSTOMER_ID );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
-			->with( $this->anything(), $this->anything(), self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, $this->anything(), false, false, $this->anything(), $this->anything(), true )
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
 
 		$this->wcpay_gateway->scheduled_subscription_payment( $renewal_order->get_total(), $renewal_order );

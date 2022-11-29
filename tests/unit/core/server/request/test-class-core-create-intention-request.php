@@ -63,16 +63,16 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 	public function test_exception_will_throw_if_amount_parameter_is_changed_when_filter_is_applied() {
 		$request = new Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Immutable_Parameter_Exception::class );
-		$request->set_amount( 1 )
-			->set_currency( 'usd' );
+		$request->set_amount( 1 );
+		$request->set_currency( 'usd' );
 		add_filter(
 			'test_exception_will_throw_if_immutable_parameter_is_changed_when_filter_is_applied',
 			function() {
 				$new_class = new class( $this->mock_api_client, $this->mock_wc_payments_http_client) extends Create_Intent {
 
 				};
-				$new_class->set_amount( 3 )
-					->set_currency( 'usd' );
+				$new_class->set_amount( 3 );
+				$new_class->set_currency( 'usd' );
 				return $new_class;
 			}
 		);
@@ -83,8 +83,8 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 		$amount   = 1;
 		$currency = 'usd';
 		$request  = new Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_amount( $amount )
-			->set_currency( $currency );
+		$request->set_amount( $amount );
+		$request->set_currency( $currency );
 		$this->assertInstanceOf( Create_Intent::class, $request );
 		$params = $request->get_params();
 
@@ -101,9 +101,9 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 		$amount   = 1;
 		$currency = 'usd';
 		$request  = new WooPay_Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_amount( $amount )
-			->set_save_payment_method_to_platform( true )
-			->set_currency( $currency );
+		$request->set_amount( $amount );
+		$request->set_save_payment_method_to_platform( true );
+		$request->set_currency( $currency );
 		$this->assertInstanceOf( WooPay_Create_Intent::class, $request );
 		$params = $request->get_params();
 

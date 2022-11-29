@@ -56,15 +56,17 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->checkout_service->is_platform_payment_method( false ) );
 	}
 
-	public function test_extend_woo_pay_filter() {
+	public function test_create_woopay_intention_request_will_create_request() {
+		add_filter( 'test_create_woopay_intention_request_will_create_request', [ Checkout_Service::class, 'create_woopay_intention_request' ], 10, 3 );
 		$order = wc_create_order();
-		$this->request
-			->set_amount( 1 )
-			->set_currency_code( 'usd' )
-			->set_payment_method( 'pm_1' )
-			->set_customer( 'cus_1' )
-			->set_metadata( [ 'order_number' => 1 ] );
-		$request = $this->request->apply_filters( 'create_woopay_intention_request', $order, true );
+		$this->request->set_amount( 1 );
+		$this->request->set_currency_code( 'usd' );
+		$this->request->set_payment_method( 'pm_1' );
+		$this->request->set_customer( 'cus_1' );
+		$this->request->set_metadata( [ 'order_number' => 1 ] );
+		$request = $this->request->apply_filters( 'test_create_woopay_intention_request_will_create_request', $order, true );
 		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
+		remove_filter( 'test_create_woopay_intention_request_will_create_request', [ Checkout_Service::class, 'create_woopay_intention_request' ], 10, 3 );
+
 	}
 }

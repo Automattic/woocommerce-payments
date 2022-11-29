@@ -50,29 +50,29 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 	public function test_exception_will_throw_if_amount_is_not_set() {
 		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_payment_method( 'pm_1' )
-			->set_customer( 'cus_1' )
-			->set_metadata( [ 'order_number' => 1 ] )
-			->set_currency_code( 'usd' );
+		$request->set_payment_method( 'pm_1' );
+		$request->set_customer( 'cus_1' );
+		$request->set_metadata( [ 'order_number' => 1 ] );
+		$request->set_currency_code( 'usd' );
 		$request->get_params();
 	}
 	public function test_exception_will_throw_if_currency_is_not_set() {
 		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_amount( 1 )
-			->set_customer( 'cus_1' )
-			->set_metadata( [ 'order_number' => 1 ] )
-			->set_payment_method( 'pm_1' );
+		$request->set_amount( 1 );
+		$request->set_customer( 'cus_1' );
+		$request->set_metadata( [ 'order_number' => 1 ] );
+		$request->set_payment_method( 'pm_1' );
 		$request->get_params();
 	}
 
 	public function test_exception_will_throw_if_payment_method_is_not_set() {
 		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_amount( 1 )
-			->set_customer( 'cus_1' )
-			->set_metadata( [ 'order_number' => 1 ] )
-			->set_currency_code( 'usd' );
+		$request->set_amount( 1 );
+		$request->set_customer( 'cus_1' );
+		$request->set_metadata( [ 'order_number' => 1 ] );
+		$request->set_currency_code( 'usd' );
 		$request->get_params();
 	}
 
@@ -85,10 +85,10 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 	public function test_exception_will_throw_if_customer_is_not_set() {
 		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_amount( 1 )
-			->set_payment_method( 'pm_1' )
-			->set_metadata( [ 'order_number' => 1 ] )
-			->set_currency_code( 'usd' );
+		$request->set_amount( 1 );
+		$request->set_payment_method( 'pm_1' );
+		$request->set_metadata( [ 'order_number' => 1 ] );
+		$request->set_currency_code( 'usd' );
 		$request->get_params();
 	}
 	public function test_exception_will_throw_if_customer_is_invalid() {
@@ -106,22 +106,23 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 	public function test_exception_will_throw_if_amount_parameter_is_changed_when_filter_is_applied() {
 		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Immutable_Parameter_Exception::class );
-		$request->set_amount( 2 )
-			->set_customer( 'cus_1' )
-			->set_metadata( [ 'order_number' => 1 ] )
-			->set_payment_method( 'pm_1' )
-			->set_currency_code( 'usd' );
+		$request->set_amount( 2 );
+		$request->set_customer( 'cus_1' );
+		$request->set_metadata( [ 'order_number' => 1 ] );
+		$request->set_payment_method( 'pm_1' );
+		$request->set_currency_code( 'usd' );
 		add_filter(
 			'cac_test_exception_will_throw_if_immutable_parameter_is_changed_when_filter_is_applied',
 			function() {
 				$new_class = new class( $this->mock_api_client, $this->mock_wc_payments_http_client) extends Create_And_Confirm_Intention {
 
 				};
-				$new_class->set_amount( 3 )
-					->set_payment_method( 'pm_2' )
-					->set_customer( 'cus_2' )
-					->set_metadata( [ 'order_number' => 2 ] )
-					->set_currency_code( 'eur' );
+				$new_class->set_amount( 3 );
+				$new_class->set_payment_method( 'pm_2' );
+				$new_class->set_customer( 'cus_2' );
+				$new_class->set_metadata( [ 'order_number' => 2 ] );
+				$new_class->set_currency_code( 'eur' );
+
 				return $new_class;
 			}
 		);
@@ -136,17 +137,17 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$cvc      = 'cvc';
 
 		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_amount( $amount )
-			->set_currency_code( $currency )
-			->set_payment_method( $pm )
-			->set_customer( $cs )
-			->set_capture_method( true )
-			->setup_future_usage()
-			->set_metadata( [ 'order_number' => 1 ] )
-			->set_level3( [ 'level3' => 'level3' ] )
-			->set_off_session()
-			->set_payment_methods( [ 'pm' => '1' ] )
-			->set_cvc_confirmation( $cvc );
+		$request->set_amount( $amount );
+		$request->set_currency_code( $currency );
+		$request->set_payment_method( $pm );
+		$request->set_customer( $cs );
+		$request->set_capture_method( true );
+		$request->setup_future_usage();
+		$request->set_metadata( [ 'order_number' => 1 ] );
+		$request->set_level3( [ 'level3' => 'level3' ] );
+		$request->set_off_session();
+		$request->set_payment_methods( [ 'pm' => '1' ] );
+		$request->set_cvc_confirmation( $cvc );
 		$this->assertInstanceOf( Create_And_Confirm_Intention::class, $request );
 		$params = $request->get_params();
 
@@ -175,19 +176,19 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$cs       = 'cus_1';
 		$cvc      = 'cvc';
 		$request  = new WooPay_Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_amount( 1 )
-			->set_currency_code( 'usd' )
-			->set_payment_method( 'pm_1' )
-			->set_customer( 'cus_1' )
-			->set_capture_method( true )
-			->setup_future_usage()
-			->set_metadata( [ 'order_number' => 1 ] )
-			->set_level3( [ 'level3' => 'level3' ] )
-			->set_off_session()
-			->set_payment_methods( [ 'pm' => '1' ] )
-			->set_cvc_confirmation( 'cvc' )
-			->set_is_platform_payment_method()
-			->set_has_woopay_subscription();
+		$request->set_amount( 1 );
+		$request->set_currency_code( 'usd' );
+		$request->set_payment_method( 'pm_1' );
+		$request->set_customer( 'cus_1' );
+		$request->set_capture_method( true );
+		$request->setup_future_usage();
+		$request->set_metadata( [ 'order_number' => 1 ] );
+		$request->set_level3( [ 'level3' => 'level3' ] );
+		$request->set_off_session();
+		$request->set_payment_methods( [ 'pm' => '1' ] );
+		$request->set_cvc_confirmation( 'cvc' );
+		$request->set_is_platform_payment_method();
+		$request->set_has_woopay_subscription();
 		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
 		$params = $request->get_params();
 
