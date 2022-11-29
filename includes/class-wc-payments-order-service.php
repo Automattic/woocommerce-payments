@@ -588,10 +588,10 @@ class WC_Payments_Order_Service {
 		$order->set_transaction_id( $intent_id );
 		$this->set_intent_id_for_order( $order, $intent_id );
 		$this->set_payment_method_id_for_order( $order, $payment_method );
-		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', $intent_status );
-		$order->update_meta_data( '_stripe_customer_id', $customer_id );
-		WC_Payments_Utils::set_order_intent_currency( $order, $currency );
+		$this->set_charge_id_for_order( $order, $charge_id );
+		$this->set_intention_status_for_order( $order, $intent_status );
+		$this->set_customer_id_for_order( $order, $customer_id );
+		$this->set_wcpay_intent_currency_for_order( $order, $currency );
 		$order->save();
 	}
 
