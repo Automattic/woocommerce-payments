@@ -57,15 +57,16 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_create_woopay_intention_request_will_create_request() {
-		$mock_request = $this->createMock( Create_And_Confirm_Intention::class );
-		$mock_request->disableOriginalConstructor()
-			->getMock();
-		// Mimic behavior when filter is applied by setting protected mode to false.
-		$reflection          = new ReflectionClass( Create_And_Confirm_Intention::class );
-		$reflection_property = $reflection->getProperty( 'protected_mode' );
-		$reflection_property->setAccessible( true );
-		$reflection_property->setValue( $mock_request, false );
-		$this->checkout_service->create_woopay_intention_request( $mock_request, new WC_Order(), true );
+		add_filter( 'test_create_woopay_intention_request_will_create_request_with_filter', [ Checkout_Service::class, 'create_woopay_intention_request' ], 10, 3 );
+		$order = wc_create_order();
+		$this->request->set_amount( 1 );
+		$this->request->set_currency_code( 'usd' );
+		$this->request->set_payment_method( 'pm_1' );
+		$this->request->set_customer( 'cus_1' );
+		$this->request->set_metadata( [ 'order_number' => 1 ] );
+		$request = $this->request->apply_filters( 'test_create_woopay_intention_request_will_create_request_with_filter', $order, true );
+		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
+		remove_filter( 'test_create_woopay_intention_request_will_create_request', [ Checkout_Service::class, 'create_woopay_intention_request' ], 10, 3 );
 
 	}
 }
