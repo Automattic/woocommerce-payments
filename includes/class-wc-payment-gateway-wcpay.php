@@ -825,7 +825,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
-		} 
+		}
 
 		// Determine the customer making the payment, create one if we don't have one already.
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
