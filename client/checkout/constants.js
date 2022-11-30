@@ -1,4 +1,5 @@
 export const PAYMENT_METHOD_NAME_CARD = 'woocommerce_payments';
+export const PAYMENT_METHOD_NAME_LINK = 'woocommerce_payments_link';
 export const PAYMENT_METHOD_NAME_BANCONTACT = 'woocommerce_payments_bancontact';
 export const PAYMENT_METHOD_NAME_BECS = 'woocommerce_payments_au_becs_debit';
 export const PAYMENT_METHOD_NAME_EPS = 'woocommerce_payments_eps';

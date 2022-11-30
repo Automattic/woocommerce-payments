@@ -10,6 +10,7 @@ import {
 	PAYMENT_METHOD_NAME_EPS,
 	PAYMENT_METHOD_NAME_GIROPAY,
 	PAYMENT_METHOD_NAME_IDEAL,
+	PAYMENT_METHOD_NAME_LINK,
 	PAYMENT_METHOD_NAME_P24,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
@@ -47,7 +48,7 @@ jQuery( function ( $ ) {
 			upeElement: null,
 			paymentIntentId: null,
 			paymentIntentClientSecret: null,
-			isUPEComplete: null,
+			isUPEComplete: false,
 			country: null,
 		};
 	}
@@ -345,7 +346,10 @@ jQuery( function ( $ ) {
 		upeElement.mount( upeDOMElement );
 		unblockUI( $upeContainer );
 		upeElement.on( 'change', ( event ) => {
-			const selectedUPEPaymentType = event.value.type;
+			let selectedUPEPaymentType = event.value.type;
+			if ( 'card' === selectedUPEPaymentType ) {
+				selectedUPEPaymentType = 'link';
+			}
 			gatewayUPEComponents[ selectedUPEPaymentType ].country =
 				event.value.country;
 			gatewayUPEComponents[ selectedUPEPaymentType ].isUPEComplete =
@@ -718,6 +722,7 @@ jQuery( function ( $ ) {
 		PAYMENT_METHOD_NAME_EPS,
 		PAYMENT_METHOD_NAME_GIROPAY,
 		PAYMENT_METHOD_NAME_IDEAL,
+		PAYMENT_METHOD_NAME_LINK,
 		PAYMENT_METHOD_NAME_P24,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,

@@ -333,12 +333,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				'wcpay_upe_intent_error'
 			);
 		}
+		$payment_method_types = [ $this->payment_method->get_id() ];
+		if ( 'link' === $this->payment_method->get_id() ) {
+			$payment_method_types[] = 'card';
+		}
 
 		try {
 			$payment_intent = $this->payments_api_client->create_intention(
 				$converted_amount,
 				strtolower( $currency ),
-				[ $this->payment_method->get_id() ],
+				$payment_method_types,
 				$order_id ?? 0,
 				$capture_method
 			);
@@ -427,10 +431,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				'invalid_payment_method'
 			);
 		}
+		$payment_method_types = [ $this->payment_method->get_id() ];
+		if ( 'link' === $this->payment_method->get_id() ) {
+			$payment_method_types[] = 'card';
+		}
 
 		$setup_intent = $this->payments_api_client->create_setup_intention(
 			$customer_id,
-			[ $this->payment_method->get_id() ]
+			$payment_method_types
 		);
 		return [
 			'id'            => $setup_intent['id'],
