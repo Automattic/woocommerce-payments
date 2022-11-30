@@ -57,7 +57,12 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_create_woopay_intention_request_will_create_request() {
-		add_filter( 'test_create_woopay_intention_request_will_create_request_with_filter', [ Checkout_Service::class, 'create_woopay_intention_request' ], 10, 3 );
+		$fn = function( $request, $order, $using_saved_payment_method ) {
+			$checkout_service = new Checkout_Service();
+
+			return $checkout_service->create_woopay_intention_request( $request, $order, $using_saved_payment_method );
+		};
+		add_filter( 'test_create_woopay_intention_request_will_create_request_with_filter', $fn, 10, 3 );
 		$order = wc_create_order();
 		$this->request->set_amount( 1 );
 		$this->request->set_currency_code( 'usd' );
@@ -66,7 +71,7 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$this->request->set_metadata( [ 'order_number' => 1 ] );
 		$request = $this->request->apply_filters( 'test_create_woopay_intention_request_will_create_request_with_filter', $order, true );
 		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
-		remove_filter( 'test_create_woopay_intention_request_will_create_request', [ Checkout_Service::class, 'create_woopay_intention_request' ], 10, 3 );
+		remove_filter( 'test_create_woopay_intention_request_will_create_request', $fn, 10, 3 );
 
 	}
 }
