@@ -276,18 +276,8 @@ abstract class Request {
 	 * @throws Extend_Request_Exception In case this is not a subclass of the base request.
 	 */
 	final public static function extend( Request $base_request ) {
-		$class_name    = get_class( $base_request );
 		$current_class = static::class;
-		if ( ! is_subclass_of( $current_class, $class_name ) ) {
-			throw new Extend_Request_Exception(
-				sprintf(
-					'Failed to extend request. %s is not a subclass of %s',
-					$current_class,
-					$class_name
-				),
-				'wcpay_core_extend_class_not_subclass'
-			);
-		}
+		$base_request->validate_extended_class( $current_class, get_class( $base_request ) );
 
 		if ( ! $base_request->protected_mode ) {
 			throw new Extend_Request_Exception(
@@ -295,7 +285,6 @@ abstract class Request {
 				'wcpay_core_extend_class_incorrectly'
 			);
 		}
-
 		$obj = new $current_class( $base_request->api_client, $base_request->http_interface );
 		$obj->set_params( $base_request->params );
 
@@ -334,18 +323,10 @@ abstract class Request {
 		// Exit protected mode right after `apply_filters`.
 		$this->protected_mode = false;
 
-		// Make sure the replacement is either the same class, or a sub-class.
 		$my_class  = get_class( $this );
 		$new_class = get_class( $replacement );
-		if ( $new_class !== $my_class && ! is_subclass_of( $replacement, $my_class ) ) {
-			throw new Extend_Request_Exception(
-				sprintf(
-					'Failed to modify request. The provided %s is not a subclass of %s',
-					$new_class,
-					$my_class
-				),
-				'wcpay_core_extend_class_not_subclass'
-			);
+		if ( $new_class !== $my_class ) {
+			$this->validate_extended_class( $new_class, $my_class );
 		}
 
 		// NB: `array_diff` will only pick up updated props, not new ones.
@@ -540,5 +521,29 @@ abstract class Request {
 				'wcpay_core_invalid_request_parameter_currency_not_available'
 			);
 		}
+	}
+
+	/**
+	 * Extend class validator.
+	 *
+	 * @param mixed  $child_class  Child class.
+	 * @param string $parent_class Parent class.
+	 *
+	 * @return void
+	 * @throws Extend_Request_Exception
+	 */
+	public function validate_extended_class( $child_class, string $parent_class ) {
+
+		if ( ! is_subclass_of( $child_class, $parent_class ) ) {
+			throw new Extend_Request_Exception(
+				sprintf(
+					'Failed to extend request. %s is not a subclass of %s',
+					is_string( $child_class ) ? $child_class : get_class( $child_class ),
+					$parent_class
+				),
+				'wcpay_core_extend_class_not_subclass'
+			);
+		}
+
 	}
 }

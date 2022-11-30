@@ -7,6 +7,7 @@
 
 namespace WCPay\WooPay\Service;
 
+use Automattic\WooCommerce\Admin\Overrides\Order;
 use WC_Payments_Features;
 use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
@@ -28,16 +29,10 @@ class Checkout_Service {
 	 * @throws Invalid_Request_Parameter_Exception
 	 * @throws \WCPay\Core\Exceptions\Extend_Request_Exception
 	 */
-	public function create_woopay_intention_request( $base_request, $order, $using_saved_payment_method ) {
-		if ( ! $order ) {
-			throw new Invalid_Request_Parameter_Exception(
-				'Invalid order passed',
-				'wcpay_core_invalid_request_parameter_order'
-			);
-		}
+	public function create_woopay_intention_request( Request $base_request, \WC_Order $order, bool $using_saved_payment_method ) {
 		$request = WooPay_Create_And_Confirm_Intention::extend( $base_request );
 		$request->set_has_woopay_subscription( '1' === $order->get_meta( '_woopay_has_subscription' ) );
-		$request->set_is_platform_payment_method( self::is_platform_payment_method( $using_saved_payment_method ) );
+		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $using_saved_payment_method ) );
 		return $request;
 	}
 
@@ -48,7 +43,7 @@ class Checkout_Service {
 	 *
 	 * @return boolean True if it is a platform payment method.
 	 */
-	public static function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+	public function is_platform_payment_method( bool $is_using_saved_payment_method ) {
 		// Make sure the payment method being charged was created in the platform.
 		if (
 			! $is_using_saved_payment_method &&
@@ -58,7 +53,7 @@ class Checkout_Service {
 		) {
 
 			// This payment method was created under the platform account.
-			return self::should_use_stripe_platform_on_checkout_page();
+			return $this->should_use_stripe_platform_on_checkout_page();
 		}
 
 		return false;
@@ -69,7 +64,7 @@ class Checkout_Service {
 	 *
 	 * @return bool
 	 */
-	public static function should_use_stripe_platform_on_checkout_page() {
+	public function should_use_stripe_platform_on_checkout_page() {
 			// TODO: Add support for blocks checkout.
 		if (
 				WC_Payments_Features::is_platform_checkout_eligible() &&

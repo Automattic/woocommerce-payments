@@ -985,8 +985,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$request->setup_future_usage();
 				}
 
-				$request = $request->apply_filters( 'create_woopay_intention_request', $order, $payment_information->is_using_saved_payment_method() );
-				$intent  = $request->send();
+				$intent = $request->send( 'create_woopay_intention_request', $order, $payment_information->is_using_saved_payment_method() );
 			}
 
 			$intent_id     = $intent->get_id();

@@ -37,10 +37,6 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$this->expectException( Extend_Request_Exception::class );
 		$this->checkout_service->create_woopay_intention_request( new Generic( 'api', Requests::POST ), new WC_Order(), true );
 	}
-	public function test_exception_will_throw_if_create_order_is_invalid() {
-		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$this->checkout_service->create_woopay_intention_request( $this->request, null, true );
-	}
 	public function test_exception_will_throw_if_create_woopay_intention_request_is_called_directly() {
 		$this->expectException( Extend_Request_Exception::class );
 		$this->checkout_service->create_woopay_intention_request( $this->request, new WC_Order(), true );

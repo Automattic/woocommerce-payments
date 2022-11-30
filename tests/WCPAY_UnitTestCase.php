@@ -44,7 +44,14 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 
 		$api_client_mock->expects( $this->once() )
 			->method( 'send_request' )
-			->with( $request )
+			->with(
+				$this->callback(
+				// With filters there is a chance that mock will be changed. With this code we are sure that it belongs to same class.
+					function( $argument ) use ( $request_class, $request ) {
+						return get_class( $request ) === get_class( $argument ) || is_subclass_of( $argument, $request_class );
+					}
+				)
+			)
 			->willReturn( $response );
 
 		// An anonoymous callback, which will be used once and disposed.
