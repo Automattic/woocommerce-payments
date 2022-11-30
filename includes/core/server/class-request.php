@@ -190,13 +190,26 @@ abstract class Request {
 	}
 
 	/**
-	 * Allows the request to be executed and formatted.
+	 * Allows the request to be modified, and then sends it.
 	 *
-	 * @return mixed          Either the response array, or the correct object.
+	 * @param string|null $hook    The filter to use.
+	 * @param mixed       ...$args      Other parameters for the hook.
+	 * @return mixed               Either the response array, or the correct object.
+	 *
+	 * @throws Extend_Request_Exception
+	 * @throws Immutable_Parameter_Exception
+	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	final public function send() {
+	final public function send( $hook = null, ...$args ) {
+
+		$request = $this;
+		// In case where you don't want to send request.
+		if ( $hook ) {
+			$request = $this->apply_filters( $hook, ...$args );
+		}
+
 		return $this->format_response(
-			$this->api_client->send_request( $this )
+			$this->api_client->send_request( $request )
 		);
 	}
 

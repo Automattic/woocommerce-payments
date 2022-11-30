@@ -11,7 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Core\Mode;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
-use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
@@ -25,7 +24,6 @@ use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
-use WCPay\WooPay\Service\Checkout_Service;
 
 /**
  * Gateway class for WooCommerce Payments

@@ -34,6 +34,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
+use WCPay\WooPay\Service\Checkout_Service;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -330,7 +331,7 @@ class WC_Payments {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 		}
 
-		\WCPay\WooPay\Service\Checkout_Service::init();
+		( new Checkout_Service() )->init();
 
 		// // Load platform checkout save user section if feature is enabled.
 		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_platform_checkout' ] );
