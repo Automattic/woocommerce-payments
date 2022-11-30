@@ -20,11 +20,12 @@ use WCPay\Database_Cache;
 class WC_Payments_Account {
 
 	// ACCOUNT_OPTION is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
-	const ACCOUNT_OPTION                   = 'wcpay_account_data';
-	const ON_BOARDING_DISABLED_TRANSIENT   = 'wcpay_on_boarding_disabled';
-	const ON_BOARDING_STARTED_TRANSIENT    = 'wcpay_on_boarding_started';
-	const ERROR_MESSAGE_TRANSIENT          = 'wcpay_error_message';
-	const INSTANT_DEPOSITS_REMINDER_ACTION = 'wcpay_instant_deposit_reminder';
+	const ACCOUNT_OPTION                     = 'wcpay_account_data';
+	const ON_BOARDING_DISABLED_TRANSIENT     = 'wcpay_on_boarding_disabled';
+	const ON_BOARDING_STARTED_TRANSIENT      = 'wcpay_on_boarding_started';
+	const ERROR_MESSAGE_TRANSIENT            = 'wcpay_error_message';
+	const INSTANT_DEPOSITS_REMINDER_ACTION   = 'wcpay_instant_deposit_reminder';
+	const SHOW_UPDATE_DETAILS_TASK_TRANSIENT = 'wcpay_show_update_business_details_task';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -764,6 +765,19 @@ class WC_Payments_Account {
 			$this->finalize_connection( $state, $mode );
 			return;
 		}
+	}
+
+	/**
+	 * Check the value of the transient which indicates whether or not to show the business details task.
+	 *
+	 * @return string Will return the value of the transient if it is set, or 'no' if it is not set.
+	 */
+	public function get_show_update_details_task_transient(): string {
+		$transient_value = get_transient( self::SHOW_UPDATE_DETAILS_TASK_TRANSIENT );
+
+		return ( ! $transient_value )
+			? 'no'
+			: $transient_value;
 	}
 
 	/**

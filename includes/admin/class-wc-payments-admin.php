@@ -500,7 +500,7 @@ class WC_Payments_Admin {
 			'accountFees'                => $this->account->get_fees(),
 			'accountLoans'               => $this->account->get_capital(),
 			'accountEmail'               => $this->account->get_account_email(),
-			'showUpdateDetailsTask'      => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+			'showUpdateDetailsTask'      => $this->account->get_show_update_details_task_transient(),
 			'wpcomReconnectUrl'          => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup'     => [
 				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
@@ -813,7 +813,8 @@ class WC_Payments_Admin {
 	 * their business details when the account is facing restriction.
 	 */
 	public function add_update_business_details_task() {
-		if ( 'yes' === get_option( 'wcpay_show_update_business_details_task', 'no' ) ) {
+		$transient_name = WC_Payments_Account::SHOW_UPDATE_DETAILS_TASK_TRANSIENT;
+		if ( 'yes' === get_transient( $transient_name ) ) {
 			return;
 		}
 
@@ -824,7 +825,8 @@ class WC_Payments_Admin {
 
 		// If the account is restricted_soon, but there's no current deadline, no action is needed.
 		if ( ( 'restricted_soon' === $status && $current_deadline ) || ( 'restricted' === $status && $past_due ) ) {
-			update_option( 'wcpay_show_update_business_details_task', 'yes' );
+			delete_transient( $transient_name );
+			set_transient( $transient_name, 'yes', HOUR_IN_SECONDS );
 		}
 	}
 
