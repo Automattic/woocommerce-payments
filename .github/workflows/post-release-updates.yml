@@ -3,12 +3,6 @@ name: "Handle post-release steps"
 # This action will run when it is triggered manually
 on:
   workflow_dispatch:
-    inputs:
-      allowMerge:
-        description: 'Whether we allow merging trunk back into develop'
-        required: false
-        type: string
-        default: "false"
 
 defaults:
   run:
@@ -81,7 +75,6 @@ jobs:
   merge-trunk-into-develop:
     name: "Merge trunk back into develop"
     needs: get-last-released-version
-    if: ${{ inputs.allowMerge == 'true' }}
     runs-on: ubuntu-20.04
     env:
       RELEASE_VERSION: ${{ needs.get-last-released-version.outputs.releaseVersion }}
@@ -92,11 +85,12 @@ jobs:
         with:
           ref: 'trunk'
           fetch-depth: 0
+          token: ${{ SECRETS.BOTWOO_TOKEN }}
 
       - name: "Merge trunk back into develop"
         run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git config user.name "botwoo"
+          git config user.email "botwoo@users.noreply.github.com"
           git checkout develop && git pull
           git merge trunk --no-ff -m "Merge trunk v$RELEASE_VERSION into develop"
           git push

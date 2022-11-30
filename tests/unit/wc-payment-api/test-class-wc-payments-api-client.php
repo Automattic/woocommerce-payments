@@ -216,6 +216,73 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test a successful call to create_and_confirm_intention with user fingeprint data.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_and_confirm_intention_with_user_fingerprint_data() {
+		$fingerprint     = 'abc123';
+		$expected_amount = 123;
+		$expected_status = 'succeeded';
+
+		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
+		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
+
+		Buyer_Fingerprinting_Service::set_instance( $mock_fingerprinting );
+		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
+
+		$mock_fraud_prevention
+			->expects( $this->never() )
+			->method( 'is_enabled' );
+
+		$mock_fingerprinting
+			->expects( $this->once() )
+			->method( 'get_hashed_data_for_customer' )
+			->with( $fingerprint );
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'            => 'test_intention_id',
+				'amount'        => $expected_amount,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
+						],
+					],
+				],
+				'client_secret' => 'test_client_secret',
+				'currency'      => 'usd',
+			]
+		);
+
+		$this->payments_api_client->create_and_confirm_intention(
+			$expected_amount,
+			'usd',
+			'pm_123456789',
+			1,
+			false,
+			false,
+			false,
+			[],
+			[],
+			false,
+			[],
+			null,
+			null,
+			$fingerprint
+		);
+	}
+
+	/**
 	 * Test a successful call to create_intention.
 	 *
 	 * @throws Exception - In the event of test failure.
@@ -1707,8 +1774,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
 		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
-							->setMethods( [ 'log' ] )
-							->getMock();
+			->setMethods( [ 'log' ] )
+			->getMock();
 
 		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
 		$logger_ref->setAccessible( true );

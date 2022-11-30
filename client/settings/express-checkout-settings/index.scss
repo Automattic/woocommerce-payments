@@ -129,3 +129,43 @@
 		margin-bottom: 26px;
 	}
 }
+
+.woopay-express-button {
+	font-size: 20px;
+	font-weight: normal;
+	line-height: 42px;
+	background: $white;
+	border: 1px solid $white;
+	color: $studio-woocommerce-purple-60;
+	width: 100%;
+	border-radius: 4px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+
+	&[class*='dark'] {
+		background: $studio-woocommerce-purple-60;
+		color: $white;
+
+		svg {
+			fill: $white;
+		}
+	}
+
+	&[class*='outline'] {
+		border-color: $studio-woocommerce-purple-60;
+	}
+
+	&[class*='medium'] {
+		font-size: 24px;
+		line-height: 48px;
+	}
+
+	&[class*='large'] {
+		font-size: 32px;
+		line-height: 56px;
+	}
+
+	svg {
+		fill: $studio-woocommerce-purple-60;
+	}
+}
