@@ -195,7 +195,6 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$latest_wcpay_note = $notes[0];
 
 		$this->assertTrue( $result );
-		$this->assertEquals( 're_123456789', $refund->get_meta( '_wcpay_refund_id', true ) );
 		$this->assertStringContainsString( 'successfully processed', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'USD' ] ), $latest_wcpay_note->content );
 		$this->assertStringContainsString( 're_123456789', $latest_wcpay_note->content );
@@ -744,6 +743,10 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'refund_charge' )
 			->willThrowException( new \Exception( 'Test message' ) );
+
+		$this->mock_order_service
+			->method( 'get_wcpay_refund_status_for_order' )
+			->willReturn( 'failed' );
 
 		$this->wcpay_gateway->process_refund( $order_id, 19.99 );
 

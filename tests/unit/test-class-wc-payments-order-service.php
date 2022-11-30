@@ -675,6 +675,38 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $wcpay_intent_currency_from_service, $wcpay_intent_currency );
 	}
 
+	public function test_set_wcpay_refund_id() {
+		$order           = WC_Helper_Order::create_order();
+		$wcpay_refund_id = 'ri_mock';
+		$this->order_service->set_wcpay_refund_id_for_order( $order, $wcpay_refund_id );
+		$this->assertEquals( $order->get_meta( '_wcpay_refund_id', true ), $wcpay_refund_id );
+	}
+
+	public function test_get_wcpay_refund_id() {
+		$wcpay_refund_id = 'ri_1234';
+		$order           = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_refund_id', $wcpay_refund_id );
+		$order->save_meta_data();
+		$wcpay_refund_id_from_service = $this->order_service->get_wcpay_refund_id_for_order( $order->get_id() );
+		$this->assertEquals( $wcpay_refund_id_from_service, $wcpay_refund_id );
+	}
+
+	public function test_set_wcpay_refund_status() {
+		$order               = WC_Helper_Order::create_order();
+		$wcpay_refund_status = 'failed';
+		$this->order_service->set_wcpay_refund_status_for_order( $order, $wcpay_refund_status );
+		$this->assertEquals( $order->get_meta( '_wcpay_refund_status', true ), $wcpay_refund_status );
+	}
+
+	public function test_get_wcpay_refund_status() {
+		$wcpay_refund_status = 'mock_status';
+		$order               = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_refund_status', $wcpay_refund_status );
+		$order->save_meta_data();
+		$wcpay_refund_status_from_service = $this->order_service->get_wcpay_refund_status_for_order( $order->get_id() );
+		$this->assertEquals( $wcpay_refund_status_from_service, $wcpay_refund_status );
+	}
+
 	public function test_attach_intent_info_to_order() {
 		$order          = WC_Helper_Order::create_order();
 		$intent_id      = 'pi_mock';

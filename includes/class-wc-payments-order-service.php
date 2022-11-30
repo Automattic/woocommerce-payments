@@ -6,7 +6,6 @@
  */
 
 use WCPay\Logger;
-use WCPay\Constants\Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -66,6 +65,20 @@ class WC_Payments_Order_Service {
 	 * @const string
 	 */
 	const WCPAY_INTENT_CURRENCY_META_KEY = '_wcpay_intent_currency';
+
+	/**
+	 * Meta key used to store WCPay refund id.
+	 *
+	 * @const string
+	 */
+	const WCPAY_REFUND_ID_META_KEY = '_wcpay_refund_id';
+
+		/**
+	 * Meta key used to store WCPay refund status.
+	 *
+	 * @const string
+	 */
+	const WCPAY_REFUND_STATUS_META_KEY = '_wcpay_refund_status';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -562,6 +575,50 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Set the payment metadata for refund id.
+	 *
+	 * @param  mixed $order The order.
+	 * @param  mixed $wcpay_refund_id The value to be set.
+	 */
+	public function set_wcpay_refund_id_for_order( $order, $wcpay_refund_id ) {
+		$order->update_meta_data( self::WCPAY_REFUND_ID_META_KEY, $wcpay_refund_id );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the payment metadata for refund id.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 * @return string
+	 */
+	public function get_wcpay_refund_id_for_order( $order ) : string {
+		$order = wc_get_order( $order );
+		return $order->get_meta( self::WCPAY_REFUND_ID_META_KEY, true );
+	}
+
+	/**
+	 * Set the payment metadata for refund status.
+	 *
+	 * @param  mixed $order The order.
+	 * @param  mixed $wcpay_refund_status The value to be set.
+	 */
+	public function set_wcpay_refund_status_for_order( $order, $wcpay_refund_status ) {
+		$order->update_meta_data( self::WCPAY_REFUND_STATUS_META_KEY, $wcpay_refund_status );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the payment metadata for refund status.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 * @return string
+	 */
+	public function get_wcpay_refund_status_for_order( $order ) : string {
+		$order = wc_get_order( $order );
+		return $order->get_meta( self::WCPAY_REFUND_STATUS_META_KEY, true );
+	}
+
+	/**
 	 * Get the payment metadata for intent currency.
 	 *
 	 * @param  mixed $order The order Id or order object.
@@ -571,6 +628,7 @@ class WC_Payments_Order_Service {
 		$order = wc_get_order( $order );
 		return $order->get_meta( self::WCPAY_INTENT_CURRENCY_META_KEY, true );
 	}
+
 
 	/**
 	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added

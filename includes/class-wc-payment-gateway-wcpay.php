@@ -1443,7 +1443,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			Logger::log( $note );
 			$order->add_order_note( $note );
-			$order->update_meta_data( '_wcpay_refund_status', 'failed' );
+			$this->order_service->set_wcpay_refund_status_for_order( $order, 'failed' );
 			$order->save();
 
 			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
@@ -1480,12 +1480,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Get the last created WC refund from order and save WCPay refund id as meta.
 		$wc_last_refund = WC_Payments_Utils::get_last_refund_from_order_id( $order_id );
 		if ( $wc_last_refund ) {
-			$wc_last_refund->update_meta_data( '_wcpay_refund_id', $refund['id'] );
+			$this->order_service->set_wcpay_refund_id_for_order( $wc_last_refund, $refund['id'] );
 			$wc_last_refund->save_meta_data();
 		}
 
 		$order->add_order_note( $note );
-		$order->update_meta_data( '_wcpay_refund_status', 'successful' );
+		$this->order_service->set_wcpay_refund_status_for_order( $order, 'successful' );
 		$order->save();
 
 		return true;
@@ -1498,7 +1498,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean
 	 */
 	public function has_refund_failed( $order ) {
-		return 'failed' === $order->get_meta( '_wcpay_refund_status', true );
+		return 'failed' === $this->order_service->get_wcpay_refund_status_for_order( $order );
 	}
 
 	/**
