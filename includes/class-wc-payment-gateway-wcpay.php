@@ -922,7 +922,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Make sure that we attach the payment method and the customer ID to the order meta data.
 		$payment_method = $payment_information->get_payment_method();
 		$this->order_service->set_payment_method_id_for_order( $order, $payment_method );
-		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+		$this->order_service->set_customer_id_for_order( $order, $customer_id );
 		$order->update_meta_data( '_wcpay_mode', $this->is_in_test_mode() ? 'test' : 'prod' );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
@@ -1363,7 +1363,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function can_refund_order( $order ) {
-		return $order && $order->get_meta( '_charge_id', true );
+		return $order && $this->order_service->get_charge_id_for_order( $order );
 	}
 
 	/**
@@ -1377,14 +1377,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 		$order    = wc_get_order( $order_id );
-		$currency = WC_Payments_Utils::get_order_intent_currency( $order );
+		$currency = $this->order_service->get_wcpay_intent_currency_for_order( $order );
 
 		if ( ! $order ) {
 			return false;
 		}
 
 		// If this order is not captured yet, don't try and refund it. Instead, return an appropriate error message.
-		if ( 'requires_capture' === $order->get_meta( '_intention_status', true ) ) {
+		if ( 'requires_capture' === $this->order_service->get_intention_status_for_order( $order ) ) {
 			return new WP_Error(
 				'uncaptured-payment',
 				/* translators: an error message which will appear if a user tries to refund an order which is has been authorized but not yet charged. */
@@ -1400,7 +1400,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 		}
 
-		$charge_id = $order->get_meta( '_charge_id', true );
+		$charge_id = $this->order_service->get_charge_id_for_order( $order );
 
 		try {
 			// If the payment method is Interac, the refund already exists (refunded via Mobile app).
@@ -1508,11 +1508,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	private function get_payment_method_type_for_order( $order ): string {
-		if ( $order->meta_exists( '_payment_method_id' ) && '' !== $order->get_meta( '_payment_method_id', true ) ) {
-			$payment_method_id      = $order->get_meta( '_payment_method_id', true );
+		if ( $this->order_service->get_payment_method_id_for_order( $order ) ) {
+			$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
 			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
 		} elseif ( $order->meta_exists( '_intent_id' ) ) {
-			$payment_intent_id      = $order->get_meta( '_intent_id', true );
+			$payment_intent_id      = $this->order_service->get_intent_id_for_order( $order );
 			$payment_intent         = $this->payments_api_client->get_intent( $payment_intent_id );
 			$charge                 = $payment_intent ? $payment_intent->get_charge() : null;
 			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
@@ -2060,7 +2060,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $actions;
 		}
 
-		if ( 'requires_capture' !== $theorder->get_meta( '_intention_status', true ) ) {
+		if ( 'requires_capture' !== $this->order_service->get_intention_status_for_order( $theorder ) ) {
 			return $actions;
 		}
 
@@ -2087,7 +2087,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$status                   = null;
 		$error_message            = null;
 		$http_code                = null;
-		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
+		$currency                 = $this->order_service->get_wcpay_intent_currency_for_order( $order );
 
 		try {
 			$intent_id    = $order->get_transaction_id();
@@ -2135,7 +2135,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// There is a possibility of the intent being null, so we need to get the charge_id safely.
 		$charge    = ! empty( $intent ) ? $intent->get_charge() : null;
-		$charge_id = ! empty( $charge ) ? $charge->get_id() : $order->get_meta( '_charge_id' );
+		$charge_id = ! empty( $charge ) ? $charge->get_id() : $this->order_service->get_charge_id_for_order( $order );
 
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 
@@ -2220,7 +2220,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			);
 		}
 
-		$order->update_meta_data( '_intention_status', $status );
+		$this->order_service->set_intention_status_for_order( $order, $status );
 		$order->save();
 	}
 
@@ -2339,7 +2339,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$intent_id          = $order->get_meta( '_intent_id', true );
+			$intent_id          = $this->order_service->get_intent_id_for_order( $order );
 			$intent_id_received = isset( $_POST['intent_id'] )
 			? sanitize_text_field( wp_unslash( $_POST['intent_id'] ) )
 			/* translators: This will be used to indicate an unknown value for an ID. */
@@ -2539,7 +2539,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// We only want to track orders created by our payment gateway, and orders with a payment method set.
-		if ( $order->get_payment_method() !== self::GATEWAY_ID || empty( $order->get_meta_data( '_payment_method_id' ) ) ) {
+		if ( $order->get_payment_method() !== self::GATEWAY_ID || empty( $this->order_service->get_payment_method_id_for_order( $order ) ) ) {
 			return;
 		}
 
@@ -2679,8 +2679,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_transaction_url( $order ) {
-		$intent_id = $order->get_meta( '_intent_id', true );
-		$charge_id = $order->get_meta( '_charge_id', true );
+		$intent_id = $this->order_service->get_intent_id_for_order( $order );
+		$charge_id = $this->order_service->get_charge_id_for_order( $order );
 
 		return WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 	}
