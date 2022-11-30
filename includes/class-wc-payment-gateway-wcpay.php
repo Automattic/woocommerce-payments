@@ -825,7 +825,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
-		}
+		} 
 
 		// Determine the customer making the payment, create one if we don't have one already.
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
@@ -1511,7 +1511,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $this->order_service->get_payment_method_id_for_order( $order ) ) {
 			$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
 			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
-		} elseif ( $order->meta_exists( '_intent_id' ) ) {
+		} elseif ( $this->order_service->get_intent_id_for_order( $order ) ) {
 			$payment_intent_id      = $this->order_service->get_intent_id_for_order( $order );
 			$payment_intent         = $this->payments_api_client->get_intent( $payment_intent_id );
 			$charge                 = $payment_intent ? $payment_intent->get_charge() : null;

@@ -302,6 +302,14 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
 		$order->save();
 
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_payment_method' )
@@ -367,6 +375,14 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
+
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		// Arrange: Mock Stripe's call with an empty payment method ID.
 		$this->mock_api_client->method( 'get_payment_method' )->with( '' )->willThrowException( new Exception( 'Missing required parameter: type.' ) );
@@ -435,6 +451,18 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
 		$order->save();
 
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_payment_method' )
@@ -478,6 +506,18 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_payment_method_id', $payment_method_id );
 		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
 		$order->save();
+
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( $payment_method_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -538,6 +578,14 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_payment_method_id', $payment_method_id );
 		$order->save();
 
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( $payment_method_id );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_payment_method' )
@@ -596,6 +644,18 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 		$order->save();
+
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_intention_status_for_order' )
+			->willReturn( 'requires_capture' );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$order_id = $order->get_id();
 
@@ -702,6 +762,14 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_status( 'processing' );
 		$order->save();
 
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
 		$order_id = $order->get_id();
 
 		$this->mock_api_client
@@ -726,6 +794,18 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
 		$order->update_status( 'processing' );
 		$order->save();
+
+		$this->mock_order_service
+			->method( 'get_intent_id_for_order' )
+			->willReturn( $intent_id );
+
+		$this->mock_order_service
+			->method( 'get_wcpay_intent_currency_for_order' )
+			->willReturn( 'EUR' );
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
 
 		$order_id = $order->get_id();
 
