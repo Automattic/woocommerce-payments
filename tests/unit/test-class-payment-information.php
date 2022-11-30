@@ -196,4 +196,25 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
 		$this->assertFalse( $payment_information->is_merchant_initiated() );
 	}
+
+	public function test_get_cvc_confirmation_from_request_returns_null_if_payment_method_is_empty() {
+		$cvc_confirmation = Payment_Information::get_cvc_confirmation_from_request( [ 'payment_method' => null ] );
+		$this->assertEquals( null, $cvc_confirmation );
+	}
+
+	public function test_get_fingerprint_from_request() {
+		$fingerprint = '123abc';
+		$result      = Payment_Information::get_fingerprint_from_request( [ 'wcpay-fingerprint' => $fingerprint ] );
+		$this->assertEquals( $fingerprint, $result );
+	}
+
+	public function test_get_fingerprint_from_request_returns_empty_string_if_invalid() {
+		$result = Payment_Information::get_fingerprint_from_request( [ 'wcpay-fingerprint' => [] ] );
+		$this->assertEquals( '', $result );
+	}
+
+	public function test_get_fingerprint_from_request_returns_empty_string_if_empty() {
+		$result = Payment_Information::get_fingerprint_from_request( [] );
+		$this->assertEquals( '', $result );
+	}
 }

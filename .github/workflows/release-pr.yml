@@ -9,7 +9,7 @@ on:
         required: true
         type: string
       releaseDateString:
-        description: "The release date in human-readable format, which will be formatted for changelog.txt and readme.txt (default: 'next wednesday')."
+        description: "The release date in human-readable format (default: 'next wednesday')."
         required: false
         default: "next wednesday"
         type: string
@@ -20,7 +20,7 @@ on:
         required: true
         type: string
       releaseDateString:
-        description: "The release date in human-readable format, which will be formatted for changelog.txt and readme.txt (default: 'next wednesday')."
+        description: "The release date in human-readable format (default: 'next wednesday')."
         required: false
         default: "next wednesday"
         type: string
@@ -61,7 +61,7 @@ jobs:
 
       - name: "Generate the changelog"
         id: generate_changelog
-        uses: ./.github/actions/generate-changelog
+        uses: ./.github/actions/process-changelog
         with:
           release-version: ${{ steps.create_branch.outputs.trimmed-version }}
           release-date: ${{ steps.define_var.outputs.RELEASE_DATE }}
@@ -92,17 +92,19 @@ jobs:
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
         run: |
           npm install # To update package-lock.json with the new version of the plugin
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          # We could consider fetching the bot's ID through an API call to be future-proof. Hardcoded for now. 
+          # See https://github.com/Automattic/woocommerce-payments/pull/5200#discussion_r1034560144
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -am "Update version and add changelog entries for release $RELEASE_VERSION"
           git push --set-upstream origin $BRANCH_NAME
 
       - name: "Create a PR to trunk"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
           CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
         run: |
-          PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command: \` git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \`\n\`\`\`\n${CHANGELOG}\n\`\`\`")
+          PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command:\n\`\`\`\n git checkout trunk && git pull \n git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \n git push origin trunk \n\`\`\` \n Changelog: \n\`\`\`\n${CHANGELOG}\n\`\`\`")
           gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk"

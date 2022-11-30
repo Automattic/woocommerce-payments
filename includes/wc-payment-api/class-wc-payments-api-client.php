@@ -194,6 +194,7 @@ class WC_Payments_API_Client {
 	 * @param array  $additional_parameters           - An array of any additional request parameters, particularly for additional payment methods.
 	 * @param array  $payment_methods                 - An array of payment methods that might be used for the payment.
 	 * @param string $cvc_confirmation                - The CVC confirmation for this payment method.
+	 * @param string $fingerprint                     - User fingerprint.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -211,7 +212,8 @@ class WC_Payments_API_Client {
 		$off_session = false,
 		$additional_parameters = [],
 		$payment_methods = null,
-		$cvc_confirmation = null
+		$cvc_confirmation = null,
+		$fingerprint = ''
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -230,7 +232,7 @@ class WC_Payments_API_Client {
 		}
 
 		$request             = array_merge( $request, $additional_parameters );
-		$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
+		$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata( $fingerprint ) );
 
 		if ( $off_session ) {
 			$request['off_session'] = 'true';
@@ -275,13 +277,16 @@ class WC_Payments_API_Client {
 		array $metadata = [],
 		$customer_id = null
 	) {
+		$fingerprint = isset( $metadata['fingerprint'] ) ? $metadata['fingerprint'] : '';
+		unset( $metadata['fingerprint'] );
+
 		$request                         = [];
 		$request['amount']               = $amount;
 		$request['currency']             = $currency_code;
 		$request['description']          = $this->get_intent_description( $order_number );
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
-		$request['metadata']             = array_merge( $metadata, $this->get_fingerprint_metadata() );
+		$request['metadata']             = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
 		if ( $customer_id ) {
 			$request['customer'] = $customer_id;
 		}
@@ -1016,7 +1021,12 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception
 	 */
 	public function get_file_contents( string $file_id, bool $as_account = true ) : array {
-		return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id . '/contents', self::GET );
+		try {
+			return $this->request( [ 'as_account' => $as_account ], self::FILES_API . '/' . $file_id . '/contents', self::GET );
+		} catch ( API_Exception $e ) {
+			Logger::error( 'Error retrieving file contents for ' . $file_id . '. ' . $e->getMessage() );
+			return [];
+		}
 	}
 
 	/**
@@ -2552,12 +2562,14 @@ class WC_Payments_API_Client {
 	/**
 	 * Returns a list of fingerprinting metadata to attach to order.
 	 *
+	 * @param string $fingerprint User fingerprint.
+	 *
 	 * @return array List of fingerprinting metadata.
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	private function get_fingerprint_metadata(): array {
-		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();
+	private function get_fingerprint_metadata( $fingerprint = '' ): array {
+		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer( $fingerprint );
 		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
 
 		return $customer_fingerprint_metadata;
