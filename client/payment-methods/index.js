@@ -24,6 +24,8 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
+	useSelectedPaymentMethod,
+	useUnselectedPaymentMethod,
 } from 'wcpay/data';
 
 import useIsUpeEnabled from '../settings/wcpay-upe-toggle/hook.js';
@@ -113,10 +115,7 @@ const UpeSetupBanner = () => {
 };
 
 const PaymentMethods = () => {
-	const [
-		enabledMethodIds,
-		updateEnabledMethodIds,
-	] = useEnabledPaymentMethodIds();
+	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
 	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 
@@ -132,17 +131,17 @@ const PaymentMethods = () => {
 	);
 	const [ deleteModalParams, handleDeleteModalOpen ] = useState( null );
 
+	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
+
 	const completeActivation = ( itemId ) => {
-		updateEnabledMethodIds( [
-			...new Set( [ ...enabledMethodIds, itemId ] ),
-		] );
+		updateSelectedPaymentMethod( itemId );
 		handleActivationModalOpen( null );
 	};
 
+	const [ , updateUnselectedPaymentMethod ] = useUnselectedPaymentMethod();
+
 	const completeDeleteAction = ( itemId ) => {
-		updateEnabledMethodIds( [
-			...enabledMethodIds.filter( ( id ) => id !== itemId ),
-		] );
+		updateUnselectedPaymentMethod( itemId );
 		handleDeleteModalOpen( null );
 	};
 
