@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-With HPOS and data syncing enabled, updating the status of a pending manual renewal order to a paid status correctly activates the related subscription.
