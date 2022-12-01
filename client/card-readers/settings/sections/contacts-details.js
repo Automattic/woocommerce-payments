@@ -5,7 +5,11 @@
 import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TextControl, Notice, BaseControl } from '@wordpress/components';
-const PhoneNumberInput = React.lazy( () => import( 'settings/phone-input' ) );
+const PhoneNumberInput = React.lazy( () =>
+	import(
+		/* webpackChunkName: "settings-phone-input" */ 'settings/phone-input'
+	)
+);
 
 /**
  * Internal dependencies
