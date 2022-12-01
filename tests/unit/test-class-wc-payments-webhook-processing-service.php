@@ -248,9 +248,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'get_wcpay_refund_id_for_order' )
 			->withConsecutive(
 				[ $mock_refund_1 ],
-				[ $mock_refund_2 ],
-			)
-			->willReturnOnConsecutiveCalls(
+				[ $mock_refund_2 ]
+			)->willReturnOnConsecutiveCalls(
 				'another_test_refund_id',
 				'test_refund_id'
 			);
