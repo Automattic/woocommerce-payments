@@ -210,7 +210,6 @@ class WC_Payments_Admin {
 		);
 
 		$this->add_menu_notification_badge();
-		$this->add_update_business_details_task();
 	}
 
 	/**
@@ -419,7 +418,6 @@ class WC_Payments_Admin {
 		);
 
 		$this->add_menu_notification_badge();
-		$this->add_update_business_details_task();
 		$this->add_disputes_notification_badge();
 		if ( \WC_Payments_Features::is_auth_and_capture_enabled() && $this->wcpay_gateway->get_option( 'manual_capture' ) === 'yes' ) {
 			$this->add_transactions_notification_badge();
@@ -478,6 +476,8 @@ class WC_Payments_Admin {
 			];
 		}
 
+		$account_status_data = $this->account->get_account_status_data();
+
 		$wcpay_settings = [
 			'connectUrl'                 => WC_Payments_Account::get_connect_url(),
 			'connect'                    => [
@@ -496,11 +496,11 @@ class WC_Payments_Admin {
 			'fraudServices'              => $this->account->get_fraud_services_config(),
 			'isJetpackConnected'         => $this->payments_api_client->is_server_connected(),
 			'isJetpackIdcActive'         => Jetpack_Identity_Crisis::has_identity_crisis(),
-			'accountStatus'              => $this->account->get_account_status_data(),
+			'accountStatus'              => $account_status_data,
 			'accountFees'                => $this->account->get_fees(),
 			'accountLoans'               => $this->account->get_capital(),
 			'accountEmail'               => $this->account->get_account_email(),
-			'showUpdateDetailsTask'      => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+			'showUpdateDetailsTask'      => $this->get_should_show_update_business_details_task( $account_status_data ),
 			'wpcomReconnectUrl'          => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup'     => [
 				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
@@ -509,6 +509,7 @@ class WC_Payments_Admin {
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
 			'isMultiCurrencyEnabled'     => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'isClientEncryptionEligible' => WC_Payments_Features::is_client_secret_encryption_eligible(),
 			'shouldUseExplicitPrice'     => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
 			'overviewTasksVisibility'    => [
 				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
@@ -808,21 +809,24 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Attempts to add a setup task to remind the user to update
-	 * their business details when the account is facing restriction.
+	 * Check whether a setup task needs to be displayed prompting the user to update
+	 * their business details.
+	 *
+	 * @param array $account_status_data An array containing the account status data.
+	 *
+	 * @return bool True if we should show the task, false otherwise.
 	 */
-	public function add_update_business_details_task() {
-		if ( 'yes' === get_option( 'wcpay_show_update_business_details_task', 'no' ) ) {
-			return;
+	public function get_should_show_update_business_details_task( array $account_status_data ) {
+		$status           = $account_status_data['status'] ?? '';
+		$current_deadline = $account_status_data['currentDeadline'] ?? false;
+		$past_due         = $account_status_data['pastDue'] ?? false;
+
+		// If the account is restricted_soon, but there's no current deadline, no action is needed.
+		if ( ( 'restricted_soon' === $status && $current_deadline ) || ( 'restricted' === $status && $past_due ) ) {
+			return true;
 		}
 
-		$account  = $this->account->get_account_status_data();
-		$status   = $account['status'] ?? '';
-		$past_due = $account['has_overdue_requirements'] ?? false;
-
-		if ( 'restricted_soon' === $status || ( 'restricted' === $status && $past_due ) ) {
-			update_option( 'wcpay_show_update_business_details_task', 'yes' );
-		}
+		return false;
 	}
 
 	/**
