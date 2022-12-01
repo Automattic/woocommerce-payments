@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Introduce a WC_Subscription::set_status() function to handle subscriptions set with a draft or auto-draft status. Replaces the need for the overriding WC_Subscription::get_status() which has been deleted.
