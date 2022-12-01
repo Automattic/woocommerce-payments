@@ -96,18 +96,22 @@ const ContactDetailsSection = ( { setSaveDisabled } ) => {
 				className="card-readers-business-phone-input"
 				id="support-phone-number-input"
 			>
-				<PhoneNumberInput
-					onValueChange={ setAccountBusinessSupportPhone }
-					value={ accountBusinessSupportPhone }
-					onValidationChange={ setPhoneValidity }
-					inputProps={ {
-						ariaLabel: __(
-							'Support phone number',
-							'woocommerce-payments'
-						),
-					} }
-					id="support-phone-number-input"
-				/>
+				<React.Suspense
+					fallback={ __( 'Loading', 'woocommerce-payments' ) }
+				>
+					<PhoneNumberInput
+						onValueChange={ setAccountBusinessSupportPhone }
+						value={ accountBusinessSupportPhone }
+						onValidationChange={ setPhoneValidity }
+						inputProps={ {
+							ariaLabel: __(
+								'Support phone number',
+								'woocommerce-payments'
+							),
+						} }
+						id="support-phone-number-input"
+					/>
+				</React.Suspense>
 			</BaseControl>
 		</>
 	);

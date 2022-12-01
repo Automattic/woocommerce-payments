@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Code splitting the intl-tel-input library and load it on demand
