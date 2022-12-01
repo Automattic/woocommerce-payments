@@ -102,7 +102,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
 
-
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
