@@ -691,7 +691,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( is_null( $payment_token ) ) {
 			if ( empty( $this->order_service->get_payment_method_id_for_order( $order ) ) ) {
 				$parent_order             = wc_get_order( $order->get_parent_id() );
-				$parent_payment_method_id = $this->order_service->get_payment_method_id_for_order( $parent_order );
+				if( $parent_order ) {
+					$parent_payment_method_id = $this->order_service->get_payment_method_id_for_order( $parent_order );
+				}
 				// If there is no parent order, or the parent order doesn't have the metadata set, then we cannot track this order.
 				if ( empty( $parent_order ) || empty( $parent_payment_method_id ) ) {
 					return;
