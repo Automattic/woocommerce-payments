@@ -1018,7 +1018,10 @@ class WC_Payments_Subscription_Service {
 				'subscription_status'    => 'active',
 				// Ignoring phpcs warning, we need to search meta.
 				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					self::SUBSCRIPTION_ID_META_KEY => 'EXISTS',
+					[
+						'key'     => self::SUBSCRIPTION_ID_META_KEY,
+						'compare' => 'EXISTS',
+					],
 				],
 			]
 		);
