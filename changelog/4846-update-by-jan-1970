@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix for an issue where a timestamp in the past could be displayed on the update business details task card.
