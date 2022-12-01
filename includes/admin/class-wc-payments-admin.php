@@ -210,7 +210,6 @@ class WC_Payments_Admin {
 		);
 
 		$this->add_menu_notification_badge();
-		$this->add_update_business_details_task();
 	}
 
 	/**
@@ -419,7 +418,6 @@ class WC_Payments_Admin {
 		);
 
 		$this->add_menu_notification_badge();
-		$this->add_update_business_details_task();
 		$this->add_disputes_notification_badge();
 		if ( \WC_Payments_Features::is_auth_and_capture_enabled() && $this->wcpay_gateway->get_option( 'manual_capture' ) === 'yes' ) {
 			$this->add_transactions_notification_badge();
@@ -816,7 +814,7 @@ class WC_Payments_Admin {
 	 *
 	 * @param array $account_status_data An array containing the account status data.
 	 *
-	 * @return bool True if we should show the task, false otherwise.
+	 * @return string 'yes' if we should show the task, 'no' otherwise.
 	 */
 	public function get_should_show_update_business_details_task( array $account_status_data ) {
 		$status           = $account_status_data['status'] ?? '';
@@ -825,10 +823,10 @@ class WC_Payments_Admin {
 
 		// If the account is restricted_soon, but there's no current deadline, no action is needed.
 		if ( ( 'restricted_soon' === $status && $current_deadline ) || ( 'restricted' === $status && $past_due ) ) {
-			return true;
+			return 'yes';
 		}
 
-		return false;
+		return 'no';
 	}
 
 	/**

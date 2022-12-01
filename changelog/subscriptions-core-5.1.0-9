@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Processing a manual renewal order with HPOS and data syncing enabled correctly saves the related order cache metadata on the subscription and prevents the post and order meta data getting out of sync.
