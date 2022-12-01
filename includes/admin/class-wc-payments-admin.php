@@ -478,6 +478,8 @@ class WC_Payments_Admin {
 			];
 		}
 
+		$account_status_data = $this->account->get_account_status_data();
+
 		$wcpay_settings = [
 			'connectUrl'                 => WC_Payments_Account::get_connect_url(),
 			'connect'                    => [
@@ -496,11 +498,11 @@ class WC_Payments_Admin {
 			'fraudServices'              => $this->account->get_fraud_services_config(),
 			'isJetpackConnected'         => $this->payments_api_client->is_server_connected(),
 			'isJetpackIdcActive'         => Jetpack_Identity_Crisis::has_identity_crisis(),
-			'accountStatus'              => $this->account->get_account_status_data(),
+			'accountStatus'              => $account_status_data,
 			'accountFees'                => $this->account->get_fees(),
 			'accountLoans'               => $this->account->get_capital(),
 			'accountEmail'               => $this->account->get_account_email(),
-			'showUpdateDetailsTask'      => $this->account->get_show_update_details_task_transient(),
+			'showUpdateDetailsTask'      => $this->get_should_show_update_business_details_task( $account_status_data ),
 			'wpcomReconnectUrl'          => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup'     => [
 				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
@@ -809,25 +811,24 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Attempts to add a setup task to remind the user to update
-	 * their business details when the account is facing restriction.
+	 * Check whether a setup task needs to be displayed prompting the user to update
+	 * their business details.
+	 *
+	 * @param array $account_status_data An array containing the account status data.
+	 *
+	 * @return bool True if we should show the task, false otherwise.
 	 */
-	public function add_update_business_details_task() {
-		$transient_name = WC_Payments_Account::SHOW_UPDATE_DETAILS_TASK_TRANSIENT;
-		if ( 'yes' === get_transient( $transient_name ) ) {
-			return;
-		}
-
-		$account          = $this->account->get_account_status_data();
-		$status           = $account['status'] ?? '';
-		$current_deadline = $account['currentDeadline'] ?? false;
-		$past_due         = $account['pastDue'] ?? false;
+	public function get_should_show_update_business_details_task( array $account_status_data ) {
+		$status           = $account_status_data['status'] ?? '';
+		$current_deadline = $account_status_data['currentDeadline'] ?? false;
+		$past_due         = $account_status_data['pastDue'] ?? false;
 
 		// If the account is restricted_soon, but there's no current deadline, no action is needed.
 		if ( ( 'restricted_soon' === $status && $current_deadline ) || ( 'restricted' === $status && $past_due ) ) {
-			delete_transient( $transient_name );
-			set_transient( $transient_name, 'yes', HOUR_IN_SECONDS );
+			return true;
 		}
+
+		return false;
 	}
 
 	/**
