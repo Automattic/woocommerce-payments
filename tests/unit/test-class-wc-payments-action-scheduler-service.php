@@ -27,14 +27,22 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_order_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
-		$this->action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
+		$this->action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $this->mock_order_service );
 	}
 
 	public function test_track_new_order_action() {
