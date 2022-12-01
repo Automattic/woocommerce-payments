@@ -711,7 +711,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// If the stripe customer ID metadata isn't set for this order, try and get this data from the metadata of the parent order.
 		if ( empty( $this->order_service->get_customer_id_for_order( $order ) ) ) {
 			$parent_order       = wc_get_order( $order->get_parent_id() );
-			$parent_customer_id = $this->order_service->get_customer_id_for_order( $parent_order );
+			if ( $parent_order ) {
+				$parent_customer_id = $this->order_service->get_customer_id_for_order( $parent_order );
+			}
 			if ( ! empty( $parent_order ) && ! empty( $parent_customer_id ) ) {
 				$this->order_service->set_customer_id_for_order( $order, $parent_customer_id );
 				$save_meta_data = true;
