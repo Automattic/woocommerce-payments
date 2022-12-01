@@ -689,28 +689,29 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// If we can't get the payment token for this order, then we check if we already have a payment token
 		// set in the order metadata. If we don't, then we try and get the parent order's token from the metadata.
 		if ( is_null( $payment_token ) ) {
-			if ( empty( $order->get_meta( '_payment_method_id' ) ) ) {
-				$parent_order = wc_get_order( $order->get_parent_id() );
-
+			if ( empty( $this->order_service->get_payment_method_id_for_order( $order ) ) ) {
+				$parent_order             = wc_get_order( $order->get_parent_id() );
+				$parent_payment_method_id = $this->order_service->get_payment_method_id_for_order( $parent_order );
 				// If there is no parent order, or the parent order doesn't have the metadata set, then we cannot track this order.
-				if ( empty( $parent_order ) || empty( $parent_order->get_meta( '_payment_method_id' ) ) ) {
+				if ( empty( $parent_order ) || empty( $parent_payment_method_id ) ) {
 					return;
 				}
 
-				$order->update_meta_data( '_payment_method_id', $parent_order->get_meta( '_payment_method_id' ) );
+				$this->order_service->set_payment_method_id_for_order( $order, $parent_payment_method_id );
 				$save_meta_data = true;
 			}
-		} elseif ( $order->get_meta( '_payment_method_id' ) !== $payment_token->get_token() ) {
+		} elseif ( $this->order_service->get_payment_method_id_for_order( $order ) !== $payment_token->get_token() ) {
 			// If the payment token stored in the metadata already doesn't reflect the latest token, update it.
-			$order->update_meta_data( '_payment_method_id', $payment_token->get_token() );
+			$this->order_service->set_payment_method_id_for_order( $order, $payment_token->get_token() );
 			$save_meta_data = true;
 		}
 
 		// If the stripe customer ID metadata isn't set for this order, try and get this data from the metadata of the parent order.
-		if ( empty( $order->get_meta( '_stripe_customer_id' ) ) ) {
-			$parent_order = wc_get_order( $order->get_parent_id() );
-			if ( ! empty( $parent_order ) && ! empty( $parent_order->get_meta( '_stripe_customer_id' ) ) ) {
-				$order->update_meta_data( '_stripe_customer_id', $parent_order->get_meta( '_stripe_customer_id' ) );
+		if ( empty( $this->order_service->get_customer_id_for_order( $order ) ) ) {
+			$parent_order       = wc_get_order( $order->get_parent_id() );
+			$parent_customer_id = $this->order_service->get_customer_id_for_order( $parent_order );
+			if ( ! empty( $parent_order ) && ! empty( $parent_customer_id ) ) {
+				$this->order_service->set_customer_id_for_order( $order, $parent_customer_id );
 				$save_meta_data = true;
 			}
 		}
