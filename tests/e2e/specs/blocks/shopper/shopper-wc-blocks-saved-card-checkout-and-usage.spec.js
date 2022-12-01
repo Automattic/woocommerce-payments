@@ -24,36 +24,22 @@ const card = config.get( 'cards.basic' );
 
 import { fillCardDetailsWCB } from '../../../utils/payments';
 
-const sepaPaymentMethod = '#inspector-checkbox-control-8';
-
 describeif( RUN_WC_BLOCKS_TESTS )(
 	'WooCommerce Blocks > Saved cards with enabled UPE methods',
 	() => {
 		beforeAll( async () => {
 			try {
-				await merchant.login();
-				await merchantWCP.activateUpe();
-				// enable SEPA
-				await merchantWCP.enablePaymentMethod( sepaPaymentMethod );
 				await checkPageExists( 'checkout-wcb' );
-				await merchant.logout();
 			} catch ( error ) {
+				await merchant.login();
 				await merchantWCP.addNewPageCheckoutWCB();
 				await merchant.logout();
 			}
-
 			await shopper.login();
-			await shopperWCP.changeAccountCurrencyTo( 'EUR' );
 		} );
 
 		afterAll( async () => {
-			await shopperWCP.changeAccountCurrencyTo( 'USD' );
 			await shopperWCP.logout();
-			await merchant.login();
-			//disable SEPA
-			await merchantWCP.disablePaymentMethod( sepaPaymentMethod );
-			await merchantWCP.deactivateUpe();
-			await merchant.logout();
 		} );
 
 		it( 'should be able to save basic card on Blocks checkout', async () => {
@@ -97,22 +83,6 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await expect( page ).toMatch( 'p', {
 				text: 'Thank you. Your order has been received.',
 			} );
-		} );
-
-		it( 'saved payment method is checked by default when adding a new payment method', async () => {
-			await shopperWCP.goToPaymentMethods();
-			await expect( page ).toClick( 'a', {
-				text: 'Add payment method',
-			} );
-			await page.waitForNavigation( {
-				waitUntil: 'networkidle0',
-			} );
-
-			const isSavedPaymentTokenChecked = await page.$eval(
-				'li.woocommerce-SavedPaymentMethods-token > input',
-				( input ) => input.checked
-			);
-			expect( isSavedPaymentTokenChecked ).toEqual( true );
 		} );
 
 		it( 'should delete the card', async () => {

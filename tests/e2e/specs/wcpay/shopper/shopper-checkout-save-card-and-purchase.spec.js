@@ -8,45 +8,31 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
 /**
  * Internal dependencies
  */
-import { merchantWCP, shopperWCP } from '../../../utils/flows';
+import { shopperWCP } from '../../../utils/flows';
 
 import {
 	fillCardDetails,
 	confirmCardAuthentication,
 	setupProductCheckout,
 } from '../../../utils/payments';
-import { merchant } from '@woocommerce/e2e-utils';
 
 const cards = [
 	[ 'basic', config.get( 'cards.basic' ) ],
 	[ '3DS', config.get( 'cards.3ds' ) ],
 ];
-const sepaPaymentMethod = '#inspector-checkbox-control-8';
 
 describe( 'Saved cards ', () => {
-	beforeAll( async () => {
-		await merchant.login();
-		await merchantWCP.activateUpe();
-		// enable SEPA
-		await merchantWCP.enablePaymentMethod( sepaPaymentMethod );
-		await merchant.logout();
-		await shopper.login();
-		await shopperWCP.changeAccountCurrencyTo( 'EUR' );
-	} );
-
-	afterAll( async () => {
-		await shopperWCP.changeAccountCurrencyTo( 'USD' );
-		await shopperWCP.logout();
-		await merchant.login();
-		//disable SEPA
-		await merchantWCP.disablePaymentMethod( sepaPaymentMethod );
-		await merchantWCP.deactivateUpe();
-		await merchant.logout();
-	} );
-
 	describe.each( cards )(
 		'when using a %s card added on checkout',
 		( cardType, card ) => {
+			beforeAll( async () => {
+				await shopper.login();
+			} );
+
+			afterAll( async () => {
+				await shopperWCP.logout();
+			} );
+
 			it( 'should save the card', async () => {
 				await setupProductCheckout(
 					config.get( 'addresses.customer.billing' )
