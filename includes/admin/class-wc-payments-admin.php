@@ -814,7 +814,7 @@ class WC_Payments_Admin {
 	 *
 	 * @param array $account_status_data An array containing the account status data.
 	 *
-	 * @return string 'yes' if we should show the task, 'no' otherwise.
+	 * @return string True if we should show the task, false otherwise.
 	 */
 	public function get_should_show_update_business_details_task( array $account_status_data ) {
 		$status           = $account_status_data['status'] ?? '';
@@ -823,10 +823,10 @@ class WC_Payments_Admin {
 
 		// If the account is restricted_soon, but there's no current deadline, no action is needed.
 		if ( ( 'restricted_soon' === $status && $current_deadline ) || ( 'restricted' === $status && $past_due ) ) {
-			return 'yes';
+			return true;
 		}
 
-		return 'no';
+		return false;
 	}
 
 	/**
