@@ -1993,50 +1993,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_gateway->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
 	}
 
-	public function test_create_intent_success() {
-		$intent_id       = 'pi_mock';
-		$charge_id       = 'ch_mock';
-		$payment_methods = [ 'card_present' ];
-		$capture_method  = 'manual';
-
-		$order = WC_Helper_Order::create_order();
-		$order->update_status( 'on-hold' );
-
-		$this->mock_api_client->expects( $this->once() )->method( 'create_intention' )->will(
-			$this->returnValue( WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] ) )
-		);
-
-		$result = $this->wcpay_gateway->create_intent( $order, $payment_methods, $capture_method );
-
-		// Assert the returned data contains fields required by the REST endpoint.
-		$this->assertSame(
-			[
-				'id' => $intent_id,
-			],
-			$result
-		);
-	}
-
-	public function test_create_intent_api_failure() {
-		$payment_methods = [ 'card_present' ];
-		$capture_method  = 'manual';
-
-		$order = WC_Helper_Order::create_order();
-		$order->update_status( 'on-hold' );
-
-		$this->mock_api_client->expects( $this->once() )->method( 'create_intention' )->will(
-			$this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) )
-		);
-
-		$result = $this->wcpay_gateway->create_intent( $order, $payment_methods, $capture_method );
-
-		$this->assertInstanceOf( 'WP_Error', $result );
-		$data = $result->get_error_data();
-		$this->assertArrayHasKey( 'status', $data );
-		$this->assertSame( 500, $data['status'] );
-		$this->assertSame( 'Intent creation failed with the following message: test exception', $result->get_error_message() );
-	}
-
 	public function test_is_platform_checkout_enabled_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );

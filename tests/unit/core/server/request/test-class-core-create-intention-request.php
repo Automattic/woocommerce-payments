@@ -50,7 +50,7 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 	public function test_exception_will_throw_if_amount_is_not_set() {
 		$request = new Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_currency( 'usd' );
+		$request->set_currency_code( 'usd' );
 		$request->get_params();
 	}
 	public function test_exception_will_throw_if_currency_is_not_set() {
@@ -64,7 +64,7 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 		$request = new Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Immutable_Parameter_Exception::class );
 		$request->set_amount( 1 );
-		$request->set_currency( 'usd' );
+		$request->set_currency_code( 'usd' );
 		add_filter(
 			'test_exception_will_throw_if_immutable_parameter_is_changed_when_filter_is_applied',
 			function() {
@@ -72,7 +72,7 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 
 				};
 				$new_class->set_amount( 3 );
-				$new_class->set_currency( 'usd' );
+				$new_class->set_currency_code( 'usd' );
 				return $new_class;
 			}
 		);
@@ -84,7 +84,7 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 		$currency = 'usd';
 		$request  = new Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_amount( $amount );
-		$request->set_currency( $currency );
+		$request->set_currency_code( $currency );
 		$this->assertInstanceOf( Create_Intent::class, $request );
 		$params = $request->get_params();
 
@@ -103,7 +103,7 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 		$request  = new WooPay_Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_amount( $amount );
 		$request->set_save_payment_method_to_platform( true );
-		$request->set_currency( $currency );
+		$request->set_currency_code( $currency );
 		$this->assertInstanceOf( WooPay_Create_Intent::class, $request );
 		$params = $request->get_params();
 

@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Core\Mode;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
+use WCPay\Core\Server\Request\Create_Intent;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -2546,51 +2547,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				strtotime( '+5 seconds' ),
 				'wcpay_track_update_order',
 				[ 'order_id' => $order_id ]
-			);
-		}
-	}
-
-	/**
-	 * Create a payment intent without confirming the intent.
-	 *
-	 * @param WC_Order    $order           - Order based on which to create intent.
-	 * @param array       $payment_methods - A list of allowed payment methods. Eg. card, card_present.
-	 * @param string      $capture_method  - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
-	 *  It must be "manual" for in-person (terminal) payments.
-	 * @param array       $metadata        - A list of intent metadata.
-	 * @param string|null $customer_id     - Customer id for intent.
-	 *
-	 * @return array|WP_Error On success, an array containing info about the newly created intent. On failure, WP_Error object.
-	 *
-	 * @throws Exception - When an error occurs in intent creation.
-	 */
-	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic', array $metadata = [], string $customer_id = null ) {
-		$currency         = strtolower( $order->get_currency() );
-		$converted_amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-
-		try {
-			$intent = $this->payments_api_client->create_intention(
-				$converted_amount,
-				$currency,
-				$payment_methods,
-				$order->get_order_number(),
-				$capture_method,
-				$metadata,
-				$customer_id
-			);
-
-			return [
-				'id' => ! empty( $intent ) ? $intent->get_id() : null,
-			];
-		} catch ( API_Exception $e ) {
-			return new WP_Error(
-				'wcpay_intent_creation_error',
-				sprintf(
-					// translators: %s: the error message.
-					__( 'Intent creation failed with the following message: %s', 'woocommerce-payments' ),
-					$e->getMessage() ?? __( 'Unknown error', 'woocommerce-payments' )
-				),
-				[ 'status' => $e->get_http_code() ]
 			);
 		}
 	}

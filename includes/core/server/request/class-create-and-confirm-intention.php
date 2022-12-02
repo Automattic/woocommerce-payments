@@ -9,15 +9,13 @@ namespace WCPay\Core\Server\Request;
 
 use WC_Payments;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
-use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
 /**
  * Request class for creating intents.
  */
-class Create_And_Confirm_Intention extends Request {
-	use Intention;
-	use Level3;
+class Create_And_Confirm_Intention extends Create_Intent {
+
 
 
 	const IMMUTABLE_PARAMS = [
@@ -57,97 +55,12 @@ class Create_And_Confirm_Intention extends Request {
 	}
 
 	/**
-	 * Amount setter.
-	 *
-	 * @param int $amount Amount to charge.
-	 */
-	public function set_amount( int $amount ) {
-		$this->validate_is_larger_then( $amount, 0 );
-		$this->set_param( 'amount', $amount );
-	}
-
-	/**
-	 * Currency code setter.
-	 *
-	 * @param  string $currency_code Currency to charge in.
-	 * @throws Invalid_Request_Parameter_Exception When the currency code is invalid.
-	 */
-	public function set_currency_code( string $currency_code ) {
-		$this->validate_currency_code( $currency_code );
-		$this->set_param( 'currency', $currency_code );
-	}
-
-	/**
-	 * Payment method setter.
-	 *
-	 * @param string $payment_method_id ID of payment method to process charge with.
-	 */
-	public function set_payment_method( $payment_method_id ) {
-		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src' ] );
-		$this->set_param( 'payment_method', $payment_method_id );
-	}
-
-	/**
-	 * Customer setter.
-	 *
-	 * @param string $customer_id ID of the customer making the payment.
-	 */
-	public function set_customer( string $customer_id ) {
-		$this->validate_stripe_id( $customer_id, 'cus' );
-		$this->set_param( 'customer', $customer_id );
-	}
-
-	/**
-	 * Capture method setter.
-	 *
-	 * @param bool $manual_capture Whether to capture funds via manual action.
-	 */
-	public function set_capture_method( bool $manual_capture = false ) {
-		$this->set_param( 'capture_method', $manual_capture ? 'manual' : 'automatic' );
-	}
-
-	/**
 	 * If the payment method should be saved to the store, this enables future usage.
 	 */
 	public function setup_future_usage() {
 		$this->set_param( 'setup_future_usage', 'off_session' );
 	}
 
-	/**
-	 * Metadata setter.
-	 *
-	 * @param  array $metadata                     Meta data values to be sent along with payment intent creation.
-	 * @throws Invalid_Request_Parameter_Exception In case there is no order number provided.
-	 */
-	public function set_metadata( $metadata ) {
-		if ( ! isset( $metadata['order_number'] ) ) {
-			throw new Invalid_Request_Parameter_Exception(
-				__( 'An order number is required!', 'woocommerce-payments' ),
-				'wcpay_core_invalid_request_parameter_metadata_order_number'
-			);
-		}
-
-		// The description is based on the order number here.
-		$description = $this->get_intent_description( $metadata['order_number'] ?? 0 );
-		$this->set_param( 'description', $description );
-
-		// Combine the metadata with the fingerprint.
-		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata() );
-		$this->set_param( 'metadata', $metadata );
-	}
-
-	/**
-	 * Level 3 data setter.
-	 *
-	 * @param array $level3 Level 3 data.
-	 */
-	public function set_level3( $level3 ) {
-		if ( empty( $level3 ) || ! is_array( $level3 ) ) {
-			return;
-		}
-
-		$this->set_param( 'level3', $this->fix_level3_data( $level3 ) );
-	}
 
 	/**
 	 * Off-session setter.
