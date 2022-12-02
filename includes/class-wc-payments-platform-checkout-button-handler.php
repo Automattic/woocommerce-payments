@@ -288,13 +288,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 
-		$button_settings = $this->get_button_settings();
-		$button_text     = 'default' !== $button_settings['type'] ? sprintf(
-			// Translators: %s is the name of the button action.
-			__( '%s with WooPay', 'woocommerce-payments' ),
-			ucfirst( $button_settings['type'] )
-		) : 'WooPay';
-
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
 			<div id="wcpay-platform-checkout-button">
