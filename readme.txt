@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.1.1 - 2022-xx-xx =
+* Fix - Minor patch fix to cron functionality that does not appear to have front-end ramifications for customers.
+
 = 5.1.0 - 2022-11-30 =
 * Add - Add a counter of pending authorizations to Uncaptured tab in Transactions page.
 * Add - Added support for a WooPay express checkout button on checkout blocks. This feature is currently behind a feature flag and is not yet publicly available.
