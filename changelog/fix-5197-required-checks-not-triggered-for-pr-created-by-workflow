@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+PR created by the code freeze workflow is now done by botwoo to allow PR checks to be triggered
