@@ -165,6 +165,19 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Link is enabled as UPE payment method.
+	 *
+	 * @return bool
+	 */
+	public static function is_link_enabled() {
+		return in_array(
+			WCPay\Payment_Methods\Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+			true
+		);
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -174,6 +187,7 @@ class WC_Payments_Features {
 			[
 				'upe'                     => self::is_upe_enabled(),
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
+				'link'                    => self::is_link_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
 				'platformCheckout'        => self::is_platform_checkout_eligible(),

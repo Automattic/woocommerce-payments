@@ -334,8 +334,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			);
 		}
 		$payment_method_types = [ $this->payment_method->get_id() ];
-		if ( 'link' === $this->payment_method->get_id() ) {
-			$payment_method_types[] = 'card';
+		if ( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $this->payment_method->get_id() && WC_Payments_Features::is_link_enabled() ) {
+			$payment_method_types[] = CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		}
 
 		try {
@@ -432,8 +432,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			);
 		}
 		$payment_method_types = [ $this->payment_method->get_id() ];
-		if ( 'link' === $this->payment_method->get_id() ) {
-			$payment_method_types[] = 'card';
+		if ( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $this->payment_method->get_id() && WC_Payments_Features::is_link_enabled() ) {
+			$payment_method_types[] = CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		}
 
 		$setup_intent = $this->payments_api_client->create_setup_intention(
