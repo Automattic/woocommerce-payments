@@ -49,6 +49,7 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
+		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_sepa_label' ] );
 	}
 
 	/**
@@ -243,5 +244,19 @@ class WC_Payments_Token_Service {
 		}
 
 		return $item;
+	}
+
+	/**
+	 * Normalizes the SEPA IBAN label on My Account page.
+	 *
+	 * @param string $label Token label.
+	 * @return string $label Capitalized SEPA IBAN label.
+	 */
+	public function normalize_sepa_label( $label ) {
+		if ( 'sepa iban' === strtolower( $label ) ) {
+			return 'SEPA IBAN';
+		}
+
+		return $label;
 	}
 }
