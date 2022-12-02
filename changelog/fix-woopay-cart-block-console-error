@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix undefined element error on Cart block for WooPay enabled site.
