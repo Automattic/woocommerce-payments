@@ -120,13 +120,17 @@ trait WC_Payments_Subscriptions_Utilities {
 	}
 
 	/**
-	 * Gets the version of the Subscriptions base library running.
-	 *
-	 * This may be the version of the package in WC Payments or WC Subscriptions. Which ever one happens to be loaded.
+	 * Gets the version of the Subscriptions core library running.
 	 *
 	 * @return null|string The core Subscriptions libary version.
 	 */
 	public function get_subscriptions_core_version() {
-		return WC_Subscriptions_Core_Plugin::instance()->get_plugin_version();
+		$subscriptions_core_instance = WC_Subscriptions_Core_Plugin::instance();
+
+		// For backwards compatibility with older versions of WC Subscriptions, we need to do an existence check.
+		if ( method_exists( $subscriptions_core_instance, 'get_library_version' ) ) {
+			return $subscriptions_core_instance->get_library_version();
+		}
+		return $subscriptions_core_instance ? $subscriptions_core_instance->get_plugin_version() : null;
 	}
 }
