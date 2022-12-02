@@ -6,8 +6,8 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Core\Exceptions\Immutable_Parameter_Exception;
-use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
+use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Intention;
 

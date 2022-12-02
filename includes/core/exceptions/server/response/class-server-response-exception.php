@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Core\Exceptions;
+namespace WCPay\Core\Exceptions\Server\Response;
 
 use WCPay\Exceptions\Base_Exception;
 

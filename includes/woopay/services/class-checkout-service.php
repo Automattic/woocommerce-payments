@@ -7,11 +7,10 @@
 
 namespace WCPay\WooPay\Service;
 
-use Automattic\WooCommerce\Admin\Overrides\Order;
 use WC_Payments_Features;
-use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Intention;
+use WCPay\Payment_Information;
 
 /**
  * Checkout service class.
@@ -21,18 +20,16 @@ class Checkout_Service {
 	/**
 	 * Create woopay request from base create and confirm request.
 	 *
-	 * @param Request   $base_request Base request.
-	 * @param \WC_Order $order Order.
-	 * @param bool      $using_saved_payment_method Using saved payment method.
+	 * @param Request             $base_request Base request.
+	 * @param Payment_Information $payment_information Using saved payment method.
 	 *
 	 * @return WooPay_Create_And_Confirm_Intention
-	 * @throws Invalid_Request_Parameter_Exception
-	 * @throws \WCPay\Core\Exceptions\Extend_Request_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
 	 */
-	public function create_woopay_intention_request( Request $base_request, \WC_Order $order, bool $using_saved_payment_method ) {
+	public function create_intention_request( Request $base_request, Payment_Information $payment_information ) {
 		$request = WooPay_Create_And_Confirm_Intention::extend( $base_request );
-		$request->set_has_woopay_subscription( '1' === $order->get_meta( '_woopay_has_subscription' ) );
-		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $using_saved_payment_method ) );
+		$request->set_has_woopay_subscription( '1' === $payment_information->get_order()->get_meta( '_woopay_has_subscription' ) );
+		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ) );
 		return $request;
 	}
 
@@ -65,21 +62,18 @@ class Checkout_Service {
 	 * @return bool
 	 */
 	public function should_use_stripe_platform_on_checkout_page() {
-			// TODO: Add support for blocks checkout.
-		if (
-				WC_Payments_Features::is_platform_checkout_eligible() &&
-				'yes' === get_option( 'platform_checkout', 'no' ) &&
-				! WC_Payments_Features::is_upe_enabled() &&
-				is_checkout() &&
-				! has_block( 'woocommerce/checkout' ) &&
-				! is_wc_endpoint_url( 'order-pay' ) &&
-				! WC()->cart->is_empty() &&
-				WC()->cart->needs_payment()
-			) {
+		// TODO: Add support for blocks checkout.
+		if ( WC_Payments_Features::is_platform_checkout_eligible()
+			&& 'yes' === get_option( 'platform_checkout', 'no' )
+			&& ! WC_Payments_Features::is_upe_enabled()
+			&& is_checkout() && ! has_block( 'woocommerce/checkout' )
+			&& ! is_wc_endpoint_url( 'order-pay' )
+			&& ! WC()->cart->is_empty()
+			&& WC()->cart->needs_payment() ) {
 			return true;
 		}
 
-			return false;
+		return false;
 	}
 
 	/**
@@ -88,6 +82,6 @@ class Checkout_Service {
 	 * @return void
 	 */
 	public function init() {
-		add_filter( 'create_woopay_intention_request', [ $this, 'create_woopay_intention_request' ], 10, 3 );
+		add_filter( 'create_intention_request', [ $this, 'create_intention_request' ], 10, 3 );
 	}
 }

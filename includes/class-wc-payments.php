@@ -216,6 +216,13 @@ class WC_Payments {
 	private static $wc_payments_checkout;
 
 	/**
+	 * WooPay Checkout service
+	 *
+	 * @var Checkout_Service
+	 */
+	private static $woopay_checkout_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -248,12 +255,11 @@ class WC_Payments {
 		include_once __DIR__ . '/core/class-mode.php';
 
 		// Include core exceptions.
-		include_once __DIR__ . '/core/exceptions/class-invalid-request-parameter-exception.php';
-		include_once __DIR__ . '/core/exceptions/class-immutable-parameter-exception.php';
-		include_once __DIR__ . '/core/exceptions/class-extend-request-exception.php';
-		include_once __DIR__ . '/core/exceptions/class-server-response-exception.php';
-		include_once __DIR__ . '/core/exceptions/class-server-request-exception.php';
-
+		include_once __DIR__ . '/core/exceptions/server/request/class-server-request-exception.php';
+		include_once __DIR__ . '/core/exceptions/server/request/class-invalid-request-parameter-exception.php';
+		include_once __DIR__ . '/core/exceptions/server/request/class-immutable-parameter-exception.php';
+		include_once __DIR__ . '/core/exceptions/server/request/class-extend-request-exception.php';
+		include_once __DIR__ . '/core/exceptions/server/response/class-server-response-exception.php';
 		include_once __DIR__ . '/core/server/class-request.php';
 		include_once __DIR__ . '/core/server/class-response.php';
 		include_once __DIR__ . '/core/server/request/trait-intention.php';
@@ -331,7 +337,8 @@ class WC_Payments {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 		}
 
-		( new Checkout_Service() )->init();
+		self::$woopay_checkout_service = new Checkout_Service();
+		self::$woopay_checkout_service->init();
 
 		// // Load platform checkout save user section if feature is enabled.
 		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_platform_checkout' ] );

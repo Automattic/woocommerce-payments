@@ -858,9 +858,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
 	 *
 	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
-	 * @throws API_Exception                   Error processing the payment.
-	 * @throws Add_Payment_Method_Exception    When $0 order processing failed.
-	 * @throws Intent_Authentication_Exception|WC_Data_Exception When the payment intent could not be authenticated.
+	 * @throws API_Exception
+	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception When request class filter filed to extend request class because of incompatibility.
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception When immutable parameter gets changed in request class.
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception When you send incorrect request value via setters.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
 		$order                                       = $payment_information->get_order();
@@ -985,7 +987,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$request->setup_future_usage();
 				}
 
-				$intent = $request->send( 'create_woopay_intention_request', $order, $payment_information->is_using_saved_payment_method() );
+				$intent = $request->send( 'create_intention_request', $payment_information );
 			}
 
 			$intent_id     = $intent->get_id();

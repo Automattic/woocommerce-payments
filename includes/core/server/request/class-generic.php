@@ -7,10 +7,9 @@
 
 namespace WCPay\Core\Server\Request;
 
-use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
-use WCPay\Core\Exceptions\Server_Request_Exception;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Core\Exceptions\Server\Request\Server_Request_Exception;
 use WCPay\Core\Server\Request;
-use Requests;
 
 /**
  * Generic WCPay Server Request.

@@ -5,9 +5,9 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
-use WCPay\Core\Exceptions\Server_Request_Exception;
-use WCPay\Core\Exceptions\Server_Response_Exception;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Core\Exceptions\Server\Request\Server_Request_Exception;
+use WCPay\Core\Exceptions\Server\Response\Server_Response_Exception;
 use WCPay\Core\Server\Request\Generic;
 use WCPay\Core\Server\Response;
 

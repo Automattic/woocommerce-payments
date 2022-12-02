@@ -230,6 +230,49 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 
 		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( self::CUSTOMER_ID );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( self::PAYMENT_METHOD_ID );
+
+		$request->expects( $this->once() )
+			->method( 'set_cvc_confirmation' )
+			->with( null );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( 5000 )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( 'usd' )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false )
+			->willReturn( $request );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
+			->with(
+				$this->callback(
+					function( $metadata ) {
+						$required_keys = [ 'customer_name', 'customer_email', 'site_url', 'order_id', 'order_number', 'order_key', 'payment_type' ];
+						foreach ( $required_keys as $key ) {
+							if ( ! array_key_exists( $key, $metadata ) ) {
+								return false;
+							}
+						}
+						return true;
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention() );
 

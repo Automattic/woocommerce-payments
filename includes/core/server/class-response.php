@@ -8,7 +8,7 @@
 namespace WCPay\Core\Server;
 
 use ArrayAccess;
-use WCPay\Core\Exceptions\Server_Response_Exception;
+use WCPay\Core\Exceptions\Server\Response\Server_Response_Exception;
 
 /**
  * Represents responses from the WCPay server.

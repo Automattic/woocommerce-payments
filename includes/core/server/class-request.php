@@ -10,9 +10,9 @@ namespace WCPay\Core\Server;
 use WC_Payments;
 use WC_Payments_Http_Interface;
 use WC_Payments_API_Client;
-use WCPay\Core\Exceptions\Extend_Request_Exception;
-use WCPay\Core\Exceptions\Immutable_Parameter_Exception;
-use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
+use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
+use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 
 /**
  * Base for requests to the WCPay server.
@@ -192,18 +192,18 @@ abstract class Request {
 	/**
 	 * Allows the request to be modified, and then sends it.
 	 *
-	 * @param string|null $hook    The filter to use.
-	 * @param mixed       ...$args      Other parameters for the hook.
+	 * @param string $hook    The filter to use.
+	 * @param mixed  ...$args      Other parameters for the hook.
 	 * @return mixed               Either the response array, or the correct object.
 	 *
 	 * @throws Extend_Request_Exception
 	 * @throws Immutable_Parameter_Exception
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	final public function send( $hook = null, ...$args ) {
+	final public function send( $hook, ...$args ) {
 
 		$request = $this;
-		// In case where you don't want to send request.
+		// In case where you don't want to apply filters to request.
 		if ( $hook ) {
 			$request = $this->apply_filters( $hook, ...$args );
 		}

@@ -2115,6 +2115,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_gateway->is_in_test_mode() );
 	}
 
+	// TODO: Remove this test before merge.
 	public function test_request_class_example() {
 		$this->mock_customer_service
 			->expects( $this->once() )

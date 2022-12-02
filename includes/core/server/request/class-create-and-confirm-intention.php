@@ -8,7 +8,7 @@
 namespace WCPay\Core\Server\Request;
 
 use WC_Payments;
-use WCPay\Core\Exceptions\Invalid_Request_Parameter_Exception;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
@@ -18,6 +18,7 @@ use WC_Payments_API_Client;
 class Create_And_Confirm_Intention extends Request {
 	use Intention;
 	use Level3;
+
 
 	const IMMUTABLE_PARAMS = [
 		// Those are up to us, we have to decide.
