@@ -113,10 +113,10 @@ const PaymentDetailsSummary = ( {
 		featureFlags: { isAuthAndCaptureEnabled },
 	} = useContext( WCPaySettingsContext );
 
-	// We should only fetch the authorization data if the payment is marked for manual capture
+	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
 	const shouldFetchAuthorization =
-		charge.amount !== charge.amount_captured &&
-		charge.amount_refunded === 0 &&
+		'captured' in charge && // captured key is only present for manual capture payments. See https://stripe.com/docs/api/charges/object#charge_object-captured
+		! charge.captured &&
 		isAuthAndCaptureEnabled;
 
 	const { authorization } = useAuthorization(
