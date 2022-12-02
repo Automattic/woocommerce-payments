@@ -201,15 +201,8 @@ abstract class Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	final public function send( $hook, ...$args ) {
-
-		$request = $this;
-		// In case where you don't want to apply filters to request.
-		if ( $hook ) {
-			$request = $this->apply_filters( $hook, ...$args );
-		}
-
 		return $this->format_response(
-			$this->api_client->send_request( $request )
+			$this->api_client->send_request( $this->apply_filters( $hook, ...$args ) )
 		);
 	}
 

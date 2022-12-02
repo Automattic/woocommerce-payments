@@ -189,7 +189,6 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$request->set_cvc_confirmation( 'cvc' );
 		$request->set_is_platform_payment_method();
 		$request->set_has_woopay_subscription();
-		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
 		$params = $request->get_params();
 
 		$this->assertIsArray( $params );

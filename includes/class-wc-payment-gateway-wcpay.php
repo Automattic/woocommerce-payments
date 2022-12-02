@@ -987,7 +987,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$request->setup_future_usage();
 				}
 
-				$intent = $request->send( 'create_intention_request', $payment_information );
+				$intent = $request->send( 'wcpay_create_intention_request', $payment_information );
 			}
 
 			$intent_id     = $intent->get_id();

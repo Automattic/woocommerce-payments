@@ -82,6 +82,6 @@ class Checkout_Service {
 	 * @return void
 	 */
 	public function init() {
-		add_filter( 'create_intention_request', [ $this, 'create_intention_request' ], 10, 3 );
+		add_filter( 'wcpay_create_intention_request', [ $this, 'create_intention_request' ], 10, 3 );
 	}
 }
