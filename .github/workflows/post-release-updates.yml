@@ -100,6 +100,11 @@ jobs:
     needs: get-last-released-version
     runs-on: ubuntu-20.04
     steps:
+      - name: "Checkout repository (trunk)"
+        uses: actions/checkout@v3
+        with:
+          ref: 'trunk'
+          
       - name: "Trigger translations update on GlotPress"
         uses: ./.github/actions/trigger-translations
         with:
