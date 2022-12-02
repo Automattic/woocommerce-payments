@@ -761,6 +761,15 @@ jQuery( function ( $ ) {
 
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
+		// Skip adding legacy cards as UPE payment methods.
+		if (
+			'woocommerce_payments' ===
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val()
+		) {
+			return;
+		}
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
 			const paymentMethodType = getSelectedGatewayPaymentMethod();
 			const paymentIntentId =
