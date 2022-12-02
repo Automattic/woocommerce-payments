@@ -20,10 +20,11 @@
 					<p>
 						<?php
 							printf(
-								// Translators: $1 $2 are placeholders are opening and closing HTML link tags, linking to documentation.
-								// Translators: $3 $4 placeholders are opening and closing strong HTML tags.
-								esc_html__( 'Your store has active subscriptions using the built-in WooCommerce Payments functionality. Due to the %1$soff-site billing engine%2$s these subscriptions use, %3$sthey will continue to renew even after you deactivate WooCommerce Payments.%4$s', 'woocommerce-payments' ),
+								// Translators: $1 $2 $3 are placeholders are opening and closing HTML link tags, linking to documentation.
+								// Translators: $4 $5 placeholders are opening and closing strong HTML tags.
+								esc_html__( 'Your store has active subscriptions using the built-in WooCommerce Payments functionality. Due to the %1$soff-site billing engine%3$s these subscriptions use, %4$sthey will continue to renew even after you deactivate WooCommerce Payments%5$s. %2$sLearn more%3$s.', 'woocommerce-payments' ),
 								'<a href="https://woocommerce.com/document/payments/subscriptions/comparison/#billing-engine">',
+								'<a href="https://woocommerce.com/document/woocommerce-payments/built-in-subscriptions/deactivate/#existing-subscriptions">',
 								'</a>',
 								'<strong>',
 								'</strong>'
@@ -33,10 +34,9 @@
 					</p>
 						<?php
 							printf(
-								// Translators: $1 $2 $3 placeholders are opening and closing HTML link tags, linking to documentation.
-								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel all subscriptions%3$s prior to deactivating WooCommerce Payments. %2$sLearn more.%3$s', 'woocommerce-payments' ),
+								// Translators: $1 $2 placeholders are opening and closing HTML link tags, linking to documentation.
+								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel all subscriptions%2$s prior to deactivating WooCommerce Payments. ', 'woocommerce-payments' ),
 								'<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#cancel-or-suspend-subscription">',
-								'<a href="https://woocommerce.com/document/woocommerce-payments/built-in-subscriptions/deactivate/#existing-subscriptions">',
 								'</a>'
 							);
 							?>
