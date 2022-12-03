@@ -27,7 +27,7 @@ export const getTasks = ( {
 
 	const isDisputeTaskVisible = 0 < numDisputesNeedingResponse;
 
-	if ( accountRestrictedSoon && currentDeadline ) {
+	if ( accountRestrictedSoon ) {
 		accountDetailsTaskDescription = sprintf(
 			/* translators: %s - formatted requirements current deadline (date) */
 			__(
@@ -50,7 +50,7 @@ export const getTasks = ( {
 
 	return [
 		isAccountOverviewTasksEnabled &&
-			showUpdateDetailsTask && {
+			'yes' === showUpdateDetailsTask && {
 				key: 'update-business-details',
 				level: 1,
 				title: __(

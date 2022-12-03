@@ -14,7 +14,7 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			showUpdateDetailsTask: true,
+			showUpdateDetailsTask: 'yes',
 			isAccountOverviewTasksEnabled: true,
 		} );
 
@@ -36,7 +36,7 @@ describe( 'getTasks()', () => {
 				pastDue: true,
 				accountLink: 'http://example.com',
 			},
-			showUpdateDetailsTask: false,
+			showUpdateDetailsTask: 'no',
 			isAccountOverviewTasksEnabled: true,
 		} );
 
@@ -57,7 +57,7 @@ describe( 'getTasks()', () => {
 				pastDue: false,
 				accountLink: 'http://example.com',
 			},
-			showUpdateDetailsTask: true,
+			showUpdateDetailsTask: 'yes',
 			isAccountOverviewTasksEnabled: true,
 		} );
 
@@ -111,7 +111,7 @@ describe( 'getTasks()', () => {
 	it( 'returns the expected keys when the account overview flag is enabled', () => {
 		const tasks = getTasks( {
 			isAccountOverviewTasksEnabled: true,
-			showUpdateDetailsTask: true,
+			showUpdateDetailsTask: 'yes',
 			wpcomReconnectUrl: 'http://example.com',
 			accountStatus: {},
 		} );
@@ -126,7 +126,7 @@ describe( 'getTasks()', () => {
 
 	it( 'returns the expected keys when the account overview flag is disabled', () => {
 		const tasks = getTasks( {
-			showUpdateDetailsTask: true,
+			showUpdateDetailsTask: 'yes',
 			wpcomReconnectUrl: 'http://example.com',
 			accountStatus: {},
 		} );

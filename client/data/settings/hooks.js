@@ -59,38 +59,6 @@ export const useEnabledPaymentMethodIds = () => {
 	);
 };
 
-export const useSelectedPaymentMethod = () => {
-	const { updateSelectedPaymentMethod } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
-
-			return [
-				getEnabledPaymentMethodIds(),
-				updateSelectedPaymentMethod,
-			];
-		},
-		[ updateSelectedPaymentMethod ]
-	);
-};
-
-export const useUnselectedPaymentMethod = () => {
-	const { updateUnselectedPaymentMethod } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
-
-			return [
-				getEnabledPaymentMethodIds(),
-				updateUnselectedPaymentMethod,
-			];
-		},
-		[ updateUnselectedPaymentMethod ]
-	);
-};
-
 export const useDebugLog = () => {
 	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
 
