@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Import fingerprint package directly instead of lazy loading it
