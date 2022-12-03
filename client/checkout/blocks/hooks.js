@@ -7,7 +7,10 @@ import { useEffect, useState } from '@wordpress/element';
  * Internal dependencies
  */
 import confirmCardPayment from './confirm-card-payment.js';
-import { getFingerprint } from '../utils/fingerprint.js';
+import {
+	getFingerprint,
+	FINGERPRINT_GENERIC_ERROR,
+} from '../utils/fingerprint.js';
 
 export const usePaymentCompleteHandler = (
 	api,
@@ -45,7 +48,9 @@ export const useFingerprint = () => {
 				const { visitorId } = await getFingerprint();
 				setFingerprint( visitorId );
 			} catch ( err ) {
-				setError( err );
+				setError(
+					err.message ? err.message : FINGERPRINT_GENERIC_ERROR
+				);
 			}
 		} )();
 	}, [] );

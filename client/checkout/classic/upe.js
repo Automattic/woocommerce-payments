@@ -189,6 +189,8 @@ jQuery( function ( $ ) {
 				fingerprint = visitorId;
 			} catch ( error ) {
 				// Do not mount element if fingerprinting is not available
+				showErrorCheckout( error.message );
+
 				return;
 			}
 		}
