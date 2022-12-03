@@ -1,13 +1,17 @@
-export const getFingerprint = async () => {
-	const FingerprintJS = await import(
-		/* webpackChunkName: "fp_agent" */
-		'@fingerprintjs/fingerprintjs'
-	);
+/** @format */
+/**
+ * Internal dependencies
+ */
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
+export const FINGERPRINT_GENERIC_ERROR =
+	'An error was encountered when preparing the payment form. Please try again later.';
+
+export const getFingerprint = async () => {
 	const agent = await FingerprintJS.load( { monitoring: false } );
 
 	if ( ! agent ) {
-		throw new Error( 'Unable to load agent.' );
+		throw new Error( FINGERPRINT_GENERIC_ERROR );
 	}
 
 	return await agent.get();
