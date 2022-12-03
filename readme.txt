@@ -99,7 +99,7 @@ Please note that our support for the checkout block is still experimental and th
 == Changelog ==
 
 = 5.1.2 - 2022-12-03 =
-* Fix - Import fingerprint package directly instead of lazy loading it
+* Fix - Import critical package instead of lazy loading.
 
 = 5.1.1 - 2022-12-02 =
 * Fix - Minor patch fix to cron functionality that does not appear to have front-end ramifications for customers.
