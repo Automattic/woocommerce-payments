@@ -1753,23 +1753,19 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
-			->with( (int) ( $amount * 100 ) )
-			->willReturn( $request );
+			->with( (int) ( $amount * 100 ) );
 
 		$request->expects( $this->once() )
 			->method( 'set_payment_method' )
-			->with( $pm )
-			->willReturn( $request );
+			->with( $pm );
 
 		$request->expects( $this->once() )
 			->method( 'set_customer' )
-			->with( $customer )
-			->willReturn( $request );
+			->with( $customer );
 
 		$request->expects( $this->once() )
 			->method( 'set_capture_method' )
-			->with( false )
-			->willReturn( $request );
+			->with( false );
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
@@ -1785,8 +1781,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						return true;
 					}
 				)
-			)
-				->willReturn( $request );
+			);
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -2084,8 +2079,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
 		$request->expects( $this->once() )
 			->method( 'set_customer' )
-			->with( 'cus_XYZ' )
-			->willReturn( $request );
+			->with( 'cus_XYZ' );
 
 		$order = WC_Helper_Order::create_order();
 		$order->set_currency( 'USD' );

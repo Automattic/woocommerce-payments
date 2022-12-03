@@ -12,6 +12,7 @@ use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Explicit_Price_Formatter;
 use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Create_Intent;
+use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
@@ -210,18 +211,23 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 			$payment_type               = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
-
-			$this->payments_api_client->update_intention(
-				$payment_intent_id,
-				WC_Payments_Utils::prepare_amount( $amount, $currency ),
-				strtolower( $currency ),
-				$save_payment_method,
-				$customer_id,
-				$this->get_metadata_from_order( $order, $payment_type ),
-				$this->get_level3_data_from_order( $order ),
-				$selected_upe_payment_type,
-				$payment_country
-			);
+			$request                    = Update_Intention::create();
+			$request->set_intent_id( $payment_intent_id );
+			$request->set_currency_code( strtolower( $currency ) );
+			$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $currency ) );
+			$request->set_metadata( $this->get_metadata_from_order( $order, $payment_type ) );
+			$request->set_level3( $this->get_level3_data_from_order( $order ) );
+			$request->set_selected_upe_payment_method_type( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) );
+			if ( $payment_country ) {
+				$request->set_payment_country( $payment_country );
+			}
+			if ( true === $save_payment_method ) {
+				$request->setup_future_usage();
+			}
+			if ( $customer_id ) {
+				$request->set_customer( $customer_id );
+			}
+			$request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
 		}
 
 		return [
@@ -454,17 +460,24 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 
 				try {
-					$updated_payment_intent = $this->payments_api_client->update_intention(
-						$payment_intent_id,
-						$converted_amount,
-						strtolower( $currency ),
-						$save_payment_method,
-						$customer_id,
-						$this->get_metadata_from_order( $order, $payment_type ),
-						$this->get_level3_data_from_order( $order ),
-						$selected_upe_payment_type,
-						$payment_country
-					);
+
+					$request = Update_Intention::create();
+					$request->set_intent_id( $payment_intent_id );
+					$request->set_currency_code( strtolower( $currency ) );
+					$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $currency ) );
+					$request->set_metadata( $this->get_metadata_from_order( $order, $payment_type ) );
+					$request->set_level3( $this->get_level3_data_from_order( $order ) );
+					$request->set_selected_upe_payment_method_type( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) );
+					if ( $payment_country ) {
+						$request->set_payment_country( $payment_country );
+					}
+					if ( true === $save_payment_method ) {
+						$request->setup_future_usage();
+					}
+					if ( $customer_id ) {
+						$request->set_customer( $customer_id );
+					}
+					$updated_payment_intent = $request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
 				} catch ( Amount_Too_Small_Exception $e ) {
 					// This code would only be reached if the cache has already expired.
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );

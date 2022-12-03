@@ -7,7 +7,6 @@
 
 namespace WCPay\Core\Server\Request;
 
-use WC_Payments;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WC_Payments_API_Client;
 
@@ -101,15 +100,5 @@ class Create_And_Confirm_Intention extends Create_Intent {
 	 */
 	public function set_cvc_confirmation( $cvc_confirmation = null ) {
 		$this->set_param( 'cvc_confirmation', $cvc_confirmation );
-	}
-
-	/**
-	 * Formats the response from the server.
-	 *
-	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
-	 * @return mixed           Either the same response, or the correct object.
-	 */
-	public function format_response( $response ) {
-		return WC_Payments::get_payments_api_client()->deserialize_intention_object_from_array( $response );
 	}
 }

@@ -183,4 +183,14 @@ class Update_Intention extends Request {
 
 		$this->set_param( 'level3', $this->fix_level3_data( $level3 ) );
 	}
+
+	/**
+	 * Formats the response from the server.
+	 *
+	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
+	 * @return mixed           Either the same response, or the correct object.
+	 */
+	public function format_response( $response ) {
+		return WC_Payments::get_payments_api_client()->deserialize_intention_object_from_array( $response );
+	}
 }
