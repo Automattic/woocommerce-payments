@@ -158,8 +158,7 @@ const AddPaymentMethodsTask = () => {
 	);
 
 	const completeActivation = ( itemId ) => {
-		paymentMethodsState[ itemId ] = true;
-		handlePaymentMethodChange( paymentMethodsState );
+		handlePaymentMethodChange( itemId, true );
 		handleActivationModalOpen( null );
 	};
 
@@ -193,8 +192,7 @@ const AddPaymentMethodsTask = () => {
 				completeActivation( itemId );
 			}
 		} else {
-			paymentMethodsState[ itemId ] = false;
-			handlePaymentMethodChange( paymentMethodsState );
+			handlePaymentMethodChange( itemId, false );
 		}
 	};
 
