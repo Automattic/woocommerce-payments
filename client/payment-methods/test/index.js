@@ -16,8 +16,6 @@ import {
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
 	useManualCapture,
-	useSelectedPaymentMethod,
-	useUnselectedPaymentMethod,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
@@ -31,8 +29,6 @@ jest.mock( '../../data', () => ( {
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 	useManualCapture: jest.fn(),
-	useSelectedPaymentMethod: jest.fn(),
-	useUnselectedPaymentMethod: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -44,8 +40,6 @@ jest.mock( '@wordpress/data', () => ( {
 describe( 'PaymentMethods', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
-		useSelectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
-		useUnselectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'au_becs_debit',
@@ -135,7 +129,7 @@ describe( 'PaymentMethods', () => {
 
 	test( 'inactive and pending payment methods have notice pills', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
-		useSelectedPaymentMethod.mockReturnValue( [
+		useEnabledPaymentMethodIds.mockReturnValue( [
 			[
 				'Credit card / debit card',
 				'BECS Direct Debit',

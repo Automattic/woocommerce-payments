@@ -376,7 +376,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		getConfig( 'wcBlocksUPEAppearance' )
 	);
 	const [ fontRules ] = useState( getFontRulesFromPage() );
-	const [ fingerprint, fingerprintErrorMessage ] = useFingerprint();
+	const [ fingerprint ] = useFingerprint();
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
@@ -389,11 +389,6 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		}
 		if ( ! appearance ) {
 			generateUPEAppearance();
-		}
-
-		if ( fingerprintErrorMessage ) {
-			setErrorMessage( fingerprintErrorMessage );
-			return;
 		}
 
 		if ( paymentIntentId || hasRequestedIntent || ! fingerprint ) {
@@ -422,7 +417,6 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		errorMessage,
 		appearance,
 		fingerprint,
-		fingerprintErrorMessage,
 	] );
 
 	if ( ! clientSecret ) {
