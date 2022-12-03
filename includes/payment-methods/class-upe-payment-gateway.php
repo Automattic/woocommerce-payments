@@ -11,6 +11,7 @@ use WC_Order;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Explicit_Price_Formatter;
 use WCPay\Constants\Payment_Method;
+use WCPay\Core\Server\Request\Create_Intent;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
@@ -273,14 +274,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @return array
 	 */
 	public function create_payment_intent( $order_id = null ) {
-		$amount   = WC()->cart->get_total( '' );
-		$currency = get_woocommerce_currency();
-		$number   = 0;
-		$order    = wc_get_order( $order_id );
+		$amount                   = WC()->cart->get_total( '' );
+		$currency                 = get_woocommerce_currency();
+		$metadata                 = [];
+		$metadata['order_number'] = 0;
+		$order                    = wc_get_order( $order_id );
 		if ( is_a( $order, 'WC_Order' ) ) {
-			$amount   = $order->get_total();
-			$currency = $order->get_currency();
-			$number   = $order->get_order_number();
+			$amount                   = $order->get_total();
+			$currency                 = $order->get_currency();
+			$metadata['order_number'] = $order->get_order_number();
 		}
 
 		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
@@ -294,17 +296,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$converted_amount = $minimum_amount;
 		}
 
-		$capture_method          = empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] ? 'automatic' : 'manual';
+		$capture_method          = ! ( empty( $this->settings['manual_capture'] ) || 'no' === $this->settings['manual_capture'] );
 		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 
 		try {
-			$payment_intent = $this->payments_api_client->create_intention(
-				$converted_amount,
-				strtolower( $currency ),
-				array_values( $enabled_payment_methods ),
-				$number,
-				$capture_method
-			);
+			$request = Create_Intent::create();
+			$request->set_amount( $converted_amount );
+			$request->set_currency_code( strtolower( $currency ) );
+			$request->set_payment_method_types( array_values( $enabled_payment_methods ) );
+			$request->set_metadata( $metadata );
+			$request->set_capture_method( $capture_method );
+			$payment_intent = $request->send( 'create_wcpay_intent_request', $order );
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$minimum_amount = $e->get_minimum_amount();
 
@@ -312,18 +314,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			/**
 			 * Try to create a new payment intent with the minimum amount
-			 * in order to display fields om the checkout page and allow
+			 * in order to display fields on the checkout page and allow
 			 * customers to select a shipping method, which might make
 			 * the total amount of the order higher than the minimum
 			 * amount for the API.
 			 */
-			$payment_intent = $this->payments_api_client->create_intention(
-				$minimum_amount,
-				strtolower( $currency ),
-				array_values( $enabled_payment_methods ),
-				$number,
-				$capture_method
-			);
+			$request->set_amount( $minimum_amount );
+			$payment_intent = $request->send( 'create_wcpay_intent_request', $order );
 		}
 
 		return [

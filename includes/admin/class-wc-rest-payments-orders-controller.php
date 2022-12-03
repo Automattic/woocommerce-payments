@@ -367,7 +367,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$wcpay_server_request->set_metadata( $metadata );
 			$wcpay_server_request->set_payment_method_types( $this->get_terminal_intent_payment_method( $request ) );
 			$wcpay_server_request->set_capture_method( 'manual' === $this->get_terminal_intent_capture_method( $request ) );
-			$intent = $wcpay_server_request->send( 'create_wcpay_terminal_intent_request', $order );
+			$intent = $wcpay_server_request->send( 'create_wcpay_intent_request', $order );
 
 			return rest_ensure_response(
 				[

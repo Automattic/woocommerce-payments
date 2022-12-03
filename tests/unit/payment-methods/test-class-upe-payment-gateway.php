@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Type;
+use WCPay\Core\Server\Request\Create_Intent;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
@@ -500,11 +501,43 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 		$intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_intention' )
-			->with( 5000, 'usd', [ 'card' ] )
+		$request  = $this->mock_wcpay_request( Create_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( $intent->get_amount() );
+
+		$request->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( strtolower( $intent->get_currency() ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
+			->with(
+				$this->callback(
+					function( $metadata ) {
+						return isset( $metadata['order_number'] );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' )
+			->with(
+				$this->callback(
+					function( $argument ) {
+						return is_array( $argument ) && ! empty( $argument );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $intent );
+
 		$this->set_cart_contains_subscription_items( false );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
@@ -515,17 +548,43 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 		$intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_intention' )
+		$request  = $this->mock_wcpay_request( Create_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( $intent->get_amount() );
+
+		$request->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( strtolower( $intent->get_currency() ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
 			->with(
-				5000,
-				'usd',
-				[ 'card' ],
-				$order_id,
-				'automatic'
-			)
+				$this->callback(
+					function( $metadata ) {
+						return isset( $metadata['order_number'] );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' )
+			->with(
+				$this->callback(
+					function( $argument ) {
+						return is_array( $argument ) && ! empty( $argument );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $intent );
+
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
 		$this->mock_upe_gateway->create_payment_intent( $order_id );
@@ -536,17 +595,43 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id = $order->get_id();
 		$intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
 		$this->mock_upe_gateway->settings['manual_capture'] = 'no';
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_intention' )
+		$request = $this->mock_wcpay_request( Create_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( $intent->get_amount() );
+
+		$request->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( strtolower( $intent->get_currency() ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
 			->with(
-				5000,
-				'usd',
-				[ 'card' ],
-				$order_id,
-				'automatic'
-			)
+				$this->callback(
+					function( $metadata ) {
+						return isset( $metadata['order_number'] );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' )
+			->with(
+				$this->callback(
+					function( $argument ) {
+						return is_array( $argument ) && ! empty( $argument );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $intent );
+
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
 		$this->mock_upe_gateway->create_payment_intent( $order_id );
@@ -557,17 +642,44 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id = $order->get_id();
 		$intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
 		$this->mock_upe_gateway->settings['manual_capture'] = 'yes';
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_intention' )
+		$request = $this->mock_wcpay_request( Create_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( $intent->get_amount() );
+
+		$request->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( strtolower( $intent->get_currency() ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( true );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
 			->with(
-				5000,
-				'usd',
-				[ 'card' ],
-				$order_id,
-				'manual'
-			)
+				$this->callback(
+					function( $metadata ) {
+						return isset( $metadata['order_number'] );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' )
+			->with(
+				$this->callback(
+					function( $argument ) {
+						return is_array( $argument ) && ! empty( $argument );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $intent );
+
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
 		$this->mock_upe_gateway->create_payment_intent( $order_id );
@@ -1267,11 +1379,43 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_intention' )
-			->with( 50, 'usd', [ 'card' ] )
+		$request = $this->mock_wcpay_request( Create_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( $intent->get_amount() );
+
+		$request->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( strtolower( $intent->get_currency() ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
+			->with(
+				$this->callback(
+					function( $metadata ) {
+						return isset( $metadata['order_number'] );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' )
+			->with(
+				$this->callback(
+					function( $argument ) {
+						return is_array( $argument ) && ! empty( $argument );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $intent );
+
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
 		$this->mock_upe_gateway->create_payment_intent( $order->get_id() );
@@ -1290,13 +1434,42 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->exactly( 2 ) )
-			->method( 'create_intention' )
-			->withConsecutive(
-				[ 45, 'usd', [ 'card' ] ],
-				[ 50, 'usd', [ 'card' ] ]
-			)
+		$request = $this->mock_wcpay_request( Create_Intent::class, 2 );
+
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'set_amount' )
+			->withConsecutive( [ 45 ], [ $intent->get_amount() ] );
+
+		$request->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( strtolower( $intent->get_currency() ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_capture_method' )
+			->with( false );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
+			->with(
+				$this->callback(
+					function( $metadata ) {
+						return isset( $metadata['order_number'] );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' )
+			->with(
+				$this->callback(
+					function( $argument ) {
+						return is_array( $argument ) && ! empty( $argument );
+					}
+				)
+			);
+
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'format_response' )
 			->will(
 				$this->onConsecutiveCalls(
 					$this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $0.50 usd', 50, 'usd', 400 ) ),
