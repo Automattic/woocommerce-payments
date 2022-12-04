@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Minor patch fix to cron functionality that does not appear to have front-end ramifications for customers.
+
+
