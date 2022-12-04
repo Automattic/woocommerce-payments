@@ -73,7 +73,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @type int
 	 */
 
-	const USER_FORMATTED_TOKENS_LIMIT = 100;
+	const USER_FORMATTED_TOKENS_LIMIT  = 100;
+	const SESSION_KEY_PROCESSING_ORDER = 'wcpay_processing_order';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -670,6 +671,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
+
+			$check_response = $this->check_against_session_processing_order( $order );
+			if ( is_array( $check_response ) ) {
+				return $check_response;
+			}
+			$this->maybe_update_session_processing_order( $order_id );
 
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
@@ -1329,6 +1336,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id ) {
 		switch ( $intent_status ) {
 			case 'succeeded':
+				$this->remove_session_processing_order( $order->get_id() );
 				$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			case 'processing':
@@ -1867,6 +1875,96 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $default_value;
+	}
+
+	/**
+	 * Checks if the current order has the same content with the session processing order, which was already paid (ex. by a webhook).
+	 *
+	 * @param  WC_Order $current_order Current order in process_payment.
+	 *
+	 * @return array|void A successful response in case the session processing order was paid, null if none.
+	 */
+	protected function check_against_session_processing_order( WC_Order $current_order ) {
+		$session_order_id = $this->get_session_processing_order();
+		if ( null === $session_order_id ) {
+			return;
+		}
+
+		$session_order = wc_get_order( $session_order_id );
+		if ( ! is_a( $session_order, 'WC_Order' ) ) {
+			return;
+		}
+
+		if ( $current_order->get_cart_hash() !== $session_order->get_cart_hash() ) {
+			return;
+		}
+
+		if ( ! $session_order->has_status( wc_get_is_paid_statuses() ) ) {
+			return;
+		}
+
+		$current_order->set_status(
+			'cancelled',
+			sprintf(
+				/* translators: order ID integer number */
+				__( 'WooCommerce Payments: detected duplicate cart content in order ID %d.', 'woocommerce-payments' ),
+				$session_order->get_id()
+			)
+		);
+		$current_order->save();
+		$this->remove_session_processing_order( $session_order_id );
+
+		$return_url = $this->get_return_url( $session_order );
+		// TODO We'll need to add a notice, indicating that a previous order was completed.
+		// TODO may add order ID, or notice?
+		$return_url = add_query_arg( 'wcpay_paid_for_previous_order', 'yes', $return_url );
+
+		return [
+			'result'   => 'success',
+			'redirect' => $return_url,
+		];
+	}
+
+	/**
+	 * Update the processing order ID for the current session.
+	 *
+	 * @param  int $order_id Order ID.
+	 *
+	 * @return void
+	 */
+	protected function maybe_update_session_processing_order( int $order_id ) {
+		if ( WC()->session ) {
+			WC()->session->set( self::SESSION_KEY_PROCESSING_ORDER, $order_id );
+		}
+	}
+
+	/**
+	 * Remove the processing order ID for the current session.
+	 *
+	 * @param  int $order_id Order ID to remove from the session.
+	 *
+	 * @return void
+	 */
+	protected function remove_session_processing_order( int $order_id ) {
+		$current_session_id = $this->get_session_processing_order();
+		if ( $order_id === $current_session_id && WC()->session ) {
+			WC()->session->set( self::SESSION_KEY_PROCESSING_ORDER, null );
+		}
+	}
+
+	/**
+	 * Get the processing order ID for the current session.
+	 *
+	 * @return integer|null Order ID. Null if the value is not set.
+	 */
+	protected function get_session_processing_order() {
+		$session = WC()->session;
+		if ( null === $session ) {
+			return null;
+		}
+
+		$val = $session->get( self::SESSION_KEY_PROCESSING_ORDER );
+		return null === $val ? null : absint( $val );
 	}
 
 	/**
