@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Payment_Method;
+use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
@@ -312,8 +313,12 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		// Get the intent_id and then its status.
-		$intent_id     = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
-		$intent        = $this->api_client->get_intent( $intent_id );
+		$intent_id = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
+
+		$request = Get_Intent::create();
+		$request->set_intent_id( $intent_id );
+		$intent = $request->send( 'wcpay_get_intent_request', $order );
+
 		$intent_status = $intent->get_status();
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.

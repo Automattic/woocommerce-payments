@@ -12,6 +12,7 @@ use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Explicit_Price_Formatter;
 use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Create_Intent;
+use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WP_User;
@@ -619,7 +620,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			// Get payment intent to confirm status.
 			if ( $payment_needed ) {
-				$intent                 = $this->payments_api_client->get_intent( $intent_id );
+				$request = Get_Intent::create();
+				$request->set_intent_id( $intent_id );
+
+				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
 				$client_secret          = $intent->get_client_secret();
 				$status                 = $intent->get_status();
 				$charge                 = $intent->get_charge();
@@ -987,8 +991,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				throw new Exception( 'Order not found. Unable to log error.' );
 			}
 
-			$intent_id     = $charge_data['payment_intent'] ?? $order->get_meta( '_intent_id' );
-			$intent        = $this->payments_api_client->get_intent( $intent_id );
+			$intent_id = $charge_data['payment_intent'] ?? $order->get_meta( '_intent_id' );
+
+			$request = Get_Intent::create();
+			$request->set_intent_id( $intent_id );
+			$intent = $request->send( 'wcpay_get_intent_request', $order );
+
 			$intent_status = $intent->get_status();
 			$error_message = esc_html( rtrim( $charge_data['failure_message'], '.' ) );
 

@@ -10,6 +10,7 @@ namespace WCPay\Payment_Methods;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Type;
 use WCPay\Core\Server\Request\Create_Intent;
+use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
@@ -165,7 +166,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'create_intention',
 					'create_setup_intention',
 					'update_intention',
-					'get_intent',
 					'get_setup_intent',
 					'get_payment_method',
 					'is_server_connected',
@@ -974,12 +974,15 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( $intent_id )
-			->will(
-				$this->returnValue( $payment_intent )
-			);
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will( $this->returnValue( $payment_intent ) );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -1021,12 +1024,15 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( $intent_id )
-			->will(
-				$this->returnValue( $payment_intent )
-			);
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will( $this->returnValue( $payment_intent ) );
 
 		$this->set_cart_contains_subscription_items( false );
 
@@ -1125,12 +1131,15 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( $intent_id )
-			->will(
-				$this->returnValue( $payment_intent )
-			);
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->will( $this->returnValue( $payment_intent ) );
 
 		$this->mock_token_service->expects( $this->once() )
 			->method( 'add_payment_method_to_user' )

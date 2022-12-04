@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
@@ -208,8 +209,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return bool True if the Intent was fetched and prepared successfully, false otherwise.
 	 */
 	public function prepare_intent_for_order_pay_page(): bool {
-		$order  = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
-		$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+		$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+
+		$request = Get_Intent::create();
+		$request->set_intent_id( $order->get_transaction_id() );
+		$intent = $request->send( 'wcpay_get_intent_request', $order );
 
 		if ( ! $intent || 'requires_action' !== $intent->get_status() ) {
 			return false;

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
@@ -246,7 +247,10 @@ class WC_Payments_Invoice_Service {
 	 */
 	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
 		try {
-			$intent_object = $this->payments_api_client->get_intent( $intent_id );
+			$request = Get_Intent::create();
+			$request->set_intent_id( $intent_id );
+			$intent_object = $request->send( 'wcpay_get_intent_request', $order );
+
 		} catch ( API_Exception $e ) {
 			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
 			return;

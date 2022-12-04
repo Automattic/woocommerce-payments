@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Exceptions\API_Exception;
 
 /**
@@ -306,10 +307,14 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention();
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( $intent_id )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $intent );
 
 		$this->mock_gateway
@@ -327,10 +332,14 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 		$mock_order = WC_Helper_Order::create_order();
 		$intent_id  = 'pi_paymentIntentID';
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( $intent_id )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( $intent_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'whoops', 'mock_error', 403 ) ) );
 
 		$this->mock_gateway

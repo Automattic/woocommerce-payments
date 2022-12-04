@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_Intent;
+use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Constants\Payment_Method;
@@ -87,9 +88,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -154,9 +156,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -226,9 +229,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -289,9 +293,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -323,9 +328,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'succeeded' ] );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -364,10 +370,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_intent' );
+		$request = $this->mock_wcpay_request( Get_Intent::class, 0 );
 
+		$request->expects( $this->never() )
+			->method( 'format_response' );
 		$this->mock_gateway
 			->expects( $this->never() )
 			->method( 'capture_charge' );
@@ -404,9 +410,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -452,9 +459,10 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -498,9 +506,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_capture_terminal_payment_handles_exceptions() {
 		$order = $this->create_mock_order();
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willThrowException( new Exception( 'test error' ) );
 
 		$request = new WP_REST_Request( 'POST' );
@@ -551,9 +559,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -607,9 +615,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -648,9 +656,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -686,9 +694,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'succeeded' ] );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -728,9 +736,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_intent' );
+		$request = $this->mock_wcpay_request( Get_Intent::class, 0 );
+		$request->expects( $this->never() )
+			->method( 'format_response' );
 
 		$this->mock_gateway
 			->expects( $this->never() )
@@ -764,9 +772,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -808,9 +816,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $mock_intent );
 
 		$this->mock_gateway
@@ -850,9 +858,9 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_capture_authorization_handles_exceptions() {
 		$order = $this->create_mock_order();
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willThrowException( new Exception( 'test error' ) );
 
 		$request = new WP_REST_Request( 'POST' );

@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_REST_Payments_Reader_Controller as Controller;
+use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Exceptions\API_Exception;
 
 require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-printed-receipt-sample-order.php';
@@ -260,10 +261,14 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$receipt = 'receipt';
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
 		$this->mock_api_client
@@ -414,11 +419,16 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $mock_receipt, $response_data['html_content'] );
 	}
 
-	public function test_generate_print_receipt_invalid_payment_error(): void {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+	public function test_generate_print_receipt_invalid_payment_error() {
+
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] ) );
 
 		$this->mock_api_client
@@ -445,10 +455,15 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_generate_print_receipt_handle_api_exceptions(): void {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willThrowException( new API_Exception( 'Something bad happened', 'test error', 500 ) );
 
 		$this->mock_api_client
@@ -479,10 +494,14 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$charge = $this->mock_charge( '42' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
 		$this->mock_api_client
@@ -517,10 +536,14 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$charge = $this->mock_charge( $order->get_id() );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
 		$this->mock_api_client
@@ -549,7 +572,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 500, $data['status'] );
 	}
 
-	public function test_generate_print_receipt_handle_receipt_service_exception(): void {
+	public function test_generate_print_receipt_handle_receipt_service_exception() {
 		$order = WC_Helper_Order::create_order();
 
 		$payment_intent = WC_Helper_Intention::create_intention();
@@ -558,10 +581,14 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$settings = $this->mock_settings();
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_intent' )
-			->with( 'pi_mock' )
+		$request = $this->mock_wcpay_request( Get_Intent::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_intent_id' )
+			->with( 'pi_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
 		$this->mock_api_client
