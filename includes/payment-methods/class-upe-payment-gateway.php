@@ -471,6 +471,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
+				$check_response = $this->check_against_session_processing_order( $order );
+				if ( is_array( $check_response ) ) {
+					return $check_response;
+				}
+				$this->maybe_update_session_processing_order( $order_id );
+
 				try {
 					$updated_payment_intent = $this->payments_api_client->update_intention(
 						$payment_intent_id,

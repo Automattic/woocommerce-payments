@@ -277,6 +277,15 @@ const WCPayUPEFields = ( {
 							fingerprint
 						);
 
+						// Redirect to the order-received page, whose order with the same cart content was paid.
+						if (
+							paymentDetails.wcpay_paid_for_previous_order &&
+							paymentDetails.redirect
+						) {
+							window.location = paymentDetails.redirect;
+							return;
+						}
+
 						return confirmUPEPayment(
 							api,
 							paymentDetails.redirect_url,
