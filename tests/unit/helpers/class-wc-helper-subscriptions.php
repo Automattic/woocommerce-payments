@@ -69,16 +69,11 @@ function wcs_create_renewal_order( $subscription ) {
 	return ( WC_Subscriptions::$wcs_create_renewal_order )( $subscription );
 }
 
-function wcs_get_subscription_statuses() {
-	return [
-		'wc-pending'        => 'Pending',
-		'wc-active'         => 'Active',
-		'wc-on-hold'        => 'On hold',
-		'wc-cancelled'      => 'Cancelled',
-		'wc-switched'       => 'Switched',
-		'wc-expired'        => 'Expired',
-		'wc-pending-cancel' => 'Pending Cancellation',
-	];
+function wcs_get_subscriptions( $args ) {
+	if ( ! WC_Subscriptions::$wcs_get_subscriptions ) {
+		return [];
+	}
+	return ( WC_Subscriptions::$wcs_get_subscriptions )( $args );
 }
 
 /**
@@ -130,6 +125,13 @@ class WC_Subscriptions {
 	public static $wcs_get_subscription = null;
 
 	/**
+	 * wcs_get_subscriptions mock.
+	 *
+	 * @var function
+	 */
+	public static $wcs_get_subscriptions = null;
+
+	/**
 	 * wcs_cart_contains_renewal mock.
 	 *
 	 * @var function
@@ -175,6 +177,10 @@ class WC_Subscriptions {
 
 	public static function set_wcs_get_subscription( $function ) {
 		self::$wcs_get_subscription = $function;
+	}
+
+	public static function set_wcs_get_subscriptions( $function ) {
+		self::$wcs_get_subscriptions = $function;
 	}
 
 	public static function wcs_cart_contains_renewal( $function ) {
