@@ -7,10 +7,12 @@ import { sprintf, __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import WoopayIcon from './woopay-icon';
+import { expressCheckoutIframe } from './express-checkout-iframe';
 
 export const WoopayExpressCheckoutButton = ( {
 	isPreview = false,
 	buttonSettings,
+	api,
 } ) => {
 	const { type: buttonType, text, height, size, theme } = buttonSettings;
 
@@ -21,7 +23,7 @@ export const WoopayExpressCheckoutButton = ( {
 			return; // eslint-disable-line no-useless-return
 		}
 
-		// Add buton functionality.
+		expressCheckoutIframe( api );
 	};
 
 	return (
