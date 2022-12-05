@@ -1,4 +1,4 @@
 Significance: minor
 Type: add
 
-Added Order class in WCPay\Core namespace
+Moved methods used for order metadata update to the Order Service class.
