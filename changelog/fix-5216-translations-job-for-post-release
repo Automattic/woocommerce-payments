@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix translations job from the post-release workflow

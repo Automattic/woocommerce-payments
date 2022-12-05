@@ -1,10 +1,10 @@
 === WooCommerce Payments - Fully Integrated Solution Built and Supported by Woo ===
 Contributors: woocommerce, automattic
 Tags: payment gateway, payment, apple pay, credit card, google pay
-Requires at least: 5.8
-Tested up to: 6.0
+Requires at least: 5.9
+Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 5.0.2
+Stable tag: 5.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,8 +38,8 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* WordPress 5.8 or newer.
-* WooCommerce 6.6 or newer.
+* WordPress 5.9 or newer.
+* WooCommerce 7.0 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -97,6 +97,65 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 5.1.2 - 2022-12-03 =
+* Fix - Import critical package instead of lazy loading.
+
+= 5.1.1 - 2022-12-02 =
+* Fix - Minor patch fix to cron functionality that does not appear to have front-end ramifications for customers.
+
+= 5.1.0 - 2022-11-30 =
+* Add - Add a counter of pending authorizations to Uncaptured tab in Transactions page.
+* Add - Added support for a WooPay express checkout button on checkout blocks. This feature is currently behind a feature flag and is not yet publicly available.
+* Add - Adds encryption to the exposed `client_secret` to harden the store against card testing attacks
+* Add - Add uncaptured transactions count badge to Transactions menu.
+* Add - Enable the improvements to the authorization and capture workflow, that were hidden behind a feature flag.
+* Add - Improve fingerprint mechanism on checkout page
+* Add - New wcs_get_orders_with_meta_query() helper function to query for orders and subscriptions.
+* Add - Send merchant's setting for ship_to_billing_address_only to platform checkout
+* Add - Support creating new platform checkout user from checkout blocks.
+* Fix - Fix an error in the Uncaptured transactions table when it is sorted using the Capture by column.
+* Fix - Fix blocks checkout when card testing prevention is active
+* Fix - fixed bug that would not allow customers to add new payment methods to WooPay
+* Fix - Fixed bug that would not allow customers using firefox to log in to WooPay sometimes
+* Fix - Fix the "Learn more" link on Express Payments section
+* Fix - Fix undefined element error on Cart block for WooPay enabled site.
+* Fix - Handle errors in retrieving a file gracefully
+* Fix - On HPOS stores, ensure payment tokens are copied from the subscription to the renewal order.
+* Fix - On HPOS stores, make sure the links in the related-orders table redirect to the new Edit Order URL.
+* Fix - On HPOS stores, when a subscription is loaded from the database, make sure all core subscription properties are read directly from meta.
+* Fix - On HPOS stores, when querying for subscriptions with wcs_get_orders_with_meta_query() with status 'any', ensure that wc_get_orders() queries for subscription statuses.
+* Fix - On HPOS stores, when saving a subscription make sure subscription properties (ie `_requires_manual_renewal`) are saved to the database.
+* Fix - Processing a manual renewal order with HPOS and data syncing enabled correctly saves the related order cache metadata on the subscription and prevents the post and order meta data getting out of sync.
+* Fix - Redirect modal not closing when customer clicks back button on safari
+* Fix - Refactor `WCS_Meta_Box_Schedule::save` to support HPOS stores, fixing a PHP warning notice when updating an order via the Edit Order screen.
+* Fix - Return a fresh instance of the renewal order after creating it. Fixes caching issues on HPOS sites where the returned order has no line items.
+* Fix - Set payment tokens when copying data between orders and subscriptions in a CRUD compatible way. Fixes PHP notices during renewal order process.
+* Fix - Update margin to fix cropping of search field for Multi-Currency currency search
+* Fix - Use botwoo user for a job in the post-release-updates workflow
+* Fix - Use supported CRUD apis to determine if subscriptions are present on store (`wcs_do_subscriptions_exist`)
+* Fix - When viewing My Account > Subscriptions, fix an issue where no subscriptions were listed when HPOS is enabled.
+* Fix - With HPOS and data syncing enabled, updating the status of a pending manual renewal order to a paid status correctly activates the related subscription.
+* Update - Display related orders table when viewing the new "Edit Order" page (HPOS enabled stores).
+* Update - Don't load WooPay scripts and styles when the WCPay payment gateway isn't available.
+* Update - Refactor our Related Orders data store classes (WCS_Related_Order_Store_Cached_CPT and WCS_Related_Order_Store_CPT) to use CRUD methods to support subscriptions and orders stored in HPOS.
+* Update - Refactor the `wcs_is_subscription` helper function to support HPOS.
+* Update - Replace instances of `get_posts()` across codebase with new wcs_get_orders_with_meta_query() function.
+* Update - Update copy of warning modal appearing while deactivating Subscriptions extension.
+* Dev - Add API docs for authorization endpoints
+* Dev - Add description for capture authorization endpoint
+* Dev - Add new workflow to amend (or generate) the changelog for the release
+* Dev - Add PHPCS `PEAR.WhiteSpace.ObjectOperatorIndent` rule.
+* Dev - Bump minimum required version of WooCommerce to 6.9 and WordPress to 5.9
+* Dev - Fix section divider in Authentication API docs
+* Dev - Introduce a WC_Subscription::set_status() function to handle subscriptions set with a draft or auto-draft status. Replaces the need for the overriding WC_Subscription::get_status() which has been deleted.
+* Dev - Manual renewal orders created with HPOS and data syncing enabled are properly linked to the subscription by its `_subscription_renewal` meta and backfilled to posts table.
+* Dev - Refactor the saving of subscription dates in the subscription datastore to separate fetching changes and saving. Enables backfilling subscription dates when HPOS syncing is enabled.
+* Dev - Removed the deprecated "wcs_subscriptions_for_{$relation_type}_order" dynamic hook used to filter the list of related subscriptions for the given relation type. The following hooks have been removed with no alternative: wcs_subscriptions_for_renewal_order, wcs_subscriptions_for_switch_order, wcs_subscriptions_for_resubscribe_order
+* Dev - Show uncaptured transactions tab only when some specific criteria is met
+
+= 5.0.3 - 2022-11-15 =
+* Fix - Purchasing a synced subscription with WCPay Subscriptions correctly sets the next payment date to the sync date in Stripe.
 
 = 5.0.2 - 2022-11-14 =
 * Fix - Fixed rest api error for payment_gateways endpoint

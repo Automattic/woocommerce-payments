@@ -18,6 +18,7 @@ import {
 	updateIsPlatformCheckoutEnabled,
 	updatePlatformCheckoutCustomMessage,
 	updatePlatformCheckoutStoreLogo,
+	updateIsClientSecretEncryptionEnabled,
 } from '../actions';
 
 describe( 'Settings reducer tests', () => {
@@ -497,6 +498,50 @@ describe( 'Settings reducer tests', () => {
 				foo: 'bar',
 				data: {
 					platform_checkout_store_logo: 'test',
+					baz: 'quux',
+				},
+				savingError: null,
+			} );
+		} );
+	} );
+
+	describe( 'SET_IS_CLIENT_SECRET_ENCRYPTION_ENABLED', () => {
+		test( 'toggle `data.is_client_secret_encryption_enabled`', () => {
+			const oldState = {
+				data: {
+					is_client_secret_encryption_enabled: false,
+				},
+			};
+
+			const state = reducer(
+				oldState,
+				updateIsClientSecretEncryptionEnabled( true )
+			);
+
+			expect( state.data.is_client_secret_encryption_enabled ).toEqual(
+				true
+			);
+		} );
+
+		test( 'leaves other fields unchanged', () => {
+			const oldState = {
+				foo: 'bar',
+				data: {
+					is_client_secret_encryption_enabled: false,
+					baz: 'quux',
+				},
+				savingError: {},
+			};
+
+			const state = reducer(
+				oldState,
+				updateIsClientSecretEncryptionEnabled( true )
+			);
+
+			expect( state ).toEqual( {
+				foo: 'bar',
+				data: {
+					is_client_secret_encryption_enabled: true,
 					baz: 'quux',
 				},
 				savingError: null,

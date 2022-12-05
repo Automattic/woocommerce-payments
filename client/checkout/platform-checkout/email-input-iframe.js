@@ -18,6 +18,11 @@ const waitForElement = ( selector ) => {
 		const checkoutBlock = document.querySelector(
 			'[data-block-name="woocommerce/checkout"]'
 		);
+
+		if ( ! checkoutBlock ) {
+			return resolve( null );
+		}
+
 		const observer = new MutationObserver( ( mutationList, obs ) => {
 			if ( document.querySelector( selector ) ) {
 				resolve( document.querySelector( selector ) );
@@ -601,6 +606,13 @@ export const handlePlatformCheckoutEmailInput = async (
 				break;
 			default:
 			// do nothing, only respond to expected actions.
+		}
+	} );
+
+	window.addEventListener( 'pageshow', function ( event ) {
+		if ( event.persisted ) {
+			// Safari needs to close iframe with this.
+			closeIframe( false );
 		}
 	} );
 
