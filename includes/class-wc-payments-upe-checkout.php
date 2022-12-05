@@ -75,6 +75,11 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		add_action( 'woocommerce_subscription_payment_method_updated', [ $this->gateway, 'remove_upe_setup_intent_from_session' ], 10, 0 );
 		add_action( 'woocommerce_order_payment_status_changed', [ 'WCPay\Payment_Methods\UPE_Payment_Gateway', 'remove_upe_payment_intent_from_session' ], 10, 0 );
 		add_action( 'wp', [ $this->gateway, 'maybe_process_upe_redirect' ] );
+		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
+		add_action( 'wp_ajax_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
+		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
+		add_action( 'switch_theme', [ $this->gateway, 'clear_upe_appearance_transient' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this->gateway, 'clear_upe_appearance_transient' ] );
 	}
 
 	/**

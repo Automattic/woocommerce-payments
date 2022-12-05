@@ -107,26 +107,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
 			$this->method_title = "WooCommerce Payments ($this->title)";
 		}
-
-		if ( ! has_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] ) ) {
-			add_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] );
-		}
-
-		if ( ! has_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] ) ) {
-			add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
-		}
-
-		if ( ! has_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] ) ) {
-			add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
-		}
-
-		if ( ! has_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] ) ) {
-			add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
-		}
-
-		if ( ! has_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_upe_appearance_transient' ] ) ) {
-			add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_upe_appearance_transient' ] );
-		}
 	}
 
 	/**
