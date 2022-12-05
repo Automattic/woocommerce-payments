@@ -127,10 +127,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( ! has_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_upe_appearance_transient' ] ) ) {
 			add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_upe_appearance_transient' ] );
 		}
-
-		if ( ! has_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] ) ) {
-			add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
-		}
 	}
 
 	/**
