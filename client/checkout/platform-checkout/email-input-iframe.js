@@ -629,7 +629,7 @@ export const handlePlatformCheckoutEmailInput = async (
 		// Dispatch an event declaring this user exists as returned via back button. Wait for the window to load.
 		setTimeout( () => {
 			dispatchUserExistEvent( true );
-		}, 1000 );
+		}, 2000 );
 
 		wcpayTracks.recordUserEvent(
 			wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
