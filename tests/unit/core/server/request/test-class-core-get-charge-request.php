@@ -7,12 +7,12 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
-use WCPay\Core\Server\Request\Get_Intent;
+use WCPay\Core\Server\Request\Get_Charge;
 
 /**
  * WCPay\Core\Server\Request unit tests.
  */
-class Get_Intention_Test extends WCPAY_UnitTestCase {
+class Get_Charge_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Mock WC_Payments_API_Client.
@@ -40,22 +40,21 @@ class Get_Intention_Test extends WCPAY_UnitTestCase {
 		$this->mock_wc_payments_http_client = $this->createMock( WC_Payments_Http_Interface::class );
 	}
 
-	public function test_exception_will_throw_if_payment_intent_is_not_set() {
-		$request = new Get_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
+	public function test_exception_will_throw_if_charge_id_is_not_set() {
+		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->get_api();
 	}
-
-	public function test_exception_will_throw_if_payment_intent_is_invalid() {
-		$request = new Get_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
+	public function test_exception_will_throw_if_charge_id_is_invalid() {
+		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_intent_id( '1' );
+		$request->set_charge_id( '1' );
 	}
-	public function test_payment_intent_is_immutable_once_set() {
-		$request = new Get_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_intent_id( 'pi_1' );
+	public function test_charge_is_immutable_once_set() {
+		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_charge_id( 'ch_1' );
 		$api = $request->get_api();
-		$request->set_intent_id( 'pi_2' );
+		$request->set_charge_id( 'ch_2' );
 		$this->assertSame( $api, $request->get_api() );
 	}
 }

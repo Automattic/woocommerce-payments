@@ -12,6 +12,7 @@ use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Explicit_Price_Formatter;
 use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Create_Intent;
+use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -982,7 +983,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			// Get charge data from WCPay Server.
-			$charge_data = $this->payments_api_client->get_charge( $charge_id );
+			$request = Get_Charge::create();
+			$request->set_charge_id( $charge_id );
+			$charge_data = $request->send( 'wcpay_get_charge_request', $charge_id );
 			$order_id    = $charge_data['metadata']['order_id'];
 
 			// Validate Order ID and proceed with logging errors and updating order status.

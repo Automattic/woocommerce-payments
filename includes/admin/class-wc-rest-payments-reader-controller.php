@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Exceptions\API_Exception;
 
@@ -277,9 +278,11 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 				throw new \RuntimeException( __( 'Invalid payment intent', 'woocommerce-payments' ) );
 			}
 
-			$charge       = $payment_intent->get_charge();
-			$charge_id    = $charge ? $charge->get_id() : null;
-			$charge_array = $this->api_client->get_charge( $charge_id );
+			$charge         = $payment_intent->get_charge();
+			$charge_id      = $charge ? $charge->get_id() : null;
+			$charge_request = Get_Charge::create();
+			$charge_request->set_charge_id( $charge_id );
+			$charge_array = $charge_request->send( 'wcpay_get_charge_request', $charge_id );
 
 			/* Collect receipt data, stored on the store side. */
 			$order = wc_get_order( $charge_array['order']['number'] );

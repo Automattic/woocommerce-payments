@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_REST_Payments_Reader_Controller as Controller;
+use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Exceptions\API_Exception;
 
@@ -271,10 +272,14 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
-			->with( 'ch_mock' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, $charge );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway

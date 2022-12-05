@@ -13,6 +13,7 @@ use WCPay\Core\Mode;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_Intent;
+use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
@@ -1256,7 +1257,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $currency_order !== $currency_account ) {
 			// We check that the currency used in the order is different than the one set in the WC Payments account
 			// to avoid requesting the charge if not needed.
-			$charge        = $this->payments_api_client->get_charge( $charge_id );
+			$request = Get_Charge::create();
+			$request->set_charge_id( $charge_id );
+			$charge = $request->send( 'wcpay_get_charge_request', $charge_id );
+
 			$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
 			if ( isset( $exchange_rate ) ) {
 				$exchange_rate = WC_Payments_Utils::interpret_string_exchange_rate( $exchange_rate, $currency_order, $currency_account );

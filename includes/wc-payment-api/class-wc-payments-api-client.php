@@ -2281,7 +2281,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 */
-	private function add_additional_info_to_charge( array $charge ) : array {
+	public function add_additional_info_to_charge( array $charge ) : array {
 		$charge = $this->add_order_info_to_object( $charge['id'], $charge );
 		$charge = $this->add_formatted_address_to_charge_object( $charge );
 

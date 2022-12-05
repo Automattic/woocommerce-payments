@@ -38,7 +38,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 */
 	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $response = null, $api_client_mock = null, $http_mock = null ) {
 		$http_mock       = $http_mock ? $http_mock : $this->createMock( WC_Payments_Http::class );
-		$api_client_mock = $api_client_mock ? $http_mock : $this->createMock( WC_Payments_API_Client::class );
+		$api_client_mock = $api_client_mock ? $api_client_mock : $this->createMock( WC_Payments_API_Client::class );
 
 		$request = $this->getMockBuilder( $request_class )
 			->setConstructorArgs( [ $api_client_mock, $http_mock ] )
@@ -56,7 +56,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 			)
 			->willReturn( $response );
 
-		// An anonoymous callback, which will be used once and disposed.
+		// An anonymous callback, which will be used once and disposed.
 		$fn = function( $existing_request, $class_name ) use ( &$fn, $request ) {
 			if ( ! is_null( $existing_request ) ) {
 				return $existing_request; // Another `mock_wcpay_request` in action.
