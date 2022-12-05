@@ -182,37 +182,17 @@ class WC_Payments_Subscription_Service {
 	 * @return WC_Subscription|bool The WC subscription or false if it can't be found.
 	 */
 	public static function get_subscription_from_wcpay_subscription_id( string $wcpay_subscription_id ) {
-		$query_args = [
-			'status'     => array_keys( wcs_get_subscription_statuses() ),
-			'type'       => 'shop_subscription',
+		$subscriptions = wcs_get_subscriptions( [
 			'limit'      => 1,
-			'return'     => 'ids',
-			'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+    		'meta_query' => [
 				[
-					'key'   => self::SUBSCRIPTION_ID_META_KEY,
-					'value' => $wcpay_subscription_id,
+					'key'   => '_wcpay_subscription_id',
+					'value' => 'sub_1M3xEhCSQIDdUhVAkTMveWbf',
 				],
-			],
-		];
+			]
+		] );
 
-		// On HPOS environments we can pass meta_query directly to get_orders() as WC doesn't override it.
-		if ( WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
-			$subscription_ids = wc_get_orders( $query_args );
-		} else {
-			$meta_query = $query_args['meta_query'];
-			unset( $query_args['meta_query'] );
-
-			$add_meta_query = function ( $query ) use ( $meta_query ) {
-				$query['meta_query'] = $meta_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-				return $query;
-			};
-
-			add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $add_meta_query, 10, 2 );
-			$subscription_ids = wc_get_orders( $query_args );
-			remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $add_meta_query, 10 );
-		}
-
-		return wcs_get_subscription( array_shift( $subscription_ids ) );
+		return empty( $subscriptions ) ? false : reset( $subscriptions );
 	}
 
 	/**
