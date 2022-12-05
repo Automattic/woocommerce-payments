@@ -265,7 +265,6 @@ const PaymentDetailsSummary = ( {
 											moment
 												.utc( authorization.created )
 												.add( 7, 'days' )
-												.toISOString()
 										) }
 									</b>
 								</div>

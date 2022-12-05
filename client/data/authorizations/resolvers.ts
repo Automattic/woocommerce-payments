@@ -77,11 +77,13 @@ export function* getAuthorization(
 			const {
 				is_captured: isCaptured,
 				payment_intent_id: paymentIntentId,
+				created,
 			} = result as GetAuthorizationApiResponse;
 
 			yield updateAuthorization( {
 				payment_intent_id: paymentIntentId,
 				captured: isCaptured,
+				created,
 			} as Authorization );
 		}
 	} catch ( e ) {

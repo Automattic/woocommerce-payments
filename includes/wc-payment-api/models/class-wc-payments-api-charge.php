@@ -476,6 +476,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 			'refunded'               => $this->get_refunded(),
 			'refunds'                => $this->get_refunds(),
 			'status'                 => $this->get_status(),
+			'captured'               => $this->is_captured(),
 		];
 	}
 }
