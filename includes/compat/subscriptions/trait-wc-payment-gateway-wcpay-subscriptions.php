@@ -336,6 +336,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
 					'value' => empty( $active_token ) ? '' : (string) $active_token->get_id(),
 				],
+				'_payment_method_id'           => [
+					'value' => empty( $active_token ) ? '' : (string) $active_token->get_token(),
+				],
 			],
 		];
 	}
