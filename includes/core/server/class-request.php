@@ -77,10 +77,12 @@ abstract class Request {
 	/**
 	 * Creates a new request, loading dependencies in there.
 	 *
+	 * @param mixed ...$constructor_arguments Constructor arguments.
+	 *
 	 * @return static
 	 */
-	public static function create() {
-		return WC_Payments::create_request( static::class );
+	public static function create( ...$constructor_arguments ) {
+		return WC_Payments::create_request( static::class, ...$constructor_arguments );
 	}
 
 	/**

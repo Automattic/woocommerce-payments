@@ -12,9 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Core\Mode;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
-use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -2103,10 +2103,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$metadata_from_order  = $this->get_metadata_from_order( $order, $payment_type );
 			$merged_metadata      = array_merge( (array) $metadata_from_order, (array) $metadata_from_intent ); // prioritize metadata from mobile app.
 
-			$this->payments_api_client->prepare_intention_for_capture(
-				$intent_id,
-				$merged_metadata
-			);
+			$wcpay_request = Update_Intention::create( $intent_id );
+			$wcpay_request->set_metadata( $merged_metadata );
+			$request->send( 'wcpay_prepare_intention_for_capture', $order );
 
 			$intent = $this->payments_api_client->capture_intention(
 				$intent_id,

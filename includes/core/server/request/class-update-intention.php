@@ -8,6 +8,7 @@
 namespace WCPay\Core\Server\Request;
 
 use WC_Payments;
+use WC_Payments_Http_Interface;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
@@ -22,7 +23,7 @@ class Update_Intention extends Request {
 	use Level3;
 
 	const IMMUTABLE_PARAMS = [ 'amount' ];
-	const REQUIRED_PARAMS  = [ 'amount', 'currency' ];
+	const REQUIRED_PARAMS  = []; // This use to be amount and currency, but since it is not required on server API, I will leave it blank.
 	const DEFAULT_PARAMS   = [
 		'receipt_email' => '',
 		'metadata'      => [],
@@ -31,26 +32,35 @@ class Update_Intention extends Request {
 	/**
 	 * Intent id.
 	 *
-	 * @var string|null $intent_id
+	 * @var string $intent_id
 	 */
-	private $intent_id = null;
+	private $intent_id;
 
 	/**
-	 * Set intent id.
+	 * Action.
 	 *
-	 * @param string $intent_id Intent id.
+	 * @var string|null $action
+	 */
+	private $action;
+
+	/**
+	 * Class constructor.
 	 *
-	 * @return void
+	 * @param WC_Payments_API_Client     $api_client Api client.
+	 * @param WC_Payments_Http_Interface $http_interface Http interface.
+	 * @param string                     $intent_id Intent id.
+	 * @param string|null                $action Intent action (capture/delete/confirm,...).
+	 *
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function set_intent_id( string $intent_id ) {
-		$this->validate_stripe_id( $intent_id, [ 'pi' ] );
-
-		// Prevent mutation of intent id. It can be only set once.
-		if ( null === $this->intent_id ) {
-			$this->intent_id = $intent_id;
-		}
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_Http_Interface $http_interface, string $intent_id, string $action = null ) {
+		$this->validate_stripe_id( $intent_id );
+		$this->intent_id = $intent_id;
+		$this->action    = $action;
+		parent::__construct( $api_client, $http_interface );
 	}
+
+
 
 	/**
 	 * Returns the request's API.
@@ -59,10 +69,8 @@ class Update_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
-		if ( null === $this->intent_id ) {
-			throw new Invalid_Request_Parameter_Exception( __( 'Intent ID is not set.', 'woocommerce-payments' ), 'wcpay_core_request_intent_not_set' );
-		}
-		return WC_Payments_API_Client::INTENTIONS_API . '/' . $this->intent_id;
+		$endpoint = WC_Payments_API_Client::INTENTIONS_API . '/' . $this->intent_id;
+		return $this->action ? $endpoint . '/' . $this->action : $endpoint;
 	}
 
 	/**

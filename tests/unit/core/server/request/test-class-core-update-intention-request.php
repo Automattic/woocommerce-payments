@@ -42,45 +42,24 @@ class Update_Intention_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_exception_will_throw_if_amount_is_negative_number() {
-		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, 'pi_mock' );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->set_amount( -1 );
 	}
-	public function test_exception_will_throw_if_amount_is_not_set() {
-		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->get_params();
-	}
-	public function test_exception_will_throw_if_currency_is_not_set() {
-		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_amount( 1 );
-		$request->get_params();
-	}
-
 	public function test_exception_will_throw_if_customer_is_invalid() {
-		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, 'pi_mock' );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->set_customer( '1' );
 	}
 
 	public function test_exception_will_throw_if_intent_is_invalid() {
-		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_intent_id( '1' );
+		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
 	}
 
-	public function test_exception_will_throw_if_payment_intent_is_not_set() {
-		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->get_api();
-	}
-	public function test_payment_intent_is_immutable_once_set() {
-		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_intent_id( 'pi_1' );
-		$api = $request->get_api();
-		$request->set_intent_id( 'pi_2' );
-		$this->assertSame( $api, $request->get_api() );
+	public function test_payment_intent_api_url_when_action_is_set() {
+		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, 'pi_mock', 'capture' );
+		$this->assertSame( WC_Payments_API_Client::INTENTIONS_API . '/pi_mock/capture', $request->get_api() );
 	}
 
 	public function test_create_intent_request_will_be_created() {
@@ -91,10 +70,9 @@ class Update_Intention_Test extends WCPAY_UnitTestCase {
 		$payment_type = 'card';
 		$intent_id    = 'pi_1';
 
-		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, $intent_id );
 		$request->set_amount( $amount );
 		$request->set_currency_code( $currency );
-		$request->set_intent_id( $intent_id );
 		$request->set_customer( $cs );
 		$request->setup_future_usage();
 		$request->set_metadata( [ 'order_number' => 1 ] );

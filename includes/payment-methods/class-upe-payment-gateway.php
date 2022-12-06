@@ -213,8 +213,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 			$payment_type               = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
-			$request                    = Update_Intention::create();
-			$request->set_intent_id( $payment_intent_id );
+			$request                    = Update_Intention::create( $payment_intent_id );
 			$request->set_currency_code( strtolower( $currency ) );
 			$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $currency ) );
 			$request->set_metadata( $this->get_metadata_from_order( $order, $payment_type ) );
@@ -463,8 +462,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				try {
 
-					$request = Update_Intention::create();
-					$request->set_intent_id( $payment_intent_id );
+					$request = Update_Intention::create( $payment_intent_id );
 					$request->set_currency_code( strtolower( $currency ) );
 					$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $currency ) );
 					$request->set_metadata( $this->get_metadata_from_order( $order, $payment_type ) );
