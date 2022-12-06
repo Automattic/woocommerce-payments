@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Separate authorizations cache for test and live mode
