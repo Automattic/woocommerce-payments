@@ -262,7 +262,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$receipt = 'receipt';
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1 );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
