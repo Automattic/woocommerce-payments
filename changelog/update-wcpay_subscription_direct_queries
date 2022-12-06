@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Replace direct database queries which fetched orders with an invoice ID with an equivalent wc_get_orders() query
