@@ -184,8 +184,8 @@ class WC_Payments_Subscription_Service {
 	public static function get_subscription_from_wcpay_subscription_id( string $wcpay_subscription_id ) {
 		$subscriptions = wcs_get_subscriptions(
 			[
-				'limit'      => 1,
-				'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'subscriptions_per_page' => 1,
+				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 					[
 						'key'   => self::SUBSCRIPTION_ID_META_KEY,
 						'value' => $wcpay_subscription_id,
