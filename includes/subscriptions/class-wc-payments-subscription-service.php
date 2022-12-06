@@ -1004,4 +1004,28 @@ class WC_Payments_Subscription_Service {
 			}
 		}
 	}
+
+	/**
+	 * Determines if the store has any active WCPay subscriptions.
+	 *
+	 * @return bool True if store has active WCPay subscriptions, otherwise false.
+	 */
+	public static function store_has_active_wcpay_subscriptions() {
+		$results = wcs_get_subscriptions(
+			[
+				'subscriptions_per_page' => 1,
+				'subscription_status'    => 'active',
+				// Ignoring phpcs warning, we need to search meta.
+				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => self::SUBSCRIPTION_ID_META_KEY,
+						'compare' => 'EXISTS',
+					],
+				],
+			]
+		);
+
+		$store_has_active_wcpay_subscriptions = count( $results ) > 0;
+		return $store_has_active_wcpay_subscriptions;
+	}
 }
