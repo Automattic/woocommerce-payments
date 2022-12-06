@@ -1916,12 +1916,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$return_url = $this->get_return_url( $session_order );
 		// TODO We'll need to add a notice, indicating that a previous order was completed.
-		$return_url = add_query_arg( 'wcpay_paid_for_previous_order', $session_order_id, $return_url );
+		$return_url = add_query_arg( 'wcpay_paid_for_previous_order', 'yes', $return_url );
 
 		return [
 			'result'                        => 'success',
 			'redirect'                      => $return_url,
-			'wcpay_paid_for_previous_order' => $session_order_id, // This flag is needed for UPE flow in the block checkout.
+			'wcpay_paid_for_previous_order' => 'yes', // This flag is needed for UPE flow in the block checkout.
 		];
 	}
 
