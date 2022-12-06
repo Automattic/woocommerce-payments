@@ -443,13 +443,17 @@ jQuery( function ( $ ) {
 
 		try {
 			// Update payment intent with level3 data, customer and maybe setup for future use.
-			await api.updateIntent(
+			const updateResponse = await api.updateIntent(
 				paymentIntentId,
 				orderId,
 				savePaymentMethod,
 				$( '#wcpay_selected_upe_payment_type' ).val(),
 				$( '#wcpay_payment_country' ).val()
 			);
+
+			if ( updateResponse.data ) {
+				await api.handlePreviousOrderPaid( updateResponse.data );
+			}
 
 			const { error } = await api.handlePaymentConfirmation(
 				elements,
