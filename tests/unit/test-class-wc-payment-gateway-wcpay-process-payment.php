@@ -6,6 +6,7 @@
  */
 
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
+use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
@@ -92,7 +93,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'create_and_confirm_setup_intent', 'get_payment_method', 'is_server_connected', 'get_charge', 'request' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'create_and_confirm_setup_intent', 'get_payment_method', 'is_server_connected', 'request' ] )
 			->getMock();
 
 		// Arrange: Mock WC_Payments_Account instance to use later.
@@ -250,10 +251,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$mock_cart
 			->expects( $this->once() )
 			->method( 'empty_cart' );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
 
 		// Act: process a successful payment.
@@ -314,9 +319,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' )
 			->with( $this->isInstanceOf( WP_User::class ) );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
 
 		// Act: process a successful payment.
@@ -416,9 +426,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'empty_cart' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
 
 		// Act: process payment.
@@ -809,9 +824,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'empty_cart' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
 
 		// Act: process payment.
@@ -1173,6 +1193,16 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [ 'id' => 'ch_mock' ] );
+
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Act: process a successful payment.
@@ -1311,6 +1341,15 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [ 'id' => 'ch_mock' ] );
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		// Act: process a successful payment.

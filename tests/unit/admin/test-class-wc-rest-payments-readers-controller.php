@@ -272,7 +272,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
-		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, $charge );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
 
 		$charge_request->expects( $this->once() )
 			->method( 'set_charge_id' )
@@ -436,9 +436,10 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] ) );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_charge' );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 0 );
+
+		$charge_request->expects( $this->never() )
+			->method( 'format_response' );
 
 		$this->mock_wcpay_gateway
 			->expects( $this->never() )
@@ -471,9 +472,10 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willThrowException( new API_Exception( 'Something bad happened', 'test error', 500 ) );
 
-		$this->mock_api_client
-			->expects( $this->never() )
-			->method( 'get_charge' );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 0 );
+
+		$charge_request->expects( $this->never() )
+			->method( 'format_response' );
 
 		$this->mock_wcpay_gateway
 			->expects( $this->never() )
@@ -509,10 +511,14 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
-			->with( 'ch_mock' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
@@ -551,10 +557,14 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
-			->with( 'ch_mock' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway
@@ -596,10 +606,14 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $payment_intent );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
-			->with( 'ch_mock' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $charge );
 
 		$this->mock_wcpay_gateway

@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intent;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
@@ -130,7 +131,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'get_payment_method',
 					'refund_charge',
 					'list_refunds',
-					'get_charge',
 					'prepare_intention_for_capture',
 					'get_timeline',
 				]
@@ -243,9 +243,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_account_default_currency' )
 			->willReturn( 'usd' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
 				[
 					'id'                  => 'ch_123456',
@@ -276,9 +281,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'get_account_default_currency' )
 			->willReturn( 'usd' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_charge' )
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
+
+		$charge_request->expects( $this->once() )
+			->method( 'set_charge_id' )
+			->with( 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
 				[
 					'id'                  => 'ch_123456',

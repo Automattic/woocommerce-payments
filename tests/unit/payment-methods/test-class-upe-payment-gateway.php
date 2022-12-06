@@ -169,7 +169,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'get_setup_intent',
 					'get_payment_method',
 					'is_server_connected',
-					'get_charge',
 					'get_timeline',
 				]
 			)
