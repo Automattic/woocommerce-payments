@@ -1079,6 +1079,14 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Error contacting the API.
 	 */
 	public function get_currency_rates( string $currency_from, $currencies_to = null ) {
+		if ( empty( $currency_from ) ) {
+			throw new API_Exception(
+				__( 'Currency From parameter is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_currency_from_missing',
+				400
+			);
+		}
+
 		$query_body = [ 'currency_from' => $currency_from ];
 
 		if ( null !== $currencies_to ) {
