@@ -1919,9 +1919,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$return_url = add_query_arg( 'wcpay_paid_for_previous_order', 'yes', $return_url );
 
 		return [
-			'result'                        => 'success',
-			'redirect'                      => $return_url,
-			'wcpay_paid_for_previous_order' => 'yes', // This flag is needed for UPE flow in the block checkout.
+			'result'                            => 'success',
+			'redirect'                          => $return_url,
+			'wcpay_upe_paid_for_previous_order' => 'yes', // This flag is needed for UPE flow.
 		];
 	}
 

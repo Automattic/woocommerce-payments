@@ -268,6 +268,8 @@ const WCPayUPEFields = ( {
 			onCheckoutAfterProcessingWithSuccess(
 				( { orderId, processingResponse: { paymentDetails } } ) => {
 					async function updateIntent() {
+						await api.handlePreviousOrderPaid( paymentDetails );
+
 						await api.updateIntent(
 							paymentIntentId,
 							orderId,
@@ -276,15 +278,6 @@ const WCPayUPEFields = ( {
 							paymentCountry,
 							fingerprint
 						);
-
-						// Redirect to the order-received page, whose order with the same cart content was paid.
-						if (
-							paymentDetails.wcpay_paid_for_previous_order &&
-							paymentDetails.redirect
-						) {
-							window.location = paymentDetails.redirect;
-							return;
-						}
 
 						return confirmUPEPayment(
 							api,

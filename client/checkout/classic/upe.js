@@ -526,11 +526,7 @@ jQuery( function ( $ ) {
 				fingerprint ? fingerprint : ''
 			);
 
-			// Redirect to the order-received page, whose order with the same cart content was paid.
-			if ( response.wcpay_paid_for_previous_order && response.redirect ) {
-				window.location = response.redirect;
-				return;
-			}
+			await api.handlePreviousOrderPaid( response );
 
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {

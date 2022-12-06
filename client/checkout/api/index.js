@@ -698,4 +698,15 @@ export default class WCPayAPI {
 			return true;
 		} );
 	}
+
+	/**
+	 * If another order has the same cart content and was paid, redirect to its thank-you page.
+	 *
+	 * @param {Object} response Stripe Charge ID
+	 */
+	handlePreviousOrderPaid( response ) {
+		if ( response.wcpay_upe_paid_for_previous_order && response.redirect ) {
+			window.location = response.redirect;
+		}
+	}
 }
