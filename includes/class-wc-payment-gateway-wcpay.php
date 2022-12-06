@@ -962,9 +962,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = null;
 			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the intent is included in the request use that intent.
-				$request = Get_Intention::create();
-				$request->set_intent_id( $platform_checkout_intent_id );
-				$intent = $request->send( 'wcpay_get_intent_request', $order );
+				$request = Get_Intention::create( $platform_checkout_intent_id );
+				$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
 				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
@@ -1511,9 +1510,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
 		} elseif ( $order->meta_exists( '_intent_id' ) ) {
 			$payment_intent_id = $order->get_meta( '_intent_id', true );
-			$request           = Get_Intention::create();
-			$request->set_intent_id( $payment_intent_id );
-			$payment_intent = $request->send( 'wcpay_get_intent_request', $order );
+			$request           = Get_Intention::create( $payment_intent_id );
+			$payment_intent    = $request->send( 'wcpay_get_intent_request', $order );
 
 			$charge                 = $payment_intent ? $payment_intent->get_charge() : null;
 			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
@@ -2093,9 +2091,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$intent_id = $order->get_transaction_id();
 
-			$request = Get_Intention::create();
-			$request->set_intent_id( $intent_id );
-			$intent = $request->send( 'wcpay_get_intent_request', $order );
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
 			$payment_type = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 
@@ -2105,7 +2102,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$wcpay_request = Update_Intention::create( $intent_id );
 			$wcpay_request->set_metadata( $merged_metadata );
-			$request->send( 'wcpay_prepare_intention_for_capture', $order );
+			$wcpay_request->send( 'wcpay_prepare_intention_for_capture', $order );
 
 			$intent = $this->payments_api_client->capture_intention(
 				$intent_id,
@@ -2181,9 +2178,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} catch ( API_Exception $e ) {
 			try {
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
-				$request = Get_Intention::create();
-				$request->set_intent_id( $order->get_transaction_id() );
-				$intent = $request->send( 'wcpay_get_intent_request', $order );
+				$request = Get_Intention::create( $order->get_transaction_id() );
+				$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
 				$status = $intent->get_status();
 				if ( 'canceled' !== $status ) {
@@ -2381,9 +2377,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $amount > 0 ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
-				$request = Get_Intention::create();
-				$request->set_intent_id( $intent_id );
-				$intent = $request->send( 'wcpay_get_intent_request', $order );
+				$request = Get_Intention::create( $intent_id );
+				$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
 				$status    = $intent->get_status();
 				$charge    = $intent->get_charge();

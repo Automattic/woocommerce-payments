@@ -307,11 +307,7 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention();
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( $intent_id );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -332,11 +328,7 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 		$mock_order = WC_Helper_Order::create_order();
 		$intent_id  = 'pi_paymentIntentID';
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( $intent_id );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )

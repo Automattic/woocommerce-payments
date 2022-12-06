@@ -271,8 +271,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	public function generate_print_receipt( $request ) {
 		try {
 			/* Collect the data, available on the server side. */
-			$wcpay_request = Get_Intention::create();
-			$wcpay_request->set_intent_id( $request->get_param( 'payment_intent_id' ) );
+			$wcpay_request  = Get_Intention::create( $request->get_param( 'payment_intent_id' ) );
 			$payment_intent = $wcpay_request->send( 'wcpay_get_intent_request' );
 			if ( 'succeeded' !== $payment_intent->get_status() ) {
 				throw new \RuntimeException( __( 'Invalid payment intent', 'woocommerce-payments' ) );

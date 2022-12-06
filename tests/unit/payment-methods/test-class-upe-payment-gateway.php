@@ -153,7 +153,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->setMethods(
 				[
 					'create_setup_intention',
-					'update_intention',
 					'get_setup_intent',
 					'get_payment_method',
 					'is_server_connected',
@@ -301,7 +300,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Update_Intention::class );
+		$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
@@ -318,10 +317,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'set_selected_upe_payment_method_type' )
 			->with( '', [] );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'setup_future_usage' );
@@ -403,7 +398,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Update_Intention::class );
+		$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
@@ -420,10 +415,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'set_selected_upe_payment_method_type' )
 			->with( 'giropay', [] );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'setup_future_usage' );
@@ -501,7 +492,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Update_Intention::class );
+		$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
@@ -518,10 +509,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'set_selected_upe_payment_method_type' )
 			->with( '', [] );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'set_payment_country' )
@@ -835,7 +822,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] );
 
-		$request = $this->mock_wcpay_request( Update_Intention::class );
+		$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -864,7 +851,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] );
 
-		$request = $this->mock_wcpay_request( Update_Intention::class );
+		$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -890,7 +877,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] );
 
-		$request = $this->mock_wcpay_request( Update_Intention::class );
+		$request = $this->mock_wcpay_request( Update_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -961,11 +948,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( $intent_id );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1011,11 +994,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( $intent_id );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1118,11 +1097,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( $intent_id );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1598,7 +1573,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$_POST['wc_payment_intent_id'] = $payment_intent_id;
 
-		$request = $this->mock_wcpay_request( Update_Intention::class );
+		$request = $this->mock_wcpay_request( Update_Intention::class, 1, $payment_intent_id );
 
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
@@ -1607,10 +1582,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'set_selected_upe_payment_method_type' )
 			->with( '', [] );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( $payment_intent_id );
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )

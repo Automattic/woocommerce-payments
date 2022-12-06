@@ -619,8 +619,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			// Get payment intent to confirm status.
 			if ( $payment_needed ) {
-				$request = Get_Intention::create();
-				$request->set_intent_id( $intent_id );
+				$request = Get_Intention::create( $intent_id );
 
 				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
 				$client_secret          = $intent->get_client_secret();
@@ -994,9 +993,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$intent_id = $charge_data['payment_intent'] ?? $order->get_meta( '_intent_id' );
 
-			$request = Get_Intention::create();
-			$request->set_intent_id( $intent_id );
-			$intent = $request->send( 'wcpay_get_intent_request', $order );
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
 			$intent_status = $intent->get_status();
 			$error_message = esc_html( rtrim( $charge_data['failure_message'], '.' ) );

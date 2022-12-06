@@ -247,8 +247,7 @@ class WC_Payments_Invoice_Service {
 	 */
 	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
 		try {
-			$request = Get_Intention::create();
-			$request->set_intent_id( $intent_id );
+			$request       = Get_Intention::create( $intent_id );
 			$intent_object = $request->send( 'wcpay_get_intent_request', $order );
 
 		} catch ( API_Exception $e ) {

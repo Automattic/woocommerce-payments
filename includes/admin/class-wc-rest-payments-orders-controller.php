@@ -141,9 +141,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Do not process intents that can't be captured.
-			$request = Get_Intention::create();
-			$request->set_intent_id( $intent_id );
-			$intent                   = $request->send( 'wcpay_get_intent_request', $order );
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
@@ -246,9 +246,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Do not process intents that can't be captured.
-			$request = Get_Intention::create();
-			$request->set_intent_id( $intent_id );
-			$intent = $request->send( 'wcpay_get_intent_request', $order );
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';

@@ -262,11 +262,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$receipt = 'receipt';
 
-		$request = $this->mock_wcpay_request( Get_Intention::class, 1 );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( 'pi_mock' );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -426,11 +422,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function test_generate_print_receipt_invalid_payment_error() {
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( 'pi_mock' );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -462,11 +454,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function test_generate_print_receipt_handle_api_exceptions(): void {
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( 'pi_mock' );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -501,11 +489,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$charge = $this->mock_charge( '42' );
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( 'pi_mock' );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -547,11 +531,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$charge = $this->mock_charge( $order->get_id() );
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( 'pi_mock' );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -596,11 +576,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$settings = $this->mock_settings();
 
-		$request = $this->mock_wcpay_request( Get_Intention::class );
-
-		$request->expects( $this->once() )
-			->method( 'set_intent_id' )
-			->with( 'pi_mock' );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 1, 'pi_mock' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
