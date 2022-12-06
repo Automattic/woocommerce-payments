@@ -1903,15 +1903,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$current_order->set_status(
-			'cancelled',
+		$session_order->add_order_note(
 			sprintf(
 				/* translators: order ID integer number */
-				__( 'WooCommerce Payments: detected duplicate cart content in order ID %d.', 'woocommerce-payments' ),
-				$session_order->get_id()
+				__( 'WooCommerce Payments: detected and deleted order ID %d, which has duplicate cart content with this order.', 'woocommerce-payments' ),
+				$current_order->get_id()
 			)
 		);
-		$current_order->save();
+		$current_order->delete();
+
 		$this->remove_session_processing_order( $session_order_id );
 
 		$return_url = $this->get_return_url( $session_order );
