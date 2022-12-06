@@ -15,7 +15,7 @@ use WC_Payments_API_Client;
 /**
  * Request class for getting intents.
  */
-class Get_Intent extends Request {
+class Get_Intention extends Request {
 
 
 	/**

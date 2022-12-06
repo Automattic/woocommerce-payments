@@ -8,7 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
-use WCPay\Core\Server\Request\Create_Intent;
+use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\WooPay_Create_Intent;
 
 /**
@@ -43,32 +43,32 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_exception_will_throw_if_amount_is_negative_number() {
-		$request = new Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request = new Create_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->set_amount( -1 );
 	}
 	public function test_exception_will_throw_if_amount_is_not_set() {
-		$request = new Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request = new Create_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->set_currency_code( 'usd' );
 		$request->get_params();
 	}
 	public function test_exception_will_throw_if_currency_is_not_set() {
-		$request = new Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request = new Create_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->set_amount( 1 );
 		$request->get_params();
 	}
 
 	public function test_exception_will_throw_if_amount_parameter_is_changed_when_filter_is_applied() {
-		$request = new Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request = new Create_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Immutable_Parameter_Exception::class );
 		$request->set_amount( 1 );
 		$request->set_currency_code( 'usd' );
 		add_filter(
 			'test_exception_will_throw_if_immutable_parameter_is_changed_when_filter_is_applied',
 			function() {
-				$new_class = new class( $this->mock_api_client, $this->mock_wc_payments_http_client) extends Create_Intent {
+				$new_class = new class( $this->mock_api_client, $this->mock_wc_payments_http_client) extends Create_Intention {
 
 				};
 				$new_class->set_amount( 3 );
@@ -79,13 +79,13 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 		$request->apply_filters( 'test_exception_will_throw_if_immutable_parameter_is_changed_when_filter_is_applied' );
 	}
 
-	public function test_create_intent_request_will_be_created_() {
+	public function test_create_intent_request_will_be_created() {
 		$amount   = 1;
 		$currency = 'usd';
-		$request  = new Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request  = new Create_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_amount( $amount );
 		$request->set_currency_code( $currency );
-		$this->assertInstanceOf( Create_Intent::class, $request );
+		$this->assertInstanceOf( Create_Intention::class, $request );
 		$params = $request->get_params();
 
 		$this->assertIsArray( $params );
@@ -97,7 +97,7 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( WC_Payments_API_Client::INTENTIONS_API, $request->get_api() );
 	}
 
-	public function test_woopay_create_intent_request_will_be_created_() {
+	public function test_woopay_create_intent_request_will_be_created() {
 		$amount   = 1;
 		$currency = 'usd';
 		$request  = new WooPay_Create_Intent( $this->mock_api_client, $this->mock_wc_payments_http_client );

@@ -11,9 +11,9 @@ use WC_Order;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Explicit_Price_Formatter;
 use WCPay\Constants\Payment_Method;
-use WCPay\Core\Server\Request\Create_Intent;
+use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
-use WCPay\Core\Server\Request\Get_Intent;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WP_User;
@@ -308,7 +308,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id, true );
 
 		try {
-			$request = Create_Intent::create();
+			$request = Create_Intention::create();
 			$request->set_amount( $converted_amount );
 			$request->set_currency_code( strtolower( $currency ) );
 			$request->set_payment_method_types( array_values( $enabled_payment_methods ) );
@@ -621,7 +621,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			// Get payment intent to confirm status.
 			if ( $payment_needed ) {
-				$request = Get_Intent::create();
+				$request = Get_Intention::create();
 				$request->set_intent_id( $intent_id );
 
 				$intent                 = $request->send( 'wcpay_get_intent_request', $order );
@@ -996,7 +996,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$intent_id = $charge_data['payment_intent'] ?? $order->get_meta( '_intent_id' );
 
-			$request = Get_Intent::create();
+			$request = Get_Intention::create();
 			$request->set_intent_id( $intent_id );
 			$intent = $request->send( 'wcpay_get_intent_request', $order );
 

@@ -9,18 +9,12 @@ namespace WCPay\Payment_Methods;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Type;
-use WCPay\Core\Server\Request\Create_Intent;
-use WCPay\Core\Server\Request\Get_Intent;
+use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Connection_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
-use WCPay\Logger;
-use WCPay\MultiCurrency\Currency;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
-
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
@@ -28,14 +22,9 @@ use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
 use WC_Payments_Token_Service;
 use WC_Payments_Order_Service;
-use WC_Payments;
-use WC_Customer;
 use WC_Helper_Order;
 use WC_Helper_Intention;
 use WC_Helper_Token;
-use WC_Payments_Utils;
-use WC_Subscriptions;
-use WC_Subscriptions_Cart;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPAY_UnitTestCase;
 use WP_User;
@@ -163,7 +152,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->setMethods(
 				[
-					'create_intention',
 					'create_setup_intention',
 					'update_intention',
 					'get_setup_intent',
@@ -593,7 +581,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 		$intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
-		$request  = $this->mock_wcpay_request( Create_Intent::class );
+		$request  = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( $intent->get_amount() );
@@ -640,7 +628,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 		$intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
-		$request  = $this->mock_wcpay_request( Create_Intent::class );
+		$request  = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( $intent->get_amount() );
@@ -687,7 +675,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id = $order->get_id();
 		$intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
 		$this->mock_upe_gateway->settings['manual_capture'] = 'no';
-		$request = $this->mock_wcpay_request( Create_Intent::class );
+		$request = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( $intent->get_amount() );
@@ -734,7 +722,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id = $order->get_id();
 		$intent   = WC_Helper_Intention::create_intention( [ 'status' => 'requires_payment_method' ] );
 		$this->mock_upe_gateway->settings['manual_capture'] = 'yes';
-		$request = $this->mock_wcpay_request( Create_Intent::class );
+		$request = $this->mock_wcpay_request( Create_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
@@ -973,7 +961,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -1023,7 +1011,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -1130,7 +1118,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				$this->returnValue( [ $user, $customer_id ] )
 			);
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -1477,7 +1465,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Create_Intent::class );
+		$request = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( $intent->get_amount() );
@@ -1532,7 +1520,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Create_Intent::class, 2 );
+		$request = $this->mock_wcpay_request( Create_Intention::class, 2 );
 
 		$request->expects( $this->exactly( 2 ) )
 			->method( 'set_amount' )

@@ -8,8 +8,8 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Constants\Payment_Method;
-use WCPay\Core\Server\Request\Create_Intent;
-use WCPay\Core\Server\Request\Get_Intent;
+use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 
@@ -141,7 +141,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Do not process intents that can't be captured.
-			$request = Get_Intent::create();
+			$request = Get_Intention::create();
 			$request->set_intent_id( $intent_id );
 			$intent                   = $request->send( 'wcpay_get_intent_request', $order );
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
@@ -246,7 +246,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Do not process intents that can't be captured.
-			$request = Get_Intent::create();
+			$request = Get_Intention::create();
 			$request->set_intent_id( $intent_id );
 			$intent = $request->send( 'wcpay_get_intent_request', $order );
 
@@ -364,7 +364,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$metadata                 = $request->get_param( 'metadata' ) ?? [];
 			$metadata['order_number'] = $order->get_order_number();
 
-			$wcpay_server_request = Create_Intent::create();
+			$wcpay_server_request = Create_Intention::create();
 			$wcpay_server_request->set_currency_code( $currency );
 			$wcpay_server_request->set_amount( WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ) );
 			if ( $customer_id ) {

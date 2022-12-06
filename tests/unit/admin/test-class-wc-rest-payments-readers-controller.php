@@ -8,7 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_REST_Payments_Reader_Controller as Controller;
 use WCPay\Core\Server\Request\Get_Charge;
-use WCPay\Core\Server\Request\Get_Intent;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 
 require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-printed-receipt-sample-order.php';
@@ -262,7 +262,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$receipt = 'receipt';
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -426,7 +426,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function test_generate_print_receipt_invalid_payment_error() {
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -462,7 +462,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function test_generate_print_receipt_handle_api_exceptions(): void {
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -501,7 +501,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$charge = $this->mock_charge( '42' );
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -547,7 +547,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$charge = $this->mock_charge( $order->get_id() );
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -596,7 +596,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 
 		$settings = $this->mock_settings();
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )

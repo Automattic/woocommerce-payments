@@ -6,7 +6,7 @@
  */
 
 use WCPay\Core\Server\Request\Get_Charge;
-use WCPay\Core\Server\Request\Get_Intent;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -271,7 +271,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	public function generate_print_receipt( $request ) {
 		try {
 			/* Collect the data, available on the server side. */
-			$wcpay_request = Get_Intent::create();
+			$wcpay_request = Get_Intention::create();
 			$wcpay_request->set_intent_id( $request->get_param( 'payment_intent_id' ) );
 			$payment_intent = $wcpay_request->send( 'wcpay_get_intent_request' );
 			if ( 'succeeded' !== $payment_intent->get_status() ) {

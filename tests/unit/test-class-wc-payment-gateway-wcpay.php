@@ -7,7 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Get_Charge;
-use WCPay\Core\Server\Request\Get_Intent;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Constants\Payment_Type;
@@ -786,7 +786,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -852,7 +852,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -915,7 +915,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -981,7 +981,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -1043,7 +1043,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
 
-		$request = $this->mock_wcpay_request( Get_Intent::class, 2 );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 2 );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -1110,7 +1110,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$request = $this->mock_wcpay_request( Get_Intent::class, 2 );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 2 );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -1173,7 +1173,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'canceled' ] );
 
-		$request = $this->mock_wcpay_request( Get_Intent::class, 2 );
+		$request = $this->mock_wcpay_request( Get_Intention::class, 2 );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -1251,7 +1251,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'payment_type'   => Payment_Type::SINGLE(),
 		];
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -1311,7 +1311,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_intent = WC_Helper_Intention::create_intention( [ 'status' => 'requires_capture' ] );
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -1374,7 +1374,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'cancel_intention' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'test', 123 ) ) );
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'set_intent_id' )
@@ -1413,7 +1413,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'cancel_intention' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'test', 123 ) ) );
 
-		$request = $this->mock_wcpay_request( Get_Intent::class );
+		$request = $this->mock_wcpay_request( Get_Intention::class );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )

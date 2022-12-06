@@ -12,9 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Core\Mode;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
-use WCPay\Core\Server\Request\Create_Intent;
+use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
-use WCPay\Core\Server\Request\Get_Intent;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -962,7 +962,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = null;
 			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the intent is included in the request use that intent.
-				$request = Get_Intent::create();
+				$request = Get_Intention::create();
 				$request->set_intent_id( $platform_checkout_intent_id );
 				$intent = $request->send( 'wcpay_get_intent_request', $order );
 
@@ -1511,7 +1511,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
 		} elseif ( $order->meta_exists( '_intent_id' ) ) {
 			$payment_intent_id = $order->get_meta( '_intent_id', true );
-			$request           = Get_Intent::create();
+			$request           = Get_Intention::create();
 			$request->set_intent_id( $payment_intent_id );
 			$payment_intent = $request->send( 'wcpay_get_intent_request', $order );
 
@@ -2093,7 +2093,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		try {
 			$intent_id = $order->get_transaction_id();
 
-			$request = Get_Intent::create();
+			$request = Get_Intention::create();
 			$request->set_intent_id( $intent_id );
 			$intent = $request->send( 'wcpay_get_intent_request', $order );
 
@@ -2182,7 +2182,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		} catch ( API_Exception $e ) {
 			try {
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
-				$request = Get_Intent::create();
+				$request = Get_Intention::create();
 				$request->set_intent_id( $order->get_transaction_id() );
 				$intent = $request->send( 'wcpay_get_intent_request', $order );
 
@@ -2382,7 +2382,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $amount > 0 ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
-				$request = Get_Intent::create();
+				$request = Get_Intention::create();
 				$request->set_intent_id( $intent_id );
 				$intent = $request->send( 'wcpay_get_intent_request', $order );
 

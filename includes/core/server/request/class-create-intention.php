@@ -1,6 +1,6 @@
 <?php
 /**
- * Class file for WCPay\Core\Server\Request\Create_Intent.
+ * Class file for WCPay\Core\Server\Request\Create_Intention.
  *
  * @package WooCommerce Payments
  */
@@ -15,7 +15,7 @@ use WC_Payments_API_Client;
 /**
  * Request class for creating intents.
  */
-class Create_Intent extends Request {
+class Create_Intention extends Request {
 	use Intention;
 	use Level3;
 
