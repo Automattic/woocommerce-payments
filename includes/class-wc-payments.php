@@ -1339,18 +1339,18 @@ class WC_Payments {
 	 * Creates a new request object for a server call.
 	 *
 	 * @param  string $class_name The name of the request class. Must extend WCPay\Core\Server\Request.
-	 * @param  array  ...$constructor_arguments Used to pass constructor arguments.
+	 * @param  mixed  $id         The item ID, if the request needs it (Optional).
 	 * @return Request
 	 * @throws Exception          If the request class is not really a request.
 	 */
-	public static function create_request( $class_name, ...$constructor_arguments ) {
+	public static function create_request( $class_name, $id = null ) {
 		/**
 		 * Used for unit tests only, as requests have dependencies, which are not publicly available in live mode.
 		 *
 		 * @param Request $request    Null, but if the filter returns a request, it will be used.
 		 * @param string  $class_name The name of the request class.
 		 */
-		$request = apply_filters( 'wcpay_create_request', null, $class_name );
+		$request = apply_filters( 'wcpay_create_request', null, $class_name, $id );
 		if ( $request instanceof Request ) {
 			return $request;
 		}
@@ -1365,7 +1365,7 @@ class WC_Payments {
 			);
 		}
 
-		return new $class_name( self::get_payments_api_client(), self::get_wc_payments_http(), ...$constructor_arguments );
+		return new $class_name( self::get_payments_api_client(), self::get_wc_payments_http(), $id );
 
 	}
 }

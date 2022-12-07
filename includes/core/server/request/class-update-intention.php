@@ -29,35 +29,18 @@ class Update_Intention extends Request {
 		'metadata'      => [],
 	];
 
-	/**
-	 * Intent id.
-	 *
-	 * @var string $intent_id
-	 */
-	private $intent_id;
+
 
 	/**
-	 * Action.
+	 * Sets the intent ID, which will be used in the request URL.
 	 *
-	 * @var string|null $action
-	 */
-	private $action;
-
-	/**
-	 * Class constructor.
-	 *
-	 * @param WC_Payments_API_Client     $api_client Api client.
-	 * @param WC_Payments_Http_Interface $http_interface Http interface.
-	 * @param string                     $intent_id Intent id.
-	 * @param string|null                $action Intent action (capture/delete/confirm,...).
+	 * @param string $id Sets the intent ID, which will be used in the request URL.
 	 *
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_Http_Interface $http_interface, string $intent_id, string $action = null ) {
-		$this->validate_stripe_id( $intent_id );
-		$this->intent_id = $intent_id;
-		$this->action    = $action;
-		parent::__construct( $api_client, $http_interface );
+	protected function set_id( string $id ) {
+		$this->validate_stripe_id( $id );
+		$this->id = $id;
 	}
 
 
@@ -69,8 +52,7 @@ class Update_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
-		$endpoint = WC_Payments_API_Client::INTENTIONS_API . '/' . $this->intent_id;
-		return $this->action ? $endpoint . '/' . $this->action : $endpoint;
+		return WC_Payments_API_Client::INTENTIONS_API . '/' . $this->id;
 	}
 
 	/**

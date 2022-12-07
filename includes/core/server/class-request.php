@@ -75,25 +75,43 @@ abstract class Request {
 	protected $http_interface;
 
 	/**
+	 * Holds the ID of an item, which is included in the request URL.
+	 *
+	 * @var mixed (int|string)
+	 */
+	protected $id;
+
+	/**
 	 * Creates a new request, loading dependencies in there.
 	 *
-	 * @param mixed ...$constructor_arguments Constructor arguments.
+	 * @param mixed $id The identifier for various update/get/delete requests.
 	 *
 	 * @return static
 	 */
-	public static function create( ...$constructor_arguments ) {
-		return WC_Payments::create_request( static::class, ...$constructor_arguments );
+	public static function create( $id = null ) {
+		return WC_Payments::create_request( static::class, $id );
 	}
 
 	/**
 	 * Prevents the class from being constructed directly.
 	 *
-	 * @param WC_Payments_API_Client     $api_client     The API client to use to send requests.
+	 * @param WC_Payments_API_Client     $api_client The API client to use to send requests.
 	 * @param WC_Payments_Http_Interface $http_interface The HTTP interface for the server.
+	 * @param mixed                      $id An optional ID for the item that will be updated/retrieved/deleted.
+	 *
+	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_Http_Interface $http_interface ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_Http_Interface $http_interface, $id = null ) {
 		$this->api_client     = $api_client;
 		$this->http_interface = $http_interface;
+
+		if ( method_exists( $this, 'set_id' ) ) {
+			if ( null !== $id ) {
+				$this->set_id( $id );
+			} else {
+				throw new Invalid_Request_Parameter_Exception( 'This request requires an item ID.', 'wcpay_core_invalid_request_parameter_missing_id' );
+			}
+		}
 	}
 
 	/**
