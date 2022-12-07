@@ -28,6 +28,7 @@ const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
 const WC_ADMIN_BASE_URL = baseUrl + 'wp-admin/';
 const MY_ACCOUNT_SUBSCRIPTIONS = baseUrl + 'my-account/subscriptions';
+const MY_ACCOUNT_EDIT = baseUrl + 'my-account/edit-account';
 const WCPAY_DISPUTES =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/disputes';
 const WCPAY_DEPOSITS =
@@ -36,6 +37,9 @@ const WCPAY_TRANSACTIONS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
 const WCPAY_MULTI_CURRENCY =
 	baseUrl + 'wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency';
+const WCPAY_PAYMENT_SETTINGS =
+	baseUrl +
+	'wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments';
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
@@ -111,6 +115,17 @@ export const shopperWCP = {
 	goToSubscriptions: async () => {
 		await page.goto( MY_ACCOUNT_SUBSCRIPTIONS, {
 			waitUntil: 'networkidle0',
+		} );
+	},
+
+	changeAccountCurrencyTo: async ( currencyToSet ) => {
+		await page.goto( MY_ACCOUNT_EDIT, {
+			waitUntil: 'networkidle0',
+		} );
+
+		await page.select( '#wcpay_selected_currency', currencyToSet );
+		await expect( page ).toClick( 'button', {
+			text: 'Save changes',
 		} );
 	},
 
@@ -305,6 +320,33 @@ export const merchantWCP = {
 		await expect( page ).toClick( 'input[type="submit"]' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
+		} );
+	},
+
+	enablePaymentMethod: async ( paymentMethod ) => {
+		await page.goto( WCPAY_PAYMENT_SETTINGS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		await page.$eval( paymentMethod, ( method ) => method.click() );
+		await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
+		await expect( page ).toClick( 'button', {
+			text: 'Save changes',
+		} );
+	},
+
+	disablePaymentMethod: async ( paymentMethod ) => {
+		await page.goto( WCPAY_PAYMENT_SETTINGS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		await page.$eval( paymentMethod, ( method ) => method.click() );
+		await expect( page ).toClick( 'button', {
+			text: 'Remove',
+		} );
+		await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
+		await expect( page ).toClick( 'button', {
+			text: 'Save changes',
 		} );
 	},
 

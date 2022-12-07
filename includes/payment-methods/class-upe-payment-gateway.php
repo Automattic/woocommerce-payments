@@ -196,11 +196,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$order_id                  = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
 			$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : '';
+			$fingerprint               = isset( $_POST['wcpay-fingerprint'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fingerprint'] ) ) : '';
 			$save_payment_method       = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false;
 			$selected_upe_payment_type = $this->stripe_id;
 			$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
 
-			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country ), 200 );
+			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country, $fingerprint ), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -270,9 +271,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			// If paying from order, we need to get the total from the order instead of the cart.
-			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
+			$order_id    = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
+			$fingerprint = isset( $_POST['wcpay-fingerprint'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fingerprint'] ) ) : '';
 
-			$response = $this->create_payment_intent( $order_id );
+			$response = $this->create_payment_intent( $order_id, $fingerprint );
 
 			// Encrypt client secret before exposing it to the browser.
 			if ( $response['client_secret'] ) {
@@ -299,12 +301,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Creates payment intent using current cart or order and store details.
 	 *
-	 * @param int $order_id The id of the order if intent created from Order.
+	 * @param int|null $order_id The id of the order if intent created from Order.
+	 * @param string   $fingerprint User fingerprint.
 	 *
 	 * @return array
 	 * @throws Process_Payment_Exception - If payment method is not enabled.
 	 */
-	public function create_payment_intent( $order_id = null ) {
+	public function create_payment_intent( $order_id = null, $fingerprint = '' ) {
 		$amount   = WC()->cart->get_total( '' );
 		$currency = get_woocommerce_currency();
 		$number   = 0;
@@ -345,7 +348,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				$payment_method_types,
 				$order_id ?? 0,
-				$capture_method
+				$capture_method,
+				[ 'fingerprint' => $fingerprint ]
 			);
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$minimum_amount = $e->get_minimum_amount();
@@ -364,7 +368,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				[ $this->payment_method->get_id() ],
 				$order_id ?? 0,
-				$capture_method
+				$capture_method,
+				[ 'fingerprint' => $fingerprint ]
 			);
 		}
 

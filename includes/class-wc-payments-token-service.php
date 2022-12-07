@@ -18,8 +18,11 @@ use WCPay\Constants\Payment_Method;
  * Seen in checkout page and my account->add payment method page.
  */
 class WC_Payments_Token_Service {
-
-	const REUSABLE_GATEWAYS = [ WC_Payment_Gateway_WCPay::GATEWAY_ID, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA, WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK ];
+	const REUSABLE_GATEWAYS_BY_PAYMENT_METHOD = [
+		Payment_Method::CARD => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		Payment_Method::SEPA => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
+		Payment_Method::LINK => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK,
+	];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -49,6 +52,7 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
+		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_sepa_label' ] );
 	}
 
 	/**
@@ -111,7 +115,7 @@ class WC_Payments_Token_Service {
 	 */
 	public function woocommerce_get_customer_payment_tokens( $tokens, $user_id, $gateway_id ) {
 
-		if ( ( ! empty( $gateway_id ) && ! in_array( $gateway_id, self::REUSABLE_GATEWAYS, true ) ) || ! is_user_logged_in() ) {
+		if ( ( ! empty( $gateway_id ) && ! in_array( $gateway_id, self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) || ! is_user_logged_in() ) {
 			return $tokens;
 		}
 
@@ -131,7 +135,7 @@ class WC_Payments_Token_Service {
 			$stored_tokens = [];
 
 			foreach ( $tokens as $token ) {
-				if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS, true ) ) {
+				if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
 					$stored_tokens[ $token->get_token() ] = $token;
 				}
 			}
@@ -166,13 +170,7 @@ class WC_Payments_Token_Service {
 			if ( ! isset( $payment_method['type'] ) ) {
 				continue;
 			}
-
-			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) && (
-					( Payment_Method::CARD === $payment_method['type'] && WC_Payment_Gateway_WCPay::GATEWAY_ID === $gateway_id ) ||
-					( Payment_Method::SEPA === $payment_method['type'] && WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA === $gateway_id ) ||
-					( Payment_Method::LINK === $payment_method['type'] && WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK === $gateway_id ) ) ||
-					empty( $gateway_id )
-				) {
+			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) && ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD[ $payment_method['type'] ] === $gateway_id || empty( $gateway_id ) ) ) {
 				$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
 				$tokens[ $token->get_id() ] = $token;
 			} else {
@@ -200,7 +198,7 @@ class WC_Payments_Token_Service {
 	 */
 	public function woocommerce_payment_token_deleted( $token_id, $token ) {
 
-		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS, true ) ) {
+		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
 			try {
 				$this->payments_api_client->detach_payment_method( $token->get_token() );
 				// Clear cached payment methods.
@@ -219,7 +217,7 @@ class WC_Payments_Token_Service {
 	 */
 	public function woocommerce_payment_token_set_default( $token_id, $token ) {
 
-		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS, true ) ) {
+		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
 			if ( $customer_id ) {
 				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
@@ -243,5 +241,19 @@ class WC_Payments_Token_Service {
 		}
 
 		return $item;
+	}
+
+	/**
+	 * Normalizes the SEPA IBAN label on My Account page.
+	 *
+	 * @param string $label Token label.
+	 * @return string $label Capitalized SEPA IBAN label.
+	 */
+	public function normalize_sepa_label( $label ) {
+		if ( 'sepa iban' === strtolower( $label ) ) {
+			return 'SEPA IBAN';
+		}
+
+		return $label;
 	}
 }

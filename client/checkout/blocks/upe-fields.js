@@ -14,6 +14,7 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from '@wordpress/element';
+import { useDispatch, useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -29,8 +30,8 @@ import {
 import { WC_STORE_CART } from '../constants.js';
 import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
-import { useDispatch, useSelect } from '@wordpress/data';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
+import { useFingerprint } from './hooks';
 
 const useCustomerData = () => {
 	const { customerData, isInitialized } = useSelect( ( select ) => {
@@ -74,6 +75,7 @@ const WCPayUPEFields = ( {
 	paymentIntentSecret,
 	errorMessage,
 	shouldSavePayment,
+	fingerprint,
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
@@ -246,6 +248,7 @@ const WCPayUPEFields = ( {
 							wcpay_selected_upe_payment_type: selectedUPEPaymentType,
 							'wcpay-fraud-prevention-token':
 								fraudPreventionToken ?? '',
+							'wcpay-fingerprint': fingerprint,
 						},
 					},
 				};
@@ -257,6 +260,7 @@ const WCPayUPEFields = ( {
 			isUPEComplete,
 			selectedUPEPaymentType,
 			shouldSavePayment,
+			fingerprint,
 		]
 	);
 
@@ -271,7 +275,8 @@ const WCPayUPEFields = ( {
 							orderId,
 							shouldSavePayment ? 'yes' : 'no',
 							selectedUPEPaymentType,
-							paymentCountry
+							paymentCountry,
+							fingerprint
 						);
 
 						return confirmUPEPayment(
@@ -379,6 +384,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	);
 	const [ fontRules ] = useState( getFontRulesFromPage() );
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+	const [ fingerprint ] = useFingerprint();
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
@@ -393,12 +399,15 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 			generateUPEAppearance();
 		}
 
-		if ( paymentIntentId || hasRequestedIntent ) {
+		if ( paymentIntentId || hasRequestedIntent || ! fingerprint ) {
 			return;
 		}
 		async function createIntent( paymentMethodId ) {
 			try {
-				const response = await api.createIntent( paymentMethodId );
+				const response = await api.createIntent(
+					fingerprint,
+					paymentMethodId
+				);
 				const cartHash = getCookieValue( 'woocommerce_cart_hash' );
 				if ( cartHash ) {
 					paymentMethodsConfig[
@@ -447,6 +456,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		api,
 		errorMessage,
 		appearance,
+		fingerprint,
 	] );
 
 	if ( ! clientSecret ) {
@@ -478,6 +488,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 				paymentIntentId={ paymentIntentId }
 				paymentIntentSecret={ clientSecret }
 				errorMessage={ errorMessage }
+				fingerprint={ fingerprint }
 				{ ...props }
 			/>
 		</Elements>

@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Return a fresh instance of the renewal order after creating it. Fixes caching issues on HPOS sites where the returned order has no line items.

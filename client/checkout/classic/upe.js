@@ -28,6 +28,10 @@ import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
+import {
+	getFingerprint,
+	appendFingerprintInputToForm,
+} from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -70,6 +74,7 @@ jQuery( function ( $ ) {
 		},
 		apiRequest
 	);
+	let fingerprint = null;
 
 	const hiddenBillingFields = {
 		name:
@@ -215,6 +220,16 @@ jQuery( function ( $ ) {
 			return;
 		}
 
+		if ( ! fingerprint ) {
+			try {
+				const { visitorId } = await getFingerprint();
+				fingerprint = visitorId;
+			} catch ( error ) {
+				// Do not mount element if fingerprinting is not available
+				return;
+			}
+		}
+
 		/*
 		 * Trigger this event to ensure the tokenization-form.js init
 		 * is executed.
@@ -248,7 +263,11 @@ jQuery( function ( $ ) {
 			try {
 				const newIntent = isSetupIntent
 					? await api.initSetupIntent( paymentMethodType )
-					: await api.createIntent( paymentMethodType, orderId );
+					: await api.createIntent(
+							fingerprint,
+							paymentMethodType,
+							orderId
+					  );
 				intentId = newIntent.id;
 				clientSecret = newIntent.client_secret;
 			} catch ( error ) {
@@ -572,7 +591,8 @@ jQuery( function ( $ ) {
 			formFields.wcpay_payment_country = upeComponents.country;
 			const response = await api.processCheckout(
 				upeComponents.paymentIntentId,
-				formFields
+				formFields,
+				fingerprint ? fingerprint : ''
 			);
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {
@@ -740,10 +760,21 @@ jQuery( function ( $ ) {
 				return false;
 			}
 		}
+
+		appendFingerprintInputToForm( $( this ), fingerprint );
 	} );
 
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
+		// Skip adding legacy cards as UPE payment methods.
+		if (
+			'woocommerce_payments' ===
+			$(
+				"#add_payment_method input:checked[name='payment_method']"
+			).val()
+		) {
+			return;
+		}
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
 			const paymentMethodType = getSelectedGatewayPaymentMethod();
 			const paymentIntentId =
