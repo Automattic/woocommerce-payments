@@ -109,15 +109,21 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 
-		$wcpay_config = WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-
 		$script_src_url    = plugins_url( 'dist/platform-checkout-express-button.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/platform-checkout-express-button.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', $script_src_url, $script_asset['dependencies'], WC_Payments::get_file_version( 'dist/platform-checkout-express-button.js' ), true );
 
-		wp_localize_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'wcpay_config', $wcpay_config );
+		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
+
+		wp_add_inline_script(
+			'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON',
+			"
+			var wcpay_config = wcpay_config || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
+			",
+			'before'
+		);
 
 		wp_set_script_translations( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'woocommerce-payments' );
 
