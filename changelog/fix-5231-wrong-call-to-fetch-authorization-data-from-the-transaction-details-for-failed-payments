@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix wrong capture deadline date in the payment details page.
+Fix wrong time displayed in the "You need to capture this charge before..." text on the payment details page.
