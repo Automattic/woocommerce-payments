@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event';
  */
 import { WoopayExpressCheckoutButton } from '../woopay-express-checkout-button';
 import { expressCheckoutIframe } from '../express-checkout-iframe';
-import WCPayAPI from '../../../api';
+import WCPayAPI from 'wcpay/checkout/api';
 
 jest.mock( '../express-checkout-iframe', () => ( {
 	__esModule: true,

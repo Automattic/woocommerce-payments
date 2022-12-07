@@ -16,13 +16,14 @@ jest.mock( '../woopay-express-checkout-button', () => ( {
 } ) );
 
 describe( 'renderPlatformCheckoutExpressButton', () => {
+	// placeholder to attach react component.
+	const expressButtonContainer = document.createElement( 'div' );
+	expressButtonContainer.setAttribute(
+		'id',
+		'wcpay-platform-checkout-button'
+	);
+
 	test( 'render the button component in placeholder', () => {
-		// placeholder to attach react component.
-		const expressButtonContainer = document.createElement( 'div' );
-		expressButtonContainer.setAttribute(
-			'id',
-			'wcpay-platform-checkout-button'
-		);
 		document.body.appendChild( expressButtonContainer );
 
 		// trigger window load.
@@ -34,6 +35,8 @@ describe( 'renderPlatformCheckoutExpressButton', () => {
 	} );
 
 	test( 'should not render the express button component if placeholder is absent', () => {
+		document.body.removeChild( expressButtonContainer );
+
 		// trigger window load.
 		window.dispatchEvent( new Event( 'load' ) );
 
