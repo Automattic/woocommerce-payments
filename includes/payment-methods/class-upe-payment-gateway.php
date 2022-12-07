@@ -28,6 +28,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payments;
 use WC_Payments_Utils;
+use WC_Payments_Features;
 
 use Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
