@@ -184,9 +184,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					className="save-details-form form-row"
 					data-testid="save-user-form"
 				>
-					<span>
-						{ __( 'Mobile phone number', 'woocommerce-payments' ) }
-					</span>
 					<PhoneNumberInput
 						value={
 							null === phoneNumber
