@@ -6,6 +6,9 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
 import { WC_STORE_CART } from '../../../checkout/constants';
 import { useDispatch } from '@wordpress/data';
+// eslint-disable-next-line import/no-unresolved
+import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
+import { Icon, info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -16,8 +19,8 @@ import AdditionalInformation from './additional-information';
 import PhoneNumberInput from 'settings/phone-input';
 import Agreement from './agreement';
 import { getConfig } from 'utils/checkout';
-// eslint-disable-next-line import/no-unresolved
-import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
+import WooPayIcon from '../../../../assets/images/woopay.svg';
+import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
@@ -153,9 +156,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	}
 
 	return (
-		<>
-			<h3>{ __( 'Remember your details?', 'woocommerce-payments' ) }</h3>
-			<span>
+		<div className="save-details">
+			<div className="save-details-header">
 				<label htmlFor="save_user_in_platform_checkout">
 					<input
 						type="checkbox"
@@ -169,15 +171,17 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					/>
 					<span>
 						{ __(
-							'Save my information for faster checkouts',
+							'Save my information for a faster and secure checkout',
 							'woocommerce-payments'
 						) }
 					</span>
 				</label>
-			</span>
+				<img src={ WooPayIcon } alt="WooPay" className="woopay-logo" />
+				<Icon icon={ info } size={ 36 } />
+			</div>
 			{ isSaveDetailsChecked && (
 				<div
-					className="save-details-form form-row place-order"
+					className="save-details-form form-row"
 					data-testid="save-user-form"
 				>
 					<span>
@@ -208,7 +212,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					<Agreement />
 				</div>
 			) }
-		</>
+		</div>
 	);
 };
 

@@ -1,0 +1,26 @@
+@import '../../../stylesheets/abstracts/colors';
+@import '../../../stylesheets/abstracts/variables';
+
+.platform-checkout-save-new-user-container {
+	.save-details {
+		padding: $gap-small;
+		border: 1px solid $gray-300;
+		border-radius: 3px;
+		transition: height 1s ease-in-out;
+	}
+
+	.save-details-header {
+		display: flex;
+		align-items: center;
+
+		svg {
+			fill: $gray-600;
+		}
+
+		.woopay-logo {
+			height: 17px;
+			margin-left: $gap-small;
+			margin-right: $gap-small;
+		}
+	}
+}
