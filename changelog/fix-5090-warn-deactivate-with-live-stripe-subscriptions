@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+When deactivating WCPay plugin, warn merchant that active WCPay Subscriptions will continue collecting payment.

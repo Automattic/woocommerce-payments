@@ -31,7 +31,6 @@ const WCPayFields = ( {
 	shouldSavePayment,
 } ) => {
 	const [ errorMessage, setErrorMessage ] = useState( null );
-	const [ fingerprint ] = useFingerprint();
 	const isTestMode = getConfig( 'testMode' );
 	const testingInstructions = (
 		<p>
@@ -43,6 +42,12 @@ const WCPayFields = ( {
 			.
 		</p>
 	);
+
+	const [ fingerprint, fingerprintErrorMessage ] = useFingerprint();
+
+	useEffect( () => {
+		setErrorMessage( fingerprintErrorMessage );
+	}, [ fingerprintErrorMessage ] );
 
 	// When it's time to process the payment, generate a Stripe payment method object.
 	useEffect(

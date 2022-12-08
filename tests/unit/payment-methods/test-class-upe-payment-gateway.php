@@ -1669,6 +1669,52 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_remove_upe_setup_intent_from_session() {
+		// Two payment methods (SEPA and giropay) are enabled.
+		$sepa_setup_intent_key    = UPE_Payment_Gateway::KEY_UPE_SETUP_INTENT . '_sepa_debit';
+		$giropay_setup_intent_key = UPE_Payment_Gateway::KEY_UPE_SETUP_INTENT . '_giropay';
+
+		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_payment_methods['card'],
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethods( [ 'wc_payments_get_payment_method_map' ] )
+			->getMock();
+
+		$mock_upe_gateway
+			->expects( $this->once() )
+			->method( 'wc_payments_get_payment_method_map' )
+			->will(
+				$this->returnValue(
+					[
+						'sepa_debit' => $this->mock_payment_methods[ Payment_Method::SEPA ],
+						'giropay'    => $this->mock_payment_methods[ Payment_Method::GIROPAY ],
+					]
+				)
+			);
+
+		// and both SEPA and giropay have a setup intent stored in WC session object.
+		WC()->session->set( $sepa_setup_intent_key, 'pi_test_setup_intent_sepa_debit' );
+		WC()->session->set( $giropay_setup_intent_key, 'pi_test_setup_intent_giropay' );
+
+		$this->assertNotNull( WC()->session->get( $sepa_setup_intent_key ) );
+		$this->assertNotNull( WC()->session->get( $giropay_setup_intent_key ) );
+
+		$mock_upe_gateway->remove_upe_setup_intent_from_session();
+
+		$this->assertNull( WC()->session->get( $sepa_setup_intent_key ) );
+		$this->assertNull( WC()->session->get( $giropay_setup_intent_key ) );
+	}
+
 	/**
 	 * Helper function to mock subscriptions for internal UPE payment methods.
 	 */
