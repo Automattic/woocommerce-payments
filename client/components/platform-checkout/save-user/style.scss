@@ -6,12 +6,12 @@
 		padding: $gap-small;
 		border: 1px solid $gray-300;
 		border-radius: 3px;
-		transition: height 1s ease-in-out;
 	}
 
 	.save-details-header {
 		display: flex;
 		align-items: center;
+		gap: $gap-small;
 
 		svg {
 			fill: $gray-600;
@@ -19,8 +19,6 @@
 
 		.woopay-logo {
 			height: 17px;
-			margin-left: $gap-small;
-			margin-right: $gap-small;
 		}
 	}
 }
