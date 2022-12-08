@@ -52,6 +52,7 @@ export interface CaptureAuthorizationApiResponse {
 export interface GetAuthorizationApiResponse {
 	payment_intent_id: string;
 	is_captured: boolean;
+	created: string;
 }
 
 export interface UpdateAuthorizationAction {

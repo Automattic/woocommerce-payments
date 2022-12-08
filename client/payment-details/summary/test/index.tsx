@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 
 /**
@@ -10,6 +10,7 @@ import React from 'react';
  */
 import PaymentDetailsSummary from '../';
 import { Charge } from 'wcpay/types/charges';
+import { useAuthorization } from 'wcpay/data';
 
 declare const global: {
 	wcpaySettings: {
@@ -24,6 +25,16 @@ declare const global: {
 		};
 	};
 };
+
+jest.mock( 'wcpay/data', () => ( {
+	useAuthorization: jest.fn( () => ( {
+		authorization: null,
+	} ) ),
+} ) );
+
+const mockUseAuthorization = useAuthorization as jest.MockedFunction<
+	typeof useAuthorization
+>;
 
 const getBaseCharge = (): Charge =>
 	( {
@@ -76,6 +87,8 @@ function renderCharge( charge: Charge, isLoading = false ) {
 
 describe( 'PaymentDetailsSummary', () => {
 	beforeEach( () => {
+		jest.clearAllMocks();
+
 		global.wcpaySettings = {
 			isSubscriptionsActive: false,
 			zeroDecimalCurrencies: [],
@@ -83,7 +96,7 @@ describe( 'PaymentDetailsSummary', () => {
 				country: 'US',
 			},
 			featureFlags: {
-				isAuthAndCaptureEnabled: false,
+				isAuthAndCaptureEnabled: true,
 			},
 			currencyData: {
 				US: {
@@ -165,5 +178,41 @@ describe( 'PaymentDetailsSummary', () => {
 
 	test( 'renders loading state', () => {
 		expect( renderCharge( {} as any, true ) ).toMatchSnapshot();
+	} );
+
+	test( 'renders capture section correctly', () => {
+		mockUseAuthorization.mockReturnValueOnce( {
+			authorization: {
+				captured: false,
+				charge_id: 'ch_mock',
+				amount: 1000,
+				currency: 'usd',
+				created: '2019-09-19 17:24:00',
+				order_id: 123,
+				risk_level: 1,
+				customer_country: 'US',
+				customer_email: 'test@example.com',
+				customer_name: 'Test Customer',
+				payment_intent_id: 'pi_mock',
+			},
+			isLoading: false,
+			doCaptureAuthorization: jest.fn(),
+		} );
+		const charge = getBaseCharge();
+		charge.captured = false;
+
+		const container = renderCharge( charge );
+
+		expect(
+			screen.getByRole( 'button', { name: /Capture/i } )
+		).toBeInTheDocument();
+
+		expect(
+			screen.getByText( /You need to capture this charge/i )
+		).toHaveTextContent(
+			'You need to capture this charge before Sep 26, 2019 / 5:24PM'
+		);
+
+		expect( container ).toMatchSnapshot();
 	} );
 } );
