@@ -8,6 +8,7 @@
 namespace WCPay\Core\Server\Request;
 
 use WC_Payments;
+use WC_Payments_Http_Interface;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
@@ -18,28 +19,17 @@ use WC_Payments_API_Client;
 class Get_Charge extends Request {
 
 
-	/**
-	 * Charge id.
-	 *
-	 * @var string|null $intent_id
-	 */
-	private $charge_id = null;
 
 	/**
-	 * Set intent id.
+	 * Sets the intent ID, which will be used in the request URL.
 	 *
-	 * @param string $charge_id Charge id.
+	 * @param string $id Sets the intent ID, which will be used in the request URL.
 	 *
-	 * @return void
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function set_charge_id( string $charge_id ) {
-		$this->validate_stripe_id( $charge_id, [ 'ch' ] );
-
-		// Prevent mutation of charge id. It can be only set once.
-		if ( null === $this->charge_id ) {
-			$this->charge_id = $charge_id;
-		}
+	protected function set_id( string $id ) {
+		$this->validate_stripe_id( $id, [ 'ch' ] );
+		$this->id = $id;
 	}
 
 	/**
@@ -49,10 +39,7 @@ class Get_Charge extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
-		if ( null === $this->charge_id ) {
-			throw new Invalid_Request_Parameter_Exception( __( 'Charge ID is not set.', 'woocommerce-payments' ), 'wcpay_core_request_intent_not_set' );
-		}
-		return WC_Payments_API_Client::CHARGES_API . '/' . $this->charge_id;
+		return WC_Payments_API_Client::CHARGES_API . '/' . $this->id;
 	}
 
 	/**

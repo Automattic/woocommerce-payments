@@ -251,11 +251,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$mock_cart
 			->expects( $this->once() )
 			->method( 'empty_cart' );
-		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
-
-		$charge_request->expects( $this->once() )
-			->method( 'set_charge_id' )
-			->with( 'ch_mock' );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
 
 		$charge_request->expects( $this->once() )
 			->method( 'format_response' )
@@ -319,11 +315,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' )
 			->with( $this->isInstanceOf( WP_User::class ) );
 
-		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
-
-		$charge_request->expects( $this->once() )
-			->method( 'set_charge_id' )
-			->with( 'ch_mock' );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
 
 		$charge_request->expects( $this->once() )
 			->method( 'format_response' )
@@ -426,11 +418,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'empty_cart' );
 
-		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
-
-		$charge_request->expects( $this->once() )
-			->method( 'set_charge_id' )
-			->with( 'ch_mock' );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
 
 		$charge_request->expects( $this->once() )
 			->method( 'format_response' )
@@ -824,11 +812,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'empty_cart' );
 
-		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
-
-		$charge_request->expects( $this->once() )
-			->method( 'set_charge_id' )
-			->with( 'ch_mock' );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
 
 		$charge_request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1193,11 +1177,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
-		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
-
-		$charge_request->expects( $this->once() )
-			->method( 'set_charge_id' )
-			->with( 'ch_mock' );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
 
 		$charge_request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1341,11 +1321,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
-		$charge_request = $this->mock_wcpay_request( Get_Charge::class );
-
-		$charge_request->expects( $this->once() )
-			->method( 'set_charge_id' )
-			->with( 'ch_mock' );
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
 
 		$charge_request->expects( $this->once() )
 			->method( 'format_response' )

@@ -57,11 +57,6 @@ class Update_Intention_Test extends WCPAY_UnitTestCase {
 		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
 	}
 
-	public function test_payment_intent_api_url_when_action_is_set() {
-		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, 'pi_mock' );
-		$this->assertSame( WC_Payments_API_Client::INTENTIONS_API . '/pi_mock/capture', $request->get_api() );
-	}
-
 	public function test_create_intent_request_will_be_created() {
 		$amount       = 1;
 		$currency     = 'usd';

@@ -980,8 +980,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			// Get charge data from WCPay Server.
-			$request = Get_Charge::create();
-			$request->set_charge_id( $charge_id );
+			$request     = Get_Charge::create( $charge_id );
 			$charge_data = $request->send( 'wcpay_get_charge_request', $charge_id );
 			$order_id    = $charge_data['metadata']['order_id'];
 

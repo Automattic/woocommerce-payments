@@ -41,20 +41,16 @@ class Get_Charge_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_exception_will_throw_if_charge_id_is_not_set() {
-		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->get_api();
+
+		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, null );
 	}
 	public function test_exception_will_throw_if_charge_id_is_invalid() {
-		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_charge_id( '1' );
+		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
 	}
-	public function test_charge_is_immutable_once_set() {
-		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$request->set_charge_id( 'ch_1' );
-		$api = $request->get_api();
-		$request->set_charge_id( 'ch_2' );
-		$this->assertSame( $api, $request->get_api() );
+	public function test_charge_request_class_is_created() {
+		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'ch_mock' );
+		$this->assertSame( WC_Payments_API_Client::CHARGES_API . '/ch_mock', $request->get_api() );
 	}
 }

@@ -42,11 +42,11 @@ final class Generic extends Request {
 	/**
 	 * Creates a new instance of the class.
 	 *
-	 * @param array ...$arguments Constructor arguments.
+	 * @param string|null $id Request parameter ID (intent_id, charge_id, ...).
 	 *
 	 * @throws Server_Request_Exception
 	 */
-	public static function create( ...$arguments ) {
+	public static function create( $id = null ) {
 		throw new Server_Request_Exception( 'You cannot create request this way.', 'wcpay_core_server_request_invalid_method_call' );
 	}
 
