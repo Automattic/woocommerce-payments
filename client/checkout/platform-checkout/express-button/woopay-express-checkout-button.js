@@ -56,6 +56,7 @@ export const WoopayExpressCheckoutButton = ( {
 	return (
 		<button
 			key={ `${ buttonType }-${ theme }-${ size }` }
+			aria-label={ text }
 			onClick={ initPlatformCheckout }
 			className="woopay-express-button"
 			data-type={ buttonType }

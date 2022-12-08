@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Allow the "Your payment information is incomplete." UPE checkout block message to be translated.
