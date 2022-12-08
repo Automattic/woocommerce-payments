@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Show correct authorizations count when switching between live and test modes

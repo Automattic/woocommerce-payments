@@ -1024,8 +1024,11 @@ class WC_Payments_Admin {
 	 * @return int The number of uncaptured transactions.
 	 */
 	private function get_uncaptured_transactions_count() {
+		$test_mode = $this->wcpay_gateway->is_in_test_mode();
+		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
+
 		$authorization_summary = $this->database_cache->get_or_add(
-			Database_Cache::AUTHORIZATION_SUMMARY_KEY,
+			$cache_key,
 			[ $this->payments_api_client, 'get_authorizations_summary' ],
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
