@@ -28,7 +28,7 @@ export const WoopayExpressCheckoutButton = ( {
 	useEffect( () => {
 		if ( ! isPreview ) {
 			wcpayTracks.recordUserEvent(
-				'platform_checkout_express_button_offered',
+				wcpayTracks.events.PLATFORM_CHECKOUT_EXPRESS_BUTTON_OFFERED,
 				{
 					context,
 				}
@@ -44,7 +44,7 @@ export const WoopayExpressCheckoutButton = ( {
 		}
 
 		wcpayTracks.recordUserEvent(
-			'platform_checkout_express_button_clicked',
+			wcpayTracks.events.PLATFORM_CHECKOUT_EXPRESS_BUTTON_CLICKED,
 			{
 				context: context,
 			}
