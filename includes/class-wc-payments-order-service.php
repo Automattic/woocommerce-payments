@@ -575,6 +575,17 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Get the payment metadata for intent currency.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 * @return string
+	 */
+	public function get_wcpay_intent_currency_for_order( $order ) : string {
+		$order = wc_get_order( $order );
+		return $order->get_meta( self::WCPAY_INTENT_CURRENCY_META_KEY, true );
+	}
+
+	/**
 	 * Set the payment metadata for refund id.
 	 *
 	 * @param  mixed $order The order.
@@ -617,18 +628,6 @@ class WC_Payments_Order_Service {
 		$order = wc_get_order( $order );
 		return $order->get_meta( self::WCPAY_REFUND_STATUS_META_KEY, true );
 	}
-
-	/**
-	 * Get the payment metadata for intent currency.
-	 *
-	 * @param  mixed $order The order Id or order object.
-	 * @return string
-	 */
-	public function get_wcpay_intent_currency_for_order( $order ) : string {
-		$order = wc_get_order( $order );
-		return $order->get_meta( self::WCPAY_INTENT_CURRENCY_META_KEY, true );
-	}
-
 
 	/**
 	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added
