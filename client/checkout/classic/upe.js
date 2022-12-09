@@ -1,6 +1,11 @@
 /* global jQuery */
 
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import './style.scss';
@@ -455,7 +460,12 @@ jQuery( function ( $ ) {
 		const isUPEComplete = upeComponents.isUPEComplete;
 
 		if ( ! upeElement ) {
-			showErrorCheckout( 'Your payment information is incomplete.' );
+			showErrorCheckout(
+				__(
+					'Your payment information is incomplete.',
+					'woocommerce-payments'
+				)
+			);
 			return false;
 		}
 		if ( ! isUPEComplete ) {
