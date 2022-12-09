@@ -144,6 +144,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		return [
 			[ false, false ],
 			[ false, true ],
+			[ true, false ],
 			[ true, true ],
 		];
 	}
