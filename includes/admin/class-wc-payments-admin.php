@@ -7,6 +7,7 @@
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
 use WCPay\Database_Cache;
+use function WCPay\time;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -459,7 +460,15 @@ class WC_Payments_Admin {
 			$path = WC()->plugin_path() . '/i18n/locale-info.php';
 		}
 
-		$locale_info = include $path;
+		$locale_info       = include $path;
+		$currency_switches = include WCPAY_ABSPATH . 'i18n/currency-switches.php';
+		$current_timestamp = time();
+		foreach ( $currency_switches as $country_code => $change ) {
+			if ( $change['effective'] < $current_timestamp ) {
+				$locale_info[ $country_code ] = array_merge( $locale_info[ $country_code ], $change['update'] );
+			}
+		}
+
 		// Get symbols for those currencies without a short one.
 		$symbols       = get_woocommerce_currency_symbols();
 		$currency_data = [];

@@ -29,6 +29,7 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( 0 );
 		remove_all_filters( 'locale' );
 		remove_all_filters( 'wcpay_eur_format' );
+		remove_all_filters( 'wcpay_mock_time' );
 	}
 
 	public function test_get_currency_format_returns_default_format() {
@@ -170,6 +171,32 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 	public function test_transient_data_set() {
 		$this->assertTrue( is_array( get_transient( WC_Payments_Localization_Service::WCPAY_CURRENCY_FORMAT_TRANSIENT ) ) );
 		$this->assertTrue( is_array( get_transient( WC_Payments_Localization_Service::WCPAY_LOCALE_INFO_TRANSIENT ) ) );
+	}
+
+	public function test_currency_switches_for_a_country_is_not_effective_until_timestamp() {
+		add_filter( 'transient_' . WC_Payments_Localization_Service::WCPAY_CURRENCY_FORMAT_TRANSIENT, '__return_false' );
+		add_filter( 'transient_' . WC_Payments_Localization_Service::WCPAY_LOCALE_INFO_TRANSIENT, '__return_false' );
+		add_filter(
+			'wcpay_mock_time',
+			function() {
+				return strtotime( '2022-12-31 23:59:59' );
+			}
+		);
+		$this->localization_service = new WC_Payments_Localization_Service();
+		$this->assertSame( 'HRK', $this->localization_service->get_country_locale_data( 'HR' )['currency_code'] );
+	}
+
+	public function test_currency_switches_for_a_country_is_effective_after_timestamp() {
+		add_filter( 'transient_' . WC_Payments_Localization_Service::WCPAY_CURRENCY_FORMAT_TRANSIENT, '__return_false' );
+		add_filter( 'transient_' . WC_Payments_Localization_Service::WCPAY_LOCALE_INFO_TRANSIENT, '__return_false' );
+		add_filter(
+			'wcpay_mock_time',
+			function() {
+				return strtotime( '2023-01-01 00:00:01' );
+			}
+		);
+		$this->localization_service = new WC_Payments_Localization_Service();
+		$this->assertSame( 'EUR', $this->localization_service->get_country_locale_data( 'HR' )['currency_code'] );
 	}
 
 	private function mock_locale( $locale ) {

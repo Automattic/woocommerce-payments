@@ -348,6 +348,7 @@ return [
 		'fr_PM'      => $global_formats['rs_comma_space_ltr'],
 		'fr_RE'      => $global_formats['rs_comma_space_ltr'],
 		'fr_YT'      => $global_formats['rs_comma_space_ltr'],
+		'hr_HR'      => $global_formats['rs_comma_dot_ltr'],
 		'it_SM'      => $global_formats['rs_comma_dot_ltr'],
 		'it_VA'      => $global_formats['rs_comma_dot_ltr'],
 		'nl_BE'      => $global_formats['ls_comma_dot_ltr'],

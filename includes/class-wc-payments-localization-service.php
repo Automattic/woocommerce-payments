@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use function WCPay\time;
+
 /**
  * WC_Payments_Localization_Service.
  */
@@ -119,6 +121,15 @@ class WC_Payments_Localization_Service {
 		}
 
 		$this->locale_info = include $locale_info_path;
+
+		$currency_switches = include WCPAY_ABSPATH . 'i18n/currency-switches.php';
+
+		$current_timestamp = time();
+		foreach ( $currency_switches as $country_code => $change ) {
+			if ( $change['effective'] < $current_timestamp ) {
+				$this->locale_info[ $country_code ] = array_merge( $this->locale_info[ $country_code ], $change['update'] );
+			}
+		}
 
 		if ( is_array( $this->locale_info ) && 0 < count( $this->locale_info ) ) {
 			// Extract the currency formatting options from the locale info.
