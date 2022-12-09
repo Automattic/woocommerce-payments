@@ -165,6 +165,13 @@ class WC_Payments {
 	private static $platform_checkout_button_handler;
 
 	/**
+	 * Instance of WC_Payments_Stripe_Link_Button_Handler, created in init function
+	 *
+	 * @var WC_Payments_Stripe_Link_Button_Handler
+	 */
+	private static $stripe_link_button_handler;
+
+	/**
 	 * Instance of WC_Payments_Apple_Pay_Registration, created in init function
 	 *
 	 * @var WC_Payments_Apple_Pay_Registration
@@ -302,6 +309,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-platform-checkout-button-handler.php';
+		include_once __DIR__ . '/class-wc-payments-stripe-link-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
@@ -399,6 +407,7 @@ class WC_Payments {
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
 		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway() );
+		self::$stripe_link_button_handler       = new WC_Payments_Stripe_Link_Button_Handler( self::$account, self::get_gateway() );
 		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
