@@ -61,41 +61,6 @@ class WC_Payments_Stripe_Link_Button_Handler {
 		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
 		}
-
-		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
-	}
-
-	/**
-	 * Load public scripts and styles.
-	 *
-	 * @return void
-	 */
-	public function scripts() {
-		if ( ! WC_Payments_Features::is_link_enabled() ) {
-			return;
-		}
-
-		if ( ! $this->is_checkout() ) {
-			return;
-		}
-
-		$params = WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-
-		$script_src_url    = plugins_url( 'dist/stripe-link-button.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/stripe-link-button.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script( 'WCPAY_STRIPE_LINK_BUTTON', $script_src_url, $script_asset['dependencies'], WC_Payments::get_file_version( 'dist/stripe-link-button.js' ), true );
-		wp_localize_script( 'WCPAY_STRIPE_LINK_BUTTON', 'wcpayStripeLinkParams', $params );
-		wp_set_script_translations( 'WCPAY_STRIPE_LINK_BUTTON', 'woocommerce-payments' );
-		wp_enqueue_script( 'WCPAY_STRIPE_LINK_BUTTON' );
-		wp_register_style(
-			'WCPAY_STRIPE_LINK',
-			plugins_url( 'dist/stripe_link.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WCPAY_VERSION_NUMBER
-		);
-		wp_enqueue_style( 'WCPAY_STRIPE_LINK' );
 	}
 
 	/**
@@ -112,7 +77,9 @@ class WC_Payments_Stripe_Link_Button_Handler {
 
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
-			<div id="wcpay-stripe-link-button"></div>
+			<div id="wcpay-stripe-link-button">
+				<p>Checkout with &nbsp;<span id="logo"></span></p>
+			</div>
 		</div>
 		<?php
 	}

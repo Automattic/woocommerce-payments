@@ -44,17 +44,28 @@
 	position: relative;
 }
 
-.wcpay-checkout-email-field button.wcpay-stripelink-modal-trigger {
-	display: none;
-	position: absolute;
-	right: 5px;
-	width: 64px;
-	height: 40px;
-	background: no-repeat
-		url( '../../../assets/images/payment-methods/link.svg' );
+#wcpay-stripe-link-button {
+	width: 100%;
 	background-color: none;
 	cursor: pointer;
-	border: none;
+	margin: 0 auto;
+	border: 2px solid rgb( 247, 247, 247 );
+}
+
+#wcpay-stripe-link-button p {
+	font-size: 1em;
+	text-align: center;
+	margin-bottom: 22px;
+	padding: 0;
+}
+
+#wcpay-stripe-link-button p #logo {
+	height: 40px;
+	width: 50px;
+	background: no-repeat
+		url( '../../../assets/images/payment-methods/link.svg' ) center 9px;
+	background-color: none;
+	display: inline-block;
 }
 
 @import '../platform-checkout/style';

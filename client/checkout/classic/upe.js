@@ -311,7 +311,7 @@ jQuery( function ( $ ) {
 		} );
 		gatewayUPEComponents[ paymentMethodType ].elements = elements;
 
-		if ( isStripeLinkEnabled ) {
+		if ( isStripeLinkEnabled && 'link' === paymentMethodType ) {
 			enableStripeLinkPaymentMethod( {
 				api: api,
 				elements: elements,
@@ -349,6 +349,7 @@ jQuery( function ( $ ) {
 					first_name: 'billing_first_name',
 					last_name: 'billing_last_name',
 				},
+				showError: showErrorCheckout,
 			} );
 		}
 

@@ -1,26 +1,5 @@
 /* global jQuery */
 
-const showLinkButton = ( linkAutofill ) => {
-	// Display StripeLink button if email field is prefilled.
-	if ( '' !== jQuery( '#billing_email' ).val() ) {
-		const linkButtonTop =
-			jQuery( '#billing_email' ).position().top +
-			( jQuery( '#billing_email' ).outerHeight() - 40 ) / 2;
-		jQuery( '.wcpay-stripelink-modal-trigger' ).show();
-		jQuery( '.wcpay-stripelink-modal-trigger' ).css(
-			'top',
-			linkButtonTop + 'px'
-		);
-	}
-
-	// Handle StripeLink button click.
-	jQuery( '.wcpay-stripelink-modal-trigger' ).on( 'click', ( event ) => {
-		event.preventDefault();
-		// Trigger modal.
-		linkAutofill.launch( { email: jQuery( '#billing_email' ).val() } );
-	} );
-};
-
 const enableStripeLinkPaymentMethod = ( options ) => {
 	if ( ! document.getElementById( options.emailId ) ) {
 		return;
@@ -28,16 +7,26 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 	const api = options.api;
 	const linkAutofill = api.getStripe().linkAutofillModal( options.elements );
 
-	document
-		.getElementById( options.emailId )
-		.addEventListener( 'keyup', ( event ) => {
-			linkAutofill.launch( { email: event.target.value } );
-		} );
-
-	const showButton = options.show_button
-		? options.show_button
-		: showLinkButton;
-	showButton( linkAutofill );
+	// Handle StripeLink button click.
+	jQuery( '#wcpay-stripe-link-button' ).on( 'click', ( event ) => {
+		event.preventDefault();
+		jQuery( '#payment_method_woocommerce_payments_link' ).click();
+		document
+			.getElementById( options.emailId )
+			.addEventListener( 'keyup', ( e ) => {
+				linkAutofill.launch( { email: e.target.value } );
+			} );
+		const emailValue = jQuery( `#${ options.emailId }` ).val();
+		// Trigger modal.
+		if ( '' === emailValue ) {
+			options.showError(
+				'Please enter your email address to checkout with Link.'
+			);
+			jQuery( `#${ options.emailId }` ).focus();
+		} else {
+			linkAutofill.launch( { email: emailValue } );
+		}
+	} );
 
 	linkAutofill.on( 'autofill', ( event ) => {
 		const { billingAddress, shippingAddress } = event.value;
