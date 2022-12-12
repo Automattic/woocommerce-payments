@@ -113,9 +113,12 @@ const PaymentDetailsSummary = ( {
 		featureFlags: { isAuthAndCaptureEnabled },
 	} = useContext( WCPaySettingsContext );
 
-	// We should only fetch the authorization data if the payment is marked for manual capture
+	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
+	// We also need to exclude failed payments and payments that have been refunded, because capture === false in those cases, even
+	// if the capture is automatic.
 	const shouldFetchAuthorization =
-		charge.amount !== charge.amount_captured &&
+		! charge.captured &&
+		charge.status !== 'failed' &&
 		charge.amount_refunded === 0 &&
 		isAuthAndCaptureEnabled;
 
@@ -265,7 +268,6 @@ const PaymentDetailsSummary = ( {
 											moment
 												.utc( authorization.created )
 												.add( 7, 'days' )
-												.toISOString()
 										) }
 									</b>
 								</div>

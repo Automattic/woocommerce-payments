@@ -43,8 +43,8 @@
 				</article>
 				<footer>
 					<div class="inner">
-						<button id="wcpay-subscriptions-plugin-deactivation-submit" class="button button-primary button-large"><?php esc_html_e( 'Yes, deactivate WooCommerce Subscriptions', 'woocommerce-payments' ); ?></button>
 						<button class="modal-close button button-secondary button-large"><?php esc_html_e( 'Cancel', 'woocommerce-payments' ); ?></button>
+						<button id="wcpay-subscriptions-plugin-deactivation-submit" class="button button-primary button-large"><?php esc_html_e( 'Yes, deactivate WooCommerce Subscriptions', 'woocommerce-payments' ); ?></button>
 					</div>
 				</footer>
 			</section>
