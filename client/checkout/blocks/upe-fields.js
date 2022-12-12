@@ -15,6 +15,7 @@ import {
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from '@wordpress/element';
 import { useDispatch, useSelect } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -212,7 +213,10 @@ const WCPayUPEFields = ( {
 				if ( ! isUPEComplete ) {
 					return {
 						type: 'error',
-						message: 'Your payment information is incomplete.',
+						message: __(
+							'Your payment information is incomplete.',
+							'woocommerce-payments'
+						),
 					};
 				}
 
