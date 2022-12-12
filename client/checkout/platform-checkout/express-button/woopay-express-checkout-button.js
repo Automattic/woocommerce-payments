@@ -15,6 +15,7 @@ export const WoopayExpressCheckoutButton = ( {
 	isPreview = false,
 	buttonSettings,
 	api,
+	productId = false,
 } ) => {
 	const {
 		type: buttonType,
@@ -36,6 +37,10 @@ export const WoopayExpressCheckoutButton = ( {
 		}
 	}, [ isPreview, context ] );
 
+	const addToCart = () => {
+		console.log( 'addToCart function called' );
+	};
+
 	const initPlatformCheckout = ( e ) => {
 		e.preventDefault();
 
@@ -49,6 +54,10 @@ export const WoopayExpressCheckoutButton = ( {
 				context: context,
 			}
 		);
+
+		if ( productId ) {
+			addToCart();
+		}
 
 		expressCheckoutIframe( api );
 	};

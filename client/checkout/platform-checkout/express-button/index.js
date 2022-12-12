@@ -32,6 +32,11 @@ const renderPlatformCheckoutExpressButton = () => {
 			<WoopayExpressCheckoutButton
 				buttonSettings={ getConfig( 'platformCheckoutButton' ) }
 				api={ api }
+				productId={
+					!! platformCheckoutContainer.getAttribute(
+						'data-product-id'
+					)
+				}
 			/>,
 			platformCheckoutContainer
 		);
