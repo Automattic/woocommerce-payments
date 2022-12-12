@@ -369,7 +369,7 @@ class MultiCurrency {
 			Database_Cache::CURRENCIES_KEY,
 			function() {
 				try {
-					$currency_data = $this->payments_api_client->get_currency_rates( get_woocommerce_currency() );
+					$currency_data = $this->payments_api_client->get_currency_rates( strtolower( get_woocommerce_currency() ) );
 					return [
 						'currencies' => $currency_data,
 						'updated'    => time(),
