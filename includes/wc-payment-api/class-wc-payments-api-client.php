@@ -341,7 +341,7 @@ class WC_Payments_API_Client {
 			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
 				$is_link_enabled = in_array(
 					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-					\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+					\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
 					true
 				);
 				if ( $is_link_enabled ) {
