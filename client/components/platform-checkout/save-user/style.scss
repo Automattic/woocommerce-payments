@@ -12,13 +12,47 @@
 		display: flex;
 		align-items: center;
 		gap: $gap-small;
-
-		svg {
-			fill: $gray-600;
-		}
+		position: relative;
 
 		.woopay-logo {
 			height: 17px;
+		}
+
+		.info-icon {
+			fill: $gray-600;
+
+			&:hover,
+			&.focused {
+				fill: #3d9cd2;
+			}
+
+			&:hover + .save-details-flyout {
+				display: flex;
+			}
+		}
+
+		.save-details-flyout {
+			display: none;
+			flex-direction: row;
+			gap: $gap-smaller;
+			background-color: #fff;
+			border: 1px solid $gray-300;
+			border-radius: 3px;
+			padding: $gap-small;
+			position: absolute;
+			width: 270px;
+			font-size: 13px;
+			line-height: 20px;
+			top: -115px;
+			left: calc( 100% - 135px );
+
+			&:hover {
+				display: flex;
+			}
+
+			svg {
+				fill: $alert-green;
+			}
 		}
 	}
 }

@@ -4,11 +4,11 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
-import { WC_STORE_CART } from '../../../checkout/constants';
 import { useDispatch } from '@wordpress/data';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 import { Icon, info } from '@wordpress/icons';
+import interpolateComponents from 'interpolate-components';
 
 /**
  * Internal dependencies
@@ -19,7 +19,9 @@ import AdditionalInformation from './additional-information';
 import PhoneNumberInput from 'settings/phone-input';
 import Agreement from './agreement';
 import { getConfig } from 'utils/checkout';
+import { WC_STORE_CART } from '../../../checkout/constants';
 import WooPayIcon from '../../../../assets/images/woopay.svg';
+import LockIcon from '../icons/lock';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -28,6 +30,15 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
+	const [ isInfoFlyoutVisible, setIsInfoFlyoutVisible ] = useState( false );
+	const setInfoFlyoutVisible = useCallback(
+		() => setIsInfoFlyoutVisible( true ),
+		[]
+	);
+	const setInfoFlyoutNotVisible = useCallback(
+		() => setIsInfoFlyoutVisible( false ),
+		[]
+	);
 	const isRegisteredUser = usePlatformCheckoutUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
@@ -177,7 +188,50 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					</span>
 				</label>
 				<img src={ WooPayIcon } alt="WooPay" className="woopay-logo" />
-				<Icon icon={ info } size={ 36 } />
+				<Icon
+					icon={ info }
+					size={ 36 }
+					className={
+						isInfoFlyoutVisible ? 'focused info-icon' : 'info-icon'
+					}
+					onMouseOver={ setInfoFlyoutVisible }
+					onMouseOut={ setInfoFlyoutNotVisible }
+				/>
+				<div
+					className="save-details-flyout"
+					onMouseOver={ setInfoFlyoutVisible }
+					onFocus={ setInfoFlyoutVisible }
+					onMouseOut={ setInfoFlyoutNotVisible }
+					onBlur={ setInfoFlyoutNotVisible }
+				>
+					<div>
+						<LockIcon />
+					</div>
+					<span>
+						{ interpolateComponents( {
+							mixedString: __(
+								'We use {{woopayBold/}} to securely store your information in this WooCommerce store and others. ' +
+									"Next time at checkout, we'll send you a code by SMS to authenticate your purchase. {{learnMore/}}",
+								'woocommerce-payments'
+							),
+							components: {
+								woopayBold: <b>WooPay</b>,
+								learnMore: (
+									<a
+										target="_blank"
+										href="https://automattic.com"
+										rel="noopener noreferrer"
+									>
+										{ __(
+											'Learn more',
+											'woocommerce-payments'
+										) }
+									</a>
+								),
+							},
+						} ) }
+					</span>
+				</div>
 			</div>
 			{ isSaveDetailsChecked && (
 				<div
