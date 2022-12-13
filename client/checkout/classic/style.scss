@@ -45,6 +45,7 @@
 }
 
 #wcpay-stripe-link-button-wrapper button {
+	height: 40px;
 	width: 100%;
 	background-color: #fff;
 	cursor: pointer;
@@ -58,7 +59,7 @@
 #wcpay-stripe-link-button-wrapper button {
 	font-size: 1em;
 	text-align: center;
-	padding-bottom: 22px;
+	padding: 0;
 	margin: 0;
 }
 
@@ -66,7 +67,7 @@
 	height: 40px;
 	width: 50px;
 	background: no-repeat
-		url( '../../../assets/images/payment-methods/link.svg' ) center 9px;
+		url( '../../../assets/images/payment-methods/link.svg' ) center -3px;
 	background-color: none;
 	display: inline-block;
 }
