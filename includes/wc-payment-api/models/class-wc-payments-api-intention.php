@@ -98,6 +98,13 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	private $metadata;
 
 	/**
+	 * The details on the state of the payment.
+	 *
+	 * @var array
+	 */
+	private $processing;
+
+	/**
 	 * WC_Payments_API_Intention constructor.
 	 *
 	 * @param string                 $id                 - ID of the intention.
@@ -112,6 +119,7 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	 * @param array                  $next_action        - An array containing information for next action to take.
 	 * @param array                  $last_payment_error - An array containing details of any errors.
 	 * @param array                  $metadata           - An array containing additional metadata of associated charge or order.
+	 * @param array                  $processing         - An array containing details of the processing state of the payment.
 	 */
 	public function __construct(
 		$id,
@@ -125,7 +133,8 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 		$charge = null,
 		$next_action = [],
 		$last_payment_error = [],
-		$metadata = []
+		$metadata = [],
+		$processing = []
 	) {
 		$this->id                 = $id;
 		$this->amount             = $amount;
@@ -139,6 +148,7 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 		$this->payment_method_id  = $payment_method_id;
 		$this->charge             = $charge;
 		$this->metadata           = $metadata;
+		$this->processing         = $processing;
 	}
 
 	/**
@@ -250,6 +260,15 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 	}
 
 	/**
+	 * Returns the processing state of this intention
+	 *
+	 * @return array
+	 */
+	public function get_processing() {
+		return $this->processing;
+	}
+
+	/**
 	 * Defines which data will be serialized to JSON
 	 */
 	public function jsonSerialize(): array {
@@ -262,6 +281,7 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 			'customer'       => $this->get_customer_id(),
 			'metadata'       => $this->get_metadata(),
 			'payment_method' => $this->get_payment_method_id(),
+			'processing'     => $this->get_processing(),
 			'status'         => $this->get_status(),
 		];
 	}
