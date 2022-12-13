@@ -172,7 +172,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_action( 'template_redirect', [ $this, 'remove_order_pay_var' ], 99 );
 		add_action( 'template_redirect', [ $this, 'restore_order_pay_var' ], 101 );
 
-		// Update subscriptions token when the payment method is updated.
+		// Update subscriptions token when user sets a default payment method.
 		add_filter( 'woocommerce_subscriptions_update_subscription_token', [ $this, 'update_subscription_token' ], 10, 3 );
 	}
 
