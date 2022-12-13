@@ -14,6 +14,10 @@
 		gap: $gap-small;
 		position: relative;
 
+		label {
+			flex: 1;
+		}
+
 		.woopay-logo {
 			height: 17px;
 		}
@@ -43,7 +47,7 @@
 			width: 270px;
 			font-size: 13px;
 			line-height: 20px;
-			top: -115px;
+			top: -112px;
 			left: calc( 100% - 135px );
 
 			&:hover {
@@ -52,6 +56,12 @@
 
 			svg {
 				fill: $alert-green;
+			}
+
+			@include breakpoint( '<800px' ) {
+				left: initial;
+				right: 0;
+				top: -130px;
 			}
 		}
 	}

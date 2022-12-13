@@ -190,7 +190,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				<img src={ WooPayIcon } alt="WooPay" className="woopay-logo" />
 				<Icon
 					icon={ info }
-					size={ 36 }
+					size={ 22 }
 					className={ `info-icon ${
 						isInfoFlyoutVisible ? 'focused' : ''
 					}` }
