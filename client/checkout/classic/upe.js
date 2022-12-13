@@ -206,6 +206,56 @@ jQuery( function ( $ ) {
 	};
 
 	/**
+	 * Passes appropriate elements to Link component and enables button.
+	 *
+	 * @param {Object} elements Stripe Link Elements group.
+	 * @param {string} paymentMethodType Stripe payment method type.
+	 */
+	const maybeEnableLink = function ( elements, paymentMethodType ) {
+		if ( isStripeLinkEnabled && 'link' === paymentMethodType ) {
+			enableStripeLinkPaymentMethod( {
+				api: api,
+				elements: elements,
+				emailId: 'billing_email',
+				complete_billing: () => {
+					return true;
+				},
+				complete_shipping: () => {
+					return (
+						document.getElementById(
+							'ship-to-different-address-checkbox'
+						) &&
+						document.getElementById(
+							'ship-to-different-address-checkbox'
+						).checked
+					);
+				},
+				shipping_fields: {
+					line1: 'shipping_address_1',
+					line2: 'shipping_address_2',
+					city: 'shipping_city',
+					state: 'shipping_state',
+					postal_code: 'shipping_postcode',
+					country: 'shipping_country',
+					first_name: 'shipping_first_name',
+					last_name: 'shipping_last_name',
+				},
+				billing_fields: {
+					line1: 'billing_address_1',
+					line2: 'billing_address_2',
+					city: 'billing_city',
+					state: 'billing_state',
+					postal_code: 'billing_postcode',
+					country: 'billing_country',
+					first_name: 'billing_first_name',
+					last_name: 'billing_last_name',
+				},
+				showError: showErrorCheckout,
+			} );
+		}
+	};
+
+	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
 	 * @param {string} paymentMethodType Stripe payment method type.
@@ -311,48 +361,6 @@ jQuery( function ( $ ) {
 		} );
 		gatewayUPEComponents[ paymentMethodType ].elements = elements;
 
-		if ( isStripeLinkEnabled && 'link' === paymentMethodType ) {
-			enableStripeLinkPaymentMethod( {
-				api: api,
-				elements: elements,
-				emailId: 'billing_email',
-				complete_billing: () => {
-					return true;
-				},
-				complete_shipping: () => {
-					return (
-						document.getElementById(
-							'ship-to-different-address-checkbox'
-						) &&
-						document.getElementById(
-							'ship-to-different-address-checkbox'
-						).checked
-					);
-				},
-				shipping_fields: {
-					line1: 'shipping_address_1',
-					line2: 'shipping_address_2',
-					city: 'shipping_city',
-					state: 'shipping_state',
-					postal_code: 'shipping_postcode',
-					country: 'shipping_country',
-					first_name: 'shipping_first_name',
-					last_name: 'shipping_last_name',
-				},
-				billing_fields: {
-					line1: 'billing_address_1',
-					line2: 'billing_address_2',
-					city: 'billing_city',
-					state: 'billing_state',
-					postal_code: 'billing_postcode',
-					country: 'billing_country',
-					first_name: 'billing_first_name',
-					last_name: 'billing_last_name',
-				},
-				showError: showErrorCheckout,
-			} );
-		}
-
 		const upeSettings = {};
 		if ( getUPEConfig( 'cartContainsSubscription' ) ) {
 			upeSettings.terms = getTerms( paymentMethodsConfig, 'always' );
@@ -383,6 +391,8 @@ jQuery( function ( $ ) {
 				event.complete;
 		} );
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
+
+		maybeEnableLink( elements, paymentMethodType );
 	};
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout

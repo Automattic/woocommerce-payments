@@ -2957,23 +2957,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Append StripeLink button within email field for logged in users.
-	 *
-	 * @param string $field    - HTML content within email field.
-	 * @param string $key      - Key.
-	 * @param array  $args     - Arguments.
-	 * @param string $value    - Default value.
-	 *
-	 * @return string $field    - Updated email field content with the button appended.
-	 */
-	public function append_stripelink_button( $field, $key, $args, $value ) {
-		if ( 'billing_email' === $key ) {
-			$field = str_replace( '</span>', '<button class="wcpay-stripelink-modal-trigger"></button></span>', $field );
-		}
-		return $field;
-	}
-
-	/**
 	 * Returns the URL of the configuration screen for this gateway, for use in internal links.
 	 *
 	 * @return string URL of the configuration screen for this gateway

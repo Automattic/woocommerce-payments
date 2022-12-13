@@ -44,22 +44,25 @@
 	position: relative;
 }
 
-#wcpay-stripe-link-button {
+#wcpay-stripe-link-button-wrapper button {
 	width: 100%;
-	background-color: none;
+	background-color: #fff;
 	cursor: pointer;
 	margin: 0 auto;
 	border: 2px solid rgb( 247, 247, 247 );
 }
-
-#wcpay-stripe-link-button p {
-	font-size: 1em;
-	text-align: center;
-	margin-bottom: 22px;
-	padding: 0;
+#wcpay-stripe-link-button-wrapper button:active {
+	background-color: rgb( 247, 247, 247 );
 }
 
-#wcpay-stripe-link-button p #logo {
+#wcpay-stripe-link-button-wrapper button {
+	font-size: 1em;
+	text-align: center;
+	padding-bottom: 22px;
+	margin: 0;
+}
+
+#wcpay-stripe-link-button-wrapper button #logo {
 	height: 40px;
 	width: 50px;
 	background: no-repeat

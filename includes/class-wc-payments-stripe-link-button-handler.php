@@ -77,8 +77,8 @@ class WC_Payments_Stripe_Link_Button_Handler {
 
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
-			<div id="wcpay-stripe-link-button">
-				<p>Checkout with &nbsp;<span id="logo"></span></p>
+			<div id="wcpay-stripe-link-button-wrapper">
+				<button disabled>Checkout with &nbsp;<span id="logo"></span></button>
 			</div>
 		</div>
 		<?php
