@@ -24,6 +24,12 @@
 		}
 	}
 
+	input[type='checkbox'] {
+		&:disabled {
+			cursor: not-allowed;
+		}
+	}
+
 	.loadable-checkbox__spinner {
 		margin-top: 2px;
 	}
@@ -69,6 +75,14 @@
 	}
 
 	&__label {
+		text-transform: initial;
+	}
+
+	&__required-label {
+		display: block;
+		font-size: 11px;
+		line-height: 1em;
+		color: $gray-700;
 		text-transform: initial;
 	}
 

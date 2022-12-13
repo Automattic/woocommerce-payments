@@ -43,24 +43,37 @@ const PaymentMethodDescription = ( { name } ) => {
 	);
 };
 
-const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
+const PaymentMethodCheckbox = ( {
+	onChange,
+	name,
+	checked,
+	fees,
+	status,
+	required,
+	locked,
+} ) => {
 	const { accountFees } = useContext( WCPaySettingsContext );
 
 	const handleChange = useCallback(
 		( enabled ) => {
+			// If the payment method checkbox control is locked, reject any changes.
+			if ( locked ) {
+				return;
+			}
+
 			onChange( name, enabled );
 		},
-		[ name, onChange ]
+		[ locked, name, onChange ]
 	);
 
-	const disabled = upeCapabilityStatuses.INACTIVE === status;
+	const paymentMethodDisabled = upeCapabilityStatuses.INACTIVE === status;
 
-	// Uncheck payment method if checked and disabled.
+	// Uncheck payment method if it's disabled and checked.
 	useEffect( () => {
-		if ( disabled && checked ) {
+		if ( paymentMethodDisabled && checked ) {
 			handleChange( false );
 		}
-	}, [ disabled, checked, handleChange ] );
+	}, [ paymentMethodDisabled, checked, handleChange ] );
 
 	const [ isManualCaptureEnabled ] = useManualCapture();
 	const paymentMethod = PaymentMethodsMap[ name ];
@@ -76,7 +89,7 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 			<LoadableCheckboxControl
 				label={ paymentMethod.label }
 				checked={ checked }
-				disabled={ disabled }
+				disabled={ paymentMethodDisabled || locked }
 				onChange={ ( state ) => {
 					handleChange( state );
 				} }
@@ -92,8 +105,12 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 				<div className={ 'payment-method-checkbox__pills-left' }>
 					<span className="payment-method-checkbox__label">
 						{ paymentMethod.label }
+						{ required && (
+							<span className="payment-method-checkbox__required-label">
+								{ __( 'Required', 'woocommerce-payments' ) }
+							</span>
+						) }
 					</span>
-
 					{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
 						<Tooltip
 							content={ __(
@@ -135,7 +152,7 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 							</Pill>
 						</Tooltip>
 					) }
-					{ disabled && (
+					{ paymentMethodDisabled && (
 						<Tooltip
 							content={ sprintf(
 								__(
