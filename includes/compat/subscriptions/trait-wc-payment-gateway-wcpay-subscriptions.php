@@ -805,6 +805,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return $updated;
 		}
 
+		$subscription->set_payment_method( $this->id );
 		$subscription->update_meta_data( '_payment_method_id', $new_token->get_token() );
 		$subscription->add_payment_token( $new_token );
 		$subscription->save();
