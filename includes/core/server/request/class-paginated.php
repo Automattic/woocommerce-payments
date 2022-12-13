@@ -49,6 +49,18 @@ class Paginated extends Request {
 	}
 
 	/**
+	 * Return exact same response from API server. In some cases, this is all we need.
+	 *
+	 * @param mixed $response Response from server.
+	 *
+	 * @return mixed|\WCPay\Core\Server\Response
+	 */
+	public function format_response( $response ) {
+		return $response;
+	}
+
+
+	/**
 	 * Used to provide custom check for setting filter keys. Some requests might have their own logic of which filters keys are mutable.
 	 *
 	 * @param string $key Key to check.
@@ -91,6 +103,7 @@ class Paginated extends Request {
 	public function set_page( int $page ) {
 		$this->set_param( 'page', $page );
 	}
+
 
 	/**
 	 * Set page size.
