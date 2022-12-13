@@ -2839,9 +2839,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_payment_method_ids_enabled_at_checkout_filtered_by_fees( $order_id = null, $force_currency_check = false ) {
-		return [
-			'card',
-		];
+		return $this->get_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check );
 	}
 
 	/**
