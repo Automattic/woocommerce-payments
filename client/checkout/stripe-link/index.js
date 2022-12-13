@@ -10,6 +10,7 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 	const api = options.api;
 	const linkAutofill = api.getStripe().linkAutofillModal( options.elements );
 	let isKeyupHandlerAttached = false;
+	let isAuthenticated = false;
 
 	const keyupHandler = ( event ) => {
 		linkAutofill.launch( { email: event.target.value } );
@@ -30,6 +31,11 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 			isKeyupHandlerAttached = true;
 		}
 
+		if ( isAuthenticated ) {
+			linkAutofill.show();
+			return;
+		}
+
 		const emailValue = jQuery( `#${ options.emailId }` ).val();
 		// Trigger modal.
 		if ( '' === emailValue ) {
@@ -41,6 +47,11 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 			linkAutofill.launch( { email: emailValue } );
 			jQuery( STRIPE_LINK_BUTTON_SELECTOR ).prop( 'disabled', true );
 		}
+	};
+
+	const authenticationHandler = () => {
+		isAuthenticated = true;
+		jQuery( STRIPE_LINK_BUTTON_SELECTOR ).removeAttr( 'disabled' );
 	};
 
 	const autofillHandler = ( event ) => {
@@ -132,6 +143,9 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 
 	// Handle autofill fields post authentication.
 	linkAutofill.on( 'autofill', autofillHandler );
+
+	// Handle successful authentication.
+	linkAutofill.on( 'authenticated', authenticationHandler );
 
 	// Enable StripeLink button.
 	jQuery( STRIPE_LINK_BUTTON_SELECTOR ).removeAttr( 'disabled' );
