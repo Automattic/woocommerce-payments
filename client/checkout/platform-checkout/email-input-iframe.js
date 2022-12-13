@@ -7,6 +7,7 @@ import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 import { buildAjaxURL } from '../../payment-request/utils';
+import { isLinkCheckoutActive } from '../utils/link.js';
 
 // Waits for the element to exist as in the Blocks checkout, sometimes the field is not immediately available.
 const waitForElement = ( selector ) => {
@@ -254,6 +255,9 @@ export const handlePlatformCheckoutEmailInput = async (
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email ) => {
+		if ( isLinkCheckoutActive( platformCheckoutEmailInput ) ) {
+			return;
+		}
 		const urlParams = new URLSearchParams();
 		urlParams.append( 'email', email );
 		urlParams.append(
@@ -475,6 +479,10 @@ export const handlePlatformCheckoutEmailInput = async (
 	};
 
 	const openLoginSessionIframe = ( email ) => {
+		if ( isLinkCheckoutActive( platformCheckoutEmailInput ) ) {
+			return;
+		}
+
 		const emailParam = new URLSearchParams();
 
 		if ( validateEmail( email ) ) {

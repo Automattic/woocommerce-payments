@@ -1,5 +1,10 @@
 /* global jQuery */
 
+/**
+ * Internal dependencies
+ */
+import { STRIPE_LINK_ACTIVE_CLASS } from '../utils/link.js';
+
 const STRIPE_LINK_BUTTON_SELECTOR = '#wcpay-stripe-link-button-wrapper button';
 const STRIPE_LINK_RADIO_SELECTOR = '#payment_method_woocommerce_payments_link';
 
@@ -20,9 +25,7 @@ const enableStripeLinkPaymentMethod = ( options ) => {
 	const clickHandler = ( event ) => {
 		event.preventDefault();
 		jQuery( STRIPE_LINK_RADIO_SELECTOR ).click();
-		jQuery( `#${ options.emailId }` ).addClass(
-			'stripe-link-checkout-initiated'
-		);
+		jQuery( `#${ options.emailId }` ).addClass( STRIPE_LINK_ACTIVE_CLASS );
 
 		if ( ! isKeyupHandlerAttached ) {
 			document
