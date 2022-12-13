@@ -792,7 +792,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Update subscription token.
+	 * Update the specified subscription's payment token with a new token.
 	 *
 	 * @param bool             $updated      Whether the token was updated.
 	 * @param WC_Subscription  $subscription The subscription whose payment token need to be updated.
