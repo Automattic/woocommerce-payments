@@ -44,7 +44,13 @@
 		line-height: 20px;
 		font-weight: 400;
 		gap: $gap;
-		margin-top: $gap-large;
+		transition: max-height 0.5s ease-in-out;
+		max-height: 0;
+		overflow-y: hidden;
+
+		&.visible {
+			max-height: 350px;
+		}
 
 		.additional-information {
 			font-size: 14px;
@@ -75,6 +81,8 @@
 			box-shadow: none;
 			border: 1px solid $gray-300;
 			border-radius: 5px;
+			margin-left: 2px;
+			width: calc( 100% - 4px );
 
 			&.has-error {
 				outline-color: $alert-red;
@@ -115,6 +123,7 @@
 // override intl-tel-input styles
 .iti {
 	width: 100%;
+	margin-top: $gap-large;
 }
 
 .iti__selected-flag {
