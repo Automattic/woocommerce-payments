@@ -13,6 +13,8 @@ use WC_Payments_API_Client;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\API_Exception;
+use WP_Error;
 
 /**
  * Base for requests to the WCPay server.
@@ -224,6 +226,26 @@ abstract class Request {
 		return $this->format_response(
 			$this->api_client->send_request( $this->apply_filters( $hook, ...$args ) )
 		);
+	}
+
+	/**
+	 * This is mimic of send method, but where API execption is handled.
+	 * The reason behind this is that sometimes API request can fail for valid reasons and instead of handling this exception on every request, you could use this function.
+	 *
+	 * @param string $hook         The filter to use.
+	 * @param mixed  ...$args      Other parameters for the hook.
+	 * @return mixed               Either the response array, or the correct object.
+	 *
+	 * @throws Extend_Request_Exception
+	 * @throws Immutable_Parameter_Exception
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	final public function handle_request( $hook, ...$args ) {
+		try {
+			return $this->send( $hook, $args );
+		} catch ( API_Exception $e ) {
+			new WP_Error( $e->get_error_code(), $e->getMessage() );
+		}
 	}
 
 	/**

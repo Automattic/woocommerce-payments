@@ -260,6 +260,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/exceptions/server/request/class-immutable-parameter-exception.php';
 		include_once __DIR__ . '/core/exceptions/server/request/class-extend-request-exception.php';
 		include_once __DIR__ . '/core/exceptions/server/response/class-server-response-exception.php';
+
 		include_once __DIR__ . '/core/server/class-request.php';
 		include_once __DIR__ . '/core/server/class-response.php';
 		include_once __DIR__ . '/core/server/request/trait-intention.php';
@@ -272,6 +273,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-woopay-create-intent.php';
 		include_once __DIR__ . '/core/server/request/class-create-and-confirm-intention.php';
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-intention.php';
+		include_once __DIR__ . '/core/server/request/class-paginated.php';
 
 		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 
