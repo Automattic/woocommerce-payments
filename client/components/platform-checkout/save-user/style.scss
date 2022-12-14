@@ -55,7 +55,7 @@
 			}
 
 			svg {
-				fill: $alert-green;
+				color: $alert-green;
 			}
 
 			@include breakpoint( '<800px' ) {
