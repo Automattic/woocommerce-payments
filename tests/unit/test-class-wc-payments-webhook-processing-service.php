@@ -157,6 +157,46 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test a webhook with a test event for a gateway with live mode.
+	 */
+	public function test_webhook_with_test_event_and_live_gateway() {
+		$this->event_body['type']     = 'charge.refund.updated';
+		$this->event_body['id']       = 'testID';
+		$this->event_body['livemode'] = false;
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_in_test_mode' )
+			->willReturn( false );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'Webhook event mode did not match the gateway mode (event ID: testID)' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Test a webhook with a live event for a gateway in test mode.
+	 */
+	public function test_webhook_with_live_event_and_test_gateway() {
+		$this->event_body['type']     = 'charge.refund.updated';
+		$this->event_body['id']       = 'testID';
+		$this->event_body['livemode'] = true;
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_in_test_mode' )
+			->willReturn( true );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'Webhook event mode did not match the gateway mode (event ID: testID)' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Test a webhook with no object property.
 	 */
 	public function test_webhook_with_no_object_property() {
