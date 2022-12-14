@@ -837,6 +837,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_payment_intent_successful_and_save_mandate() {
 		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
@@ -993,6 +994,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_payment_intent_without_charges_fails_and_fails_order() {
 		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
 			'object'             => 'payment_intent',
