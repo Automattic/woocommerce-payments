@@ -17,12 +17,11 @@ class WC_Payments_Order_Service {
 	/**
 	 * Order status constants.
 	 */
-	const STATUS_CANCELLED  = 'cancelled';
-	const STATUS_COMPLETED  = 'completed';
-	const STATUS_FAILED     = 'failed';
-	const STATUS_ON_HOLD    = 'on-hold';
-	const STATUS_PENDING    = 'pending';
-	const STATUS_PROCESSING = 'processing';
+	const STATUS_CANCELLED = 'cancelled';
+	const STATUS_COMPLETED = 'completed';
+	const STATUS_FAILED    = 'failed';
+	const STATUS_ON_HOLD   = 'on-hold';
+	const STATUS_PENDING   = 'pending';
 
 	const ADD_FEE_BREAKDOWN_TO_ORDER_NOTES = 'wcpay_add_fee_breakdown_to_order_notes';
 

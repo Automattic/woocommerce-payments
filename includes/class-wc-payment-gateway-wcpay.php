@@ -2098,13 +2098,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// if order is already completed, we shouldn't capture the charge anymore.
-		if (
-			in_array(
-				$theorder->get_status(),
-				wc_get_is_paid_statuses(),
-				true
-			)
-		) {
+		if ( in_array( $theorder->get_status(), wc_get_is_paid_statuses(), true ) ) {
 			return $actions;
 		}
 
