@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Hide capture charge and cancel authorization options on order when order is completed
