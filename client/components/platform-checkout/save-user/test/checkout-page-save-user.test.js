@@ -156,6 +156,11 @@ describe( 'CheckoutPageSaveUser', () => {
 
 	it( 'call `extensionCartUpdate` on blocks checkout when checkbox is clicked', async () => {
 		extensionCartUpdate.mockResolvedValue( {} );
+		const placeOrderButton = document.createElement( 'button' );
+		placeOrderButton.classList.add(
+			'wc-block-components-checkout-place-order-button'
+		);
+		document.body.appendChild( placeOrderButton );
 		const phoneField = document.createElement( 'input' );
 		phoneField.setAttribute( 'id', 'phone' );
 		phoneField.value = '+12015555555';
@@ -167,6 +172,7 @@ describe( 'CheckoutPageSaveUser', () => {
 			'Save my information for a faster and secure checkout'
 		);
 
+		expect( label ).not.toBeChecked();
 		expect( extensionCartUpdate ).not.toHaveBeenCalled();
 
 		// click on the checkbox to select
