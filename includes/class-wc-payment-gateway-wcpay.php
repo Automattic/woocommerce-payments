@@ -2097,6 +2097,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $actions;
 		}
 
+		// if order is already completed, we shouldn't capture the charge anymore.
+		if (
+			in_array(
+				$theorder->get_status(),
+				[ WC_Payments_Order_Service::STATUS_PROCESSING, WC_Payments_Order_Service::STATUS_COMPLETED ],
+				true
+			)
+		) {
+			return $actions;
+		}
+
 		$new_actions = [
 			'capture_charge'       => __( 'Capture charge', 'woocommerce-payments' ),
 			'cancel_authorization' => __( 'Cancel authorization', 'woocommerce-payments' ),
