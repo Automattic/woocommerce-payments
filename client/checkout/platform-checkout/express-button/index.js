@@ -32,9 +32,9 @@ const renderPlatformCheckoutExpressButton = () => {
 			<WoopayExpressCheckoutButton
 				buttonSettings={ getConfig( 'platformCheckoutButton' ) }
 				api={ api }
-				productId={
+				isProductPage={
 					!! platformCheckoutContainer.getAttribute(
-						'data-product-id'
+						'data-product_page'
 					)
 				}
 			/>,

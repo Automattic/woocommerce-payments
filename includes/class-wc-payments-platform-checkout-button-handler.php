@@ -294,14 +294,9 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 
-		if ( $this->is_product() ) {
-			global $post;
-			$product_id = $post->ID;
-		}
-
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">
-			<div id="wcpay-platform-checkout-button" data-product-id=<?php echo esc_attr( $product_id ?? null ); ?>>
+			<div id="wcpay-platform-checkout-button" data-product_page=<?php echo esc_attr( $this->is_product() ); ?>>
 				<?php // The WooPay express checkout button React component will go here. ?>
 			</div>
 		</div>

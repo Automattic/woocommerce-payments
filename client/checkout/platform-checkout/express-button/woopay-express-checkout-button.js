@@ -2,20 +2,21 @@
  * External dependencies
  */
 import { sprintf, __ } from '@wordpress/i18n';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 /**
  * Internal dependencies
  */
 import WoopayIcon from './woopay-icon';
 import { expressCheckoutIframe } from './express-checkout-iframe';
+import { useExpressCheckoutProductHandler } from './use-express-checkout-product-handler';
 import wcpayTracks from 'tracks';
 
 export const WoopayExpressCheckoutButton = ( {
 	isPreview = false,
 	buttonSettings,
 	api,
-	productId = false,
+	isProductPage = false,
 } ) => {
 	const {
 		type: buttonType,
@@ -25,6 +26,8 @@ export const WoopayExpressCheckoutButton = ( {
 		theme,
 		context,
 	} = buttonSettings;
+	const [ buttonHasBeenClicked, setButtonHasBeenClicked ] = useState( false );
+	const { addToCart } = useExpressCheckoutProductHandler( api );
 
 	useEffect( () => {
 		if ( ! isPreview ) {
@@ -36,10 +39,6 @@ export const WoopayExpressCheckoutButton = ( {
 			);
 		}
 	}, [ isPreview, context ] );
-
-	const addToCart = () => {
-		console.log( 'addToCart function called' );
-	};
 
 	const initPlatformCheckout = ( e ) => {
 		e.preventDefault();
@@ -55,10 +54,11 @@ export const WoopayExpressCheckoutButton = ( {
 			}
 		);
 
-		if ( productId ) {
+		if ( isProductPage && ! buttonHasBeenClicked ) {
 			addToCart();
 		}
 
+		setButtonHasBeenClicked( true );
 		expressCheckoutIframe( api );
 	};
 
