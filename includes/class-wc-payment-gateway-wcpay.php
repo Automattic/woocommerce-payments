@@ -2101,7 +2101,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			in_array(
 				$theorder->get_status(),
-				[ WC_Payments_Order_Service::STATUS_PROCESSING, WC_Payments_Order_Service::STATUS_COMPLETED ],
+				wc_get_is_paid_statuses(),
 				true
 			)
 		) {
