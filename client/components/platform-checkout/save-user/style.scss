@@ -4,8 +4,7 @@
 .platform-checkout-save-new-user-container {
 	.save-details {
 		padding: $gap-small;
-		border: 1px solid $gray-300;
-		border-radius: 3px;
+		border: 1px solid rgba( 109, 109, 109, 0.3 );
 	}
 
 	.save-details-header {
@@ -16,6 +15,13 @@
 
 		label {
 			flex: 1;
+			display: flex;
+			gap: $gap-small;
+			align-items: flex-start;
+
+			.save-details-checkbox {
+				margin-top: 6px;
+			}
 		}
 
 		.woopay-logo {
@@ -40,7 +46,7 @@
 			flex-direction: row;
 			gap: $gap-smaller;
 			background-color: #fff;
-			border: 1px solid $gray-300;
+			border: 1px solid rgba( 109, 109, 109, 0.3 );
 			border-radius: 3px;
 			padding: $gap-small;
 			position: absolute;
