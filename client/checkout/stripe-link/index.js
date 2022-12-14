@@ -7,7 +7,6 @@ import { STRIPE_LINK_ACTIVE_CLASS } from '../utils/link.js';
 
 const STRIPE_LINK_BUTTON_SELECTOR = '#wcpay-stripe-link-button-wrapper button';
 const STRIPE_LINK_RADIO_SELECTOR = '#payment_method_woocommerce_payments_link';
-let emailInputListener = null;
 
 /**
  * Enables, disables, and manages Stripe Link checkout autofill.
@@ -21,6 +20,7 @@ export default class StripeLinkButton {
 		this.linkAutofill = null;
 		this.isKeyupHandlerAttached = false;
 		this.isAuthenticated = false;
+		this.removeEmailInputListener = null;
 		this.disableRequestButton();
 	}
 
@@ -184,22 +184,22 @@ export default class StripeLinkButton {
 	 */
 	addEmailInputListener() {
 		if ( ! this.isKeyupHandlerAttached ) {
+			const emailInputListener = ( event ) => {
+				this.keyupHandler( event );
+			};
 			document
 				.getElementById( this.options.emailId )
 				.addEventListener( 'keyup', emailInputListener );
 			this.isKeyupHandlerAttached = true;
-		}
-	}
 
-	/**
-	 * Function to remove email input listener.
-	 */
-	removeEmailInputListener() {
-		if ( this.isKeyupHandlerAttached ) {
-			document
-				.getElementById( this.options.emailId )
-				.removeEventListener( 'keyup', emailInputListener );
-			this.isKeyupHandlerAttached = false;
+			this.removeEmailInputListener = () => {
+				if ( this.isKeyupHandlerAttached ) {
+					document
+						.getElementById( this.options.emailId )
+						.removeEventListener( 'keyup', emailInputListener );
+					this.isKeyupHandlerAttached = false;
+				}
+			};
 		}
 	}
 
@@ -234,7 +234,6 @@ export default class StripeLinkButton {
 		this.linkAutofill = api
 			.getStripe()
 			.linkAutofillModal( this.options.elements );
-		emailInputListener = this.keyupHandler;
 
 		// Handle StripeLink button click.
 		jQuery( STRIPE_LINK_BUTTON_SELECTOR ).on( 'click', ( event ) => {
@@ -258,6 +257,10 @@ export default class StripeLinkButton {
 	 * @return {undefined}
 	 */
 	enable() {
+		if ( ! this.linkAutofill ) {
+			return;
+		}
+
 		jQuery( `#${ this.options.emailId }` ).addClass(
 			STRIPE_LINK_ACTIVE_CLASS
 		);
