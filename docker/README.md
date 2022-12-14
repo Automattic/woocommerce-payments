@@ -58,4 +58,4 @@ services:
         - REMOTE_PORT=9003 # IDE/Editor's listener port
 ```
 I used port `9003` as an example.
-To make changes work please re-create your containers.
+To apply the change, restart your containers using `npm run down && npm run up`
