@@ -627,7 +627,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				return;
 			}
 
-			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );
+			Logger::log( "Begin processing UPE redirect payment for order #$order_id for the amount of {$order->get_total()}" );
 
 			// Get user/customer for order.
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
@@ -667,7 +667,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			} else {
 				if ( $this->payment_method->get_id() !== $payment_method_type ) {
-					return;
+					if ( 'link' !== $payment_method_type ) {
+						return;
+					} elseif ( 'card' !== $this->payment_method->get_id() ) {
+						return;
+					}
 				}
 
 				if ( $save_payment_method && $this->payment_method->is_reusable() ) {

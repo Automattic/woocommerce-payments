@@ -30,7 +30,7 @@ import {
 	getPaymentIntentFromSession,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
-import enableStripeLinkPaymentMethod from '../stripe-link';
+import StripeLinkButton from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 import {
@@ -61,6 +61,7 @@ jQuery( function ( $ ) {
 			country: null,
 		};
 	}
+	const stripeLinkButton = new StripeLinkButton();
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -208,12 +209,15 @@ jQuery( function ( $ ) {
 	/**
 	 * Passes appropriate elements to Link component and enables button.
 	 *
-	 * @param {Object} elements Stripe Link Elements group.
 	 * @param {string} paymentMethodType Stripe payment method type.
 	 */
-	const maybeEnableLink = function ( elements, paymentMethodType ) {
+	const maybeEnableLink = function ( paymentMethodType ) {
 		if ( isStripeLinkEnabled && 'link' === paymentMethodType ) {
-			enableStripeLinkPaymentMethod( {
+			const elements = gatewayUPEComponents[ paymentMethodType ].elements;
+			const upeElement =
+				gatewayUPEComponents[ paymentMethodType ].upeElement;
+
+			stripeLinkButton.init( {
 				api: api,
 				elements: elements,
 				emailId: 'billing_email',
@@ -251,6 +255,13 @@ jQuery( function ( $ ) {
 					last_name: 'billing_last_name',
 				},
 				showError: showErrorCheckout,
+			} );
+
+			upeElement.on( 'ready', () => {
+				stripeLinkButton.enableRequestButton();
+				if ( 'link' === getSelectedGatewayPaymentMethod() ) {
+					stripeLinkButton.enable();
+				}
 			} );
 		}
 	};
@@ -392,7 +403,7 @@ jQuery( function ( $ ) {
 		} );
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
 
-		maybeEnableLink( elements, paymentMethodType );
+		maybeEnableLink( paymentMethodType );
 	};
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
@@ -848,6 +859,12 @@ jQuery( function ( $ ) {
 			}
 		}
 	);
+
+	$( document ).on( 'payment_method_selected', () => {
+		if ( 'link' === getSelectedGatewayPaymentMethod() ) {
+			stripeLinkButton.enable();
+		}
+	} );
 
 	// On every page load, check to see whether we should display the authentication
 	// modal and display it if it should be displayed.
