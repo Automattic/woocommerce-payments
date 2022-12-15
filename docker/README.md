@@ -47,7 +47,7 @@ You may need to temporarily set your `siteurl` and `home` `wp_option`s to the ne
 Visit the `<url>` , login and setup WCPay.
 
 ### Changing default port for xDebug
-To change the default port for xDebug you should create `docker.compose.override.yml` with the following contents:
+To change the default port for xDebug you should create `docker-compose.override.yml` with the following contents:
 ```
 version: '3'
 
