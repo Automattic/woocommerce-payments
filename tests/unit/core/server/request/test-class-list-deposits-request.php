@@ -1,18 +1,17 @@
 <?php
 /**
- * Class Create_And_Confirm_Intention_Test
+ * Class List_Deposits_Test
  *
  * @package WooCommerce\Payments\Tests
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Paginated;
+use WCPay\Core\Server\Request\List_Deposits;
 
 /**
  * WCPay\Core\Server\Request unit tests.
  */
-class Paginated_Test extends WCPAY_UnitTestCase {
+class List_Deposits_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Mock WC_Payments_API_Client.
@@ -41,7 +40,7 @@ class Paginated_Test extends WCPAY_UnitTestCase {
 	}
 
 
-	public function test_paginated_request_will_be_created() {
+	public function test_list_deposits_request_will_be_created() {
 		$page      = 2;
 		$page_size = 50;
 		$direction = 'asc';
@@ -51,7 +50,7 @@ class Paginated_Test extends WCPAY_UnitTestCase {
 			'page' => 3,
 		];
 
-		$request = new Paginated( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request = new List_Deposits( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_page( $page );
 		$request->set_page_size( $page_size );
 		$request->set_sort_direction( $direction );
@@ -68,31 +67,7 @@ class Paginated_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $direction, $params['direction'] );
 		$this->assertSame( $filters['key'], $params['key'] );
 		$this->assertSame( 'GET', $request->get_method() );
-
-	}
-
-	public function test_create_from_rest_request() {
-		$page      = 2;
-		$page_size = 50;
-		$direction = 'asc';
-		$sort      = 'created';
-
-		$rest_request = new WP_REST_Request( 'GET' );
-		$rest_request->set_param( 'page', $page );
-		$rest_request->set_param( 'pagesize', $page_size );
-		$rest_request->set_param( 'sort', $sort );
-		$rest_request->set_param( 'sort', $sort );
-		$rest_request->set_param( 'direction', $direction );
-
-		$request = Paginated::from_rest_request( $rest_request );
-
-		$params = $request->get_params();
-
-		$this->assertIsArray( $params );
-		$this->assertSame( $page, $params['page'] );
-		$this->assertSame( $page_size, $params['pagesize'] );
-		$this->assertSame( $sort, $params['sort'] );
-		$this->assertSame( $direction, $params['direction'] );
+		$this->assertSame( WC_Payments_API_Client::DEPOSITS_API, $request->get_api() );
 
 	}
 }

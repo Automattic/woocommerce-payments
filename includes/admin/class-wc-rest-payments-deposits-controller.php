@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Core\Server\Request\Paginated as Paginated_Request;
+use WCPay\Core\Server\Request\List_Deposits;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -98,12 +98,7 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_deposits( $request ) {
-		$wcpay_request = Paginated_Request::create();
-		$wcpay_request->set_uri( WC_Payments_API_Client::DEPOSITS_API );
-		$wcpay_request->set_page( (int) $request->get_param( 'page' ) );
-		$wcpay_request->set_page_size( (int) $request->get_param( 'pagesize' ) );
-		$wcpay_request->set_sort_by( $request->get_param( 'sort' ) );
-		$wcpay_request->set_sort_direction( $request->get_param( 'direction' ) );
+		$wcpay_request = List_Deposits::from_rest_request( $request );
 		$wcpay_request->set_filters( $this->get_deposits_filters( $request ) );
 
 		return $wcpay_request->handle_rest_request( 'wcpay_list_deposits_request' );
