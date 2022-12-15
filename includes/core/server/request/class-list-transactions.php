@@ -19,8 +19,6 @@ class List_Transactions extends Paginated {
 	use Order_Info;
 
 	const DEFAULTS = [
-		'page'       => 0,
-		'pagesize'   => 25,
 		'sort'       => 'date',
 		'direction'  => 'desc',
 		'deposit_id' => null,
@@ -51,7 +49,7 @@ class List_Transactions extends Paginated {
 	 *
 	 * @param mixed $response Transactions from server.
 	 *
-	 * @return mixed|array
+	 * @return Response
 	 */
 	public function format_response( $response ) {
 		$wcpay_db               = new WC_Payments_DB();

@@ -34,7 +34,7 @@ class List_Disputes extends Paginated {
 	 *
 	 * @param mixed $response Transactions from server.
 	 *
-	 * @return mixed|array
+	 * @return Response
 	 */
 	public function format_response( $response ) {
 		// Add WooCommerce order information to each dispute.
