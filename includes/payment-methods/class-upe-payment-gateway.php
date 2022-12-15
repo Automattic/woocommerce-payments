@@ -667,9 +667,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			} else {
 				if ( $this->payment_method->get_id() !== $payment_method_type ) {
-					if ( 'link' !== $payment_method_type ) {
+					if ( Payment_Method::LINK !== $payment_method_type ) {
 						return;
-					} elseif ( 'card' !== $this->payment_method->get_id() ) {
+					} elseif ( Payment_Method::CARD !== $this->payment_method->get_id() ) {
 						return;
 					}
 				}
