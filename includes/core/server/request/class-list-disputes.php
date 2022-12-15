@@ -14,7 +14,7 @@ use WCPay\Core\Server\Response;
 use WCPay\Logger;
 
 /**
- * Request class for listing transactions.
+ * Request class for listing disputes.
  */
 class List_Disputes extends Paginated {
 

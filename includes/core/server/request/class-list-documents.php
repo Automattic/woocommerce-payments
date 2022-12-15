@@ -10,7 +10,7 @@ namespace WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
 /**
- * Request class for paginated requests.
+ * Request class for listing documents.
  */
 class List_Documents extends Paginated {
 
