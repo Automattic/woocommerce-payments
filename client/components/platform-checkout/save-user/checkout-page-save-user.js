@@ -13,15 +13,16 @@ import interpolateComponents from 'interpolate-components';
 /**
  * Internal dependencies
  */
+import PhoneNumberInput from 'settings/phone-input';
+import { getConfig } from 'utils/checkout';
+import AdditionalInformation from './additional-information';
+import Agreement from './agreement';
+import Container from './container';
+import LockIcon from '../icons/lock';
 import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
-import AdditionalInformation from './additional-information';
-import PhoneNumberInput from 'settings/phone-input';
-import Agreement from './agreement';
-import { getConfig } from 'utils/checkout';
 import { WC_STORE_CART } from '../../../checkout/constants';
 import WooPayIcon from '../../../../assets/images/woopay.svg';
-import LockIcon from '../icons/lock';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -166,103 +167,109 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	}
 
 	return (
-		<div className="save-details">
-			<div className="save-details-header">
-				<label htmlFor="save_user_in_platform_checkout">
-					<input
-						type="checkbox"
-						checked={ isSaveDetailsChecked }
-						onChange={ handleCheckboxClick }
-						name="save_user_in_platform_checkout"
-						id="save_user_in_platform_checkout"
-						value="true"
-						className="save-details-checkbox"
-						aria-checked={ isSaveDetailsChecked }
-					/>
-					<span>
-						{ __(
-							'Save my information for a faster and secure checkout',
-							'woocommerce-payments'
-						) }
-					</span>
-				</label>
-				<img src={ WooPayIcon } alt="WooPay" className="woopay-logo" />
-				<Icon
-					icon={ info }
-					size={ 22 }
-					className={ `info-icon ${
-						isInfoFlyoutVisible ? 'focused' : ''
-					}` }
-					onMouseOver={ setInfoFlyoutVisible }
-					onMouseOut={ setInfoFlyoutNotVisible }
-				/>
-				<div
-					className="save-details-flyout"
-					onMouseOver={ setInfoFlyoutVisible }
-					onFocus={ setInfoFlyoutVisible }
-					onMouseOut={ setInfoFlyoutNotVisible }
-					onBlur={ setInfoFlyoutNotVisible }
-				>
-					<div>
-						<LockIcon />
-					</div>
-					<span>
-						{ interpolateComponents( {
-							mixedString: __(
-								'We use {{woopayBold/}} to securely store your information in this WooCommerce store and others. ' +
-									"Next time at checkout, we'll send you a code by SMS to authenticate your purchase. {{learnMore/}}",
+		<Container isBlocksCheckout={ isBlocksCheckout }>
+			<div className="save-details">
+				<div className="save-details-header">
+					<label htmlFor="save_user_in_platform_checkout">
+						<input
+							type="checkbox"
+							checked={ isSaveDetailsChecked }
+							onChange={ handleCheckboxClick }
+							name="save_user_in_platform_checkout"
+							id="save_user_in_platform_checkout"
+							value="true"
+							className="save-details-checkbox"
+							aria-checked={ isSaveDetailsChecked }
+						/>
+						<span>
+							{ __(
+								'Save my information for a faster and secure checkout',
 								'woocommerce-payments'
-							),
-							components: {
-								woopayBold: <b>WooPay</b>,
-								learnMore: (
-									<a
-										target="_blank"
-										href="https://automattic.com"
-										rel="noopener noreferrer"
-									>
-										{ __(
-											'Learn more',
-											'woocommerce-payments'
-										) }
-									</a>
+							) }
+						</span>
+					</label>
+					<img
+						src={ WooPayIcon }
+						alt="WooPay"
+						className="woopay-logo"
+					/>
+					<Icon
+						icon={ info }
+						size={ 22 }
+						className={ `info-icon ${
+							isInfoFlyoutVisible ? 'focused' : ''
+						}` }
+						onMouseOver={ setInfoFlyoutVisible }
+						onMouseOut={ setInfoFlyoutNotVisible }
+					/>
+					<div
+						className="save-details-flyout"
+						onMouseOver={ setInfoFlyoutVisible }
+						onFocus={ setInfoFlyoutVisible }
+						onMouseOut={ setInfoFlyoutNotVisible }
+						onBlur={ setInfoFlyoutNotVisible }
+					>
+						<div>
+							<LockIcon />
+						</div>
+						<span>
+							{ interpolateComponents( {
+								mixedString: __(
+									'We use {{woopayBold/}} to securely store your information in this WooCommerce store and others. ' +
+										"Next time at checkout, we'll send you a code by SMS to authenticate your purchase. {{learnMore/}}",
+									'woocommerce-payments'
 								),
-							},
-						} ) }
-					</span>
+								components: {
+									woopayBold: <b>WooPay</b>,
+									learnMore: (
+										<a
+											target="_blank"
+											href="https://automattic.com"
+											rel="noopener noreferrer"
+										>
+											{ __(
+												'Learn more',
+												'woocommerce-payments'
+											) }
+										</a>
+									),
+								},
+							} ) }
+						</span>
+					</div>
+				</div>
+				<div
+					className={ `save-details-form form-row ${
+						isSaveDetailsChecked ? 'visible' : ''
+					}` }
+					data-testid="save-user-form"
+				>
+					<PhoneNumberInput
+						value={
+							null === phoneNumber
+								? getPhoneFieldValue()
+								: phoneNumber
+						}
+						onValueChange={ setPhoneNumber }
+						onValidationChange={ onPhoneValidationChange }
+						inputProps={ {
+							name:
+								'platform_checkout_user_phone_field[no-country-code]',
+						} }
+					/>
+					{ ! isPhoneValid && (
+						<p className="error-text">
+							{ __(
+								'Please enter a valid mobile phone number.',
+								'woocommerce-payments'
+							) }
+						</p>
+					) }
+					<AdditionalInformation />
+					<Agreement />
 				</div>
 			</div>
-			<div
-				className={ `save-details-form form-row ${
-					isSaveDetailsChecked ? 'visible' : ''
-				}` }
-				data-testid="save-user-form"
-			>
-				<PhoneNumberInput
-					value={
-						null === phoneNumber
-							? getPhoneFieldValue()
-							: phoneNumber
-					}
-					onValueChange={ setPhoneNumber }
-					onValidationChange={ onPhoneValidationChange }
-					inputProps={ {
-						name:
-							'platform_checkout_user_phone_field[no-country-code]',
-					} }
-				/>
-				{ ! isPhoneValid && (
-					<p className="error-text">
-						{ __(
-							'Please enter a valid mobile phone number.',
-							'woocommerce-payments'
-						) }
-					</p>
-				) }
-				<AdditionalInformation />
-				<Agreement />
-			</div>
-		</div>
+		</Container>
 	);
 };
 
