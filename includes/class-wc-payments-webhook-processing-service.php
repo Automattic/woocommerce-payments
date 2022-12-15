@@ -321,6 +321,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -333,6 +334,7 @@ class WC_Payments_Webhook_Processing_Service {
 	private function process_webhook_payment_intent_canceled( $event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -345,6 +347,7 @@ class WC_Payments_Webhook_Processing_Service {
 	private function process_webhook_payment_intent_amount_capturable_updated( $event_body ) {
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -357,10 +360,13 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function process_webhook_payment_intent_failed( $event_body ) {
 		// Check to make sure we should process this according to the payment method.
-		$charges_data        = $event_body['data']['object']['charges']['data'][0] ?? null;
-		$payment_method_type = $charges_data['payment_method_details']['type'] ?? null;
+		$charge_id           = $event_body['data']['object']['charges']['data'][0]['id'] ?? '';
+		$last_payment_error  = $event_body['data']['object']['last_payment_error'] ?? null;
+		$payment_method      = $last_payment_error['payment_method'] ?? null;
+		$payment_method_type = $payment_method['type'] ?? null;
 
 		$actionable_methods = [
+			Payment_Method::CARD,
 			Payment_Method::US_BANK_ACCOUNT,
 			Payment_Method::BECS,
 		];
@@ -371,7 +377,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Get the order and make sure it is an order and the payment methods match.
 		$order             = $this->get_order_from_event_body_intent_id( $event_body );
-		$payment_method_id = $charges_data['payment_method'] ?? null;
+		$payment_method_id = $payment_method['id'] ?? null;
 
 		if ( ! $order
 			|| empty( $payment_method_id )
@@ -383,9 +389,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_object  = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$intent_status = $this->read_webhook_property( $event_object, 'status' );
-		$charge_id     = $this->read_webhook_property( $charges_data, 'id' );
 
-		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_event( $event_body ) );  }
+		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );  }
 
 	/**
 	 * Process webhook for a successful payment intent.
@@ -418,6 +423,12 @@ class WC_Payments_Webhook_Processing_Service {
 			WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY => $currency,
 		];
 
+		// Save mandate id, necessary for some subscription renewals.
+		$mandate_id = $event_data['object']['charges']['data'][0]['payment_method_details']['card']['mandate'] ?? null;
+		if ( $mandate_id ) {
+			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
+		}
+
 		foreach ( $meta_data_to_update as $key => $value ) {
 			// Override existing meta data with incoming values, if present.
 			if ( $value ) {
@@ -445,6 +456,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Clear the authorization summary cache to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -657,45 +669,41 @@ class WC_Payments_Webhook_Processing_Service {
 	}
 
 	/**
-	 * Gets the proper failure message from the code in the event.
+	 * Gets the proper failure message from the code in the error.
+	 * Error codes from https://stripe.com/docs/error-codes.
 	 *
-	 * @param array $event_body The event that triggered the webhook.
+	 * @param array $error The last payment error from the payment failed event.
 	 *
 	 * @return string The failure message.
 	 */
-	private function get_failure_message_from_event( $event_body ):string {
-		// Get the failure code from the event body.
-		$event_data    = $this->read_webhook_property( $event_body, 'data' );
-		$event_object  = $this->read_webhook_property( $event_data, 'object' );
-		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
-		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
-		$failure_code  = $charges_data[0]['failure_code'] ?? '';
+	private function get_failure_message_from_error( $error ):string {
+		$code         = $error['code'] ?? '';
+		$decline_code = $error['decline_code'] ?? '';
+		$message      = $error['message'] ?? '';
 
-		switch ( $failure_code ) {
+		switch ( $code ) {
 			case 'account_closed':
-				$failure_message = __( "The customer's bank account has been closed.", 'woocommerce-payments' );
-				break;
+				return __( "The customer's bank account has been closed.", 'woocommerce-payments' );
 			case 'debit_not_authorized':
-				$failure_message = __( 'The customer has notified their bank that this payment was unauthorized.', 'woocommerce-payments' );
-				break;
+				return __( 'The customer has notified their bank that this payment was unauthorized.', 'woocommerce-payments' );
 			case 'insufficient_funds':
-				$failure_message = __( "The customer's account has insufficient funds to cover this payment.", 'woocommerce-payments' );
-				break;
+				return __( "The customer's account has insufficient funds to cover this payment.", 'woocommerce-payments' );
 			case 'no_account':
-				$failure_message = __( "The customer's bank account could not be located.", 'woocommerce-payments' );
-				break;
+				return __( "The customer's bank account could not be located.", 'woocommerce-payments' );
 			case 'payment_method_microdeposit_failed':
-				$failure_message = __( 'Microdeposit transfers failed. Please check the account, institution and transit numbers.', 'woocommerce-payments' );
-				break;
+				return __( 'Microdeposit transfers failed. Please check the account, institution and transit numbers.', 'woocommerce-payments' );
 			case 'payment_method_microdeposit_verification_attempts_exceeded':
-				$failure_message = __( 'You have exceeded the number of allowed verification attempts.', 'woocommerce-payments' );
-				break;
-
-			default:
-				$failure_message = __( 'The payment was not able to be processed.', 'woocommerce-payments' );
-				break;
+				return __( 'You have exceeded the number of allowed verification attempts.', 'woocommerce-payments' );
+			case 'card_declined':
+				switch ( $decline_code ) {
+					case 'debit_notification_undelivered':
+						return __( "The customer's bank could not send pre-debit notification for the payment.", 'woocommerce-payments' );
+					case 'transaction_not_approved':
+						return __( 'For recurring payment greater than mandate amount or INR 15000, payment was not approved by the card holder.', 'woocommerce-payments' );
+				}
 		}
 
-		return $failure_message;
+		// translators: %s Stripe error message.
+		return sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), $message );
 	}
 }
