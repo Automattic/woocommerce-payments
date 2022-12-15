@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Create_And_Confirm_Intention_Test
+ * Class Get_Intention_Test
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -10,7 +10,7 @@ use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\Get_Intention;
 
 /**
- * WCPay\Core\Server\Request unit tests.
+ * WCPay\Core\Server\Get_Intention_Test unit tests.
  */
 class Get_Intention_Test extends WCPAY_UnitTestCase {
 

@@ -1,16 +1,15 @@
 <?php
 /**
- * Class Create_And_Confirm_Intention_Test
+ * Class Paginated_Test
  *
  * @package WooCommerce\Payments\Tests
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Paginated;
 
 /**
- * WCPay\Core\Server\Request unit tests.
+ * WCPay\Core\Server\Paginated_Test unit tests.
  */
 class Paginated_Test extends WCPAY_UnitTestCase {
 

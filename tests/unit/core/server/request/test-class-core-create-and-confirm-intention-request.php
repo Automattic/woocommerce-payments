@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Create_Intention_Test
+ * Class Create_And_Confirm_Intention_Test
  *
  * @package WooCommerce\Payments\Tests
  */
@@ -12,7 +12,7 @@ use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Intention;
 
 /**
- * WCPay\Core\Server\Request unit tests.
+ * WCPay\Core\Server\Create_And_Confirm_Intention_Test unit tests.
  */
 class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 

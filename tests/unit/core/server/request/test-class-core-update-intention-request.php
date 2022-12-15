@@ -1,17 +1,16 @@
 <?php
 /**
- * Class Create_Intention_Test
+ * Class Update_Intention_Test
  *
  * @package WooCommerce\Payments\Tests
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\Update_Intention;
 
 /**
- * WCPay\Core\Server\Request unit tests.
+ * WCPay\Core\Server\Update_Intention_Test unit tests.
  */
 class Update_Intention_Test extends WCPAY_UnitTestCase {
 

@@ -9,7 +9,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\List_Deposits;
 
 /**
- * WCPay\Core\Server\Request unit tests.
+ * WCPay\Core\Server\List_Deposits_Test unit tests.
  */
 class List_Deposits_Test extends WCPAY_UnitTestCase {
 
