@@ -77,7 +77,6 @@ const PhoneNumberInput = ( {
 				utilsScript: utils,
 			} );
 			setInputInstance( iti );
-			onValidationChange( iti.isValidNumber() );
 
 			currentRef.addEventListener( 'countrychange', handleCountryChange );
 		}
@@ -94,7 +93,13 @@ const PhoneNumberInput = ( {
 				}
 			}
 		};
-	}, [ value, onValueChange, onValidationChange ] );
+	}, [ onValueChange, onValidationChange ] );
+
+	useEffect( () => {
+		if ( inputInstance && inputRef.current ) {
+			onValidationChange( inputInstance.isValidNumber() );
+		}
+	}, [ value, inputInstance, inputRef, onValidationChange ] );
 
 	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
 	// alters the DOM and we'll get warnings about "removing content without using React."
