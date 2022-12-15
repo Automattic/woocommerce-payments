@@ -170,24 +170,46 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		<Container isBlocksCheckout={ isBlocksCheckout }>
 			<div className="save-details">
 				<div className="save-details-header">
-					<label htmlFor="save_user_in_platform_checkout">
-						<input
-							type="checkbox"
-							checked={ isSaveDetailsChecked }
-							onChange={ handleCheckboxClick }
-							name="save_user_in_platform_checkout"
-							id="save_user_in_platform_checkout"
-							value="true"
-							className="save-details-checkbox"
-							aria-checked={ isSaveDetailsChecked }
-						/>
-						<span>
-							{ __(
-								'Save my information for a faster and secure checkout',
-								'woocommerce-payments'
+					<div
+						className={
+							isBlocksCheckout
+								? 'wc-block-components-checkbox'
+								: ''
+						}
+					>
+						<label htmlFor="save_user_in_platform_checkout">
+							<input
+								type="checkbox"
+								checked={ isSaveDetailsChecked }
+								onChange={ handleCheckboxClick }
+								name="save_user_in_platform_checkout"
+								id="save_user_in_platform_checkout"
+								value="true"
+								className={ `save-details-checkbox ${
+									isBlocksCheckout
+										? 'wc-block-components-checkbox__input'
+										: ''
+								}` }
+								aria-checked={ isSaveDetailsChecked }
+							/>
+							{ isBlocksCheckout && (
+								<svg
+									className="wc-block-components-checkbox__mark"
+									aria-hidden="true"
+									xmlns="http://www.w3.org/2000/svg"
+									viewBox="0 0 24 20"
+								>
+									<path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+								</svg>
 							) }
-						</span>
-					</label>
+							<span>
+								{ __(
+									'Save my information for a faster and secure checkout',
+									'woocommerce-payments'
+								) }
+							</span>
+						</label>
+					</div>
 					<img
 						src={ WooPayIcon }
 						alt="WooPay"
@@ -195,7 +217,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					/>
 					<Icon
 						icon={ info }
-						size={ 22 }
+						size={ isBlocksCheckout ? 24 : 36 }
 						className={ `info-icon ${
 							isInfoFlyoutVisible ? 'focused' : ''
 						}` }
@@ -203,7 +225,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						onMouseOut={ setInfoFlyoutNotVisible }
 					/>
 					<div
-						className="save-details-flyout"
+						className={ `save-details-flyout ${
+							isBlocksCheckout ? 'is-blocks' : ''
+						}` }
 						onMouseOver={ setInfoFlyoutVisible }
 						onFocus={ setInfoFlyoutVisible }
 						onMouseOut={ setInfoFlyoutNotVisible }

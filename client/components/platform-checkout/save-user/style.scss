@@ -19,9 +19,13 @@
 			gap: $gap-small;
 			align-items: flex-start;
 
-			.save-details-checkbox {
+			.save-details-checkbox:not( .wc-block-components-checkbox__input ) {
 				margin-top: 6px;
 			}
+		}
+
+		.wc-block-components-checkbox label {
+			gap: unset;
 		}
 
 		.woopay-logo {
@@ -53,8 +57,12 @@
 			width: 270px;
 			font-size: 13px;
 			line-height: 20px;
-			top: -112px;
+			top: -115px;
 			left: calc( 100% - 135px );
+
+			&.is-blocks {
+				top: -105px;
+			}
 
 			&:hover {
 				display: flex;
