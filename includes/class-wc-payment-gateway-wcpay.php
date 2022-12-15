@@ -961,6 +961,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
+		// Add card mandate options parameters to the order payment intent if needed.
+		$additional_api_parameters = array_merge(
+			$additional_api_parameters,
+			$this->get_mandate_params_for_order( $order )
+		);
+
 		if ( $payment_needed ) {
 			$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() );
 			$currency         = strtolower( $order->get_currency() );
@@ -1032,6 +1038,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$client_secret = $intent->get_client_secret();
 			$currency      = $intent->get_currency();
 			$next_action   = $intent->get_next_action();
+			$processing    = $intent->get_processing();
 			// We update the payment method ID server side when it's necessary to clone payment methods,
 			// for example when saving a payment method to a platform customer account. When this happens
 			// we need to make sure the payment method on the order matches the one on the merchant account
@@ -1095,6 +1102,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$client_secret = $intent['client_secret'];
 			$currency      = $order->get_currency();
 			$next_action   = $intent['next_action'];
+			$processing    = [];
 		}
 
 		if ( ! empty( $intent ) ) {
@@ -1175,6 +1183,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 		$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
+
+		$this->maybe_add_customer_notification_note( $order, $processing );
 
 		if ( isset( $response ) ) {
 			return $response;
