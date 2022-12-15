@@ -40,6 +40,10 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		expressCheckoutIframe.mockImplementation( () => jest.fn() );
 		getConfig.mockReturnValue( 'foo' );
 		wcpayTracks.recordUserEvent.mockReturnValue( true );
+		wcpayTracks.events = {
+			PLATFORM_CHECKOUT_EXPRESS_BUTTON_OFFERED:
+				'platform_checkout_express_button_offered',
+		};
 	} );
 
 	afterEach( () => {
