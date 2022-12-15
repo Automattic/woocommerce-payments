@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Core\Server\Request\Paginated as Paginated_Request;
+use WCPay\Core\Server\Request\List_Documents;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -62,12 +62,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 	 */
 	public function get_documents( $request ) {
 
-		$wcpay_request = Paginated_Request::create();
-		$wcpay_request->set_uri( WC_Payments_API_Client::DOCUMENTS_API );
-		$wcpay_request->set_page( (int) $request->get_param( 'page' ) );
-		$wcpay_request->set_page_size( (int) $request->get_param( 'pagesize' ) );
-		$wcpay_request->set_sort_by( $request->get_param( 'sort' ) );
-		$wcpay_request->set_sort_direction( $request->get_param( 'direction' ) );
+		$wcpay_request = List_Documents::from_rest_request( $request );
 		$wcpay_request->set_filters( $this->get_documents_filters( $request ) );
 
 		return $wcpay_request->handle_rest_request( 'wcpay_list_documents_request' );
