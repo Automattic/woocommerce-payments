@@ -67,7 +67,7 @@ class WC_REST_Payments_Authorizations_Controller extends WC_Payments_REST_Contro
 		$wcpay_request->set_sort_by( $request->get_param( 'sort' ) );
 		$wcpay_request->set_sort_direction( $request->get_param( 'direction' ) );
 
-		return $wcpay_request->handle_request( 'wcpay_list_authorizations_request' );
+		return $wcpay_request->handle_rest_request( 'wcpay_list_authorizations_request' );
 	}
 
 	/**

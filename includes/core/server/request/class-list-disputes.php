@@ -10,6 +10,7 @@ namespace WCPay\Core\Server\Request;
 use Exception;
 use WC_Payments_API_Client;
 use WC_Payments_DB;
+use WCPay\Core\Server\Response;
 use WCPay\Logger;
 
 /**
@@ -54,7 +55,7 @@ class List_Disputes extends Paginated {
 			}
 		}
 
-		return $response;
+		return new Response( $response );
 	}
 
 

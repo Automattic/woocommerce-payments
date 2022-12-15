@@ -240,9 +240,16 @@ abstract class Request {
 	 * @throws Immutable_Parameter_Exception
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	final public function handle_request( $hook, ...$args ) {
+	final public function handle_rest_request( $hook, ...$args ) {
 		try {
-			return $this->send( $hook, $args );
+			$data = $this->send( $hook, $args );
+			// Make sure to return array if $data is instace or has parent as a Response class.
+			if ( is_a( $data, Response::class ) ) {
+				return $data->to_array();
+			}
+
+			// Return the data and let caller to parse it as it pleases.
+			return $data;
 		} catch ( API_Exception $e ) {
 			new WP_Error( $e->get_error_code(), $e->getMessage() );
 		}

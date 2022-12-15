@@ -70,7 +70,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 		$wcpay_request->set_sort_direction( $request->get_param( 'direction' ) );
 		$wcpay_request->set_filters( $this->get_documents_filters( $request ) );
 
-		return $wcpay_request->handle_request( 'wcpay_list_documents_request' );
+		return $wcpay_request->handle_rest_request( 'wcpay_list_documents_request' );
 	}
 
 	/**

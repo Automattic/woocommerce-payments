@@ -94,7 +94,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		$wcpay_request->set_sort_direction( $request->get_param( 'direction' ) ?? 'desc' );
 		$wcpay_request->set_filters( $this->get_disputes_filters( $request ) );
 
-		return $wcpay_request->handle_request( 'wcpay_list_disputes_request', $request );
+		return $wcpay_request->handle_rest_request( 'wcpay_list_disputes_request', $request );
 	}
 
 	/**

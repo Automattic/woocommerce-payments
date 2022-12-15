@@ -9,6 +9,8 @@ namespace WCPay\Core\Server\Request;
 
 use WC_Payments_API_Client;
 use WC_Payments_DB;
+use WCPay\Core\Server\Response;
+
 /**
  * Request class for listing transactions.
  */
@@ -72,7 +74,7 @@ class List_Transactions extends Paginated {
 			unset( $transaction );
 		}
 
-		return $response;
+		return new Response( $response );
 	}
 
 

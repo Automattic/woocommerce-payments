@@ -87,7 +87,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		$wcpay_request->set_deposit_id( $request->get_param( 'deposit_id' ) );
 		$wcpay_request->set_filters( $this->get_transactions_filters( $request ) );
 
-		return $wcpay_request->handle_request( 'wcpay_list_transactions_request' );
+		return $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
 	}
 
 	/**
