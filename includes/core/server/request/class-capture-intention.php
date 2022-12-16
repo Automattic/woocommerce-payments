@@ -1,6 +1,6 @@
 <?php
 /**
- * Class file for WCPay\Core\Server\Request\Update_Intent.
+ * Class file for WCPay\Core\Server\Request\Capture_Intention.
  *
  * @package WooCommerce Payments
  */
@@ -8,25 +8,21 @@
 namespace WCPay\Core\Server\Request;
 
 use WC_Payments;
-use WC_Payments_Http_Interface;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
-use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Link_Payment_Method;
 
 /**
- * Request class for creating intents.
+ * Request class for capturing intents.
  */
 class Capture_Intention extends Request {
 	use Intention;
 	use Level3;
 
-	const IMMUTABLE_PARAMS = [ 'amount' ];
-	const REQUIRED_PARAMS  = []; // This use to be amount and currency, but since it is not required on server API, I will leave it blank.
+	const IMMUTABLE_PARAMS = [ 'amount_to_capture' ];
+	const REQUIRED_PARAMS  = [ 'amount_to_capture' ];
 	const DEFAULT_PARAMS   = [
-		'receipt_email' => '',
-		'metadata'      => [],
+		'level3' => [],
 	];
 
 
