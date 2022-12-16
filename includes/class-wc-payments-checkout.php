@@ -127,6 +127,11 @@ class WC_Payments_Checkout {
 			'platformCheckoutMerchantId'     => Jetpack_Options::get_option( 'id' ),
 		];
 
+		/**
+		 * Allows filtering of the JS config for the payment fields.
+		 *
+		 * @param array $js_config The JS config for the payment fields.
+		 */
 		return apply_filters( 'wcpay_payment_fields_js_config', $js_config );
 	}
 
