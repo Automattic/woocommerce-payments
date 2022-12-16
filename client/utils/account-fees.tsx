@@ -77,7 +77,7 @@ const getFeeDescriptionString = ( fee: BaseFee ): string => {
 	return '';
 };
 
-export const getCurrentFee = (
+export const getCurrentBaseFee = (
 	accountFees: FeeStructure
 ): BaseFee | DiscountFee => {
 	return accountFees.discount.length
@@ -89,16 +89,15 @@ export const formatMethodFeesTooltip = (
 	accountFees: FeeStructure
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
-	// If there is a discount, use that instead of the base fee.
-	const currentFee = getCurrentFee( accountFees );
+	const currentBaseFee = getCurrentBaseFee( accountFees );
 
 	const total = {
 		percentage_rate:
-			currentFee.percentage_rate +
+			currentBaseFee.percentage_rate +
 			accountFees.additional.percentage_rate +
 			accountFees.fx.percentage_rate,
 		fixed_rate:
-			currentFee.fixed_rate +
+			currentBaseFee.fixed_rate +
 			accountFees.additional.fixed_rate +
 			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
@@ -112,7 +111,7 @@ export const formatMethodFeesTooltip = (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
 				<div>Base fee</div>
-				<div>{ getFeeDescriptionString( currentFee ) }</div>
+				<div>{ getFeeDescriptionString( currentBaseFee ) }</div>
 			</div>
 			{ hasFees( accountFees.additional ) ? (
 				<div>
@@ -212,7 +211,7 @@ export const formatAccountFeesDescription = (
 	const baseFee = accountFees.base;
 	const additionalFee = accountFees.additional ?? defaultFee;
 	const fxFee = accountFees.fx ?? defaultFee;
-	const currentFee = getCurrentFee( accountFees );
+	const currentBaseFee = getCurrentBaseFee( accountFees );
 
 	// Default formats will be used if no matching field was passed in the `formats` parameter.
 	const formats = {
@@ -238,11 +237,11 @@ export const formatAccountFeesDescription = (
 		formatCurrency( baseFee.fixed_rate, baseFee.currency )
 	);
 	const isFormattingWithDiscount =
-		currentFee.percentage_rate !== baseFee.percentage_rate ||
-		currentFee.fixed_rate !== baseFee.fixed_rate ||
-		currentFee.currency !== baseFee.currency;
+		currentBaseFee.percentage_rate !== baseFee.percentage_rate ||
+		currentBaseFee.fixed_rate !== baseFee.fixed_rate ||
+		currentBaseFee.currency !== baseFee.currency;
 	if ( isFormattingWithDiscount ) {
-		const discountFee = currentFee as DiscountFee;
+		const discountFee = currentBaseFee as DiscountFee;
 		// TODO: Figure out how the UI should work if there are several "discount" fees stacked.
 		let percentage, fixed;
 
@@ -252,33 +251,33 @@ export const formatAccountFeesDescription = (
 			fixed = baseFee.fixed_rate * ( 1 - discountFee.discount );
 		} else {
 			// Custom base fee (2% + $.20)
-			percentage = currentFee.percentage_rate;
-			fixed = currentFee.fixed_rate;
+			percentage = currentBaseFee.percentage_rate;
+			fixed = currentBaseFee.fixed_rate;
 		}
 
-		let currentFeeDescription = sprintf(
+		let currentBaseFeeDescription = sprintf(
 			formats.fee,
 			formatFee( percentage ),
 			formatCurrency( fixed, baseFee.currency )
 		);
 
 		if ( formats.displayBaseFeeIfDifferent ) {
-			currentFeeDescription = sprintf(
+			currentBaseFeeDescription = sprintf(
 				// eslint-disable-next-line max-len
 				/* translators: %1 Base fee (that don't apply to this account at this moment), %2: Current fee (e.g: "2.9% + $.30 per transaction") */
 				__( '<s>%1$s</s> %2$s', 'woocommerce-payments' ),
 				feeDescription,
-				currentFeeDescription
+				currentBaseFeeDescription
 			);
 		}
 
 		if ( discountFee.discount && 0 < formats.discount.length ) {
-			currentFeeDescription +=
+			currentBaseFeeDescription +=
 				' ' +
 				sprintf( formats.discount, formatFee( discountFee.discount ) );
 		}
 
-		return createInterpolateElement( currentFeeDescription, {
+		return createInterpolateElement( currentBaseFeeDescription, {
 			s: <s />,
 		} );
 	}

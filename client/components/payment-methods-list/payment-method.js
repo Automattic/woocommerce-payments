@@ -46,7 +46,6 @@ const PaymentMethod = ( {
 		return onUncheckClick( id );
 	};
 
-	//console.log( accountFees );
 	return (
 		<li
 			className={ classNames(
