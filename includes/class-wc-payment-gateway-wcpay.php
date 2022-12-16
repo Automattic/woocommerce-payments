@@ -2842,6 +2842,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout filtered by fees.
+	 *
+	 * @param string $order_id optional Order ID.
+	 * @param bool   $force_currency_check optional Whether the currency check is required even if is_admin().
+	 * @return string[]
+	 */
+	public function get_payment_method_ids_enabled_at_checkout_filtered_by_fees( $order_id = null, $force_currency_check = false ) {
+		return $this->get_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check );
+	}
+
+	/**
 	 * Returns the list of available payment method types for UPE.
 	 * See https://stripe.com/docs/stripe-js/payment-element#web-create-payment-intent for a complete list.
 	 *
@@ -2932,7 +2943,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function checkout_update_email_field_priority( $fields ) {
 		$is_link_enabled = in_array(
 			Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+			\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
 			true
 		);
 
