@@ -217,7 +217,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					/>
 					<Icon
 						icon={ info }
-						size={ isBlocksCheckout ? 24 : 36 }
+						size={ 20 }
 						className={ `info-icon ${
 							isInfoFlyoutVisible ? 'focused' : ''
 						}` }
@@ -225,9 +225,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						onMouseOut={ setInfoFlyoutNotVisible }
 					/>
 					<div
-						className={ `save-details-flyout ${
-							isBlocksCheckout ? 'is-blocks' : ''
-						}` }
+						className="save-details-flyout"
 						onMouseOver={ setInfoFlyoutVisible }
 						onFocus={ setInfoFlyoutVisible }
 						onMouseOut={ setInfoFlyoutNotVisible }

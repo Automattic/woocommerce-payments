@@ -9,9 +9,13 @@
 
 	.save-details-header {
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		gap: $gap-small;
 		position: relative;
+
+		> div {
+			flex: 1;
+		}
 
 		label {
 			flex: 1;
@@ -24,16 +28,34 @@
 			}
 		}
 
-		.wc-block-components-checkbox label {
-			gap: unset;
+		.wc-block-components-checkbox {
+			margin-top: 0;
+			flex: 1;
+
+			label {
+				gap: unset;
+			}
+
+			input {
+				margin-right: $gap-small;
+			}
+
+			span {
+				@include breakpoint( '>960px' ) {
+					margin-right: 20px;
+				}
+			}
 		}
 
 		.woopay-logo {
 			height: 17px;
+			margin-top: 6px;
 		}
 
 		.info-icon {
 			fill: $gray-600;
+			margin-top: 3px;
+			object-fit: none;
 
 			&:hover,
 			&.focused {
@@ -57,12 +79,8 @@
 			width: 270px;
 			font-size: 13px;
 			line-height: 20px;
-			top: -115px;
+			top: -124px;
 			left: calc( 100% - 135px );
-
-			&.is-blocks {
-				top: -105px;
-			}
 
 			&:hover {
 				display: flex;
