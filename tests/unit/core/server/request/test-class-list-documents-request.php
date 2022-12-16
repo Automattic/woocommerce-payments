@@ -63,7 +63,7 @@ class List_Documents_Test extends WCPAY_UnitTestCase {
 		];
 		$date_after   = '2022-01-01 00:00:00';
 		$date_before  = '2022-02-01 00:00:00';
-		$date_between = $date_after . '-' . $date_before;
+		$date_between = [ $date_after, $date_before ];
 		$match        = 'match';
 		$type         = 'bill';
 		$type_is_not  = 'passport';
@@ -107,7 +107,7 @@ class List_Documents_Test extends WCPAY_UnitTestCase {
 		$sort         = 'date';
 		$date_after   = '2022-01-01 00:00:00';
 		$date_before  = '2022-02-01 00:00:00';
-		$date_between = $date_after . '-' . $date_before;
+		$date_between = [ $date_after, $date_before ];
 		$match        = 'match';
 		$type         = 'bill';
 		$type_is_not  = 'passport';

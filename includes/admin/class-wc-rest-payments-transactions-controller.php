@@ -79,7 +79,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 */
 	public function get_transactions( $request ) {
 
-		$wcpay_request = List_Transactions::create();
+		$wcpay_request = List_Transactions::from_rest_request( $request );
 		$wcpay_request->set_page( (int) $request->get_param( 'page' ) );
 		$wcpay_request->set_page_size( (int) $request->get_param( 'pagesize' ) );
 		$wcpay_request->set_sort_by( $request->get_param( 'sort' ) );

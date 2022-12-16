@@ -39,7 +39,7 @@ class List_Deposits extends Paginated {
 			'store_currency_is' => $request->get_param( 'store_currency_is' ),
 			'date_before'       => $request->get_param( 'date_before' ),
 			'date_after'        => $request->get_param( 'date_after' ),
-			'date_between'      => $request->get_param( 'date_between' ),
+			'date_between'      => (array) $request->get_param( 'date_between' ),
 			'status_is'         => $request->get_param( 'status_is' ),
 			'status_is_not'     => $request->get_param( 'status_is_not' ),
 		];
@@ -98,14 +98,15 @@ class List_Deposits extends Paginated {
 	/**
 	 * Set date between.
 	 *
-	 * @param string $date_between Date between.
+	 * @param array $date_between Date between.
 	 *
 	 * @return void
 	 */
-	public function set_date_between( string $date_between ) {
-		$this->set_param( 'date_between', $date_between );
+	public function set_date_between( array $date_between ) {
+		if ( $date_between ) {
+			$this->set_param( 'date_between', $date_between );
+		}
 	}
-
 
 	/**
 	 * Set status is.

@@ -37,7 +37,7 @@ class List_Documents extends Paginated {
 			'match'        => $request->get_param( 'match' ),
 			'date_before'  => $request->get_param( 'date_before' ),
 			'date_after'   => $request->get_param( 'date_after' ),
-			'date_between' => $request->get_param( 'date_between' ),
+			'date_between' => (array) $request->get_param( 'date_between' ),
 			'type_is'      => $request->get_param( 'type_is' ),
 			'type_is_not'  => $request->get_param( 'type_is_not' ),
 		];
@@ -85,12 +85,15 @@ class List_Documents extends Paginated {
 	/**
 	 * Set date between.
 	 *
-	 * @param string $date_between Date between.
+	 * @param array $date_between Date between.
 	 *
 	 * @return void
 	 */
-	public function set_date_between( string $date_between ) {
-		$this->set_param( 'date_between', $date_between );
+	public function set_date_between( array $date_between ) {
+		// Add only if it's not empty.
+		if ( $date_between ) {
+			$this->set_param( 'date_between', $date_between );
+		}
 	}
 
 

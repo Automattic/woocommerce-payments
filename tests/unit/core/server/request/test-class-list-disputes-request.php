@@ -62,7 +62,7 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		];
 		$created_after   = '2022-01-01 00:00:00';
 		$created_before  = '2022-02-01 00:00:00';
-		$created_between = $created_after . '-' . $created_before;
+		$created_between = [ $created_after, $created_before ];
 		$match           = 'match';
 		$currency        = 'usd';
 		$status          = 'completed';
@@ -112,7 +112,7 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$sort            = 'created';
 		$created_after   = '2022-01-01 00:00:00';
 		$created_before  = '2022-02-01 00:00:00';
-		$created_between = $created_after . '-' . $created_before;
+		$created_between = [ $created_after, $created_before ];
 		$match           = 'match';
 		$currency        = 'usd';
 		$status          = 'completed';

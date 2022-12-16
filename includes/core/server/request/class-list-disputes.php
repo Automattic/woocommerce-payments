@@ -45,7 +45,7 @@ class List_Disputes extends Paginated {
 			'currency_is'     => $request->get_param( 'store_currency_is' ),
 			'created_before'  => $request->get_param( 'date_before' ),
 			'created_after'   => $request->get_param( 'date_after' ),
-			'created_between' => $request->get_param( 'date_between' ),
+			'created_between' => (array) $request->get_param( 'date_between' ),
 			'search'          => $request->get_param( 'search' ),
 			'status_is'       => $request->get_param( 'status_is' ),
 			'status_is_not'   => $request->get_param( 'status_is_not' ),
@@ -106,12 +106,14 @@ class List_Disputes extends Paginated {
 	/**
 	 * Set created between.
 	 *
-	 * @param string $created_between Created between.
+	 * @param array $created_between Created between.
 	 *
 	 * @return void
 	 */
-	public function set_created_between( string $created_between ) {
-		$this->set_param( 'created_between', $created_between );
+	public function set_created_between( array $created_between ) {
+		if ( $created_between ) {
+			$this->set_param( 'created_between', $created_between );
+		}
 	}
 
 	/**
