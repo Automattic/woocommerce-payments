@@ -10,6 +10,7 @@ namespace WCPay\WooPay\Service;
 use WC_Payments_Features;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Intention;
+use WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Setup_Intention;
 use WCPay\Payment_Information;
 
 /**
@@ -29,6 +30,25 @@ class Checkout_Service {
 	public function create_intention_request( Request $base_request, Payment_Information $payment_information ) {
 		$request = WooPay_Create_And_Confirm_Intention::extend( $base_request );
 		$request->set_has_woopay_subscription( '1' === $payment_information->get_order()->get_meta( '_woopay_has_subscription' ) );
+		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ) );
+		return $request;
+	}
+
+	/**
+	 * Create woopay setup and confirm intent request from base create and confirm request.
+	 *
+	 * @param Request             $base_request Base request.
+	 * @param Payment_Information $payment_information Using saved payment method.
+	 * @param bool                $save_in_platform_account Should save in platform account.
+	 * @param bool                $save_payment_method_to_platform Should save in platform.
+	 *
+	 * @return WooPay_Create_And_Confirm_Setup_Intention
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
+	 */
+	public function create_and_confirm_setup_intention_request( Request $base_request, Payment_Information $payment_information, bool $save_in_platform_account, bool $save_payment_method_to_platform ) {
+		$request = WooPay_Create_And_Confirm_Setup_Intention::extend( $base_request );
+		$request->set_save_in_platform_account( $save_in_platform_account );
+		$request->set_save_payment_method_to_platform( $save_payment_method_to_platform );
 		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ) );
 		return $request;
 	}
@@ -83,5 +103,6 @@ class Checkout_Service {
 	 */
 	public function init() {
 		add_filter( 'wcpay_create_intention_request', [ $this, 'create_intention_request' ], 10, 3 );
+		add_filter( 'wcpay_create_and_confirm_setup_intention_request', [ $this, 'create_and_confirm_setup_intention_request' ], 10, 3 );
 	}
 }
