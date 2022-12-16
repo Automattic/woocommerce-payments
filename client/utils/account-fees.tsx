@@ -18,28 +18,28 @@ import { PaymentMethod } from 'wcpay/types/payment-methods';
 import { createInterpolateElement } from '@wordpress/element';
 
 const countryFeeStripeDocsBaseLink =
-	'https://woocommerce.com/document/payments/faq/fees/#section-';
+	'https://woocommerce.com/document/payments/faq/fees/#';
 const countryFeeStripeDocsBaseLinkNoCountry =
 	'https://woocommerce.com/document/payments/faq/fees';
-const countryFeeStripeDocsSectionNumbers: Record< string, number > = {
-	AU: 1,
-	AT: 2,
-	BE: 3,
-	CA: 4,
-	FR: 5,
-	DE: 6,
-	HK: 7,
-	IE: 8,
-	IT: 9,
-	NL: 10,
-	NZ: 11,
-	PL: 12,
-	PT: 13,
-	SG: 14,
-	ES: 15,
-	CH: 16,
-	UK: 17,
-	US: 18,
+const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
+	AU: 'australia',
+	AT: 'austria',
+	BE: 'belgium',
+	CA: 'canada',
+	FR: 'france',
+	DE: 'germany',
+	HK: 'hong-kong',
+	IE: 'ireland',
+	IT: 'italy',
+	NL: 'netherlands',
+	NZ: 'new-zealand',
+	PL: 'poland',
+	PT: 'portugal',
+	SG: 'singapore',
+	ES: 'spain',
+	CH: 'switzerland',
+	UK: 'united-kingdom',
+	US: 'united-states',
 };
 
 const stripeFeeSectionExistsForCountry = ( country: string ): boolean => {
