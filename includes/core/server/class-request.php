@@ -7,6 +7,7 @@
 
 namespace WCPay\Core\Server;
 
+use DateTime;
 use WC_Payments;
 use WC_Payments_Http_Interface;
 use WC_Payments_API_Client;
@@ -587,5 +588,29 @@ abstract class Request {
 			);
 		}
 
+	}
+
+	/**
+	 * Validate date with given format.
+	 *
+	 * @param string $date Date to validate.
+	 * @param string $format Format to check.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function validate_date( string $date, string $format = 'Y-m-d H:i:s' ) {
+		$d = DateTime::createFromFormat( $format, $date );
+		if ( ! ( $d && $d->format( $format ) === $date ) ) {
+			throw new Invalid_Request_Parameter_Exception(
+				sprintf(
+				// Translators: %s is a currency code.
+					__( '%1$s is not a valid date for format %2$s.', 'woocommerce-payments' ),
+					$date,
+					$format
+				),
+				'wcpay_core_invalid_request_parameter_invalid_date'
+			);
+		}
 	}
 }
