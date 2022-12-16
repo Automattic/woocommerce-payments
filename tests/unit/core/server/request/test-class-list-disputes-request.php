@@ -69,6 +69,7 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$currency        = 'usd';
 		$status          = 'completed';
 		$status_is_not   = 'failed';
+		$search          = 'term';
 
 		$request = new List_Disputes( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_page( $page );
@@ -82,6 +83,7 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$request->set_currency_is( $currency );
 		$request->set_status_is( $status );
 		$request->set_status_is_not( $status_is_not );
+		$request->set_search( $search );
 		$request->set_filters( $filters );
 		$this->assertNotSame( $filters['page'], $request->get_param( 'page' ) ); // Test immutability of filter key.
 
@@ -99,6 +101,7 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $currency, $params['currency_is'] );
 		$this->assertSame( $status, $params['status_is'] );
 		$this->assertSame( $status_is_not, $params['status_is_not'] );
+		$this->assertSame( $search, $params['search'] );
 		$this->assertSame( $filters['key'], $params['key'] );
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::DISPUTES_API, $request->get_api() );
@@ -116,6 +119,7 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$currency        = 'usd';
 		$status          = 'completed';
 		$status_is_not   = 'failed';
+		$search          = 'term';
 
 		$rest_request = new WP_REST_Request( 'GET' );
 		$rest_request->set_param( 'page', $page );
@@ -129,6 +133,7 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$rest_request->set_param( 'store_currency_is', $currency );
 		$rest_request->set_param( 'status_is', $status );
 		$rest_request->set_param( 'status_is_not', $status_is_not );
+		$rest_request->set_param( 'search', $search );
 
 		$request = List_Disputes::from_rest_request( $rest_request );
 
@@ -146,6 +151,7 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $currency, $params['currency_is'] );
 		$this->assertSame( $status, $params['status_is'] );
 		$this->assertSame( $status_is_not, $params['status_is_not'] );
+		$this->assertSame( $search, $params['search'] );
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::DISPUTES_API, $request->get_api() );
 
