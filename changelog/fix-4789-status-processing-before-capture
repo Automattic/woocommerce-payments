@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Hide "capture charge" and "cancel authorization" actions on order details page when order status is processing or completed.
