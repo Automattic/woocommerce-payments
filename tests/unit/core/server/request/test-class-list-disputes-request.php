@@ -43,13 +43,11 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 	public function test_exception_will_throw_if_created_after_is_invalid_format() {
 		$request = new List_Disputes( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		// Default format is MySQL date time format, so we don't need to pass anything here.
 		$request->set_created_after( '2022-01-01' );
 	}
 	public function test_exception_will_throw_if_created_before_is_invalid_format() {
 		$request = new List_Disputes( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		// Default format is MySQL date time format, so we don't need to pass anything here.
 		$request->set_created_before( '2022-01-01' );
 	}
 

@@ -99,7 +99,6 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function get_deposits( $request ) {
 		$wcpay_request = List_Deposits::from_rest_request( $request );
-		$wcpay_request->set_filters( $this->get_deposits_filters( $request ) );
 
 		return $wcpay_request->handle_rest_request( 'wcpay_list_deposits_request' );
 	}

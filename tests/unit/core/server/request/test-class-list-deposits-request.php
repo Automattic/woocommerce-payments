@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request\List_Deposits;
 
 /**
@@ -37,6 +38,17 @@ class List_Deposits_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client              = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_wc_payments_http_client = $this->createMock( WC_Payments_Http_Interface::class );
+	}
+
+	public function test_exception_will_throw_if_date_after_is_invalid_format() {
+		$request = new List_Deposits( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$request->set_date_after( '2022-01-01' );
+	}
+	public function test_exception_will_throw_if_date_before_is_invalid_format() {
+		$request = new List_Deposits( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$request->set_date_before( '2022-01-01' );
 	}
 
 	public function test_list_deposits_request_will_be_date() {
@@ -134,6 +146,5 @@ class List_Deposits_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $status_is_not, $params['status_is_not'] );
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::DEPOSITS_API, $request->get_api() );
-
 	}
 }

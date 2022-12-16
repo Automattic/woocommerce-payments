@@ -61,10 +61,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_documents( $request ) {
-
 		$wcpay_request = List_Documents::from_rest_request( $request );
-		$wcpay_request->set_filters( $this->get_documents_filters( $request ) );
-
 		return $wcpay_request->handle_rest_request( 'wcpay_list_documents_request' );
 	}
 
