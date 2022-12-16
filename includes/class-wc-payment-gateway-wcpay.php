@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Core\Mode;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
@@ -2172,8 +2173,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$error_message = null;
 
 		try {
-			$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );
-			$status = $intent->get_status();
+			$request = Cancel_Intention::create( $order->get_transaction_id() );
+			$intent  = $request->send( 'wcpay_cancel_intent_request', $order );
+			$status  = $intent->get_status();
 		} catch ( API_Exception $e ) {
 			try {
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.

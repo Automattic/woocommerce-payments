@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
@@ -124,7 +125,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'get_account_data',
 					'is_server_connected',
 					'get_blog_id',
-					'cancel_intention',
 					'create_intention',
 					'create_and_confirm_intention',
 					'create_and_confirm_setup_intent',
@@ -1437,9 +1437,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'cancel_intention' )
+		$cancel_intent_request = $this->mock_wcpay_request( Cancel_Intention::class, 1, $intent_id );
+		$cancel_intent_request->expects( $this->once() )
+			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'test', 123 ) ) );
 
 		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
@@ -1471,9 +1471,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
 		$order->update_status( 'on-hold' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'cancel_intention' )
+		$cancel_intent_request = $this->mock_wcpay_request( Cancel_Intention::class, 1, $intent_id );
+		$cancel_intent_request->expects( $this->once() )
+			->method( 'format_response' )
 			->will( $this->throwException( new API_Exception( 'test exception', 'test', 123 ) ) );
 
 		$request = $this->mock_wcpay_request( Get_Intention::class, 1, $intent_id );
