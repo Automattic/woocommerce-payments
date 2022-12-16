@@ -3,18 +3,20 @@
  */
 import { expressCheckoutIframe } from '../express-checkout-iframe';
 import WCPayAPI from 'wcpay/checkout/api';
-import { getWooPayExpressData } from 'wcpay/checkout/platform-checkout/express-button/utils';
+import { getConfig } from 'utils/checkout';
 
-jest.mock( 'wcpay/checkout/platform-checkout/express-button/utils', () => ( {
-	getWooPayExpressData: jest.fn(),
+jest.mock( 'utils/checkout', () => ( {
+	getConfig: jest.fn(),
 } ) );
 
 describe( 'expressCheckoutIframe', () => {
 	const api = new WCPayAPI( {}, jest.fn() );
 
-	test( 'should open the iframe', () => {
-		getWooPayExpressData.mockReturnValue( 'http://example.com' );
+	beforeEach( () => {
+		getConfig.mockReturnValue( 'http://example.com' );
+	} );
 
+	test( 'should open the iframe', () => {
 		expressCheckoutIframe( api );
 
 		const woopayIframe = document.querySelector( 'iframe' );
