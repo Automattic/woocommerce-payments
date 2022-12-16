@@ -445,7 +445,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_needed            = 0 < $converted_amount;
 		$selected_upe_payment_type = $this->stripe_id;
 		$payment_type              = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
-		$save_payment_method       = $payment_type->equals( Payment_Type::RECURRING() ) || ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '_' . $this->stripe_id . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$save_payment_method       = $payment_type->equals( Payment_Type::RECURRING() ) || ! empty( $_POST[ 'wc-' . self::GATEWAY_ID . '_' . $this->stripe_id . '-new-payment-method' ] ) || ! empty( $_POST[ 'wc-' . $this->stripe_id . '-new-payment-method' ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $payment_intent_id ) {
@@ -660,10 +660,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'upe_payment_intent_error'
 				);
 			} else {
-				if ( $this->payment_method->get_id() !== $payment_method_type ) {
-					return;
-				}
-
 				if ( $save_payment_method && $this->payment_method->is_reusable() ) {
 					try {
 						$token = $this->payment_method->get_payment_token_for_user( $user, $payment_method_id );
