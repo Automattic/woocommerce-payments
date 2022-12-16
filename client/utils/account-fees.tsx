@@ -86,17 +86,19 @@ export const getCurrentFee = (
 };
 
 export const formatMethodFeesTooltip = (
-	accountFees: FeeStructure | undefined
+	accountFees: FeeStructure
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
+	// If there is a discount, use that instead of the base fee.
+	const currentFee = getCurrentFee( accountFees );
 
 	const total = {
 		percentage_rate:
-			accountFees.base.percentage_rate +
+			currentFee.percentage_rate +
 			accountFees.additional.percentage_rate +
 			accountFees.fx.percentage_rate,
 		fixed_rate:
-			accountFees.base.fixed_rate +
+			currentFee.fixed_rate +
 			accountFees.additional.fixed_rate +
 			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
@@ -110,7 +112,7 @@ export const formatMethodFeesTooltip = (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
 				<div>Base fee</div>
-				<div>{ getFeeDescriptionString( accountFees.base ) }</div>
+				<div>{ getFeeDescriptionString( currentFee ) }</div>
 			</div>
 			{ hasFees( accountFees.additional ) ? (
 				<div>
