@@ -10,8 +10,10 @@ namespace WCPay\Payment_Methods;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Type;
 use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
+use WCPay\Core\Server\Response;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
@@ -152,7 +154,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->setMethods(
 				[
-					'create_setup_intention',
 					'get_setup_intent',
 					'get_payment_method',
 					'is_server_connected',
@@ -764,15 +765,30 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'create_customer_for_user' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_setup_intention' )
-			->with( 'cus_mock', [ 'card' ] )
+		$request = $this->mock_wcpay_request( Create_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( 'cus_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' )
+			->with(
+				$this->callback(
+					function( $argument ) {
+						return is_array( $argument ) && ! empty( $argument );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
-				[
-					'id'            => 'seti_mock',
-					'client_secret' => 'client_secret_mock',
-				]
+				new Response(
+					[
+						'id'            => 'seti_mock',
+						'client_secret' => 'client_secret_mock',
+					]
+				)
 			);
 
 		$this->set_cart_contains_subscription_items( false );
@@ -796,15 +812,24 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' )
 			->will( $this->returnValue( 'cus_12346' ) );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_setup_intention' )
-			->with( 'cus_12346', [ 'card' ] )
+		$request = $this->mock_wcpay_request( Create_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( 'cus_12346' );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' )
+			->with( [ 'card' ] );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn(
-				[
-					'id'            => 'seti_mock',
-					'client_secret' => 'client_secret_mock',
-				]
+				new Response(
+					[
+						'id'            => 'seti_mock',
+						'client_secret' => 'client_secret_mock',
+					]
+				)
 			);
 
 		$this->set_cart_contains_subscription_items( false );

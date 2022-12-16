@@ -12,6 +12,7 @@ use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Explicit_Price_Formatter;
 use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
@@ -384,13 +385,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
 
-		$setup_intent = $this->payments_api_client->create_setup_intention(
-			$customer_id,
-			array_values( $enabled_payment_methods )
-		);
+		$request = Create_Setup_Intention::create();
+		$request->set_customer( $customer_id );
+		$request->set_payment_method_types( array_values( $enabled_payment_methods ) );
+		$setup_intent = $request->send( 'wcpay_create_setup_intention_request' );
 		return [
-			'id'            => $setup_intent['id'],
-			'client_secret' => $setup_intent['client_secret'],
+			'id'            => $setup_intent->offsetGet( 'id' ),
+			'client_secret' => $setup_intent->offsetGet( 'client_secret' ),
 		];
 	}
 
