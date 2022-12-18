@@ -1,4 +1,3 @@
-/* global wcpayWooPayExpressParams */
 /**
  * Internal dependencies
  */
@@ -7,17 +6,14 @@ import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import { getConfig } from '../../../utils/checkout';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
-import { getWooPayExpressData } from './utils';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
 	{
-		publishableKey: getWooPayExpressData( 'publishableKey' ),
-		accountId: getWooPayExpressData( 'accountId' ),
-		forceNetworkSavedCards: getWooPayExpressData(
-			'forceNetworkSavedCards'
-		),
-		locale: getWooPayExpressData( 'locale' ),
+		publishableKey: getConfig( 'publishableKey' ),
+		accountId: getConfig( 'accountId' ),
+		forceNetworkSavedCards: getConfig( 'forceNetworkSavedCards' ),
+		locale: getConfig( 'locale' ),
 	},
 	request
 );
@@ -26,13 +22,13 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 	name: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	content: (
 		<WoopayExpressCheckoutButton
-			buttonSettings={ wcpayWooPayExpressParams?.button }
+			buttonSettings={ getConfig( 'platformCheckoutButton' ) }
 			api={ api }
 		/>
 	),
 	edit: (
 		<WoopayExpressCheckoutButton
-			buttonSettings={ wcpayWooPayExpressParams?.button }
+			buttonSettings={ getConfig( 'platformCheckoutButton' ) }
 			isPreview={ true }
 		/>
 	),
