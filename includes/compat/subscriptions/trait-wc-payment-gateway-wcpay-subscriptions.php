@@ -171,6 +171,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		 */
 		add_action( 'template_redirect', [ $this, 'remove_order_pay_var' ], 99 );
 		add_action( 'template_redirect', [ $this, 'restore_order_pay_var' ], 101 );
+
+		// Update subscriptions token when user sets a default payment method.
+		add_filter( 'woocommerce_subscriptions_update_subscription_token', [ $this, 'update_subscription_token' ], 10, 3 );
 	}
 
 	/**
@@ -786,6 +789,28 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( isset( $this->order_pay_var ) ) {
 			$wp->query_vars['order-pay'] = $this->order_pay_var;
 		}
+	}
+
+	/**
+	 * Update the specified subscription's payment token with a new token.
+	 *
+	 * @param bool             $updated      Whether the token was updated.
+	 * @param WC_Subscription  $subscription The subscription whose payment token need to be updated.
+	 * @param WC_Payment_Token $new_token    The new payment token to be used for the specified subscription.
+	 *
+	 * @return bool Whether this function updates the token or not.
+	 */
+	public function update_subscription_token( $updated, $subscription, $new_token ) {
+		if ( $this->id !== $new_token->get_gateway_id() ) {
+			return $updated;
+		}
+
+		$subscription->set_payment_method( $this->id );
+		$subscription->update_meta_data( '_payment_method_id', $new_token->get_token() );
+		$subscription->add_payment_token( $new_token );
+		$subscription->save();
+
+		return true;
 	}
 
 	/**
