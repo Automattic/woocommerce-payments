@@ -61,8 +61,8 @@ class List_Transactions extends Paginated {
 
 		if ( ! is_null( $date_between_filter ) ) {
 			$date_between_filter = array_map(
-				function ( $transaction_date ) use ( $user_timezone, $wcpay_request ) {
-					return $wcpay_request->format_transaction_date_with_timestamp( $transaction_date, $user_timezone );
+				function ( $transaction_date ) use ( $user_timezone ) {
+					return List_Transactions::format_transaction_date_with_timestamp( $transaction_date, $user_timezone );
 				},
 				$date_between_filter
 			);
@@ -70,8 +70,8 @@ class List_Transactions extends Paginated {
 
 		$filters = [
 			'match'                    => $request->get_param( 'match' ),
-			'date_before'              => $wcpay_request->format_transaction_date_with_timestamp( $request->get_param( 'date_before' ), $user_timezone ),
-			'date_after'               => $wcpay_request->format_transaction_date_with_timestamp( $request->get_param( 'date_after' ), $user_timezone ),
+			'date_before'              => self::format_transaction_date_with_timestamp( $request->get_param( 'date_before' ), $user_timezone ),
+			'date_after'               => self::format_transaction_date_with_timestamp( $request->get_param( 'date_after' ), $user_timezone ),
 			'date_between'             => $date_between_filter,
 			'type_is'                  => $request->get_param( 'type_is' ),
 			'type_is_not'              => $request->get_param( 'type_is_not' ),
@@ -216,7 +216,7 @@ class List_Transactions extends Paginated {
 	 *
 	 * @return string|null The formatted transaction date as per timezone.
 	 */
-	private function format_transaction_date_with_timestamp( $transaction_date, $user_timezone ) {
+	public static function format_transaction_date_with_timestamp( $transaction_date, $user_timezone ) {
 		if ( is_null( $transaction_date ) || is_null( $user_timezone ) ) {
 			return $transaction_date;
 		}
