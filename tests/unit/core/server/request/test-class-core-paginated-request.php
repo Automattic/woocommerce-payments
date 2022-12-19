@@ -50,7 +50,12 @@ class Paginated_Test extends WCPAY_UnitTestCase {
 			'page' => 3,
 		];
 
-		$request = new Paginated( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request = new class( $this->mock_api_client, $this->mock_wc_payments_http_client ) extends Paginated
+		{
+			public function get_api(): string {
+				return '';
+			}
+		};
 		$request->set_page( $page );
 		$request->set_page_size( $page_size );
 		$request->set_sort_direction( $direction );
@@ -83,7 +88,13 @@ class Paginated_Test extends WCPAY_UnitTestCase {
 		$rest_request->set_param( 'sort', $sort );
 		$rest_request->set_param( 'direction', $direction );
 
-		$request = Paginated::from_rest_request( $rest_request );
+		$class   = new class( $this->mock_api_client, $this->mock_wc_payments_http_client ) extends Paginated
+		{
+			public function get_api(): string {
+				return '';
+			}
+		};
+		$request = $class::from_rest_request( $rest_request );
 
 		$params = $request->get_params();
 

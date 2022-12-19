@@ -7,14 +7,13 @@
 
 namespace WCPay\Core\Server\Request;
 
-use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WP_REST_Request;
 
 /**
  * Request class for paginated requests.
  */
-class Paginated extends Request {
+abstract class Paginated extends Request {
 
 
 	const DEFAULT_PARAMS = [
@@ -25,16 +24,6 @@ class Paginated extends Request {
 		'limit'     => 100,
 	];
 
-
-	/**
-	 * Returns the request's API.
-	 *
-	 * @return string
-	 * @throws Invalid_Request_Parameter_Exception
-	 */
-	public function get_api(): string {
-		return ''; // Will be changed on every request that extends this class.
-	}
 
 	/**
 	 * Returns the request's HTTP method.
