@@ -249,7 +249,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 									learnMore: (
 										<a
 											target="_blank"
-											href="https://automattic.com"
+											href="https://woocommerce.com/document/woopay-customer-documentation/"
 											rel="noopener noreferrer"
 										>
 											{ __(
