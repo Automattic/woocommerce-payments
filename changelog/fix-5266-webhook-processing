@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Make the webhook processing respect the test/live mode setting for the gateway
