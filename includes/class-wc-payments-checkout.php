@@ -96,7 +96,7 @@ class WC_Payments_Checkout {
 
 		$wc_checkout = WC_Checkout::instance();
 
-		return [
+		$js_config = [
 			'publishableKey'                 => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
 			'testMode'                       => $this->gateway->is_in_test_mode(),
 			'accountId'                      => $this->account->get_stripe_account_id(),
@@ -126,6 +126,13 @@ class WC_Payments_Checkout {
 			'platformCheckoutSignatureNonce' => wp_create_nonce( 'platform_checkout_signature_nonce' ),
 			'platformCheckoutMerchantId'     => Jetpack_Options::get_option( 'id' ),
 		];
+
+		/**
+		 * Allows filtering of the JS config for the payment fields.
+		 *
+		 * @param array $js_config The JS config for the payment fields.
+		 */
+		return apply_filters( 'wcpay_payment_fields_js_config', $js_config );
 	}
 
 	/**

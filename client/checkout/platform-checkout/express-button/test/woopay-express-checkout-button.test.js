@@ -10,10 +10,20 @@ import userEvent from '@testing-library/user-event';
 import { WoopayExpressCheckoutButton } from '../woopay-express-checkout-button';
 import { expressCheckoutIframe } from '../express-checkout-iframe';
 import WCPayAPI from 'wcpay/checkout/api';
+import { getConfig } from 'utils/checkout';
+import wcpayTracks from 'tracks';
+
+jest.mock( 'utils/checkout', () => ( {
+	getConfig: jest.fn(),
+} ) );
 
 jest.mock( '../express-checkout-iframe', () => ( {
 	__esModule: true,
 	expressCheckoutIframe: jest.fn(),
+} ) );
+
+jest.mock( 'tracks', () => ( {
+	recordUserEvent: jest.fn(),
 } ) );
 
 describe( 'WoopayExpressCheckoutButton', () => {
@@ -28,6 +38,12 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 	beforeEach( () => {
 		expressCheckoutIframe.mockImplementation( () => jest.fn() );
+		getConfig.mockReturnValue( 'foo' );
+		wcpayTracks.recordUserEvent.mockReturnValue( true );
+		wcpayTracks.events = {
+			PLATFORM_CHECKOUT_EXPRESS_BUTTON_OFFERED:
+				'platform_checkout_express_button_offered',
+		};
 	} );
 
 	afterEach( () => {

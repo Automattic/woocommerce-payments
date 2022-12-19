@@ -841,6 +841,21 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout filtered by fees.
+	 *
+	 * @param string $order_id optional Order ID.
+	 * @param bool   $force_currency_check optional Whether the currency check is required even if is_admin().
+	 *
+	 * @return string[]
+	 */
+	public function get_payment_method_ids_enabled_at_checkout_filtered_by_fees( $order_id = null, $force_currency_check = false ) {
+		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check );
+		$methods_with_fees       = array_keys( $this->account->get_fees() );
+
+		return array_values( array_intersect( $enabled_payment_methods, $methods_with_fees ) );
+	}
+
+	/**
 	 * Returns the list of available payment method types for UPE.
 	 * Filtering out those without configured fees, this will prevent a payment method not supported by the Stripe account's country from being returned.
 	 * Note that we are not taking into account capabilities, which are taken into account when managing payment methods in settings.

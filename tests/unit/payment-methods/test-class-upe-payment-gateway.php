@@ -176,6 +176,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 
+		$payment_methods = [
+			'link' => [
+				'base' => 0.1,
+			],
+		];
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_fees' )
+			->willReturn( $payment_methods );
+
 		$this->mock_platform_checkout_utilities = $this->createMock( Platform_Checkout_Utilities::class );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { getWooPayExpressData } from './utils';
+import { getConfig } from 'utils/checkout';
 import wcpayTracks from 'tracks';
 
 export const expressCheckoutIframe = async ( api ) => {
@@ -45,7 +45,7 @@ export const expressCheckoutIframe = async ( api ) => {
 					action: 'setHeader',
 					value: iframeHeaderValue,
 				},
-				getWooPayExpressData( 'platformCheckoutHost' )
+				getConfig( 'platformCheckoutHost' )
 			);
 		}
 
@@ -128,12 +128,9 @@ export const expressCheckoutIframe = async ( api ) => {
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
 		);
-		urlParams.append(
-			'wcpayVersion',
-			getWooPayExpressData( 'wcpayVersionNumber' )
-		);
+		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
 
-		iframe.src = `${ getWooPayExpressData(
+		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
 		) }/otp/?${ urlParams.toString() }`;
 
@@ -157,11 +154,7 @@ export const expressCheckoutIframe = async ( api ) => {
 	} );
 
 	window.addEventListener( 'message', ( e ) => {
-		if (
-			! getWooPayExpressData( 'platformCheckoutHost' ).startsWith(
-				e.origin
-			)
-		) {
+		if ( ! getConfig( 'platformCheckoutHost' ).startsWith( e.origin ) ) {
 			return;
 		}
 
