@@ -1053,11 +1053,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// For $0 orders, we need to save the payment method using a setup intent.
-				$create_and_confirm_intent_request = Create_And_Confirm_Setup_Intention::create();
-				$create_and_confirm_intent_request->set_customer( $customer_id );
-				$create_and_confirm_intent_request->set_payment_method( $payment_information->get_payment_method() );
-				$create_and_confirm_intent_request->set_metadata( $metadata );
-				$intent = $create_and_confirm_intent_request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_platform_checkout );
+				$request = Create_And_Confirm_Setup_Intention::create();
+				$request->set_customer( $customer_id );
+				$request->set_payment_method( $payment_information->get_payment_method() );
+				$request->set_metadata( $metadata );
+				$intent = $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_platform_checkout );
 				$intent = $intent->to_array();
 			}
 
@@ -2570,7 +2570,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Create a setup intent when adding cards using the my account page.
 	 *
-	 * @throws Exception - When an error occurs in setup intent creation.
+	 * @return mixed|\WCPay\Core\Server\Response
+	 * @throws API_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
 	 */
 	public function create_and_confirm_setup_intent() {
 		$payment_information             = Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification
@@ -2589,12 +2593,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
-		$create_and_confirm_intent_request = Create_And_Confirm_Setup_Intention::create();
-		$create_and_confirm_intent_request->set_customer( $customer_id );
-		$create_and_confirm_intent_request->set_payment_method( $payment_information->get_payment_method() );
-		$intent = $create_and_confirm_intent_request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, $should_save_in_platform_account, false );
-
-		return $intent->to_array();
+		$request = Create_And_Confirm_Setup_Intention::create();
+		$request->set_customer( $customer_id );
+		$request->set_payment_method( $payment_information->get_payment_method() );
+		return $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, $should_save_in_platform_account, false );
 	}
 
 	/**
@@ -2614,7 +2616,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$setup_intent = $this->create_and_confirm_setup_intent();
 
-			wp_send_json_success( $setup_intent, 200 );
+			wp_send_json_success( $setup_intent->to_array(), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(

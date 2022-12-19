@@ -390,8 +390,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$request->set_payment_method_types( array_values( $enabled_payment_methods ) );
 		$setup_intent = $request->send( 'wcpay_create_setup_intention_request' );
 		return [
-			'id'            => $setup_intent->offsetGet( 'id' ),
-			'client_secret' => $setup_intent->offsetGet( 'client_secret' ),
+			'id'            => $setup_intent['id'],
+			'client_secret' => $setup_intent['client_secret'],
 		];
 	}
 
