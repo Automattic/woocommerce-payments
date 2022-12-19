@@ -796,6 +796,48 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_update_subscription_token_from_wcpay_to_wcpay() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$token1       = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+		$token2       = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+
+		$subscription->set_payment_method( $this->wcpay_gateway->id );
+		$subscription->update_meta_data( '_payment_method_id', $token1->get_token() );
+		$subscription->add_payment_token( $token1 );
+		$subscription->save();
+
+		$updated             = $this->wcpay_gateway->update_subscription_token( false, $subscription, $token2 );
+		$subscription_tokens = $subscription->get_payment_tokens();
+
+		$this->assertSame( $token2->get_id(), end( $subscription_tokens ) );
+		$this->assertSame( $updated, true );
+		$this->assertSame( $token2->get_token(), $subscription->get_meta_data( '_payment_method_id' )[0]->get_data()['value'] );
+	}
+
+	public function test_update_subscription_token_from_non_wcpay_to_wcpay() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$token        = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
+
+		$subscription->set_payment_method( 'bacs' );
+		$subscription->save();
+
+		$updated             = $this->wcpay_gateway->update_subscription_token( false, $subscription, $token );
+		$subscription_tokens = $subscription->get_payment_tokens();
+
+		$this->assertSame( $token->get_id(), end( $subscription_tokens ) );
+		$this->assertSame( $updated, true );
+	}
+
+	public function test_update_subscription_token_not_wcpay() {
+		$subscription    = WC_Helper_Order::create_order( self::USER_ID );
+		$non_wcpay_token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID, 'not_woocommerce_payments' );
+
+		$updated             = $this->wcpay_gateway->update_subscription_token( false, $subscription, $non_wcpay_token );
+		$subscription_tokens = $subscription->get_payment_tokens();
+
+		$this->assertSame( $updated, false );
+	}
+
 	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
 			function ( $order ) use ( $subscriptions ) {
