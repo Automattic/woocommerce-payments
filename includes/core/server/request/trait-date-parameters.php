@@ -9,6 +9,7 @@ namespace WCPay\Core\Server\Request;
 
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WC_Order;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 
 /**
  * Tait for request date parameters.
@@ -47,10 +48,13 @@ trait Date_Parameters {
 	 * @param array $date_between Date between.
 	 *
 	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_date_between( array $date_between ) {
-		// Add only if it's not empty.
-		if ( $date_between ) {
+		if ( ! empty( $date_between ) ) {
+			foreach ( $date_between as $date ) {
+				$this->validate_date( $date );
+			}
 			$this->set_param( 'date_between', $date_between );
 		}
 	}
