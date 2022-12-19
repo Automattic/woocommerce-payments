@@ -10,7 +10,7 @@ import React from 'react';
 import {
 	formatAccountFeesDescription,
 	formatMethodFeesDescription,
-	getCurrentFee,
+	getCurrentBaseFee,
 } from '../account-fees';
 import { formatCurrency } from '../currency';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
@@ -59,7 +59,7 @@ const mockAccountFees = (
 };
 
 describe( 'Account fees utility functions', () => {
-	describe( 'getCurrentFee()', () => {
+	describe( 'getCurrentBaseFee()', () => {
 		it( 'returns first discount regardless of amount', () => {
 			const accountFees = mockAccountFees(
 				{
@@ -70,7 +70,7 @@ describe( 'Account fees utility functions', () => {
 				[ { discount: 0.1 }, { discount: 0.2 } ]
 			);
 
-			expect( getCurrentFee( accountFees ) ).toEqual(
+			expect( getCurrentBaseFee( accountFees ) ).toEqual(
 				accountFees.discount[ 0 ]
 			);
 		} );
@@ -81,7 +81,9 @@ describe( 'Account fees utility functions', () => {
 				fixed_rate: 456.78,
 				currency: 'USD',
 			} );
-			expect( getCurrentFee( accountFees ) ).toEqual( accountFees.base );
+			expect( getCurrentBaseFee( accountFees ) ).toEqual(
+				accountFees.base
+			);
 		} );
 	} );
 

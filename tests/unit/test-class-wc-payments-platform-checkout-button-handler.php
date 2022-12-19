@@ -118,11 +118,12 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 		$this->assertEquals(
 			[
-				'type'   => 'default',
-				'text'   => 'Default',
-				'theme'  => 'dark',
-				'height' => '48',
-				'size'   => 'medium',
+				'type'    => 'default',
+				'text'    => 'Default',
+				'theme'   => 'dark',
+				'height'  => '48',
+				'size'    => 'medium',
+				'context' => 'cart',
 			],
 			$this->pr->get_button_settings()
 		);

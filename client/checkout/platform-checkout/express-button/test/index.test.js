@@ -7,6 +7,11 @@ import { screen } from '@testing-library/react';
  * Internal dependencies
  */
 import '../index';
+import { getConfig } from 'utils/checkout';
+
+jest.mock( 'utils/checkout', () => ( {
+	getConfig: jest.fn(),
+} ) );
 
 jest.mock( '../woopay-express-checkout-button', () => ( {
 	__esModule: true,
@@ -22,6 +27,10 @@ describe( 'renderPlatformCheckoutExpressButton', () => {
 		'id',
 		'wcpay-platform-checkout-button'
 	);
+
+	beforeEach( () => {
+		getConfig.mockReturnValue( 'foo' );
+	} );
 
 	test( 'render the button component in placeholder', () => {
 		document.body.appendChild( expressButtonContainer );
