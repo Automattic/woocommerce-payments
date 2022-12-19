@@ -21,10 +21,9 @@ class List_Transactions extends Paginated {
 
 	use Order_Info;
 
-	const DEFAULTS = [
-		'sort'       => 'date',
-		'direction'  => 'desc',
-		'deposit_id' => null,
+	const DEFAULT_PARAMS = [
+		'sort'      => 'date',
+		'direction' => 'desc',
 	];
 
 	/**
@@ -83,6 +82,7 @@ class List_Transactions extends Paginated {
 		];
 
 		$wcpay_request->set_filters( $filters );
+		$wcpay_request->set_deposit_id( $request->get_param( 'deposit_id' ) );
 		return $wcpay_request;
 	}
 

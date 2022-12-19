@@ -17,7 +17,7 @@ use WP_REST_Request;
 class Paginated extends Request {
 
 
-	const DEFAULTS = [
+	const DEFAULT_PARAMS = [
 		'page'      => 0,
 		'pagesize'  => 25,
 		'sort'      => 'created',
@@ -53,9 +53,15 @@ class Paginated extends Request {
 	public static function from_rest_request( $request ) {
 		$wcpay_request = static::create();
 		$wcpay_request->set_page( (int) $request->get_param( 'page' ) );
-		$wcpay_request->set_page_size( (int) $request->get_param( 'pagesize' ) );
-		$wcpay_request->set_sort_by( $request->get_param( 'sort' ) );
-		$wcpay_request->set_sort_direction( $request->get_param( 'direction' ) );
+		$wcpay_request->set_page_size( (int) ( $request->get_param( 'pagesize' ) ?? 25 ) );
+		$sort = $request->get_param( 'sort' );
+		if ( null !== $sort ) {
+			$wcpay_request->set_sort_by( (string) $sort );
+		}
+		$direction = $request->get_param( 'direction' );
+		if ( null !== $direction ) {
+			$wcpay_request->set_sort_direction( (string) $direction );
+		}
 		return $wcpay_request;
 	}
 
@@ -68,7 +74,7 @@ class Paginated extends Request {
 	 */
 	public function is_filter_key_mutable( string $key ) {
 		// In most cases, the default parameters are keys that cannot be changed via filters.
-		return ! array_key_exists( $key, self::DEFAULTS );
+		return ! array_key_exists( $key, self::DEFAULT_PARAMS );
 	}
 
 	/**

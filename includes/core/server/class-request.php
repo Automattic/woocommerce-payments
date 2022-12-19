@@ -243,8 +243,8 @@ abstract class Request {
 	 */
 	final public function handle_rest_request( $hook, ...$args ) {
 		try {
-			$data = $this->send( $hook, $args );
-			// Make sure to return array if $data is instace or has parent as a Response class.
+			$data = $this->send( $hook, ...$args );
+			// Make sure to return array if $data is instance or has parent as a Response class.
 			if ( is_a( $data, Response::class ) ) {
 				return $data->to_array();
 			}
@@ -252,7 +252,7 @@ abstract class Request {
 			// Return the data and let caller to parse it as it pleases.
 			return $data;
 		} catch ( API_Exception $e ) {
-			new WP_Error( $e->get_error_code(), $e->getMessage() );
+			return new WP_Error( $e->get_error_code(), $e->getMessage() );
 		}
 	}
 

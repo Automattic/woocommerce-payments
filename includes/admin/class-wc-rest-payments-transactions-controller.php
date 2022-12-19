@@ -80,12 +80,6 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	public function get_transactions( $request ) {
 
 		$wcpay_request = List_Transactions::from_rest_request( $request );
-		$wcpay_request->set_page( (int) $request->get_param( 'page' ) );
-		$wcpay_request->set_page_size( (int) $request->get_param( 'pagesize' ) );
-		$wcpay_request->set_sort_by( $request->get_param( 'sort' ) );
-		$wcpay_request->set_sort_direction( $request->get_param( 'direction' ) );
-		$wcpay_request->set_deposit_id( $request->get_param( 'deposit_id' ) );
-		$wcpay_request->set_filters( $this->get_transactions_filters( $request ) );
 
 		return $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
 	}
