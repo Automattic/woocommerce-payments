@@ -58,6 +58,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				document.getElementById( 'billing_phone' )?.value || '';
 		}
 
+		// Take out any non-digit characters, except +.
+		phoneFieldValue = phoneFieldValue.replace( /[^\d+]*/g, '' );
+
 		return phoneFieldValue;
 	};
 
