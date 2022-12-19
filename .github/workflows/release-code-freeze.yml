@@ -75,6 +75,8 @@ jobs:
     uses: ./.github/workflows/release-pr.yml
     with:
       releaseVersion: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
+    secrets:
+      BOTWOO_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
 
   slack-notification:
     name: "Send notification to Slack"
