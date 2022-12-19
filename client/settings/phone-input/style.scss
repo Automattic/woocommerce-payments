@@ -36,8 +36,8 @@
 	.save-details-form.form-row {
 		display: flex;
 		flex-direction: column;
-		font-size: 16px;
-		line-height: 20px;
+		font-size: 1rem;
+		line-height: 1.25rem;
 		font-weight: 400;
 		gap: $gap;
 		transition: max-height 0.5s ease-in-out;
@@ -45,15 +45,15 @@
 		overflow-y: hidden;
 
 		&.visible {
-			max-height: 350px;
+			max-height: 21.875rem;
 		}
 
 		.additional-information {
-			font-size: 14px;
+			font-size: 0.875rem;
 		}
 
 		.tos {
-			font-size: 13px;
+			font-size: 0.8125rem;
 		}
 
 		.error-text {
@@ -72,13 +72,13 @@
 		}
 
 		.phone-input {
-			font-size: 16px;
+			font-size: 1rem;
 			background-color: #fff;
 			box-shadow: none;
 			border: 1px solid $gray-300;
 			border-radius: 5px;
-			margin-left: 2px;
-			width: calc( 100% - 4px );
+			margin-left: 0.125rem;
+			width: calc( 100% - 0.25rem );
 
 			&.has-error {
 				outline-color: $alert-red;

@@ -24,7 +24,7 @@
 			align-items: flex-start;
 
 			.save-details-checkbox:not( .wc-block-components-checkbox__input ) {
-				margin-top: 6px;
+				margin-top: 0.375rem;
 			}
 		}
 
@@ -42,19 +42,19 @@
 
 			span {
 				@include breakpoint( '>960px' ) {
-					margin-right: 20px;
+					margin-right: 1.25rem;
 				}
 			}
 		}
 
 		.woopay-logo {
-			height: 17px;
-			margin-top: 6px;
+			height: 1.0625rem;
+			margin-top: 0.375rem;
 		}
 
 		.info-icon {
 			fill: $gray-600;
-			margin-top: 3px;
+			margin-top: 0.1875rem;
 			object-fit: none;
 
 			&:hover,
@@ -76,11 +76,11 @@
 			border-radius: 3px;
 			padding: $gap-small;
 			position: absolute;
-			width: 270px;
-			font-size: 13px;
-			line-height: 20px;
-			top: -124px;
-			left: calc( 100% - 135px );
+			width: 16.875rem;
+			font-size: 0.8125rem;
+			line-height: 1.25rem;
+			top: -7.75rem;
+			left: calc( 100% - 8.4375rem );
 
 			&:hover {
 				display: flex;
@@ -93,7 +93,7 @@
 			@include breakpoint( '<800px' ) {
 				left: initial;
 				right: 0;
-				top: -130px;
+				top: -8.125rem;
 			}
 		}
 	}
