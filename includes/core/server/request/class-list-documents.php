@@ -15,6 +15,7 @@ use WP_REST_Request;
  */
 class List_Documents extends Paginated {
 
+	use Date_Parameters;
 
 	/**
 	 * Returns the request's API.
@@ -54,46 +55,6 @@ class List_Documents extends Paginated {
 	 */
 	public function set_match( string $match ) {
 		$this->set_param( 'match', $match );
-	}
-
-	/**
-	 * Set date after.
-	 *
-	 * @param string $date_after Date after.
-	 *
-	 * @return void
-	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
-	 */
-	public function set_date_after( string $date_after ) {
-		$this->validate_date( $date_after );
-		$this->set_param( 'date_after', $date_after );
-	}
-
-	/**
-	 * Set date before.
-	 *
-	 * @param string $date_before Date before.
-	 *
-	 * @return void
-	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
-	 */
-	public function set_date_before( string $date_before ) {
-		$this->validate_date( $date_before );
-		$this->set_param( 'date_before', $date_before );
-	}
-
-	/**
-	 * Set date between.
-	 *
-	 * @param array $date_between Date between.
-	 *
-	 * @return void
-	 */
-	public function set_date_between( array $date_between ) {
-		// Add only if it's not empty.
-		if ( $date_between ) {
-			$this->set_param( 'date_between', $date_between );
-		}
 	}
 
 

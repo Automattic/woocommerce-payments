@@ -266,6 +266,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/trait-intention.php';
 		include_once __DIR__ . '/core/server/request/trait-level3.php';
 		include_once __DIR__ . '/core/server/request/trait-order-info.php';
+		include_once __DIR__ . '/core/server/request/trait-date-parameters.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-intention.php';
