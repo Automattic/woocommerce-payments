@@ -67,7 +67,7 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$match        = 'match';
 		$type         = 'bill';
 		$type_is_not  = 'passport';
-		$search       = 'search';
+		$search       = [ 'search' ];
 		$currency     = 'usd';
 		$cs_currency  = 'eur';
 		$loan_id      = 'loan_id';
@@ -125,7 +125,7 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$match        = 'match';
 		$type         = 'bill';
 		$type_is_not  = 'passport';
-		$search       = 'search';
+		$search       = [ 'search' ];
 		$currency     = 'usd';
 		$cs_currency  = 'eur';
 		$loan_id      = 'loan_id';

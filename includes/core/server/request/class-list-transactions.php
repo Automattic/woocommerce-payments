@@ -11,6 +11,7 @@ use DateTime;
 use DateTimeZone;
 use WC_Payments_API_Client;
 use WC_Payments_DB;
+use WC_Payments_Utils;
 use WCPay\Core\Server\Response;
 use WP_REST_Request;
 
@@ -78,9 +79,8 @@ class List_Transactions extends Paginated {
 			'customer_currency_is'     => $request->get_param( 'customer_currency_is' ),
 			'customer_currency_is_not' => $request->get_param( 'customer_currency_is_not' ),
 			'loan_id_is'               => $request->get_param( 'loan_id_is' ),
-			'search'                   => $request->get_param( 'search' ),
+			'search'                   => (array) $request->get_param( 'search' ),
 		];
-
 		$wcpay_request->set_filters( $filters );
 		$wcpay_request->set_deposit_id( $request->get_param( 'deposit_id' ) );
 		return $wcpay_request;
@@ -144,12 +144,15 @@ class List_Transactions extends Paginated {
 	/**
 	 * Set search.
 	 *
-	 * @param string $search Search term.
+	 * @param array $search Search term.
 	 *
 	 * @return void
 	 */
-	public function set_search( string $search ) {
-		$this->set_param( 'search', $search );
+	public function set_search( array $search ) {
+		if ( ! empty( $search ) ) {
+			$search = WC_Payments_Utils::map_search_orders_to_charge_ids( $search );
+			$this->set_param( 'search', $search );
+		}
 	}
 
 	/**
