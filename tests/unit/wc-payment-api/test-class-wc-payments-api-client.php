@@ -2147,6 +2147,105 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test that API client will retry request in case of network error
+	 *
+	 * POST calls have `Idempotency-Key` set in the `request`, thus are
+	 * possible to retry.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_post_on_network_failure() {
+		$this->mock_http_client
+			->expects( $this->exactly( 4 ) )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
+					'response' => [
+						'code'    => 0,
+						'message' => 'Unknown network error',
+					],
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'POST' ]
+		);
+	}
+
+	/**
+	 * Test that API client will retry request in case of network error with
+	 * Idempotency-Key header
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_get_with_idempotency_header_on_network_failure() {
+		$this->mock_http_client
+			->expects( $this->exactly( 4 ) )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
+					'response' => [
+						'code'    => 0,
+						'message' => 'Unknown network error',
+					],
+				]
+			);
+
+		$callable = function ( $headers ) {
+			$headers['Idempotency-Key'] = 'ik_42';
+			return $headers;
+		};
+
+		add_filter(
+			'wcpay_api_request_headers',
+			$callable,
+			10,
+			2
+		);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'GET' ]
+		);
+
+		remove_filter(
+			'wcpay_api_request_headers',
+			$callable,
+			10
+		);
+	}
+
+	/**
+	 * Test that API client won't retry GET request without Idemptency-Key header.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_doesnt_retry_get_without_idempotency_header_on_network_failure() {
+		$this->mock_http_client
+			->expects( $this->exactly( 1 ) )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
+					'response' => [
+						'code'    => 0,
+						'message' => 'Unknown network error',
+					],
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'GET' ]
+		);
+	}
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int $status_code status code for the mocked response.

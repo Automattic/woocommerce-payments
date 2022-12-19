@@ -31,6 +31,7 @@ class WC_Payments_API_Client {
 	const DELETE = 'DELETE';
 
 	const API_TIMEOUT_SECONDS = 70;
+	const API_RETRIES_LIMIT   = 3;
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
@@ -2088,20 +2089,34 @@ class WC_Payments_API_Client {
 			);
 		}
 
-		$response = $this->http_client->remote_request(
-			[
-				'url'             => $url,
-				'method'          => $method,
-				'headers'         => apply_filters( 'wcpay_api_request_headers', $headers ),
-				'timeout'         => self::API_TIMEOUT_SECONDS,
-				'connect_timeout' => self::API_TIMEOUT_SECONDS,
-			],
-			$body,
-			$is_site_specific,
-			$use_user_token
-		);
+		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
+		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
+		$retries        = 0;
+		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
 
-		$response = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+		while ( true ) {
+			$response = $this->http_client->remote_request(
+				[
+					'url'             => $url,
+					'method'          => $method,
+					'headers'         => $headers,
+					'timeout'         => self::API_TIMEOUT_SECONDS,
+					'connect_timeout' => self::API_TIMEOUT_SECONDS,
+				],
+				$body,
+				$is_site_specific,
+				$use_user_token
+			);
+
+			$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+			$response_code = wp_remote_retrieve_response_code( $response );
+
+			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
+				break;
+			}
+
+			$retries++;
+		}
 
 		$this->check_response_for_errors( $response );
 
