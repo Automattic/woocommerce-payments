@@ -137,7 +137,9 @@ class WC_Payments_Webhook_Processing_Service {
 			. var_export( WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 		);
 
-		$this->check_webhook_mode_mismatch( $event_body );
+		if ( $this->is_webhook_mode_mismatch( $event_body ) ) {
+			return;
+		};
 
 		try {
 			do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $event_body );
@@ -205,23 +207,28 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
+	 * @return bool Indicates whether the event's mode is different from the gateway's mode
 	 * @throws Invalid_Webhook_Data_Exception Event mode does not match the gateway mode.
 	 */
-	private function check_webhook_mode_mismatch( array $event_body ) {
+	private function is_webhook_mode_mismatch( array $event_body ): bool {
 		$is_gateway_live_mode = ! $this->wcpay_gateway->is_in_test_mode();
 		$is_event_live_mode   = $this->read_webhook_property( $event_body, 'livemode' );
 
 		if ( $is_gateway_live_mode !== $is_event_live_mode ) {
 			$event_id = $this->read_webhook_property( $event_body, 'id' );
 
-			throw new Invalid_Webhook_Data_Exception(
+			Logger::error(
 				sprintf(
 				/* translators: %1: webhook event ID */
 					__( 'Webhook event mode did not match the gateway mode (event ID: %1$s)', 'woocommerce-payments' ),
 					$event_id
 				)
 			);
+
+			return true;
 		}
+
+		return false;
 	}
 
 	/**
