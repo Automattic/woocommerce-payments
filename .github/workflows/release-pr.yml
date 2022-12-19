@@ -13,10 +13,6 @@ on:
         required: false
         default: "next wednesday"
         type: string
-    secrets:
-      BOTWOO_TOKEN:
-        description: 'The botwoo token passed from the caller workflow'
-        required: true
 
   workflow_dispatch:
     inputs:
