@@ -20,6 +20,7 @@ interface PhoneNumberInputProps {
 		ariaLabel: string;
 		name: string;
 	};
+	isBlocksCheckout: boolean;
 }
 
 const PhoneNumberInput = ( {
@@ -31,6 +32,7 @@ const PhoneNumberInput = ( {
 		ariaLabel: '',
 		name: '',
 	},
+	isBlocksCheckout,
 	...props
 }: PhoneNumberInputProps ): JSX.Element => {
 	const [
@@ -104,7 +106,11 @@ const PhoneNumberInput = ( {
 	// Wrapping this in a div instead of a fragment because the library we're using for the phone input
 	// alters the DOM and we'll get warnings about "removing content without using React."
 	return (
-		<div>
+		<div
+			className={
+				isBlocksCheckout ? 'wc-block-components-text-input' : ''
+			}
+		>
 			<input
 				type="tel"
 				ref={ inputRef }

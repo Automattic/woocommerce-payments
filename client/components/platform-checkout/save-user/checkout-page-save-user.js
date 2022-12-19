@@ -281,6 +281,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							name:
 								'platform_checkout_user_phone_field[no-country-code]',
 						} }
+						isBlocksCheckout={ isBlocksCheckout }
 					/>
 					{ ! isPhoneValid && (
 						<p className="error-text">
