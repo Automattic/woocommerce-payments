@@ -24,6 +24,14 @@ abstract class Paginated extends Request {
 		'limit'     => 100,
 	];
 
+	const IMMUTABLE_PARAMS = [
+		'page',
+		'pagesize',
+		'sort',
+		'direction',
+		'limit',
+	];
+
 
 	/**
 	 * Returns the request's HTTP method.
@@ -55,18 +63,6 @@ abstract class Paginated extends Request {
 	}
 
 	/**
-	 * Used to provide custom check for setting filter keys. Some requests might have their own logic of which filters keys are mutable.
-	 *
-	 * @param string $key Key to check.
-	 *
-	 * @return bool
-	 */
-	public function is_filter_key_mutable( string $key ) {
-		// In most cases, the default parameters are keys that cannot be changed via filters.
-		return ! array_key_exists( $key, self::DEFAULT_PARAMS );
-	}
-
-	/**
 	 * Set filters.
 	 *
 	 * @param array $filters Filterd to set.
@@ -77,7 +73,7 @@ abstract class Paginated extends Request {
 
 		foreach ( $filters as $key => $value ) {
 			// Nullable filters are not needed and mutable keys can only be changed with this method.
-			if ( null !== $value && $this->is_filter_key_mutable( $key ) ) {
+			if ( null !== $value && ! in_array( $key, self::IMMUTABLE_PARAMS, true ) ) {
 				// Make sure that setter is called for this specific key to preform validations and other things in setter function.
 				if ( method_exists( $this, 'set_' . $key ) ) {
 					$this->{'set_' . $key}( $value );
