@@ -8,7 +8,6 @@
 namespace WCPay\Core\Server\Request;
 
 use WC_Payments;
-use WC_Payments_Http_Interface;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
@@ -23,7 +22,6 @@ class Update_Intention extends Request {
 	use Level3;
 
 	const IMMUTABLE_PARAMS = [ 'amount' ];
-	const REQUIRED_PARAMS  = []; // This use to be amount and currency, but since it is not required on server API, I will leave it blank.
 	const DEFAULT_PARAMS   = [
 		'receipt_email' => '',
 		'metadata'      => [],
