@@ -2213,10 +2213,10 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 1 ) )
 			->method( 'remote_request' )
 			->willThrowException(
-				new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 500 )
+				new Exception( 'Random exception' )
 			);
 
-		$this->expectException( Connection_Exception::class );
+		$this->expectException( Exception::class );
 
 		PHPUnit_Utils::call_method(
 			$this->payments_api_client,

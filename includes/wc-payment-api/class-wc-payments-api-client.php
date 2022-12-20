@@ -2116,14 +2116,6 @@ class WC_Payments_API_Client {
 				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
 				$response_code = wp_remote_retrieve_response_code( $response );
 			} catch ( Connection_Exception $e ) {
-				/**
-				 * Error code 503 indicates there was no response, while 500
-				 * means there was a response and it was an error. We only want
-				 * to retry connection errors here.
-				 */
-				if ( 503 !== $e->get_http_code() ) {
-					throw $e;
-				}
 				$last_exception = $e;
 			}
 
