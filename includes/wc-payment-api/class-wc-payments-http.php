@@ -114,7 +114,10 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 				__( 'Http request failed. Reason: %1$s', 'woocommerce-payments' ),
 				$response->get_error_message()
 			);
-			throw new Connection_Exception( $message, 'wcpay_http_request_failed', 500 );
+			$exception_http_code = is_array( $response )
+				? 500
+				: 503;
+			throw new Connection_Exception( $message, 'wcpay_http_request_failed', $exception_response_code );
 		}
 
 		return $response;

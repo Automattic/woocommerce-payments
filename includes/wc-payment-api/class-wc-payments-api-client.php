@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
@@ -2095,23 +2096,41 @@ class WC_Payments_API_Client {
 		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
 
 		while ( true ) {
-			$response = $this->http_client->remote_request(
-				[
-					'url'             => $url,
-					'method'          => $method,
-					'headers'         => $headers,
-					'timeout'         => self::API_TIMEOUT_SECONDS,
-					'connect_timeout' => self::API_TIMEOUT_SECONDS,
-				],
-				$body,
-				$is_site_specific,
-				$use_user_token
-			);
+			$response_code  = null;
+			$last_exception = null;
 
-			$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
-			$response_code = wp_remote_retrieve_response_code( $response );
+			try {
+				$response = $this->http_client->remote_request(
+					[
+						'url'             => $url,
+						'method'          => $method,
+						'headers'         => $headers,
+						'timeout'         => self::API_TIMEOUT_SECONDS,
+						'connect_timeout' => self::API_TIMEOUT_SECONDS,
+					],
+					$body,
+					$is_site_specific,
+					$use_user_token
+				);
+
+				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+				$response_code = wp_remote_retrieve_response_code( $response );
+			} catch ( Connection_Exception $e ) {
+				/**
+				 * Error code 503 indicates there was no response, while 500
+				 * means there was a response and it was an error. We only want
+				 * to retry connection errors here.
+				 */
+				if ( 503 !== $e->get_http_code() ) {
+					throw $e;
+				}
+				$last_exception = $e;
+			}
 
 			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
+				if ( null !== $last_exception ) {
+					throw $last_exception;
+				}
 				break;
 			}
 
