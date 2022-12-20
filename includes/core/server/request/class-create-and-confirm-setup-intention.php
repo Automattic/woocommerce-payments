@@ -7,7 +7,6 @@
 
 namespace WCPay\Core\Server\Request;
 
-use WC_Payments;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
@@ -64,6 +63,10 @@ class Create_And_Confirm_Setup_Intention extends Request {
 	 * @return void
 	 */
 	public function set_metadata( array $metadata ) {
+		if ( isset( $metadata['order_number'] ) ) {
+			$description = $this->get_intent_description( $metadata['order_number'] );
+			$this->set_param( 'description', $description );
+		}
 		$this->set_param( 'metadata', $metadata );
 	}
 

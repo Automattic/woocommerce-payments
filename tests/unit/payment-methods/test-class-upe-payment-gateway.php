@@ -7,7 +7,6 @@
 
 namespace WCPay\Payment_Methods;
 
-use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Type;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Create_Setup_Intention;
@@ -29,7 +28,6 @@ use WC_Helper_Intention;
 use WC_Helper_Token;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPAY_UnitTestCase;
-use WP_User;
 use Exception;
 
 /**

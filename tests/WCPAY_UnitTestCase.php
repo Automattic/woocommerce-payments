@@ -34,7 +34,6 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 * @param  mixed                  $response                     The expected response.
 	 * @param  WC_Payments_API_Client $api_client_mock              Specific API client mock if necessary.
 	 * @param  WC_Payments_Http       $http_mock                    Specific HTTP mock if necessary.
-
 	 *
 	 * @return Request                                                      The mocked request.
 	 */

@@ -10,7 +10,6 @@ defined( 'ABSPATH' ) || exit;
 use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 
 /**

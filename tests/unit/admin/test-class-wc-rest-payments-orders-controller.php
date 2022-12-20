@@ -8,9 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Constants\Payment_Method;
 
 /**
