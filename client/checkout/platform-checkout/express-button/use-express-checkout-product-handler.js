@@ -46,6 +46,27 @@ export const useExpressCheckoutProductHandler = (
 				: [],
 		};
 
+		const addOnForm = document.querySelector( 'form.cart' );
+
+		if ( addOnForm ) {
+			const formData = new FormData( addOnForm );
+
+			formData.forEach( ( value, name ) => {
+				if ( /^addon-/.test( name ) ) {
+					if ( /\[\]$/.test( name ) ) {
+						const fieldName = name.substring( 0, name.length - 2 );
+						if ( data[ fieldName ] ) {
+							data[ fieldName ].push( value );
+						} else {
+							data[ fieldName ] = [ value ];
+						}
+					} else {
+						data[ name ] = value;
+					}
+				}
+			} );
+		}
+
 		return api.paymentRequestAddToCart( data );
 	};
 
