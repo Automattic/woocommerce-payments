@@ -1939,7 +1939,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Remove the processing order ID for the current session.
+	 * Remove the provided order ID from the current session if it matches with the ID in the session.
 	 *
 	 * @param  int $order_id Order ID to remove from the session.
 	 *
