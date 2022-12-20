@@ -41,8 +41,8 @@
 		font-weight: 400;
 		gap: $gap;
 		transition: max-height 0.5s ease-in-out;
-		margin: 0;
-		padding: 0;
+		margin: 0 !important;
+		padding: 0 !important;
 		max-height: 0;
 		overflow-y: hidden;
 
