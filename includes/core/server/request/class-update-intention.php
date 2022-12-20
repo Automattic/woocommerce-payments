@@ -99,28 +99,14 @@ class Update_Intention extends Request {
 	}
 
 	/**
-	 * Set selected UPE payment method type.
+	 * Set/update payment methods.
 	 *
-	 * @param string $selected_upe_payment_type Selected UPE payment method.
-	 * @param array  $enabled_payment_methods Enabled payment methods.
+	 * @param array $payment_methods Payment methods.
 	 *
 	 * @return void
 	 */
-	public function set_selected_upe_payment_method_type( string $selected_upe_payment_type, array $enabled_payment_methods ) {
-		if ( '' !== $selected_upe_payment_type ) {
-			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
-			$payment_methods = [ $selected_upe_payment_type ];
-
-			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
-				$is_link_enabled = in_array(
-					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-					$enabled_payment_methods,
-					true
-				);
-				if ( $is_link_enabled ) {
-					$payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-				}
-			}
+	public function set_payment_method_types( array $payment_methods ) {
+		if ( ! empty( $payment_methods ) ) {
 			$this->set_param( 'payment_method_types', $payment_methods );
 		}
 	}

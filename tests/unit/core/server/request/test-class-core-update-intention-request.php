@@ -72,7 +72,7 @@ class Update_Intention_Test extends WCPAY_UnitTestCase {
 		$request->setup_future_usage();
 		$request->set_metadata( [ 'order_number' => 1 ] );
 		$request->set_level3( [ 'level3' => 'level3' ] );
-		$request->set_selected_upe_payment_method_type( $payment_type, [ $payment_type ] );
+		$request->set_payment_method_types( [ $payment_type ] );
 		$request->set_payment_country( $country );
 		$params = $request->get_params();
 
