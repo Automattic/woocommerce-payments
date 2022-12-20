@@ -20,6 +20,7 @@ export default class StripeLinkButton {
 		this.linkAutofill = null;
 		this.isKeyupHandlerAttached = false;
 		this.isAuthenticated = false;
+		this.isUPELoaded = false;
 		this.removeEmailInputListener = null;
 		this.disableRequestButton();
 	}
@@ -291,6 +292,7 @@ export default class StripeLinkButton {
 		} else {
 			this.launchAutofill( emailValue );
 		}
+		this.isUPELoaded = true;
 	}
 
 	/**

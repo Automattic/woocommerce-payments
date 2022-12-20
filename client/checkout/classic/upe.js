@@ -259,7 +259,10 @@ jQuery( function ( $ ) {
 
 			upeElement.on( 'ready', () => {
 				stripeLinkButton.enableRequestButton();
-				if ( 'link' === getSelectedGatewayPaymentMethod() ) {
+				if (
+					'link' === getSelectedGatewayPaymentMethod() &&
+					! stripeLinkButton.isUPELoaded
+				) {
 					stripeLinkButton.enable();
 				}
 			} );
