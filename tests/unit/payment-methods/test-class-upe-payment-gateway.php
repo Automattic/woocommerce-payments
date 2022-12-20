@@ -617,23 +617,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->with( strtolower( $intent->get_currency() ) );
 
 		$request->expects( $this->once() )
-			->method( 'set_capture_method' )
-			->with( false );
-
-		$request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return isset( $metadata['order_number'] );
-					}
-				)
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' );
-
-		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
 
@@ -655,23 +638,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'set_currency_code' )
 			->with( strtolower( $intent->get_currency() ) );
-
-		$request->expects( $this->once() )
-			->method( 'set_capture_method' )
-			->with( false );
-
-		$request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return isset( $metadata['order_number'] );
-					}
-				)
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -700,19 +666,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'set_capture_method' )
 			->with( true );
-
-		$request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return isset( $metadata['order_number'] );
-					}
-				)
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1434,27 +1387,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->with( $intent->get_amount() );
 
 		$request->expects( $this->once() )
-			->method( 'set_currency_code' )
-			->with( strtolower( $intent->get_currency() ) );
-
-		$request->expects( $this->once() )
-			->method( 'set_capture_method' )
-			->with( false );
-
-		$request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return isset( $metadata['order_number'] );
-					}
-				)
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' );
-
-		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
 
@@ -1485,23 +1417,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'set_currency_code' )
 			->with( strtolower( $intent->get_currency() ) );
-
-		$request->expects( $this->once() )
-			->method( 'set_capture_method' )
-			->with( false );
-
-		$request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) {
-						return isset( $metadata['order_number'] );
-					}
-				)
-			);
-
-		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' );
 
 		$request->expects( $this->exactly( 2 ) )
 			->method( 'format_response' )
