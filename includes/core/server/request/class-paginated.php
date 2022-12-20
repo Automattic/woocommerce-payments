@@ -72,8 +72,8 @@ abstract class Paginated extends Request {
 	public function set_filters( array $filters ) {
 
 		foreach ( $filters as $key => $value ) {
-			// Nullable filters are not needed and mutable keys can only be changed with this method.
-			if ( null !== $value && ! in_array( $key, self::IMMUTABLE_PARAMS, true ) ) {
+			// Nullable filters are not needed so we skip them.
+			if ( null !== $value ) {
 				// Make sure that setter is called for this specific key to preform validations and other things in setter function.
 				if ( method_exists( $this, 'set_' . $key ) ) {
 					$this->{'set_' . $key}( $value );
