@@ -25,8 +25,6 @@ class Capture_Intention extends Request {
 		'level3' => [],
 	];
 
-
-
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
@@ -38,8 +36,6 @@ class Capture_Intention extends Request {
 		$this->validate_stripe_id( $id );
 		$this->id = $id;
 	}
-
-
 
 	/**
 	 * Returns the request's API.
@@ -66,8 +62,6 @@ class Capture_Intention extends Request {
 	public function set_amount_to_capture( int $amount ) {
 		$this->set_param( 'amount_to_capture', $amount );
 	}
-
-
 
 	/**
 	 * Level 3 data setter.

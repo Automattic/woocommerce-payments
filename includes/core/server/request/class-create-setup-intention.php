@@ -42,7 +42,6 @@ class Create_Setup_Intention extends Request {
 		return 'POST';
 	}
 
-
 	/**
 	 * Payment methods type setter.
 	 *

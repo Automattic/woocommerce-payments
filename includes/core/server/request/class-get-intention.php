@@ -17,8 +17,6 @@ use WC_Payments_API_Client;
  * Request class for getting intents.
  */
 class Get_Intention extends Request {
-
-
 	/**
 	 * Intent id.
 	 *
@@ -57,6 +55,7 @@ class Get_Intention extends Request {
 	public function get_method(): string {
 		return 'GET';
 	}
+
 	/**
 	 * Formats the response from the server.
 	 *

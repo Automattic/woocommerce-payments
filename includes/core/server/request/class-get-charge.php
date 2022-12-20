@@ -17,9 +17,6 @@ use WC_Payments_API_Client;
  * Request class for getting intents.
  */
 class Get_Charge extends Request {
-
-
-
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *

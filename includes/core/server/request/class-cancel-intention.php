@@ -23,8 +23,6 @@ class Cancel_Intention extends Request {
 	const REQUIRED_PARAMS  = [];
 	const DEFAULT_PARAMS   = [];
 
-
-
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *

@@ -29,8 +29,6 @@ class Update_Intention extends Request {
 		'metadata'      => [],
 	];
 
-
-
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
@@ -42,8 +40,6 @@ class Update_Intention extends Request {
 		$this->validate_stripe_id( $id );
 		$this->id = $id;
 	}
-
-
 
 	/**
 	 * Returns the request's API.
