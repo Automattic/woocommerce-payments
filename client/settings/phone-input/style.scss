@@ -41,8 +41,15 @@
 		font-weight: 400;
 		gap: $gap;
 		transition: max-height 0.5s ease-in-out;
+		margin: 0;
+		padding: 0;
 		max-height: 0;
 		overflow-y: hidden;
+
+		&::before,
+		&::after {
+			display: none;
+		}
 
 		&.visible {
 			max-height: 21.875rem;
