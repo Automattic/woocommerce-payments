@@ -117,7 +117,7 @@ class WC_Payments_Http implements WC_Payments_Http_Interface {
 			$exception_http_code = is_array( $response )
 				? 500
 				: 503;
-			throw new Connection_Exception( $message, 'wcpay_http_request_failed', $exception_response_code );
+			throw new Connection_Exception( $message, 'wcpay_http_request_failed', $exception_http_code );
 		}
 
 		return $response;
