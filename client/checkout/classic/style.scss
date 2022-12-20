@@ -56,6 +56,12 @@
 	background-color: rgb( 247, 247, 247 );
 }
 
+#wcpay-stripe-link-button-wrapper button:disabled {
+	background: none;
+	outline: 0;
+	box-shadow: none;
+}
+
 #wcpay-stripe-link-button-wrapper button {
 	font-size: 1em;
 	text-align: center;
