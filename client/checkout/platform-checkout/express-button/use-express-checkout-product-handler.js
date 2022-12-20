@@ -1,4 +1,14 @@
-export const useExpressCheckoutProductHandler = ( api ) => {
+/**
+ * External dependencies
+ */
+import { useEffect, useState } from 'react';
+
+export const useExpressCheckoutProductHandler = (
+	api,
+	isProductPage = false
+) => {
+	const [ isAddToCartDisabled, setIsAddToCartDisabled ] = useState( false );
+
 	const getAttributes = () => {
 		const select = document
 			.querySelector( '.variations_form' )
@@ -39,7 +49,26 @@ export const useExpressCheckoutProductHandler = ( api ) => {
 		return api.paymentRequestAddToCart( data );
 	};
 
+	useEffect( () => {
+		const getIsAddToCartDisabled = () => {
+			if ( ! isProductPage ) {
+				return false;
+			}
+
+			const addToCartButton = document.querySelector(
+				'.single_add_to_cart_button'
+			);
+
+			return (
+				addToCartButton.disabled ||
+				addToCartButton.classList.contains( 'disabled' )
+			);
+		};
+		setIsAddToCartDisabled( getIsAddToCartDisabled() );
+	}, [ isProductPage ] );
+
 	return {
 		addToCart: addToCart,
+		isAddToCartDisabled: isAddToCartDisabled,
 	};
 };

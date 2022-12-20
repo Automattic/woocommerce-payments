@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { sprintf, __ } from '@wordpress/i18n';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 
 /**
  * Internal dependencies
@@ -26,8 +26,10 @@ export const WoopayExpressCheckoutButton = ( {
 		theme,
 		context,
 	} = buttonSettings;
-	const [ buttonHasBeenClicked, setButtonHasBeenClicked ] = useState( false );
-	const { addToCart } = useExpressCheckoutProductHandler( api );
+	const { addToCart, isAddToCartDisabled } = useExpressCheckoutProductHandler(
+		api,
+		isProductPage
+	);
 
 	useEffect( () => {
 		if ( ! isPreview ) {
@@ -54,12 +56,17 @@ export const WoopayExpressCheckoutButton = ( {
 			}
 		);
 
-		if ( isProductPage && ! buttonHasBeenClicked ) {
-			addToCart();
+		if ( isProductPage ) {
+			addToCart()
+				.then( () => {
+					expressCheckoutIframe( api );
+				} )
+				.catch( () => {
+					// handle error.
+				} );
+		} else {
+			expressCheckoutIframe( api );
 		}
-
-		setButtonHasBeenClicked( true );
-		expressCheckoutIframe( api );
 	};
 
 	return (
@@ -68,6 +75,7 @@ export const WoopayExpressCheckoutButton = ( {
 			aria-label={ text }
 			onClick={ initPlatformCheckout }
 			className="woopay-express-button"
+			disabled={ isAddToCartDisabled }
 			data-type={ buttonType }
 			data-size={ size }
 			data-theme={ theme }
