@@ -18,24 +18,44 @@ const renderSaveUserSection = () => {
 		return;
 	}
 
-	const placeOrderButton = document.getElementsByClassName(
-		'form-row place-order'
-	)?.[ 0 ];
-	const buttonParent = placeOrderButton?.parentNode;
 	const checkoutPageSaveUserContainer = document.createElement( 'div' );
 	checkoutPageSaveUserContainer.className =
 		'platform-checkout-save-new-user-container';
 
-	if ( placeOrderButton && buttonParent ) {
-		buttonParent.insertBefore(
-			checkoutPageSaveUserContainer,
-			placeOrderButton
-		);
+	const blocksCheckout = document.getElementsByClassName(
+		'wc-block-checkout'
+	);
 
-		ReactDOM.render(
-			<CheckoutPageSaveUser />,
-			checkoutPageSaveUserContainer
-		);
+	if ( blocksCheckout.length ) {
+		const paymentOptions = document.getElementsByClassName(
+			'wp-block-woocommerce-checkout-payment-block'
+		)?.[ 0 ];
+
+		if ( paymentOptions ) {
+			paymentOptions.appendChild( checkoutPageSaveUserContainer );
+
+			ReactDOM.render(
+				<CheckoutPageSaveUser isBlocksCheckout={ true } />,
+				checkoutPageSaveUserContainer
+			);
+		}
+	} else {
+		const placeOrderButton = document.getElementsByClassName(
+			'form-row place-order'
+		)?.[ 0 ];
+		const buttonParent = placeOrderButton?.parentNode;
+
+		if ( placeOrderButton && buttonParent ) {
+			buttonParent.insertBefore(
+				checkoutPageSaveUserContainer,
+				placeOrderButton
+			);
+
+			ReactDOM.render(
+				<CheckoutPageSaveUser isBlocksCheckout={ false } />,
+				checkoutPageSaveUserContainer
+			);
+		}
 	}
 };
 

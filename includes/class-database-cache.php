@@ -38,6 +38,13 @@ class Database_Cache {
 	const AUTHORIZATION_SUMMARY_KEY = 'wcpay_authorization_summary_cache';
 
 	/**
+	 * Cache key for authorization summary data like count, total amount, etc in test mode.
+	 *
+	 * @var string
+	 */
+	const AUTHORIZATION_SUMMARY_KEY_TEST_MODE = 'wcpay_test_authorization_summary_cache';
+
+	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
 	 *
 	 * @var bool

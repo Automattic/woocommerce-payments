@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
 import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
 import moment from 'moment';
-import React from 'react';
+import React, { useContext } from 'react';
 
 /**
  * Internal dependencies.
@@ -30,8 +30,9 @@ import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-b
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
 import wcpayTracks from 'tracks';
+import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 
-const displayCaptureAuthorizationSection = false;
+declare const window: any;
 
 const placeholderValues = {
 	amount: 0,
@@ -108,11 +109,18 @@ const PaymentDetailsSummary = ( {
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
 
-	// We should only fetch the authorization data if the payment is marked for manual capture
+	const {
+		featureFlags: { isAuthAndCaptureEnabled },
+	} = useContext( WCPaySettingsContext );
+
+	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
+	// We also need to exclude failed payments and payments that have been refunded, because capture === false in those cases, even
+	// if the capture is automatic.
 	const shouldFetchAuthorization =
-		charge.amount !== charge.amount_captured &&
+		! charge.captured &&
+		charge.status !== 'failed' &&
 		charge.amount_refunded === 0 &&
-		displayCaptureAuthorizationSection;
+		isAuthAndCaptureEnabled;
 
 	const { authorization } = useAuthorization(
 		charge.payment_intent as string,
@@ -243,7 +251,7 @@ const PaymentDetailsSummary = ( {
 					/>
 				</LoadableBlock>
 			</CardBody>
-			{ displayCaptureAuthorizationSection &&
+			{ isAuthAndCaptureEnabled &&
 				authorization &&
 				! authorization.captured && (
 					<Loadable isLoading={ isLoading } placeholder="">
@@ -260,7 +268,6 @@ const PaymentDetailsSummary = ( {
 											moment
 												.utc( authorization.created )
 												.add( 7, 'days' )
-												.toISOString()
 										) }
 									</b>
 								</div>
@@ -291,4 +298,13 @@ const PaymentDetailsSummary = ( {
 	);
 };
 
-export default PaymentDetailsSummary;
+export default ( props: {
+	charge: Charge;
+	isLoading: boolean;
+} ): JSX.Element => {
+	return (
+		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+			<PaymentDetailsSummary { ...props } />
+		</WCPaySettingsContext.Provider>
+	);
+};

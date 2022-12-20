@@ -26,7 +26,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 			->setMethods(
 				[
 					'get_upe_available_payment_methods',
-					'get_payment_method_ids_enabled_at_checkout',
+					'get_payment_method_ids_enabled_at_checkout_filtered_by_fees',
 				]
 			)
 			->getMock();
@@ -89,7 +89,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->method( 'get_payment_method_ids_enabled_at_checkout_filtered_by_fees' )
 			->willReturn( $enabled_methods );
 
 		\WC_Payments_Notes_Set_Up_StripeLink::set_gateway( $this->mock_wcpay_gateway );

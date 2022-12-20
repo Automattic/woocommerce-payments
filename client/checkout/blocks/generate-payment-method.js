@@ -9,9 +9,16 @@ import { PAYMENT_METHOD_NAME_CARD } from '../constants.js';
  * @param {WCPayAPI} api The API class that is used to connect both with the server and Stripe.
  * @param {Object} elements A hash, containing all Stripe card elements.
  * @param {Object} billingData The billing data, which was collected from the checkout block.
+ * @param {string} fingerprint User fingerprint.
+ *
  * @return {Object} The `onPaymentProcessing` response object, including a type and meta data/error message.
  */
-const generatePaymentMethod = async ( api, elements, billingData ) => {
+const generatePaymentMethod = async (
+	api,
+	elements,
+	billingData,
+	fingerprint
+) => {
 	const request = api.generatePaymentMethodRequest( elements );
 
 	request.setBillingDetail(
@@ -32,12 +39,18 @@ const generatePaymentMethod = async ( api, elements, billingData ) => {
 			paymentMethod: { id },
 		} = await request.send();
 
+		const fraudPreventionToken = document
+			.querySelector( '#wcpay-fraud-prevention-token' )
+			?.getAttribute( 'value' );
+
 		return {
 			type: 'success',
 			meta: {
 				paymentMethodData: {
 					paymentMethod: PAYMENT_METHOD_NAME_CARD,
 					'wcpay-payment-method': id,
+					'wcpay-fraud-prevention-token': fraudPreventionToken ?? '',
+					'wcpay-fingerprint': fingerprint,
 				},
 			},
 		};

@@ -805,4 +805,34 @@ class WC_Payments_Utils {
 
 		return $formatted_amount;
 	}
+
+	/**
+	 * Encrypts client secret of intents created on Stripe.
+	 *
+	 * @param   string $stripe_account_id Stripe account ID.
+	 * @param   string $client_secret     Client secret string.
+	 *
+	 * @return  string                 Encrypted value.
+	 */
+	public static function encrypt_client_secret( string $stripe_account_id, string $client_secret ): string {
+		if ( \WC_Payments_Features::is_client_secret_encryption_enabled() ) {
+			return openssl_encrypt(
+				$client_secret,
+				'aes-128-cbc',
+				substr( $stripe_account_id, 5 ),
+				0,
+				str_repeat( 'WC', 8 )
+			);
+		}
+		return $client_secret;
+	}
+
+	/**
+	 * Checks if the HPOS order tables are being used.
+	 *
+	 * @return bool True if HPOS tables are enabled and being used.
+	 */
+	public static function is_hpos_tables_usage_enabled() {
+		return class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+	}
 }

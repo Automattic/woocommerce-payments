@@ -11,6 +11,8 @@ module.exports = {
 		'blocks-checkout': './client/checkout/blocks/index.js',
 		'upe-blocks-checkout': './client/checkout/blocks/upe.js',
 		'platform-checkout': './client/checkout/platform-checkout/index.js',
+		'platform-checkout-express-button':
+			'./client/checkout/platform-checkout/express-button/index.js',
 		checkout: './client/checkout/classic/index.js',
 		upe_checkout: './client/checkout/classic/upe.js',
 		'payment-request': './client/payment-request/index.js',
