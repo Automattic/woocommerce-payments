@@ -47,7 +47,7 @@ function recordUserEvent( eventName, eventProperties ) {
 	body.append( 'tracksNonce', nonce );
 	body.append( 'action', 'platform_tracks' );
 	body.append( 'tracksEventName', eventName );
-	body.append( 'tracksEventProp', eventProperties );
+	body.append( 'tracksEventProp', JSON.stringify( eventProperties ) );
 	fetch( ajaxUrl, {
 		method: 'post',
 		body,
@@ -84,6 +84,10 @@ const events = {
 	PLATFORM_CHECKOUT_OTP_FAILED: 'platform_checkout_otp_prompt_failed',
 	PLATFORM_CHECKOUT_AUTO_REDIRECT: 'platform_checkout_auto_redirect',
 	PLATFORM_CHECKOUT_SKIPPED: 'platform_checkout_skipped',
+	PLATFORM_CHECKOUT_EXPRESS_BUTTON_OFFERED:
+		'platform_checkout_express_button_offered',
+	PLATFORM_CHECKOUT_EXPRESS_BUTTON_CLICKED:
+		'platform_checkout_express_button_clicked',
 };
 
 export default {
