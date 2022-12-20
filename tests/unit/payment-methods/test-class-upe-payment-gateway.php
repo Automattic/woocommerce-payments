@@ -591,14 +591,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_payment_method_types' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -638,14 +631,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_payment_method_types' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -685,14 +671,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_payment_method_types' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -733,14 +712,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_payment_method_types' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -769,14 +741,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->with( 'cus_mock' );
 
 		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_payment_method_types' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1487,14 +1452,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_payment_method_types' );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1543,14 +1501,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 
 		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_payment_method_types' );
 
 		$request->expects( $this->exactly( 2 ) )
 			->method( 'format_response' )

@@ -859,14 +859,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_metadata' );
+
 		$update_intent_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $mock_intent );
@@ -934,14 +928,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_metadata' );
 		$capture_intent_request = $this->mock_wcpay_request( Capture_Intention::class, 1, $intent_id );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_amount_to_capture' )
@@ -1008,14 +995,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_metadata' );
 		$capture_intent_request = $this->mock_wcpay_request( Capture_Intention::class, 1, $intent_id );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_amount_to_capture' )
@@ -1078,14 +1058,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_metadata' );
 		$capture_intent_request = $this->mock_wcpay_request( Capture_Intention::class, 1, $intent_id );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_amount_to_capture' )
@@ -1153,14 +1126,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_metadata' );
 
 		$update_intent_request->expects( $this->once() )
 			->method( 'format_response' )
@@ -1229,14 +1195,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_metadata' );
 		$capture_intent_request = $this->mock_wcpay_request( Capture_Intention::class, 1, $intent_id );
 		$capture_intent_request->expects( $this->once() )
 			->method( 'set_amount_to_capture' )
@@ -1378,14 +1337,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$update_intent_request = $this->mock_wcpay_request( Update_Intention::class, 1, $intent_id );
 		$update_intent_request->expects( $this->once() )
-			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $argument ) {
-						return is_array( $argument ) && ! empty( $argument );
-					}
-				)
-			);
+			->method( 'set_metadata' );
 
 		$capture_intent_request = $this->mock_wcpay_request( Capture_Intention::class, 1, $intent_id );
 		$capture_intent_request->expects( $this->once() )
