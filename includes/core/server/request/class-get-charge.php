@@ -8,7 +8,6 @@
 namespace WCPay\Core\Server\Request;
 
 use WC_Payments;
-use WC_Payments_Http_Interface;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;

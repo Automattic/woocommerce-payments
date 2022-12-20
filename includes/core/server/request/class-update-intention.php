@@ -11,8 +11,6 @@ use WC_Payments;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
-use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Link_Payment_Method;
 
 /**
  * Request class for creating intents.

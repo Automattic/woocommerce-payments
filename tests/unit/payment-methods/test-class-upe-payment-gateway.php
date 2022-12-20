@@ -734,10 +734,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->with( 'cus_12346' );
 
 		$request->expects( $this->once() )
-			->method( 'set_payment_method_types' )
-			->with( [ 'card' ] );
-
-		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn(
 				new Response(
