@@ -216,7 +216,7 @@ export default class StripeLinkButton {
 	 * Make payment request button clickable.
 	 */
 	enableRequestButton() {
-		jQuery( STRIPE_LINK_BUTTON_SELECTOR ).removeAttr( 'disabled' );
+		jQuery( STRIPE_LINK_BUTTON_SELECTOR ).prop( 'disabled', false );
 	}
 
 	/**
