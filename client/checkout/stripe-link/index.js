@@ -25,13 +25,22 @@ export default class StripeLinkButton {
 	}
 
 	/**
+	 * Queries Stripe Link for user's email address and launches autofill, if account found.
+	 *
+	 * @param {string} email User email address value.
+	 */
+	launchAutofill( email ) {
+		this.linkAutofill.launch( { email } );
+		this.disableRequestButton();
+	}
+
+	/**
 	 * Listener function for email input keyup event.
 	 *
 	 * @param {Object} event Keyup event.
 	 */
 	keyupHandler( event ) {
-		this.linkAutofill.launch( { email: event.target.value } );
-		this.disableRequestButton();
+		this.launchAutofill( event.target.value );
 	}
 
 	/**
@@ -280,8 +289,7 @@ export default class StripeLinkButton {
 			);
 			jQuery( `#${ this.options.emailId }` ).focus();
 		} else {
-			this.linkAutofill.launch( { email: emailValue } );
-			this.disableRequestButton();
+			this.launchAutofill( emailValue );
 		}
 	}
 
