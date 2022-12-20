@@ -15,6 +15,7 @@ use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 
 
@@ -252,7 +253,11 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				<div class="wcpay-upe-element" data-payment-method-type="<?php echo esc_attr( $this->gateway->get_selected_stripe_payment_type_id() ); ?>"></div>
 				<?php
 					$is_enabled_for_saved_payments = $this->gateway->is_enabled_for_saved_payments();
-				if ( $this->gateway->is_saved_cards_enabled() && $is_enabled_for_saved_payments ) {
+				if (
+					$this->gateway->is_saved_cards_enabled() &&
+					$is_enabled_for_saved_payments &&
+					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $this->gateway->get_selected_stripe_payment_type_id()
+					) {
 					$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
 					if ( is_user_logged_in() || $force_save_payment ) {
 						$this->gateway->save_payment_method_checkbox( $force_save_payment );
