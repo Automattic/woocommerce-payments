@@ -50,11 +50,11 @@ export const useExpressCheckoutProductHandler = (
 	};
 
 	useEffect( () => {
-		const getIsAddToCartDisabled = () => {
-			if ( ! isProductPage ) {
-				return false;
-			}
+		if ( ! isProductPage ) {
+			return;
+		}
 
+		const getIsAddToCartDisabled = () => {
 			const addToCartButton = document.querySelector(
 				'.single_add_to_cart_button'
 			);
@@ -65,7 +65,25 @@ export const useExpressCheckoutProductHandler = (
 			);
 		};
 		setIsAddToCartDisabled( getIsAddToCartDisabled() );
-	}, [ isProductPage ] );
+
+		const onVariationChange = () =>
+			setIsAddToCartDisabled( getIsAddToCartDisabled() );
+
+		const variationList = document.querySelector( '.variations_form' );
+
+		if ( variationList ) {
+			variationList.addEventListener( 'change', onVariationChange );
+		}
+
+		return () => {
+			if ( variationList ) {
+				variationList.removeEventListener(
+					'change',
+					onVariationChange
+				);
+			}
+		};
+	}, [ isProductPage, setIsAddToCartDisabled ] );
 
 	return {
 		addToCart: addToCart,
