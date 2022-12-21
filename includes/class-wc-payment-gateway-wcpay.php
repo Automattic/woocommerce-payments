@@ -869,7 +869,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Cart|null              $cart Cart.
 	 * @param WCPay\Payment_Information $payment_information Payment info.
-	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
+	 * @param bool                      $scheduled_subscription_payment Used to deterimated is sceduled subs payment to add more fields into API request..
 	 *
 	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception
@@ -878,7 +878,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception When immutable parameter gets changed in request class.
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception When you send incorrect request value via setters.
 	 */
-	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
+	public function process_payment_for_order( $cart, $payment_information, $scheduled_subscription_payment = false ) {
 		$order                                       = $payment_information->get_order();
 		$save_payment_method_to_store                = $payment_information->should_save_payment_method_to_store();
 		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();
@@ -950,12 +950,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
-		// Add card mandate options parameters to the order payment intent if needed.
-		$additional_api_parameters = array_merge(
-			$additional_api_parameters,
-			$this->get_mandate_params_for_order( $order )
-		);
-
 		if ( $payment_needed ) {
 			$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() );
 			$currency         = strtolower( $order->get_currency() );
@@ -1009,6 +1003,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_fingerprint( $payment_information->get_fingerprint() );
 				if ( $save_payment_method_to_store ) {
 					$request->setup_future_usage();
+				}
+				if ( $scheduled_subscription_payment ) {
+					$mandate = $this->get_mandate_param_for_renewal_order( $order );
+					if ( $mandate ) {
+						$request->set_mandate( $mandate );
+					}
 				}
 
 				$intent = $request->send( 'wcpay_create_intention_request', $payment_information );

@@ -154,6 +154,17 @@ class Create_Intention extends Request {
 	}
 
 	/**
+	 * Set mandate.
+	 *
+	 * @param string $mandate Mandate.
+	 *
+	 * @return void
+	 */
+	public function set_mandate( string $mandate ) {
+		$this->set_param( 'mandate', $mandate );
+	}
+
+	/**
 	 * Formats the response from the server.
 	 *
 	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.

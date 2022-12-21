@@ -280,12 +280,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
-		// Add mandate param to the order payment if needed.
-		$additional_api_parameters = $this->get_mandate_param_for_renewal_order( $renewal_order );
-
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
-			$this->process_payment_for_order( null, $payment_information, $additional_api_parameters );
+			$this->process_payment_for_order( null, $payment_information, true );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
@@ -927,28 +924,28 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * More details https://wp.me/pc4etw-ky
 	 *
 	 * @param WC_Order $renewal_order The subscription renewal order.
-	 * @return array Param to be included or empty array.
+	 * @return string Param to be included or empty array.
 	 */
-	public function get_mandate_param_for_renewal_order( WC_Order $renewal_order ): array {
+	public function get_mandate_param_for_renewal_order( WC_Order $renewal_order ): string {
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
 		$subscription  = reset( $subscriptions );
 
 		if ( ! $subscription ) {
-			return [];
+			return '';
 		}
 
 		$parent_order = wc_get_order( $subscription->get_parent_id() );
 
 		if ( ! $parent_order ) {
-			return [];
+			return '';
 		}
 
 		$mandate = $parent_order->get_meta( '_stripe_mandate_id', true );
 
 		if ( empty( $mandate ) ) {
-			return [];
+			return '';
 		}
 
-		return [ 'mandate' => $mandate ];
+		return $mandate;
 	}
 }
