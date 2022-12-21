@@ -869,7 +869,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @param WC_Cart|null              $cart Cart.
 	 * @param WCPay\Payment_Information $payment_information Payment info.
-	 * @param bool                      $scheduled_subscription_payment Used to deterimated is sceduled subs payment to add more fields into API request..
+	 * @param bool                      $scheduled_subscription_payment Used to determinate is scheduled subscription payment to add more fields into API request.
 	 *
 	 * @return array|null                      An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception

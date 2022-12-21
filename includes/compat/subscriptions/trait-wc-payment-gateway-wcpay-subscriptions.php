@@ -39,13 +39,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 *
 	 * @param WC_Cart|null              $cart Cart.
 	 * @param WCPay\Payment_Information $payment_information Payment info.
-	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
+	 * @param bool                      $scheduled_subscription_payment Used to determinate is scheduled subscription payment to add more fields into API request.
 	 *
 	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception                Error processing the payment.
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
-	abstract public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] );
+	abstract public function process_payment_for_order( $cart, $payment_information, $scheduled_subscription_payment = false );
 
 	/**
 	 * Saves the payment token to the order.
