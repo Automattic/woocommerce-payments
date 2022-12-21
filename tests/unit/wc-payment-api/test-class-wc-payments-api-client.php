@@ -2203,6 +2203,42 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test that API client will retry request in case of network error
+	 * and stop on success.
+	 *
+	 * POST calls have `Idempotency-Key` set in the `request`, thus are
+	 * possible to retry.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_post_on_network_failure_exception_and_stops_on_success() {
+		$this->mock_http_client
+			->expects( $this->exactly( 3 ) )
+			->method( 'remote_request' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException(
+					new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 500 )
+				),
+				$this->throwException(
+					new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 500 )
+				),
+				[
+					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'POST' ]
+		);
+	}
+
+	/**
 	 * Test that API client will not retry if connection exception indicates there
 	 * was a response.
 	 *

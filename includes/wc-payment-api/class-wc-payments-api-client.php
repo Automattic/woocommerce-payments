@@ -31,8 +31,9 @@ class WC_Payments_API_Client {
 	const GET    = 'GET';
 	const DELETE = 'DELETE';
 
-	const API_TIMEOUT_SECONDS = 70;
-	const API_RETRIES_LIMIT   = 3;
+	const API_TIMEOUT_SECONDS      = 70;
+	const API_RETRIES_LIMIT        = 3;
+	const API_RETRIES_BACKOFF_MSEC = 250;
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
@@ -2126,6 +2127,8 @@ class WC_Payments_API_Client {
 				break;
 			}
 
+			// Use exponential backoff to not overload backend.
+			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
 			$retries++;
 		}
 
