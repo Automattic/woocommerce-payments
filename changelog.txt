@@ -5,7 +5,7 @@
 * Add - When deactivating WCPay plugin, warn merchant that active WCPay Subscriptions will continue collecting payment.
 * Fix - Allow the "Your payment information is incomplete." UPE checkout block message to be translated.
 * Fix - Extend Stripe Link availability check with available fees
-* Fix - Fix - Prevent `Additional Payment Methods` (UPE) checkboxes within `Payments > Settings` , from getting unchecked and checked automatically while selecting multiple items quickly.
+* Fix - Prevent `Additional Payment Methods` (UPE) checkboxes within `Payments > Settings` , from getting unchecked and checked automatically while selecting multiple items quickly.
 * Fix - Fix an undefined variable bug in WooPay Express Checkout.
 * Fix - Fix for an issue where a timestamp in the past could be displayed on the update business details task card.
 * Fix - Fix translations job from the post-release workflow
