@@ -115,6 +115,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Recurring payments for cards issued by Indian banks.
 * Fix - Remove the UPE notification badge on the Payments > Settings menu item
 * Fix - Set commit author as github-actions bot for the code freeze workflow
+* Fix - Updates subscriptions' payment token when a new default payment method is set.
 * Update - Update currency_rate endpoint to not make a request if currency_from value is not valid/expected value.
 * Dev - Bump minimum required version of WooCommerce to 7.0.
 * Dev - Remove unused pre-release workflow
