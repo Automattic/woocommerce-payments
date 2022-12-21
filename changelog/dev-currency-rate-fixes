@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Update currency_rate endpoint to not make a request if currency_from value is not valid/expected value.
