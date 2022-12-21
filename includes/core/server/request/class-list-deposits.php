@@ -31,7 +31,7 @@ class List_Deposits extends Paginated {
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
-	 * @return Paginated|self
+	 * @return static
 	 */
 	public static function from_rest_request( $request ) {
 		$wcpay_request = parent::from_rest_request( $request );
