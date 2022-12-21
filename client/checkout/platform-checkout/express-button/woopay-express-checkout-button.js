@@ -9,7 +9,7 @@ import { useEffect } from 'react';
  */
 import WoopayIcon from './woopay-icon';
 import { expressCheckoutIframe } from './express-checkout-iframe';
-import { useExpressCheckoutProductHandler } from './use-express-checkout-product-handler';
+import useExpressCheckoutProductHandler from './use-express-checkout-product-handler';
 import wcpayTracks from 'tracks';
 
 export const WoopayExpressCheckoutButton = ( {

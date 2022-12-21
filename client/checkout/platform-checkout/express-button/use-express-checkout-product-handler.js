@@ -3,10 +3,7 @@
  */
 import { useEffect, useState } from 'react';
 
-export const useExpressCheckoutProductHandler = (
-	api,
-	isProductPage = false
-) => {
+const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 	const [ isAddToCartDisabled, setIsAddToCartDisabled ] = useState( false );
 
 	const getAttributes = () => {
@@ -111,3 +108,5 @@ export const useExpressCheckoutProductHandler = (
 		isAddToCartDisabled: isAddToCartDisabled,
 	};
 };
+
+export default useExpressCheckoutProductHandler;
