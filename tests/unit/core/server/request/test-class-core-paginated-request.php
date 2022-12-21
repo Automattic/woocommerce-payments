@@ -46,8 +46,7 @@ class Paginated_Test extends WCPAY_UnitTestCase {
 		$direction = 'asc';
 		$sort      = 'created';
 		$filters   = [
-			'key'  => 'value',
-			'page' => 3,
+			'key' => 'value',
 		];
 
 		$request = new class( $this->mock_api_client, $this->mock_wc_payments_http_client ) extends Paginated
@@ -61,7 +60,6 @@ class Paginated_Test extends WCPAY_UnitTestCase {
 		$request->set_sort_direction( $direction );
 		$request->set_sort_by( $sort );
 		$request->set_filters( $filters );
-		$this->assertNotSame( $filters['page'], $request->get_param( 'page' ) ); // Test immutability of filter key.
 
 		$params = $request->get_params();
 

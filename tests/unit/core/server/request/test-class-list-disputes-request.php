@@ -57,8 +57,7 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$direction       = 'asc';
 		$sort            = 'created';
 		$filters         = [
-			'key'  => 'value',
-			'page' => 3,
+			'key' => 'value',
 		];
 		$created_after   = '2022-01-01 00:00:00';
 		$created_before  = '2022-02-01 00:00:00';
@@ -83,7 +82,6 @@ class List_Disputes_Test extends WCPAY_UnitTestCase {
 		$request->set_status_is_not( $status_is_not );
 		$request->set_search( $search );
 		$request->set_filters( $filters );
-		$this->assertNotSame( $filters['page'], $request->get_param( 'page' ) ); // Test immutability of filter key.
 
 		$params = $request->get_params();
 

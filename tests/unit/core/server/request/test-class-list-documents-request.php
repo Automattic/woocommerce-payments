@@ -58,8 +58,7 @@ class List_Documents_Test extends WCPAY_UnitTestCase {
 		$direction    = 'asc';
 		$sort         = 'date';
 		$filters      = [
-			'key'  => 'value',
-			'page' => 3,
+			'key' => 'value',
 		];
 		$date_after   = '2022-01-01 00:00:00';
 		$date_before  = '2022-02-01 00:00:00';
@@ -80,7 +79,6 @@ class List_Documents_Test extends WCPAY_UnitTestCase {
 		$request->set_type_is( $type );
 		$request->set_type_is_not( $type_is_not );
 		$request->set_filters( $filters );
-		$this->assertNotSame( $filters['page'], $request->get_param( 'page' ) ); // Test immutability of filter key.
 
 		$params = $request->get_params();
 
