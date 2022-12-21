@@ -1068,7 +1068,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
+			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
 
 		$this->mock_wcpay_account
 			->expects( $this->once() )
@@ -1141,7 +1141,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
+			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
 
 		$this->mock_wcpay_account
 			->expects( $this->once() )
@@ -1205,7 +1205,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$capture_intent_request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
+			->will( $this->throwException( new API_Exception( 'test exception', 'server_error', 500 ) ) );
 
 		$this->mock_wcpay_account
 			->expects( $this->once() )
