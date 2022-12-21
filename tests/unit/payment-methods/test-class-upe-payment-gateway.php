@@ -314,10 +314,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->with( 'cus_mock' );
 
 		$request->expects( $this->once() )
-			->method( 'set_selected_upe_payment_method_type' )
-			->with( '', [] );
-
-		$request->expects( $this->once() )
 			->method( 'setup_future_usage' );
 
 		$request->expects( $this->once() )
@@ -412,8 +408,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->with( 'cus_mock' );
 
 		$request->expects( $this->once() )
-			->method( 'set_selected_upe_payment_method_type' )
-			->with( 'giropay', [] );
+			->method( 'set_payment_method_types' )
+			->with( [ 'giropay' ] );
 
 		$request->expects( $this->once() )
 			->method( 'setup_future_usage' );
@@ -504,10 +500,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'set_customer' )
 			->with( 'cus_mock' );
-
-		$request->expects( $this->once() )
-			->method( 'set_selected_upe_payment_method_type' )
-			->with( '', [] );
 
 		$request->expects( $this->once() )
 			->method( 'set_payment_country' )
@@ -1463,10 +1455,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$request->expects( $this->once() )
 			->method( 'set_amount' )
 			->with( (int) ( $amount * 100 ) );
-
-		$request->expects( $this->once() )
-			->method( 'set_selected_upe_payment_method_type' )
-			->with( '', [] );
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )

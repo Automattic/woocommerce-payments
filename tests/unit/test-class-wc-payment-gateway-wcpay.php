@@ -8,9 +8,11 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
+use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
+use WCPay\Core\Server\Response;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Constants\Payment_Type;
@@ -1465,11 +1467,19 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'create_customer_for_user' );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_setup_intent' )
-			->with( 'pm_mock', 'cus_12345' )
-			->willReturn( [ 'id' => 'pm_mock' ] );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( 'cus_12345' );
+
+		$request->expects( $this->once() )
+			->method( 'set_payment_method' )
+			->with( 'pm_mock' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( new Response( [ 'id' => 'pm_mock' ] ) );
 
 		$result = $this->wcpay_gateway->create_and_confirm_setup_intent();
 
@@ -1489,11 +1499,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->method( 'create_customer_for_user' )
 			->will( $this->returnValue( 'cus_12345' ) );
 
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_setup_intent' )
-			->with( 'pm_mock', 'cus_12345' )
-			->willReturn( [ 'id' => 'pm_mock' ] );
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( new Response( [ 'id' => 'pm_mock' ] ) );
 
 		$result = $this->wcpay_gateway->create_and_confirm_setup_intent();
 

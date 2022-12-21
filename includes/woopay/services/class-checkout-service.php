@@ -103,6 +103,6 @@ class Checkout_Service {
 	 */
 	public function init() {
 		add_filter( 'wcpay_create_intention_request', [ $this, 'create_intention_request' ], 10, 3 );
-		add_filter( 'wcpay_create_and_confirm_setup_intention_request', [ $this, 'create_and_confirm_setup_intention_request' ], 10, 3 );
+		add_filter( 'wcpay_create_and_confirm_setup_intention_request', [ $this, 'create_and_confirm_setup_intention_request' ], 10, 4 );
 	}
 }
