@@ -276,6 +276,11 @@ class WC_Payments {
 		include_once __DIR__ . '/core/exceptions/server/request/class-immutable-parameter-exception.php';
 		include_once __DIR__ . '/core/exceptions/server/request/class-extend-request-exception.php';
 		include_once __DIR__ . '/core/exceptions/server/response/class-server-response-exception.php';
+
+		include_once __DIR__ . '/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php';
+		include_once __DIR__ . '/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
+
+		// Include core requests.
 		include_once __DIR__ . '/core/server/class-request.php';
 		include_once __DIR__ . '/core/server/class-response.php';
 		include_once __DIR__ . '/core/server/request/trait-intention.php';
@@ -298,8 +303,6 @@ class WC_Payments {
 
 		self::$api_client = self::create_api_client();
 
-		include_once __DIR__ . '/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php';
-		include_once __DIR__ . '/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
