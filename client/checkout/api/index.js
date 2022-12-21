@@ -654,10 +654,12 @@ export default class WCPayAPI {
 	}
 
 	initPlatformCheckout( userEmail, platformCheckoutUserSession ) {
+		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
+		const nonce = getConfig( 'initPlatformCheckoutNonce' );
 		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_platform_checkout' ),
+			buildAjaxURL( wcAjaxUrl, 'init_platform_checkout' ),
 			{
-				_wpnonce: getConfig( 'initPlatformCheckoutNonce' ),
+				_wpnonce: nonce,
 				email: userEmail,
 				user_session: platformCheckoutUserSession,
 			}
