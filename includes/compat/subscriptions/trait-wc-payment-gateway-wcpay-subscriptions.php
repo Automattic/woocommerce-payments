@@ -871,8 +871,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$subs_amount += $sub->get_total();
 		}
 
-		$result['setup_future_usage']                                = 'off_session';
-		$result['payment_method_options']['card']['mandate_options'] = [
+		$result['card']['mandate_options'] = [
 			'reference'       => $order->get_id(),
 			'amount'          => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
 			'amount_type'     => 'fixed',
@@ -887,9 +886,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// - Set interval to sporadic, to not follow any specific interval.
 		// - Unset interval count, because it doesn't apply anymore.
 		if ( 1 < count( $subscriptions ) ) {
-			$result['payment_method_options']['card']['mandate_options']['amount_type'] = 'maximum';
-			$result['payment_method_options']['card']['mandate_options']['interval']    = 'sporadic';
-			unset( $result['payment_method_options']['card']['mandate_options']['interval_count'] );
+			$result['card']['mandate_options']['amount_type'] = 'maximum';
+			$result['card']['mandate_options']['interval']    = 'sporadic';
+			unset( $result['card']['mandate_options']['interval_count'] );
 		}
 
 		return $result;

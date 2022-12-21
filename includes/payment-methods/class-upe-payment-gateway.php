@@ -479,7 +479,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				try {
 					$payment_methods = $this->get_selected_upe_payment_methods( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) );
 
-					$request = Update_Intention::fill_mandate_params_for_order( $order, $payment_intent_id );
+					$request = Update_Intention::create( $payment_intent_id );
 					$request->set_currency_code( strtolower( $currency ) );
 					$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $currency ) );
 					$request->set_metadata( $this->get_metadata_from_order( $order, $payment_type ) );
@@ -493,6 +493,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					}
 					if ( $customer_id ) {
 						$request->set_customer( $customer_id );
+					}
+					$payment_method_options = $this->get_mandate_params_for_order( $order );
+					if ( $payment_method_options ) {
+						$request->setup_future_usage();
+						$request->set_payment_method_options( $payment_method_options );
 					}
 					$updated_payment_intent = $request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
 				} catch ( Amount_Too_Small_Exception $e ) {
