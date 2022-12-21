@@ -662,6 +662,7 @@ export default class WCPayAPI {
 				_wpnonce: nonce,
 				email: userEmail,
 				user_session: platformCheckoutUserSession,
+				return_url: window?.location?.href ?? '',
 			}
 		);
 	}
