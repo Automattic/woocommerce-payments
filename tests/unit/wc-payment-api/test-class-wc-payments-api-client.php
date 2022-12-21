@@ -2190,7 +2190,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 4 ) )
 			->method( 'remote_request' )
 			->willThrowException(
-				new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 503 )
+				new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 500 )
 			);
 
 		$this->expectException( Connection_Exception::class );
