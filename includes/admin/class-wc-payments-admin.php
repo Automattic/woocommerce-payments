@@ -856,13 +856,7 @@ class WC_Payments_Admin {
 	 * @return string
 	 */
 	private function get_settings_menu_item_name() {
-		$label = __( 'Settings', 'woocommerce' ); // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
-
-		if ( WC_Payments_Features::is_upe_settings_preview_enabled() && ! WC_Payments_Features::is_upe_enabled() ) {
-			$label .= self::MENU_NOTIFICATION_BADGE;
-		}
-
-		return $label;
+		return __( 'Settings', 'woocommerce' ); // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
 	}
 
 	/**

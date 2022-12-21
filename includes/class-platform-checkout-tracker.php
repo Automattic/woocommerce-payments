@@ -78,7 +78,8 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 
 		$tracks_data = [];
 		if ( isset( $_REQUEST['tracksEventProp'] ) ) {
-			$event_prop = wc_clean( wp_unslash( $_REQUEST['tracksEventProp'] ) );
+			// tracksEventProp is a JSON-encoded string.
+			$event_prop = json_decode( wc_clean( wp_unslash( $_REQUEST['tracksEventProp'] ) ), true );
 			if ( is_array( $event_prop ) ) {
 				$tracks_data = $event_prop;
 			}

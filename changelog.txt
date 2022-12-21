@@ -1,5 +1,31 @@
 *** WooCommerce Payments Changelog ***
 
+= 5.2.0 - 2022-12-21 =
+* Add - Add WooPay Express Checkout button iframe functionality.
+* Add - When deactivating WCPay plugin, warn merchant that active WCPay Subscriptions will continue collecting payment.
+* Fix - Allow the "Your payment information is incomplete." UPE checkout block message to be translated.
+* Fix - Extend Stripe Link availability check with available fees
+* Fix - Prevent `Additional Payment Methods` (UPE) checkboxes within `Payments > Settings` , from getting unchecked and checked automatically while selecting multiple items quickly.
+* Fix - Fix an undefined variable bug in WooPay Express Checkout.
+* Fix - Fix for an issue where a timestamp in the past could be displayed on the update business details task card.
+* Fix - Fix translations job from the post-release workflow
+* Fix - Fix wrong time displayed in the "You need to capture this charge before..." text on the payment details page.
+* Fix - Hide "capture charge" and "cancel authorization" actions on order details page when order status is processing or completed.
+* Fix - Make the tooltips on UPE settings ( Settings > Payments accepted on checkout ) , show the correct custom rates whenever applicable.
+* Fix - PR created by the code freeze workflow is now done by botwoo to allow PR checks to be triggered
+* Fix - Prevent checkboxes from getting unchecked automatically within the UPE onboarding form, when we click multiple selections within a very short time ( 1.5 seconds )
+* Fix - Recurring payments for cards issued by Indian banks.
+* Fix - Remove the UPE notification badge on the Payments > Settings menu item
+* Fix - Set commit author as github-actions bot for the code freeze workflow
+* Fix - Updates subscriptions' payment token when a new default payment method is set.
+* Update - Update currency_rate endpoint to not make a request if currency_from value is not valid/expected value.
+* Dev - Bump minimum required version of WooCommerce to 7.0.
+* Dev - Remove unused pre-release workflow
+* Dev - Replace direct database queries which fetched orders with an invoice ID with an equivalent wc_get_orders() query
+* Dev - Replace direct database queries which fetched subscriptions with a wcpay subscription ID with an equivalent wc_get_orders() query
+* Dev - Show correct authorizations count when switching between live and test modes
+* Dev - Support custom REMOTE_PORT for xDebug
+
 = 5.1.2 - 2022-12-03 =
 * Fix - Import critical package instead of lazy loading.
 
