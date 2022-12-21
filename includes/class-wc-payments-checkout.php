@@ -96,9 +96,9 @@ class WC_Payments_Checkout {
 
 		$wc_checkout = WC_Checkout::instance();
 
-		return [
-			'publishableKey'                 => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
-			'testMode'                       => $this->gateway->is_in_test_mode(),
+		$js_config = [
+			'publishableKey'                 => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+			'testMode'                       => WC_Payments::mode()->is_test(),
 			'accountId'                      => $this->account->get_stripe_account_id(),
 			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
@@ -115,6 +115,7 @@ class WC_Payments_Checkout {
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
 			'isPlatformCheckoutEnabled'      => $this->platform_checkout_util->should_enable_platform_checkout( $this->gateway ),
+			'isWoopayExpressCheckoutEnabled' => $this->platform_checkout_util->is_woopay_express_checkout_enabled(),
 			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
 			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
@@ -125,6 +126,13 @@ class WC_Payments_Checkout {
 			'platformCheckoutSignatureNonce' => wp_create_nonce( 'platform_checkout_signature_nonce' ),
 			'platformCheckoutMerchantId'     => Jetpack_Options::get_option( 'id' ),
 		];
+
+		/**
+		 * Allows filtering of the JS config for the payment fields.
+		 *
+		 * @param array $js_config The JS config for the payment fields.
+		 */
+		return apply_filters( 'wcpay_payment_fields_js_config', $js_config );
 	}
 
 	/**
@@ -156,7 +164,7 @@ class WC_Payments_Checkout {
 				<p><?php echo wp_kses_post( $this->gateway->get_description() ); ?></p>
 			<?php endif; ?>
 
-			<?php if ( $this->gateway->is_in_test_mode() ) : ?>
+			<?php if ( WC_Payments::mode()->is_test() ) : ?>
 				<p class="testmode-info">
 					<?php
 					echo WC_Payments_Utils::esc_interpolated_html(

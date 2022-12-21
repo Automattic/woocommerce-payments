@@ -100,7 +100,7 @@
 		.platform-checkout-otp-iframe {
 			transition: none;
 			height: 90vh;
-			max-height: 520px;
+			max-height: 600px;
 			position: absolute;
 			max-width: 374px;
 			border-radius: 8px;
@@ -138,6 +138,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	white-space: nowrap;
 
 	svg {
 		fill: $studio-woocommerce-purple-60;

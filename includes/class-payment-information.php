@@ -92,6 +92,13 @@ class Payment_Information {
 	private $is_changing_payment_method_for_subscription = false;
 
 	/**
+	 * The attached fingerprint.
+	 *
+	 * @var string
+	 */
+	private $fingerprint = '';
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string               $payment_method The ID of the payment method used for this payment.
@@ -101,6 +108,7 @@ class Payment_Information {
 	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
 	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
 	 * @param string               $cvc_confirmation The CVC confirmation for this payment method.
+	 * @param string               $fingerprint The attached fingerprint.
 	 *
 	 * @throws Invalid_Payment_Method_Exception When no payment method is found in the provided request.
 	 */
@@ -111,7 +119,8 @@ class Payment_Information {
 		\WC_Payment_Token $token = null,
 		Payment_Initiated_By $payment_initiated_by = null,
 		Payment_Capture_Type $manual_capture = null,
-		string $cvc_confirmation = null
+		string $cvc_confirmation = null,
+		string $fingerprint = ''
 	) {
 		if ( empty( $payment_method ) && empty( $token ) && ! \WC_Payments::is_network_saved_cards_enabled() ) {
 			// If network-wide cards are enabled, a payment method or token may not be specified and the platform default one will be used.
@@ -127,6 +136,7 @@ class Payment_Information {
 		$this->manual_capture       = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
 		$this->payment_type         = $payment_type ?? Payment_Type::SINGLE();
 		$this->cvc_confirmation     = $cvc_confirmation;
+		$this->fingerprint          = $fingerprint;
 	}
 
 	/**
@@ -222,13 +232,14 @@ class Payment_Information {
 		$payment_method   = self::get_payment_method_from_request( $request );
 		$token            = self::get_token_from_request( $request );
 		$cvc_confirmation = self::get_cvc_confirmation_from_request( $request );
+		$fingerprint      = self::get_fingerprint_from_request( $request );
 
 		if ( isset( $request['is_woopay'] ) && $request['is_woopay'] ) {
 			$order->add_meta_data( 'is_woopay', true, true );
 			$order->save_meta_data();
 		}
 
-		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation );
+		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint );
 	}
 
 	/**
@@ -302,6 +313,22 @@ class Payment_Information {
 		}
 
 		return $request[ $cvc_request_key ];
+	}
+
+	/**
+	 * Extracts the fingerprint data from the provided request.
+	 *
+	 * @param array $request Associative array containing payment request information.
+	 *
+	 * @return string
+	 */
+	public static function get_fingerprint_from_request( array $request ) {
+		if ( ! empty( $request['wcpay-fingerprint'] ) ) {
+			$normalized = wc_clean( $request['wcpay-fingerprint'] );
+			return is_string( $normalized ) ? $normalized : '';
+		}
+
+		return '';
 	}
 
 	/**
@@ -379,5 +406,14 @@ class Payment_Information {
 	 */
 	public function get_cvc_confirmation() {
 		return $this->cvc_confirmation;
+	}
+
+	/**
+	 * Returns the attached fingerprint.
+	 *
+	 * @return string The attached fingerprint.
+	 */
+	public function get_fingerprint() {
+		return $this->fingerprint;
 	}
 }

@@ -43,7 +43,7 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
-		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
+		WC_Payments::mode()->live();
 	}
 
 	/**
@@ -281,7 +281,7 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '_wcpay_product_id_live', WC_Payments_Product_Service::get_wcpay_product_id_option() );
 
 		// set to testmode.
-		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		WC_Payments::mode()->test();
 		$this->assertSame( '_wcpay_product_id_test', WC_Payments_Product_Service::get_wcpay_product_id_option() );
 	}
 

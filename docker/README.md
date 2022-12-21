@@ -45,3 +45,17 @@ You will see it give a forwarding address like this one:
 You may need to temporarily set your `siteurl` and `home` `wp_option`s to the new url. You can do this with phpMyAdmin or WP-CLI.
 
 Visit the `<url>` , login and setup WCPay.
+
+### Changing default port for xDebug
+To change the default port for xDebug you should create `docker-compose.override.yml` with the following contents:
+```
+version: '3'
+
+services:
+  wordpress:
+    build:
+      args:
+        - REMOTE_PORT=9003 # IDE/Editor's listener port
+```
+I used port `9003` as an example.
+To apply the change, restart your containers using `npm run down && npm run up`

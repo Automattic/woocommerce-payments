@@ -27,12 +27,17 @@ import { NAMESPACE } from '../constants';
 import { ApiError } from 'wcpay/types/errors';
 
 export function* getAuthorizations( query: Query ): Generator< unknown > {
-	const {
+	let {
 		paged = 1,
 		per_page: perPage = 25,
 		orderby = 'created',
 		order = 'desc',
 	} = query;
+
+	if ( orderby === 'capture_by' ) {
+		// The API does not expect 'capture_by' to be a valid sorting field, since it is a derived field, calculated from the 'created' field.
+		orderby = 'created';
+	}
 
 	const path = addQueryArgs( `${ NAMESPACE }/authorizations`, {
 		page: paged,
@@ -72,11 +77,13 @@ export function* getAuthorization(
 			const {
 				is_captured: isCaptured,
 				payment_intent_id: paymentIntentId,
+				created,
 			} = result as GetAuthorizationApiResponse;
 
 			yield updateAuthorization( {
 				payment_intent_id: paymentIntentId,
 				captured: isCaptured,
+				created,
 			} as Authorization );
 		}
 	} catch ( e ) {

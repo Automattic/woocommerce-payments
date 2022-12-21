@@ -12,6 +12,7 @@ use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
 use WC_Payments_Utils;
+use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
@@ -90,7 +91,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['isCheckout']               = is_checkout();
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
 		$payment_fields['saveUPEAppearanceNonce']   = wp_create_nonce( 'wcpay_save_upe_appearance_nonce' );
-		$payment_fields['testMode']                 = $this->gateway->is_in_test_mode();
+		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
 		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['checkoutTitle']            = $this->gateway->get_checkout_title();
@@ -159,6 +160,13 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_methods = $this->gateway->get_payment_methods();
 
 		foreach ( $enabled_payment_methods as $payment_method ) {
+			// Link by Stripe should be validated with available fees.
+			if ( Payment_Method::LINK === $payment_method ) {
+				if ( ! in_array( Payment_Method::LINK, array_keys( $this->account->get_fees() ), true ) ) {
+					continue;
+				}
+			}
+
 			$settings[ $payment_method ] = [
 				'isReusable' => $payment_methods[ $payment_method ]->is_reusable(),
 				'title'      => $payment_methods[ $payment_method ]->get_title(),
@@ -209,7 +217,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				<p><?php echo wp_kses_post( $this->gateway->get_description() ); ?></p>
 			<?php endif; ?>
 
-			<?php if ( $this->gateway->is_in_test_mode() ) : ?>
+			<?php if ( WC_Payments::mode()->is_test() ) : ?>
 				<p class="testmode-info">
 					<?php
 					echo WC_Payments_Utils::esc_interpolated_html(

@@ -31,6 +31,15 @@ class Platform_Checkout_Utilities {
 	}
 
 	/**
+	 * Check conditions to determine if woopay express checkout is enabled.
+	 *
+	 * @return boolean
+	 */
+	public function is_woopay_express_checkout_enabled() {
+		return WC_Payments_Features::is_woopay_express_checkout_enabled(); // Feature flag.
+	}
+
+	/**
 	 * Generates a hash based on the store's blog token, merchant ID, and the time step window.
 	 *
 	 * @return string

@@ -18,6 +18,11 @@ const waitForElement = ( selector ) => {
 		const checkoutBlock = document.querySelector(
 			'[data-block-name="woocommerce/checkout"]'
 		);
+
+		if ( ! checkoutBlock ) {
+			return resolve( null );
+		}
+
 		const observer = new MutationObserver( ( mutationList, obs ) => {
 			if ( document.querySelector( selector ) ) {
 				resolve( document.querySelector( selector ) );
@@ -312,6 +317,18 @@ export const handlePlatformCheckoutEmailInput = async (
 			} );
 	}
 
+	const dispatchUserExistEvent = ( userExist ) => {
+		const PlatformCheckoutUserCheckEvent = new CustomEvent(
+			'PlatformCheckoutUserCheck',
+			{
+				detail: {
+					isRegisteredUser: userExist,
+				},
+			}
+		);
+		window.dispatchEvent( PlatformCheckoutUserCheckEvent );
+	};
+
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
@@ -413,15 +430,7 @@ export const handlePlatformCheckoutEmailInput = async (
 			} )
 			.then( ( data ) => {
 				// Dispatch an event after we get the response.
-				const PlatformCheckoutUserCheckEvent = new CustomEvent(
-					'PlatformCheckoutUserCheck',
-					{
-						detail: {
-							isRegisteredUser: data[ 'user-exists' ],
-						},
-					}
-				);
-				window.dispatchEvent( PlatformCheckoutUserCheckEvent );
+				dispatchUserExistEvent( data[ 'user-exists' ] );
 
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
@@ -617,6 +626,11 @@ export const handlePlatformCheckoutEmailInput = async (
 			openLoginSessionIframe( platformCheckoutEmailInput.value );
 		}
 	} else {
+		// Dispatch an event declaring this user exists as returned via back button. Wait for the window to load.
+		setTimeout( () => {
+			dispatchUserExistEvent( true );
+		}, 2000 );
+
 		wcpayTracks.recordUserEvent(
 			wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
 		);

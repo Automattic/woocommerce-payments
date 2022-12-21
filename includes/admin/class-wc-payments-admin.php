@@ -210,7 +210,6 @@ class WC_Payments_Admin {
 		);
 
 		$this->add_menu_notification_badge();
-		$this->add_update_business_details_task();
 	}
 
 	/**
@@ -419,7 +418,6 @@ class WC_Payments_Admin {
 		);
 
 		$this->add_menu_notification_badge();
-		$this->add_update_business_details_task();
 		$this->add_disputes_notification_badge();
 		if ( \WC_Payments_Features::is_auth_and_capture_enabled() && $this->wcpay_gateway->get_option( 'manual_capture' ) === 'yes' ) {
 			$this->add_transactions_notification_badge();
@@ -478,6 +476,8 @@ class WC_Payments_Admin {
 			];
 		}
 
+		$account_status_data = $this->account->get_account_status_data();
+
 		$wcpay_settings = [
 			'connectUrl'                 => WC_Payments_Account::get_connect_url(),
 			'connect'                    => [
@@ -485,7 +485,7 @@ class WC_Payments_Admin {
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 				'availableStates'    => WC()->countries->get_states(),
 			],
-			'testMode'                   => $this->wcpay_gateway->is_in_test_mode(),
+			'testMode'                   => WC_Payments::mode()->is_test(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'         => WC_Payments_Account::is_on_boarding_disabled(),
 			'errorMessage'               => $error_message,
@@ -496,11 +496,11 @@ class WC_Payments_Admin {
 			'fraudServices'              => $this->account->get_fraud_services_config(),
 			'isJetpackConnected'         => $this->payments_api_client->is_server_connected(),
 			'isJetpackIdcActive'         => Jetpack_Identity_Crisis::has_identity_crisis(),
-			'accountStatus'              => $this->account->get_account_status_data(),
+			'accountStatus'              => $account_status_data,
 			'accountFees'                => $this->account->get_fees(),
 			'accountLoans'               => $this->account->get_capital(),
 			'accountEmail'               => $this->account->get_account_email(),
-			'showUpdateDetailsTask'      => get_option( 'wcpay_show_update_business_details_task', 'no' ),
+			'showUpdateDetailsTask'      => $this->get_should_show_update_business_details_task( $account_status_data ),
 			'wpcomReconnectUrl'          => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup'     => [
 				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
@@ -587,7 +587,7 @@ class WC_Payments_Admin {
 			'wcpayPaymentRequestParams',
 			[
 				'stripe' => [
-					'publishableKey' => $this->account->get_publishable_key( $this->wcpay_gateway->is_in_test_mode() ),
+					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 					'accountId'      => $this->account->get_stripe_account_id(),
 					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 				],
@@ -809,21 +809,24 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Attempts to add a setup task to remind the user to update
-	 * their business details when the account is facing restriction.
+	 * Check whether a setup task needs to be displayed prompting the user to update
+	 * their business details.
+	 *
+	 * @param array $account_status_data An array containing the account status data.
+	 *
+	 * @return bool True if we should show the task, false otherwise.
 	 */
-	public function add_update_business_details_task() {
-		if ( 'yes' === get_option( 'wcpay_show_update_business_details_task', 'no' ) ) {
-			return;
+	public function get_should_show_update_business_details_task( array $account_status_data ) {
+		$status           = $account_status_data['status'] ?? '';
+		$current_deadline = $account_status_data['currentDeadline'] ?? false;
+		$past_due         = $account_status_data['pastDue'] ?? false;
+
+		// If the account is restricted_soon, but there's no current deadline, no action is needed.
+		if ( ( 'restricted_soon' === $status && $current_deadline ) || ( 'restricted' === $status && $past_due ) ) {
+			return true;
 		}
 
-		$account  = $this->account->get_account_status_data();
-		$status   = $account['status'] ?? '';
-		$past_due = $account['has_overdue_requirements'] ?? false;
-
-		if ( 'restricted_soon' === $status || ( 'restricted' === $status && $past_due ) ) {
-			update_option( 'wcpay_show_update_business_details_task', 'yes' );
-		}
+		return false;
 	}
 
 	/**
@@ -844,13 +847,7 @@ class WC_Payments_Admin {
 	 * @return string
 	 */
 	private function get_settings_menu_item_name() {
-		$label = __( 'Settings', 'woocommerce' ); // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
-
-		if ( WC_Payments_Features::is_upe_settings_preview_enabled() && ! WC_Payments_Features::is_upe_enabled() ) {
-			$label .= self::MENU_NOTIFICATION_BADGE;
-		}
-
-		return $label;
+		return __( 'Settings', 'woocommerce' ); // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
 	}
 
 	/**
@@ -1021,8 +1018,11 @@ class WC_Payments_Admin {
 	 * @return int The number of uncaptured transactions.
 	 */
 	private function get_uncaptured_transactions_count() {
+		$test_mode = $this->wcpay_gateway->is_in_test_mode();
+		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
+
 		$authorization_summary = $this->database_cache->get_or_add(
-			Database_Cache::AUTHORIZATION_SUMMARY_KEY,
+			$cache_key,
 			[ $this->payments_api_client, 'get_authorizations_summary' ],
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'
