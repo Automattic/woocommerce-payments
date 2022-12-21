@@ -103,20 +103,37 @@ class WC_Payments_Invoice_Service {
 	 * @return int The order ID.
 	 */
 	public static function get_order_id_by_invoice_id( string $invoice_id ) {
-		global $wpdb;
+		$query_args = [
+			'status'     => 'any',
+			'type'       => 'shop_order',
+			'limit'      => 1,
+			'return'     => 'ids',
+			'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				[
+					'key'   => self::ORDER_INVOICE_ID_KEY,
+					'value' => $invoice_id,
+				],
+			],
+		];
 
-		return (int) $wpdb->get_var(
-			$wpdb->prepare(
-				"
-				SELECT pm.post_id
-				FROM {$wpdb->prefix}postmeta AS pm
-				INNER JOIN {$wpdb->prefix}posts AS p ON pm.post_id = p.ID
-				WHERE pm.meta_key = %s AND pm.meta_value = %s
-				",
-				self::ORDER_INVOICE_ID_KEY,
-				$invoice_id
-			)
-		);
+		// On HPOS environments we can pass meta_query directly to get_orders() as WC doesn't override it.
+		if ( WC_Payments_Utils::is_hpos_tables_usage_enabled() ) {
+			$order_ids = wc_get_orders( $query_args );
+		} else {
+			$meta_query = $query_args['meta_query'];
+			unset( $query_args['meta_query'] );
+
+			$add_meta_query = function ( $query ) use ( $meta_query ) {
+				$query['meta_query'] = $meta_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				return $query;
+			};
+
+			add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $add_meta_query, 10, 2 );
+			$order_ids = wc_get_orders( $query_args );
+			remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $add_meta_query, 10 );
+		}
+
+		return (int) array_shift( $order_ids );
 	}
 
 	/**

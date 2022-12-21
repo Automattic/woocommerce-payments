@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       skipSlackPing:
-        description: "If true, the Slack ping will be skipped"
+        description: "Skip the Slack ping"
         type: boolean
         required: false
         default: false
@@ -75,6 +75,7 @@ jobs:
     uses: ./.github/workflows/release-pr.yml
     with:
       releaseVersion: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
+    secrets: inherit
 
   slack-notification:
     name: "Send notification to Slack"
