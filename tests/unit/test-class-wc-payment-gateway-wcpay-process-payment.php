@@ -1138,41 +1138,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
-	public function test_save_payment_method_to_platform_for_blocks_checkout() {
-		return $this->markTestSkipped( 'Will fix soon...' );
-		$order = WC_Helper_Order::create_order();
-
-		$intent = WC_Helper_Intention::create_intention();
-
-		WC()->session->set(
-			Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY,
-			[
-				'save_user_in_platform_checkout'     => true,
-				'platform_checkout_user_phone_field' => [
-					'full' => '+12015555555',
-				],
-			]
-		);
-
-		$request = $this->mock_wcpay_request( WooPay_Create_And_Confirm_Intention::class );
-		$request
-			->expects( $this->once() )
-			->method( 'set_is_platform_payment_method' )
-			->with( true );
-		$request
-			->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $intent );
-
-		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
-
-		// clean up session.
-		WC()->session->set(
-			Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY,
-			[]
-		);
-	}
-
 	public function test_process_payment_using_platform_payment_method_adds_platform_payment_method_flag_to_request() {
 		// Arrange: Create an order to test with.
 		$mock_order = $this->createMock( 'WC_Order' );
