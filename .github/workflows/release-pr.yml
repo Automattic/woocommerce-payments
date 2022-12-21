@@ -13,6 +13,7 @@ on:
         required: false
         default: "next wednesday"
         type: string
+
   workflow_dispatch:
     inputs:
       releaseVersion:
