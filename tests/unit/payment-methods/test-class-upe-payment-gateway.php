@@ -705,17 +705,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order    = WC_Helper_Order::create_order();
 		$order_id = $order->get_id();
 		$intent   = WC_Helper_Intention::create_intention();
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_intention' )
-			->with(
-				5000,
-				'usd',
-				[ 'card' ],
-				$order_id,
-				'automatic',
-				[ 'fingerprint' => '' ]
-			)
+		$request  = $this->mock_wcpay_request( Create_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( $intent->get_amount() );
+
+		$request->expects( $this->once() )
+			->method( 'set_fingerprint' )
+			->with( '' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
