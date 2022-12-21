@@ -80,9 +80,9 @@ class List_Transactions extends Paginated {
 			'customer_currency_is_not' => $request->get_param( 'customer_currency_is_not' ),
 			'loan_id_is'               => $request->get_param( 'loan_id_is' ),
 			'search'                   => (array) $request->get_param( 'search' ),
+			'deposit_id'               => $request->get_param( 'deposit_id' ),
 		];
 		$wcpay_request->set_filters( $filters );
-		$wcpay_request->set_deposit_id( $request->get_param( 'deposit_id' ) );
 		return $wcpay_request;
 	}
 
