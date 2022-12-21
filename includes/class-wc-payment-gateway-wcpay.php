@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Core\Mode;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
@@ -423,34 +424,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Check the defined constant to determine the current plugin mode.
-	 *
-	 * @return bool
-	 */
-	public function is_in_dev_mode() {
-		$is_extension_dev_mode        = defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
-		$is_wordpress_dev_environment = function_exists( 'wp_get_environment_type' ) && in_array( wp_get_environment_type(), [ 'development', 'staging' ], true );
-		return apply_filters( 'wcpay_dev_mode', $is_extension_dev_mode || $is_wordpress_dev_environment );
-	}
-
-	/**
-	 * Returns whether test_mode or dev_mode is active for the gateway
-	 *
-	 * @return boolean Test mode enabled if true, disabled if false
-	 */
-	public function is_in_test_mode() {
-		return apply_filters( 'wcpay_test_mode', $this->is_in_dev_mode() || 'yes' === $this->get_option( 'test_mode' ) );
-	}
-
-
-	/**
 	 * Returns whether a store that is not in test mode needs to set https
 	 * in the checkout
 	 *
 	 * @return boolean True if needs to set up forced ssl in checkout or https
 	 */
 	public function needs_https_setup() {
-		return ! $this->is_in_test_mode() && ! wc_checkout_is_https();
+		return ! WC_Payments::mode()->is_test() && ! wc_checkout_is_https();
 	}
 
 	/**
@@ -842,7 +822,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[
 					'order_id'     => $order->get_id(),
 					'customer_id'  => $customer_id,
-					'is_test_mode' => $this->is_in_test_mode(),
+					'is_test_mode' => WC_Payments::mode()->is_test(),
 					'is_woopay'    => $options['is_woopay'] ?? false,
 				]
 			);
@@ -911,7 +891,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				[
 					'payment_method' => $payment_information->get_payment_method(),
 					'order_id'       => $order->get_id(),
-					'is_test_mode'   => $this->is_in_test_mode(),
+					'is_test_mode'   => WC_Payments::mode()->is_test(),
 				]
 			);
 		}
@@ -923,7 +903,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_method = $payment_information->get_payment_method();
 		$order->update_meta_data( '_payment_method_id', $payment_method );
 		$order->update_meta_data( '_stripe_customer_id', $customer_id );
-		$order->update_meta_data( '_wcpay_mode', $this->is_in_test_mode() ? 'test' : 'prod' );
+		$order->update_meta_data( '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
@@ -1567,7 +1547,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return '';
 		}
 
-		$in_dev_mode = $this->is_in_dev_mode();
+		$in_dev_mode = WC_Payments::mode()->is_dev();
 
 		if ( 'test_mode' === $key && $in_dev_mode ) {
 			$data['custom_attributes']['disabled'] = 'disabled';
@@ -1684,7 +1664,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $is_platform_checkout_enabled !== $current_is_platform_checkout_enabled ) {
 			wc_admin_record_tracks_event(
 				$is_platform_checkout_enabled ? 'platform_checkout_enabled' : 'platform_checkout_disabled',
-				[ 'test_mode' => $this->is_in_test_mode() ? 1 : 0 ]
+				[ 'test_mode' => WC_Payments::mode()->is_test() ? 1 : 0 ]
 			);
 			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
 			if ( ! $is_platform_checkout_enabled ) {
@@ -2992,6 +2972,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	// Start: Deprecated functions.
+
+	/**
+	 * Check the defined constant to determine the current plugin mode.
+	 *
+	 * @return bool
+	 */
+	public function is_in_dev_mode() {
+		wc_deprecated_function( __FUNCTION__, Mode::AVAILABLE_SINCE, 'WC_Payments::mode()->is_dev()' );
+		return WC_Payments::mode()->is_dev();
+	}
+
+	/**
+	 * Returns whether test_mode or dev_mode is active for the gateway
+	 *
+	 * @return boolean Test mode enabled if true, disabled if false
+	 */
+	public function is_in_test_mode() {
+		wc_deprecated_function( __FUNCTION__, Mode::AVAILABLE_SINCE, 'WC_Payments::mode()->is_test()' );
+		return WC_Payments::mode()->is_test();
+	}
 
 	/**
 	 * Whether the current page is the WooCommerce Payments settings page.
