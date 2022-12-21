@@ -70,4 +70,13 @@ class Response implements ArrayAccess {
 	public function offsetUnset( $offset ) {
 		throw new Server_Response_Exception( 'Server responses cannot be mutated.', 'wcpay_core_server_response_malformed' );
 	}
+
+	/**
+	 * Return data as an array.
+	 *
+	 * @return array
+	 */
+	public function to_array() {
+		return $this->data;
+	}
 }

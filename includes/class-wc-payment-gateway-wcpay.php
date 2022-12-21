@@ -11,7 +11,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Core\Mode;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Core\Server\Request\Cancel_Intention;
+use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
+use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
+use WCPay\Core\Server\Request\Get_Charge;
+use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
@@ -959,7 +965,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = null;
 			if ( ! empty( $platform_checkout_intent_id ) ) {
 				// If the intent is included in the request use that intent.
-				$intent                   = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
+				$request = Get_Intention::create( $platform_checkout_intent_id );
+				$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
 
@@ -1045,14 +1053,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// For $0 orders, we need to save the payment method using a setup intent.
-				$intent = $this->payments_api_client->create_and_confirm_setup_intent(
-					$payment_information->get_payment_method(),
-					$customer_id,
-					false,
-					$this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ),
-					$save_user_in_platform_checkout,
-					$metadata
-				);
+				$request = Create_And_Confirm_Setup_Intention::create();
+				$request->set_customer( $customer_id );
+				$request->set_payment_method( $payment_information->get_payment_method() );
+				$request->set_metadata( $metadata );
+				$intent = $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_platform_checkout );
+				$intent = $intent->to_array();
 			}
 
 			$intent_id     = $intent['id'];
@@ -1251,7 +1257,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $currency_order !== $currency_account ) {
 			// We check that the currency used in the order is different than the one set in the WC Payments account
 			// to avoid requesting the charge if not needed.
-			$charge        = $this->payments_api_client->get_charge( $charge_id );
+			$request = Get_Charge::create( $charge_id );
+			$charge  = $request->send( 'wcpay_get_charge_request', $charge_id );
+
 			$exchange_rate = $charge['balance_transaction']['exchange_rate'] ?? null;
 			if ( isset( $exchange_rate ) ) {
 				$exchange_rate = WC_Payments_Utils::interpret_string_exchange_rate( $exchange_rate, $currency_order, $currency_account );
@@ -1501,8 +1509,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_id      = $order->get_meta( '_payment_method_id', true );
 			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
 		} elseif ( $order->meta_exists( '_intent_id' ) ) {
-			$payment_intent_id      = $order->get_meta( '_intent_id', true );
-			$payment_intent         = $this->payments_api_client->get_intent( $payment_intent_id );
+			$payment_intent_id = $order->get_meta( '_intent_id', true );
+			$request           = Get_Intention::create( $payment_intent_id );
+			$payment_intent    = $request->send( 'wcpay_get_intent_request', $order );
+
 			$charge                 = $payment_intent ? $payment_intent->get_charge() : null;
 			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
 		}
@@ -2079,24 +2089,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$currency                 = WC_Payments_Utils::get_order_intent_currency( $order );
 
 		try {
-			$intent_id    = $order->get_transaction_id();
-			$intent       = $this->payments_api_client->get_intent( $intent_id );
+			$intent_id = $order->get_transaction_id();
+
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 			$payment_type = $this->is_payment_recurring( $order->get_id() ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 
 			$metadata_from_intent = $intent->get_metadata(); // mobile app may have set metadata.
 			$metadata_from_order  = $this->get_metadata_from_order( $order, $payment_type );
 			$merged_metadata      = array_merge( (array) $metadata_from_order, (array) $metadata_from_intent ); // prioritize metadata from mobile app.
 
-			$this->payments_api_client->prepare_intention_for_capture(
-				$intent_id,
-				$merged_metadata
-			);
+			$wcpay_request = Update_Intention::create( $intent_id );
+			$wcpay_request->set_metadata( $merged_metadata );
+			$wcpay_request->send( 'wcpay_prepare_intention_for_capture', $order );
 
-			$intent = $this->payments_api_client->capture_intention(
-				$intent_id,
-				WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
-				$include_level3 ? $this->get_level3_data_from_order( $order ) : []
-			);
+			$capture_intention_request = Capture_Intention::create( $intent_id );
+			$capture_intention_request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+			if ( $include_level3 ) {
+				$capture_intention_request->set_level3( $this->get_level3_data_from_order( $order ) );
+			}
+			$intent = $capture_intention_request->send( 'wcpay_capture_intent_request', $order );
 
 			$status    = $intent->get_status();
 			$currency  = $intent->get_currency();
@@ -2107,7 +2120,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$http_code     = $e->get_http_code();
 
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
-				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+				$intent = $request->send( 'wcpay_get_intent_request', $order );
+
 				if ( 'canceled' === $intent->get_status() ) {
 					$is_authorization_expired = true;
 				}
@@ -2160,12 +2174,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$error_message = null;
 
 		try {
-			$intent = $this->payments_api_client->cancel_intention( $order->get_transaction_id() );
-			$status = $intent->get_status();
+			$request = Cancel_Intention::create( $order->get_transaction_id() );
+			$intent  = $request->send( 'wcpay_cancel_intent_request', $order );
+			$status  = $intent->get_status();
 		} catch ( API_Exception $e ) {
 			try {
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
-				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+				$request = Get_Intention::create( $order->get_transaction_id() );
+				$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 				$status = $intent->get_status();
 				if ( 'canceled' !== $status ) {
 					$error_message = $e->getMessage();
@@ -2362,7 +2379,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $amount > 0 ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
-				$intent    = $this->payments_api_client->get_intent( $intent_id );
+				$request = Get_Intention::create( $intent_id );
+				$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 				$status    = $intent->get_status();
 				$charge    = $intent->get_charge();
 				$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
@@ -2551,54 +2570,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Create a payment intent without confirming the intent.
-	 *
-	 * @param WC_Order    $order           - Order based on which to create intent.
-	 * @param array       $payment_methods - A list of allowed payment methods. Eg. card, card_present.
-	 * @param string      $capture_method  - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
-	 *  It must be "manual" for in-person (terminal) payments.
-	 * @param array       $metadata        - A list of intent metadata.
-	 * @param string|null $customer_id     - Customer id for intent.
-	 *
-	 * @return array|WP_Error On success, an array containing info about the newly created intent. On failure, WP_Error object.
-	 *
-	 * @throws Exception - When an error occurs in intent creation.
-	 */
-	public function create_intent( WC_Order $order, array $payment_methods, string $capture_method = 'automatic', array $metadata = [], string $customer_id = null ) {
-		$currency         = strtolower( $order->get_currency() );
-		$converted_amount = WC_Payments_Utils::prepare_amount( $order->get_total(), $currency );
-
-		try {
-			$intent = $this->payments_api_client->create_intention(
-				$converted_amount,
-				$currency,
-				$payment_methods,
-				$order->get_order_number(),
-				$capture_method,
-				$metadata,
-				$customer_id
-			);
-
-			return [
-				'id' => ! empty( $intent ) ? $intent->get_id() : null,
-			];
-		} catch ( API_Exception $e ) {
-			return new WP_Error(
-				'wcpay_intent_creation_error',
-				sprintf(
-					// translators: %s: the error message.
-					__( 'Intent creation failed with the following message: %s', 'woocommerce-payments' ),
-					$e->getMessage() ?? __( 'Unknown error', 'woocommerce-payments' )
-				),
-				[ 'status' => $e->get_http_code() ]
-			);
-		}
-	}
-
-	/**
 	 * Create a setup intent when adding cards using the my account page.
 	 *
-	 * @throws Exception - When an error occurs in setup intent creation.
+	 * @return mixed|\WCPay\Core\Server\Response
+	 * @throws API_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
 	 */
 	public function create_and_confirm_setup_intent() {
 		$payment_information             = Payment_Information::from_payment_request( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification
@@ -2617,12 +2595,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$customer_id   = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		}
 
-		return $this->payments_api_client->create_and_confirm_setup_intent(
-			$payment_information->get_payment_method(),
-			$customer_id,
-			$should_save_in_platform_account,
-			$this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() )
-		);
+		$request = Create_And_Confirm_Setup_Intention::create();
+		$request->set_customer( $customer_id );
+		$request->set_payment_method( $payment_information->get_payment_method() );
+		return $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, $should_save_in_platform_account, false );
 	}
 
 	/**
@@ -2642,7 +2618,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$setup_intent = $this->create_and_confirm_setup_intent();
 
-			wp_send_json_success( $setup_intent, 200 );
+			wp_send_json_success( $setup_intent->to_array(), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(

@@ -28,21 +28,24 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 	 * If the given request class does not have a specific `format_response` method, you can provide
 	 * the expexted response here. If there is a `format_response` method, mock it manually.
 	 *
-	 * @param  string                 $request_class   The class of the mocked request.
-	 * @param  mixed                  $response        The expected response.
-	 * @param  WC_Payments_API_Client $api_client_mock Specific API client mock if necessary.
-	 * @param  WC_Payments_Http       $http_mock       Specific HTTP mock if necessary.
-	 * @return Request                                 The mocked request.
+	 * @param  string                 $request_class                The class of the mocked request.
+	 * @param  int                    $total_api_calls              Number of same api calls that will be executed. Used when you want to send multiple request, using the same instance of class, i.e. retry mechanism.
+	 * @param  string|null            $request_class_constructor_id Used when constructor class gets ID (like intent id or charge id) and passes it as a constructor dependency in mocked request class.
+	 * @param  mixed                  $response                     The expected response.
+	 * @param  WC_Payments_API_Client $api_client_mock              Specific API client mock if necessary.
+	 * @param  WC_Payments_Http       $http_mock                    Specific HTTP mock if necessary.
+	 *
+	 * @return Request                                                      The mocked request.
 	 */
-	protected function mock_wcpay_request( string $request_class, $response = null, $api_client_mock = null, $http_mock = null ) {
+	protected function mock_wcpay_request( string $request_class, int $total_api_calls = 1, $request_class_constructor_id = null, $response = null, $api_client_mock = null, $http_mock = null ) {
 		$http_mock       = $http_mock ? $http_mock : $this->createMock( WC_Payments_Http::class );
 		$api_client_mock = $api_client_mock ? $api_client_mock : $this->createMock( WC_Payments_API_Client::class );
 
 		$request = $this->getMockBuilder( $request_class )
-			->setConstructorArgs( [ $api_client_mock, $http_mock ] )
+			->setConstructorArgs( [ $api_client_mock, $http_mock, $request_class_constructor_id ] )
 			->getMock();
 
-		$api_client_mock->expects( $this->once() )
+		$api_client_mock->expects( $this->exactly( $total_api_calls ) )
 			->method( 'send_request' )
 			->with(
 				$this->callback(
@@ -54,7 +57,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 			)
 			->willReturn( $response );
 
-		// An anonoymous callback, which will be used once and disposed.
+		// An anonymous callback, which will be used once and disposed.
 		$fn = function( $existing_request, $class_name ) use ( &$fn, $request ) {
 			if ( ! is_null( $existing_request ) ) {
 				return $existing_request; // Another `mock_wcpay_request` in action.

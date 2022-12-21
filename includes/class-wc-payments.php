@@ -265,10 +265,18 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/trait-intention.php';
 		include_once __DIR__ . '/core/server/request/trait-level3.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
-		include_once __DIR__ . '/core/server/request/class-create-intent.php';
+		include_once __DIR__ . '/core/server/request/class-get-intention.php';
+		include_once __DIR__ . '/core/server/request/class-create-intention.php';
+		include_once __DIR__ . '/core/server/request/class-update-intention.php';
+		include_once __DIR__ . '/core/server/request/class-capture-intention.php';
+		include_once __DIR__ . '/core/server/request/class-cancel-intention.php';
+		include_once __DIR__ . '/core/server/request/class-create-setup-intention.php';
+		include_once __DIR__ . '/core/server/request/class-create-and-confirm-setup-intention.php';
+		include_once __DIR__ . '/core/server/request/class-get-charge.php';
 		include_once __DIR__ . '/core/server/request/class-woopay-create-intent.php';
 		include_once __DIR__ . '/core/server/request/class-create-and-confirm-intention.php';
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-intention.php';
+		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
 
 		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 
@@ -1336,17 +1344,18 @@ class WC_Payments {
 	 * Creates a new request object for a server call.
 	 *
 	 * @param  string $class_name The name of the request class. Must extend WCPay\Core\Server\Request.
+	 * @param  mixed  $id         The item ID, if the request needs it (Optional).
 	 * @return Request
 	 * @throws Exception          If the request class is not really a request.
 	 */
-	public static function create_request( $class_name ) {
+	public static function create_request( $class_name, $id = null ) {
 		/**
 		 * Used for unit tests only, as requests have dependencies, which are not publicly available in live mode.
 		 *
 		 * @param Request $request    Null, but if the filter returns a request, it will be used.
 		 * @param string  $class_name The name of the request class.
 		 */
-		$request = apply_filters( 'wcpay_create_request', null, $class_name );
+		$request = apply_filters( 'wcpay_create_request', null, $class_name, $id );
 		if ( $request instanceof Request ) {
 			return $request;
 		}
@@ -1361,9 +1370,7 @@ class WC_Payments {
 			);
 		}
 
-		$request = new $class_name( self::get_payments_api_client(), self::get_wc_payments_http() );
-
-		return $request;
+		return new $class_name( self::get_payments_api_client(), self::get_wc_payments_http(), $id );
 
 	}
 }
