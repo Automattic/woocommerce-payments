@@ -39,5 +39,3 @@ trait Level3 {
 		return $data;
 	}
 }
-
-

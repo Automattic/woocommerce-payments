@@ -56,7 +56,7 @@ class Update_Intention_Test extends WCPAY_UnitTestCase {
 		$request = new Update_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
 	}
 
-	public function test_create_intent_request_will_be_created() {
+	public function test_update_intent_request_will_be_created() {
 		$amount       = 1;
 		$currency     = 'usd';
 		$cs           = 'cus_1';
@@ -71,7 +71,7 @@ class Update_Intention_Test extends WCPAY_UnitTestCase {
 		$request->setup_future_usage();
 		$request->set_metadata( [ 'order_number' => 1 ] );
 		$request->set_level3( [ 'level3' => 'level3' ] );
-		$request->set_selected_upe_payment_method_type( $payment_type, [ $payment_type ] );
+		$request->set_payment_method_types( [ $payment_type ] );
 		$request->set_payment_country( $country );
 		$params = $request->get_params();
 

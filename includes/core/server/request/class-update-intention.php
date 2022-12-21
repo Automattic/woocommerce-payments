@@ -8,12 +8,9 @@
 namespace WCPay\Core\Server\Request;
 
 use WC_Payments;
-use WC_Payments_Http_Interface;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
-use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Link_Payment_Method;
 
 /**
  * Request class for creating intents.
@@ -23,13 +20,10 @@ class Update_Intention extends Request {
 	use Level3;
 
 	const IMMUTABLE_PARAMS = [ 'amount' ];
-	const REQUIRED_PARAMS  = []; // This use to be amount and currency, but since it is not required on server API, I will leave it blank.
 	const DEFAULT_PARAMS   = [
 		'receipt_email' => '',
 		'metadata'      => [],
 	];
-
-
 
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
@@ -42,8 +36,6 @@ class Update_Intention extends Request {
 		$this->validate_stripe_id( $id );
 		$this->id = $id;
 	}
-
-
 
 	/**
 	 * Returns the request's API.
@@ -105,28 +97,14 @@ class Update_Intention extends Request {
 	}
 
 	/**
-	 * Set selected UPE payment method type.
+	 * Set/update payment methods.
 	 *
-	 * @param string $selected_upe_payment_type Selected UPE payment method.
-	 * @param array  $enabled_payment_methods Enabled payment methods.
+	 * @param array $payment_methods Payment methods.
 	 *
 	 * @return void
 	 */
-	public function set_selected_upe_payment_method_type( string $selected_upe_payment_type, array $enabled_payment_methods ) {
-		if ( '' !== $selected_upe_payment_type ) {
-			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
-			$payment_methods = [ $selected_upe_payment_type ];
-
-			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
-				$is_link_enabled = in_array(
-					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-					$enabled_payment_methods,
-					true
-				);
-				if ( $is_link_enabled ) {
-					$payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-				}
-			}
+	public function set_payment_method_types( array $payment_methods ) {
+		if ( ! empty( $payment_methods ) ) {
 			$this->set_param( 'payment_method_types', $payment_methods );
 		}
 	}

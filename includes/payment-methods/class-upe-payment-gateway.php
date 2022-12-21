@@ -9,9 +9,9 @@ namespace WCPay\Payment_Methods;
 
 use WC_Order;
 use WC_Payment_Token_WCPay_SEPA;
-use WC_Payments_Explicit_Price_Formatter;
 use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
@@ -19,7 +19,6 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
-use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Session_Rate_Limiter;
 use WC_Payment_Gateway_WCPay;
@@ -36,7 +35,6 @@ use WC_Payments_Utils;
 use Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
-
 
 /**
  * UPE Payment method extended from WCPay generic Gateway.
@@ -213,12 +211,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( $payment_intent_id ) {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 			$payment_type               = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
+			$payment_methods            = $this->get_selected_upe_payment_methods( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) );
 			$request                    = Update_Intention::create( $payment_intent_id );
 			$request->set_currency_code( strtolower( $currency ) );
 			$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $currency ) );
 			$request->set_metadata( $this->get_metadata_from_order( $order, $payment_type ) );
 			$request->set_level3( $this->get_level3_data_from_order( $order ) );
-			$request->set_selected_upe_payment_method_type( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) );
+			$request->set_payment_method_types( $payment_methods );
 			if ( $payment_country ) {
 				$request->set_payment_country( $payment_country );
 			}
@@ -384,10 +383,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$enabled_payment_methods = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
 
-		$setup_intent = $this->payments_api_client->create_setup_intention(
-			$customer_id,
-			array_values( $enabled_payment_methods )
-		);
+		$request = Create_Setup_Intention::create();
+		$request->set_customer( $customer_id );
+		$request->set_payment_method_types( array_values( $enabled_payment_methods ) );
+		$setup_intent = $request->send( 'wcpay_create_setup_intention_request' );
 		return [
 			'id'            => $setup_intent['id'],
 			'client_secret' => $setup_intent['client_secret'],
@@ -461,13 +460,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 
 				try {
+					$payment_methods = $this->get_selected_upe_payment_methods( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) );
 
 					$request = Update_Intention::create( $payment_intent_id );
 					$request->set_currency_code( strtolower( $currency ) );
 					$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $currency ) );
 					$request->set_metadata( $this->get_metadata_from_order( $order, $payment_type ) );
 					$request->set_level3( $this->get_level3_data_from_order( $order ) );
-					$request->set_selected_upe_payment_method_type( (string) $selected_upe_payment_type, $this->get_payment_method_ids_enabled_at_checkout( null, true ) );
+					$request->set_payment_method_types( $payment_methods );
 					if ( $payment_country ) {
 						$request->set_payment_country( $payment_country );
 					}
@@ -543,6 +543,33 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		return ( $page_id && is_page( $page_id ) && ( isset( $wp->query_vars['payment-methods'] ) ) );
 	}
 
+	/**
+	 * Get selected UPE payment methods.
+	 *
+	 * @param string $selected_upe_payment_type Selected payment methods.
+	 * @param array  $enabled_payment_methods Enabled payment methods.
+	 *
+	 * @return array
+	 */
+	private function get_selected_upe_payment_methods( string $selected_upe_payment_type, array $enabled_payment_methods ) {
+		$payment_methods = [];
+		if ( '' !== $selected_upe_payment_type ) {
+			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
+			$payment_methods[] = $selected_upe_payment_type;
+
+			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
+				$is_link_enabled = in_array(
+					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+					$enabled_payment_methods,
+					true
+				);
+				if ( $is_link_enabled ) {
+					$payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+				}
+			}
+		}
+		return $payment_methods;
+	}
 	/**
 	 * Check for a redirect payment method on order received page or setup intent on payment methods page.
 	 */

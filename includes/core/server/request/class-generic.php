@@ -42,7 +42,7 @@ final class Generic extends Request {
 	/**
 	 * Creates a new instance of the class.
 	 *
-	 * @param string|null $id Request parameter ID (intent_id, charge_id, ...).
+	 * @param mixed $id The identifier for various update/get/delete requests.
 	 *
 	 * @throws Server_Request_Exception
 	 */

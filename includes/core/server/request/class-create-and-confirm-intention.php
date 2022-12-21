@@ -15,8 +15,6 @@ use WC_Payments_API_Client;
  */
 class Create_And_Confirm_Intention extends Create_Intention {
 
-
-
 	const IMMUTABLE_PARAMS = [
 		// Those are up to us, we have to decide.
 		'amount',
@@ -59,7 +57,6 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	public function setup_future_usage() {
 		$this->set_param( 'setup_future_usage', 'off_session' );
 	}
-
 
 	/**
 	 * Off-session setter.

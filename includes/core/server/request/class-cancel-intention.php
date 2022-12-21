@@ -1,6 +1,6 @@
 <?php
 /**
- * Class file for WCPay\Core\Server\Request\Get_Charge.
+ * Class file for WCPay\Core\Server\Request\Update_Intent.
  *
  * @package WooCommerce Payments
  */
@@ -13,9 +13,16 @@ use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
 /**
- * Request class for getting intents.
+ * Request class for canceling intents.
  */
-class Get_Charge extends Request {
+class Cancel_Intention extends Request {
+	use Intention;
+	use Level3;
+
+	const IMMUTABLE_PARAMS = [];
+	const REQUIRED_PARAMS  = [];
+	const DEFAULT_PARAMS   = [];
+
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
@@ -24,7 +31,7 @@ class Get_Charge extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	protected function set_id( string $id ) {
-		$this->validate_stripe_id( $id, [ 'ch' ] );
+		$this->validate_stripe_id( $id );
 		$this->id = $id;
 	}
 
@@ -35,15 +42,16 @@ class Get_Charge extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
-		return WC_Payments_API_Client::CHARGES_API . '/' . $this->id;
+		return WC_Payments_API_Client::INTENTIONS_API . '/' . $this->id . '/cancel';
 	}
 
 	/**
 	 * Returns the request's HTTP method.
 	 */
 	public function get_method(): string {
-		return 'GET';
+		return 'POST';
 	}
+
 	/**
 	 * Formats the response from the server.
 	 *
@@ -51,10 +59,6 @@ class Get_Charge extends Request {
 	 * @return mixed           Either the same response, or the correct object.
 	 */
 	public function format_response( $response ) {
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		return WC_Payments::get_payments_api_client()->add_additional_info_to_charge( $response );
+		return WC_Payments::get_payments_api_client()->deserialize_intention_object_from_array( $response );
 	}
 }
