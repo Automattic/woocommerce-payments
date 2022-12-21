@@ -10,7 +10,7 @@ const { shopper } = require( '@woocommerce/e2e-utils' );
  */
 import { shopperWCP } from '../../../utils/flows';
 
-import { /*RUN_SUBSCRIPTIONS_TESTS,*/ describeif } from '../../../utils';
+import { RUN_SUBSCRIPTIONS_TESTS, describeif } from '../../../utils';
 const { withRestApi } = require( '@woocommerce/e2e-utils' );
 import { fillCardDetails, setupCheckout } from '../../../utils/payments';
 
@@ -19,9 +19,7 @@ const customerBilling = config.get(
 );
 const card = config.get( 'cards.basic' );
 
-const a = true;
-
-describeif( a )( 'Setting Default Payment Method', () => {
+describeif( RUN_SUBSCRIPTIONS_TESTS )( 'Setting Default Payment Method', () => {
 	it( 'using a basic card', async () => {
 		await withRestApi.deleteCustomerByEmail( customerBilling.email );
 
