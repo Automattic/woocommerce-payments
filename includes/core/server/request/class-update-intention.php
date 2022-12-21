@@ -8,6 +8,7 @@
 namespace WCPay\Core\Server\Request;
 
 use WC_Payments;
+use WC_Payments_Subscriptions_Utilities;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
@@ -18,12 +19,67 @@ use WC_Payments_API_Client;
 class Update_Intention extends Request {
 	use Intention;
 	use Level3;
+	use WC_Payments_Subscriptions_Utilities;
 
 	const IMMUTABLE_PARAMS = [ 'amount' ];
 	const DEFAULT_PARAMS   = [
 		'receipt_email' => '',
 		'metadata'      => [],
 	];
+
+	/**
+	 * Fill params from order.
+	 *
+	 * @param \WC_Order $order Order.
+	 * @param string    $id Intent id.
+	 *
+	 * @return Update_Intention
+	 */
+	public static function fill_mandate_params_for_order( \WC_Order $order, string $id ) {
+		$request = self::create( $id );
+
+		if ( ! $request->is_subscriptions_enabled() ) {
+			return $request;
+		}
+		$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
+		$subscription  = reset( $subscriptions );
+
+		if ( ! $subscription ) {
+			return $request;
+		}
+
+		// Get total by adding only subscriptions and get rid of any other product or fee.
+		$subs_amount = 0;
+		foreach ( $subscriptions as $sub ) {
+			$subs_amount += $sub->get_total();
+		}
+
+		$request->setup_future_usage();
+
+		$payment_method_options                            = [];
+		$payment_method_options['card']['mandate_options'] = [
+			'reference'       => $order->get_id(),
+			'amount'          => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
+			'amount_type'     => 'fixed',
+			'start_date'      => $subscription->get_time( 'date_created' ),
+			'interval'        => $subscription->get_billing_period(),
+			'interval_count'  => $subscription->get_billing_interval(),
+			'supported_types' => [ 'india' ],
+		];
+
+		// Multiple subscriptions per order needs:
+		// - Set amount type to maximum, to allow renews of any amount under the order total.
+		// - Set interval to sporadic, to not follow any specific interval.
+		// - Unset interval count, because it doesn't apply anymore.
+		if ( 1 < count( $subscriptions ) ) {
+			$payment_method_options['card']['mandate_options']['amount_type'] = 'maximum';
+			$payment_method_options['card']['mandate_options']['interval']    = 'sporadic';
+			unset( $payment_method_options['card']['mandate_options']['interval_count'] );
+		}
+		$request->set_payment_method_options( $payment_method_options );
+
+		return $request;
+	}
 
 	/**
 	 * Sets the intent ID, which will be used in the request URL.
@@ -140,6 +196,20 @@ class Update_Intention extends Request {
 	}
 
 	/**
+	 * Set fingerprint.
+	 *
+	 * @param string $fingerprint Fingerprint data.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_fingerprint( $fingerprint = '' ) {
+		$metadata = $this->get_param( 'metadata' );
+		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
+		$this->set_param( 'metadata', $metadata );
+	}
+
+	/**
 	 * Level 3 data setter.
 	 *
 	 * @param array $level3 Level 3 data.
@@ -150,6 +220,17 @@ class Update_Intention extends Request {
 		}
 
 		$this->set_param( 'level3', $this->fix_level3_data( $level3 ) );
+	}
+
+	/**
+	 * Set payment method options.
+	 *
+	 * @param array $payment_method_options Payment method options.
+	 *
+	 * @return void
+	 */
+	public function set_payment_method_options( array $payment_method_options ) {
+		$this->set_param( 'payment_method_options', $payment_method_options );
 	}
 
 	/**

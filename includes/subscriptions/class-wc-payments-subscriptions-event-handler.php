@@ -135,6 +135,14 @@ class WC_Payments_Subscriptions_Event_Handler {
 			remove_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this->subscription_service, 'reactivate_subscription' ] );
 			$order->payment_complete();
 			add_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this->subscription_service, 'reactivate_subscription' ] );
+
+			/**
+			 * Fetch a new instance of the subscription.
+			 *
+			 * After marking the order as paid, a parallel instance of the subscription would have been reactivated.
+			 * To avoid race conditions and cache pollution, fetch a new instance to ensure our current instance doesn't override the active subscription status.
+			 */
+			$subscription = wcs_get_subscription( $subscription->get_id() );
 		}
 
 		if ( isset( $event_object['payment_intent'] ) ) {

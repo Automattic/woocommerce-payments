@@ -1,6 +1,11 @@
 /* global jQuery */
 
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import './style.scss';
@@ -13,9 +18,14 @@ import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
+import {
+	getFingerprint,
+	appendFingerprintInputToForm,
+} from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -54,6 +64,8 @@ jQuery( function ( $ ) {
 	let paymentIntentId = null;
 	let paymentIntentClientSecret = null;
 	let isUPEComplete = false;
+	let fingerprint = null;
+
 	const hiddenBillingFields = {
 		name:
 			enabledBillingFields.includes( 'billing_first_name' ) ||
@@ -176,6 +188,18 @@ jQuery( function ( $ ) {
 			return;
 		}
 
+		if ( ! fingerprint ) {
+			try {
+				const { visitorId } = await getFingerprint();
+				fingerprint = visitorId;
+			} catch ( error ) {
+				// Do not mount element if fingerprinting is not available
+				showErrorCheckout( error.message );
+
+				return;
+			}
+		}
+
 		/*
 		 * Trigger this event to ensure the tokenization-form.js init
 		 * is executed.
@@ -206,7 +230,7 @@ jQuery( function ( $ ) {
 			try {
 				const newIntent = isSetupIntent
 					? await api.initSetupIntent()
-					: await api.createIntent( orderId );
+					: await api.createIntent( fingerprint, orderId );
 				intentId = newIntent.id;
 				clientSecret = newIntent.client_secret;
 			} catch ( error ) {
@@ -237,7 +261,7 @@ jQuery( function ( $ ) {
 		}
 
 		elements = api.getStripe().elements( {
-			clientSecret,
+			clientSecret: decryptClientSecret( clientSecret ),
 			appearance,
 			fonts: getFontRulesFromPage(),
 			loader: 'never',
@@ -376,7 +400,12 @@ jQuery( function ( $ ) {
 	 */
 	const checkUPEForm = async ( $form, returnUrl = '#' ) => {
 		if ( ! upeElement ) {
-			showErrorCheckout( 'Your payment information is incomplete.' );
+			showErrorCheckout(
+				__(
+					'Your payment information is incomplete.',
+					'woocommerce-payments'
+				)
+			);
 			return false;
 		}
 		if ( ! isUPEComplete ) {
@@ -503,7 +532,8 @@ jQuery( function ( $ ) {
 		try {
 			const response = await api.processCheckout(
 				paymentIntentId,
-				formFields
+				formFields,
+				fingerprint ? fingerprint : ''
 			);
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {
@@ -669,6 +699,8 @@ jQuery( function ( $ ) {
 				return false;
 			}
 		}
+
+		appendFingerprintInputToForm( $( this ), fingerprint );
 	} );
 
 	// Handle the add payment method form for WooCommerce Payments.

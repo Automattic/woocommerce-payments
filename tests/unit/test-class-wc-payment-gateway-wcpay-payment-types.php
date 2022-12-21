@@ -163,9 +163,26 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		);
 	}
 
+	private function mock_wcs_get_subscriptions_for_order( $value ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order ) use ( $value ) {
+				return $value;
+			}
+		);
+	}
+
+	private function mock_wcs_get_subscriptions_for_renewal_order( $value ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $order ) use ( $value ) {
+				return $value;
+			}
+		);
+	}
+
 	public function test_single_payment() {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( false );
+		$this->mock_wcs_get_subscriptions_for_order( [] );
 
 		$intent  = WC_Helper_Intention::create_intention();
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
@@ -197,8 +214,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	}
 
 	public function test_initial_subscription_payment() {
-		$order = WC_Helper_Order::create_order();
+		$order        = WC_Helper_Order::create_order();
+		$subscription = new WC_Subscription();
+		$subscription->set_parent( $order );
 		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
 
 		$intent  = WC_Helper_Intention::create_intention();
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
@@ -223,22 +243,15 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	}
 
 	public function test_renewal_subscription_payment() {
-		$order = WC_Helper_Order::create_order();
-		$this->mock_wcs_order_contains_subscription( true );
-		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function( $parent_order ) use ( $order ) {
-				return $order;
-			}
-		);
-		$order->add_payment_token( $this->token );
-
+		$order             = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $order );
 
-		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $id ) use ( $mock_subscription ) {
-				return [ '1' => $mock_subscription ];
-			}
-		);
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( [ $mock_subscription ] );
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [] );
+
+		$order->add_payment_token( $this->token );
 
 		$intent  = WC_Helper_Intention::create_intention();
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
