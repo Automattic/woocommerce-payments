@@ -425,9 +425,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->willReturn( $request );
 
 		$request->expects( $this->once() )
-			->method( 'setup_future_usage' );
-
-		$request->expects( $this->once() )
 			->method( 'set_capture_method' )
 			->with( false );
 
