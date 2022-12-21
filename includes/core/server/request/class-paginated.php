@@ -45,7 +45,7 @@ abstract class Paginated extends Request {
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 *
-	 * @return Paginated
+	 * @return static
 	 */
 	public static function from_rest_request( $request ) {
 		$wcpay_request = static::create();
