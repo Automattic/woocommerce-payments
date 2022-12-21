@@ -27,14 +27,22 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * Mock WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_order_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_api_client    = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
-		$this->action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
+		$this->action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $this->mock_order_service );
 	}
 
 	public function test_track_new_order_action() {
@@ -43,6 +51,13 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$order->add_meta_data( '_stripe_customer_id', 'cu_123', true );
 		$order->add_meta_data( '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod', true );
 		$order->save_meta_data();
+
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( 'pm_131535132531' );
+		$this->mock_order_service
+			->method( 'get_customer_id_for_order' )
+			->willReturn( 'cu_123' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'track_order' )
@@ -56,6 +71,9 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->delete_meta_data( '_payment_method_id' );
 		$order->save_meta_data();
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( '' );
 
 		$this->assertFalse( $this->action_scheduler_service->track_new_order_action( $order ) );
 	}
@@ -76,6 +94,13 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 		$order->add_meta_data( '_stripe_customer_id', 'cu_123', true );
 		$order->add_meta_data( '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod', true );
 		$order->save_meta_data();
+
+		$this->mock_order_service
+			->method( 'get_payment_method_id_for_order' )
+			->willReturn( 'pm_131535132531' );
+		$this->mock_order_service
+			->method( 'get_customer_id_for_order' )
+			->willReturn( 'cu_123' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'track_order' )

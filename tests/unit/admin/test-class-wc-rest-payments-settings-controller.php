@@ -98,9 +98,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_db_cache      = $this->createMock( Database_Cache::class );
 		$customer_service         = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_db_cache );
 		$token_service            = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
-		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client );
-		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
 		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client );
+		$action_scheduler_service = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service );
+		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
