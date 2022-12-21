@@ -35,6 +35,7 @@ use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
+use WCPay\Core\WC_Payments_Customer_Service_API;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -230,6 +231,13 @@ class WC_Payments {
 	private static $woopay_checkout_service;
 
 	/**
+	 * WC Payments Customer Service API
+	 *
+	 * @var WC_Payments_Customer_Service_API
+	 */
+	private static $customer_service_api;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -348,6 +356,7 @@ class WC_Payments {
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
+		include_once __DIR__ . '/core/services/class-wc-payments-customer-service-api.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -366,7 +375,8 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client );
+		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
+		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
 		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
 		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache );
 		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
@@ -375,7 +385,6 @@ class WC_Payments {
 		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
-		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
@@ -411,6 +420,8 @@ class WC_Payments {
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
+
+		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
 
 		self::maybe_register_platform_checkout_hooks();
 
@@ -956,6 +967,15 @@ class WC_Payments {
 	 */
 	public static function get_customer_service(): WC_Payments_Customer_Service {
 		return self::$customer_service;
+	}
+
+	/**
+	 * Returns the WC_Payments_Customer_Service_API instance
+	 *
+	 * @return WC_Payments_Customer_Service_API  The Customer Service instance.
+	 */
+	public static function get_customer_service_api(): WC_Payments_Customer_Service_API {
+		return self::$customer_service_api;
 	}
 
 	/**
