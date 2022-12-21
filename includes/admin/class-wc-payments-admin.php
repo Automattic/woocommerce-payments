@@ -485,7 +485,7 @@ class WC_Payments_Admin {
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 				'availableStates'    => WC()->countries->get_states(),
 			],
-			'testMode'                   => $this->wcpay_gateway->is_in_test_mode(),
+			'testMode'                   => WC_Payments::mode()->is_test(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'         => WC_Payments_Account::is_on_boarding_disabled(),
 			'errorMessage'               => $error_message,
@@ -587,7 +587,7 @@ class WC_Payments_Admin {
 			'wcpayPaymentRequestParams',
 			[
 				'stripe' => [
-					'publishableKey' => $this->account->get_publishable_key( $this->wcpay_gateway->is_in_test_mode() ),
+					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 					'accountId'      => $this->account->get_stripe_account_id(),
 					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 				],
@@ -847,13 +847,7 @@ class WC_Payments_Admin {
 	 * @return string
 	 */
 	private function get_settings_menu_item_name() {
-		$label = __( 'Settings', 'woocommerce' ); // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
-
-		if ( WC_Payments_Features::is_upe_settings_preview_enabled() && ! WC_Payments_Features::is_upe_enabled() ) {
-			$label .= self::MENU_NOTIFICATION_BADGE;
-		}
-
-		return $label;
+		return __( 'Settings', 'woocommerce' ); // PHPCS:Ignore WordPress.WP.I18n.TextDomainMismatch
 	}
 
 	/**
@@ -1024,8 +1018,11 @@ class WC_Payments_Admin {
 	 * @return int The number of uncaptured transactions.
 	 */
 	private function get_uncaptured_transactions_count() {
+		$test_mode = $this->wcpay_gateway->is_in_test_mode();
+		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
+
 		$authorization_summary = $this->database_cache->get_or_add(
-			Database_Cache::AUTHORIZATION_SUMMARY_KEY,
+			$cache_key,
 			[ $this->payments_api_client, 'get_authorizations_summary' ],
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'

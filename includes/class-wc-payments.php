@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\RoutesController;
+use WCPay\Core\Mode;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -199,6 +200,13 @@ class WC_Payments {
 	private static $webhook_reliability_service;
 
 	/**
+	 * Holds WCPay's working mode.
+	 *
+	 * @var Mode
+	 */
+	private static $mode;
+
+	/**
 	 * Platform Checkout Utilities.
 	 *
 	 * @var Platform_Checkout_Utilities
@@ -212,7 +220,6 @@ class WC_Payments {
 	 */
 	private static $wc_payments_checkout;
 
-
 	/**
 	 * Entry point to the initialization logic.
 	 */
@@ -220,6 +227,7 @@ class WC_Payments {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
+		include_once __DIR__ . '/core/class-mode.php';
 
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
@@ -360,6 +368,8 @@ class WC_Payments {
 			self::$wc_payments_checkout = new WC_Payments_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		}
 
+		self::$mode = new Mode( self::$card_gateway );
+
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
@@ -429,6 +439,15 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
+	}
+
+	/**
+	 * Returns the gateway's working mode.
+	 *
+	 * @return Mode
+	 */
+	public static function mode() {
+		return self::$mode;
 	}
 
 	/**
@@ -1088,8 +1107,9 @@ class WC_Payments {
 
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
-		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 		$user        = wp_get_current_user();
+		$return_url  = ! empty( $_POST['return_url'] ) ? wc_clean( wp_unslash( $_POST['return_url'] ) ) : '';
 		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			// create customer.
@@ -1122,11 +1142,12 @@ class WC_Payments {
 				'blog_shop_url'                  => get_permalink( wc_get_page_id( 'shop' ) ),
 				'store_api_url'                  => self::get_store_api_url(),
 				'account_id'                     => $account_id,
-				'test_mode'                      => self::get_gateway()->is_in_test_mode(),
+				'test_mode'                      => self::$mode->is_test(),
 				'capture_method'                 => empty( self::get_gateway()->get_option( 'manual_capture' ) ) || 'no' === self::get_gateway()->get_option( 'manual_capture' ) ? 'automatic' : 'manual',
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
 				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
+				'return_url'                     => $return_url,
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];

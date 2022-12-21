@@ -309,6 +309,7 @@ class WC_Payments_API_Client {
 	 * @param array   $level3                    - Level 3 data.
 	 * @param string  $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
 	 * @param ?string $payment_country           - The payment two-letter iso country code or null.
+	 * @param array   $additional_parameters     - An array of any additional request parameters.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -322,7 +323,8 @@ class WC_Payments_API_Client {
 		$metadata = [],
 		$level3 = [],
 		$selected_upe_payment_type = '',
-		$payment_country = null
+		$payment_country = null,
+		$additional_parameters = []
 	) {
 		// 'receipt_email' is set to prevent Stripe from sending receipts (when intent is created outside WCPay).
 		$request = [
@@ -334,6 +336,8 @@ class WC_Payments_API_Client {
 			'description'   => $this->get_intent_description( $metadata['order_number'] ?? 0 ),
 		];
 
+		$request = array_merge( $request, $additional_parameters );
+
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
@@ -341,7 +345,7 @@ class WC_Payments_API_Client {
 			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
 				$is_link_enabled = in_array(
 					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-					\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+					\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
 					true
 				);
 				if ( $is_link_enabled ) {
@@ -349,7 +353,7 @@ class WC_Payments_API_Client {
 				}
 			}
 		}
-		if ( $payment_country && ! $this->is_in_dev_mode() ) {
+		if ( $payment_country && ! WC_Payments::mode()->is_dev() ) {
 			// Do not update on dev mode, Stripe tests cards don't return the appropriate country.
 			$request['payment_country'] = $payment_country;
 		}
@@ -1079,6 +1083,14 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Error contacting the API.
 	 */
 	public function get_currency_rates( string $currency_from, $currencies_to = null ) {
+		if ( empty( $currency_from ) ) {
+			throw new API_Exception(
+				__( 'Currency From parameter is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_currency_from_missing',
+				400
+			);
+		}
+
 		$query_body = [ 'currency_from' => $currency_from ];
 
 		if ( null !== $currencies_to ) {
@@ -1102,7 +1114,7 @@ class WC_Payments_API_Client {
 	public function get_account_data() {
 		return $this->request(
 			[
-				'test_mode' => $this->is_in_dev_mode(), // only send a test mode request if in dev mode.
+				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API,
 			self::GET
@@ -1119,7 +1131,7 @@ class WC_Payments_API_Client {
 	public function get_platform_checkout_eligibility() {
 		return $this->request(
 			[
-				'test_mode' => $this->is_in_dev_mode(), // only send a test mode request if in dev mode.
+				'test_mode' => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
 			self::PLATFORM_CHECKOUT_API,
 			self::GET
@@ -1138,7 +1150,7 @@ class WC_Payments_API_Client {
 	public function update_platform_checkout( $data ) {
 		return $this->request(
 			array_merge(
-				[ 'test_mode' => $this->is_in_dev_mode() ],
+				[ 'test_mode' => WC_Payments::mode()->is_dev() ],
 				$data
 			),
 			self::PLATFORM_CHECKOUT_API,
@@ -1203,7 +1215,7 @@ class WC_Payments_API_Client {
 				'return_url'          => $return_url,
 				'business_data'       => $business_data,
 				'site_data'           => $site_data,
-				'create_live_account' => ! $this->is_in_dev_mode(),
+				'create_live_account' => ! WC_Payments::mode()->is_dev(),
 				'actioned_notes'      => $actioned_notes,
 			]
 		);
@@ -1269,7 +1281,7 @@ class WC_Payments_API_Client {
 		return $this->request(
 			[
 				'redirect_url' => $redirect_url,
-				'test_mode'    => $this->is_in_dev_mode(), // only send a test mode request if in dev mode.
+				'test_mode'    => WC_Payments::mode()->is_dev(), // only send a test mode request if in dev mode.
 			],
 			self::ACCOUNTS_API . '/login_links',
 			self::POST,
@@ -1979,24 +1991,6 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Return is client in dev mode.
-	 *
-	 * @return bool
-	 */
-	public function is_in_dev_mode() {
-		return WC_Payments::get_gateway()->is_in_dev_mode();
-	}
-
-	/**
-	 * Return is client in test mode.
-	 *
-	 * @return bool
-	 */
-	public function is_in_test_mode() {
-		return WC_Payments::get_gateway()->is_in_test_mode();
-	}
-
-	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -2014,7 +2008,7 @@ class WC_Payments_API_Client {
 		$params = wp_parse_args(
 			$params,
 			[
-				'test_mode' => $this->is_in_test_mode(),
+				'test_mode' => WC_Payments::mode()->is_test(),
 			]
 		);
 
@@ -2457,6 +2451,7 @@ class WC_Payments_API_Client {
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 		$customer           = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method     = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+		$processing         = $intention_array['processing'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 
@@ -2472,7 +2467,8 @@ class WC_Payments_API_Client {
 			$charge,
 			$next_action,
 			$last_payment_error,
-			$metadata
+			$metadata,
+			$processing
 		);
 
 		return $intent;

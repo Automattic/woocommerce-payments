@@ -227,7 +227,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 2 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
-				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' ],
 				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
@@ -396,7 +396,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 2 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
-				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' ],
 				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
@@ -766,7 +766,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 2 ) )
 			->method( 'update_meta_data' )
 			->withConsecutive(
-				[ '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' ],
+				[ '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' ],
 				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
 			);
 
@@ -881,7 +881,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'update_meta_data' )
 			->with(
 				'_wcpay_mode',
-				WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod'
+				WC_Payments::mode()->is_test() ? 'test' : 'prod'
 			);
 
 		// Assert: The Order_Service is called correctly.

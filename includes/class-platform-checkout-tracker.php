@@ -9,6 +9,7 @@ namespace WCPay;
 
 use Jetpack_Tracks_Client;
 use Jetpack_Tracks_Event;
+use WC_Payments;
 use WC_Payments_Features;
 use WP_Error;
 
@@ -78,7 +79,8 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 
 		$tracks_data = [];
 		if ( isset( $_REQUEST['tracksEventProp'] ) ) {
-			$event_prop = wc_clean( wp_unslash( $_REQUEST['tracksEventProp'] ) );
+			// tracksEventProp is a JSON-encoded string.
+			$event_prop = json_decode( wc_clean( wp_unslash( $_REQUEST['tracksEventProp'] ) ), true );
 			if ( is_array( $event_prop ) ) {
 				$tracks_data = $event_prop;
 			}
@@ -111,8 +113,7 @@ class Platform_Checkout_Tracker extends Jetpack_Tracks_Client {
 		}
 
 		// Add event property for test mode vs. live mode events.
-		$gateway               = \WC_Payments::get_gateway();
-		$data['test_mode']     = $gateway->is_in_test_mode() ? 1 : 0;
+		$data['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
 		$data['wcpay_version'] = get_option( 'woocommerce_woocommerce_payments_version' );
 
 		return $this->tracks_record_event( $user, $event, $data );
