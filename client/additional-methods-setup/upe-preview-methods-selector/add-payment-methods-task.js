@@ -157,14 +157,13 @@ const AddPaymentMethodsTask = () => {
 		null
 	);
 
-	const completeActivation = ( itemId ) => {
-		paymentMethodsState[ itemId ] = true;
-		handlePaymentMethodChange( paymentMethodsState );
+	const completeActivation = ( method ) => {
+		handlePaymentMethodChange( method, true );
 		handleActivationModalOpen( null );
 	};
 
-	const getStatusAndRequirements = ( itemId ) => {
-		const stripeKey = paymentMethodsMap[ itemId ].stripe_key;
+	const getStatusAndRequirements = ( method ) => {
+		const stripeKey = paymentMethodsMap[ method ].stripe_key;
 		const stripeStatusContainer = paymentMethodStatuses[ stripeKey ] ?? [];
 		if ( ! stripeStatusContainer ) {
 			return {
@@ -178,23 +177,22 @@ const AddPaymentMethodsTask = () => {
 		};
 	};
 
-	const handleCheckClick = ( itemId, status ) => {
+	const handleCheckClick = ( method, status ) => {
 		if ( status ) {
-			const statusAndRequirements = getStatusAndRequirements( itemId );
+			const statusAndRequirements = getStatusAndRequirements( method );
 			if (
 				'unrequested' === statusAndRequirements.status &&
 				0 < statusAndRequirements.requirements.length
 			) {
 				handleActivationModalOpen( {
-					id: itemId,
+					id: method,
 					requirements: statusAndRequirements.requirements,
 				} );
 			} else {
-				completeActivation( itemId );
+				completeActivation( method );
 			}
 		} else {
-			paymentMethodsState[ itemId ] = false;
-			handlePaymentMethodChange( paymentMethodsState );
+			handlePaymentMethodChange( method, false );
 		}
 	};
 

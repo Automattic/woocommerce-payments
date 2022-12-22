@@ -28,6 +28,12 @@ export function updateIsCardPresentEligible( isEnabled ) {
 	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
 }
 
+export function updateIsClientSecretEncryptionEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_client_secret_encryption_enabled: isEnabled,
+	} );
+}
+
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
@@ -72,6 +78,20 @@ export function updateIsSavingSettings( isSaving, error ) {
 		type: ACTION_TYPES.SET_IS_SAVING_SETTINGS,
 		isSaving,
 		error,
+	};
+}
+
+export function updateSelectedPaymentMethod( id ) {
+	return {
+		type: ACTION_TYPES.SET_SELECTED_PAYMENT_METHOD,
+		id,
+	};
+}
+
+export function updateUnselectedPaymentMethod( id ) {
+	return {
+		type: ACTION_TYPES.SET_UNSELECTED_PAYMENT_METHOD,
+		id,
 	};
 }
 
@@ -215,5 +235,23 @@ export function updatePlatformCheckoutCustomMessage( message ) {
 export function updatePlatformCheckoutStoreLogo( storeLogo ) {
 	return updateSettingsValues( {
 		platform_checkout_store_logo: storeLogo,
+	} );
+}
+
+export function updatePlatformCheckoutButtonType( type ) {
+	return updateSettingsValues( { platform_checkout_button_type: type } );
+}
+
+export function updatePlatformCheckoutButtonSize( size ) {
+	return updateSettingsValues( { platform_checkout_button_size: size } );
+}
+
+export function updatePlatformCheckoutButtonTheme( theme ) {
+	return updateSettingsValues( { platform_checkout_button_theme: theme } );
+}
+
+export function updatePlatformCheckoutLocations( locations ) {
+	return updateSettingsValues( {
+		platform_checkout_enabled_locations: [ ...locations ],
 	} );
 }

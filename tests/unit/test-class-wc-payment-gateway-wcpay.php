@@ -8,6 +8,7 @@
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
@@ -21,7 +22,6 @@ use WCPay\Payment_Information;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_Checkout;
-use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -1647,7 +1647,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_payment_method_id', 'pm_123' );
 		$order->update_meta_data( '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' );
 		$order->delete_meta_data( '_new_order_tracking_complete' );
-
+		$order->save_meta_data();
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
 			->method( 'schedule_job' );
@@ -1669,6 +1669,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'woocommerce_payments' );
 		$order->add_meta_data( '_new_order_tracking_complete', 'yes' );
+		$order->update_meta_data( '_payment_method_id', 'pm_123' );
+		$order->save_meta_data();
 
 		$this->mock_action_scheduler_service
 			->expects( $this->once() )
@@ -2023,28 +2025,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_attach_intent_info_to_order() {
-		$order = $this
-			->getMockBuilder( WC_Order::class )
-			->disableOriginalConstructor()
-			->setMethods( [ 'update_meta_data', 'save' ] )
-			->getMock();
-
-		$intent_id      = 'pi_mock';
-		$charge_id      = 'ch_mock';
-		$customer_id    = 'cus_12345';
-		$payment_method = 'woocommerce_payments';
-		$intent_status  = 'succeeded';
-		$currency       = 'USD';
-
-		$order->expects( $this->atLeast( 2 ) )->method( 'update_meta_data' )->withConsecutive(
-			[ '_intent_id', $intent_id ],
-			[ '_charge_id', $charge_id ]
-		);
-
-		$this->wcpay_gateway->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
-	}
-
 	public function test_update_order_status_from_intent_success_payment_complete() {
 		$order = $this
 			->getMockBuilder( WC_Order::class )
@@ -2165,30 +2145,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mode->live();
 		$this->assertFalse( $this->wcpay_gateway->is_in_test_mode() );
-	}
-
-	// TODO: Remove this test before merge.
-	public function test_request_class_example() {
-		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'get_customer_id_by_user_id' )
-			->willReturn( 'cus_XYZ' );
-
-		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
-		$request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
-		$request->expects( $this->once() )
-			->method( 'set_customer' )
-			->with( 'cus_XYZ' );
-
-		$order = WC_Helper_Order::create_order();
-		$order->set_currency( 'USD' );
-		$order->set_total( 0.45 );
-		$order->save();
-		$pi = new Payment_Information( 'pm_test', $order );
-
-		$this->wcpay_gateway->process_payment_for_order( null, $pi );
 	}
 
 	/**

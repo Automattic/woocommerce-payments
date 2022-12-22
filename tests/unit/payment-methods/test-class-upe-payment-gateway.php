@@ -163,6 +163,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
 
+		$payment_methods = [
+			'link' => [
+				'base' => 0.1,
+			],
+		];
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_fees' )
+			->willReturn( $payment_methods );
+
 		$this->mock_platform_checkout_utilities = $this->createMock( Platform_Checkout_Utilities::class );
 
 		// Arrange: Mock WC_Payments_Customer_Service so its methods aren't called directly.
@@ -663,6 +674,63 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
+		$this->mock_upe_gateway->create_payment_intent( $order_id );
+	}
+
+	public function test_create_payment_intent_with_fingerprint() {
+		$order       = WC_Helper_Order::create_order();
+		$order_id    = $order->get_id();
+		$fingerprint = 'abc123';
+		$intent      = WC_Helper_Intention::create_intention();
+
+		$request = $this->mock_wcpay_request( Create_Intention::class, 1 );
+		$request
+			->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( 5000 );
+		$request
+			->expects( $this->once() )
+			->method( 'set_currency_code' )
+			->with( 'usd' );
+		$request
+			->expects( $this->once() )
+			->method( 'set_payment_method_types' )
+			->with( [ 'card' ] );
+		$request
+			->expects( $this->once() )
+			->method( 'set_metadata' )
+			->with( [ 'order_number' => $order_id ] );
+		$request
+			->expects( $this->once() )
+			->method( 'set_fingerprint' )
+			->with( $fingerprint );
+		$request
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+		$this->set_get_upe_enabled_payment_method_statuses_return_value();
+
+		$this->mock_upe_gateway->create_payment_intent( $order_id, $fingerprint );
+	}
+
+	public function test_create_payment_intent_with_no_fingerprint() {
+		$order    = WC_Helper_Order::create_order();
+		$order_id = $order->get_id();
+		$intent   = WC_Helper_Intention::create_intention();
+		$request  = $this->mock_wcpay_request( Create_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'set_amount' )
+			->with( $intent->get_amount() );
+
+		$request->expects( $this->once() )
+			->method( 'set_fingerprint' )
+			->with( '' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
 		$this->mock_upe_gateway->create_payment_intent( $order_id );

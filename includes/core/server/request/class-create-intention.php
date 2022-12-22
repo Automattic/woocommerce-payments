@@ -123,9 +123,6 @@ class Create_Intention extends Request {
 		// The description is based on the order number here.
 		$description = $this->get_intent_description( $metadata['order_number'] ?? 0 );
 		$this->set_param( 'description', $description );
-
-		// Combine the metadata with the fingerprint.
-		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata() );
 		$this->set_param( 'metadata', $metadata );
 	}
 
@@ -140,6 +137,31 @@ class Create_Intention extends Request {
 		}
 
 		$this->set_param( 'level3', $this->fix_level3_data( $level3 ) );
+	}
+
+	/**
+	 * Set fingerprint.
+	 *
+	 * @param string $fingerprint Fingerprint data.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_fingerprint( $fingerprint = '' ) {
+		$metadata = $this->get_param( 'metadata' );
+		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
+		$this->set_param( 'metadata', $metadata );
+	}
+
+	/**
+	 * Set mandate.
+	 *
+	 * @param string $mandate Mandate.
+	 *
+	 * @return void
+	 */
+	public function set_mandate( string $mandate ) {
+		$this->set_param( 'mandate', $mandate );
 	}
 
 	/**

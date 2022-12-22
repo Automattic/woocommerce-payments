@@ -15,7 +15,7 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 } ) );
 
 describe( 'WCPayAPI', () => {
-	test( 'initializes platform checkout using expected params', () => {
+	test( 'initializes platform checkout using config params', () => {
 		buildAjaxURL.mockReturnValue( 'https://example.org/' );
 		getConfig.mockReturnValue( 'foo' );
 
@@ -25,6 +25,7 @@ describe( 'WCPayAPI', () => {
 		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
 			_wpnonce: 'foo',
 			email: 'foo@bar.com',
+			return_url: 'http://localhost/',
 			user_session: 'qwerty123',
 		} );
 	} );

@@ -74,24 +74,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function test_it_renders_settings_badge_if_upe_settings_preview_is_enabled_and_upe_is_not() {
-		global $submenu;
-
-		$this->mock_current_user_is_admin();
-
-		update_option( '_wcpay_feature_upe_settings_preview', '1' );
-		update_option( '_wcpay_feature_upe', '0' );
-
-		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
-		$this->payments_admin->add_payments_menu();
-
-		$item_names_by_urls = wp_list_pluck( $submenu['wc-admin&path=/payments/overview'], 0, 2 );
-		$settings_item_name = $item_names_by_urls[ WC_Payments_Admin_Settings::get_settings_url() ];
-
-		$this->assertEquals( 'Settings' . WC_Payments_Admin::MENU_NOTIFICATION_BADGE, $settings_item_name );
-	}
-
 	/**
 	 * @dataProvider feature_flag_combinations_not_causing_settings_badge_render_provider
 	 *
@@ -162,6 +144,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		return [
 			[ false, false ],
 			[ false, true ],
+			[ true, false ],
 			[ true, true ],
 		];
 	}

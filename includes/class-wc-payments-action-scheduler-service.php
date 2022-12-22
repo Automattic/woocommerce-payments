@@ -21,16 +21,25 @@ class WC_Payments_Action_Scheduler_Service {
 	 */
 	private $payments_api_client;
 
+	/**
+	 * WC_Payments_Order_Service instance for updating order statuses.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
 
 	/**
 	 * Constructor for WC_Payments_Action_Scheduler_Service.
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_API_Client    $payments_api_client - WooCommerce Payments API client.
+	 * @param WC_Payments_Order_Service $order_service - Order Service.
 	 */
 	public function __construct(
-		WC_Payments_API_Client $payments_api_client
+		WC_Payments_API_Client $payments_api_client, WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
+		$this->order_service       = $order_service;
 
 		$this->add_action_scheduler_hooks();
 	}
@@ -85,7 +94,7 @@ class WC_Payments_Action_Scheduler_Service {
 		}
 
 		// If we do not have a valid payment method for this order, don't send the request.
-		$payment_method = $order->get_meta( ( '_payment_method_id' ) );
+		$payment_method = $this->order_service->get_payment_method_id_for_order( $order );
 		if ( empty( $payment_method ) ) {
 			return false;
 		}
@@ -106,7 +115,7 @@ class WC_Payments_Action_Scheduler_Service {
 				$order->get_data(),
 				[
 					'_payment_method_id'  => $payment_method,
-					'_stripe_customer_id' => $order->get_meta( '_stripe_customer_id' ),
+					'_stripe_customer_id' => $this->order_service->get_customer_id_for_order( $order ),
 					'_wcpay_mode'         => $order_mode,
 				]
 			),

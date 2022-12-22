@@ -161,7 +161,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$intent_status = $intent->get_status();
 			$charge        = $intent->get_charge();
 			$charge_id     = $charge ? $charge->get_id() : null;
-			$this->gateway->attach_intent_info_to_order(
+			$this->order_service->attach_intent_info_to_order(
 				$order,
 				$intent_id,
 				$intent_status,
@@ -315,7 +315,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			$order_user        = $order->get_user();
-			$customer_id       = $order->get_meta( '_stripe_customer_id' );
+			$customer_id       = $this->order_service->get_customer_id_for_order( $order );
 			$customer_data     = WC_Payments_Customer_Service::map_customer_data( $order );
 			$is_guest_customer = false === $order_user;
 
@@ -329,7 +329,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
 				: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
 
-			$order->update_meta_data( '_stripe_customer_id', $customer_id );
+			$this->order_service->set_customer_id_for_order( $order, $customer_id );
 			$order->save();
 
 			return rest_ensure_response(

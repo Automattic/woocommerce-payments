@@ -35,6 +35,7 @@ use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\WooPay\Service\Checkout_Service;
+use WCPay\Core\WC_Payments_Customer_Service_API;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -153,6 +154,13 @@ class WC_Payments {
 	private static $payment_request_button_handler;
 
 	/**
+	 * Instance of WC_Payments_Platform_Checkout_Button_Handler, created in init function
+	 *
+	 * @var WC_Payments_Platform_Checkout_Button_Handler
+	 */
+	private static $platform_checkout_button_handler;
+
+	/**
 	 * Instance of WC_Payments_Apple_Pay_Registration, created in init function
 	 *
 	 * @var WC_Payments_Apple_Pay_Registration
@@ -223,12 +231,20 @@ class WC_Payments {
 	private static $woopay_checkout_service;
 
 	/**
+	 * WC Payments Customer Service API
+	 *
+	 * @var WC_Payments_Customer_Service_API
+	 */
+	private static $customer_service_api;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
+		include_once __DIR__ . '/core/class-mode.php';
 
 		include_once __DIR__ . '/class-database-cache.php';
 		self::$database_cache = new Database_Cache();
@@ -261,6 +277,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/exceptions/server/request/class-extend-request-exception.php';
 		include_once __DIR__ . '/core/exceptions/server/response/class-server-response-exception.php';
 
+		// Include core requests.
 		include_once __DIR__ . '/core/server/class-request.php';
 		include_once __DIR__ . '/core/server/class-response.php';
 		include_once __DIR__ . '/core/server/request/trait-intention.php';
@@ -318,6 +335,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
+		include_once __DIR__ . '/class-wc-payments-platform-checkout-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
@@ -349,6 +367,7 @@ class WC_Payments {
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
+		include_once __DIR__ . '/core/services/class-wc-payments-customer-service-api.php';
 
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
@@ -367,7 +386,8 @@ class WC_Payments {
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
-		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client );
+		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
+		self::$action_scheduler_service            = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service );
 		self::$account                             = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service );
 		self::$customer_service                    = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache );
 		self::$token_service                       = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
@@ -376,7 +396,6 @@ class WC_Payments {
 		self::$in_person_payments_receipts_service = new WC_Payments_In_Person_Payments_Receipts_Service();
 		self::$localization_service                = new WC_Payments_Localization_Service();
 		self::$failed_transaction_rate_limiter     = new Session_Rate_Limiter( Session_Rate_Limiter::SESSION_KEY_DECLINED_CARD_REGISTRY, 5, 10 * MINUTE_IN_SECONDS );
-		self::$order_service                       = new WC_Payments_Order_Service( self::$api_client );
 		self::$order_success_page                  = new WC_Payments_Order_Success_Page();
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
@@ -413,11 +432,14 @@ class WC_Payments {
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
+		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
+
 		self::maybe_register_platform_checkout_hooks();
 
 		// Payment Request and Apple Pay.
-		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
+		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
+		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway() );
+		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -445,13 +467,16 @@ class WC_Payments {
 		WC_Payments_Explicit_Price_Formatter::init();
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 
 		// Add admin screens.
-		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
+		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
+		}
+
+		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			new WC_Payments_Admin( self::$api_client, self::get_gateway(), self::$account, self::$database_cache );
 
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 			new WC_Payments_Admin_Settings( self::get_gateway() );
 
 			add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
@@ -956,6 +981,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Customer_Service_API instance
+	 *
+	 * @return WC_Payments_Customer_Service_API  The Customer Service instance.
+	 */
+	public static function get_customer_service_api(): WC_Payments_Customer_Service_API {
+		return self::$customer_service_api;
+	}
+
+	/**
 	 * Sets the customer service instance. This is needed only for tests.
 	 *
 	 * @param WC_Payments_Customer_Service $customer_service_class Instance of WC_Payments_Customer_Service.
@@ -1143,8 +1177,9 @@ class WC_Payments {
 
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
-		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 		$user        = wp_get_current_user();
+		$return_url  = ! empty( $_POST['return_url'] ) ? wc_clean( wp_unslash( $_POST['return_url'] ) ) : '';
 		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			// create customer.
@@ -1182,6 +1217,7 @@ class WC_Payments {
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
 				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
+				'return_url'                     => $return_url,
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];

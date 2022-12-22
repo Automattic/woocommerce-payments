@@ -140,6 +140,20 @@ class Update_Intention extends Request {
 	}
 
 	/**
+	 * Set fingerprint.
+	 *
+	 * @param string $fingerprint Fingerprint data.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_fingerprint( $fingerprint = '' ) {
+		$metadata = $this->get_param( 'metadata' );
+		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
+		$this->set_param( 'metadata', $metadata );
+	}
+
+	/**
 	 * Level 3 data setter.
 	 *
 	 * @param array $level3 Level 3 data.
@@ -150,6 +164,17 @@ class Update_Intention extends Request {
 		}
 
 		$this->set_param( 'level3', $this->fix_level3_data( $level3 ) );
+	}
+
+	/**
+	 * Set payment method options.
+	 *
+	 * @param array $payment_method_options Payment method options.
+	 *
+	 * @return void
+	 */
+	public function set_payment_method_options( array $payment_method_options ) {
+		$this->set_param( 'payment_method_options', $payment_method_options );
 	}
 
 	/**
