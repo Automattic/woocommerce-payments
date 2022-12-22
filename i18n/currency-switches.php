@@ -8,6 +8,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+$locales = include WCPAY_ABSPATH . '/i18n/currency-info.php';
+
 return [
 	'HR' => [
 		'effective' => 1672531200, // Jan 1, 2023.
