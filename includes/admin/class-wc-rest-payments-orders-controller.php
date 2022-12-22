@@ -307,10 +307,10 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$disallowed_order_statuses = apply_filters(
 				'wcpay_create_customer_disallowed_order_statuses',
 				[
-					Order_Statuses::STATUS_COMPLETED,
-					Order_Statuses::STATUS_CANCELLED,
-					Order_Statuses::STATUS_REFUNDED,
-					Order_Statuses::STATUS_FAILED,
+					Order_Status::COMPLETED,
+					Order_Status::CANCELLED,
+					Order_Status::REFUNDED,
+					Order_Status::FAILED,
 				]
 			);
 			if ( $order->has_status( $disallowed_order_statuses ) ) {

@@ -138,7 +138,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$result_order = wc_get_order( $order->get_id() );
 		$this->assertEquals( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertEquals( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
-		$this->assertEquals( Order_Statuses::STATUS_COMPLETED, $result_order->get_status() );
+		$this->assertEquals( Order_Status::COMPLETED, $result_order->get_status() );
 		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/' . $this->mock_intent_id;
 		$this->assertStringEndsWith( $url, $result_order->get_meta( 'receipt_url' ) );
 	}
@@ -206,7 +206,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$result_order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertSame( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
-		$this->assertSame( Order_Statuses::STATUS_COMPLETED, $result_order->get_status() );
+		$this->assertSame( Order_Status::COMPLETED, $result_order->get_status() );
 		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/';
 		$this->assertStringEndsWith( $url . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
 	}
@@ -215,7 +215,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		// This scenario may occur when `process_webhook_payment_intent_succeeded`
 		// is triggered before the terminal payment is captured in the backend.
 		$order = $this->create_mock_order();
-		$order->update_status( Order_Statuses::STATUS_COMPLETED );
+		$order->update_status( Order_Status::COMPLETED );
 
 		$mock_intent = WC_Helper_Intention::create_intention(
 			[
@@ -278,7 +278,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$result_order = wc_get_order( $order->get_id() );
 		$this->assertSame( 'woocommerce_payments', $result_order->get_payment_method() );
 		$this->assertSame( 'WooCommerce In-Person Payments', $result_order->get_payment_method_title() );
-		$this->assertSame( Order_Statuses::STATUS_COMPLETED, $result_order->get_status() );
+		$this->assertSame( Order_Status::COMPLETED, $result_order->get_status() );
 		$url = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/readers/receipts/';
 		$this->assertStringEndsWith( $url . $this->mock_intent_id, $result_order->get_meta( 'receipt_url' ) );
 	}
@@ -349,7 +349,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertSame( 409, $data['status'] );
-		$this->assertFalse( $order->has_status( Order_Statuses::STATUS_COMPLETED ) );
+		$this->assertFalse( $order->has_status( Order_Status::COMPLETED ) );
 	}
 
 	public function test_capture_terminal_payment_refunded_order() {
@@ -712,7 +712,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertSame( 409, $data['status'] );
-		$this->assertFalse( $order->has_status( Order_Statuses::STATUS_COMPLETED ) );
+		$this->assertFalse( $order->has_status( Order_Status::COMPLETED ) );
 	}
 
 	public function test_capture_authorization_refunded_order() {
@@ -1077,7 +1077,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_create_customer_from_order_with_invalid_status() {
 		$order = WC_Helper_Order::create_order();
-		$order->set_status( Order_Statuses::STATUS_COMPLETED );
+		$order->set_status( Order_Status::COMPLETED );
 		$order->save();
 
 		$this->mock_customer_service
@@ -1308,7 +1308,7 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $this->mock_intent_id );
 		$order->update_meta_data( '_charge_id', $charge->get_id() );
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
-		$order->update_status( Order_Statuses::STATUS_ON_HOLD );
+		$order->update_status( Order_Status::ON_HOLD );
 		return $order;
 	}
 

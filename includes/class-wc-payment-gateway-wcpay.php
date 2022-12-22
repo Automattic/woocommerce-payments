@@ -681,7 +681,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 * information is not added to the order, as shown by tests.
 			 */
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
-				$order->update_status( Order_Statuses::STATUS_FAILED );
+				$order->update_status( Order_Status::FAILED );
 			}
 
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {

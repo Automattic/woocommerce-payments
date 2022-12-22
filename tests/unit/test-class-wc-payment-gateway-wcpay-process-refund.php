@@ -595,7 +595,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_intention_status', 'requires_capture' );
-		$order->update_status( Order_Statuses::STATUS_ON_HOLD );
+		$order->update_status( Order_Status::ON_HOLD );
 		$order->save();
 
 		$order_id = $order->get_id();
@@ -676,7 +676,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_status( Order_Statuses::STATUS_PROCESSING );
+		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
 
 		$order_id = $order->get_id();
@@ -700,7 +700,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_status( Order_Statuses::STATUS_PROCESSING );
+		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
 
 		$order_id = $order->get_id();
@@ -725,7 +725,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
-		$order->update_status( Order_Statuses::STATUS_PROCESSING );
+		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
 
 		$order_id = $order->get_id();

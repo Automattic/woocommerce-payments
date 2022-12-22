@@ -617,9 +617,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			if ( $order->has_status(
 				[
-					Order_Statuses::STATUS_PROCESSING,
-					Order_Statuses::STATUS_COMPLETED,
-					Order_Statuses::STATUS_ON_HOLD,
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+					Order_Status::ON_HOLD,
 				]
 			) ) {
 				return;

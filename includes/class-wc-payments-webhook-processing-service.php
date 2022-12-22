@@ -307,8 +307,8 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Update order status if order is fully refunded.
 		$current_order_status = $order->get_status();
-		if ( Order_Statuses::STATUS_REFUNDED === $current_order_status ) {
-			$order->update_status( Order_Statuses::STATUS_FAILED );
+		if ( Order_Status::REFUNDED === $current_order_status ) {
+			$order->update_status( Order_Status::FAILED );
 		}
 
 		$order->add_order_note( $note );

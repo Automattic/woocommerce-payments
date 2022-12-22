@@ -466,7 +466,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			$result_order = wc_get_order( $order->get_id() );
 
 			// Assert: Order status was updated.
-			$this->assertEquals( Order_Statuses::STATUS_FAILED, $result_order->get_status() );
+			$this->assertEquals( Order_Status::FAILED, $result_order->get_status() );
 
 			// Assert: Order transaction ID was not set.
 			$this->assertEquals( '', $result_order->get_transaction_id() );
@@ -522,7 +522,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			$result_order = wc_get_order( $order->get_id() );
 
 			// Assert: Order status was updated.
-			$this->assertEquals( Order_Statuses::STATUS_FAILED, $result_order->get_status() );
+			$this->assertEquals( Order_Status::FAILED, $result_order->get_status() );
 
 			// Assert: No order note was added, besides the status change and failed transaction details.
 			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
@@ -598,7 +598,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			$result_order = wc_get_order( $order->get_id() );
 
 			// Assert: Order status was updated.
-			$this->assertEquals( Order_Statuses::STATUS_FAILED, $result_order->get_status() );
+			$this->assertEquals( Order_Status::FAILED, $result_order->get_status() );
 
 			// Assert: No order note was added, besides the status change and failed transaction details.
 			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
@@ -640,7 +640,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			$result_order = wc_get_order( $order->get_id() );
 
 			// Assert: Order status was updated.
-			$this->assertEquals( Order_Statuses::STATUS_FAILED, $result_order->get_status() );
+			$this->assertEquals( Order_Status::FAILED, $result_order->get_status() );
 
 			// Assert: No order note was added, besides the status change and failed transaction details.
 			$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );

@@ -637,8 +637,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'has_status' )
 			->with(
 				[
-					Order_Statuses::STATUS_PROCESSING,
-					Order_Statuses::STATUS_COMPLETED,
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
 				]
 			)
 			->willReturn( false );
@@ -712,8 +712,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'has_status' )
 			->with(
 				[
-					Order_Statuses::STATUS_PROCESSING,
-					Order_Statuses::STATUS_COMPLETED,
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
 				]
 			)
 			->willReturn( false );
@@ -792,8 +792,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'has_status' )
 			->with(
 				[
-					Order_Statuses::STATUS_PROCESSING,
-					Order_Statuses::STATUS_COMPLETED,
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
 				]
 			)
 			->willReturn( true );
@@ -864,8 +864,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'has_status' )
 			->with(
 				[
-					Order_Statuses::STATUS_PROCESSING,
-					Order_Statuses::STATUS_COMPLETED,
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
 				]
 			)
 			->willReturn( false );
@@ -961,8 +961,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'has_status' )
 			->with(
 				[
-					Order_Statuses::STATUS_PROCESSING,
-					Order_Statuses::STATUS_COMPLETED,
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
 				]
 			)
 			->willReturn( false );
@@ -1041,9 +1041,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
-				[ [ Order_Statuses::STATUS_FAILED ] ],
-				[ [ Order_Statuses::STATUS_PROCESSING, Order_Statuses::STATUS_COMPLETED ] ],
-				[ [ Order_Statuses::STATUS_PROCESSING, Order_Statuses::STATUS_COMPLETED ] ]
+				[ [ Order_Status::FAILED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ]
 			)
 			->willReturn( false );
 
@@ -1059,7 +1059,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( Order_Statuses::STATUS_FAILED );
+			->with( Order_Status::FAILED );
 
 		$this->mock_order
 			->method( 'get_data_store' )
@@ -1114,9 +1114,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
-				[ [ Order_Statuses::STATUS_FAILED ] ],
-				[ [ Order_Statuses::STATUS_PROCESSING, Order_Statuses::STATUS_COMPLETED ] ],
-				[ [ Order_Statuses::STATUS_PROCESSING, Order_Statuses::STATUS_COMPLETED ] ]
+				[ [ Order_Status::FAILED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ]
 			)
 			->willReturn( false );
 
@@ -1132,7 +1132,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( Order_Statuses::STATUS_FAILED );
+			->with( Order_Status::FAILED );
 
 		$this->mock_order
 			->method( 'get_data_store' )
@@ -1173,7 +1173,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( Order_Statuses::STATUS_ON_HOLD );
+			->with( Order_Status::ON_HOLD );
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )
@@ -1210,7 +1210,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( Order_Statuses::STATUS_COMPLETED );
+			->with( Order_Status::COMPLETED );
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )

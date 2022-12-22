@@ -84,7 +84,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $message = '' ) {
-		if ( $order->has_status( [ Order_Statuses::STATUS_FAILED ] )
+		if ( $order->has_status( [ Order_Status::FAILED ] )
 			|| 'failed' === $order->get_meta( '_intention_status' )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
@@ -96,7 +96,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->update_order_status( $order, Order_Statuses::STATUS_FAILED );
+		$this->update_order_status( $order, Order_Status::FAILED );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -112,12 +112,12 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id ) {
-		if ( $order->has_status( [ Order_Statuses::STATUS_ON_HOLD ] )
+		if ( $order->has_status( [ Order_Status::ON_HOLD ] )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
-		$this->update_order_status( $order, Order_Statuses::STATUS_ON_HOLD );
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$this->add_payment_authorized_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -133,7 +133,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_started( $order, $intent_id, $intent_status, $charge_id ) {
-		if ( ! $order->has_status( [ Order_Statuses::STATUS_PENDING ] )
+		if ( ! $order->has_status( [ Order_Status::PENDING ] )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
@@ -203,7 +203,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->update_order_status( $order, Order_Statuses::STATUS_CANCELLED );
+		$this->update_order_status( $order, Order_Status::CANCELLED );
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -222,7 +222,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->update_order_status( $order, Order_Statuses::STATUS_CANCELLED );
+		$this->update_order_status( $order, Order_Status::CANCELLED );
 		$this->add_capture_cancelled_note( $order );
 		$this->complete_order_processing( $order, $intent_status );
 	}
@@ -247,7 +247,7 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		$this->update_order_status( $order, Order_Statuses::STATUS_ON_HOLD );
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$order->add_order_note( $note );
 		$order->save();
 
@@ -284,7 +284,7 @@ class WC_Payments_Order_Service {
 			);
 		} else {
 			// TODO: This should revert to the status the order was in before the dispute was created.
-			$this->update_order_status( $order, Order_Statuses::STATUS_COMPLETED );
+			$this->update_order_status( $order, Order_Status::COMPLETED );
 			$order->save();
 		}
 
@@ -301,7 +301,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
-		$this->update_order_status( $order, Order_Statuses::STATUS_COMPLETED, $intent_id );
+		$this->update_order_status( $order, Order_Status::COMPLETED, $intent_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 

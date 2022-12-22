@@ -65,7 +65,7 @@ class WC_Helper_Order {
 		WC_Helper_Shipping::create_simple_flat_rate();
 
 		$order_data = [
-			'status'        => Order_Statuses::STATUS_PENDING,
+			'status'        => Order_Status::PENDING,
 			'customer_id'   => $customer_id,
 			'customer_note' => '',
 			'total'         => '',
