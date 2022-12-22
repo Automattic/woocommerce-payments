@@ -1042,18 +1042,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'has_status' )
 			->withConsecutive(
 				[ [ Order_Statuses::STATUS_FAILED ] ],
-				[
-					[
-						Order_Statuses::STATUS_PROCESSING,
-						Order_Statuses::STATUS_COMPLETED,
-					],
-				],
-				[
-					[
-						Order_Statuses::STATUS_PROCESSING,
-						Order_Statuses::STATUS_COMPLETED,
-					],
-				],
+				[ [ Order_Statuses::STATUS_PROCESSING, Order_Statuses::STATUS_COMPLETED ] ],
+				[ [ Order_Statuses::STATUS_PROCESSING, Order_Statuses::STATUS_COMPLETED ] ]
 			)
 			->willReturn( false );
 
@@ -1125,18 +1115,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'has_status' )
 			->withConsecutive(
 				[ [ Order_Statuses::STATUS_FAILED ] ],
-				[
-					[
-						Order_Statuses::STATUS_PROCESSING,
-						Order_Statuses::STATUS_COMPLETED,
-					],
-				],
-				[
-					[
-						Order_Statuses::STATUS_PROCESSING,
-						Order_Statuses::STATUS_COMPLETED,
-					],
-				],
+				[ [ Order_Statuses::STATUS_PROCESSING, Order_Statuses::STATUS_COMPLETED ] ],
+				[ [ Order_Statuses::STATUS_PROCESSING, Order_Statuses::STATUS_COMPLETED ] ]
 			)
 			->willReturn( false );
 
