@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
@@ -38,13 +39,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 *
 	 * @param WC_Cart|null              $cart Cart.
 	 * @param WCPay\Payment_Information $payment_information Payment info.
-	 * @param array                     $additional_api_parameters Any additional fields required for payment method to pass to API.
+	 * @param bool                      $scheduled_subscription_payment Used to determinate is scheduled subscription payment to add more fields into API request.
 	 *
 	 * @return array|null                   An array with result of payment and redirect URL, or nothing.
 	 * @throws API_Exception                Error processing the payment.
 	 * @throws Add_Payment_Method_Exception When $0 order processing failed.
 	 */
-	abstract public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] );
+	abstract public function process_payment_for_order( $cart, $payment_information, $scheduled_subscription_payment = false );
 
 	/**
 	 * Saves the payment token to the order.
@@ -211,8 +212,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return bool True if the Intent was fetched and prepared successfully, false otherwise.
 	 */
 	public function prepare_intent_for_order_pay_page(): bool {
-		$order  = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
-		$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
+		$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+
+		$request = Get_Intention::create( $order->get_transaction_id() );
+		$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
 		if ( ! $intent || 'requires_action' !== $intent->get_status() ) {
 			return false;
@@ -277,12 +280,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
-		// Add mandate param to the order payment if needed.
-		$additional_api_parameters = $this->get_mandate_param_for_renewal_order( $renewal_order );
-
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
-			$this->process_payment_for_order( null, $payment_information, $additional_api_parameters );
+			$this->process_payment_for_order( null, $payment_information, true );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
@@ -868,8 +868,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$subs_amount += $sub->get_total();
 		}
 
-		$result['setup_future_usage']                                = 'off_session';
-		$result['payment_method_options']['card']['mandate_options'] = [
+		$result['card']['mandate_options'] = [
 			'reference'       => $order->get_id(),
 			'amount'          => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
 			'amount_type'     => 'fixed',
@@ -884,9 +883,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// - Set interval to sporadic, to not follow any specific interval.
 		// - Unset interval count, because it doesn't apply anymore.
 		if ( 1 < count( $subscriptions ) ) {
-			$result['payment_method_options']['card']['mandate_options']['amount_type'] = 'maximum';
-			$result['payment_method_options']['card']['mandate_options']['interval']    = 'sporadic';
-			unset( $result['payment_method_options']['card']['mandate_options']['interval_count'] );
+			$result['card']['mandate_options']['amount_type'] = 'maximum';
+			$result['card']['mandate_options']['interval']    = 'sporadic';
+			unset( $result['card']['mandate_options']['interval_count'] );
 		}
 
 		return $result;
@@ -925,28 +924,28 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * More details https://wp.me/pc4etw-ky
 	 *
 	 * @param WC_Order $renewal_order The subscription renewal order.
-	 * @return array Param to be included or empty array.
+	 * @return string Param to be included or empty array.
 	 */
-	public function get_mandate_param_for_renewal_order( WC_Order $renewal_order ): array {
+	public function get_mandate_param_for_renewal_order( WC_Order $renewal_order ): string {
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
 		$subscription  = reset( $subscriptions );
 
 		if ( ! $subscription ) {
-			return [];
+			return '';
 		}
 
 		$parent_order = wc_get_order( $subscription->get_parent_id() );
 
 		if ( ! $parent_order ) {
-			return [];
+			return '';
 		}
 
 		$mandate = $parent_order->get_meta( '_stripe_mandate_id', true );
 
 		if ( empty( $mandate ) ) {
-			return [];
+			return '';
 		}
 
-		return [ 'mandate' => $mandate ];
+		return $mandate;
 	}
 }

@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Automattic\WooCommerce\StoreApi\StoreApi;
 use Automattic\WooCommerce\StoreApi\RoutesController;
 use WCPay\Core\Mode;
+use WCPay\Core\Server\Request;
 use WCPay\Logger;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
@@ -33,6 +34,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
+use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 
 /**
@@ -222,6 +224,13 @@ class WC_Payments {
 	private static $wc_payments_checkout;
 
 	/**
+	 * WooPay Checkout service
+	 *
+	 * @var Checkout_Service
+	 */
+	private static $woopay_checkout_service;
+
+	/**
 	 * WC Payments Customer Service API
 	 *
 	 * @var WC_Payments_Customer_Service_API
@@ -259,6 +268,44 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-base-exception.php';
 		include_once __DIR__ . '/exceptions/class-api-exception.php';
 		include_once __DIR__ . '/exceptions/class-connection-exception.php';
+		include_once __DIR__ . '/core/class-mode.php';
+
+		// Include core exceptions.
+		include_once __DIR__ . '/core/exceptions/server/request/class-server-request-exception.php';
+		include_once __DIR__ . '/core/exceptions/server/request/class-invalid-request-parameter-exception.php';
+		include_once __DIR__ . '/core/exceptions/server/request/class-immutable-parameter-exception.php';
+		include_once __DIR__ . '/core/exceptions/server/request/class-extend-request-exception.php';
+		include_once __DIR__ . '/core/exceptions/server/response/class-server-response-exception.php';
+
+		// Include core requests.
+		include_once __DIR__ . '/core/server/class-request.php';
+		include_once __DIR__ . '/core/server/class-response.php';
+		include_once __DIR__ . '/core/server/request/trait-intention.php';
+		include_once __DIR__ . '/core/server/request/trait-level3.php';
+		include_once __DIR__ . '/core/server/request/trait-order-info.php';
+		include_once __DIR__ . '/core/server/request/trait-date-parameters.php';
+		include_once __DIR__ . '/core/server/request/class-generic.php';
+		include_once __DIR__ . '/core/server/request/class-get-intention.php';
+		include_once __DIR__ . '/core/server/request/class-create-intention.php';
+		include_once __DIR__ . '/core/server/request/class-update-intention.php';
+		include_once __DIR__ . '/core/server/request/class-capture-intention.php';
+		include_once __DIR__ . '/core/server/request/class-cancel-intention.php';
+		include_once __DIR__ . '/core/server/request/class-create-setup-intention.php';
+		include_once __DIR__ . '/core/server/request/class-create-and-confirm-setup-intention.php';
+		include_once __DIR__ . '/core/server/request/class-get-charge.php';
+		include_once __DIR__ . '/core/server/request/class-woopay-create-intent.php';
+		include_once __DIR__ . '/core/server/request/class-create-and-confirm-intention.php';
+		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-intention.php';
+		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
+		include_once __DIR__ . '/core/server/request/class-paginated.php';
+		include_once __DIR__ . '/core/server/request/class-list-transactions.php';
+		include_once __DIR__ . '/core/server/request/class-list-disputes.php';
+		include_once __DIR__ . '/core/server/request/class-list-deposits.php';
+		include_once __DIR__ . '/core/server/request/class-list-documents.php';
+		include_once __DIR__ . '/core/server/request/class-list-authorizations.php';
+		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
+
+		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 
 		self::$api_client = self::create_api_client();
 
@@ -326,6 +373,9 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 		}
+
+		self::$woopay_checkout_service = new Checkout_Service();
+		self::$woopay_checkout_service->init();
 
 		// // Load platform checkout save user section if feature is enabled.
 		add_action( 'woocommerce_cart_loaded_from_session', [ __CLASS__, 'init_platform_checkout' ] );
@@ -1334,5 +1384,39 @@ class WC_Payments {
 		if ( ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) && file_exists( WCPAY_ABSPATH . 'dist/runtime.js' ) ) {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
+	}
+
+	/**
+	 * Creates a new request object for a server call.
+	 *
+	 * @param  string $class_name The name of the request class. Must extend WCPay\Core\Server\Request.
+	 * @param  mixed  $id         The item ID, if the request needs it (Optional).
+	 * @return Request
+	 * @throws Exception          If the request class is not really a request.
+	 */
+	public static function create_request( $class_name, $id = null ) {
+		/**
+		 * Used for unit tests only, as requests have dependencies, which are not publicly available in live mode.
+		 *
+		 * @param Request $request    Null, but if the filter returns a request, it will be used.
+		 * @param string  $class_name The name of the request class.
+		 */
+		$request = apply_filters( 'wcpay_create_request', null, $class_name, $id );
+		if ( $request instanceof Request ) {
+			return $request;
+		}
+
+		if ( ! is_subclass_of( $class_name, Request::class ) ) {
+			throw new Exception(
+				sprintf(
+					'WC_Payments::create_request() requires a class, which extends %s, %s provided instead',
+					Request::class,
+					$class_name
+				)
+			);
+		}
+
+		return new $class_name( self::get_payments_api_client(), self::get_wc_payments_http(), $id );
+
 	}
 }
