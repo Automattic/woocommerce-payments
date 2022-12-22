@@ -16,6 +16,8 @@ use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Database_Cache;
+use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Response;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -1991,6 +1993,23 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Sends a request object.
+	 *
+	 * @param  Request $request The request to send.
+	 * @return array            A response object.
+	 */
+	public function send_request( Request $request ) {
+		return $this->request(
+			$request->get_params(),
+			$request->get_api(),
+			$request->get_method(),
+			$request->is_site_specific(),
+			$request->should_use_user_token(),
+			$request->should_return_raw_response()
+		);
+	}
+
+	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
@@ -2083,9 +2102,30 @@ class WC_Payments_API_Client {
 			$use_user_token
 		);
 
-		$response = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+		try {
+			$response = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+			$this->check_response_for_errors( $response );
+		} catch ( API_Exception $e ) {
+			if ( ! isset( $params['level3'] ) || 'invalid_request_error' !== $e->get_error_code() ) {
+				throw $e;
+			}
 
-		$this->check_response_for_errors( $response );
+			// phpcs:disable WordPress.PHP.DevelopmentFunctions
+
+			// Log the issue so we could debug it.
+			Logger::error(
+				'Level3 data error: ' . PHP_EOL
+				. print_r( $e->getMessage(), true ) . PHP_EOL
+				. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
+				. print_r( $params['level3'], true )
+			);
+
+			// phpcs:enable WordPress.PHP.DevelopmentFunctions
+
+			// Retry without level3 data.
+			unset( $params['level3'] );
+			return $this->request( $params, $api, $method, $is_site_specific, $use_user_token, $raw_response );
+		}
 
 		if ( ! $raw_response ) {
 			$response_body = $this->extract_response_body( $response );
@@ -2132,29 +2172,11 @@ class WC_Payments_API_Client {
 			];
 		}
 
-		try {
-			return $this->request( $params, $api, $method, $is_site_specific );
-		} catch ( API_Exception $e ) {
-			if ( 'invalid_request_error' !== $e->get_error_code() ) {
-				throw $e;
-			}
-
-			// phpcs:disable WordPress.PHP.DevelopmentFunctions
-
-			// Log the issue so we could debug it.
-			Logger::error(
-				'Level3 data error: ' . PHP_EOL
-				. print_r( $e->getMessage(), true ) . PHP_EOL
-				. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
-				. print_r( $params['level3'], true )
-			);
-
-			// phpcs:enable WordPress.PHP.DevelopmentFunctions
-
-			// Retry without level3 data.
-			unset( $params['level3'] );
-			return $this->request( $params, $api, $method, $is_site_specific );
-		}
+		/**
+		 * In case of invalid request errors, level3 data is now removed,
+		 * and the request is retried within `request()` instead of here.
+		 */
+		return $this->request( $params, $api, $method, $is_site_specific );
 	}
 
 	/**
@@ -2281,7 +2303,7 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 */
-	private function add_additional_info_to_charge( array $charge ) : array {
+	public function add_additional_info_to_charge( array $charge ) : array {
 		$charge = $this->add_order_info_to_object( $charge['id'], $charge );
 		$charge = $this->add_formatted_address_to_charge_object( $charge );
 
@@ -2440,7 +2462,7 @@ class WC_Payments_API_Client {
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Unable to deserialize intention array.
 	 */
-	private function deserialize_intention_object_from_array( array $intention_array ) {
+	public function deserialize_intention_object_from_array( array $intention_array ) {
 		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
 		$created = new DateTime();
 		$created->setTimestamp( $intention_array['created'] );
