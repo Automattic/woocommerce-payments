@@ -1,6 +1,167 @@
 # WooCommerce Payments Server Requests
 
-This document will outline the concepts and documentation of WooCommerce Payments Request classes. The purpose of request classes is to provide an easy way to send API requests towards WooCommerce Payments Server, where type safety, validation and builder pattern is used to built requests towards WooCommerce Payments Server. To make it easier for other parties to use it and extend it, every request class has its own filter that can be hooked on, and you could change the behavior or even set your own parameters while maintain all functionality from the original request class
+This document outlines the concepts and implementation of WooCommerce Payments server request classes.
+
+The purpose of request classes is to provide an easy way to send API requests towards WooCommerce Payments Server, where type safety, validation and builder pattern is used to built requests towards WooCommerce Payments Server.
+
+To make it easier for other parties to use it and extend it, every request class has its own filter that can be hooked on, and you could change the behavior or even set your own parameters while maintain all functionality from the original request class.
+
+## Usage
+
+In general, to use any specific request class to make a request, you need to:
+
+1. Create the request.
+2. Prepare the request by calling all necessary setters (mainly for `POST` requests).
+3. Send the request.
+
+### Using `GET` and `DELETE` requests
+
+Requests to retrieve or delete items should be performed similarly to this:
+
+```php
+<?php
+use WCPay\Core\Server\Request\Get_Intention;
+
+$intention_id = $this->order_service->get_intent_id_for_order( $order );
+$request      = Get_Intention::create( $intention_id );
+
+/**
+ * Sends a request to retrieve an intention.
+ * 
+ * @param WC_Order $order The order, which the intent is associated with.
+ */
+$intention = $request->send( 'my_get_intention_request', $order );
+```
+
+Highlights from this example:
+
+1. For `GET` requests the item identifier is a required parameter for the `::create()` method.
+2. Additional parameters should be providable only through setters (see examples with `POST` requests below).
+3. Whenever sending the request, it is required to provide a filter.
+
+### Using `POST` requests
+
+Requests to create/update items should look similarly to this:
+
+```php
+<?php
+use WCPay\Core\Server\Request\Create_Intention;
+
+$request = Create_Intention::create();
+$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+$request->set_currency( $order->get_currency() );
+$request->set_payment_method( $payment_information->get_payment_method() );
+
+/**
+ * Sending a request to create and confirm a payment intention.
+ * 
+ * @param WC_Order            $order               The order which the intention belongs to. 
+ * @param Payment_Information $payment_information Prepared payment information from the gateway.
+ */
+$intention = $request->send( 'wcpay_create_intention_request', $order, $payment_information );
+```
+
+### Generic requests
+
+[➡️ Generic Requests Documentation](request/class-generic.md)
+
+The `WCPay\Core\Server\Request\Generic` class is available to use during development without needing to create a new request class.
+
+```php
+use WCPay\Core\Server\Request\Generic;
+
+$request = new Generic(
+	'payment_intentions',
+	\Requests::POST,
+	[
+		'amount' => 300
+	]
+);
+$intention = $request->send( 'custom_create_intention_request' );
+```
+
+However, once the rest of the related development is finished, please create a new request class before merging.
+
+### Providing and using filters
+
+Request classes are build from the ground up with the idea of being safely extendable. Every time a request is sent, it is mandatory to provide at least a filter, and potentially arguments for that filter, in order to allow others to modify it.
+
+Filters in request work similarly to generic WordPress filter, with the difference that they are provided through the request. This allows protected (immutable) parameters to remain protected, and slightly decreases the overhead of checking the returned request.
+
+#### Providing filters
+
+It is mandatory to provide a filter when sending each request. When doing so, please try to provide enough context for the filter, but do not provide parameters, which are already in the filter.
+
+> The `->send()` method of any request should be documented similarly to any other WordPress filter/action.
+
+If you are using the same hook name as another instance, please use the same parameters.
+
+Here is a **good example**:
+
+```php
+/**
+ * Sending a request to create and confirm a payment intention.
+ * 
+ * @param WC_Order            $order               The order which the intention belongs to. 
+ * @param Payment_Information $payment_information Prepared payment information from the gateway.
+ */
+$intention = $request->send( 'wcpay_update_intention_request', $order, $payment_information );
+```
+
+- This example includes everything needed in the `$order` and `$payment_information` parameters, and they are documented.
+- The hook name is prefixed with `wcpay_`.
+
+Here is a **bad example**:
+
+```php
+$intention = $request->send( 'update_request', $intention_id );
+```
+
+- This example uses `update_request`, which could appear in other hooks.
+- The relevant order and payment information objects are not present.
+- `$intention_id` is redundant, as it's already available though the request: `$request->get_id()`.
+- There is no PHPDoc comment for the request, leaving others guessing what types to expect.
+
+#### Using filters
+
+Based on the good example above, a request can be modified in the following way:
+
+```php
+add_filter( 'wcpay_update_intention_request', 'my_update_intention_callback', 10, 3 );
+function my_update_intention_callback( $request, WC_Order $order, \WCPay\Payment_Information $payment_information ) {
+	$request->set_metadata( [] );
+	$request->set_amount( 300 ); // Do not try this, `amount` is protected, and cannot be modified through filters.
+	return $request;
+}
+```
+
+Note that you need to increase the callback parameter count by 1 in order to receive both the request, and all additional context.
+
+## List of covered requests
+
+Current WooCommerce payments client API has over 100 requests. In time, we are planning to cover all of them. Here is the list of requests we covered so far with 
+
+- [Cancel_Intention](requests/class-cancel-intention.md)
+- [Capture_Intention](requests/class-capture-intention.md)
+- [Create_And_Confirm_Intention](requests/class-create-and-confirm-intention.md)
+- [Create_And_Confirm_Setup_Intention](requests/class-create-and-confirm-setup-intention.md)
+- [Create_Intention](requests/class-create-intention.md)
+- [Create_Setup_Intention](requests/class-create-setup-intention.md)
+- [Generic](requests/class-generic.md)
+- [Get_Charge](requests/class-get-charge.md)
+- [Get_Intention](requests/class-get-intention.md)
+- [List_Authorizations](requests/class-list-authorizations.md)
+- [List_Deposits](requests/class-list-deposits.md)
+- [List_Disputes](requests/class-list-disputes.md)
+- [List_Documents](requests/class-list-documents.md)
+- [List_Transactions](requests/class-list-transactions.md)
+- [Paginated](requests/class-paginated.md)
+- [Update_Intention](requests/class-update-intention.md)
+- [WooPay_Create_And_Confirm_Intention](requests/class-woopay-create-and-confirm-intention.md)
+- [WooPay_Create_And_Confirm_Setup_Intention](requests/class-woopay-create-and-confirm-setup-intention.md)
+- [WooPay_Create_Intent](requests/class-woopay-create-intent.md)
+
+
 
 ## Creating request class
 
@@ -47,122 +208,4 @@ The third argument is request class constructor ID. This id is used in request c
 The fourth argument is the response you would like to have from wc pay server API. In most cases this is not needed, because you can mock format response function and set any response you would like to, but if you want to test format_response function, you can set response using this argument and test whatever scenario you want.
 The last two arguments are WC Payments API Client and WC Payments HTTP interface. This is used to handle all request related task to wcpay server (like authentication, …). In most you don’t need to send your version of mocked classes here, but if you would like to test something inside these classes feel free to pass whatever mocked object you would like to.
 
-## List of covered requests
-
-Current WooCommerce payments client API has over 100 requests. In time, we are planning to cover all of them. Here is the list of requests we covered so far with 
-
-- [Cancel_Intention](requests/class-cancel-intention.md)
-- [Capture_Intention](requests/class-capture-intention.md)
-- [Create_And_Confirm_Intention](requests/class-create-and-confirm-intention.md)
-- [Create_And_Confirm_Setup_Intention](requests/class-create-and-confirm-setup-intention.md)
-- [Create_Intention](requests/class-create-intention.md)
-- [Create_Setup_Intention](requests/class-create-setup-intention.md)
-- [Generic](requests/class-generic.md)
-- [Get_Charge](requests/class-get-charge.md)
-- [Get_Intention](requests/class-get-intention.md)
-- [List_Authorizations](requests/class-list-authorizations.md)
-- [List_Deposits](requests/class-list-deposits.md)
-- [List_Disputes](requests/class-list-disputes.md)
-- [List_Documents](requests/class-list-documents.md)
-- [List_Transactions](requests/class-list-transactions.md)
-- [Paginated](requests/class-paginated.md)
-- [Update_Intention](requests/class-update-intention.md)
-- [WooPay_Create_And_Confirm_Intention](requests/class-woopay-create-and-confirm-intention.md)
-- [WooPay_Create_And_Confirm_Setup_Intention](requests/class-woopay-create-and-confirm-setup-intention.md)
-- [WooPay_Create_Intent](requests/class-woopay-create-intent.md)
-
-`Cancel_Intention`
-
-Used to sent cancel indentation request.
-
-- List of immutable parameters: none
-- List of required parameters: none
-- List of default parameters: none
-
-Name of the filter added: 'wcpay_cancel_intent_request'
-Arguments passed to filter: WC_Order
-Example:
-
-```php
-$request = Cancel_Intention::create( $order->get_transaction_id() );
-$intent  = $request->send( 'wcpay_cancel_intent_request', $order );
-```
-
-`Capure_Intention`
-
-Used to sent capture indentation.
-
-- List of immutable parameters: `amount_to_capture`
-- List of required parameters: `amount_to_capture`
-- List of default parameters: `level3`( as empty array)
-
-Name of the filter added: ‘wcpay_capture_intent_request’
-Arguments passed to filter: `WC_Order`
-Example:
-
-```php
-$capture_intention_request = Capture_Intention::create( $intent_id );
-$capture_intention_request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
-if ( $include_level3 ) {
- $capture_intention_request->set_level3( $this->get_level3_data_from_order( $order ) );
-}
-```
-
-`Create_And_Confirm_Intention`
-
-Used to construct create and confirm intention request.
-
-- List of immutable parameters: `amount`, `currency`, `payment_method`
-- List of required parameters: `amount`, `currency`, `payment_method`, `customer`, `metadata`
-- List of default parameters: `confirm` (as `true`), `capture_method` (as ‘automatic’)
-
-Name of the filter added: `wcpay_create_intention_request`
-Arguments passed to filter: `Payment_Information`
-
-Example:
-
-```php
-$request = Create_And_Confirm_Intention::create();
-$request->set_amount( $converted_amount );
-$request->set_currency_code( $currency );
-$request->set_payment_method( $payment_information->get_payment_method() );
-$request->set_customer( $customer_id );
-$request->set_capture_method( $payment_information->is_using_manual_capture() );
-$request->set_metadata( $metadata );
-$request->set_level3( $this->get_level3_data_from_order( $order ) );
-$request->set_off_session( $payment_information->is_merchant_initiated() );
-$request->set_payment_methods( $payment_methods );
-$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
-// Make sure that setting fingerprint is performed after setting metadata becaouse metadata will override any values you set before for metadata param.
-$request->set_fingerprint( $payment_information->get_fingerprint() );
-if ( $save_payment_method_to_store ) {
- $request->setup_future_usage();
-}
-if ( $scheduled_subscription_payment ) {
- $mandate = $this->get_mandate_param_for_renewal_order( $order );
- if ( $mandate ) {
-   $request->set_mandate( $mandate );
- }
-}
-$intent = $request->send( 'wcpay_create_intention_request', $payment_information );
-```
-
-`Create_And_Confirm_Setup_Intention`
-
-Used to construct create and confirm setup intention request.
-
-- List of immutable parameters: `customer`, `confirm`
-- List of required parameters: `customer`
-- List of default parameters: `confirm` (as `true`), `metadata` (as empty array)
-
-Name of the filter added: `wcpay_create_intention_request`
-Arguments passed to filter: `Payment_Information`
-Example:
-
-```php
-$request = Create_And_Confirm_Setup_Intention::create();
-$request->set_customer( $customer_id );
-$request->set_payment_method( $payment_information->get_payment_method() );
-$request->set_metadata( $metadata );
-$intent = $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_platform_checkout );
-```
+## Exceptions
