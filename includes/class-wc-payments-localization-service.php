@@ -126,7 +126,7 @@ class WC_Payments_Localization_Service {
 
 		$current_timestamp = time();
 		foreach ( $currency_switches as $country_code => $change ) {
-			if ( $change['effective'] < $current_timestamp ) {
+			if ( $change['effective'] <= $current_timestamp ) {
 				$this->locale_info[ $country_code ] = array_merge( $this->locale_info[ $country_code ], $change['update'] );
 			}
 		}

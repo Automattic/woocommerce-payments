@@ -12,7 +12,7 @@ $locales = include WCPAY_ABSPATH . '/i18n/currency-info.php';
 
 return [
 	'HR' => [
-		'effective' => 1672531200, // Jan 1, 2023.
+		'effective' => 1672531200, // Jan 1, 2023 00:00:00.
 		'update'    => [
 			'currency_code' => 'EUR',
 			'name'          => 'Euro',

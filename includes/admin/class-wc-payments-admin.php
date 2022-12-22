@@ -464,7 +464,7 @@ class WC_Payments_Admin {
 		$currency_switches = include WCPAY_ABSPATH . 'i18n/currency-switches.php';
 		$current_timestamp = time();
 		foreach ( $currency_switches as $country_code => $change ) {
-			if ( $change['effective'] < $current_timestamp ) {
+			if ( $change['effective'] <= $current_timestamp ) {
 				$locale_info[ $country_code ] = array_merge( $locale_info[ $country_code ], $change['update'] );
 			}
 		}

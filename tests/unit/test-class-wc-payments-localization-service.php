@@ -179,7 +179,7 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 		add_filter(
 			'wcpay_mock_time',
 			function() {
-				return strtotime( '2022-12-30 23:59:59' );
+				return 1672531199;
 			}
 		);
 		$this->localization_service = new WC_Payments_Localization_Service();
@@ -192,7 +192,7 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 		add_filter(
 			'wcpay_mock_time',
 			function() {
-				return strtotime( '2023-01-01 00:00:01' );
+				return 1672531200;
 			}
 		);
 		$this->localization_service = new WC_Payments_Localization_Service();
