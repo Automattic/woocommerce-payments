@@ -1,5 +1,19 @@
 # WooCommerce Payments: Creating and extending server requests
 
+1. [Creating new requests](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#creating-new-requests)
+    1. [Basic methods](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#basic-methods)
+    1. [Identifiers](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#identifiers)
+    1. [Setters](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#setters)
+    1. [Parameter definitions](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#parameter-definitions)
+        1. [Immutable parameters](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#immutable-parameters)
+    1. [Validators](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#validators)
+1. [Extending requests](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#extending-requests)
+    1. [Finding the definition](#1-look-for-the-definition)
+    2. [Creating a new extended class](#2-extend-the-class)
+    3. [Using the extended class](#3-replacing-the-class)
+1. [Testing](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#testing)
+
+
 ## Creating new requests
 
 This is the anatomy of a request-specific class:
@@ -93,7 +107,7 @@ class My_Request {
 }
 
 add_filter( 'wcpay_my_request', function ( $request ) {
-  $request->set_name( 'Hans' ); // <-- this will throw an `Immutable_Parameter_Exception`
+	$request->set_name( 'Hans' ); // <-- this will throw an `Immutable_Parameter_Exception`
 } );
 
 $request = My_Request::create();
@@ -112,9 +126,75 @@ Validators are stored in the abstract `Request` class, and they are used to vali
 
 All of those validators would throw an `Invalid_Request_Parameter_Exception` exception if the value is not in the correct format.
 
+Example:
+
+```php
+/**
+ * Sets the deposit ID.
+ * 
+ * @param  string $deposit_id                  The deposit ID, including. the `po_` prefix.
+ * @throws Invalid_Request_Parameter_Exception When the provided ID is not valid.
+ */
+public function set_deposit( string $deposit_id ) {
+	$this->validate_stripe_id( $deposit_id, 'po' );
+	$this->set_param( 'deposit', $deposit_id );
+}
+```
+
 ## Extending requests
 
-Every request class can be modified or extended using filters. There is built in functionality to use that within request classes. One of the ways is to use the built-in static “extend” function. The recommended way to extend request or to hook is to use defined filters. When request method “send” is called (the method that actually sends the request to wcpay sever) the request filter name and filter arguments are passed to the send function. Te “send” function will apply passed filters and pass the arguments to it. To change behavior or to set some custom parameters, you could define your own filter, do your custom logic there. You could create your own request class by extending the request class you want to hook on, do some custom coding there and everything will work out of the box because of functionalities that are added to base request class. This approach makes things easier and you can easily change something in the codebase without worrying that you might break something somewhere else. You can create a filter and apply it when you need it, and set your own custom logic wherever you need.
+Every request class can be extended, and replaced using filters. The important addition with requests is the static `extend()` method, which can be used on child classes to extend the parent request __object__ once it already exists.
+
+### 1. Look for the definition
+
+Request classes can be extended as any other PHP class. Let's use the existing `Create_and_Confirm_Intention` and `WooPay_Create_and_Confirm_Intention` requests as an example. Here is how `Create_and_Confirm_Intention` is used in the gateway:
+
+```php
+$request = Create_And_Confirm_Intention::create();
+// Call all necessary setters...
+$intent = $request->send( 'wcpay_create_intention_request', $payment_information );
+```
+
+### 2. Extend the class
+
+It can be easily extended:
+
+```php
+class WooPay_Create_and_Confirm_Intention extends Create_and_Confirm_Intention {
+	public function set_is_platform_payment_method() {
+		$this->set_param( 'is_platform_payment_method', true );
+	}
+}
+```
+
+### 3. Replacing the class
+ 
+The important part is how the new class is used. Instead of replacing `Create_and_Confirm_Intention` where it is used, please use the provided filter (`wcpay_create_intention_request` in this case) instead:
+
+
+```php
+function replace_request( Create_and_Confirm_Intention $base_request, Payment_Information $payment_information ) {
+	$request = WooPay_Create_and_Confirm_Intention::extend( $base_request );
+	$request->set_is_platform_payment_method();
+	return $request;
+}
+	
+add_filter( 'wcpay_create_intention_request', 'replace_request', 10, 2 );
+```
+
+Notice how `WooPay_Create_and_Confirm_Intention::extend()` is called here, and the provided argument is an instance of `Create_and_Confirm_Intention`. This mechanism copies the parameters of the existing request into the new one, but keeps them protected.
+
+#### Immutable parameters
+
+Even though the request is now an instance of another class, immutable parameters cannot be changed:
+
+```php
+function replace_request( Create_and_Confirm_Intention $base_request, Payment_Information $payment_information ) {
+	$request = WooPay_Create_and_Confirm_Intention::extend( $base_request );
+	$request->set_amount( 300 ); // <-- this will throw an exception.
+	return $request;
+}
+```
 
 ## Testing
 
