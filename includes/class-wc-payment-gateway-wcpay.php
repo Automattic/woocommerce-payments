@@ -84,6 +84,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const SESSION_KEY_PROCESSING_ORDER = 'wcpay_processing_order';
 
 	/**
+	 * Flag to indicate that a previous order with the same cart content has already paid.
+	 *
+	 * @type string
+	 */
+	const FLAG_PREVIOUS_ORDER_PAID = 'wcpay_paid_for_previous_order';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -1932,8 +1939,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->remove_session_processing_order( $session_order_id );
 
 		$return_url = $this->get_return_url( $session_order );
-		// TODO We'll need to add a notice, indicating that a previous order was completed.
-		$return_url = add_query_arg( 'wcpay_paid_for_previous_order', 'yes', $return_url );
+		$return_url = add_query_arg( self::FLAG_PREVIOUS_ORDER_PAID, 'yes', $return_url );
 
 		return [
 			'result'                            => 'success',
