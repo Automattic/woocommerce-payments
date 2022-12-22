@@ -51,6 +51,26 @@ The last two arguments are WC Payments API Client and WC Payments HTTP interface
 
 Current WooCommerce payments client API has over 100 requests. In time, we are planning to cover all of them. Here is the list of requests we covered so far with 
 
+- [Cancel_Intention](requests/class-cancel-intention.md)
+- [Capture_Intention](requests/class-capture-intention.md)
+- [Create_And_Confirm_Intention](requests/class-create-and-confirm-intention.md)
+- [Create_And_Confirm_Setup_Intention](requests/class-create-and-confirm-setup-intention.md)
+- [Create_Intention](requests/class-create-intention.md)
+- [Create_Setup_Intention](requests/class-create-setup-intention.md)
+- [Generic](requests/class-generic.md)
+- [Get_Charge](requests/class-get-charge.md)
+- [Get_Intention](requests/class-get-intention.md)
+- [List_Authorizations](requests/class-list-authorizations.md)
+- [List_Deposits](requests/class-list-deposits.md)
+- [List_Disputes](requests/class-list-disputes.md)
+- [List_Documents](requests/class-list-documents.md)
+- [List_Transactions](requests/class-list-transactions.md)
+- [Paginated](requests/class-paginated.md)
+- [Update_Intention](requests/class-update-intention.md)
+- [WooPay_Create_And_Confirm_Intention](requests/class-woopay-create-and-confirm-intention.md)
+- [WooPay_Create_And_Confirm_Setup_Intention](requests/class-woopay-create-and-confirm-setup-intention.md)
+- [WooPay_Create_Intent](requests/class-woopay-create-intent.md)
+
 `Cancel_Intention`
 
 Used to sent cancel indentation request.
