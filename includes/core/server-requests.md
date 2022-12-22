@@ -4,7 +4,7 @@ This document will outline the concepts and documentation of WooCommerce Payment
 
 ## Creating request class
 
-A new abstract request class have been added that outlines functionalities that are standard for each request class. New defined parameters constants (IMMUTABLE_PARAMS, REQUIRED_PARAMS, DEFAULT_PARAMS) holds some basic functionality for request parameters. Immutable parameters constant is sued to maintain immutability when request is extended or altered via filters. One good example is “amount” parameter in any intent API request calls, where “amount” cannot be changed in any filters. Default parameters constant is used to hold default value for request parameters. Using this approach will make building a request easier by not calling setters for default parameters. Required parameters constant holds a list of parameters that are required. This constant is used during execution of the request, where each parameter is checked and validated. 
+A new abstract request class have been added that outlines functionalities that are standard for each request class. New defined parameters constants (`IMMUTABLE_PARAMS`, `REQUIRED_PARAMS`, `DEFAULT_PARAMS`) holds some basic functionality for request parameters. Immutable parameters constant is sued to maintain immutability when request is extended or altered via filters. One good example is “amount” parameter in any intent API request calls, where “amount” cannot be changed in any filters. Default parameters constant is used to hold default value for request parameters. Using this approach will make building a request easier by not calling setters for default parameters. Required parameters constant holds a list of parameters that are required. This constant is used during execution of the request, where each parameter is checked and validated. 
 To set request parameters, each request class has its own setter functions. Some of these functions have their own validators. Using validators will force us to pass variables that are in correct type and in correct format.
 Some request classes uses ID to send request. For example, update intent requests needs to know the ID of intent it needs to update. You can pass ID to request class and request class will know how to handle it.
 To create a request, use a static function called “create” and pass ID if needed. All dependencies are already taken care of. More examples will be provided in this document, where every request will be displayed with built steps.
@@ -72,12 +72,12 @@ $intent  = $request->send( 'wcpay_cancel_intent_request', $order );
 
 Used to sent capture indentation.
 
-- List of immutable parameters: amount_to_capture
-- List of required parameters: amount_to_capture
-- List of default parameters: level3( as empty array)
+- List of immutable parameters: `amount_to_capture`
+- List of required parameters: `amount_to_capture`
+- List of default parameters: `level3`( as empty array)
 
 Name of the filter added: ‘wcpay_capture_intent_request’
-Arguments passed to filter: WC_Order
+Arguments passed to filter: `WC_Order`
 Example:
 
 ```php
@@ -92,12 +92,13 @@ if ( $include_level3 ) {
 
 Used to construct create and confirm intention request.
 
-- List of immutable parameters: amount, currency, payment_method
-- List of required parameters: amount, currency, payment_method, customer, metadata
-- List of default parameters: confirm (as true), capture_method (as ‘automatic’)
+- List of immutable parameters: `amount`, `currency`, `payment_method`
+- List of required parameters: `amount`, `currency`, `payment_method`, `customer`, `metadata`
+- List of default parameters: `confirm` (as `true`), `capture_method` (as ‘automatic’)
 
-Name of the filter added: wcpay_create_intention_request
-Arguments passed to filter: Payment_Information
+Name of the filter added: `wcpay_create_intention_request`
+Arguments passed to filter: `Payment_Information`
+
 Example:
 
 ```php
@@ -130,12 +131,12 @@ $intent = $request->send( 'wcpay_create_intention_request', $payment_information
 
 Used to construct create and confirm setup intention request.
 
-- List of immutable parameters: customer, confirm
-- List of required parameters: customer
-- List of default parameters: confirm (as true), metadata (as empty array)
+- List of immutable parameters: `customer`, `confirm`
+- List of required parameters: `customer`
+- List of default parameters: `confirm` (as `true`), `metadata` (as empty array)
 
-Name of the filter added: wcpay_create_intention_request
-Arguments passed to filter: Payment_Information
+Name of the filter added: `wcpay_create_intention_request`
+Arguments passed to filter: `Payment_Information`
 Example:
 
 ```php
