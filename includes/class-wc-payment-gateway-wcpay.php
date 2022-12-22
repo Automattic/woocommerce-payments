@@ -73,7 +73,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @type int
 	 */
 
-	const USER_FORMATTED_TOKENS_LIMIT  = 100;
+	const USER_FORMATTED_TOKENS_LIMIT = 100;
+
+	/**
+	 * Key name for saving the current processing order_id to WC Session with the purpose
+	 * of preventing duplicate payments in a single order.
+	 *
+	 * @type string
+	 */
 	const SESSION_KEY_PROCESSING_ORDER = 'wcpay_processing_order';
 
 	/**
