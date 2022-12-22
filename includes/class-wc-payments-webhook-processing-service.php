@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Constants\Order_Statuses;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;

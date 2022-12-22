@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Order_Statuses;
+use WCPay\Constants\Order_Status;
 
 /**
  * WC_Payments_Order_Service unit tests.

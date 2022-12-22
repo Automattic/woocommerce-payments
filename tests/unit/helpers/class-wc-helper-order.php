@@ -5,7 +5,7 @@
  * @package WooCommerce/Tests
  */
 
-use WCPay\Constants\Order_Statuses;
+use WCPay\Constants\Order_Status;
 
 /**
  * Class WC_Helper_Order.

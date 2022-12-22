@@ -5,9 +5,9 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Logger;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
-use WCPay\Constants\Order_Statuses;
+use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
 

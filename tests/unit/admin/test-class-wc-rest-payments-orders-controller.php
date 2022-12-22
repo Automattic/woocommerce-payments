@@ -6,7 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Constants\Order_Statuses;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Rest_Request_Exception;
 

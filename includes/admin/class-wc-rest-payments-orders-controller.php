@@ -7,9 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Constants\Payment_Method;
-use WCPay\Constants\Order_Statuses;
 use WCPay\Logger;
+use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Method;
 
 /**
  * REST controller for order processing.

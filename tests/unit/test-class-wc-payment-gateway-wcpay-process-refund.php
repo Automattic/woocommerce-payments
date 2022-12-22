@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Order_Statuses;
+use WCPay\Constants\Order_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
 

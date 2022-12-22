@@ -9,7 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPAY\Constants\Order_Statuses;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
@@ -21,7 +21,6 @@ use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPAY_UnitTestCase;
-
 use WC_Customer;
 use WC_Helper_Order;
 use WC_Helper_Intention;
