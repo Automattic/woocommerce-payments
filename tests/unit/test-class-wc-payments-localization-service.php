@@ -182,6 +182,10 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 				return 1672531199;
 			}
 		);
+		// Debugging tests only failing on GH.
+		$current_time = strval( time() );
+		echo "\n\nCurrent test: " . esc_html( strval( __FUNCTION__ ) ) . "\n";
+		echo 'Current timestamp: ' . esc_html( $current_time ) . "\n\n";
 		$this->localization_service = new WC_Payments_Localization_Service();
 		$this->assertSame( 'HRK', $this->localization_service->get_country_locale_data( 'HR' )['currency_code'] );
 	}
@@ -195,6 +199,10 @@ class WC_Payments_Localization_Service_Test extends WCPAY_UnitTestCase {
 				return 1672531200;
 			}
 		);
+		// Debugging tests only failing on GH.
+		$current_time = strval( time() );
+		echo "\n\nCurrent test: " . esc_html( strval( __FUNCTION__ ) ) . "\n";
+		echo 'Current timestamp: ' . esc_html( $current_time ) . "\n\n";
 		$this->localization_service = new WC_Payments_Localization_Service();
 		$this->assertSame( 'EUR', $this->localization_service->get_country_locale_data( 'HR' )['currency_code'] );
 	}
