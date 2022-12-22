@@ -6,10 +6,11 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Order_Statuses;
+use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
-use WCPay\Database_Cache;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -634,7 +635,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Statuses::STATUS_PROCESSING,
+					Order_Statuses::STATUS_COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -704,7 +710,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Statuses::STATUS_PROCESSING,
+					Order_Statuses::STATUS_COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -779,7 +790,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Statuses::STATUS_PROCESSING,
+					Order_Statuses::STATUS_COMPLETED,
+				]
+			)
 			->willReturn( true );
 
 		$this->mock_order
@@ -846,7 +862,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Statuses::STATUS_PROCESSING,
+					Order_Statuses::STATUS_COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -938,7 +959,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Statuses::STATUS_PROCESSING,
+					Order_Statuses::STATUS_COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -1015,9 +1041,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
-				[ [ 'failed' ] ],
-				[ [ 'processing', 'completed' ] ],
-				[ [ 'processing', 'completed' ] ]
+				[ [ Order_Statuses::STATUS_FAILED ] ],
+				[
+					[
+						Order_Statuses::STATUS_PROCESSING,
+						Order_Statuses::STATUS_COMPLETED,
+					],
+				],
+				[
+					[
+						Order_Statuses::STATUS_PROCESSING,
+						Order_Statuses::STATUS_COMPLETED,
+					],
+				],
 			)
 			->willReturn( false );
 
@@ -1033,7 +1069,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'failed' );
+			->with( Order_Statuses::STATUS_FAILED );
 
 		$this->mock_order
 			->method( 'get_data_store' )
@@ -1088,9 +1124,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
-				[ [ 'failed' ] ],
-				[ [ 'processing', 'completed' ] ],
-				[ [ 'processing', 'completed' ] ]
+				[ [ Order_Statuses::STATUS_FAILED ] ],
+				[
+					[
+						Order_Statuses::STATUS_PROCESSING,
+						Order_Statuses::STATUS_COMPLETED,
+					],
+				],
+				[
+					[
+						Order_Statuses::STATUS_PROCESSING,
+						Order_Statuses::STATUS_COMPLETED,
+					],
+				],
 			)
 			->willReturn( false );
 
@@ -1106,7 +1152,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'failed' );
+			->with( Order_Statuses::STATUS_FAILED );
 
 		$this->mock_order
 			->method( 'get_data_store' )
@@ -1147,7 +1193,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'on-hold' );
+			->with( Order_Statuses::STATUS_ON_HOLD );
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )
@@ -1184,7 +1230,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'completed' );
+			->with( Order_Statuses::STATUS_COMPLETED );
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )

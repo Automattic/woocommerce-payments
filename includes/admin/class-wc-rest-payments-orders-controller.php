@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Order_Statuses;
 use WCPay\Logger;
 
 /**
@@ -303,7 +304,15 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-			$disallowed_order_statuses = apply_filters( 'wcpay_create_customer_disallowed_order_statuses', [ 'completed', 'cancelled', 'refunded', 'failed' ] );
+			$disallowed_order_statuses = apply_filters(
+				'wcpay_create_customer_disallowed_order_statuses',
+				[
+					Order_Statuses::STATUS_COMPLETED,
+					Order_Statuses::STATUS_CANCELLED,
+					Order_Statuses::STATUS_REFUNDED,
+					Order_Statuses::STATUS_FAILED,
+				]
+			);
 			if ( $order->has_status( $disallowed_order_statuses ) ) {
 				return new WP_Error( 'wcpay_invalid_order_status', __( 'Invalid order status', 'woocommerce-payments' ), [ 'status' => 400 ] );
 			}

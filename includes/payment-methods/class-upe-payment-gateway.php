@@ -10,13 +10,14 @@ namespace WCPay\Payment_Methods;
 use WC_Order;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Explicit_Price_Formatter;
+use WCPay\Constants\Order_Statuses;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Payment_Type;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WP_User;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
-use WCPay\Constants\Payment_Type;
 use WCPay\Session_Rate_Limiter;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Account;
@@ -614,7 +615,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				return;
 			}
 
-			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
+			if ( $order->has_status(
+				[
+					Order_Statuses::STATUS_PROCESSING,
+					Order_Statuses::STATUS_COMPLETED,
+					Order_Statuses::STATUS_ON_HOLD,
+				]
+			) ) {
 				return;
 			}
 

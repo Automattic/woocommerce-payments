@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Order_Statuses;
+
 /**
  * WC_Payments_Order_Service unit tests.
  */
@@ -72,7 +74,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_order_status_not_updated_if_order_paid() {
 		// Arrange: Set the order status to processing, default is pending. Get expected notes.
-		$this->order->set_status( 'processing' );
+		$this->order->set_status( Order_Statuses::STATUS_PROCESSING );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete.
@@ -180,7 +182,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_failed_exits_on_existing_order_status_failed() {
 		// Arrange: Set the intent status, order status, and get the expected notes.
 		$intent_status = 'failed';
-		$this->order->set_status( 'failed' );
+		$this->order->set_status( Order_Statuses::STATUS_FAILED );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order failed.
@@ -220,7 +222,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_authorized() {
 		// Arrange: Set the intent and order statuses.
 		$intent_status = 'requires_capture';
-		$order_status  = 'on-hold';
+		$order_status  = Order_Statuses::STATUS_ON_HOLD;
 
 		// Act: Attempt to mark the payment/order on-hold.
 		$this->order_service->mark_payment_authorized( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -247,7 +249,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_authorized_exits_on_existing_order_status_on_hold() {
 		// Arrange: Set the intent status, order status, and get the expected notes.
 		$intent_status = 'requires_capture';
-		$this->order->set_status( 'on-hold' );
+		$this->order->set_status( Order_Statuses::STATUS_ON_HOLD );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order on-hold.
@@ -267,7 +269,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_started() {
 		// Arrange: Set the intent and order statuses.
 		$intent_status = 'requires_action';
-		$order_status  = 'pending';
+		$order_status  = Order_Statuses::STATUS_PENDING;
 
 		// Act: Attempt to mark the payment/order pending.
 		$this->order_service->mark_payment_started( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -293,7 +295,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_started_exits_on_existing_order_status_not_pending() {
 		// Arrange: Set the intent status, order status, and get the expected notes.
 		$intent_status = 'requires_action';
-		$this->order->set_status( 'on-hold' );
+		$this->order->set_status( Order_Statuses::STATUS_ON_HOLD );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order pending.
@@ -348,7 +350,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
 
 		// Assert: Check that the order status was not updated.
-		$this->assertTrue( $this->order->has_status( [ 'pending' ] ) );
+		$this->assertTrue( $this->order->has_status( [ Order_Statuses::STATUS_PENDING ] ) );
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -373,7 +375,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( '', $this->order->get_meta( '_intention_status' ) );
 
 		// Assert: Check that the order status was not updated.
-		$this->assertTrue( $this->order->has_status( [ 'pending' ] ) );
+		$this->assertTrue( $this->order->has_status( [ Order_Statuses::STATUS_PENDING ] ) );
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -390,7 +392,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_capture_expired() {
 		// Arrange: Set the intent and order statuses.
 		$intent_status = 'canceled';  // Stripe uses single 'l'.
-		$order_status  = 'cancelled'; // WooCommerce uses double 'l'.
+		$order_status  = Order_Statuses::STATUS_CANCELLED; // WooCommerce uses double 'l'.
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
 		$this->order_service->mark_payment_capture_expired( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -422,7 +424,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_capture_cancelled() {
 		// Arrange: Set the intent and order statuses.
 		$intent_status = 'canceled';  // Stripe uses single 'l'.
-		$order_status  = 'cancelled'; // WooCommerce uses double 'l'.
+		$order_status  = Order_Statuses::STATUS_CANCELLED; // WooCommerce uses double 'l'.
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
 		$this->order_service->mark_payment_capture_cancelled( $this->order, $this->intent_id, $intent_status );
@@ -449,7 +451,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Arrange: Set the dispute_id and reason, and the order status.
 		$dispute_id   = 'dp_123';
 		$reason       = 'product_not_received';
-		$order_status = 'on-hold';
+		$order_status = Order_Statuses::STATUS_ON_HOLD;
 
 		// Act: Attempt to mark payment dispute created.
 		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $reason );
@@ -476,7 +478,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Arrange: Set the dispute_id and status, and the order status.
 		$dispute_id   = 'dp_123';
 		$status       = 'won';
-		$order_status = 'completed';
+		$order_status = Order_Statuses::STATUS_COMPLETED;
 
 		// Act: Attempt to mark payment dispute created.
 		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
@@ -503,7 +505,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Arrange: Set the dispute_id, dispute status, the order status, and update the order status.
 		$dispute_id   = 'dp_123';
 		$status       = 'lost';
-		$order_status = 'on-hold';
+		$order_status = Order_Statuses::STATUS_ON_HOLD;
 		$this->order->update_status( $order_status ); // When a dispute is created, the order status is changed to On Hold.
 
 		// Act: Attempt to mark payment dispute created.
@@ -535,7 +537,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_terminal_payment_completed() {
 		// Arrange: Set the intent status.
 		$intent_status = 'succeeded';
-		$order_status  = 'completed';
+		$order_status  = Order_Statuses::STATUS_COMPLETED;
 
 		// Act: Attempt to mark the payment/order complete.
 		$this->order_service->mark_terminal_payment_completed( $this->order, $this->intent_id, $intent_status );

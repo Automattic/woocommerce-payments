@@ -19,9 +19,11 @@ use MyCLabs\Enum\Enum;
  * @psalm-immutable
  */
 class Order_Statuses extends Enum {
-	const STATUS_CANCELLED = 'cancelled';
-	const STATUS_COMPLETED = 'completed';
-	const STATUS_FAILED    = 'failed';
-	const STATUS_ON_HOLD   = 'on-hold';
-	const STATUS_PENDING   = 'pending';
+	const STATUS_CANCELLED  = 'cancelled';
+	const STATUS_COMPLETED  = 'completed';
+	const STATUS_FAILED     = 'failed';
+	const STATUS_ON_HOLD    = 'on-hold';
+	const STATUS_PENDING    = 'pending';
+	const STATUS_PROCESSING = 'processing';
+	const STATUS_REFUNDED   = 'refunded';
 }

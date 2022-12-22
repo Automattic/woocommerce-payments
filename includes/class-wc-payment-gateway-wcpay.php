@@ -9,20 +9,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Logger;
-use WCPay\Payment_Information;
+use WCPay\Constants\Order_Statuses;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Constants\Payment_Method;
-use WCPay\Tracker;
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Logger;
+use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Session_Rate_Limiter;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\Session_Rate_Limiter;
+use WCPay\Tracker;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -680,7 +681,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 * information is not added to the order, as shown by tests.
 			 */
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
-				$order->update_status( 'failed' );
+				$order->update_status( Order_Statuses::STATUS_FAILED );
 			}
 
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
