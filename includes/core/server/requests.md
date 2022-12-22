@@ -6,6 +6,17 @@ The purpose of request classes is to provide an easy way to send API requests to
 
 To make it easier for other parties to use it and extend it, every request class has its own filter that can be hooked on, and you could change the behavior or even set your own parameters while maintain all functionality from the original request class.
 
+1. [Usage](#usage)
+    1. [Using `GET` and `DELETE` requests](#using-get-and-delete-requests)
+    1. [Using `POST` requests](#using-post-requests)
+    1. [Generic requests](#generic-requests)
+1. [Providing and using filters](#providing-and-using-filters)
+    1. [Providing filters](#providing-filters)
+    1. [Using filters](#using-filters)
+1. [Available requests](#available-requests)
+1. [Responses](#responses)
+1. [Creating new requests and extending existing ones](#creating-new-requests-and-extending-existing-ones)
+
 ## Usage
 
 In general, to use any specific request class to make a request, you need to:
@@ -142,25 +153,25 @@ Note that you need to increase the callback parameter count by 1 in order to rec
 Currently the WooCommerce Payments API client contains around 100 requests. The plan is to cover all of them in time, in the meantime here is a list of the existing requests:
 
 - Intentions
-	- [Cancel_Intention](requests/class-cancel-intention.md)
-	- [Capture_Intention](requests/class-capture-intention.md)
-	- [Create_And_Confirm_Intention](requests/class-create-and-confirm-intention.md)
-	- [Create_And_Confirm_Setup_Intention](requests/class-create-and-confirm-setup-intention.md)
-	- [Create_Intention](requests/class-create-intention.md)
-	- [Create_Setup_Intention](requests/class-create-setup-intention.md)
-	- [Get_Intention](requests/class-get-intention.md)
-	- [Update_Intention](requests/class-update-intention.md)
-- [Get_Charge](requests/class-get-charge.md)
+	- [Cancel_Intention](request/class-cancel-intention.md)
+	- [Capture_Intention](request/class-capture-intention.md)
+	- [Create_And_Confirm_Intention](request/class-create-and-confirm-intention.md)
+	- [Create_And_Confirm_Setup_Intention](request/class-create-and-confirm-setup-intention.md)
+	- [Create_Intention](request/class-create-intention.md)
+	- [Create_Setup_Intention](request/class-create-setup-intention.md)
+	- [Get_Intention](request/class-get-intention.md)
+	- [Update_Intention](request/class-update-intention.md)
+- [Get_Charge](request/class-get-charge.md)
 - Paginated lists (mainly used for the REST API):
-	- [List_Authorizations](requests/class-list-authorizations.md)
-	- [List_Deposits](requests/class-list-deposits.md)
-	- [List_Disputes](requests/class-list-disputes.md)
-	- [List_Documents](requests/class-list-documents.md)
-	- [List_Transactions](requests/class-list-transactions.md)
+	- [List_Authorizations](request/class-list-authorizations.md)
+	- [List_Deposits](request/class-list-deposits.md)
+	- [List_Disputes](request/class-list-disputes.md)
+	- [List_Documents](request/class-list-documents.md)
+	- [List_Transactions](request/class-list-transactions.md)
 - WooPay-specific
-	- [WooPay_Create_Intent](requests/class-woopay-create-intent.md)
-	- [WooPay_Create_And_Confirm_Intention](requests/class-woopay-create-and-confirm-intention.md)
-	- [WooPay_Create_And_Confirm_Setup_Intention](requests/class-woopay-create-and-confirm-setup-intention.md)
+	- [WooPay_Create_Intent](request/class-woopay-create-intent.md)
+	- [WooPay_Create_And_Confirm_Intention](request/class-woopay-create-and-confirm-intention.md)
+	- [WooPay_Create_And_Confirm_Setup_Intention](request/class-woopay-create-and-confirm-setup-intention.md)
 
 ## Responses
 
