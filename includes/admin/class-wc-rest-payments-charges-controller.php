@@ -47,7 +47,7 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 
 		try {
 			$wcpay_request = Get_Charge::create( $charge_id );
-			$charge        = $wcpay_request->send( 'wcpay_get_charge_request', $charge_id );
+			$charge        = $wcpay_request->send( 'wcpay_get_charge_request' );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( 'wcpay_get_charge', $e->getMessage() ) );
 		}

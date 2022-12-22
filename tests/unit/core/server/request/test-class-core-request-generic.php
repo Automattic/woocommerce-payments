@@ -12,7 +12,7 @@ use WCPay\Core\Server\Request\Generic;
 use WCPay\Core\Server\Response;
 
 /**
- * WCPay\Core\Server\Request unit tests.
+ * WCPay\Core\Server\Core_Request_Generic_Test unit tests.
  */
 class Core_Request_Generic_Test extends WCPAY_UnitTestCase {
 

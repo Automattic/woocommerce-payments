@@ -280,7 +280,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			$charge         = $payment_intent->get_charge();
 			$charge_id      = $charge ? $charge->get_id() : null;
 			$charge_request = Get_Charge::create( $charge_id );
-			$charge_array   = $charge_request->send( 'wcpay_get_charge_request', $charge_id );
+			$charge_array   = $charge_request->send( 'wcpay_get_charge_request' );
 
 			/* Collect receipt data, stored on the store side. */
 			$order = wc_get_order( $charge_array['order']['number'] );

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Create_And_Confirm_Intention_Test
+ * Class Get_Charge_Test
  *
  * @package WooCommerce\Payments\Tests
  */

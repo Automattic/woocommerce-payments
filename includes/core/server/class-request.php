@@ -7,12 +7,15 @@
 
 namespace WCPay\Core\Server;
 
+use DateTime;
 use WC_Payments;
 use WC_Payments_Http_Interface;
 use WC_Payments_API_Client;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Exceptions\API_Exception;
+use WP_Error;
 
 /**
  * Base for requests to the WCPay server.
@@ -224,6 +227,33 @@ abstract class Request {
 		return $this->format_response(
 			$this->api_client->send_request( $this->apply_filters( $hook, ...$args ) )
 		);
+	}
+
+	/**
+	 * This is mimic of send method, but where API execption is handled.
+	 * The reason behind this is that sometimes API request can fail for valid reasons and instead of handling this exception on every request, you could use this function.
+	 *
+	 * @param string $hook         The filter to use.
+	 * @param mixed  ...$args      Other parameters for the hook.
+	 * @return mixed               Either the response array, or the correct object.
+	 *
+	 * @throws Extend_Request_Exception
+	 * @throws Immutable_Parameter_Exception
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	final public function handle_rest_request( $hook, ...$args ) {
+		try {
+			$data = $this->send( $hook, ...$args );
+			// Make sure to return array if $data is instance or has parent as a Response class.
+			if ( is_a( $data, Response::class ) ) {
+				return $data->to_array();
+			}
+
+			// Return the data and let caller to parse it as it pleases.
+			return $data;
+		} catch ( API_Exception $e ) {
+			return new WP_Error( $e->get_error_code(), $e->getMessage() );
+		}
 	}
 
 	/**
@@ -558,5 +588,29 @@ abstract class Request {
 			);
 		}
 
+	}
+
+	/**
+	 * Validate date with given format.
+	 *
+	 * @param string $date Date to validate.
+	 * @param string $format Format to check.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function validate_date( string $date, string $format = 'Y-m-d H:i:s' ) {
+		$d = DateTime::createFromFormat( $format, $date );
+		if ( ! ( $d && $d->format( $format ) === $date ) ) {
+			throw new Invalid_Request_Parameter_Exception(
+				sprintf(
+				// Translators: %s is a currency code.
+					__( '%1$s is not a valid date for format %2$s.', 'woocommerce-payments' ),
+					$date,
+					$format
+				),
+				'wcpay_core_invalid_request_parameter_invalid_date'
+			);
+		}
 	}
 }

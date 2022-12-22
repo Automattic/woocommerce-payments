@@ -11,7 +11,7 @@ namespace WCPay\Core\Server\Request;
  * Request class for creating intents.
  */
 class WooPay_Create_And_Confirm_Intention extends Create_And_Confirm_Intention {
-	const DEFAULTS = [
+	const DEFAULT_PARAMS = [
 		'is_platform_payment_method' => false,
 		'woopay_has_subscription'    => false,
 	];
