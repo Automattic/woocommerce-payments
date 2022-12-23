@@ -1,17 +1,17 @@
 # WooCommerce Payments: Creating and extending server requests
 
-1. [Creating new requests](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#creating-new-requests)
-    1. [Basic methods](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#basic-methods)
-    1. [Identifiers](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#identifiers)
-    1. [Setters](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#setters)
-    1. [Parameter definitions](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#parameter-definitions)
-        1. [Immutable parameters](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#immutable-parameters)
-    1. [Validators](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#validators)
-1. [Extending requests](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#extending-requests)
+1. [Creating new requests](#creating-new-requests)
+    1. [Basic methods](#basic-methods)
+    1. [Identifiers](#identifiers)
+    1. [Setters](#setters)
+    1. [Parameter definitions](#parameter-definitions)
+        1. [Immutable parameters](#immutable-parameters)
+    1. [Validators](#validators)
+1. [Extending requests](#extending-requests)
     1. [Finding the definition](#1-look-for-the-definition)
     2. [Creating a new extended class](#2-extend-the-class)
     3. [Using the extended class](#3-replacing-the-class)
-1. [Testing](https://github.com/Automattic/woocommerce-payments/blob/add/request-classes-docs/includes/core/server/request/README.md#testing)
+1. [Testing](#testing)
 
 
 ## Creating new requests
@@ -198,7 +198,7 @@ function replace_request( Create_and_Confirm_Intention $base_request, Payment_In
 
 ## Testing
 
-To mock request classes, the recommended way is to use the built-in mock_wcpay_request function. One of the approaches is to mock format_respomse function and send whatever response you might need. The examples will be shown below on how to mock response.  This function accepts 7 parameters. The first parameter is the request class you want to mock. That class can be class name of request you would like to mock or subclass of request you would like to mock. Subclasses are usually used when you would like to extend a request with another class by using filters.
+To mock request classes, the recommended way is to use the built-in `mock_wcpay_request` function. One of the approaches is to mock `format_respomse` function and send whatever response you might need. The examples will be shown below on how to mock response.  This function accepts 7 parameters. The first parameter is the request class you want to mock. That class can be class name of request you would like to mock or subclass of request you would like to mock. Subclasses are usually used when you would like to extend a request with another class by using filters.
 
 The second argument is a number of API calls. This number tells how many API requests towards the server are expected to be executed. By default, this is set to one, but if you need to changed it you can pass any number you would like to. The good example is  when you want to be sure that no requests will be executed (like $this->never() in PHPUnit) or when you are executing same API request class multiple times (like retry mechanism).
 
