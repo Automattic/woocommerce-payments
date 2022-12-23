@@ -21,8 +21,6 @@ When using this request, provide the following filter and arguments:
 ## Example:
 
 ```php
-$request = %class_name%::create(%constructor_arg%);
+$request = %class_name%::create(%constructor_arg%);%setters%
 $request->send( '%filter%'%filter_args_inline% );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

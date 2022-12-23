@@ -24,5 +24,3 @@ When using this request, provide the following filter and arguments:
 $request = Get_Intention::create( $id );
 $request->send( 'wcpay_get_intent_request', $order );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

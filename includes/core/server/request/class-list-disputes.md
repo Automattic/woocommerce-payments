@@ -36,7 +36,17 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = List_Disputes::create();
+$request->set_created_after( $created_after );
+$request->set_created_before( $created_before );
+$request->set_created_between( $created_between );
+$request->set_currency_is( $currency_is );
+$request->set_match( $match );
+$request->set_page( $page );
+$request->set_page_size( $page_size );
+$request->set_search( $search );
+$request->set_sort_by( $sort );
+$request->set_sort_direction( $direction );
+$request->set_status_is( $status_is );
+$request->set_status_is_not( $status_is_not );
 $request->send( 'wcpay_list_disputes_request', $request );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

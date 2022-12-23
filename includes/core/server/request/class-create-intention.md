@@ -33,7 +33,14 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = Create_Intention::create();
+$request->set_amount( $amount );
+$request->set_capture_method( $manual_capture );
+$request->set_currency_code( $currency_code );
+$request->set_customer( $customer_id );
+$request->set_fingerprint( $fingerprint );
+$request->set_mandate( $mandate );
+$request->set_metadata( $metadata );
+$request->set_payment_method( $payment_method_id );
+$request->set_payment_method_types( $payment_methods );
 $request->send( 'wcpay_create_intent_request', $order );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

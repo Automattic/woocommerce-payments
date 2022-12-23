@@ -24,5 +24,3 @@ When using this request, provide the following filter and arguments:
 $request = Cancel_Intention::create( $id );
 $request->send( 'wcpay_cancel_intent_request', $order );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

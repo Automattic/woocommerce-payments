@@ -16,7 +16,7 @@ There are no additional parameters for this request.
 When using this request, provide the following filter and arguments:
 
 - Name: `wcpay_get_charge_request`
-- Arguments: 
+- Arguments: None
 
 ## Example:
 
@@ -24,5 +24,3 @@ When using this request, provide the following filter and arguments:
 $request = Get_Charge::create( $id );
 $request->send( 'wcpay_get_charge_request' );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

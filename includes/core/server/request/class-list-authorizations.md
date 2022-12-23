@@ -28,7 +28,9 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = List_Authorizations::create();
+$request->set_page( $page );
+$request->set_page_size( $page_size );
+$request->set_sort_by( $sort );
+$request->set_sort_direction( $direction );
 $request->send( 'wcpay_list_authorizations_request', $request );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

@@ -37,7 +37,18 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = List_Transactions::create();
+$request->set_customer_currency_is( $customer_currency_is );
+$request->set_customer_currency_is_not( $currency );
+$request->set_deposit_id( $deposit_id );
+$request->set_loan_id_is( $loan_id );
+$request->set_match( $match );
+$request->set_page( $page );
+$request->set_page_size( $page_size );
+$request->set_search( $search );
+$request->set_sort_by( $sort );
+$request->set_sort_direction( $direction );
+$request->set_store_currency_is( $currency );
+$request->set_type_is( $type_is );
+$request->set_type_is_not( $type_is_not );
 $request->send( 'wcpay_list_transactions_request', $request );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

@@ -30,7 +30,8 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = Create_And_Confirm_Setup_Intention::create();
+$request->set_customer( $customer_id );
+$request->set_metadata( $metadata );
+$request->set_payment_method( $payment_method_id );
 $request->send( 'wcpay_create_and_confirm_setup_intent_request', $payment_information, $save_in_platform_account, $save_payment_method_to_platform );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

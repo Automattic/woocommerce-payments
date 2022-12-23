@@ -37,7 +37,18 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = Create_And_Confirm_Intention::create();
+$request->set_amount( $amount );
+$request->set_capture_method( $manual_capture );
+$request->set_currency_code( $currency_code );
+$request->set_customer( $customer_id );
+$request->set_cvc_confirmation( $cvc_confirmation );
+$request->set_fingerprint( $fingerprint );
+$request->set_mandate( $mandate );
+$request->set_metadata( $metadata );
+$request->set_off_session( $off_session );
+$request->set_payment_method( $payment_method_id );
+$request->set_payment_method_types( $payment_methods );
+$request->set_payment_methods( $payment_methods );
+$request->setup_future_usage();
 $request->send( 'wcpay_create_and_confirm_intent_request', $payment_information );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

@@ -33,7 +33,11 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = WooPay_Create_And_Confirm_Setup_Intention::create();
+$request->set_customer( $customer_id );
+$request->set_is_platform_payment_method( $is );
+$request->set_metadata( $metadata );
+$request->set_payment_method( $payment_method_id );
+$request->set_save_in_platform_account( $save );
+$request->set_save_payment_method_to_platform( $save );
 $request->send( 'wcpay_create_and_confirm_setup_intent_request', $payment_information, $save_in_platform_account, $save_payment_method_to_platform );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else

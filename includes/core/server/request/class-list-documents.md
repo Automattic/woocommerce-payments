@@ -31,7 +31,12 @@ When using this request, provide the following filter and arguments:
 
 ```php
 $request = List_Documents::create();
+$request->set_match( $match );
+$request->set_page( $page );
+$request->set_page_size( $page_size );
+$request->set_sort_by( $sort );
+$request->set_sort_direction( $direction );
+$request->set_type_is( $type_is );
+$request->set_type_is_not( $type_is_not );
 $request->send( 'wcpay_list_documents_request', $request );
 ```
-
-!! NOT DONE!!! Remove this line once you have added an example and verified everything else
