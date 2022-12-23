@@ -1065,7 +1065,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange the order saved in the session.
 		$session_order = WC_Helper_Order::create_order();
 		$session_order->set_cart_hash( $same_cart_hash );
-		$session_order->set_status( 'completed' );
+		$session_order->set_status( Order_Status::COMPLETED );
 		$session_order->save();
 		WC()->session->set(
 			WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER,
@@ -1097,7 +1097,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			'WooCommerce Payments: detected and deleted order ID ' . $current_order_id,
 			$notes[0]->content
 		);
-		$this->assertSame( 'trash', wc_get_order( $current_order_id )->get_status() );
+		$this->assertSame( Order_Status::TRASH, wc_get_order( $current_order_id )->get_status() );
 		$this->assertSame(
 			null,
 			WC()->session->get( WC_Payment_Gateway_WCPay::SESSION_KEY_PROCESSING_ORDER )
@@ -1181,10 +1181,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 	public function provider_process_payment_check_session_and_continue_processing() {
 		return [
-			'Different cart hash with session order status completed'   => [ 'SESSION_ORDER_HASH', 'completed', 'CURRENT_ORDER_HASH' ],
-			'Different cart hash  with session order status processing' => [ 'SESSION_ORDER_HASH', 'processing', 'CURRENT_ORDER_HASH' ],
-			'Same cart hash with session order status pending'          => [ 'SAME_CART_HASH', 'pending', 'SAME_CART_HASH' ],
-			'Same cart hash with session order status cancelled'         => [ 'SAME_CART_HASH', 'pending', 'SAME_CART_HASH' ],
+			'Different cart hash with session order status completed'   => [ 'SESSION_ORDER_HASH', Order_Status::COMPLETED, 'CURRENT_ORDER_HASH' ],
+			'Different cart hash  with session order status processing' => [ 'SESSION_ORDER_HASH', Order_Status::PROCESSING, 'CURRENT_ORDER_HASH' ],
+			'Same cart hash with session order status pending'          => [ 'SAME_CART_HASH', Order_Status::PENDING, 'SAME_CART_HASH' ],
+			'Same cart hash with session order status cancelled'        => [ 'SAME_CART_HASH', Order_Status::CANCELLED, 'SAME_CART_HASH' ],
 		];
 	}
 
