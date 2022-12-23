@@ -1,23 +1,31 @@
+# `Capture_Intention` request class
 
-`Capure_Intention`
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
 
-Used to sent capture indentation.
+## Description
 
-- List of immutable parameters: `amount_to_capture`
-- List of required parameters: `amount_to_capture`
-- List of default parameters: `level3`( as empty array)
+The `WCPay\Core\Server\Request\Capture_Intention` class is used to construct the request for capturing an intention.
 
-Name of the filter added: ‘wcpay_capture_intent_request’
-Arguments passed to filter: `WC_Order`
-Example:
+## Parameters
+
+When creating `Capture_Intention` requests, the item ID must be provided to the `::create()` method. The identifier should be in the `pi_XXX` format.
+| Parameter           | Setter                                 | Immutable | Required | Default value |
+|---------------------|----------------------------------------|:---------:|:--------:|:-------------:|
+| `amount_to_capture` | `set_amount_to_capture( int $amount )` |    Yes    |   Yes    |       -       |
+
+
+## Filter
+
+When using this request, provide the following filter and arguments:
+
+- Name: `wcpay_capture_intent_request`
+- Arguments: `WC_Order $order`
+
+## Example:
 
 ```php
-$capture_intention_request = Capture_Intention::create( $intent_id );
-$capture_intention_request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
-if ( $include_level3 ) {
- $capture_intention_request->set_level3( $this->get_level3_data_from_order( $order ) );
-}
+$request = Capture_Intention::create( $id );
+$request->send( 'wcpay_capture_intent_request', $order );
 ```
 
-
-
+!! NOT DONE!!! Remove this line once you have added an example and verified everything else

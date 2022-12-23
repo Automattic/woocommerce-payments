@@ -1,19 +1,36 @@
-`Create_And_Confirm_Setup_Intention`
+# `Create_And_Confirm_Setup_Intention` request class
 
-Used to construct create and confirm setup intention request.
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
 
-- List of immutable parameters: `customer`, `confirm`
-- List of required parameters: `customer`
-- List of default parameters: `confirm` (as `true`), `metadata` (as empty array)
+## Description
 
-Name of the filter added: `wcpay_create_intention_request`
-Arguments passed to filter: `Payment_Information`
-Example:
+The `WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention` class is used to construct the request for creating and confirming a setup intention.
+
+## Parameters
+
+
+| Parameter        | Setter                                            | Immutable | Required | Default value |
+|------------------|---------------------------------------------------|:---------:|:--------:|:-------------:|
+| `customer`       | `set_customer( string $customer_id )`             |    Yes    |   Yes    |       -       |
+| `description`    | `set_metadata( array $metadata )`                 |     -     |    -     |       -       |
+| `payment_method` | `set_payment_method( string $payment_method_id )` |     -     |    -     |       -       |
+
+
+## Filter
+
+When using this request, provide the following filter and arguments:
+
+- Name: `wcpay_create_and_confirm_setup_intent_request`
+- Arguments: 
+   - `WCPay\Payment_Information $payment_information`
+   - `bool $save_in_platform_account`
+   - `bool $save_payment_method_to_platform`
+
+## Example:
 
 ```php
 $request = Create_And_Confirm_Setup_Intention::create();
-$request->set_customer( $customer_id );
-$request->set_payment_method( $payment_information->get_payment_method() );
-$request->set_metadata( $metadata );
-$intent = $request->send( 'wcpay_create_and_confirm_setup_intention_request', $payment_information, false, $save_user_in_platform_checkout );
+$request->send( 'wcpay_create_and_confirm_setup_intent_request', $payment_information, $save_in_platform_account, $save_payment_method_to_platform );
 ```
+
+!! NOT DONE!!! Remove this line once you have added an example and verified everything else

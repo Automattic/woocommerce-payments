@@ -1,38 +1,43 @@
-`Create_And_Confirm_Intention`
+# `Create_And_Confirm_Intention` request class
 
-Used to construct create and confirm intention request.
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
 
-- List of immutable parameters: `amount`, `currency`, `payment_method`
-- List of required parameters: `amount`, `currency`, `payment_method`, `customer`, `metadata`
-- List of default parameters: `confirm` (as `true`), `capture_method` (as ‘automatic’)
+## Description
 
-Name of the filter added: `wcpay_create_intention_request`
-Arguments passed to filter: `Payment_Information`
+The `WCPay\Core\Server\Request\Create_And_Confirm_Intention` class is used to construct the request for creating and confirming an intention.
 
-Example:
+## Parameters
+
+
+| Parameter               | Setter                                               | Immutable | Required | Default value |
+|-------------------------|------------------------------------------------------|:---------:|:--------:|:-------------:|
+| `amount`                | `set_amount( int $amount )`                          |    Yes    |   Yes    |       -       |
+| `capture_method`        | `set_capture_method( bool $manual_capture = false )` |     -     |    -     | `'automatic'` |
+| `currency`              | `set_currency_code( string $currency_code )`         |    Yes    |   Yes    |       -       |
+| `customer`              | `set_customer( string $customer_id )`                |     -     |   Yes    |       -       |
+| `cvc_confirmation`      | `set_cvc_confirmation( $cvc_confirmation = null )`   |     -     |    -     |       -       |
+| `metadata`              | `set_fingerprint( string $fingerprint = '' )`        |     -     |   Yes    |       -       |
+| `mandate`               | `set_mandate( string $mandate )`                     |     -     |    -     |       -       |
+| `description`           | `set_metadata( array $metadata )`                    |     -     |    -     |       -       |
+| `off_session`           | `set_off_session( bool $off_session = true )`        |     -     |    -     |       -       |
+| `payment_method`        | `set_payment_method( string $payment_method_id )`    |    Yes    |   Yes    |       -       |
+| `payment_method_types`  | `set_payment_method_types( array $payment_methods )` |     -     |    -     |       -       |
+| `payment_methods_types` | `set_payment_methods( array $payment_methods )`      |     -     |    -     |       -       |
+| `setup_future_usage`    | `setup_future_usage()`                               |     -     |    -     |       -       |
+
+
+## Filter
+
+When using this request, provide the following filter and arguments:
+
+- Name: `wcpay_create_and_confirm_intent_request`
+- Arguments: `WCPay\Payment_Information $payment_information`
+
+## Example:
 
 ```php
 $request = Create_And_Confirm_Intention::create();
-$request->set_amount( $converted_amount );
-$request->set_currency_code( $currency );
-$request->set_payment_method( $payment_information->get_payment_method() );
-$request->set_customer( $customer_id );
-$request->set_capture_method( $payment_information->is_using_manual_capture() );
-$request->set_metadata( $metadata );
-$request->set_level3( $this->get_level3_data_from_order( $order ) );
-$request->set_off_session( $payment_information->is_merchant_initiated() );
-$request->set_payment_methods( $payment_methods );
-$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
-// Make sure that setting fingerprint is performed after setting metadata becaouse metadata will override any values you set before for metadata param.
-$request->set_fingerprint( $payment_information->get_fingerprint() );
-if ( $save_payment_method_to_store ) {
- $request->setup_future_usage();
-}
-if ( $scheduled_subscription_payment ) {
- $mandate = $this->get_mandate_param_for_renewal_order( $order );
- if ( $mandate ) {
-   $request->set_mandate( $mandate );
- }
-}
-$intent = $request->send( 'wcpay_create_intention_request', $payment_information );
+$request->send( 'wcpay_create_and_confirm_intent_request', $payment_information );
 ```
+
+!! NOT DONE!!! Remove this line once you have added an example and verified everything else
