@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 
 defined( 'ABSPATH' ) || exit;
@@ -24,7 +25,7 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
+		$note_class = Note::class;
 		$note       = new $note_class();
 
 		$note->set_title( __( 'You’re now eligible to receive Instant Deposits with WooCommerce Payments', 'woocommerce-payments' ) );

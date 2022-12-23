@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -71,7 +72,7 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 			return;
 		}
 
-		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
+		$note_class = Note::class;
 		$note       = new $note_class();
 
 		$note->set_title( __( 'Increase conversion at checkout', 'woocommerce-payments' ) );

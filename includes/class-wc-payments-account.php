@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Automattic\WooCommerce\Admin\Notes\DataStore;
+use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
@@ -1264,7 +1265,7 @@ class WC_Payments_Account {
 			return $where_clause . " AND name like 'wcpay-promo-%'";
 		};
 
-		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
+		$note_class = Note::class;
 
 		add_filter( 'woocommerce_note_where_clauses', $add_like_clause );
 

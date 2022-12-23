@@ -7,6 +7,7 @@
 
 namespace WCPay\MultiCurrency\Notes;
 
+use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 use WC_Payments_Account;
 
@@ -40,7 +41,7 @@ class NoteMultiCurrencyAvailable {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		$note_class = \WC_Payment_Woo_Compat_Utils::get_note_class();
+		$note_class = Note::class;
 		$note       = new $note_class();
 
 		$note->set_title( __( 'Sell worldwide in multiple currencies', 'woocommerce-payments' ) );

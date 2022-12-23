@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 
@@ -906,7 +907,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
+		$notes_class = Notes::class;
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$data_store = WC_Data_Store::load( 'admin-note' );
@@ -942,7 +943,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
+		$notes_class = Notes::class;
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$data_store = WC_Data_Store::load( 'admin-note' );

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Exceptions\Rest_Request_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -69,7 +70,7 @@ class WC_Payments_Remote_Note_Service {
 		$content   = $note_data['content'];
 		$note_name = self::NOTE_NAME_PREFIX . ( $note_data['name'] ?? md5( $title . $content ) );
 
-		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
+		$note_class = Note::class;
 		$note       = new $note_class();
 
 		$note->set_title( $title );
