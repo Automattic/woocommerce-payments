@@ -404,6 +404,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
+
+		// Priority 21 to run right after wc_clear_cart_after_payment.
+		add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
 	}
 
 	/**
@@ -1989,6 +1992,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$val = $session->get( self::SESSION_KEY_PROCESSING_ORDER );
 		return null === $val ? null : absint( $val );
+	}
+
+	/**
+	 * Action to remove the order ID when customers reach its order-received page.
+	 *
+	 * @return void
+	 */
+	public function clear_session_processing_order_after_landing_order_received_page() {
+		global $wp;
+
+		if ( is_order_received_page() && isset( $wp->query_vars['order-received'] ) ) {
+			$order_id = absint( $wp->query_vars['order-received'] );
+			$this->remove_session_processing_order( $order_id );
+		}
 	}
 
 	/**
