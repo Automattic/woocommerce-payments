@@ -80,7 +80,7 @@ class WC_Payments_Order_Success_Page {
 		if ( isset( $_GET[ WC_Payment_Gateway_WCPay::FLAG_PREVIOUS_ORDER_PAID ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			$text .= sprintf(
 				'<div class="woocommerce-info">%s</div>',
-				esc_attr__( 'This already paid order has the same content with the one you have just tried to make payment. Please checkout again if you want to have another order with the same content.', 'woocommerce-payments' )
+				esc_attr__( 'We detected and prevented an attempt to pay for a duplicate order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
 			);
 		}
 
