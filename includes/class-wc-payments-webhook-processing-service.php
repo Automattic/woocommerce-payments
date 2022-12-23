@@ -5,12 +5,13 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
+use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
-use WCPay\Database_Cache;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -306,8 +307,8 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Update order status if order is fully refunded.
 		$current_order_status = $order->get_status();
-		if ( 'refunded' === $current_order_status ) {
-			$order->update_status( 'failed' );
+		if ( Order_Status::REFUNDED === $current_order_status ) {
+			$order->update_status( Order_Status::FAILED );
 		}
 
 		$order->add_order_note( $note );
