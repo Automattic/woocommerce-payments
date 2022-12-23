@@ -7,31 +7,32 @@
 
 namespace WCPay\Payment_Methods;
 
-use WC_Order;
-use WC_Payment_Token_WCPay_SEPA;
-use WC_Payments_Explicit_Price_Formatter;
+use Exception;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WP_User;
+use WCPay\Constants\Payment_Type;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
-use WCPay\Constants\Payment_Type;
 use WCPay\Session_Rate_Limiter;
-use WC_Payment_Gateway_WCPay;
+use WC_Order;
+use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
+use WC_Payments_Explicit_Price_Formatter;
+use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
-use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
-use WC_Payments;
+use WC_Payments_Token_Service;
+use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
+use WP_User;
 
-use Exception;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
 
 
 /**
@@ -627,7 +628,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				return;
 			}
 
-			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
+			if ( $order->has_status(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+					Order_Status::ON_HOLD,
+				]
+			) ) {
 				return;
 			}
 
