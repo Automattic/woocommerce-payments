@@ -198,12 +198,64 @@ function replace_request( Create_and_Confirm_Intention $base_request, Payment_In
 
 ## Testing
 
-To mock request classes, the recommended way is to use the built-in `mock_wcpay_request` function. One of the approaches is to mock `format_respomse` function and send whatever response you might need. The examples will be shown below on how to mock response.  This function accepts 7 parameters. The first parameter is the request class you want to mock. That class can be class name of request you would like to mock or subclass of request you would like to mock. Subclasses are usually used when you would like to extend a request with another class by using filters.
+To mock request classes, the recommended way is to use the built-in `mock_wcpay_request` function of `WCPAY_UnitTestCase`.
 
-The second argument is a number of API calls. This number tells how many API requests towards the server are expected to be executed. By default, this is set to one, but if you need to changed it you can pass any number you would like to. The good example is  when you want to be sure that no requests will be executed (like $this->never() in PHPUnit) or when you are executing same API request class multiple times (like retry mechanism).
+```php
+function mock_wcpay_request(
+  // The request class you want to mock.
+  string $request_class,
 
-The third argument is request class constructor ID. This id is used in request classes where you need to pass id or any identifier to wcpay server API. Most common example is when you want to update something or get something, and you need ID of that resource.
+  // How many API requests towards the server are expected to be executed.
+  // Could be `0` to simulate `->never()`.
+  int $total_api_calls = 1,
 
-The fourth argument is the response you would like to have from wc pay server API. In most cases this is not needed, because you can mock format response function and set any response you would like to, but if you want to test format_response function, you can set response using this argument and test whatever scenario you want.
+  // ID of the item, which should be updated/retrieved, only needed for certain classes.
+  string $request_class_constructor_id = null,
 
-The last two arguments are WC Payments API Client and WC Payments HTTP interface. This is used to handle all request related task to wcpay server (like authentication, …). In most you don’t need to send your version of mocked classes here, but if you would like to test something inside these classes feel free to pass whatever mocked object you would like to.
+  // A response to be returned from the API.
+  mixed $response = null
+) : Request;
+```
+
+This will expect the request to be called `$total_api_calls` number of times. In addition, with this approach you can only mock the necessary request parameters. Here are some examples:
+
+__Standard mock__
+
+```php
+$mock_documents = [
+    // add mock objects here...
+];
+$request = $this->mock_wcpay_request( List_Documents::class, 1, $mock_documents );
+$request
+  ->expects( $this->once() )
+  ->method( 'set_type_is' )
+  ->with( 'bill' );
+```
+
+__A request, which should not be executed__
+
+```php
+$this->mock_wcpay_request( Create_Intention::class, 0 );
+```
+
+__Throw an exception__
+
+```php
+$request = $this->mock_wcpay_request( Create_Intention::class );;
+$request
+  ->expects( $this->once() )
+  ->method( 'format_response' )
+  ->will( $this->throwException( new API_Exception( /* ... */ ) ) );
+```
+
+ __Requests with custom responses__
+
+Some request classes will try to parse and format the response they receive, in which case mocking it through the `$response_parameter` of `mock_wcpay_request` will not work. In those cases, you need to mock the `format_response` method:
+
+```php
+$request = $this->mock_wcpay_request( Create_Intention::class );;
+$request
+  ->expects( $this->once() )
+  ->method( 'format_response' )
+  ->willReturn( $mock_intention );
+```
