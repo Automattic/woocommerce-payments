@@ -41,13 +41,12 @@ class NoteMultiCurrencyAvailable {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		$note_class = Note::class;
-		$note       = new $note_class();
+		$note = new Note();
 
 		$note->set_title( __( 'Sell worldwide in multiple currencies', 'woocommerce-payments' ) );
 		$note->set_content( __( 'Boost your international sales by allowing your customers to shop and pay in their local currency.', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
-		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
+		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
 		$note->set_source( 'woocommerce-payments' );
 		$note->add_action(
