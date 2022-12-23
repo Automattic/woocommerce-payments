@@ -462,7 +462,9 @@ jQuery( function ( $ ) {
 			);
 
 			if ( updateResponse.data ) {
-				await api.handlePreviousOrderPaid( updateResponse.data );
+				if ( api.handlePreviousOrderPaid( updateResponse.data ) ) {
+					return;
+				}
 			}
 
 			const { error } = await api.handlePaymentConfirmation(
@@ -540,7 +542,9 @@ jQuery( function ( $ ) {
 				fingerprint ? fingerprint : ''
 			);
 
-			await api.handlePreviousOrderPaid( response );
+			if ( api.handlePreviousOrderPaid( response ) ) {
+				return;
+			}
 
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {

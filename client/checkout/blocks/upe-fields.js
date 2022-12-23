@@ -272,7 +272,9 @@ const WCPayUPEFields = ( {
 			onCheckoutAfterProcessingWithSuccess(
 				( { orderId, processingResponse: { paymentDetails } } ) => {
 					async function updateIntent() {
-						await api.handlePreviousOrderPaid( paymentDetails );
+						if ( api.handlePreviousOrderPaid( paymentDetails ) ) {
+							return;
+						}
 
 						await api.updateIntent(
 							paymentIntentId,
