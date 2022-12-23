@@ -75,6 +75,8 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
+		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_platform_checkout_config' ] );
+
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_html' ], -2 );
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
 
@@ -86,6 +88,19 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	}
 
 	/**
+	 * Add the platform checkout button config to wcpay_config.
+	 *
+	 * @param array $config The existing config array.
+	 *
+	 * @return array The modified config array.
+	 */
+	public function add_platform_checkout_config( $config ) {
+		$config['platformCheckoutButton'] = $this->get_button_settings();
+
+		return $config;
+	}
+
+	/**
 	 * Load public scripts and styles.
 	 */
 	public function scripts() {
@@ -94,16 +109,21 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 
-		$params           = WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-		$params['button'] = $this->get_button_settings();
-
 		$script_src_url    = plugins_url( 'dist/platform-checkout-express-button.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/platform-checkout-express-button.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', $script_src_url, $script_asset['dependencies'], WC_Payments::get_file_version( 'dist/platform-checkout-express-button.js' ), true );
 
-		wp_localize_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'wcpayWooPayExpressParams', $params );
+		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
+
+		wp_add_inline_script(
+			'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON',
+			"
+			var wcpay_config = wcpay_config || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
+			",
+			'before'
+		);
 
 		wp_set_script_translations( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'woocommerce-payments' );
 
@@ -171,6 +191,31 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	}
 
 	/**
+	 * Gets the context for where the button is being displayed.
+	 *
+	 * @return string
+	 */
+	public function get_button_context() {
+		if ( $this->is_product() ) {
+			return 'product';
+		}
+
+		if ( $this->is_cart() ) {
+			return 'cart';
+		}
+
+		if ( $this->is_checkout() ) {
+			return 'checkout';
+		}
+
+		if ( $this->is_pay_for_order_page() ) {
+			return 'pay_for_order';
+		}
+
+		return '';
+	}
+
+	/**
 	 * The settings for the `button` attribute - they depend on the "grouped settings" flag value.
 	 *
 	 * @return array
@@ -178,11 +223,12 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	public function get_button_settings() {
 		$button_type = $this->gateway->get_option( 'platform_checkout_button_type', 'default' );
 		return [
-			'type'   => $button_type,
-			'text'   => ucfirst( $button_type ),
-			'theme'  => $this->gateway->get_option( 'platform_checkout_button_theme', 'dark' ),
-			'height' => $this->get_button_height(),
-			'size'   => $this->gateway->get_option( 'platform_checkout_button_size' ),
+			'type'    => $button_type,
+			'text'    => ucfirst( $button_type ),
+			'theme'   => $this->gateway->get_option( 'platform_checkout_button_theme', 'dark' ),
+			'height'  => $this->get_button_height(),
+			'size'    => $this->gateway->get_option( 'platform_checkout_button_size' ),
+			'context' => $this->get_button_context(),
 		];
 	}
 
@@ -247,13 +293,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		if ( ! $this->should_show_platform_checkout_button() ) {
 			return;
 		}
-
-		$button_settings = $this->get_button_settings();
-		$button_text     = 'default' !== $button_settings['type'] ? sprintf(
-			// Translators: %s is the name of the button action.
-			__( '%s with WooPay', 'woocommerce-payments' ),
-			ucfirst( $button_settings['type'] )
-		) : 'WooPay';
 
 		?>
 		<div id="wcpay-payment-request-wrapper" style="clear:both;padding-top:1.5em;">

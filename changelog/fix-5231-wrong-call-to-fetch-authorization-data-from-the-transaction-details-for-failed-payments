@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix wrong time displayed in the "You need to capture this charge before..." text on the payment details page.
