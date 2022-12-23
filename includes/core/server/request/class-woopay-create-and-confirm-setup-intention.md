@@ -1,10 +1,10 @@
-# `WooPay_Create_And_Confirm_Setup_Intention` request class
+# `WooPay_Create_and_Confirm_Setup_Intention` request class
 
 [ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
 
 ## Description
 
-The `WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Setup_Intention` class is used to construct the request for creating and confirming a setup intention for WooPay.
+The `WCPay\Core\Server\Request\WooPay_Create_and_Confirm_Setup_Intention` class is used to construct the request for creating and confirming a setup intention for WooPay.
 
 ## Parameters
 
@@ -32,7 +32,7 @@ When using this request, provide the following filter and arguments:
 ## Example:
 
 ```php
-$request = WooPay_Create_And_Confirm_Setup_Intention::create();
+$request = WooPay_Create_and_Confirm_Setup_Intention::create();
 $request->set_customer( $customer_id );
 $request->set_is_platform_payment_method( $is );
 $request->set_metadata( $metadata );

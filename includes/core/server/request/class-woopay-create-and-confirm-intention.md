@@ -1,10 +1,10 @@
-# `WooPay_Create_And_Confirm_Intention` request class
+# `WooPay_Create_and_Confirm_Intention` request class
 
 [ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
 
 ## Description
 
-The `WCPay\Core\Server\Request\WooPay_Create_And_Confirm_Intention` class is used to construct the request for creating and confirming an intention for WooPay.
+The `WCPay\Core\Server\Request\WooPay_Create_and_Confirm_Intention` class is used to construct the request for creating and confirming an intention for WooPay.
 
 ## Parameters
 
@@ -38,7 +38,7 @@ When using this request, provide the following filter and arguments:
 ## Example:
 
 ```php
-$request = WooPay_Create_And_Confirm_Intention::create();
+$request = WooPay_Create_and_Confirm_Intention::create();
 $request->set_amount( $amount );
 $request->set_capture_method( $manual_capture );
 $request->set_currency_code( $currency_code );
