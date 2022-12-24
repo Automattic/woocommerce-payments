@@ -2556,6 +2556,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			switch ( $status ) {
 				case 'succeeded':
+					$this->remove_session_processing_order( $order->get_id() );
 					$this->order_service->mark_payment_completed( $order, $intent_id, $status, $charge_id );
 					break;
 				case 'processing':
