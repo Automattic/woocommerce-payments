@@ -693,4 +693,19 @@ export default class WCPayAPI {
 			return true;
 		} );
 	}
+
+	/**
+	 * If another order has the same cart content and was paid, redirect to its thank-you page.
+	 *
+	 * @param {Object} response Response data to check if doing the redirect.
+	 * @return {boolean} Returns true if doing the redirection.
+	 */
+	handlePreviousOrderPaid( response ) {
+		let didRedirection = false;
+		if ( response.wcpay_upe_paid_for_previous_order && response.redirect ) {
+			window.location = response.redirect;
+			didRedirection = true;
+		}
+		return didRedirection;
+	}
 }
