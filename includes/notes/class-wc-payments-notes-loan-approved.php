@@ -138,9 +138,10 @@ class WC_Payments_Notes_Loan_Approved {
 	private static function check_attached_loan_data_is_different() {
 		// Check if the note already exists, and the stored paid out date matches our current loan before adding a new one.
 		/**
-		 * Note class.
+		 * Note class. Suppressed psalm error for WC<=5.5.0 because it uses an old class for the note.
 		 *
-		 * @var Note
+		 * @var WC_Admin_Note|Note
+		 * @psalm-suppress UndefinedDocblockClass
 		 */
 		$data_store = WC_Data_Store::load( 'admin-note' );
 		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
