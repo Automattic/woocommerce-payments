@@ -9,6 +9,7 @@ namespace WCPay\Payment_Methods;
 
 use Exception;
 use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
@@ -699,7 +700,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				self::remove_upe_payment_intent_from_session();
 
-				if ( 'requires_action' === $status ) {
+				if ( Payment_Intent_Status::REQUIRES_ACTION === $status ) {
 					// I don't think this case should be possible, but just in case...
 					$next_action = $intent->get_next_action();
 					if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
@@ -758,7 +759,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		return ! empty( $_GET['setup_intent_client_secret'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			! empty( $_GET['setup_intent'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			! empty( $_GET['redirect_status'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			'succeeded' === $_GET['redirect_status']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			Payment_Intent_Status::SUCCEEDED === $_GET['redirect_status']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**

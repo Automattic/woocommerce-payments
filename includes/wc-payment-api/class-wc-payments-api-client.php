@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Connection_Exception;
@@ -2498,7 +2499,7 @@ class WC_Payments_API_Client {
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 		$customer           = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method     = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
-		$processing         = $intention_array['processing'] ?? [];
+		$processing         = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 

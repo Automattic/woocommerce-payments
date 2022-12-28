@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Logger;
 use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Method;
 
 /**
@@ -147,7 +148,15 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				Logger::error( 'Payment capture rejected due to failed validation: order id on intent is incorrect or missing.' );
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
-			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture', 'succeeded' ], true ) ) {
+			if ( ! in_array(
+				$intent->get_status(),
+				[
+					Payment_Intent_Status::PROCESSING,
+					Payment_Intent_Status::REQUIRES_CAPTURE,
+					Payment_Intent_Status::SUCCEEDED,
+				],
+				true
+			) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
@@ -177,15 +186,15 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
 			// The client may send us the captured intent to link it to its WC order.
 			// Doing so via this endpoint is more reliable than depending on the payment_intent.succeeded event.
-			$is_intent_captured         = 'succeeded' === $intent->get_status();
+			$is_intent_captured         = Payment_Intent_Status::SUCCEEDED === $intent->get_status();
 			$result_for_captured_intent = [
-				'status' => 'succeeded',
+				'status' => Payment_Intent_Status::SUCCEEDED,
 				'id'     => $intent->get_id(),
 			];
 
 			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false );
 
-			if ( 'succeeded' !== $result['status'] ) {
+			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
 				return new WP_Error(
 					'wcpay_capture_error',
@@ -250,13 +259,21 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				Logger::error( 'Payment capture rejected due to failed validation: order id on intent is incorrect or missing.' );
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
-			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture', 'succeeded' ], true ) ) {
+			if ( ! in_array(
+				$intent->get_status(),
+				[
+					Payment_Intent_Status::PROCESSING,
+					Payment_Intent_Status::REQUIRES_CAPTURE,
+					Payment_Intent_Status::SUCCEEDED,
+				],
+				true
+			) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
 			$result = $this->gateway->capture_charge( $order, false );
 
-			if ( 'succeeded' !== $result['status'] ) {
+			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
 				return new WP_Error(
 					'wcpay_capture_error',
 					sprintf(

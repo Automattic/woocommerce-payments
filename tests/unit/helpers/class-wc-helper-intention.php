@@ -59,7 +59,7 @@ class WC_Helper_Intention {
 				'currency'           => 'usd',
 				'customer_id'        => 'cus_mock',
 				'payment_method_id'  => 'pm_mock',
-				'status'             => 'succeeded',
+				'status'             => Payment_Intent_Status::SUCCEEDED,
 				'client_secret'      => 'cs_mock',
 				'charge'             => [],
 				'created'            => new DateTime( '2022-05-20 19:05:38' ),

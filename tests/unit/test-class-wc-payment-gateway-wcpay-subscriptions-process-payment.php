@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -82,7 +83,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	 */
 	private $setup_intent = [
 		'id'             => self::SETUP_INTENT_ID,
-		'status'         => 'succeeded',
+		'status'         => Payment_Intent_Status::SUCCEEDED,
 		'client_secret'  => 'test_client_secret',
 		'next_action'    => [],
 		'payment_method' => self::PAYMENT_METHOD_ID,

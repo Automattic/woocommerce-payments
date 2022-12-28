@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Session_Rate_Limiter;
 
@@ -116,7 +117,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 					'reason'                   => null,
 					'receipt_number'           => null,
 					'source_transfer_reversal' => null,
-					'status'                   => 'succeeded',
+					'status'                   => Payment_Intent_Status::SUCCEEDED,
 					'transfer_reversal'        => null,
 					'currency'                 => 'usd',
 				]
@@ -178,7 +179,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 					'reason'                   => null,
 					'receipt_number'           => null,
 					'source_transfer_reversal' => null,
-					'status'                   => 'succeeded',
+					'status'                   => Payment_Intent_Status::SUCCEEDED,
 					'transfer_reversal'        => null,
 					'currency'                 => 'usd',
 				]
@@ -224,7 +225,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 					'reason'                   => null,
 					'receipt_number'           => null,
 					'source_transfer_reversal' => null,
-					'status'                   => 'succeeded',
+					'status'                   => Payment_Intent_Status::SUCCEEDED,
 					'transfer_reversal'        => null,
 					'currency'                 => 'eur',
 				]
@@ -268,7 +269,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 					'reason'                   => null,
 					'receipt_number'           => null,
 					'source_transfer_reversal' => null,
-					'status'                   => 'succeeded',
+					'status'                   => Payment_Intent_Status::SUCCEEDED,
 					'transfer_reversal'        => null,
 					'currency'                 => 'eur',
 				]
@@ -333,7 +334,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 							'reason'                   => null,
 							'receipt_number'           => null,
 							'source_transfer_reversal' => null,
-							'status'                   => 'succeeded',
+							'status'                   => Payment_Intent_Status::SUCCEEDED,
 							'transfer_reversal'        => null,
 							'currency'                 => 'eur',
 						],
@@ -397,7 +398,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 							'reason'                   => null,
 							'receipt_number'           => null,
 							'source_transfer_reversal' => null,
-							'status'                   => 'succeeded',
+							'status'                   => Payment_Intent_Status::SUCCEEDED,
 							'transfer_reversal'        => null,
 							'currency'                 => 'usd',
 						],
@@ -566,7 +567,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 					'reason'                   => null,
 					'receipt_number'           => null,
 					'source_transfer_reversal' => null,
-					'status'                   => 'succeeded',
+					'status'                   => Payment_Intent_Status::SUCCEEDED,
 					'transfer_reversal'        => null,
 					'currency'                 => 'eur',
 				]
@@ -594,7 +595,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
-		$order->update_meta_data( '_intention_status', 'requires_capture' );
+		$order->update_meta_data( '_intention_status', Payment_Intent_Status::REQUIRES_CAPTURE );
 		$order->update_status( Order_Status::ON_HOLD );
 		$order->save();
 
@@ -655,7 +656,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WP_UnitTestCase {
 					'reason'                   => null,
 					'receipt_number'           => null,
 					'source_transfer_reversal' => null,
-					'status'                   => 'succeeded',
+					'status'                   => Payment_Intent_Status::SUCCEEDED,
 					'transfer_reversal'        => null,
 					'currency'                 => 'usd',
 				]

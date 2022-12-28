@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
@@ -614,7 +615,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$this->mock_order
@@ -688,7 +689,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 			'metadata' => [ 'order_id' => 'id_1323' ], // Using order_id inside of the intent metadata to find the order.
 		];
 
@@ -770,7 +771,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$this->mock_order
@@ -847,7 +848,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => 'eur',
-			'status'   => 'succeeded',
+			'status'   => Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$mock_merchant_settings = [
@@ -937,7 +938,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$this->mock_order
@@ -1022,7 +1023,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency'           => 'usd',
-			'status'             => 'requires_payment_method',
+			'status'             => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
 		];
 
 		$this->mock_order
@@ -1095,7 +1096,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency'           => 'usd',
-			'status'             => 'requires_payment_method',
+			'status'             => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
 		];
 
 		$this->mock_order
