@@ -13,6 +13,7 @@ use WC_Payments_Account;
 use WC_Payments_Customer_Service;
 use WC_Payments_Utils;
 use WC_Payments_Features;
+use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Link_Payment_Method;
@@ -162,6 +163,13 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			if ( 'card' === $payment_method_id && ! WC_Payments_Features::is_link_enabled() ) {
 				continue;
 			}
+			// Link by Stripe should be validated with available fees.
+			if ( Payment_Method::LINK === $payment_method_id ) {
+				if ( ! in_array( Payment_Method::LINK, array_keys( $this->account->get_fees() ), true ) ) {
+					continue;
+				}
+			}
+
 			$payment_method                 = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
 			$settings[ $payment_method_id ] = [
 				'isReusable'           => $payment_method->is_reusable(),

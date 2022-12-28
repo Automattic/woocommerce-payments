@@ -13,7 +13,7 @@ import ExpirationDescription from './expiration-description';
 import { getCurrency, formatCurrencyName } from 'utils/currency';
 import {
 	formatAccountFeesDescription,
-	getCurrentFee,
+	getCurrentBaseFee,
 	getTransactionsPaymentMethodName,
 } from 'utils/account-fees';
 
@@ -37,7 +37,7 @@ const AccountFee = ( props ) => {
 	const currencyName = formatCurrencyName( baseFee.currency );
 	const currencyCode = currency?.getCurrencyConfig()?.code;
 	const feeDescription = formatAccountFeesDescription( accountFee );
-	const currentFee = getCurrentFee( accountFee );
+	const currentBaseFee = getCurrentBaseFee( accountFee );
 
 	return (
 		<>
@@ -45,8 +45,8 @@ const AccountFee = ( props ) => {
 			{ currencyName ? `${ currencyName } ` : null }
 			{ currencyCode ? `(${ currencyCode }) ` : null }
 			{ feeDescription }
-			<ExpirationBar feeData={ currentFee } />
-			<ExpirationDescription feeData={ currentFee } />
+			<ExpirationBar feeData={ currentBaseFee } />
+			<ExpirationDescription feeData={ currentBaseFee } />
 		</>
 	);
 };

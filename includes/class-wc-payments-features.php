@@ -172,7 +172,7 @@ class WC_Payments_Features {
 	public static function is_link_enabled() {
 		return in_array(
 			WCPay\Payment_Methods\Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+			WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
 			true
 		);
 	}

@@ -9,7 +9,6 @@ import {
 	getPaymentRequestAjaxURL,
 	buildAjaxURL,
 } from '../../payment-request/utils';
-import { getWooPayExpressData } from '../platform-checkout/express-button/utils';
 import { decryptClientSecret } from '../utils/encryption';
 
 /**
@@ -670,19 +669,15 @@ export default class WCPayAPI {
 	}
 
 	initPlatformCheckout( userEmail, platformCheckoutUserSession ) {
-		// In case this is being called via WooPay Express Checkout button from a product page,
-		// the getConfig function won't work, so fallback to getWooPayExpressData.
-		const wcAjaxUrl =
-			getWooPayExpressData( 'wcAjaxUrl' ) ?? getConfig( 'wcAjaxUrl' );
-		const nonce =
-			getWooPayExpressData( 'initPlatformCheckoutNonce' ) ??
-			getConfig( 'initPlatformCheckoutNonce' );
+		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
+		const nonce = getConfig( 'initPlatformCheckoutNonce' );
 		return this.request(
 			buildAjaxURL( wcAjaxUrl, 'init_platform_checkout' ),
 			{
 				_wpnonce: nonce,
 				email: userEmail,
 				user_session: platformCheckoutUserSession,
+				return_url: window?.location?.href ?? '',
 			}
 		);
 	}

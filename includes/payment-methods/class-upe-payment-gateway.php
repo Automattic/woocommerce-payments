@@ -7,33 +7,32 @@
 
 namespace WCPay\Payment_Methods;
 
-use WC_Order;
-use WC_Payment_Token_WCPay_SEPA;
-use WC_Payments_Explicit_Price_Formatter;
+use Exception;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WP_User;
+use WCPay\Constants\Payment_Type;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
-use WCPay\Constants\Payment_Type;
 use WCPay\Session_Rate_Limiter;
-use WC_Payment_Gateway_WCPay;
+use WC_Order;
+use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
+use WC_Payments_Explicit_Price_Formatter;
+use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
-use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
-use WC_Payments;
+use WC_Payments_Token_Service;
+use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
-
-use Exception;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
-
+use WP_User;
 
 /**
  * UPE Payment method extended from WCPay generic Gateway.
@@ -483,6 +482,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
+				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
+
 				try {
 					$updated_payment_intent = $this->payments_api_client->update_intention(
 						$payment_intent_id,
@@ -493,7 +494,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						$this->get_metadata_from_order( $order, $payment_type ),
 						$this->get_level3_data_from_order( $order ),
 						$selected_upe_payment_type,
-						$payment_country
+						$payment_country,
+						$additional_api_parameters
 					);
 				} catch ( Amount_Too_Small_Exception $e ) {
 					// This code would only be reached if the cache has already expired.
@@ -623,7 +625,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				return;
 			}
 
-			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
+			if ( $order->has_status(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+					Order_Status::ON_HOLD,
+				]
+			) ) {
 				return;
 			}
 
@@ -852,6 +860,21 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		return $enabled_payment_methods;
+	}
+
+	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout filtered by fees.
+	 *
+	 * @param string $order_id optional Order ID.
+	 * @param bool   $force_currency_check optional Whether the currency check is required even if is_admin().
+	 *
+	 * @return string[]
+	 */
+	public function get_payment_method_ids_enabled_at_checkout_filtered_by_fees( $order_id = null, $force_currency_check = false ) {
+		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check );
+		$methods_with_fees       = array_keys( $this->account->get_fees() );
+
+		return array_values( array_intersect( $enabled_payment_methods, $methods_with_fees ) );
 	}
 
 	/**

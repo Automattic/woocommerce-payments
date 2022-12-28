@@ -211,6 +211,12 @@ class WC_Payments_Subscriptions_Event_Handler_Test extends WCPAY_UnitTestCase {
 			}
 		);
 
+		WC_Subscriptions::set_wcs_get_subscription(
+			function ( $subscription_id ) use ( $mock_subscription ) {
+				return $mock_subscription;
+			}
+		);
+
 		WC_Subscriptions::wcs_create_renewal_order(
 			function ( $subscription ) use ( $mock_renewal_order ) {
 				return $mock_renewal_order;

@@ -7,33 +7,24 @@
 
 namespace WCPay\Payment_Methods;
 
+use Exception;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Connection_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
-use WCPay\Logger;
-use WCPay\MultiCurrency\Currency;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
-
-use WC_Payment_Gateway_WCPay;
+use WCPay\WC_Payments_UPE_Checkout;
+use WCPAY_UnitTestCase;
+use WC_Helper_Order;
+use WC_Helper_Intention;
+use WC_Helper_Token;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
-use WC_Payments_Token_Service;
+use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
-use WC_Helper_Order;
-use WC_Helper_Intention;
-use WC_Helper_Token;
-use WC_Payments_Utils;
-use WC_Subscriptions;
-use WC_Subscriptions_Cart;
-use WCPay\WC_Payments_UPE_Checkout;
-use WCPAY_UnitTestCase;
-use Exception;
-use WC_Payments;
+use WC_Payments_Token_Service;
 use WCPay\Constants\Payment_Method;
 use WCPay\WC_Payments_Checkout;
 
@@ -209,6 +200,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_account->method( 'get_account_country' )->willReturn( 'US' );
+
+		$payment_methods = [
+			'link' => [
+				'base' => 0.1,
+			],
+		];
+
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_fees' )
+			->willReturn( $payment_methods );
 
 		$this->mock_platform_checkout_utilities = $this->createMock( Platform_Checkout_Utilities::class );
 
@@ -958,7 +960,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
 		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
-		$this->assertEquals( 'on-hold', $result_order->get_status() );
+		$this->assertEquals( Order_Status::ON_HOLD, $result_order->get_status() );
 	}
 
 	public function test_process_redirect_payment_intent_succeded() {
@@ -1124,7 +1126,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $intent_status, $result_order->get_meta( '_intention_status', true ) );
 		$this->assertEquals( $payment_method_id, $result_order->get_meta( '_payment_method_id', true ) );
 		$this->assertEquals( $customer_id, $result_order->get_meta( '_stripe_customer_id', true ) );
-		$this->assertEquals( 'on-hold', $result_order->get_status() );
+		$this->assertEquals( Order_Status::ON_HOLD, $result_order->get_status() );
 		$this->assertEquals( 1, count( $result_order->get_payment_tokens() ) );
 	}
 
