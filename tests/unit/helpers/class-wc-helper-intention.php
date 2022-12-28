@@ -5,6 +5,7 @@
  * @package WooCommerce/Tests
  */
 
+use WCPay\Constants\Payment_Intent_Status;
 /**
  * Class WC_Helper_Intention.
  *
