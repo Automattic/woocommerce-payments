@@ -72,6 +72,7 @@ const WCPayUPEFields = ( {
 	},
 	emitResponse,
 	paymentMethodId,
+	upeMethods,
 	paymentIntentId,
 	paymentIntentSecret,
 	errorMessage,
@@ -92,7 +93,7 @@ const WCPayUPEFields = ( {
 	const testingInstructionsIfAppropriate = isTestMode
 		? testingInstructions
 		: '';
-	const gatewayConfig = getPaymentMethods()[ paymentMethodId ];
+	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
 	const customerData = useCustomerData();
 
 	useEffect( () => {
@@ -206,7 +207,7 @@ const WCPayUPEFields = ( {
 	useEffect(
 		() =>
 			onPaymentProcessing( () => {
-				if ( paymentMethodId !== activePaymentMethod ) {
+				if ( upeMethods[ paymentMethodId ] !== activePaymentMethod ) {
 					return;
 				}
 
