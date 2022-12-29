@@ -92,6 +92,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const FLAG_PREVIOUS_ORDER_PAID = 'wcpay_paid_for_previous_order';
 
 	/**
+	 * Flag to indicate that a previous intention attached to the order was successful.
+	 */
+	const FLAG_PREVIOUS_SUCCESSFUL_INTENT = 'wcpay_previous_successful_intent';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -690,11 +695,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 
-			$check_response = $this->check_against_session_processing_order( $order );
-			if ( is_array( $check_response ) ) {
-				return $check_response;
+			$check_session_order = $this->check_against_session_processing_order( $order );
+			if ( is_array( $check_session_order ) ) {
+				return $check_session_order;
 			}
 			$this->maybe_update_session_processing_order( $order_id );
+
+			$check_existing_intention = $this->check_intent_attached_to_order_succeeded( $order );
+			if ( is_array( $check_existing_intention ) ) {
+				return $check_existing_intention;
+			}
 
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
@@ -1903,6 +1913,45 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $default_value;
+	}
+
+	/**
+	 * Checks if the attached intent was successful for the current order.
+	 *
+	 * @param  WC_Order $order Current order to check.
+	 *
+	 * @return array|void A successful response in case the attached intent was successful, null if none.
+	 */
+	protected function check_intent_attached_to_order_succeeded( WC_Order $order ) {
+		$intent_id = $order->get_meta( '_intent_id', true );
+		if ( empty( $intent_id ) ) {
+			return;
+		}
+
+		$intent        = $this->payments_api_client->get_intent( $intent_id );
+		$intent_status = $intent->get_status();
+
+		if ( ! in_array( $intent_status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
+			return;
+		}
+
+		$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
+		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+		if ( $intent_meta_order_id !== $order->get_id() ) {
+			return;
+		}
+
+		$charge    = $intent->get_charge();
+		$charge_id = $charge ? $charge->get_id() : null;
+		$this->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
+
+		$return_url = $this->get_return_url( $order );
+		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
+		return [
+			'result'                               => 'success',
+			'redirect'                             => $return_url,
+			'wcpay_upe_previous_successful_intent' => 'yes', // This flag is needed for UPE flow.
+		];
 	}
 
 	/**
