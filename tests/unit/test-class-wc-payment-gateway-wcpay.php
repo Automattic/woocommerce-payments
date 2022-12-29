@@ -124,7 +124,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'cancel_intention',
 					'get_intent',
 					'create_intention',
-					'create_and_confirm_intention',
+					'create_or_update_intention_with_confirmation',
 					'create_and_confirm_setup_intent',
 					'get_setup_intent',
 					'get_payment_method',
@@ -1743,7 +1743,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
+			->method( 'create_or_update_intention_with_confirmation' )
 			->will( $this->throwException( new Amount_Too_Small_Exception( 'Error: Amount must be at least $60 usd', 6000, 'usd', 400 ) ) );
 
 		$this->expectException( Exception::class );

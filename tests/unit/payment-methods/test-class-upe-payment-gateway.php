@@ -154,7 +154,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
-		// return value of create_and_confirm_intention().
+		// return value of create_or_update_intention_with_confirmation().
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
