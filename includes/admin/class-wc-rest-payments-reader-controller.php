@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPAY\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
