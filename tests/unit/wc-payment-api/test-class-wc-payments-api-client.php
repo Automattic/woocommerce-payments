@@ -6,6 +6,7 @@
  */
 
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 
@@ -212,6 +213,73 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			'usd',
 			'pm_123456789',
 			1
+		);
+	}
+
+	/**
+	 * Test a successful call to create_and_confirm_intention with user fingeprint data.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_and_confirm_intention_with_user_fingerprint_data() {
+		$fingerprint     = 'abc123';
+		$expected_amount = 123;
+		$expected_status = 'succeeded';
+
+		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
+		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
+
+		Buyer_Fingerprinting_Service::set_instance( $mock_fingerprinting );
+		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
+
+		$mock_fraud_prevention
+			->expects( $this->never() )
+			->method( 'is_enabled' );
+
+		$mock_fingerprinting
+			->expects( $this->once() )
+			->method( 'get_hashed_data_for_customer' )
+			->with( $fingerprint );
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'            => 'test_intention_id',
+				'amount'        => $expected_amount,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => 'succeeded',
+							'payment_method_details' => [],
+						],
+					],
+				],
+				'client_secret' => 'test_client_secret',
+				'currency'      => 'usd',
+			]
+		);
+
+		$this->payments_api_client->create_and_confirm_intention(
+			$expected_amount,
+			'usd',
+			'pm_123456789',
+			1,
+			false,
+			false,
+			false,
+			[],
+			[],
+			false,
+			[],
+			null,
+			null,
+			$fingerprint
 		);
 	}
 
@@ -2079,6 +2147,190 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1200, $summary['total'] );
 	}
 
+	/**
+	 * Test that API client will retry request in case of network error
+	 *
+	 * POST calls have `Idempotency-Key` set in the `request`, thus are
+	 * possible to retry.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_post_on_network_failure() {
+		$this->mock_http_client
+			->expects( $this->exactly( 4 ) )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
+					'response' => [
+						'code'    => 0,
+						'message' => 'Unknown network error',
+					],
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'POST' ]
+		);
+	}
+
+	/**
+	 * Test that API client will retry request in case of network error
+	 * indiciated by Connection_Exception.
+	 *
+	 * POST calls have `Idempotency-Key` set in the `request`, thus are
+	 * possible to retry.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_post_on_network_failure_exception() {
+		$this->mock_http_client
+			->expects( $this->exactly( 4 ) )
+			->method( 'remote_request' )
+			->willThrowException(
+				new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 500 )
+			);
+
+		$this->expectException( Connection_Exception::class );
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'POST' ]
+		);
+	}
+
+	/**
+	 * Test that API client will retry request in case of network error
+	 * and stop on success.
+	 *
+	 * POST calls have `Idempotency-Key` set in the `request`, thus are
+	 * possible to retry.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_post_on_network_failure_exception_and_stops_on_success() {
+		$this->mock_http_client
+			->expects( $this->exactly( 3 ) )
+			->method( 'remote_request' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException(
+					new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 500 )
+				),
+				$this->throwException(
+					new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 500 )
+				),
+				[
+					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'POST' ]
+		);
+	}
+
+	/**
+	 * Test that API client will not retry if connection exception indicates there
+	 * was a response.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_doesnt_retry_on_other_exceptions() {
+		$this->mock_http_client
+			->expects( $this->exactly( 1 ) )
+			->method( 'remote_request' )
+			->willThrowException(
+				new Exception( 'Random exception' )
+			);
+
+		$this->expectException( Exception::class );
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'POST' ]
+		);
+	}
+
+	/**
+	 * Test that API client will retry request in case of network error with
+	 * Idempotency-Key header
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_get_with_idempotency_header_on_network_failure() {
+		$this->mock_http_client
+			->expects( $this->exactly( 4 ) )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
+					'response' => [
+						'code'    => 0,
+						'message' => 'Unknown network error',
+					],
+				]
+			);
+
+		$callable = function ( $headers ) {
+			$headers['Idempotency-Key'] = 'ik_42';
+			return $headers;
+		};
+
+		add_filter(
+			'wcpay_api_request_headers',
+			$callable,
+			10,
+			2
+		);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'GET' ]
+		);
+
+		remove_filter(
+			'wcpay_api_request_headers',
+			$callable,
+			10
+		);
+	}
+
+	/**
+	 * Test that API client won't retry GET request without Idemptency-Key header.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_doesnt_retry_get_without_idempotency_header_on_network_failure() {
+		$this->mock_http_client
+			->expects( $this->exactly( 1 ) )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
+					'response' => [
+						'code'    => 0,
+						'message' => 'Unknown network error',
+					],
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'GET' ]
+		);
+	}
 	/**
 	 * Set up http mock response.
 	 *

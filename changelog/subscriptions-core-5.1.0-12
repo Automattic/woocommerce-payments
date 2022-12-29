@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-On HPOS stores, ensure payment tokens are copied from the subscription to the renewal order.

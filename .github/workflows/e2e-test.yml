@@ -23,7 +23,7 @@ env:
   E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
   E2E_USE_LOCAL_SERVER:  false
   E2E_RESULT_FILEPATH:   'tests/e2e/results.json'
-  WC_L2_VERSION: '6.9.0'
+  WC_L2_VERSION: '7.1.1'
 
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast:     false
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
-    
+
     name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:

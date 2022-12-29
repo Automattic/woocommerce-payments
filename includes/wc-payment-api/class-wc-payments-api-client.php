@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
@@ -30,7 +31,9 @@ class WC_Payments_API_Client {
 	const GET    = 'GET';
 	const DELETE = 'DELETE';
 
-	const API_TIMEOUT_SECONDS = 70;
+	const API_TIMEOUT_SECONDS      = 70;
+	const API_RETRIES_LIMIT        = 3;
+	const API_RETRIES_BACKOFF_MSEC = 250;
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
@@ -194,6 +197,7 @@ class WC_Payments_API_Client {
 	 * @param array  $additional_parameters           - An array of any additional request parameters, particularly for additional payment methods.
 	 * @param array  $payment_methods                 - An array of payment methods that might be used for the payment.
 	 * @param string $cvc_confirmation                - The CVC confirmation for this payment method.
+	 * @param string $fingerprint                     - User fingerprint.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -211,7 +215,8 @@ class WC_Payments_API_Client {
 		$off_session = false,
 		$additional_parameters = [],
 		$payment_methods = null,
-		$cvc_confirmation = null
+		$cvc_confirmation = null,
+		$fingerprint = ''
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -230,7 +235,7 @@ class WC_Payments_API_Client {
 		}
 
 		$request             = array_merge( $request, $additional_parameters );
-		$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata() );
+		$request['metadata'] = array_merge( $request['metadata'], $this->get_fingerprint_metadata( $fingerprint ) );
 
 		if ( $off_session ) {
 			$request['off_session'] = 'true';
@@ -276,13 +281,16 @@ class WC_Payments_API_Client {
 		array $metadata = [],
 		$customer_id = null
 	) {
+		$fingerprint = isset( $metadata['fingerprint'] ) ? $metadata['fingerprint'] : '';
+		unset( $metadata['fingerprint'] );
+
 		$request                         = [];
 		$request['amount']               = $amount;
 		$request['currency']             = $currency_code;
 		$request['description']          = $this->get_intent_description( $order_number );
 		$request['payment_method_types'] = $payment_methods;
 		$request['capture_method']       = $capture_method;
-		$request['metadata']             = array_merge( $metadata, $this->get_fingerprint_metadata() );
+		$request['metadata']             = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
 		if ( $customer_id ) {
 			$request['customer'] = $customer_id;
 		}
@@ -304,6 +312,7 @@ class WC_Payments_API_Client {
 	 * @param array   $level3                    - Level 3 data.
 	 * @param string  $selected_upe_payment_type - The name of the selected UPE payment type or empty string.
 	 * @param ?string $payment_country           - The payment two-letter iso country code or null.
+	 * @param array   $additional_parameters     - An array of any additional request parameters.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
@@ -317,7 +326,8 @@ class WC_Payments_API_Client {
 		$metadata = [],
 		$level3 = [],
 		$selected_upe_payment_type = '',
-		$payment_country = null
+		$payment_country = null,
+		$additional_parameters = []
 	) {
 		// 'receipt_email' is set to prevent Stripe from sending receipts (when intent is created outside WCPay).
 		$request = [
@@ -329,6 +339,8 @@ class WC_Payments_API_Client {
 			'description'   => $this->get_intent_description( $metadata['order_number'] ?? 0 ),
 		];
 
+		$request = array_merge( $request, $additional_parameters );
+
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
@@ -336,7 +348,7 @@ class WC_Payments_API_Client {
 			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
 				$is_link_enabled = in_array(
 					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-					\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+					\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
 					true
 				);
 				if ( $is_link_enabled ) {
@@ -1074,6 +1086,14 @@ class WC_Payments_API_Client {
 	 * @throws API_Exception - Error contacting the API.
 	 */
 	public function get_currency_rates( string $currency_from, $currencies_to = null ) {
+		if ( empty( $currency_from ) ) {
+			throw new API_Exception(
+				__( 'Currency From parameter is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_currency_from_missing',
+				400
+			);
+		}
+
 		$query_body = [ 'currency_from' => $currency_from ];
 
 		if ( null !== $currencies_to ) {
@@ -2071,20 +2091,46 @@ class WC_Payments_API_Client {
 			);
 		}
 
-		$response = $this->http_client->remote_request(
-			[
-				'url'             => $url,
-				'method'          => $method,
-				'headers'         => apply_filters( 'wcpay_api_request_headers', $headers ),
-				'timeout'         => self::API_TIMEOUT_SECONDS,
-				'connect_timeout' => self::API_TIMEOUT_SECONDS,
-			],
-			$body,
-			$is_site_specific,
-			$use_user_token
-		);
+		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
+		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
+		$retries        = 0;
+		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
 
-		$response = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+		while ( true ) {
+			$response_code  = null;
+			$last_exception = null;
+
+			try {
+				$response = $this->http_client->remote_request(
+					[
+						'url'             => $url,
+						'method'          => $method,
+						'headers'         => $headers,
+						'timeout'         => self::API_TIMEOUT_SECONDS,
+						'connect_timeout' => self::API_TIMEOUT_SECONDS,
+					],
+					$body,
+					$is_site_specific,
+					$use_user_token
+				);
+
+				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+				$response_code = wp_remote_retrieve_response_code( $response );
+			} catch ( Connection_Exception $e ) {
+				$last_exception = $e;
+			}
+
+			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
+				if ( null !== $last_exception ) {
+					throw $last_exception;
+				}
+				break;
+			}
+
+			// Use exponential backoff to not overload backend.
+			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
+			$retries++;
+		}
 
 		$this->check_response_for_errors( $response );
 
@@ -2452,6 +2498,7 @@ class WC_Payments_API_Client {
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 		$customer           = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method     = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
+		$processing         = $intention_array['processing'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 
@@ -2467,7 +2514,8 @@ class WC_Payments_API_Client {
 			$charge,
 			$next_action,
 			$last_payment_error,
-			$metadata
+			$metadata,
+			$processing
 		);
 
 		return $intent;
@@ -2558,12 +2606,14 @@ class WC_Payments_API_Client {
 	/**
 	 * Returns a list of fingerprinting metadata to attach to order.
 	 *
+	 * @param string $fingerprint User fingerprint.
+	 *
 	 * @return array List of fingerprinting metadata.
 	 *
 	 * @throws API_Exception If an error occurs.
 	 */
-	private function get_fingerprint_metadata(): array {
-		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer();
+	private function get_fingerprint_metadata( $fingerprint = '' ): array {
+		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer( $fingerprint );
 		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
 
 		return $customer_fingerprint_metadata;

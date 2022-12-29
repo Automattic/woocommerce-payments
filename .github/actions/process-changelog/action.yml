@@ -1,0 +1,52 @@
+name: "Process the changelog for WooCommerce Payments"
+description: "Generate or amend the changelog entries"
+
+inputs:
+  release-version:
+    description: "The release version for which the action should generate the changelog (e.g. 4.5.0)"
+    required: true
+  release-date:
+    description: "The release date (format: YYYY-MM-DD) for which the action should generate the changelog (default: unreleased)"
+    required: false
+    default: "unreleased"
+  action-type:
+    description: 'Whether this is to generate or amend the changelog entries (generate or amend)'
+    required: false
+    default: "generate"
+    
+outputs: 
+  changelog:
+    description: "The escaped changelog content"
+    value: ${{ steps.process_changelog.outputs.CHANGELOG }}
+
+runs:
+  using: composite
+  steps:
+    - name: "Process changelog"
+      id: process_changelog
+      shell: bash
+      env:
+        ACTION_TYPE: ${{ inputs.action-type }}
+        RELEASE_VERSION: ${{ inputs.release-version }}
+        RELEASE_DATE: ${{ inputs.release-date }}
+      run: |
+        # Install this dev package globally to gather changelog entries while not including it into the release package
+        composer global require automattic/jetpack-changelogger:^3.0.7
+        
+        if ${{ env.ACTION_TYPE == 'generate' }}; then
+          CHANGELOG_FLAG=""
+          echo "Generating the changelog entries." >> $GITHUB_STEP_SUMMARY
+        else
+          CHANGELOG_FLAG="--amend"
+          echo "Amending the changelog entries." >> $GITHUB_STEP_SUMMARY
+        fi
+          
+        ~/.composer/vendor/bin/changelogger write --use-version="$RELEASE_VERSION" --release-date="$RELEASE_DATE" $CHANGELOG_FLAG --no-interaction
+        
+        echo "Picking up changelog for version '$RELEASE_VERSION'..."
+        CHANGELOG=$(awk '/^= / { if (p) { exit }; p=1; next } p && NF' changelog.txt)
+        echo "$CHANGELOG"
+        
+        # New line characters need to be escaped because set-output doesn't support multi-line strings out of the box
+        CHANGELOG="${CHANGELOG//$'\n'/\\n}"  
+        echo "CHANGELOG=$CHANGELOG" >> $GITHUB_OUTPUT

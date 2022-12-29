@@ -1,12 +1,16 @@
 /**
  * External dependencies
  */
-import { useEffect } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
 import confirmCardPayment from './confirm-card-payment.js';
+import {
+	getFingerprint,
+	FINGERPRINT_GENERIC_ERROR,
+} from '../utils/fingerprint.js';
 
 export const usePaymentCompleteHandler = (
 	api,
@@ -32,4 +36,24 @@ export const usePaymentCompleteHandler = (
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[ elements, stripe, api, shouldSavePayment ]
 	);
+};
+
+export const useFingerprint = () => {
+	const [ fingerprint, setFingerprint ] = useState( '' );
+	const [ error, setError ] = useState( null );
+
+	useEffect( () => {
+		( async () => {
+			try {
+				const { visitorId } = await getFingerprint();
+				setFingerprint( visitorId );
+			} catch ( err ) {
+				setError(
+					err.message ? err.message : FINGERPRINT_GENERIC_ERROR
+				);
+			}
+		} )();
+	}, [] );
+
+	return [ fingerprint, error ];
 };

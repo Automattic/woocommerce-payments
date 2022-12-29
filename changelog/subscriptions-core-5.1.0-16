@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-On HPOS stores, when querying for subscriptions with wcs_get_orders_with_meta_query() with status 'any', ensure that wc_get_orders() queries for subscription statuses.

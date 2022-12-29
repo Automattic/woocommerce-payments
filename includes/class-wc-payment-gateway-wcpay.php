@@ -9,20 +9,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Logger;
-use WCPay\Payment_Information;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Constants\Payment_Method;
-use WCPay\Tracker;
+use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Logger;
+use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
-use WCPay\Session_Rate_Limiter;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\Session_Rate_Limiter;
+use WCPay\Tracker;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -74,6 +75,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
+
+	/**
+	 * Key name for saving the current processing order_id to WC Session with the purpose
+	 * of preventing duplicate payments in a single order.
+	 *
+	 * @type string
+	 */
+	const SESSION_KEY_PROCESSING_ORDER = 'wcpay_processing_order';
+
+	/**
+	 * Flag to indicate that a previous order with the same cart content has already paid.
+	 *
+	 * @type string
+	 */
+	const FLAG_PREVIOUS_ORDER_PAID = 'wcpay_paid_for_previous_order';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -388,6 +404,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
+
+		// Priority 21 to run right after wc_clear_cart_after_payment.
+		add_action( 'template_redirect', [ $this, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
 	}
 
 	/**
@@ -685,6 +704,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
+			$check_response = $this->check_against_session_processing_order( $order );
+			if ( is_array( $check_response ) ) {
+				return $check_response;
+			}
+			$this->maybe_update_session_processing_order( $order_id );
+
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
@@ -694,7 +719,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 * information is not added to the order, as shown by tests.
 			 */
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
-				$order->update_status( 'failed' );
+				$order->update_status( Order_Status::FAILED );
 			}
 
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
@@ -975,6 +1000,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			];
 		}
 
+		// Add card mandate options parameters to the order payment intent if needed.
+		$additional_api_parameters = array_merge(
+			$additional_api_parameters,
+			$this->get_mandate_params_for_order( $order )
+		);
+
 		if ( $payment_needed ) {
 			$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() );
 			$currency         = strtolower( $order->get_currency() );
@@ -1034,7 +1065,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$payment_information->is_merchant_initiated(),
 					$additional_api_parameters,
 					$payment_methods,
-					$payment_information->get_cvc_confirmation()
+					$payment_information->get_cvc_confirmation(),
+					$payment_information->get_fingerprint()
 				);
 			}
 
@@ -1045,6 +1077,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$client_secret = $intent->get_client_secret();
 			$currency      = $intent->get_currency();
 			$next_action   = $intent->get_next_action();
+			$processing    = $intent->get_processing();
 			// We update the payment method ID server side when it's necessary to clone payment methods,
 			// for example when saving a payment method to a platform customer account. When this happens
 			// we need to make sure the payment method on the order matches the one on the merchant account
@@ -1108,6 +1141,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$client_secret = $intent['client_secret'];
 			$currency      = $order->get_currency();
 			$next_action   = $intent['next_action'];
+			$processing    = [];
 		}
 
 		if ( ! empty( $intent ) ) {
@@ -1188,6 +1222,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 		$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
+
+		$this->maybe_add_customer_notification_note( $order, $processing );
 
 		if ( isset( $response ) ) {
 			return $response;
@@ -1342,6 +1378,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id ) {
 		switch ( $intent_status ) {
 			case 'succeeded':
+				$this->remove_session_processing_order( $order->get_id() );
 				$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			case 'processing':
@@ -1883,6 +1920,109 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Checks if the current order has the same content with the session processing order, which was already paid (ex. by a webhook).
+	 *
+	 * @param  WC_Order $current_order Current order in process_payment.
+	 *
+	 * @return array|void A successful response in case the session processing order was paid, null if none.
+	 */
+	protected function check_against_session_processing_order( WC_Order $current_order ) {
+		$session_order_id = $this->get_session_processing_order();
+		if ( null === $session_order_id ) {
+			return;
+		}
+
+		$session_order = wc_get_order( $session_order_id );
+		if ( ! is_a( $session_order, 'WC_Order' ) ) {
+			return;
+		}
+
+		if ( $current_order->get_cart_hash() !== $session_order->get_cart_hash() ) {
+			return;
+		}
+
+		if ( ! $session_order->has_status( wc_get_is_paid_statuses() ) ) {
+			return;
+		}
+
+		$session_order->add_order_note(
+			sprintf(
+				/* translators: order ID integer number */
+				__( 'WooCommerce Payments: detected and deleted order ID %d, which has duplicate cart content with this order.', 'woocommerce-payments' ),
+				$current_order->get_id()
+			)
+		);
+		$current_order->delete();
+
+		$this->remove_session_processing_order( $session_order_id );
+
+		$return_url = $this->get_return_url( $session_order );
+		$return_url = add_query_arg( self::FLAG_PREVIOUS_ORDER_PAID, 'yes', $return_url );
+
+		return [
+			'result'                            => 'success',
+			'redirect'                          => $return_url,
+			'wcpay_upe_paid_for_previous_order' => 'yes', // This flag is needed for UPE flow.
+		];
+	}
+
+	/**
+	 * Update the processing order ID for the current session.
+	 *
+	 * @param  int $order_id Order ID.
+	 *
+	 * @return void
+	 */
+	protected function maybe_update_session_processing_order( int $order_id ) {
+		if ( WC()->session ) {
+			WC()->session->set( self::SESSION_KEY_PROCESSING_ORDER, $order_id );
+		}
+	}
+
+	/**
+	 * Remove the provided order ID from the current session if it matches with the ID in the session.
+	 *
+	 * @param  int $order_id Order ID to remove from the session.
+	 *
+	 * @return void
+	 */
+	protected function remove_session_processing_order( int $order_id ) {
+		$current_session_id = $this->get_session_processing_order();
+		if ( $order_id === $current_session_id && WC()->session ) {
+			WC()->session->set( self::SESSION_KEY_PROCESSING_ORDER, null );
+		}
+	}
+
+	/**
+	 * Get the processing order ID for the current session.
+	 *
+	 * @return integer|null Order ID. Null if the value is not set.
+	 */
+	protected function get_session_processing_order() {
+		$session = WC()->session;
+		if ( null === $session ) {
+			return null;
+		}
+
+		$val = $session->get( self::SESSION_KEY_PROCESSING_ORDER );
+		return null === $val ? null : absint( $val );
+	}
+
+	/**
+	 * Action to remove the order ID when customers reach its order-received page.
+	 *
+	 * @return void
+	 */
+	public function clear_session_processing_order_after_landing_order_received_page() {
+		global $wp;
+
+		if ( is_order_received_page() && isset( $wp->query_vars['order-received'] ) ) {
+			$order_id = absint( $wp->query_vars['order-received'] );
+			$this->remove_session_processing_order( $order_id );
+		}
+	}
+
+	/**
 	 * Gets connected account branding primary color.
 	 *
 	 * @param string $default_value Value to return when not connected or failed to fetch branding primary color.
@@ -2097,6 +2237,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( 'requires_capture' !== $theorder->get_meta( '_intention_status', true ) ) {
+			return $actions;
+		}
+
+		// if order is already completed, we shouldn't capture the charge anymore.
+		if ( in_array( $theorder->get_status(), wc_get_is_paid_statuses(), true ) ) {
 			return $actions;
 		}
 
@@ -2425,6 +2570,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			switch ( $status ) {
 				case 'succeeded':
+					$this->remove_session_processing_order( $order->get_id() );
 					$this->order_service->mark_payment_completed( $order, $intent_id, $status, $charge_id );
 					break;
 				case 'processing':
@@ -2845,6 +2991,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout filtered by fees.
+	 *
+	 * @param string $order_id optional Order ID.
+	 * @param bool   $force_currency_check optional Whether the currency check is required even if is_admin().
+	 * @return string[]
+	 */
+	public function get_payment_method_ids_enabled_at_checkout_filtered_by_fees( $order_id = null, $force_currency_check = false ) {
+		return $this->get_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check );
+	}
+
+	/**
 	 * Returns the list of available payment method types for UPE.
 	 * See https://stripe.com/docs/stripe-js/payment-element#web-create-payment-intent for a complete list.
 	 *
@@ -2935,7 +3092,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function checkout_update_email_field_priority( $fields ) {
 		$is_link_enabled = in_array(
 			Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true ),
+			\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
 			true
 		);
 

@@ -7,31 +7,32 @@
 
 namespace WCPay\Payment_Methods;
 
-use WC_Order;
-use WC_Payment_Token_WCPay_SEPA;
-use WC_Payments_Explicit_Price_Formatter;
+use Exception;
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WP_User;
+use WCPay\Constants\Payment_Type;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
-use WCPay\Constants\Payment_Type;
 use WCPay\Session_Rate_Limiter;
-use WC_Payment_Gateway_WCPay;
+use WC_Order;
+use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
+use WC_Payments_Explicit_Price_Formatter;
+use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
-use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
-use WC_Payments;
+use WC_Payments_Token_Service;
+use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
+use WP_User;
 
-use Exception;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
 
 
 /**
@@ -170,11 +171,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 			$order_id                  = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
 			$payment_intent_id         = isset( $_POST['wc_payment_intent_id'] ) ? wc_clean( wp_unslash( $_POST['wc_payment_intent_id'] ) ) : '';
+			$fingerprint               = isset( $_POST['wcpay-fingerprint'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fingerprint'] ) ) : '';
 			$save_payment_method       = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false;
 			$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : '';
 			$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
 
-			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country ), 200 );
+			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country, $fingerprint ), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -203,6 +205,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
+
+		$check_response = $this->check_against_session_processing_order( $order );
+		if ( is_array( $check_response ) ) {
+			return $check_response;
+		}
+		$this->maybe_update_session_processing_order( $order_id );
+
 		$amount   = $order->get_total();
 		$currency = $order->get_currency();
 
@@ -244,9 +253,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 
 			// If paying from order, we need to get the total from the order instead of the cart.
-			$order_id = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
+			$order_id    = isset( $_POST['wcpay_order_id'] ) ? absint( $_POST['wcpay_order_id'] ) : null;
+			$fingerprint = isset( $_POST['wcpay-fingerprint'] ) ? wc_clean( wp_unslash( $_POST['wcpay-fingerprint'] ) ) : '';
 
-			$response = $this->create_payment_intent( $order_id );
+			$response = $this->create_payment_intent( $order_id, $fingerprint );
 
 			// Encrypt client secret before exposing it to the browser.
 			if ( $response['client_secret'] ) {
@@ -273,11 +283,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Creates payment intent using current cart or order and store details.
 	 *
-	 * @param int $order_id The id of the order if intent created from Order.
+	 * @param int|null $order_id The id of the order if intent created from Order.
+	 * @param string   $fingerprint User fingerprint.
 	 *
 	 * @return array
 	 */
-	public function create_payment_intent( $order_id = null ) {
+	public function create_payment_intent( $order_id = null, $fingerprint = '' ) {
 		$amount   = WC()->cart->get_total( '' );
 		$currency = get_woocommerce_currency();
 		$number   = 0;
@@ -308,7 +319,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				array_values( $enabled_payment_methods ),
 				$number,
-				$capture_method
+				$capture_method,
+				[ 'fingerprint' => $fingerprint ]
 			);
 		} catch ( Amount_Too_Small_Exception $e ) {
 			$minimum_amount = $e->get_minimum_amount();
@@ -327,7 +339,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				strtolower( $currency ),
 				array_values( $enabled_payment_methods ),
 				$number,
-				$capture_method
+				$capture_method,
+				[ 'fingerprint' => $fingerprint ]
 			);
 		}
 
@@ -466,6 +479,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
+				$check_response = $this->check_against_session_processing_order( $order );
+				if ( is_array( $check_response ) ) {
+					return $check_response;
+				}
+				$this->maybe_update_session_processing_order( $order_id );
+
+				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
+
 				try {
 					$updated_payment_intent = $this->payments_api_client->update_intention(
 						$payment_intent_id,
@@ -476,7 +497,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						$this->get_metadata_from_order( $order, $payment_type ),
 						$this->get_level3_data_from_order( $order ),
 						$selected_upe_payment_type,
-						$payment_country
+						$payment_country,
+						$additional_api_parameters
 					);
 				} catch ( Amount_Too_Small_Exception $e ) {
 					// This code would only be reached if the cache has already expired.
@@ -606,7 +628,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				return;
 			}
 
-			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
+			if ( $order->has_status(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+					Order_Status::ON_HOLD,
+				]
+			) ) {
 				return;
 			}
 
@@ -830,6 +858,21 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 
 		return $enabled_payment_methods;
+	}
+
+	/**
+	 * Returns the list of enabled payment method types that will function with the current checkout filtered by fees.
+	 *
+	 * @param string $order_id optional Order ID.
+	 * @param bool   $force_currency_check optional Whether the currency check is required even if is_admin().
+	 *
+	 * @return string[]
+	 */
+	public function get_payment_method_ids_enabled_at_checkout_filtered_by_fees( $order_id = null, $force_currency_check = false ) {
+		$enabled_payment_methods = $this->get_payment_method_ids_enabled_at_checkout( $order_id, $force_currency_check );
+		$methods_with_fees       = array_keys( $this->account->get_fees() );
+
+		return array_values( array_intersect( $enabled_payment_methods, $methods_with_fees ) );
 	}
 
 	/**
