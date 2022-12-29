@@ -688,8 +688,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
-
 			// The request is a preflight check from WooPay.
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! empty( $_POST['is-woopay-preflight-check'] ) ) {
@@ -703,6 +701,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'redirect' => '',
 				];
 			}
+
+			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 
 			$check_response = $this->check_against_session_processing_order( $order );
 			if ( is_array( $check_response ) ) {
