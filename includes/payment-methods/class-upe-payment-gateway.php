@@ -205,6 +205,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
+
+		$check_response = $this->check_against_session_processing_order( $order );
+		if ( is_array( $check_response ) ) {
+			return $check_response;
+		}
+		$this->maybe_update_session_processing_order( $order_id );
+
 		$amount   = $order->get_total();
 		$currency = $order->get_currency();
 
@@ -471,6 +478,12 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					$exception = new Amount_Too_Small_Exception( 'Amount too small', $minimum_amount, $currency, 400 );
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
+
+				$check_response = $this->check_against_session_processing_order( $order );
+				if ( is_array( $check_response ) ) {
+					return $check_response;
+				}
+				$this->maybe_update_session_processing_order( $order_id );
 
 				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
 

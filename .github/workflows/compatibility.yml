@@ -4,7 +4,7 @@ on:
   pull_request
 
 env:
-  WC_L2_VERSION: '7.0.1'
+  WC_L2_VERSION: '7.1.1'
   WP_L2_VERSION: '5.9'
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
           WC_VERSIONS=$( echo "[\"$WC_L2_VERSION\", \"latest\", \"beta\"]" )
           MATRIX_INCLUDE=$( echo "[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"$WP_L2_VERSION\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]" )
           echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
-  
+
   woocommerce-compatibility:
     name: "WC compatibility"
     needs: generate-matrix

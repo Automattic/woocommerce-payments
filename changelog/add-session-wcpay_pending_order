@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add the processing order_id to WC Session and its handling to prevent duplicate orders
