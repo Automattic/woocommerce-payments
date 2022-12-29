@@ -64,7 +64,7 @@ const useExpressCheckoutProductHandler = ( api, isProductPage = false ) => {
 			} );
 		}
 
-		return api.paymentRequestAddToCart( data );
+		return api.expressCheckoutAddToCart( data );
 	};
 
 	useEffect( () => {

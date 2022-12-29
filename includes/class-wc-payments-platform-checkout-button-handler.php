@@ -96,6 +96,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 */
 	public function add_platform_checkout_config( $config ) {
 		$config['platformCheckoutButton'] = $this->get_button_settings();
+		$config['addToCartNonce']         = wp_create_nonce( 'wcpay-add-to-cart' );
 
 		return $config;
 	}
