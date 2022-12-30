@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-UPE not loading on checkout page due to undefined i18n.
