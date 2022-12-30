@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 5.2.1 - 2022-12-30 =
+* Fix - UPE not loading on checkout page due to undefined i18n.
+
 = 5.2.0 - 2022-12-21 =
 * Add - Add WooPay Express Checkout button iframe functionality.
 * Add - When deactivating WCPay plugin, warn merchant that active WCPay Subscriptions will continue collecting payment.
