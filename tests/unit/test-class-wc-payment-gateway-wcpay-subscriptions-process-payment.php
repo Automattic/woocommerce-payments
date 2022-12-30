@@ -175,7 +175,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_or_update_intention_with_confirmation' )
+			->method( 'create_and_confirm_intention' )
 			->with( $this->anything(), $this->anything(), self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, $this->anything(), true, false, $this->anything(), $this->anything(), false )
 			->willReturn( $this->payment_intent );
 
@@ -281,7 +281,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_or_update_intention_with_confirmation' )
+			->method( 'create_and_confirm_intention' )
 			->with( $this->anything(), $this->anything(), self::PAYMENT_METHOD_ID, self::CUSTOMER_ID, $this->anything(), false, false, $this->anything(), $this->anything(), false )
 			->willReturn( $this->payment_intent );
 

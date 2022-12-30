@@ -182,28 +182,27 @@ class WC_Payments_API_Client {
 	}
 
 	/**
-	 * Create or update an intention, and automatically confirm it.
+	 * Create an intention, and automatically confirm it.
 	 *
-	 * @param int     $amount                          - Amount to charge.
-	 * @param string  $currency_code                   - Currency to charge in.
-	 * @param string  $payment_method_id               - ID of payment method to process charge with.
-	 * @param string  $customer_id                     - ID of the customer making the payment.
-	 * @param bool    $manual_capture                  - Whether to capture funds via manual action.
-	 * @param bool    $save_payment_method_to_store    - Whether to save payment method for future purchases.
-	 * @param bool    $save_payment_method_to_platform - Whether to save payment method to platform.
-	 * @param array   $metadata                        - Meta data values to be sent along with payment intent creation.
-	 * @param array   $level3                          - Level 3 data.
-	 * @param bool    $off_session                     - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
-	 * @param array   $additional_parameters           - An array of any additional request parameters, particularly for additional payment methods.
-	 * @param array   $payment_methods                 - An array of payment methods that might be used for the payment.
-	 * @param string  $cvc_confirmation                - The CVC confirmation for this payment method.
-	 * @param string  $fingerprint                     - User fingerprint.
-	 * @param ?string $intent_id                       - Null to create a new intention. Otherwise, update the specified intention.
+	 * @param int    $amount                          - Amount to charge.
+	 * @param string $currency_code                   - Currency to charge in.
+	 * @param string $payment_method_id               - ID of payment method to process charge with.
+	 * @param string $customer_id                     - ID of the customer making the payment.
+	 * @param bool   $manual_capture                  - Whether to capture funds via manual action.
+	 * @param bool   $save_payment_method_to_store    - Whether to save payment method for future purchases.
+	 * @param bool   $save_payment_method_to_platform - Whether to save payment method to platform.
+	 * @param array  $metadata                        - Meta data values to be sent along with payment intent creation.
+	 * @param array  $level3                          - Level 3 data.
+	 * @param bool   $off_session                     - Whether the payment is off-session (merchant-initiated), or on-session (customer-initiated).
+	 * @param array  $additional_parameters           - An array of any additional request parameters, particularly for additional payment methods.
+	 * @param array  $payment_methods                 - An array of payment methods that might be used for the payment.
+	 * @param string $cvc_confirmation                - The CVC confirmation for this payment method.
+	 * @param string $fingerprint                     - User fingerprint.
 	 *
 	 * @return WC_Payments_API_Intention
 	 * @throws API_Exception - Exception thrown on intention creation failure.
 	 */
-	public function create_or_update_intention_with_confirmation(
+	public function create_and_confirm_intention(
 		$amount,
 		$currency_code,
 		$payment_method_id,
@@ -217,8 +216,7 @@ class WC_Payments_API_Client {
 		$additional_parameters = [],
 		$payment_methods = null,
 		$cvc_confirmation = null,
-		$fingerprint = '',
-		$intent_id = null
+		$fingerprint = ''
 	) {
 		// TODO: There's scope to have amount and currency bundled up into an object.
 		$request                   = [];
@@ -255,11 +253,7 @@ class WC_Payments_API_Client {
 			$request['cvc_confirmation'] = $cvc_confirmation;
 		}
 
-		$api = is_null( $intent_id )
-			? self::INTENTIONS_API
-			: self::INTENTIONS_API . '/' . $intent_id;
-
-		$response_array = $this->request_with_level3_data( $request, $api, self::POST );
+		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
 	}

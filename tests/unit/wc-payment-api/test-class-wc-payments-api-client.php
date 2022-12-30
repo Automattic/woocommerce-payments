@@ -94,7 +94,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$result = $this->payments_api_client->create_or_update_intention_with_confirmation(
+		$result = $this->payments_api_client->create_and_confirm_intention(
 			$expected_amount,
 			'usd',
 			'pm_123456789',
@@ -105,74 +105,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected_status, $result->get_status() );
 	}
 
-	/**
-	 * Test a successful call to update_intention.
-	 */
-	public function test_update_intention_with_confirmation() {
-
-		$intention_id = 'pi_existing_payment_intent';
-
-		// Mock the HTTP client manually to assert we are sending the correct args.
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->callback(
-					function ( $data ) use ( $intention_id ) : bool {
-						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/intentions/' . $intention_id, 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
-						return true;
-					}
-				),
-				$this->anything(),
-				true,
-				false
-			)
-			->will(
-				$this->returnValue(
-					[
-						'body'     => wp_json_encode(
-							[
-								'id'            => $intention_id,
-								'amount'        => 100,
-								'created'       => 1557224304,
-								'status'        => 'succeeded',
-								'client_secret' => 'test_client_secret',
-								'currency'      => 'usd',
-								'charges'       => [
-									'total_count' => 0,
-									'data'        => [],
-								],
-							]
-						),
-						'response' => [
-							'code'    => 200,
-							'message' => 'OK',
-						],
-					]
-				)
-			);
-
-		$result = $this->payments_api_client->create_or_update_intention_with_confirmation(
-			100,
-			'usd',
-			'pm_123456789',
-			1,
-			false,
-			false,
-			false,
-			[],
-			[],
-			false,
-			[],
-			null,
-			null,
-			'',
-			$intention_id
-		);
-
-		$this->assertSame( $intention_id, $result->get_id() );
-	}
 
 	/**
 	 * Test a successful call to create_intention with fraud prevention enabled.
@@ -230,11 +162,11 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test a successful call to create_or_update_intention_with_confirmation with fraud prevention enabled.
+	 * Test a successful call to create_and_confirm_intention with fraud prevention enabled.
 	 *
 	 * @throws Exception - In the event of test failure.
 	 */
-	public function test_create_or_update_intention_with_confirmation_with_fingerprinting_data() {
+	public function test_create_and_confirm_intention_with_fingerprinting_data() {
 		$expected_amount = 123;
 		$expected_status = 'succeeded';
 
@@ -276,7 +208,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->payments_api_client->create_or_update_intention_with_confirmation(
+		$this->payments_api_client->create_and_confirm_intention(
 			$expected_amount,
 			'usd',
 			'pm_123456789',
@@ -285,11 +217,11 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test a successful call to create_or_update_intention_with_confirmation with user fingeprint data.
+	 * Test a successful call to create_and_confirm_intention with user fingeprint data.
 	 *
 	 * @throws Exception - In the event of test failure.
 	 */
-	public function test_create_or_update_intention_with_confirmation_with_user_fingerprint_data() {
+	public function test_create_and_confirm_intention_with_user_fingerprint_data() {
 		$fingerprint     = 'abc123';
 		$expected_amount = 123;
 		$expected_status = 'succeeded';
@@ -333,7 +265,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->payments_api_client->create_or_update_intention_with_confirmation(
+		$this->payments_api_client->create_and_confirm_intention(
 			$expected_amount,
 			'usd',
 			'pm_123456789',
@@ -356,7 +288,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @throws Exception - In the event of test failure.
 	 */
-	public function test_create_or_update_intention_with_confirmation_failed_fraudulent_payment() {
+	public function test_create_and_confirm_intention_failed_fraudulent_payment() {
 		$this->set_http_mock_response(
 			402,
 			[
@@ -384,7 +316,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->method( 'regenerate_token' );
 
 		$this->expectException( API_Exception::class );
-		$this->payments_api_client->create_or_update_intention_with_confirmation(
+		$this->payments_api_client->create_and_confirm_intention(
 			123,
 			'usd',
 			'pm_123456789',
@@ -464,7 +396,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$result = $this->payments_api_client->create_or_update_intention_with_confirmation( $expected_amount, 'usd', 'pm_123456789', true );
+		$result = $this->payments_api_client->create_and_confirm_intention( $expected_amount, 'usd', 'pm_123456789', true );
 		$this->assertEquals( $expected_amount, $result->get_amount() );
 		$this->assertEquals( $expected_status, $result->get_status() );
 	}

@@ -8,7 +8,6 @@
 namespace WCPay\Payment_Methods;
 
 use Exception;
-use WC_Payments_API_Intention;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Payment_Type;
@@ -213,14 +212,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 		$this->maybe_update_session_processing_order( $order_id );
 
-		$attached_intent = $this->get_and_verify_attached_intent_to_order( $order );
-		$reuse_intent_id = null;
-		if ( is_a( $attached_intent, WC_Payments_API_Intention::class ) ) {
-			$check_existing_intention = $this->check_and_process_successful_attached_intent( $order, $attached_intent );
-			if ( is_array( $check_existing_intention ) ) {
-				return $check_existing_intention;
-			}
-			$reuse_intent_id = $this->maybe_reuse_attached_intent_to_order( $attached_intent );
+		$check_existing_intention = $this->check_intent_attached_to_order_succeeded( $order );
+		if ( is_array( $check_existing_intention ) ) {
+			return $check_existing_intention;
 		}
 
 		$amount   = $order->get_total();
@@ -231,7 +225,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$payment_type               = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 
 			$this->payments_api_client->update_intention(
-				$reuse_intent_id ?? $payment_intent_id,
+				$payment_intent_id,
 				WC_Payments_Utils::prepare_amount( $amount, $currency ),
 				strtolower( $currency ),
 				$save_payment_method,
@@ -496,21 +490,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 				$this->maybe_update_session_processing_order( $order_id );
 
-				$attached_intent = $this->get_and_verify_attached_intent_to_order( $order );
-				$reuse_intent_id = null;
-				if ( is_a( $attached_intent, WC_Payments_API_Intention::class ) ) {
-					$check_existing_intention = $this->check_and_process_successful_attached_intent( $order, $attached_intent );
-					if ( is_array( $check_existing_intention ) ) {
-						return $check_existing_intention;
-					}
-					$reuse_intent_id = $this->maybe_reuse_attached_intent_to_order( $attached_intent );
+				$check_existing_intention = $this->check_intent_attached_to_order_succeeded( $order );
+				if ( is_array( $check_existing_intention ) ) {
+					return $check_existing_intention;
 				}
 
 				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
 
 				try {
 					$updated_payment_intent = $this->payments_api_client->update_intention(
-						$reuse_intent_id ?? $payment_intent_id,
+						$payment_intent_id,
 						$converted_amount,
 						strtolower( $currency ),
 						$save_payment_method,

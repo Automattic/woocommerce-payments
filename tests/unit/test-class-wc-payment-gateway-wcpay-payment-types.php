@@ -79,11 +79,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		// Arrange: Mock WC_Payments_API_Client so we can configure the
-		// return value of create_or_update_intention_with_confirmation().
+		// return value of create_and_confirm_intention().
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_or_update_intention_with_confirmation', 'get_payment_method', 'request_with_level3_data', 'is_server_connected' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'request_with_level3_data', 'is_server_connected' ] )
 			->getMock();
 
 		// Arrange: Mock WC_Payments_Account instance to use later.
@@ -186,7 +186,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$intent = WC_Helper_Intention::create_intention();
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_or_update_intention_with_confirmation' )
+			->method( 'create_and_confirm_intention' )
 			->with(
 				$this->anything(),
 				$this->anything(),
@@ -226,7 +226,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$intent = WC_Helper_Intention::create_intention();
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_or_update_intention_with_confirmation' )
+			->method( 'create_and_confirm_intention' )
 			->with(
 				$this->anything(),
 				$this->anything(),
@@ -263,7 +263,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$intent = WC_Helper_Intention::create_intention();
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_or_update_intention_with_confirmation' )
+			->method( 'create_and_confirm_intention' )
 			->with(
 				$this->anything(),
 				$this->anything(),
@@ -314,7 +314,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		// Make sure the payment is skipped for WCPay Subscriptions.
 		$this->mock_api_client
 			->expects( $this->never() )
-			->method( 'create_or_update_intention_with_confirmation' );
+			->method( 'create_and_confirm_intention' );
 
 		$this->mock_wcpay_gateway->scheduled_subscription_payment( 100, $order );
 

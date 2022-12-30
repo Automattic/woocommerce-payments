@@ -65,13 +65,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	const SUCCESSFUL_INTENT_STATUS = [ 'succeeded', 'requires_capture', 'processing' ];
 
-	/**
-	 * Stripe intent statuses that can be reused.
-	 *
-	 * @type array
-	 */
-	const REUSE_INTENT_STATUSES = [ 'requires_action', 'requires_payment_method' ];
-
 	const UPDATE_SAVED_PAYMENT_METHOD     = 'wcpay_update_saved_payment_method';
 	const UPDATE_CUSTOMER_WITH_ORDER_DATA = 'wcpay_update_customer_with_order_data';
 
@@ -708,6 +701,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 			$this->maybe_update_session_processing_order( $order_id );
 
+			$check_existing_intention = $this->check_intent_attached_to_order_succeeded( $order );
+			if ( is_array( $check_existing_intention ) ) {
+				return $check_existing_intention;
+			}
+
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
@@ -1049,19 +1047,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( empty( $intent ) ) {
-				$attached_intent = $this->get_and_verify_attached_intent_to_order( $order );
-				$reuse_intent_id = null;
-				if ( is_a( $attached_intent, WC_Payments_API_Intention::class ) ) {
-					$check_existing_intention = $this->check_and_process_successful_attached_intent( $order, $attached_intent );
-					if ( is_array( $check_existing_intention ) ) {
-						return $check_existing_intention;
-					}
-					$reuse_intent_id = $this->maybe_reuse_attached_intent_to_order( $attached_intent );
-				}
-
-				// Create a new intention or reuse an existing one,
-				// try to confirm it & capture the charge (if 3DS is not required).
-				$intent = $this->payments_api_client->create_or_update_intention_with_confirmation(
+				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
+				$intent = $this->payments_api_client->create_and_confirm_intention(
 					$converted_amount,
 					$currency,
 					$payment_information->get_payment_method(),
@@ -1075,8 +1062,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$additional_api_parameters,
 					$payment_methods,
 					$payment_information->get_cvc_confirmation(),
-					$payment_information->get_fingerprint(),
-					$reuse_intent_id
+					$payment_information->get_fingerprint()
 				);
 			}
 
@@ -1966,72 +1952,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'redirect'                             => $return_url,
 			'wcpay_upe_previous_successful_intent' => 'yes', // This flag is needed for UPE flow.
 		];
-	}
-
-	/**
-	 * Get and verify the current attached intent to the order.
-	 *
-	 * @param  WC_Order $order Order object to get intent.
-	 *
-	 * @return WC_Payments_API_Intention|null A valid intent. Or null if there is no attached intent or it's invalid.
-	 */
-	protected function get_and_verify_attached_intent_to_order( WC_Order $order ) {
-		$intent_id = $order->get_meta( '_intent_id', true );
-		if ( empty( $intent_id ) ) {
-			return null;
-		}
-
-		$intent                   = $this->payments_api_client->get_intent( $intent_id );
-		$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
-		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
-		if ( $intent_meta_order_id !== $order->get_id() ) {
-			return null;
-		}
-
-		return $intent;
-	}
-
-	/**
-	 * Checks if the attached intent was successful for the current order, and process it.
-	 *
-	 * @param  WC_Order                  $current_order Order object to get intent.
-	 * @param  WC_Payments_API_Intention $intent Attached intent to check.
-	 *
-	 * @return array|void A successful response in case the attached intent was successful, null if none.
-	 */
-	protected function check_and_process_successful_attached_intent( WC_Order $current_order, WC_Payments_API_Intention $intent ) {
-		$intent_id     = $intent->get_id();
-		$intent_status = $intent->get_status();
-		if ( ! in_array( $intent_status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
-			return;
-		}
-
-		$charge    = $intent->get_charge();
-		$charge_id = $charge ? $charge->get_id() : null;
-		$this->update_order_status_from_intent( $current_order, $intent_id, $intent_status, $charge_id );
-
-		$return_url = $this->get_return_url( $current_order );
-		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
-		return [
-			'result'                               => 'success',
-			'redirect'                             => $return_url,
-			'wcpay_upe_previous_successful_intent' => 'yes', // This flag is needed for UPE flow.
-		];
-	}
-
-	/**
-	 * Get intent ID to reuse from the attached intent. If it is not valid, return null.
-	 *
-	 * @param  WC_Payments_API_Intention $attached_intent Attached intent to check.
-	 *
-	 * @return string|null
-	 */
-	protected function maybe_reuse_attached_intent_to_order( WC_Payments_API_Intention $attached_intent ) {
-		if ( ! in_array( $attached_intent->get_status(), self::REUSE_INTENT_STATUSES, true ) ) {
-			return null;
-		}
-
-		return $attached_intent->get_id();
 	}
 
 	/**

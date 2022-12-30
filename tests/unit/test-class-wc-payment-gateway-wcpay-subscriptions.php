@@ -230,7 +230,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_or_update_intention_with_confirmation' )
+			->method( 'create_and_confirm_intention' )
 			->with(
 				$this->anything(),
 				$this->anything(),
@@ -359,7 +359,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client
 			->expects( $this->once() )
-			->method( 'create_or_update_intention_with_confirmation' )
+			->method( 'create_and_confirm_intention' )
 			->with(
 				$this->anything(),
 				$this->anything(),
