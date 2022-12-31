@@ -93,7 +93,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'create_and_confirm_setup_intent', 'get_payment_method', 'is_server_connected', 'get_charge' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'create_and_confirm_setup_intent', 'get_payment_method', 'is_server_connected', 'get_charge', 'get_intent' ] )
 			->getMock();
 
 		// Arrange: Mock WC_Payments_Account instance to use later.
@@ -1228,6 +1228,115 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			'Different cart hash  with session order status processing' => [ 'SESSION_ORDER_HASH', Order_Status::PROCESSING, 'CURRENT_ORDER_HASH' ],
 			'Same cart hash with session order status pending'          => [ 'SAME_CART_HASH', Order_Status::PENDING, 'SAME_CART_HASH' ],
 			'Same cart hash with session order status cancelled'        => [ 'SAME_CART_HASH', Order_Status::CANCELLED, 'SAME_CART_HASH' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_process_payment_check_intent_attached_to_order_succeeded_return_redirection
+	 */
+	public function test_process_payment_check_intent_attached_to_order_succeeded_return_redirection( string $intent_successful_status ) {
+		$attached_intent_id = 'pi_attached_intent_id';
+
+		// Arrange order.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $attached_intent_id );
+		$order->save();
+		$order_id = $order->get_id();
+
+		// Arrange mock get_intention.
+		$attached_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => $attached_intent_id,
+				'status'   => $intent_successful_status,
+				'metadata' => [ 'order_id' => $order_id ],
+			]
+		);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->with( $attached_intent_id )
+			->willReturn( $attached_intent );
+
+		// Assert: no more call to the server to create and confirm a new intention.
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'create_and_confirm_intention' );
+
+		// Act: process the order but redirect to the order.
+		$result = $this->mock_wcpay_gateway->process_payment( $order_id );
+
+		// Assert: the result of check_intent_attached_to_order_succeeded.
+		$this->assertSame( 'yes', $result['wcpay_upe_previous_successful_intent'] );
+		$this->assertSame( 'success', $result['result'] );
+		$this->assertStringContainsString( $this->mock_wcpay_gateway->get_return_url( $order ), $result['redirect'] );
+	}
+
+	public function provider_process_payment_check_intent_attached_to_order_succeeded_return_redirection(): array {
+		$ret = [];
+		foreach ( WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS as $status ) {
+			$ret[ 'Intent status ' . $status ] = [ $status ];
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * @dataProvider provider_process_payment_check_intent_attached_to_order_succeeded_continue_processing
+	 * @param  string|null  $attached_intent_id Attached intent ID to the order. Null when there is no attached intent.
+	 * @param  string|null  $attached_intent_status Attached intent status. Null where there is no status.
+	 * @param  bool  $same_order_id True when the intent meta order_id is exactly the current processing order_id. False otherwise.
+	 */
+	public function test_process_payment_check_intent_attached_to_order_succeeded_continue_processing(
+		$attached_intent_id,
+		$attached_intent_status,
+		bool $same_order_id
+	) {
+		// Arrange order.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $attached_intent_id );
+		$order->save();
+
+		$order_id = $order->get_id();
+
+		// Arrange mock get_intent.
+		if ( null === $attached_intent_id ) {
+			$this->mock_api_client
+				->expects( $this->never() )
+				->method( 'get_intent' );
+		} else {
+			$meta_order_id   = $same_order_id ? $order_id : $order_id - 1;
+			$attached_intent = WC_Helper_Intention::create_intention(
+				[
+					'id'       => $attached_intent_id,
+					'status'   => $attached_intent_status,
+					'metadata' => [ 'order_id' => $meta_order_id ],
+				]
+			);
+
+			$this->mock_api_client
+				->expects( $this->once() )
+				->method( 'get_intent' )
+				->with( $attached_intent_id )
+				->willReturn( $attached_intent );
+		}
+
+		// Assert: the payment process continues.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_and_confirm_intention' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		// Act: process the order.
+		$this->mock_wcpay_gateway->process_payment( $order_id );
+	}
+
+	public function provider_process_payment_check_intent_attached_to_order_succeeded_continue_processing(): array {
+		return [
+			'No previously attached intent' => [ null, null, false ],
+			'Existing attached intent - non-success status - same order_id' => [ 'pi_attached_intent_id', 'requires_action', true ],
+			'Existing attached intent - non-success status - different order_id' => [ 'pi_attached_intent_id', 'requires_action', false ],
+			'Existing attached intent - success status - different order_id' => [ 'pi_attached_intent_id', 'succeeded', false ],
 		];
 	}
 
