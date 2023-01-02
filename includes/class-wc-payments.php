@@ -651,9 +651,11 @@ class WC_Payments {
 	public static function create_api_client() {
 		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-charge.php';
 		require_once __DIR__ . '/wc-payment-api/models/class-wc-payments-api-intention.php';
+		require_once __DIR__ . '/wc-payment-api/class-wc-payments-api-utils.php';
 		require_once __DIR__ . '/wc-payment-api/class-wc-payments-api-client.php';
 
-		$http_class = self::get_wc_payments_http();
+		$http_class      = self::get_wc_payments_http();
+		$api_utils_class = new WC_Payments_Api_Utils();
 
 		$api_client_class = apply_filters( 'wc_payments_api_client', WC_Payments_API_Client::class );
 		if ( ! class_exists( $api_client_class ) || ! is_subclass_of( $api_client_class, 'WC_Payments_API_Client' ) ) {
@@ -663,7 +665,8 @@ class WC_Payments {
 		return new $api_client_class(
 			'WooCommerce Payments/' . WCPAY_VERSION_NUMBER,
 			$http_class,
-			self::$db_helper
+			self::$db_helper,
+			$api_utils_class
 		);
 	}
 

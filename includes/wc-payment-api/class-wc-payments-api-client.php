@@ -110,16 +110,25 @@ class WC_Payments_API_Client {
 	private $wcpay_db;
 
 	/**
+	 * Helper class to perform operations on a response.
+	 *
+	 * @var WC_Payments_Api_Utils
+	 */
+	private $api_utils;
+
+	/**
 	 * WC_Payments_API_Client constructor.
 	 *
-	 * @param string           $user_agent  - User agent string to report in requests.
-	 * @param WC_Payments_Http $http_client - Used to send HTTP requests.
-	 * @param WC_Payments_DB   $wcpay_db    - DB access wrapper.
+	 * @param string                $user_agent  - User agent string to report in requests.
+	 * @param WC_Payments_Http      $http_client - Used to send HTTP requests.
+	 * @param WC_Payments_DB        $wcpay_db    - DB access wrapper.
+	 * @param WC_Payments_Api_Utils $api_utils - Helper class to perform operations on a response.
 	 */
-	public function __construct( $user_agent, $http_client, $wcpay_db ) {
+	public function __construct( $user_agent, $http_client, $wcpay_db, $api_utils ) {
 		$this->user_agent  = $user_agent;
 		$this->http_client = $http_client;
 		$this->wcpay_db    = $wcpay_db;
+		$this->api_utils   = $api_utils;
 	}
 
 	/**
@@ -2094,7 +2103,6 @@ class WC_Payments_API_Client {
 		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
 		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
 		$retries        = 0;
-		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
 
 		while ( true ) {
 			$response_code  = null;
@@ -2120,12 +2128,14 @@ class WC_Payments_API_Client {
 				$last_exception = $e;
 			}
 
-			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
+			if ( $this->api_utils->is_response_code_present_and_does_not_need_a_retry( $response_code ) || time() >= $stop_trying_at || self::API_RETRIES_LIMIT === $retries ) {
 				if ( null !== $last_exception ) {
 					throw $last_exception;
 				}
 				break;
 			}
+
+			$url = $this->prepare_url_for_retry( $response_code, $url );
 
 			// Use exponential backoff to not overload backend.
 			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
@@ -2146,6 +2156,24 @@ class WC_Payments_API_Client {
 		);
 
 		return $response_body;
+	}
+
+	/**
+	 * Gets the URL ready for a retry after a failed request.
+	 *
+	 * @param array  $response - Response which is used to determine the error type.
+	 * @param string $url - A URL from the previous request attempt which might be updated before a retry.
+	 *
+	 * @return string - URL prepared for a retry.
+	 */
+	private function prepare_url_for_retry( $response, $url ) {
+		$response_code = wp_remote_retrieve_response_code( $response );
+
+		// If the redirect occurs because of the wp cron job, we just need to retry the existing request and avoid updating it for the sake of simplicity.
+		if ( 302 === $response_code && $this->api_utils->is_doing_wp_cron_query_parameter_present( $response ) ) {
+			return $url;
+		}
+		return $url;
 	}
 
 	/**

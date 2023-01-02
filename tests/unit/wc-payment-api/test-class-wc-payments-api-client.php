@@ -37,6 +37,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	private $mock_db_wrapper;
 
 	/**
+	 * Instance of WC_Payments_Api_Utils.
+	 *
+	 * @var WC_Payments_Api_Utils
+	 */
+	private $api_utils;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -53,10 +60,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->api_utils = new WC_Payments_Api_Utils();
+
 		$this->payments_api_client = new WC_Payments_API_Client(
 			'Unit Test Agent/0.1.0',
 			$this->mock_http_client,
-			$this->mock_db_wrapper
+			$this->mock_db_wrapper,
+			$this->api_utils
 		);
 	}
 
@@ -880,6 +890,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				null,
 				true,
 				true // get_onboarding_business_types should use user token auth.
+			)
+			->willReturn(
+				[
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
 			);
 
 		$this->payments_api_client->get_onboarding_business_types();
@@ -908,6 +926,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				null,
 				true,
 				true // get_onboarding_required_verification_information should use user token auth.
+			)
+			->willReturn(
+				[
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
 			);
 
 		$this->payments_api_client->get_onboarding_required_verification_information( 'country', 'type' );
@@ -2148,7 +2174,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test that API client will retry request in case of network error
+	 * Test that API client will retry request in case of network error for POST request.
 	 *
 	 * POST calls have `Idempotency-Key` set in the `request`, thus are
 	 * possible to retry.
@@ -2178,14 +2204,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Test that API client will retry request in case of network error
-	 * indiciated by Connection_Exception.
+	 * indicated by Connection_Exception.
 	 *
-	 * POST calls have `Idempotency-Key` set in the `request`, thus are
-	 * possible to retry.
+	 * Valid for both POST and GET/DELETE requests, since POST calls have `Idempotency-Key` set in the `request`, while
+	 * GET/DELETE calls are idempotent by default.
 	 *
 	 * @throws Exception in case of the test failure.
 	 */
-	public function test_request_retries_post_on_network_failure_exception() {
+	public function test_request_retries_on_network_failure_exception() {
 		$this->mock_http_client
 			->expects( $this->exactly( 4 ) )
 			->method( 'remote_request' )
@@ -2204,7 +2230,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Test that API client will retry request in case of network error
-	 * and stop on success.
+	 * and stop on success for POST request.
 	 *
 	 * POST calls have `Idempotency-Key` set in the `request`, thus are
 	 * possible to retry.
@@ -2240,11 +2266,11 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 	/**
 	 * Test that API client will not retry if connection exception indicates there
-	 * was a response.
+	 * was a response for POST request.
 	 *
 	 * @throws Exception in case of the test failure.
 	 */
-	public function test_request_doesnt_retry_on_other_exceptions() {
+	public function test_request_doesnt_retry_post_on_other_exceptions() {
 		$this->mock_http_client
 			->expects( $this->exactly( 1 ) )
 			->method( 'remote_request' )
@@ -2262,12 +2288,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test that API client will retry request in case of network error with
-	 * Idempotency-Key header
+	 * Test that API client will retry request in case of network error for GET request.
+	 *
+	 * GET/DELETE calls are idempotent by default, thus are possible to retry.
 	 *
 	 * @throws Exception in case of the test failure.
 	 */
-	public function test_request_retries_get_with_idempotency_header_on_network_failure() {
+	public function test_request_retries_get_on_network_failure() {
 		$this->mock_http_client
 			->expects( $this->exactly( 4 ) )
 			->method( 'remote_request' )
@@ -2281,37 +2308,68 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$callable = function ( $headers ) {
-			$headers['Idempotency-Key'] = 'ik_42';
-			return $headers;
-		};
-
-		add_filter(
-			'wcpay_api_request_headers',
-			$callable,
-			10,
-			2
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'GET' ]
 		);
+	}
+
+	/**
+	 * Test that API client will retry GET request in case of a retryable response code.
+	 *
+	 * GET/DELETE calls are idempotent by default, thus are possible to retry.
+	 */
+	public function test_request_retries_get_with_retryable_response_code() {
+		$this->mock_http_client
+			->expects( $this->exactly( 4 ) )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
+					'response' => [
+						'code'    => 302,
+						'message' => 'Found',
+					],
+				]
+			);
 
 		PHPUnit_Utils::call_method(
 			$this->payments_api_client,
 			'request',
 			[ [], 'intentions', 'GET' ]
 		);
+	}
 
-		remove_filter(
-			'wcpay_api_request_headers',
-			$callable,
-			10
+	/**
+	 * Test that API client will not retry if connection exception indicates there
+	 * was a response for GET request.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_doesnt_retry_get_on_other_exceptions() {
+		$this->mock_http_client
+			->expects( $this->exactly( 1 ) )
+			->method( 'remote_request' )
+			->willThrowException(
+				new Exception( 'Random exception' )
+			);
+
+		$this->expectException( Exception::class );
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'GET' ]
 		);
 	}
 
 	/**
-	 * Test that API client won't retry GET request without Idemptency-Key header.
+	 * Test that API client won't retry GET request with non-retryable response code.
 	 *
 	 * @throws Exception in case of the test failure.
 	 */
-	public function test_request_doesnt_retry_get_without_idempotency_header_on_network_failure() {
+	public function test_get_request_doesnt_retry_with_non_retryable_response_code() {
 		$this->mock_http_client
 			->expects( $this->exactly( 1 ) )
 			->method( 'remote_request' )
@@ -2319,8 +2377,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				[
 					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
 					'response' => [
-						'code'    => 0,
-						'message' => 'Unknown network error',
+						'code'    => 300,
+						'message' => 'Multiple Choices',
 					],
 				]
 			);
