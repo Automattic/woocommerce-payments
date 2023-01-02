@@ -29,6 +29,6 @@ class WC_Payments_Api_Utils {
 	 * @return bool - True if there is the doing_wp_cron query parameter attached to the redirect URL. False otherwise.
 	 */
 	public function is_doing_wp_cron_query_parameter_present( $response ) {
-		return str_contains( $response['headers']['location'], 'doing_wp_cron' );
+		return isset( $response['headers']['location'] ) && str_contains( $response['headers']['location'], 'doing_wp_cron' );
 	}
 }
