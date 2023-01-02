@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Retry API requests in case the server responds with the redirection response due to a Cron job.
