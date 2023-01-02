@@ -38,11 +38,13 @@ class WC_Payments_API_Utils_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_doing_wp_cron_query_parameter_present_in_location_header() {
-		$this->assertTrue( $this->payments_api_utils->is_doing_wp_cron_query_parameter_present( $this->get_response( true ) ) );
+		$with_wp_cron_param = true;
+		$this->assertTrue( $this->payments_api_utils->is_doing_wp_cron_query_parameter_present( $this->get_response( $with_wp_cron_param ) ) );
 	}
 
 	public function test_doing_wp_cron_query_parameter_not_present_in_location_header() {
-		$this->assertFalse( $this->payments_api_utils->is_doing_wp_cron_query_parameter_present( $this->get_response( false ) ) );
+		$with_wp_cron_param = false;
+		$this->assertFalse( $this->payments_api_utils->is_doing_wp_cron_query_parameter_present( $this->get_response( $with_wp_cron_param ) ) );
 	}
 
 	private function get_response( $doing_wp_cron ) {

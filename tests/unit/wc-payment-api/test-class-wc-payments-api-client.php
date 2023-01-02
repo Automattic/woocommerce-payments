@@ -2326,6 +2326,11 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->method( 'remote_request' )
 			->willReturn(
 				[
+					'headers'  => new Requests_Utility_CaseInsensitiveDictionary(
+						[
+							'location' => 'new_url',
+						]
+					),
 					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
 					'response' => [
 						'code'    => 302,
@@ -2369,7 +2374,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @throws Exception in case of the test failure.
 	 */
-	public function test_get_request_doesnt_retry_with_non_retryable_response_code() {
+	public function test_request_doesnt_retry_get_with_non_retryable_response_code() {
 		$this->mock_http_client
 			->expects( $this->exactly( 1 ) )
 			->method( 'remote_request' )
@@ -2377,11 +2382,13 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				[
 					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
 					'response' => [
-						'code'    => 300,
-						'message' => 'Multiple Choices',
+						'code'    => 404,
+						'message' => 'Not Found',
 					],
 				]
 			);
+
+		$this->expectException( Exception::class );
 
 		PHPUnit_Utils::call_method(
 			$this->payments_api_client,

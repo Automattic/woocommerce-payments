@@ -2107,6 +2107,7 @@ class WC_Payments_API_Client {
 		while ( true ) {
 			$response_code  = null;
 			$last_exception = null;
+			$response       = null;
 
 			try {
 				$response = $this->http_client->remote_request(
@@ -2135,7 +2136,7 @@ class WC_Payments_API_Client {
 				break;
 			}
 
-			$url = $this->prepare_url_for_retry( $response_code, $url );
+			$url = $this->prepare_url_for_retry( $response, $url );
 
 			// Use exponential backoff to not overload backend.
 			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
@@ -2169,7 +2170,7 @@ class WC_Payments_API_Client {
 	private function prepare_url_for_retry( $response, $url ) {
 		$response_code = wp_remote_retrieve_response_code( $response );
 
-		// If the redirect occurs because of the wp cron job, we just need to retry the existing request and avoid updating it for the sake of simplicity.
+		// If the redirect occurs because of the wp cron job, we need to retry the request with existing URL and avoid updating it for the sake of simplicity.
 		if ( 302 === $response_code && $this->api_utils->is_doing_wp_cron_query_parameter_present( $response ) ) {
 			return $url;
 		}
