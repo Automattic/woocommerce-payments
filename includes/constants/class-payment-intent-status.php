@@ -21,7 +21,6 @@ use MyCLabs\Enum\Enum;
  */
 class Payment_Intent_Status extends Enum {
 	const REQUIRES_PAYMENT_METHOD = 'requires_payment_method';
-	const COMPLETED               = 'completed';
 	const REQUIRES_CONFIRMATION   = 'requires_confirmation';
 	const REQUIRES_ACTION         = 'requires_action';
 	const PROCESSING              = 'processing';
