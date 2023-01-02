@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+The PR replaces hard-coded order status constants, with a dedicated Enum class to make it reusable across the codebase.
