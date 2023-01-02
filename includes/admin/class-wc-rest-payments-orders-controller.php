@@ -150,11 +150,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 			if ( ! in_array(
 				$intent->get_status(),
-				[
-					Payment_Intent_Status::PROCESSING,
-					Payment_Intent_Status::REQUIRES_CAPTURE,
-					Payment_Intent_Status::SUCCEEDED,
-				],
+				WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS,
 				true
 			) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
@@ -261,11 +257,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 			if ( ! in_array(
 				$intent->get_status(),
-				[
-					Payment_Intent_Status::PROCESSING,
-					Payment_Intent_Status::REQUIRES_CAPTURE,
-					Payment_Intent_Status::SUCCEEDED,
-				],
+				WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS,
 				true
 			) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
