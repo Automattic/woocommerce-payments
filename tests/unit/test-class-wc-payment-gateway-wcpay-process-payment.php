@@ -1232,9 +1232,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * @dataProvider provider_process_payment_check_intent_attached_to_order_succeeded_return_redirection
+	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_return_redirection
 	 */
-	public function test_process_payment_check_intent_attached_to_order_succeeded_return_redirection( string $intent_successful_status ) {
+	public function test_check_payment_intent_attached_to_order_succeeded_return_redirection( string $intent_successful_status ) {
 		$attached_intent_id = 'pi_attached_intent_id';
 
 		// Arrange order.
@@ -1272,7 +1272,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $this->mock_wcpay_gateway->get_return_url( $order ), $result['redirect'] );
 	}
 
-	public function provider_process_payment_check_intent_attached_to_order_succeeded_return_redirection(): array {
+	public function provider_check_payment_intent_attached_to_order_succeeded_return_redirection(): array {
 		$ret = [];
 		foreach ( WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS as $status ) {
 			$ret[ 'Intent status ' . $status ] = [ $status ];
@@ -1282,14 +1282,16 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * @dataProvider provider_process_payment_check_intent_attached_to_order_succeeded_continue_processing
-	 * @param  string|null  $attached_intent_id Attached intent ID to the order. Null when there is no attached intent.
-	 * @param  string|null  $attached_intent_status Attached intent status. Null where there is no status.
+	 * The attached PaymentIntent has invalid info (status or order_id) with the order, so payment_process continues.
+	 *
+	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment
+	 * @param  string  $attached_intent_id Attached intent ID to the order.
+	 * @param  string  $attached_intent_status Attached intent status.
 	 * @param  bool  $same_order_id True when the intent meta order_id is exactly the current processing order_id. False otherwise.
 	 */
-	public function test_process_payment_check_intent_attached_to_order_succeeded_continue_processing(
-		$attached_intent_id,
-		$attached_intent_status,
+	public function test_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment(
+		string $attached_intent_id,
+		string $attached_intent_status,
 		bool $same_order_id
 	) {
 		// Arrange order.
@@ -1300,26 +1302,19 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$order_id = $order->get_id();
 
 		// Arrange mock get_intent.
-		if ( null === $attached_intent_id ) {
-			$this->mock_api_client
-				->expects( $this->never() )
-				->method( 'get_intent' );
-		} else {
-			$meta_order_id   = $same_order_id ? $order_id : $order_id - 1;
-			$attached_intent = WC_Helper_Intention::create_intention(
-				[
-					'id'       => $attached_intent_id,
-					'status'   => $attached_intent_status,
-					'metadata' => [ 'order_id' => $meta_order_id ],
-				]
-			);
-
-			$this->mock_api_client
-				->expects( $this->once() )
-				->method( 'get_intent' )
-				->with( $attached_intent_id )
-				->willReturn( $attached_intent );
-		}
+		$meta_order_id   = $same_order_id ? $order_id : $order_id - 1;
+		$attached_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => $attached_intent_id,
+				'status'   => $attached_intent_status,
+				'metadata' => [ 'order_id' => $meta_order_id ],
+			]
+		);
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->with( $attached_intent_id )
+			->willReturn( $attached_intent );
 
 		// Assert: the payment process continues.
 		$this->mock_api_client
@@ -1331,12 +1326,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_gateway->process_payment( $order_id );
 	}
 
-	public function provider_process_payment_check_intent_attached_to_order_succeeded_continue_processing(): array {
+	public function provider_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment(): array {
 		return [
-			'No previously attached intent' => [ null, null, false ],
-			'Existing attached intent - non-success status - same order_id' => [ 'pi_attached_intent_id', 'requires_action', true ],
-			'Existing attached intent - non-success status - different order_id' => [ 'pi_attached_intent_id', 'requires_action', false ],
-			'Existing attached intent - success status - different order_id' => [ 'pi_attached_intent_id', 'succeeded', false ],
+			'Attached PaymentIntent with non-success status - same order_id' => [ 'pi_attached_intent_id', 'requires_action', true ],
+			'Attached PaymentIntent - non-success status - different order_id' => [ 'pi_attached_intent_id', 'requires_action', false ],
+			'Attached PaymentIntent - success status - different order_id' => [ 'pi_attached_intent_id', 'succeeded', false ],
 		];
 	}
 
