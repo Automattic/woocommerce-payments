@@ -1334,6 +1334,40 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment
+	 * @param ?string $invalid_intent_id An invalid payment intent ID. If no intent id is set, this can be null.
+	 */
+	public function test_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment( $invalid_intent_id ) {
+		// Arrange order.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $invalid_intent_id );
+		$order->save();
+
+		$order_id = $order->get_id();
+
+		// Assert: get_intent is not called.
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_intent' );
+
+		// Assert: the payment process continues.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_and_confirm_intention' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		// Act: process the order.
+		$this->mock_wcpay_gateway->process_payment( $order_id );
+	}
+
+	public function provider_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment(): array {
+		return [
+			'No intent_id is attached'   => [ null ],
+			'A setup intent is attached' => [ 'seti_possible_for_a_subscription_id' ],
+		];
+	}
+
 	public function test_save_payment_method_to_platform_for_classic_checkout() {
 		$order = WC_Helper_Order::create_order();
 
