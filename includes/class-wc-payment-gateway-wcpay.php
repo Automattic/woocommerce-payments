@@ -715,7 +715,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 			$this->maybe_update_session_processing_order( $order_id );
 
-			$check_existing_intention = $this->check_intent_attached_to_order_succeeded( $order );
+			$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
 			if ( is_array( $check_existing_intention ) ) {
 				return $check_existing_intention;
 			}
@@ -1930,15 +1930,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Checks if the attached intent was successful for the current order.
+	 * Checks if the attached payment intent was successful for the current order.
 	 *
 	 * @param  WC_Order $order Current order to check.
 	 *
 	 * @return array|void A successful response in case the attached intent was successful, null if none.
 	 */
-	protected function check_intent_attached_to_order_succeeded( WC_Order $order ) {
-		$intent_id = $order->get_meta( '_intent_id', true );
+	protected function check_payment_intent_attached_to_order_succeeded( WC_Order $order ) {
+		$intent_id = (string) $order->get_meta( '_intent_id', true );
 		if ( empty( $intent_id ) ) {
+			return;
+		}
+
+		// We only care about payment intent.
+		$is_payment_intent = 'pi_' === substr( $intent_id, 0, 3 );
+		if ( ! $is_payment_intent ) {
 			return;
 		}
 

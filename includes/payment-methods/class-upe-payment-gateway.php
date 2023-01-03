@@ -212,7 +212,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		}
 		$this->maybe_update_session_processing_order( $order_id );
 
-		$check_existing_intention = $this->check_intent_attached_to_order_succeeded( $order );
+		$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
 		if ( is_array( $check_existing_intention ) ) {
 			return $check_existing_intention;
 		}
@@ -490,7 +490,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 				$this->maybe_update_session_processing_order( $order_id );
 
-				$check_existing_intention = $this->check_intent_attached_to_order_succeeded( $order );
+				$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
 				if ( is_array( $check_existing_intention ) ) {
 					return $check_existing_intention;
 				}
