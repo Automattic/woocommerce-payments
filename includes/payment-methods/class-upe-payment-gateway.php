@@ -759,7 +759,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		return ! empty( $_GET['setup_intent_client_secret'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			! empty( $_GET['setup_intent'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			! empty( $_GET['redirect_status'] ) && // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			Payment_Intent_Status::SUCCEEDED === $_GET['redirect_status']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			'succeeded' === $_GET['redirect_status']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
