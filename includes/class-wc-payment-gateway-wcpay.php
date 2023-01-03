@@ -2618,12 +2618,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$setup_intent = $this->create_and_confirm_setup_intent();
+			$setup_intent = $setup_intent->to_array(); // No longer working with a server response object.
 
 			if ( $setup_intent['client_secret'] ) {
 				$setup_intent['client_secret'] = WC_Payments_Utils::encrypt_client_secret( $this->account->get_stripe_account_id(), $setup_intent['client_secret'] );
 			}
 
-			wp_send_json_success( $setup_intent->to_array(), 200 );
+			wp_send_json_success( $setup_intent, 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
