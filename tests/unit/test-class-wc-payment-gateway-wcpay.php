@@ -2061,6 +2061,32 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->getMock();
 	}
 
+
+	/**
+	 * Tests that no payment is processed when the $_POST 'is-woopay-preflight-check` is present.
+	 */
+	public function test_no_payment_is_processed_for_woopay_preflight_check_request() {
+		$_POST['is-woopay-preflight-check'] = true;
+
+		// Arrange: Create an order to test with.
+		$order_data = [
+			'status' => 'draft',
+			'total'  => '100',
+		];
+
+		$order = wc_create_order( $order_data );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'process_payment_for_order' ] );
+
+		// Assert: No payment was processed.
+		$mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'process_payment_for_order' );
+
+		// Act: process payment.
+		$response = $mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
 	/**
 	 * Mocks Fraud_Prevention_Service.
 	 *

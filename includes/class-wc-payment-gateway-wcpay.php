@@ -688,6 +688,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
+			// The request is a preflight check from WooPay.
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( ! empty( $_POST['is-woopay-preflight-check'] ) ) {
+				// Set the order status to "pending payment".
+				$order->update_status( 'pending' );
+
+				// Bail out with success so we don't process the payment now,
+				// but still let WooPay continue with the payment processing.
+				return [
+					'result'   => 'success',
+					'redirect' => '',
+				];
+			}
+
 			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 
 			$check_response = $this->check_against_session_processing_order( $order );

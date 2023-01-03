@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Remove redundant compatibility utility class for admin notes.
