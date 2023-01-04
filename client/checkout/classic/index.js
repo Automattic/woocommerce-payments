@@ -586,7 +586,11 @@ jQuery( function ( $ ) {
 		);
 	};
 
-	if ( getConfig( 'isPlatformCheckoutEnabled' ) && ! isPreviewing() ) {
+	if (
+		getConfig( 'isPlatformCheckoutEnabled' ) &&
+		! getConfig( 'isWoopayExpressCheckoutEnabled' ) &&
+		! isPreviewing()
+	) {
 		handlePlatformCheckoutEmailInput( '#billing_email', api );
 	}
 } );
