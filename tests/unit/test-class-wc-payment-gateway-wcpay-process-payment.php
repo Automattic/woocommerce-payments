@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
@@ -171,7 +172,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$intent_id   = 'pi_mock';
 		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
-		$status      = 'succeeded';
+		$status      = Payment_Intent_Status::SUCCEEDED;
 		$order_id    = 123;
 		$total       = 12.23;
 
@@ -337,7 +338,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$intent_id   = 'pi_mock';
 		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
-		$status      = 'requires_capture';
+		$status      = Payment_Intent_Status::REQUIRES_CAPTURE;
 		$order_id    = 123;
 		$total       = 12.23;
 
@@ -747,7 +748,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$intent_id   = 'pi_mock';
 		$charge_id   = 'ch_mock';
 		$customer_id = 'cus_mock';
-		$status      = 'requires_action';
+		$status      = Payment_Intent_Status::REQUIRES_ACTION;
 		$secret      = 'cs_mock';
 		$order_id    = 123;
 		$total       = 12.23;
@@ -855,7 +856,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		// Arrange: Reusable data.
 		$intent_id   = 'pi_mock';
 		$customer_id = 'cus_mock';
-		$status      = 'requires_action';
+		$status      = Payment_Intent_Status::REQUIRES_ACTION;
 		$secret      = 'cs_mock';
 		$order_id    = 123;
 		$total       = 0;

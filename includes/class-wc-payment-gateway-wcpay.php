@@ -10,9 +10,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Type;
-use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
+use WCPay\Constants\Payment_Initiated_By;
+use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\{ Add_Payment_Method_Exception, Amount_Too_Small_Exception, Process_Payment_Exception, Intent_Authentication_Exception, API_Exception };
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -63,7 +64,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @type array
 	 */
-	const SUCCESSFUL_INTENT_STATUS = [ 'succeeded', 'requires_capture', 'processing' ];
+	const SUCCESSFUL_INTENT_STATUS = [
+		Payment_Intent_Status::SUCCEEDED,
+		Payment_Intent_Status::REQUIRES_CAPTURE,
+		Payment_Intent_Status::PROCESSING,
+	];
 
 	const UPDATE_SAVED_PAYMENT_METHOD     = 'wcpay_update_saved_payment_method';
 	const UPDATE_CUSTOMER_WITH_ORDER_DATA = 'wcpay_update_customer_with_order_data';
@@ -1085,7 +1090,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// down.
 			$payment_method = $intent->get_payment_method_id() ?? $payment_method;
 
-			if ( 'requires_action' === $status && $payment_information->is_merchant_initiated() ) {
+			if ( Payment_Intent_Status::REQUIRES_ACTION === $status && $payment_information->is_merchant_initiated() ) {
 				// Allow 3rd-party to trigger some action if needed.
 				do_action( 'woocommerce_woocommerce_payments_payment_requires_action', $order, $intent_id, $payment_method, $customer_id, $charge_id, $currency );
 				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
@@ -1194,7 +1199,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			if ( 'requires_action' === $status ) {
+			if ( Payment_Intent_Status::REQUIRES_ACTION === $status ) {
 				if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
 					$response = [
 						'result'   => 'success',
@@ -1377,16 +1382,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id ) {
 		switch ( $intent_status ) {
-			case 'succeeded':
+			case Payment_Intent_Status::SUCCEEDED:
 				$this->remove_session_processing_order( $order->get_id() );
 				$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 				break;
-			case 'processing':
-			case 'requires_capture':
+			case Payment_Intent_Status::PROCESSING:
+			case Payment_Intent_Status::REQUIRES_CAPTURE:
 				$this->order_service->mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id );
 				break;
-			case 'requires_action':
-			case 'requires_payment_method':
+			case Payment_Intent_Status::REQUIRES_ACTION:
+			case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
 				$this->order_service->mark_payment_started( $order, $intent_id, $intent_status, $charge_id );
 				break;
 			default:
@@ -1457,7 +1462,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// If this order is not captured yet, don't try and refund it. Instead, return an appropriate error message.
-		if ( 'requires_capture' === $order->get_meta( '_intention_status', true ) ) {
+		if ( Payment_Intent_Status::REQUIRES_CAPTURE === $order->get_meta( '_intention_status', true ) ) {
 			return new WP_Error(
 				'uncaptured-payment',
 				/* translators: an error message which will appear if a user tries to refund an order which is has been authorized but not yet charged. */
@@ -2236,7 +2241,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $actions;
 		}
 
-		if ( 'requires_capture' !== $theorder->get_meta( '_intention_status', true ) ) {
+		if ( Payment_Intent_Status::REQUIRES_CAPTURE !== $theorder->get_meta( '_intention_status', true ) ) {
 			return $actions;
 		}
 
@@ -2300,7 +2305,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
 				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
-				if ( 'canceled' === $intent->get_status() ) {
+				if ( Payment_Intent_Status::CANCELED === $intent->get_status() ) {
 					$is_authorization_expired = true;
 				}
 			} catch ( API_Exception $ge ) {
@@ -2320,10 +2325,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 
-		if ( 'succeeded' === $status ) {
+		if ( Payment_Intent_Status::SUCCEEDED === $status ) {
 			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $status, $charge_id );
 		} elseif ( $is_authorization_expired ) {
-			$this->order_service->mark_payment_capture_expired( $order, $intent_id, 'canceled', $charge_id );
+			$this->order_service->mark_payment_capture_expired( $order, $intent_id, Payment_Intent_Status::CANCELED, $charge_id );
 		} else {
 			if ( ! empty( $error_message ) ) {
 				$error_message = esc_html( $error_message );
@@ -2331,7 +2336,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$http_code = 502;
 			}
 
-			$this->order_service->mark_payment_capture_failed( $order, $intent_id, 'requires_capture', $charge_id, $error_message );
+			$this->order_service->mark_payment_capture_failed( $order, $intent_id, Payment_Intent_Status::REQUIRES_CAPTURE, $charge_id, $error_message );
 		}
 
 		return [
@@ -2359,7 +2364,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// Fetch the Intent to check if it's already expired and the site missed the "charge.expired" webhook.
 				$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
 				$status = $intent->get_status();
-				if ( 'canceled' !== $status ) {
+				if ( Payment_Intent_Status::CANCELED !== $status ) {
 					$error_message = $e->getMessage();
 				}
 			} catch ( API_Exception $ge ) {
@@ -2370,7 +2375,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		if ( 'canceled' === $status ) {
+		if ( Payment_Intent_Status::CANCELED === $status ) {
 			$charge    = $intent->get_charge();
 			$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
 
@@ -2569,15 +2574,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			switch ( $status ) {
-				case 'succeeded':
+				case Payment_Intent_Status::SUCCEEDED:
 					$this->remove_session_processing_order( $order->get_id() );
 					$this->order_service->mark_payment_completed( $order, $intent_id, $status, $charge_id );
 					break;
-				case 'processing':
-				case 'requires_capture':
+				case Payment_Intent_Status::PROCESSING:
+				case Payment_Intent_Status::REQUIRES_CAPTURE:
 					$this->order_service->mark_payment_authorized( $order, $intent_id, $status, $charge_id );
 					break;
-				case 'requires_payment_method':
+				case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
 					$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
 					break;
 			}
@@ -2676,7 +2681,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$setup_intent = $this->payments_api_client->get_setup_intent( $setup_intent_id );
 
-			if ( 'succeeded' !== $setup_intent['status'] ) {
+			if ( Payment_Intent_Status::SUCCEEDED !== $setup_intent['status'] ) {
 				throw new Add_Payment_Method_Exception(
 					__( 'Failed to add the provided payment method. Please try again later', 'woocommerce-payments' ),
 					'invalid_response_status'

@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
 
 /**
  * WC_Payments_Order_Service unit tests.
@@ -58,7 +59,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete. Get updated notes.
-		$this->order_service->mark_payment_completed( 'fake_order', $this->intent_id, 'succeeded', $this->charge_id );
+		$this->order_service->mark_payment_completed( 'fake_order', $this->intent_id, Payment_Intent_Status::SUCCEEDED, $this->charge_id );
 
 		// Assert: Check to make sure the intent/transaction id and intent_status meta were not set.
 		$this->assertEquals( '', $this->order->get_transaction_id() );
@@ -78,7 +79,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete.
-		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, 'succeeded', $this->charge_id );
+		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, Payment_Intent_Status::SUCCEEDED, $this->charge_id );
 
 		// Assert: Check to make sure the intent/transaction id and intent_status meta were not set.
 		$this->assertEquals( '', $this->order->get_transaction_id() );
@@ -99,7 +100,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete. Get updated notes.
-		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, 'succeeded', $this->charge_id );
+		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, Payment_Intent_Status::SUCCEEDED, $this->charge_id );
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Assert: Check to make sure the intent/transaction id and intent_status meta were not set.
@@ -116,7 +117,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_completed() {
 		// Arrange: Set the intent status.
-		$intent_status = 'succeeded';
+		$intent_status = Payment_Intent_Status::SUCCEEDED;
 
 		// Act: Attempt to mark the payment/order complete.
 		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -221,7 +222,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_authorized() {
 		// Arrange: Set the intent and order statuses.
-		$intent_status = 'requires_capture';
+		$intent_status = Payment_Intent_Status::REQUIRES_CAPTURE;
 		$order_status  = Order_Status::ON_HOLD;
 
 		// Act: Attempt to mark the payment/order on-hold.
@@ -248,7 +249,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_authorized_exits_on_existing_order_status_on_hold() {
 		// Arrange: Set the intent status, order status, and get the expected notes.
-		$intent_status = 'requires_capture';
+		$intent_status = Payment_Intent_Status::REQUIRES_CAPTURE;
 		$this->order->set_status( Order_Status::ON_HOLD );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
@@ -268,7 +269,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_started() {
 		// Arrange: Set the intent and order statuses.
-		$intent_status = 'requires_action';
+		$intent_status = Payment_Intent_Status::REQUIRES_ACTION;
 		$order_status  = Order_Status::PENDING;
 
 		// Act: Attempt to mark the payment/order pending.
@@ -294,7 +295,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_started_exits_on_existing_order_status_not_pending() {
 		// Arrange: Set the intent status, order status, and get the expected notes.
-		$intent_status = 'requires_action';
+		$intent_status = Payment_Intent_Status::REQUIRES_ACTION;
 		$this->order->set_status( Order_Status::ON_HOLD );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
@@ -314,7 +315,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_completed() {
 		// Arrange: Set the intent status.
-		$intent_status = 'succeeded';
+		$intent_status = Payment_Intent_Status::SUCCEEDED;
 
 		// Act: Attempt to mark the payment/order complete.
 		$this->order_service->mark_payment_capture_completed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -391,7 +392,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_expired() {
 		// Arrange: Set the intent and order statuses.
-		$intent_status = 'canceled';  // Stripe uses single 'l'.
+		$intent_status = Payment_Intent_Status::CANCELED;  // Stripe uses single 'l'.
 		$order_status  = Order_Status::CANCELLED; // WooCommerce uses double 'l'.
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
@@ -423,7 +424,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_cancelled() {
 		// Arrange: Set the intent and order statuses.
-		$intent_status = 'canceled';  // Stripe uses single 'l'.
+		$intent_status = Payment_Intent_Status::CANCELED;  // Stripe uses single 'l'.
 		$order_status  = Order_Status::CANCELLED; // WooCommerce uses double 'l'.
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
@@ -536,7 +537,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_terminal_payment_completed() {
 		// Arrange: Set the intent status.
-		$intent_status = 'succeeded';
+		$intent_status = Payment_Intent_Status::SUCCEEDED;
 		$order_status  = Order_Status::COMPLETED;
 
 		// Act: Attempt to mark the payment/order complete.
