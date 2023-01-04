@@ -667,10 +667,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					'upe_payment_intent_error'
 				);
 			} else {
-				if ( $this->payment_method->get_id() !== $payment_method_type ) {
-					return;
-				}
-
 				if ( $save_payment_method && $this->payment_method->is_reusable() ) {
 					try {
 						$token = $this->payment_method->get_payment_token_for_user( $user, $payment_method_id );
