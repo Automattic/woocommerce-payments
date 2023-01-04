@@ -8,9 +8,7 @@ import wcpayTracks from 'tracks';
 export const expressCheckoutIframe = async ( api ) => {
 	let userEmail = '';
 
-	const spinner = document.createElement( 'div' );
 	const parentDiv = document.body;
-	spinner.classList.add( 'wc-block-components-spinner' );
 
 	// Make the otp iframe wrapper.
 	const iframeWrapper = document.createElement( 'div' );
