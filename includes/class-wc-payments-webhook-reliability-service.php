@@ -18,6 +18,8 @@ use WCPay\Logger;
  * then process them with ActionScheduler
  */
 class WC_Payments_Webhook_Reliability_Service {
+	const POST_TYPE                          = 'wcpay-webhook';
+	const TYPE_TAXONOMY                      = 'wcpay-webhook-type';
 	const CONTINUOUS_FETCH_FLAG_EVENTS_LIST  = 'has_more';
 	const CONTINUOUS_FETCH_FLAG_ACCOUNT_DATA = 'has_more_failed_events';
 	const WEBHOOK_FETCH_EVENTS_ACTION        = 'wcpay_webhook_fetch_events';
@@ -45,20 +47,30 @@ class WC_Payments_Webhook_Reliability_Service {
 	private $webhook_processing_service;
 
 	/**
+	 * Gateway object.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * WC_Payments_Webhook_Reliability_Service constructor.
 	 *
-	 * @param WC_Payments_API_Client                 $payments_api_client WooCommerce Payments API client.
-	 * @param WC_Payments_Action_Scheduler_Service   $action_scheduler_service Wrapper for ActionScheduler service.
+	 * @param WC_Payments_API_Client                 $payments_api_client        WooCommerce Payments API client.
+	 * @param WC_Payments_Action_Scheduler_Service   $action_scheduler_service   Wrapper for ActionScheduler service.
 	 * @param WC_Payments_Webhook_Processing_Service $webhook_processing_service WC_Payments_Webhook_Processing_Service instance.
+	 * @param WC_Payment_Gateway_WCPay               $gateway                    The gateway instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
-		WC_Payments_Webhook_Processing_Service $webhook_processing_service
+		WC_Payments_Webhook_Processing_Service $webhook_processing_service,
+		WC_Payment_Gateway_WCPay $gateway
 	) {
 		$this->payments_api_client        = $payments_api_client;
 		$this->action_scheduler_service   = $action_scheduler_service;
 		$this->webhook_processing_service = $webhook_processing_service;
+		$this->gateway                    = $gateway;
 
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_schedule_fetch_events' ] );
 		add_action( self::WEBHOOK_FETCH_EVENTS_ACTION, [ $this, 'fetch_events_and_schedule_processing_jobs' ] );
@@ -210,5 +222,141 @@ class WC_Payments_Webhook_Reliability_Service {
 	public function get_event_data( string $event_id ) {
 		$data = get_transient( $this->get_transient_name_for_event_id( $event_id ) );
 		return false === $data ? null : $data;
+	}
+
+	/**
+	 * Registers the service's post type.
+	 */
+	public function init() {
+		register_post_type(
+			self::POST_TYPE,
+			[
+				'public'       => false,
+				'show_in_rest' => false,
+				'can_export'   => false,
+			]
+		);
+
+		register_taxonomy(
+			self::TYPE_TAXONOMY,
+			self::POST_TYPE,
+			[
+				'public'       => false,
+				'show_in_rest' => false,
+			]
+		);
+	}
+
+	/**
+	 * Checks if an event should be delayed for asynchronous processing.
+	 *
+	 * This list includes events, which might arrive synchronously
+	 * and cause concurrency issues with the rest of the gateway's code.
+	 *
+	 * @param array $event The event array.
+	 * @return bool        Whether to delay the processing of the event.
+	 */
+	public function should_delay_event( array $event ) {
+		return in_array(
+			$event['type'],
+			[
+				'payment_intent.succeeded',
+			],
+			true
+		);
+	}
+
+	/**
+	 * Loads stored events from the database.
+	 *
+	 * @param array $extra {
+	 *     Additional arguments for the query (Optional).
+	 *
+	 *     @type int          $count Limit of the query, `-1` removes it. May cause performance issues. Defaults to 10.
+	 *     @type int          $order The ID of an order, if the webhook is related to that order.
+	 *     @type string|array $type  The type (string) or types (array) of events to query. Defaults to all.
+	 *     @type bool         $live  Whether to load live or test mode events. Defaults to the current gateway mode.
+	 * }
+	 * @return array[] Stored events, which match the given criteria.
+	 */
+	public function get_events( $extra = null ) {
+		$live = isset( $extra['live'] ) ? $extra['live'] : ! $this->gateway->is_in_test_mode();
+		$args = [
+			'post_type'      => self::POST_TYPE,
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'menu_order'     => $live ? 1 : 0,
+		];
+
+		if ( isset( $extra['count'] ) ) {
+			$args['posts_per_page'] = $extra['count'];
+		}
+
+		if ( isset( $extra['type'] ) ) {
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => self::TYPE_TAXONOMY,
+					'terms'    => $extra['type'],
+					'field'    => 'name',
+				],
+			];
+		}
+
+		if ( isset( $extra['order'] ) ) {
+			$args['post_parent'] = absint( $extra['order'] );
+		}
+
+		return array_map( [ $this, 'post_to_event' ], get_posts( $args ) );
+	}
+
+	/**
+	 * Converts a post to an array, which resembles an event from the server.
+	 *
+	 * @param WP_Post $post The post to convert.
+	 * @return array
+	 */
+	public function post_to_event( $post ) {
+		return [
+			'id'       => $post->post_name,
+			'type'     => $post->post_excerpt,
+			'livemode' => $post->menu_order > 0,
+			'data'     => maybe_unserialize( $post->post_content ),
+		];
+	}
+
+	/**
+	 * Stores an event to be processed later.
+	 *
+	 * @param array $event The event as it was received from the server.
+	 */
+	public function store_event( array $event ) {
+		// Retry mechanisms might try to store an existing webhook.
+		$args     = [ 'name' => $event['id'] ];
+		$existing = $this->get_events( $args );
+		if ( ! empty( $existing ) ) {
+			return;
+		}
+
+		$post_arr = [
+			'post_title'   => $event['id'] . ' (' . $event['type'] . ')',
+			'post_name'    => $event['id'],
+			'post_type'    => self::POST_TYPE,
+			'post_content' => maybe_serialize( $event['data'] ),
+			'menu_order'   => $event['livemode'] ? 1 : 0,
+			'tax_input'    => [
+				self::TYPE_TAXONOMY => [ $event['type'] ],
+			],
+		];
+
+		switch ( $event['type'] ) {
+			case 'payment_intent.succeeded':
+				$post_arr['post_parent'] = $event['data']['object']['metadata']['order_id'];
+				break;
+		}
+
+		$post_id = wp_insert_post( $post_arr );
+		if ( is_wp_error( $post_id ) || 0 <= $post_id ) {
+			Logger::error( 'Could not store event in CPT. Event ID: ' . $event['id'] );
+		}
 	}
 }

@@ -196,7 +196,7 @@ class WC_Payments {
 	 *
 	 * @var WC_Payments_Webhook_Reliability_Service
 	 */
-	private static $webhook_reliability_service;
+	public static $webhook_reliability_service;
 
 	/**
 	 * Platform Checkout Utilities.
@@ -362,7 +362,8 @@ class WC_Payments {
 		}
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
-		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
+		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service, self::$card_gateway );
+		add_action( 'init', [ self::$webhook_reliability_service, 'init' ] );
 
 		self::maybe_register_platform_checkout_hooks();
 
@@ -725,7 +726,7 @@ class WC_Payments {
 		$timeline_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-webhook-controller.php';
-		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$webhook_processing_service );
+		$webhook_controller = new WC_REST_Payments_Webhook_Controller( self::$api_client, self::$webhook_processing_service, self::$webhook_reliability_service );
 		$webhook_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-tos-controller.php';
