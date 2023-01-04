@@ -1948,8 +1948,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$intent        = $this->payments_api_client->get_intent( $intent_id );
-		$intent_status = $intent->get_status();
+		try {
+			$intent        = $this->payments_api_client->get_intent( $intent_id );
+			$intent_status = $intent->get_status();
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to fetch attached payment intent: ' . $e );
+			return;
+		};
 
 		if ( ! in_array( $intent_status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 			return;
