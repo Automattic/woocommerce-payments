@@ -47,30 +47,20 @@ class WC_Payments_Webhook_Reliability_Service {
 	private $webhook_processing_service;
 
 	/**
-	 * Gateway object.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $gateway;
-
-	/**
 	 * WC_Payments_Webhook_Reliability_Service constructor.
 	 *
 	 * @param WC_Payments_API_Client                 $payments_api_client        WooCommerce Payments API client.
 	 * @param WC_Payments_Action_Scheduler_Service   $action_scheduler_service   Wrapper for ActionScheduler service.
 	 * @param WC_Payments_Webhook_Processing_Service $webhook_processing_service WC_Payments_Webhook_Processing_Service instance.
-	 * @param WC_Payment_Gateway_WCPay               $gateway                    The gateway instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
-		WC_Payments_Webhook_Processing_Service $webhook_processing_service,
-		WC_Payment_Gateway_WCPay $gateway
+		WC_Payments_Webhook_Processing_Service $webhook_processing_service
 	) {
 		$this->payments_api_client        = $payments_api_client;
 		$this->action_scheduler_service   = $action_scheduler_service;
 		$this->webhook_processing_service = $webhook_processing_service;
-		$this->gateway                    = $gateway;
 
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_schedule_fetch_events' ] );
 		add_action( self::WEBHOOK_FETCH_EVENTS_ACTION, [ $this, 'fetch_events_and_schedule_processing_jobs' ] );
@@ -280,7 +270,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * @return array[] Stored events, which match the given criteria.
 	 */
 	public function get_events( $extra = null ) {
-		$live = isset( $extra['live'] ) ? $extra['live'] : ! $this->gateway->is_in_test_mode();
+		$live = isset( $extra['live'] ) ? $extra['live'] : ! WC_Payments::get_gateway()->is_in_test_mode();
 		$args = [
 			'post_type'      => self::POST_TYPE,
 			'post_status'    => 'any',
@@ -316,9 +306,15 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * @return array
 	 */
 	public function post_to_event( $post ) {
+		$type = null;
+
+		foreach ( wp_get_post_terms( $post->ID, self::TYPE_TAXONOMY ) as $term ) {
+			$type = $term->name;
+		}
+
 		return [
 			'id'       => $post->post_name,
-			'type'     => $post->post_excerpt,
+			'type'     => $type,
 			'livemode' => $post->menu_order > 0,
 			'data'     => maybe_unserialize( $post->post_content ),
 		];
@@ -358,5 +354,21 @@ class WC_Payments_Webhook_Reliability_Service {
 		if ( is_wp_error( $post_id ) || 0 <= $post_id ) {
 			Logger::error( 'Could not store event in CPT. Event ID: ' . $event['id'] );
 		}
+	}
+
+	/**
+	 * Loads and processes events.
+	 *
+	 * @param array $args Arguments for the `get_events` method.
+	 * @return array[]    The processed events.
+	 */
+	public function load_and_process_events( $args ) {
+		$events = $this->get_events( $args );
+
+		foreach ( $events as $event ) {
+			$this->webhook_processing_service->process( $event );
+		}
+
+		return $events;
 	}
 }

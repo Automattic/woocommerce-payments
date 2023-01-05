@@ -66,13 +66,6 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * WC_Payment_Gateway_WCPay
 	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $wcpay_gateway;
-
-	/**
-	 * WC_Payment_Gateway_WCPay
-	 *
 	 * @var WC_Payments_Customer_Service
 	 */
 	private $customer_service;
@@ -93,7 +86,6 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @param WC_Payments_Remote_Note_Service                 $remote_note_service WC_Payments_Remote_Note_Service instance.
 	 * @param WC_Payments_Order_Service                       $order_service       WC_Payments_Order_Service instance.
 	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
-	 * @param WC_Payment_Gateway_WCPay                        $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
 	 * @param WC_Payments_Customer_Service                    $customer_service    WC_Payments_Customer_Service instance.
 	 * @param Database_Cache                                  $database_cache      Database_Cache instance.
 	 */
@@ -104,7 +96,6 @@ class WC_Payments_Webhook_Processing_Service {
 		WC_Payments_Remote_Note_Service $remote_note_service,
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service,
-		WC_Payment_Gateway_WCPay $wcpay_gateway,
 		WC_Payments_Customer_Service $customer_service,
 		Database_Cache $database_cache
 	) {
@@ -114,7 +105,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service       = $order_service;
 		$this->api_client          = $api_client;
 		$this->receipt_service     = $receipt_service;
-		$this->wcpay_gateway       = $wcpay_gateway;
 		$this->customer_service    = $customer_service;
 		$this->database_cache      = $database_cache;
 	}
@@ -212,7 +202,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Event mode does not match the gateway mode.
 	 */
 	private function is_webhook_mode_mismatch( array $event_body ): bool {
-		$is_gateway_live_mode = ! $this->wcpay_gateway->is_in_test_mode();
+		$is_gateway_live_mode = ! WC_Payments::get_gateway()->is_in_test_mode();
 		$is_event_live_mode   = $this->read_webhook_property( $event_body, 'livemode' );
 
 		if ( $is_gateway_live_mode !== $is_event_live_mode ) {
@@ -476,12 +466,13 @@ class WC_Payments_Webhook_Processing_Service {
 		// Send the customer a card reader receipt if it's an in person payment type.
 		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		if ( Payment_Method::CARD_PRESENT === $payment_method || Payment_Method::INTERAC_PRESENT === $payment_method ) {
+			$gateway           = WC_Payments::get_gateway();
 			$merchant_settings = [
-				'business_name' => $this->wcpay_gateway->get_option( 'account_business_name' ),
+				'business_name' => $gateway->get_option( 'account_business_name' ),
 				'support_info'  => [
-					'address' => $this->wcpay_gateway->get_option( 'account_business_support_address' ),
-					'phone'   => $this->wcpay_gateway->get_option( 'account_business_support_phone' ),
-					'email'   => $this->wcpay_gateway->get_option( 'account_business_support_email' ),
+					'address' => $gateway->get_option( 'account_business_support_address' ),
+					'phone'   => $gateway->get_option( 'account_business_support_phone' ),
+					'email'   => $gateway->get_option( 'account_business_support_email' ),
 				],
 			];
 			$this->receipt_service->send_customer_ipp_receipt_email( $order, $merchant_settings, $charges_data[0] );

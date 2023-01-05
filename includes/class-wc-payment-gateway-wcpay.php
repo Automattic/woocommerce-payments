@@ -164,15 +164,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $platform_checkout_util;
 
 	/**
+	 * Webhook Reliability Service.
+	 *
+	 * @var WC_Payments_Webhook_Reliability_Service
+	 */
+	protected $webhook_reliability_service;
+
+	/**
 	 * WC_Payment_Gateway_WCPay constructor.
 	 *
-	 * @param WC_Payments_API_Client               $payments_api_client             - WooCommerce Payments API client.
-	 * @param WC_Payments_Account                  $account                         - Account class instance.
-	 * @param WC_Payments_Customer_Service         $customer_service                - Customer class instance.
-	 * @param WC_Payments_Token_Service            $token_service                   - Token class instance.
-	 * @param WC_Payments_Action_Scheduler_Service $action_scheduler_service        - Action Scheduler service instance.
-	 * @param Session_Rate_Limiter                 $failed_transaction_rate_limiter - Rate Limiter for failed transactions.
-	 * @param WC_Payments_Order_Service            $order_service                   - Order class instance.
+	 * @param WC_Payments_API_Client                  $payments_api_client             - WooCommerce Payments API client.
+	 * @param WC_Payments_Account                     $account                         - Account class instance.
+	 * @param WC_Payments_Customer_Service            $customer_service                - Customer class instance.
+	 * @param WC_Payments_Token_Service               $token_service                   - Token class instance.
+	 * @param WC_Payments_Action_Scheduler_Service    $action_scheduler_service        - Action Scheduler service instance.
+	 * @param Session_Rate_Limiter                    $failed_transaction_rate_limiter - Rate Limiter for failed transactions.
+	 * @param WC_Payments_Order_Service               $order_service                   - Order class instance.
+	 * @param WC_Payments_Webhook_Reliability_Service $webhook_reliability_service     - Webhooks reliability service.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -181,7 +189,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments_Token_Service $token_service,
 		WC_Payments_Action_Scheduler_Service $action_scheduler_service,
 		Session_Rate_Limiter $failed_transaction_rate_limiter = null,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		WC_Payments_Webhook_Reliability_Service $webhook_reliability_service
 	) {
 		$this->payments_api_client             = $payments_api_client;
 		$this->account                         = $account;
@@ -190,6 +199,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->action_scheduler_service        = $action_scheduler_service;
 		$this->failed_transaction_rate_limiter = $failed_transaction_rate_limiter;
 		$this->order_service                   = $order_service;
+		$this->webhook_reliability_service     = $webhook_reliability_service;
 
 		$this->id                 = static::GATEWAY_ID;
 		$this->icon               = ''; // TODO: icon.
@@ -736,6 +746,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 */
 			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
 				$order->update_status( Order_Status::FAILED );
+			}
+
+			$events = $this->webhook_reliability_service->load_and_process_events( [ 'order' => $order_id ] );
+			if ( ! empty( $events ) ) {
+				// ToDo: Add a note that the order was asynchronously marked as paid.
+				// If events (webhooks) were processed, maybe the order changed.
+				if ( $this->order_service->is_order_paid( $order ) ) {
+					return [
+						'result'   => 'success',
+						'redirect' => $this->get_return_url( $order ),
+					];
+				}
 			}
 
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
