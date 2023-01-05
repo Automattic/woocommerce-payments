@@ -748,29 +748,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->update_status( Order_Status::FAILED );
 			}
 
-			// Load and process stored webhooks, related to the order. They might complete the order.
-			$events = $this->webhook_reliability_service->load_and_process_events( [ 'order' => $order_id ] );
-			if ( ! empty( $events ) ) {
-				// Note: This is not enough. We should do all post-payment step shere, incl. saving cards and clearing the cart.
-				if ( $this->order_service->is_order_paid( $order ) ) {
-					Logger::log(
-						sprintf(
-							'After encountering "%s" as an exception while processing a payment, %d event(s) were processed and the payment was marked as complete.',
-							$e->getMessage(),
-							count( $events )
-						)
-					);
-
-					wc_reduce_stock_levels( $order_id );
-					WC()->cart->empty_cart();
-
-					return [
-						'result'   => 'success',
-						'redirect' => $this->get_return_url( $order ),
-					];
-				}
-			}
-
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
 				$this->failed_transaction_rate_limiter->bump();
 			}
@@ -830,6 +807,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
+
+			// Load and process stored webhooks, related to the order. They might complete the order.
+			$events = $this->webhook_reliability_service->load_and_process_events( [ 'order' => $order_id ] );
+			if ( ! empty( $events ) ) {
+				// Note: This is not enough. We should do all post-payment step shere, incl. saving cards and clearing the cart.
+				if ( $this->order_service->is_order_paid( $order ) ) {
+					Logger::log(
+						sprintf(
+							'After encountering "%s" as an exception while processing a payment, %d event(s) were processed and the payment was marked as complete.',
+							$e->getMessage(),
+							count( $events )
+						)
+					);
+
+					$order->add_order_note( __( 'Payment could not be completed, but an incoming webhook recovered the process.', 'woocommerce-payments' ) );
+
+					wc_reduce_stock_levels( $order_id );
+					WC()->cart->empty_cart();
+
+					return [
+						'result'   => 'success',
+						'redirect' => $this->get_return_url( $order ),
+					];
+				}
+			}
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.
