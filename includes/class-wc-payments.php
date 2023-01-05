@@ -387,6 +387,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-update-service-data-from-server.php';
 		require_once __DIR__ . '/migrations/class-track-upe-status.php';
 		require_once __DIR__ . '/migrations/class-delete-active-platform-checkout-webhook.php';
+
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Track_Upe_Status', 'maybe_track' ] );
@@ -423,6 +424,11 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::get_gateway(), self::$account );
+
+			require_once __DIR__ . '/migrations/class-wc-payments-synced-subscriptions-repairer.php';
+			$repairer = new \WCPay\Migrations\WC_Payments_Synced_Subscriptions_Repairer( WC_Payments_Subscriptions::get_subscription_service(), self::$api_client, wc_get_logger() );
+			$repairer->init();
+			add_action( 'woocommerce_woocommerce_payments_updated', [ $repairer, 'maybe_schedule_repair' ] );
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
