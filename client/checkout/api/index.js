@@ -662,8 +662,19 @@ export default class WCPayAPI {
 				_wpnonce: nonce,
 				email: userEmail,
 				user_session: platformCheckoutUserSession,
+				return_url: window?.location?.href ?? '',
 			}
 		);
+	}
+
+	expressCheckoutAddToCart( productData ) {
+		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
+		const addToCartNonce = getConfig( 'addToCartNonce' );
+
+		return this.request( buildAjaxURL( wcAjaxUrl, 'add_to_cart' ), {
+			security: addToCartNonce,
+			...productData,
+		} );
 	}
 
 	paymentRequestPayForOrder( order, paymentData ) {
@@ -691,5 +702,20 @@ export default class WCPayAPI {
 			// There is not any action to take or harm caused by a failed update, so just returning true.
 			return true;
 		} );
+	}
+
+	/**
+	 * If another order has the same cart content and was paid, redirect to its thank-you page.
+	 *
+	 * @param {Object} response Response data to check if doing the redirect.
+	 * @return {boolean} Returns true if doing the redirection.
+	 */
+	handlePreviousOrderPaid( response ) {
+		let didRedirection = false;
+		if ( response.wcpay_upe_paid_for_previous_order && response.redirect ) {
+			window.location = response.redirect;
+			didRedirection = true;
+		}
+		return didRedirection;
 	}
 }

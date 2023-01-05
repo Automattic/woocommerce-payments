@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added support for WooPay express checkout on product page. This feature is currently behind a feature flag and is not yet publicly available.
