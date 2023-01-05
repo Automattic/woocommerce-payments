@@ -262,6 +262,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * @param array $extra {
 	 *     Additional arguments for the query (Optional).
 	 *
+	 *     @type string       $id    The ID of an existing evnet when querying a specific one.
 	 *     @type int          $count Limit of the query, `-1` removes it. May cause performance issues. Defaults to 10.
 	 *     @type int          $order The ID of an order, if the webhook is related to that order.
 	 *     @type string|array $type  The type (string) or types (array) of events to query. Defaults to all.
@@ -274,9 +275,13 @@ class WC_Payments_Webhook_Reliability_Service {
 		$args = [
 			'post_type'      => self::POST_TYPE,
 			'post_status'    => 'any',
-			'posts_per_page' => -1,
+			'posts_per_page' => 10,
 			'menu_order'     => $live ? 1 : 0,
 		];
+
+		if ( isset( $extra['id'] ) ) {
+			$args['name'] = $extra['id'];
+		}
 
 		if ( isset( $extra['count'] ) ) {
 			$args['posts_per_page'] = $extra['count'];
@@ -327,7 +332,7 @@ class WC_Payments_Webhook_Reliability_Service {
 	 */
 	public function store_event( array $event ) {
 		// Retry mechanisms might try to store an existing webhook.
-		$args     = [ 'name' => $event['id'] ];
+		$args     = [ 'id' => $event['id'] ];
 		$existing = $this->get_events( $args );
 		if ( ! empty( $existing ) ) {
 			return;

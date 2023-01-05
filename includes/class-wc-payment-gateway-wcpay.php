@@ -748,10 +748,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->update_status( Order_Status::FAILED );
 			}
 
+			// Load and process stored webhooks, related to the order. They might complete the order.
 			$events = $this->webhook_reliability_service->load_and_process_events( [ 'order' => $order_id ] );
 			if ( ! empty( $events ) ) {
-				// ToDo: Add a note that the order was asynchronously marked as paid.
-				// If events (webhooks) were processed, maybe the order changed.
+				Logger::log(
+					sprintf(
+						'After encountering "%s" as an exception while processing a payment, %d event(s) were processed and the payment was marked as complete.',
+						$e->getMessage(),
+						count( $events )
+					)
+				);
+
 				if ( $this->order_service->is_order_paid( $order ) ) {
 					return [
 						'result'   => 'success',
