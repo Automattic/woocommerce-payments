@@ -257,75 +257,6 @@ class WC_Payments_Webhook_Reliability_Service {
 	}
 
 	/**
-	 * Loads stored events from the database.
-	 *
-	 * @param array $extra {
-	 *     Additional arguments for the query (Optional).
-	 *
-	 *     @type string       $id    The ID of an existing evnet when querying a specific one.
-	 *     @type int          $count Limit of the query, `-1` removes it. May cause performance issues. Defaults to 10.
-	 *     @type int          $order The ID of an order, if the webhook is related to that order.
-	 *     @type string|array $type  The type (string) or types (array) of events to query. Defaults to all.
-	 *     @type bool         $live  Whether to load live or test mode events. Defaults to the current gateway mode.
-	 * }
-	 * @return array[] Stored events, which match the given criteria.
-	 */
-	public function get_events( $extra = null ) {
-		$live = isset( $extra['live'] ) ? $extra['live'] : ! WC_Payments::get_gateway()->is_in_test_mode();
-		$args = [
-			'post_type'      => self::POST_TYPE,
-			'post_status'    => 'any',
-			'posts_per_page' => 10,
-			'menu_order'     => $live ? 1 : 0,
-		];
-
-		if ( isset( $extra['id'] ) ) {
-			$args['name'] = $extra['id'];
-		}
-
-		if ( isset( $extra['count'] ) ) {
-			$args['posts_per_page'] = $extra['count'];
-		}
-
-		if ( isset( $extra['type'] ) ) {
-			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
-				[
-					'taxonomy' => self::TYPE_TAXONOMY,
-					'terms'    => $extra['type'],
-					'field'    => 'name',
-				],
-			];
-		}
-
-		if ( isset( $extra['order'] ) ) {
-			$args['post_parent'] = absint( $extra['order'] );
-		}
-
-		return array_map( [ $this, 'post_to_event' ], get_posts( $args ) );
-	}
-
-	/**
-	 * Converts a post to an array, which resembles an event from the server.
-	 *
-	 * @param WP_Post $post The post to convert.
-	 * @return array
-	 */
-	public function post_to_event( $post ) {
-		$type = null;
-
-		foreach ( wp_get_post_terms( $post->ID, self::TYPE_TAXONOMY ) as $term ) {
-			$type = $term->name;
-		}
-
-		return [
-			'id'       => $post->post_name,
-			'type'     => $type,
-			'livemode' => $post->menu_order > 0,
-			'data'     => maybe_unserialize( $post->post_content ),
-		];
-	}
-
-	/**
 	 * Stores an event to be processed later.
 	 *
 	 * @param array $event The event as it was received from the server.
@@ -371,9 +302,96 @@ class WC_Payments_Webhook_Reliability_Service {
 		$events = $this->get_events( $args );
 
 		foreach ( $events as $event ) {
-			$this->webhook_processing_service->process( $event );
+			$this->process( $event );
 		}
 
 		return $events;
+	}
+
+	/**
+	 * Loads stored events from the database.
+	 *
+	 * @param array $extra {
+	 *     Additional arguments for the query (Optional).
+	 *
+	 *     @type string       $id    The ID of an existing evnet when querying a specific one.
+	 *     @type int          $count Limit of the query, `-1` removes it. May cause performance issues. Defaults to 10.
+	 *     @type int          $order The ID of an order, if the webhook is related to that order.
+	 *     @type string|array $type  The type (string) or types (array) of events to query. Defaults to all.
+	 *     @type bool         $live  Whether to load live or test mode events. Defaults to the current gateway mode.
+	 * }
+	 * @return array[] Stored events, which match the given criteria. See `->post_to_event()`.
+	 */
+	protected function get_events( $extra = null ) {
+		$live = isset( $extra['live'] ) ? $extra['live'] : ! WC_Payments::get_gateway()->is_in_test_mode();
+		$args = [
+			'post_type'      => self::POST_TYPE,
+			'post_status'    => 'any',
+			'posts_per_page' => 10,
+			'menu_order'     => $live ? 1 : 0,
+		];
+
+		if ( isset( $extra['id'] ) ) {
+			$args['name'] = $extra['id'];
+		}
+
+		if ( isset( $extra['count'] ) ) {
+			$args['posts_per_page'] = $extra['count'];
+		}
+
+		if ( isset( $extra['type'] ) ) {
+			$args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+				[
+					'taxonomy' => self::TYPE_TAXONOMY,
+					'terms'    => $extra['type'],
+					'field'    => 'name',
+				],
+			];
+		}
+
+		if ( isset( $extra['order'] ) ) {
+			$args['post_parent'] = absint( $extra['order'] );
+		}
+
+		return array_map( [ $this, 'post_to_event' ], get_posts( $args ) );
+	}
+
+	/**
+	 * Converts a post to an array, which resembles an event from the server.
+	 *
+	 * @param WP_Post $post The post to convert.
+	 * @return array
+	 */
+	protected function post_to_event( $post ) {
+		$type = null;
+
+		foreach ( wp_get_post_terms( $post->ID, self::TYPE_TAXONOMY ) as $term ) {
+			$type = $term->name;
+		}
+
+		return [
+			'id'       => $post->post_name,
+			'type'     => $type,
+			'livemode' => $post->menu_order > 0,
+			'data'     => maybe_unserialize( $post->post_content ),
+			'_post_id' => $post->ID,
+		];
+	}
+
+	/**
+	 * Processes an event, and removes it from the storage once processed.
+	 *
+	 * @param array $event The event, formatted by `post_to_event()`.
+	 */
+	protected function process( $event ) {
+		// Process the event.
+		try {
+			$this->webhook_processing_service->process( $event );
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed processing event ' . $event_id . '. Reason: ' . $e->getMessage() );
+		}
+
+		// Immediately delete the event.
+		wp_delete_post( $event['_post_id'], true );
 	}
 }

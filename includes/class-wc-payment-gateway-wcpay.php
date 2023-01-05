@@ -751,15 +751,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Load and process stored webhooks, related to the order. They might complete the order.
 			$events = $this->webhook_reliability_service->load_and_process_events( [ 'order' => $order_id ] );
 			if ( ! empty( $events ) ) {
-				Logger::log(
-					sprintf(
-						'After encountering "%s" as an exception while processing a payment, %d event(s) were processed and the payment was marked as complete.',
-						$e->getMessage(),
-						count( $events )
-					)
-				);
-
+				// Note: This is not enough. We should do all post-payment step shere, incl. saving cards and clearing the cart.
 				if ( $this->order_service->is_order_paid( $order ) ) {
+					Logger::log(
+						sprintf(
+							'After encountering "%s" as an exception while processing a payment, %d event(s) were processed and the payment was marked as complete.',
+							$e->getMessage(),
+							count( $events )
+						)
+					);
+
+					wc_reduce_stock_levels( $order_id );
+					WC()->cart->empty_cart();
+
 					return [
 						'result'   => 'success',
 						'redirect' => $this->get_return_url( $order ),
