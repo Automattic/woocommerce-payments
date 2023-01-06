@@ -98,6 +98,7 @@ class WC_Payments_Webhook_Reliability_Service {
 			return;
 		}
 
+		// Schedules another fetch in case this batch does not contain all stored events.
 		if ( $payload[ self::CONTINUOUS_FETCH_FLAG_EVENTS_LIST ] ?? false ) {
 			$this->schedule_fetch_events();
 		}
@@ -110,8 +111,7 @@ class WC_Payments_Webhook_Reliability_Service {
 				continue;
 			}
 
-			$this->set_event_data( $event );
-			$this->schedule_process_event( $event['id'] );
+			$this->store_event( $event );
 		}
 	}
 
@@ -119,15 +119,20 @@ class WC_Payments_Webhook_Reliability_Service {
 	 * Process an event through ActionScheduler.
 	 *
 	 * @param  string $event_id Event ID.
+	 * @deprecated This method (and the action in the constructor) should be removed in the next version.
 	 *
 	 * @return void
 	 */
 	public function process_event( string $event_id ) {
 		Logger::info( 'Start processing event: ' . $event_id );
 
-		$event_data = $this->get_event_data( $event_id );
+		// Use md5 to overcome the limit of transient name (172 characters) while Stripe event ID can be up to 255.
+		$transient_name = 'wcpay_failed_event_' . md5( $event_id );
 
-		$this->delete_event_data( $event_id );
+		$data       = get_transient( $transient_name );
+		$event_data = false === $data ? null : $data;
+
+		delete_transient( $transient_name );
 
 		if ( null === $event_data ) {
 			Logger::error( 'Stop processing as no data available for event: ' . $event_id );
@@ -143,18 +148,6 @@ class WC_Payments_Webhook_Reliability_Service {
 	}
 
 	/**
-	 * Schedule a job to process an event later.
-	 *
-	 * @param  string $event_id Event ID.
-	 *
-	 * @return void
-	 */
-	private function schedule_process_event( string $event_id ) {
-		$this->action_scheduler_service->schedule_job( time(), self::WEBHOOK_PROCESS_EVENT_ACTION, [ 'event_id' => $event_id ] );
-		Logger::info( 'Successfully schedule a job to processing event: ' . $event_id );
-	}
-
-	/**
 	 * Schedule a job to fetch failed events.
 	 *
 	 * @return void
@@ -162,56 +155,6 @@ class WC_Payments_Webhook_Reliability_Service {
 	private function schedule_fetch_events() {
 		$this->action_scheduler_service->schedule_job( time(), self::WEBHOOK_FETCH_EVENTS_ACTION );
 		Logger::info( 'Successfully schedule a job to fetch failed events from the server.' );
-	}
-
-	/**
-	 * Get the transient name to interact with the storage.
-	 *
-	 * @param  string $event_id Event ID.
-	 *
-	 * @return string
-	 */
-	private function get_transient_name_for_event_id( string $event_id ): string {
-		// Use md5 to overcome the limit of transient name (172 characters) while Stripe event ID can be up to 255.
-		return 'wcpay_failed_event_' . md5( $event_id );
-	}
-
-	/**
-	 * Save the event data.
-	 *
-	 * @param  array $event_data Event data.
-	 *
-	 * @return bool True if the value was set, false otherwise.
-	 */
-	public function set_event_data( array $event_data ) {
-		if ( ! isset( $event_data['id'] ) ) {
-			return false;
-		}
-
-		return set_transient( $this->get_transient_name_for_event_id( $event_data['id'] ), $event_data, DAY_IN_SECONDS );
-	}
-
-	/**
-	 * Delete the event data.
-	 *
-	 * @param  string $event_id Event ID.
-	 *
-	 * @return bool True if the event data is deleted, false otherwise.
-	 */
-	public function delete_event_data( string $event_id ): bool {
-		return delete_transient( $this->get_transient_name_for_event_id( $event_id ) );
-	}
-
-	/**
-	 * Retrieve the event data. Return null if the data does not exist.
-	 *
-	 * @param  string $event_id Event ID.
-	 *
-	 * @return ?array
-	 */
-	public function get_event_data( string $event_id ) {
-		$data = get_transient( $this->get_transient_name_for_event_id( $event_id ) );
-		return false === $data ? null : $data;
 	}
 
 	/**
@@ -293,6 +236,28 @@ class WC_Payments_Webhook_Reliability_Service {
 	}
 
 	/**
+	 * Converts a post to an array, which resembles an event from the server.
+	 *
+	 * @param WP_Post $post The post to convert.
+	 * @return array
+	 */
+	protected function post_to_event( $post ) {
+		$type = null;
+
+		foreach ( wp_get_post_terms( $post->ID, self::TYPE_TAXONOMY ) as $term ) {
+			$type = $term->name;
+		}
+
+		return [
+			'id'       => $post->post_name,
+			'type'     => $type,
+			'livemode' => $post->menu_order > 0,
+			'data'     => maybe_unserialize( $post->post_content ),
+			'_post_id' => $post->ID,
+		];
+	}
+
+	/**
 	 * Loads and processes events.
 	 *
 	 * @param array $args Arguments for the `get_events` method.
@@ -354,28 +319,6 @@ class WC_Payments_Webhook_Reliability_Service {
 		}
 
 		return array_map( [ $this, 'post_to_event' ], get_posts( $args ) );
-	}
-
-	/**
-	 * Converts a post to an array, which resembles an event from the server.
-	 *
-	 * @param WP_Post $post The post to convert.
-	 * @return array
-	 */
-	protected function post_to_event( $post ) {
-		$type = null;
-
-		foreach ( wp_get_post_terms( $post->ID, self::TYPE_TAXONOMY ) as $term ) {
-			$type = $term->name;
-		}
-
-		return [
-			'id'       => $post->post_name,
-			'type'     => $type,
-			'livemode' => $post->menu_order > 0,
-			'data'     => maybe_unserialize( $post->post_content ),
-			'_post_id' => $post->ID,
-		];
 	}
 
 	/**
