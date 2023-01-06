@@ -489,7 +489,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		$script_src_url    = plugins_url( 'dist/subscription-edit-page.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/subscription-edit-page.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script(
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
