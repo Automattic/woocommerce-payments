@@ -127,6 +127,7 @@ class WC_Payments_Checkout {
 			'userExistsEndpoint'             => get_rest_url( null, '/wc/v3/users/exists' ),
 			'platformCheckoutSignatureNonce' => wp_create_nonce( 'platform_checkout_signature_nonce' ),
 			'platformCheckoutMerchantId'     => Jetpack_Options::get_option( 'id' ),
+			'icon'                           => $this->gateway->get_icon_url(),
 		];
 
 		/**

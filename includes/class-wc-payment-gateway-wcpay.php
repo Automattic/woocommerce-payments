@@ -2034,6 +2034,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * The get_icon() method from the WC_Payment_Gateway class wraps the icon URL into a prepared HTML element, but there are situations when this
+	 * element needs to be rendered differently on the UI (e.g. additional styles or `display` property).
+	 *
+	 * This is why we need a usual getter like this to provide a raw icon URL to the UI, which will render it according to particular requirements.
+	 *
+	 * @return string Returns the payment method icon URL.
+	 */
+	public function get_icon_url() {
+		return $this->icon;
+	}
+
+	/**
 	 * Handles connected account update when plugin settings saved.
 	 *
 	 * Adds error message to display in admin notices in case of failure.

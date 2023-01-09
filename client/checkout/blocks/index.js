@@ -42,7 +42,22 @@ registerPaymentMethod( {
 	savedTokenComponent: <SavedTokenHandler api={ api } />,
 	canMakePayment: () => !! api.getStripe(),
 	paymentMethodId: PAYMENT_METHOD_NAME_CARD,
-	label: __( 'Credit card', 'woocommerce-payments' ),
+	// <span> element is an inline element which doesn't take the whole width
+	// of the parent component by default. This is why we need to `width: 95%` -
+	// so that the image can be aligned to the right side of the line with the help
+	// of the `float: right` property.
+	label: (
+		<>
+			<span style={ { width: '95%' } }>
+				{ __( 'Credit card', 'woocommerce-payments' ) }
+				<img
+					style={ { float: 'right' } }
+					src={ getConfig( 'icon' ) }
+					alt={ __( 'Credit card', 'woocommerce-payments' ) }
+				/>
+			</span>
+		</>
+	),
 	ariaLabel: __( 'Credit card', 'woocommerce-payments' ),
 	supports: {
 		showSavedCards: getConfig( 'isSavedCardsEnabled' ) ?? false,
