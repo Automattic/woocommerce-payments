@@ -96,7 +96,7 @@ class WC_Payments_Checkout {
 
 		$wc_checkout = WC_Checkout::instance();
 
-		return [
+		$js_config = [
 			'publishableKey'                 => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
 			'testMode'                       => $this->gateway->is_in_test_mode(),
 			'accountId'                      => $this->account->get_stripe_account_id(),
@@ -115,6 +115,8 @@ class WC_Payments_Checkout {
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
 			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
 			'isPlatformCheckoutEnabled'      => $this->platform_checkout_util->should_enable_platform_checkout( $this->gateway ),
+			'isWoopayExpressCheckoutEnabled' => $this->platform_checkout_util->is_woopay_express_checkout_enabled(),
+			'isClientEncryptionEnabled'      => WC_Payments_Features::is_client_secret_encryption_enabled(),
 			'platformCheckoutHost'           => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
 			'platformTrackerNonce'           => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation' => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
@@ -124,6 +126,13 @@ class WC_Payments_Checkout {
 			'platformCheckoutSignatureNonce' => wp_create_nonce( 'platform_checkout_signature_nonce' ),
 			'platformCheckoutMerchantId'     => Jetpack_Options::get_option( 'id' ),
 		];
+
+		/**
+		 * Allows filtering of the JS config for the payment fields.
+		 *
+		 * @param array $js_config The JS config for the payment fields.
+		 */
+		return apply_filters( 'wcpay_payment_fields_js_config', $js_config );
 	}
 
 	/**

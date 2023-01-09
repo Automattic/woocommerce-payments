@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix an issue which caused synced wcpay subscription to not sync the first payment date when the customer is charged upfront.

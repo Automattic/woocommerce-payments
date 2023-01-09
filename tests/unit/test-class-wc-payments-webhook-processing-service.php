@@ -6,10 +6,12 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
-use WCPay\Database_Cache;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -136,7 +138,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_noop_webhook() {
 		// Setup test request data.
-		$this->event_body['type'] = 'unknown.webhook.event';
+		$this->event_body['type']     = 'unknown.webhook.event';
+		$this->event_body['livemode'] = true;
 
 		// Run the test.
 		$result = $this->webhook_processing_service->process( $this->event_body );
@@ -158,11 +161,72 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test a webhook with a test event for a gateway with live mode.
+	 */
+	public function test_webhook_with_test_event_and_live_gateway() {
+		$this->event_body['type']     = 'wcpay.notification';
+		$this->event_body['id']       = 'testID';
+		$this->event_body['livemode'] = false;
+		$this->event_body['data']     = [
+			'title'   => 'test',
+			'content' => 'hello',
+		];
+
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_in_test_mode' )
+			->willReturn( false );
+
+		$this->mock_remote_note_service
+			->expects( $this->never() )
+			->method( 'put_note' )
+			->with(
+				[
+					'title'   => 'test',
+					'content' => 'hello',
+				]
+			);
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Test a webhook with a live event for a gateway in test mode.
+	 */
+	public function test_webhook_with_live_event_and_test_gateway() {
+		$this->event_body['type']     = 'wcpay.notification';
+		$this->event_body['id']       = 'testID';
+		$this->event_body['livemode'] = true;
+		$this->event_body['data']     = [
+			'title'   => 'test',
+			'content' => 'hello',
+		];
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'is_in_test_mode' )
+			->willReturn( true );
+
+		$this->mock_remote_note_service
+			->expects( $this->never() )
+			->method( 'put_note' )
+			->with(
+				[
+					'title'   => 'test',
+					'content' => 'hello',
+				]
+			);
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Test a webhook with no object property.
 	 */
 	public function test_webhook_with_no_object_property() {
 		// Setup test request data.
-		$this->event_body['type'] = 'charge.refund.updated';
+		$this->event_body['type']     = 'charge.refund.updated';
+		$this->event_body['livemode'] = true;
 		unset( $this->event_body['data']['object'] );
 
 		$this->expectException( Invalid_Webhook_Data_Exception::class );
@@ -178,7 +242,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_webhook_with_no_data_property() {
 		// Setup test request data.
-		$this->event_body['type'] = 'charge.refund.updated';
+		$this->event_body['type']     = 'charge.refund.updated';
+		$this->event_body['livemode'] = true;
 		unset( $this->event_body['data'] );
 
 		$this->expectException( Invalid_Webhook_Data_Exception::class );
@@ -194,6 +259,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_valid_failed_refund_webhook_sets_failed_meta() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'test_charge_id',
@@ -234,6 +300,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_valid_failed_refund_webhook_deletes_wc_refund() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'test_charge_id',
@@ -279,6 +346,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_non_failed_refund_update_webhook_does_not_set_failed_meta() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'status' => 'success',
 		];
@@ -303,6 +371,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_valid_failed_refund_update_webhook() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'test_charge_id',
@@ -336,6 +405,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_valid_failed_refund_update_webhook_non_usd() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'test_charge_id',
@@ -367,6 +437,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_valid_failed_refund_update_webhook_zero_decimal_currency() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'test_charge_id',
@@ -398,6 +469,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_valid_failed_refund_update_webhook_with_unknown_charge_id() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'status'   => 'failed',
 			'charge'   => 'unknown_charge_id',
@@ -425,6 +497,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_non_failed_refund_update_webhook() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'status' => 'updated',
 			'charge' => 'test_charge_id',
@@ -445,8 +518,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_remote_note_puts_note() {
 		// Setup test request data.
-		$this->event_body['type'] = 'wcpay.notification';
-		$this->event_body['data'] = [
+		$this->event_body['type']     = 'wcpay.notification';
+		$this->event_body['livemode'] = true;
+		$this->event_body['data']     = [
 			'title'   => 'test',
 			'content' => 'hello',
 		];
@@ -470,8 +544,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_remote_note_fails_returns_expected_webhook_exception() {
 		// Setup test request data.
-		$this->event_body['type'] = 'wcpay.notification';
-		$this->event_body['data'] = [
+		$this->event_body['type']     = 'wcpay.notification';
+		$this->event_body['livemode'] = true;
+		$this->event_body['data']     = [
 			'foo' => 'bar',
 		];
 		$this->mock_remote_note_service
@@ -504,8 +579,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Setup test request data.
-		$this->event_body['type'] = 'wcpay.notification';
-		$this->event_body['data'] = [
+		$this->event_body['type']     = 'wcpay.notification';
+		$this->event_body['livemode'] = true;
+		$this->event_body['data']     = [
 			'title'   => 'test',
 			'content' => 'hello',
 		];
@@ -527,6 +603,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_payment_intent_successful_and_completes_order() {
 		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
@@ -540,7 +617,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$this->mock_order
@@ -561,7 +638,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -595,6 +677,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_payment_intent_successful_and_completes_order_without_intent_id() {
 		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
@@ -608,7 +691,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 			'metadata' => [ 'order_id' => 'id_1323' ], // Using order_id inside of the intent metadata to find the order.
 		];
 
@@ -630,7 +713,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -671,6 +759,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_payment_intent_successful_when_retrying() {
 		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
@@ -684,7 +773,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$this->mock_order
@@ -704,7 +793,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
 			->willReturn( true );
 
 		$this->mock_order
@@ -740,6 +834,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_payment_intent_successful_and_send_card_reader_receipt() {
 		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'       => 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
@@ -755,7 +850,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => 'eur',
-			'status'   => 'succeeded',
+			'status'   => Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$mock_merchant_settings = [
@@ -770,7 +865,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -817,15 +917,96 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that a payment_intent.succeeded event will complete the order.
+	 * Tests that a payment_intent.succeeded event will save mandate.
 	 */
-	public function test_payment_intent_fails_and_fails_order() {
-		$this->event_body['type']           = 'payment_intent.payment_failed';
+	public function test_payment_intent_successful_and_save_mandate() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
-			'id'       => 'pi_123123123123123', // Payment_intent's ID.
+			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
 			'object'   => 'payment_intent',
 			'amount'   => 1500,
 			'charges'  => [
+				'data' => [
+					[
+						'id'                     => $charge_id         = 'py_123123123123123',
+						'payment_method'         => $payment_method_id = 'pm_foo',
+						'payment_method_details' => [
+							'card' => [
+								'mandate' => $mandate_id = 'mandate_123123123',
+							],
+						],
+					],
+				],
+			],
+			'currency' => $currency      = 'eur',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
+		];
+
+		$this->mock_order
+			->expects( $this->exactly( 6 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_intent_id', $id ],
+				[ '_charge_id', $charge_id ],
+				[ '_payment_method_id', $payment_method_id ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ],
+				[ '_stripe_mandate_id', $mandate_id ],
+				[ '_intention_status', $intent_status ]
+			);
+
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'save' );
+
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'has_status' )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
+			->willReturn( false );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_receipt_service
+			->expects( $this->never() )
+			->method( 'send_customer_ipp_receipt_email' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'get_option' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event set order status to failed and adds a respective order note.
+	 */
+	public function test_payment_intent_fails_and_fails_order() {
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [
 				'data' => [
 					[
 						'id'                     => 'py_123123123123123',
@@ -836,8 +1017,15 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 					],
 				],
 			],
-			'currency' => 'usd',
-			'status'   => 'requires_payment_method',
+			'last_payment_error' => [
+				'message'        => 'error message',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'us_bank_account',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
 		];
 
 		$this->mock_order
@@ -856,9 +1044,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
-				[ [ 'failed' ] ],
-				[ [ 'processing', 'completed' ] ],
-				[ [ 'processing', 'completed' ] ]
+				[ [ Order_Status::FAILED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ]
 			)
 			->willReturn( false );
 
@@ -866,15 +1054,88 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'add_order_note' )
 			->with(
-				$this->matchesRegularExpression(
-					'/The payment was not able to be processed/'
+				$this->stringContains(
+					'With the following message: <code>error message</code>'
 				)
 			);
 
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'failed' );
+			->with( Order_Status::FAILED );
+
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.payment_failed event without charges set order status to failed and adds a respective order note.
+	 */
+	public function test_payment_intent_without_charges_fails_and_fails_order() {
+		$this->event_body['type']           = 'payment_intent.payment_failed';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'                 => 'pi_123123123123123', // Payment_intent's ID.
+			'object'             => 'payment_intent',
+			'amount'             => 1500,
+			'charges'            => [],
+			'last_payment_error' => [
+				'code'           => 'card_declined',
+				'decline_code'   => 'debit_notification_undelivered',
+				'payment_method' => [
+					'id'   => 'pm_123123123123123',
+					'type' => 'us_bank_account',
+				],
+			],
+			'currency'           => 'usd',
+			'status'             => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
+		];
+
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_meta' )
+			->withConsecutive(
+				[ '_payment_method_id' ],
+				[ '_intention_status' ]
+			)
+			->willReturnOnConsecutiveCalls(
+				'pm_123123123123123',
+				false
+			);
+
+		$this->mock_order
+			->expects( $this->exactly( 3 ) )
+			->method( 'has_status' )
+			->withConsecutive(
+				[ [ Order_Status::FAILED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ]
+			)
+			->willReturn( false );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with(
+				$this->stringContains(
+					"The customer's bank could not send pre-debit notification for the payment"
+				)
+			);
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'update_status' )
+			->with( Order_Status::FAILED );
 
 		$this->mock_order
 			->method( 'get_data_store' )
@@ -896,6 +1157,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_dispute_created_order_note() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.dispute.created';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
@@ -914,7 +1176,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'on-hold' );
+			->with( Order_Status::ON_HOLD );
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )
@@ -932,6 +1194,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_dispute_closed_order_note() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.dispute.closed';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
@@ -950,7 +1213,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'completed' );
+			->with( Order_Status::COMPLETED );
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )
@@ -968,6 +1231,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_dispute_updated_order_note() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.dispute.updated';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
@@ -998,6 +1262,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_dispute_funds_withdrawn_order_note() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.dispute.funds_withdrawn';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',
@@ -1028,6 +1293,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	public function test_dispute_funds_reinstated_order_note() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.dispute.funds_reinstated';
+		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
 			'id'     => 'test_dispute_id',
 			'charge' => 'test_charge_id',

@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_REST_Payments_Reader_Controller as Controller;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
 
 require_once WCPAY_ABSPATH . 'includes/in-person-payments/class-wc-payments-printed-receipt-sample-order.php';
@@ -419,7 +420,7 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_intent' )
 			->with( 'pi_mock' )
-			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'processing' ] ) );
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] ) );
 
 		$this->mock_api_client
 			->expects( $this->never() )

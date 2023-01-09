@@ -159,12 +159,14 @@ class WC_Payments_Subscription_Service {
 		$trial_end = $subscription->get_time( 'trial_end' );
 		$has_sync  = false;
 
-		// TODO: Check if there is a better way to see if sync date is today.
 		if ( WC_Subscriptions_Synchroniser::is_syncing_enabled() && WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 			$has_sync = true;
 
 			foreach ( $subscription->get_items() as $item ) {
-				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $item->get_product() ) ) {
+				$synced_payment_date = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $item->get_product(), 'timestamp' );
+
+				// Check if the subscription starts from today because in those cases we don't need a dynamic trial period to align to the payment date.
+				if ( WC_Subscriptions_Synchroniser::is_today( $synced_payment_date ) ) {
 					$has_sync = false;
 					break;
 				}
@@ -182,19 +184,19 @@ class WC_Payments_Subscription_Service {
 	 * @return WC_Subscription|bool The WC subscription or false if it can't be found.
 	 */
 	public static function get_subscription_from_wcpay_subscription_id( string $wcpay_subscription_id ) {
-		global $wpdb;
-
-		$subscription_id = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT post_id FROM {$wpdb->prefix}postmeta
-				WHERE meta_key = %s
-				AND meta_value = %s",
-				self::SUBSCRIPTION_ID_META_KEY,
-				$wcpay_subscription_id
-			)
+		$subscriptions = wcs_get_subscriptions(
+			[
+				'subscriptions_per_page' => 1,
+				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'   => self::SUBSCRIPTION_ID_META_KEY,
+						'value' => $wcpay_subscription_id,
+					],
+				],
+			]
 		);
 
-		return wcs_get_subscription( $subscription_id );
+		return empty( $subscriptions ) ? false : reset( $subscriptions );
 	}
 
 	/**
@@ -1003,5 +1005,29 @@ class WC_Payments_Subscription_Service {
 				throw new Exception( sprintf( 'The subscription billing period cannot be any longer than one year. A billing period of "every %s %s(s)" was given.', $billing_interval, $billing_period ) );
 			}
 		}
+	}
+
+	/**
+	 * Determines if the store has any active WCPay subscriptions.
+	 *
+	 * @return bool True if store has active WCPay subscriptions, otherwise false.
+	 */
+	public static function store_has_active_wcpay_subscriptions() {
+		$results = wcs_get_subscriptions(
+			[
+				'subscriptions_per_page' => 1,
+				'subscription_status'    => 'active',
+				// Ignoring phpcs warning, we need to search meta.
+				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => self::SUBSCRIPTION_ID_META_KEY,
+						'compare' => 'EXISTS',
+					],
+				],
+			]
+		);
+
+		$store_has_active_wcpay_subscriptions = count( $results ) > 0;
+		return $store_has_active_wcpay_subscriptions;
 	}
 }
