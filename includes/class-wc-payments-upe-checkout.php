@@ -182,6 +182,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 					]
 				),
+				'icon'                 => $payment_method->get_icon(),
 			];
 		}
 
