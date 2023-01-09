@@ -85,22 +85,36 @@ export const getCurrentBaseFee = (
 		: accountFees.base;
 };
 
+export const getTooltipAndPillBaseFee = (
+	accountFees: FeeStructure
+): BaseFee => {
+	const tooltipAndPillBaseFee = getCurrentBaseFee( accountFees );
+
+	if ( ! tooltipAndPillBaseFee.percentage_rate ) {
+		tooltipAndPillBaseFee.percentage_rate =
+			accountFees.base.percentage_rate;
+	}
+
+	if ( ! tooltipAndPillBaseFee.fixed_rate ) {
+		tooltipAndPillBaseFee.fixed_rate = accountFees.base.fixed_rate;
+	}
+
+	return tooltipAndPillBaseFee;
+};
+
 export const formatMethodFeesTooltip = (
 	accountFees: FeeStructure
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
-	const effectiveBaseFee = {
-		...accountFees.base,
-		...accountFees.discount[ 0 ],
-	};
+	const tooltipAndPillBaseFee = getTooltipAndPillBaseFee( accountFees );
 
 	const total = {
 		percentage_rate:
-			effectiveBaseFee.percentage_rate +
+			tooltipAndPillBaseFee.percentage_rate +
 			accountFees.additional.percentage_rate +
 			accountFees.fx.percentage_rate,
 		fixed_rate:
-			effectiveBaseFee.fixed_rate +
+			tooltipAndPillBaseFee.fixed_rate +
 			accountFees.additional.fixed_rate +
 			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
@@ -114,7 +128,7 @@ export const formatMethodFeesTooltip = (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
 				<div>Base fee</div>
-				<div>{ getFeeDescriptionString( effectiveBaseFee ) }</div>
+				<div>{ getFeeDescriptionString( tooltipAndPillBaseFee ) }</div>
 			</div>
 			{ hasFees( accountFees.additional ) ? (
 				<div>
