@@ -141,6 +141,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $return_url = 'test_url';
 
 	/**
+	 * @var string Mocked value of return_url.
+	 */
+	private $icon_url = 'test_icon_url';
+
+	/**
 	 * Mocked object to be used as response from process_payment_using_saved_method()
 	 *
 	 * @var array
@@ -246,7 +251,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		foreach ( $this->payment_method_classes as $payment_method_id => $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
 				->setConstructorArgs( [ $this->mock_token_service ] )
-				->setMethods( [ 'is_subscription_item_in_cart' ] )
+				->setMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
 				->getMock();
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 
@@ -1216,8 +1221,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_payment_methods_show_correct_default_outputs() {
-		// Setup $this->mock_payment_methods.
-
 		$mock_token = WC_Helper_Token::create_token( 'pm_mock' );
 		$this->mock_token_service->expects( $this->any() )
 			->method( 'add_payment_method_to_user' )
@@ -1641,6 +1644,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					]
 				)
 			);
+
+		$this->mock_payment_methods[ Payment_Method::LINK ]->expects( $this->any() )
+			->method( 'get_icon' )
+			->will(
+				$this->returnValue( $this->icon_url )
+			);
+
 		$mock_upe_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
 			->willReturnMap(
@@ -1666,6 +1676,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'upePaymentIntentData' => null,
 					'upeSetupIntentData'   => null,
 					'testingInstructions'  => '',
+					'icon'                 => $this->icon_url,
 				],
 			]
 		);
