@@ -85,9 +85,7 @@ export const getCurrentBaseFee = (
 		: accountFees.base;
 };
 
-export const getTooltipAndPillBaseFee = (
-	accountFees: FeeStructure
-): BaseFee => {
+const getTooltipAndPillBaseFee = ( accountFees: FeeStructure ): BaseFee => {
 	const tooltipAndPillBaseFee = getCurrentBaseFee( accountFees );
 
 	if ( ! tooltipAndPillBaseFee.percentage_rate ) {
