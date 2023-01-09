@@ -317,6 +317,17 @@ export const formatMethodFeesDescription = (
 	} );
 };
 
+export const formatPillFeesDescription = (
+	accountFees: FeeStructure
+): string => {
+	const pillBaseFee = getTooltipAndPillBaseFee( accountFees );
+	return sprintf(
+		__( 'From %1$f%% + %2$s', 'woocommerce-payments' ),
+		formatFee( pillBaseFee.percentage_rate ),
+		formatCurrency( pillBaseFee.fixed_rate, pillBaseFee.currency )
+	);
+};
+
 export const getTransactionsPaymentMethodName = (
 	paymentMethod: PaymentMethod
 ): string => {
