@@ -10,7 +10,9 @@ import React from 'react';
 import {
 	formatAccountFeesDescription,
 	formatMethodFeesDescription,
+	formatPillFeesDescription,
 	getCurrentBaseFee,
+	getTooltipAndPillBaseFee,
 } from '../account-fees';
 import { formatCurrency } from '../currency';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
@@ -262,6 +264,97 @@ describe( 'Account fees utility functions', () => {
 		it( 'returns "missing fees" if no fees are supplied', () => {
 			expect( formatMethodFeesDescription( undefined ) ).toEqual(
 				'missing fees'
+			);
+		} );
+	} );
+
+	describe( 'getTooltipAndPillBaseFee()', () => {
+		it( 'returns base fee if there are no discounts', () => {
+			const accountFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
+
+			expect( getTooltipAndPillBaseFee( accountFees ) ).toEqual(
+				accountFees.base
+			);
+		} );
+
+		it( 'returns base fee percentage rate and base fixed rate if there is a promo discount ', () => {
+			const accountFees = mockAccountFees(
+				{
+					percentage_rate: 0.123,
+					fixed_rate: 456.78,
+					currency: 'USD',
+				},
+				[ { discount: 0.1 } ]
+			);
+
+			expect(
+				getTooltipAndPillBaseFee( accountFees ).percentage_rate
+			).toEqual( 0.123 );
+			expect(
+				getTooltipAndPillBaseFee( accountFees ).fixed_rate
+			).toEqual( 456.78 );
+		} );
+
+		it( 'returns custom fee percentage rate if there is a custom rate present ', () => {
+			const accountFees = mockAccountFees(
+				{
+					percentage_rate: 0.123,
+					fixed_rate: 456.78,
+					currency: 'USD',
+				},
+				[ { percentage_rate: 0.11 } ]
+			);
+
+			expect(
+				getTooltipAndPillBaseFee( accountFees ).percentage_rate
+			).toEqual( 0.11 );
+		} );
+	} );
+
+	describe( 'formatPillFeesDescription()', () => {
+		it( 'returns pill description with base rates if there are no discounts', () => {
+			const accountFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
+
+			expect( formatPillFeesDescription( accountFees ) ).toEqual(
+				'From 12.3% + $4.57'
+			);
+		} );
+
+		it( 'returns pill description with base rates if there is a promo discount', () => {
+			const accountFees = mockAccountFees(
+				{
+					percentage_rate: 0.123,
+					fixed_rate: 456.78,
+					currency: 'USD',
+				},
+				[ { discount: 0.1 } ]
+			);
+
+			expect( formatPillFeesDescription( accountFees ) ).toEqual(
+				'From 12.3% + $4.57'
+			);
+		} );
+
+		it( 'returns pill description with custom rates if there is a custom fee present', () => {
+			const accountFees = mockAccountFees(
+				{
+					percentage_rate: 0.123,
+					fixed_rate: 456.78,
+					currency: 'USD',
+				},
+				[ { percentage_rate: 0.11, fixed_rate: 375.77 } ]
+			);
+
+			expect( formatPillFeesDescription( accountFees ) ).toEqual(
+				'From 11% + $3.76'
 			);
 		} );
 	} );
