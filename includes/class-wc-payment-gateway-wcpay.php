@@ -890,16 +890,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		} else {
 			// Update the customer with order data async.
-			$this->action_scheduler_service->schedule_job(
-				time(),
-				self::UPDATE_CUSTOMER_WITH_ORDER_DATA,
-				[
-					'order_id'     => $order->get_id(),
-					'customer_id'  => $customer_id,
-					'is_test_mode' => $this->is_in_test_mode(),
-					'is_woopay'    => $options['is_woopay'] ?? false,
-				]
-			);
+			$this->update_customer_with_order_data( $order->get_id(), $customer_id, $this->is_in_test_mode(), $options['is_woopay'] ?? false );
 		}
 
 		return [ $user, $customer_id ];
