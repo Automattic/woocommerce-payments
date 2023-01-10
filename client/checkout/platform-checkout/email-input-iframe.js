@@ -7,7 +7,11 @@ import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 import { buildAjaxURL } from '../../payment-request/utils';
-import { isLinkCheckoutActive } from '../utils/link.js';
+import {
+	isLinkCheckoutActive,
+	setWooPayQueryStatus,
+	clearWooPayQueryStatus,
+} from '../utils/link.js';
 
 // Waits for the element to exist as in the Blocks checkout, sometimes the field is not immediately available.
 const waitForElement = ( selector ) => {
@@ -435,6 +439,7 @@ export const handlePlatformCheckoutEmailInput = async (
 			.then( ( data ) => {
 				// Dispatch an event after we get the response.
 				dispatchUserExistEvent( data[ 'user-exists' ] );
+				setWooPayQueryStatus( data[ 'user-exists' ] );
 
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
@@ -521,6 +526,7 @@ export const handlePlatformCheckoutEmailInput = async (
 
 		const email = e.currentTarget.value;
 
+		clearWooPayQueryStatus();
 		clearTimeout( timer );
 		spinner.remove();
 

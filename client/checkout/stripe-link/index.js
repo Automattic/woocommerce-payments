@@ -3,7 +3,10 @@
 /**
  * Internal dependencies
  */
-import { STRIPE_LINK_ACTIVE_CLASS } from '../utils/link.js';
+import {
+	STRIPE_LINK_ACTIVE_CLASS,
+	getWooPayQueryStatus,
+} from '../utils/link.js';
 
 const STRIPE_LINK_BUTTON_SELECTOR = '#wcpay-stripe-link-button-wrapper button';
 const STRIPE_LINK_RADIO_SELECTOR = '#payment_method_woocommerce_payments_link';
@@ -14,15 +17,31 @@ const STRIPE_LINK_RADIO_SELECTOR = '#payment_method_woocommerce_payments_link';
 export default class StripeLinkButton {
 	/**
 	 * Constructor to set properties.
+	 *
+	 * @param {boolean} isPlatformCheckoutEnabled Is WooPay available at checkout.
 	 */
-	constructor() {
+	constructor( isPlatformCheckoutEnabled ) {
 		this.options = null;
 		this.linkAutofill = null;
-		this.isKeyupHandlerAttached = false;
 		this.isAuthenticated = false;
+		this.isKeyupHandlerAttached = false;
 		this.isUPELoaded = false;
+		this.isPlatformCheckoutEnabled = isPlatformCheckoutEnabled;
 		this.removeEmailInputListener = null;
 		this.disableRequestButton();
+	}
+
+	/**
+	 * Check if WooPay is active.
+	 *
+	 * @return {boolean} True, if WooPay is querying for user email or user email found.
+	 */
+	isWooPayActive() {
+		if ( this.isPlatformCheckoutEnabled ) {
+			return false;
+		}
+
+		return getWooPayQueryStatus();
 	}
 
 	/**

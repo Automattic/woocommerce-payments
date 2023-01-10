@@ -46,6 +46,9 @@ jQuery( function ( $ ) {
 	const isUPEEnabled = getUPEConfig( 'isUPEEnabled' );
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
+	const isPlatformCheckoutEnabled = getUPEConfig(
+		'isPlatformCheckoutEnabled'
+	);
 	const isStripeLinkEnabled =
 		paymentMethodsConfig.link !== undefined &&
 		paymentMethodsConfig.card !== undefined;
@@ -61,7 +64,7 @@ jQuery( function ( $ ) {
 			country: null,
 		};
 	}
-	const stripeLinkButton = new StripeLinkButton();
+	const stripeLinkButton = new StripeLinkButton( isPlatformCheckoutEnabled );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
