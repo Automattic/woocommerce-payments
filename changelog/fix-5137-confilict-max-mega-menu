@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Ensure script dependencies are loaded properly even when trying to register them again in the same request.

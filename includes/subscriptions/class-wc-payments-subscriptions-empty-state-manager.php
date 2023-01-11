@@ -50,7 +50,7 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 
 		$script_src_url    = plugins_url( 'dist/subscriptions-empty-state.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/subscriptions-empty-state.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
 		$wcpay_settings    = [
 			'connectUrl'    => WC_Payments_Account::get_connect_url( 'WC_SUBSCRIPTIONS_TABLE' ),
 			'isConnected'   => $this->account->is_stripe_connected(),
