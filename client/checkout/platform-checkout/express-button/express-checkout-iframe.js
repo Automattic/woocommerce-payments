@@ -124,6 +124,7 @@ export const expressCheckoutIframe = async ( api ) => {
 	const openIframe = ( email ) => {
 		const urlParams = new URLSearchParams();
 		urlParams.append( 'email', email );
+		urlParams.append( 'testMode', getConfig( 'testMode' ) );
 		urlParams.append(
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
