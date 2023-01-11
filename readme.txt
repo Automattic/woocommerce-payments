@@ -105,6 +105,8 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Fix an issue which caused synced wcpay subscription to not sync the first payment date when the customer is charged upfront.
 * Fix - Fix subscriptions remaining on-hold after processing a WCPay Subscription renewal on HPOS environments.
 * Fix - Make the webhook processing respect the test/live mode setting for the gateway
+* Fix - Prevent 'No such customer' errors after store is migrated to a new WCPay account.
+* Fix - Prevent occasional fatal errors when creating customers via ActionScheduler jobs
 * Fix - Updates subscriptions' payment token when a new default payment method is set.
 * Update - Bail out before payment processing for WooPay's order validation request
 * Update - Check the status of previously initiated payments and mark orders as processing instead of initiating a new payment.
