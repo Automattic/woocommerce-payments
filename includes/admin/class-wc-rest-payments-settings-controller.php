@@ -384,10 +384,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
+		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
+		/**
+		 * It might be possible that enabled payment methods setting store invalid state. As an example,
+		 * account switched and new one is in other country, or PM is not available anymore.
+		 * To keep saving settings working, we are ensuring the payment methods are yet available.
+		 */
+		$enabled_payment_methods = array_intersect(
+			$this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
+			$available_upe_payment_methods
+		);
+
 		return new WP_REST_Response(
 			[
-				'enabled_payment_method_ids'          => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
-				'available_payment_method_ids'        => $this->wcpay_gateway->get_upe_available_payment_methods(),
+				'enabled_payment_method_ids'          => array_values( $enabled_payment_methods ),
+				'available_payment_method_ids'        => $available_upe_payment_methods,
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
