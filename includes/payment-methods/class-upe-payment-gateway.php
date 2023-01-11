@@ -7,31 +7,33 @@
 
 namespace WCPay\Payment_Methods;
 
-use WC_Order;
-use WC_Payment_Token_WCPay_SEPA;
-use WC_Payments_Explicit_Price_Formatter;
+use Exception;
+use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Constants\Payment_Method;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WP_User;
+use WCPay\Constants\Payment_Type;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
 use WCPay\Payment_Information;
-use WCPay\Constants\Payment_Type;
 use WCPay\Session_Rate_Limiter;
-use WC_Payment_Gateway_WCPay;
+use WC_Order;
+use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
+use WC_Payments_Explicit_Price_Formatter;
+use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
-use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
-use WC_Payments;
+use WC_Payments_Token_Service;
+use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
+use WP_User;
 
-use Exception;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
 
 
 /**
@@ -204,6 +206,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
+
+		$check_session_order = $this->check_against_session_processing_order( $order );
+		if ( is_array( $check_session_order ) ) {
+			return $check_session_order;
+		}
+		$this->maybe_update_session_processing_order( $order_id );
+
+		$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+		if ( is_array( $check_existing_intention ) ) {
+			return $check_existing_intention;
+		}
+
 		$amount   = $order->get_total();
 		$currency = $order->get_currency();
 
@@ -471,6 +485,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
+				$check_session_order = $this->check_against_session_processing_order( $order );
+				if ( is_array( $check_session_order ) ) {
+					return $check_session_order;
+				}
+				$this->maybe_update_session_processing_order( $order_id );
+
+				$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+				if ( is_array( $check_existing_intention ) ) {
+					return $check_existing_intention;
+				}
+
 				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
 
 				try {
@@ -614,7 +639,13 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				return;
 			}
 
-			if ( $order->has_status( [ 'processing', 'completed', 'on-hold' ] ) ) {
+			if ( $order->has_status(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+					Order_Status::ON_HOLD,
+				]
+			) ) {
 				return;
 			}
 
@@ -679,7 +710,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 				self::remove_upe_payment_intent_from_session();
 
-				if ( 'requires_action' === $status ) {
+				if ( Payment_Intent_Status::REQUIRES_ACTION === $status ) {
 					// I don't think this case should be possible, but just in case...
 					$next_action = $intent->get_next_action();
 					if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {

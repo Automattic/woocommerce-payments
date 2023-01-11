@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -270,7 +271,7 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 		try {
 			/* Collect the data, available on the server side. */
 			$payment_intent = $this->api_client->get_intent( $request->get_param( 'payment_intent_id' ) );
-			if ( 'succeeded' !== $payment_intent->get_status() ) {
+			if ( Payment_Intent_Status::SUCCEEDED !== $payment_intent->get_status() ) {
 				throw new \RuntimeException( __( 'Invalid payment intent', 'woocommerce-payments' ) );
 			}
 

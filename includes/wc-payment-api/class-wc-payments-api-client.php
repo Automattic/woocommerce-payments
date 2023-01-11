@@ -7,8 +7,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
@@ -30,7 +32,9 @@ class WC_Payments_API_Client {
 	const GET    = 'GET';
 	const DELETE = 'DELETE';
 
-	const API_TIMEOUT_SECONDS = 70;
+	const API_TIMEOUT_SECONDS      = 70;
+	const API_RETRIES_LIMIT        = 3;
+	const API_RETRIES_BACKOFF_MSEC = 250;
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
@@ -2088,20 +2092,46 @@ class WC_Payments_API_Client {
 			);
 		}
 
-		$response = $this->http_client->remote_request(
-			[
-				'url'             => $url,
-				'method'          => $method,
-				'headers'         => apply_filters( 'wcpay_api_request_headers', $headers ),
-				'timeout'         => self::API_TIMEOUT_SECONDS,
-				'connect_timeout' => self::API_TIMEOUT_SECONDS,
-			],
-			$body,
-			$is_site_specific,
-			$use_user_token
-		);
+		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
+		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
+		$retries        = 0;
+		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
 
-		$response = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+		while ( true ) {
+			$response_code  = null;
+			$last_exception = null;
+
+			try {
+				$response = $this->http_client->remote_request(
+					[
+						'url'             => $url,
+						'method'          => $method,
+						'headers'         => $headers,
+						'timeout'         => self::API_TIMEOUT_SECONDS,
+						'connect_timeout' => self::API_TIMEOUT_SECONDS,
+					],
+					$body,
+					$is_site_specific,
+					$use_user_token
+				);
+
+				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+				$response_code = wp_remote_retrieve_response_code( $response );
+			} catch ( Connection_Exception $e ) {
+				$last_exception = $e;
+			}
+
+			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
+				if ( null !== $last_exception ) {
+					throw $last_exception;
+				}
+				break;
+			}
+
+			// Use exponential backoff to not overload backend.
+			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
+			$retries++;
+		}
 
 		$this->check_response_for_errors( $response );
 
@@ -2469,7 +2499,7 @@ class WC_Payments_API_Client {
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 		$customer           = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method     = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
-		$processing         = $intention_array['processing'] ?? [];
+		$processing         = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 
