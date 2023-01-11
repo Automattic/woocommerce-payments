@@ -705,17 +705,28 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * If another order has the same cart content and was paid, redirect to its thank-you page.
+	 * Redirect to the order-received page for duplicate payments.
 	 *
 	 * @param {Object} response Response data to check if doing the redirect.
 	 * @return {boolean} Returns true if doing the redirection.
 	 */
-	handlePreviousOrderPaid( response ) {
-		let didRedirection = false;
-		if ( response.wcpay_upe_paid_for_previous_order && response.redirect ) {
-			window.location = response.redirect;
-			didRedirection = true;
+	handleDuplicatePayments( {
+		wcpay_upe_paid_for_previous_order: previouslyPaid,
+		wcpay_upe_previous_successful_intent: previousSuccessfulIntent,
+		redirect,
+	} ) {
+		if ( redirect ) {
+			// Another order has the same cart content and was paid.
+			if ( previouslyPaid ) {
+				return ( window.location = redirect );
+			}
+
+			// Another intent has the equivalent successful status for the order.
+			if ( previousSuccessfulIntent ) {
+				return ( window.location = redirect );
+			}
 		}
-		return didRedirection;
+
+		return false;
 	}
 }

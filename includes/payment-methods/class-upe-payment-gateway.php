@@ -207,11 +207,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			return;
 		}
 
-		$check_response = $this->check_against_session_processing_order( $order );
-		if ( is_array( $check_response ) ) {
-			return $check_response;
+		$check_session_order = $this->check_against_session_processing_order( $order );
+		if ( is_array( $check_session_order ) ) {
+			return $check_session_order;
 		}
 		$this->maybe_update_session_processing_order( $order_id );
+
+		$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+		if ( is_array( $check_existing_intention ) ) {
+			return $check_existing_intention;
+		}
 
 		$amount   = $order->get_total();
 		$currency = $order->get_currency();
@@ -480,11 +485,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $exception ) );
 				}
 
-				$check_response = $this->check_against_session_processing_order( $order );
-				if ( is_array( $check_response ) ) {
-					return $check_response;
+				$check_session_order = $this->check_against_session_processing_order( $order );
+				if ( is_array( $check_session_order ) ) {
+					return $check_session_order;
 				}
 				$this->maybe_update_session_processing_order( $order_id );
+
+				$check_existing_intention = $this->check_payment_intent_attached_to_order_succeeded( $order );
+				if ( is_array( $check_existing_intention ) ) {
+					return $check_existing_intention;
+				}
 
 				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
 

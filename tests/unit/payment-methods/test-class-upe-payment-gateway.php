@@ -943,6 +943,147 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment
+	 * @param ?string $invalid_intent_id An invalid payment intent ID. If no intent id is set, this can be null.
+	 */
+	public function test_upe_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment( $invalid_intent_id ) {
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
+
+		// Arrange order.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $invalid_intent_id );
+		$order->save();
+
+		$order_id = $order->get_id();
+
+		// Assert: get_intent is not called.
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'get_intent' );
+
+		// Assert: the payment process continues.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_intention' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		// Act: process the order.
+		$this->mock_upe_gateway->process_payment( $order_id );
+	}
+
+	public function provider_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment(): array {
+		return [
+			'No intent_id is attached'   => [ null ],
+			'A setup intent is attached' => [ 'seti_possible_for_a_subscription_id' ],
+		];
+	}
+
+	/**
+	 * The attached PaymentIntent has invalid info (status or order_id) with the order, so payment_process continues.
+	 *
+	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment
+	 * @param  string  $attached_intent_id Attached intent ID to the order.
+	 * @param  string  $attached_intent_status Attached intent status.
+	 * @param  bool  $same_order_id True when the intent meta order_id is exactly the current processing order_id. False otherwise.
+	 */
+	public function test_upe_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment(
+		string $attached_intent_id,
+		string $attached_intent_status,
+		bool $same_order_id
+	) {
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
+		// Arrange order.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $attached_intent_id );
+		$order->save();
+
+		$order_id = $order->get_id();
+
+		// Arrange mock get_intent.
+		$meta_order_id   = $same_order_id ? $order_id : $order_id - 1;
+		$attached_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => $attached_intent_id,
+				'status'   => $attached_intent_status,
+				'metadata' => [ 'order_id' => $meta_order_id ],
+			]
+		);
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->with( $attached_intent_id )
+			->willReturn( $attached_intent );
+
+		// Assert: the payment process continues.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_intention' )
+			->willReturn( WC_Helper_Intention::create_intention() );
+
+		// Act: process the order.
+		$this->mock_upe_gateway->process_payment( $order_id );
+	}
+
+	public function provider_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment(): array {
+		return [
+			'Attached PaymentIntent with non-success status - same order_id' => [ 'pi_attached_intent_id', 'requires_action', true ],
+			'Attached PaymentIntent - non-success status - different order_id' => [ 'pi_attached_intent_id', 'requires_action', false ],
+			'Attached PaymentIntent - success status - different order_id' => [ 'pi_attached_intent_id', 'succeeded', false ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_check_payment_intent_attached_to_order_succeeded_return_redirection
+	 */
+	public function test_upe_check_payment_intent_attached_to_order_succeeded_return_redirection( string $intent_successful_status ) {
+		$_POST['wc_payment_intent_id'] = 'pi_mock';
+		$attached_intent_id            = 'pi_attached_intent_id';
+
+		// Arrange order.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $attached_intent_id );
+		$order->save();
+		$order_id = $order->get_id();
+
+		// Arrange mock get_intention.
+		$attached_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => $attached_intent_id,
+				'status'   => $intent_successful_status,
+				'metadata' => [ 'order_id' => $order_id ],
+			]
+		);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_intent' )
+			->with( $attached_intent_id )
+			->willReturn( $attached_intent );
+
+		// Assert: no more call to the server to update the intention.
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'update_intention' );
+
+		// Act: process the order but redirect to the order.
+		$result = $this->mock_upe_gateway->process_payment( $order_id );
+
+		// Assert: the result of check_intent_attached_to_order_succeeded.
+		$this->assertSame( 'yes', $result['wcpay_upe_previous_successful_intent'] );
+		$this->assertSame( 'success', $result['result'] );
+		$this->assertStringContainsString( $this->mock_upe_gateway->get_return_url( $order ), $result['redirect'] );
+	}
+
+	public function provider_check_payment_intent_attached_to_order_succeeded_return_redirection(): array {
+		$ret = [];
+		foreach ( WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS as $status ) {
+			$ret[ 'Intent status ' . $status ] = [ $status ];
+		}
+
+		return $ret;
+	}
+
 	public function test_process_redirect_payment_intent_processing() {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();

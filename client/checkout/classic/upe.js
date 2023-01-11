@@ -462,7 +462,7 @@ jQuery( function ( $ ) {
 			);
 
 			if ( updateResponse.data ) {
-				if ( api.handlePreviousOrderPaid( updateResponse.data ) ) {
+				if ( api.handleDuplicatePayments( updateResponse.data ) ) {
 					return;
 				}
 			}
@@ -542,7 +542,7 @@ jQuery( function ( $ ) {
 				fingerprint ? fingerprint : ''
 			);
 
-			if ( api.handlePreviousOrderPaid( response ) ) {
+			if ( api.handleDuplicatePayments( response ) ) {
 				return;
 			}
 
