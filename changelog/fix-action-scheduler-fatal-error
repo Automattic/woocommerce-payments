@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Prevent occasional fatal erros when creating customers via ActionScheduler jobs
+Prevent occasional fatal errors when creating customers via ActionScheduler jobs
