@@ -279,7 +279,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				'sofort',
 				'sepa_debit',
 				'p24',
-			],
+			]
 		);
 
 		$request = new WP_REST_Request();
