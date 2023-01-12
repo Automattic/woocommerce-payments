@@ -71,8 +71,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		Payment_Intent_Status::PROCESSING,
 	];
 
-	const UPDATE_SAVED_PAYMENT_METHOD     = 'wcpay_update_saved_payment_method';
-	const UPDATE_CUSTOMER_WITH_ORDER_DATA = 'wcpay_update_customer_with_order_data';
+	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';
 
 	/**
 	 * Set a large limit argument for retrieving user tokens.
@@ -279,7 +278,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
 		add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 3 );
-		add_action( self::UPDATE_CUSTOMER_WITH_ORDER_DATA, [ $this, 'update_customer_with_order_data' ], 10, 4 );
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
@@ -676,45 +674,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $payment_information;
 	}
 
-	/**
-	 * Update the customer details with the incoming order data, in a CRON job.
-	 *
-	 * @param int    $order_id     WC order id.
-	 * @param string $customer_id  The customer id to update details for.
-	 * @param bool   $is_test_mode Whether to run the CRON job in test mode.
-	 * @param bool   $is_woopay    Whether CRON job was queued from WooPay.
-	 */
-	public function update_customer_with_order_data( $order_id, $customer_id, $is_test_mode = false, $is_woopay = false ) {
-		// Since this CRON job may have been created in test_mode, when the CRON job runs, it
-		// may lose the test_mode context. So, instead, we pass that context when creating
-		// the CRON job and apply the context here.
-		$apply_test_mode_context = function () use ( $is_test_mode ) {
-			return $is_test_mode;
-		};
-		add_filter( 'wcpay_test_mode', $apply_test_mode_context );
-
-		$order = wc_get_order( $order_id );
-		$user  = $order->get_user();
-		if ( false === $user ) {
-			$user = wp_get_current_user();
-		}
-
-		// Since this function will run in a CRON job, "wp_get_current_user()" will default
-		// to user with ID of 0. So, instead, we replace it with the user from the $order,
-		// when updating a WooPay user.
-		$apply_order_user_email = function ( $params ) use ( $user, $is_woopay ) {
-			if ( $is_woopay ) {
-				$params['email'] = $user->user_email;
-			}
-
-			return $params;
-		};
-		add_filter( 'wcpay_api_request_params', $apply_order_user_email, 20, 1 );
-
-		// Update the existing customer with the current order details.
-		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
-		$this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
-	}
 
 	/**
 	 * Update the saved payment method information with checkout values, in a CRON job.
@@ -2960,6 +2919,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Order_Service::manage_customer_details_for_order' );
 
 		return $this->order_service->manage_customer_details_for_order( $order, $this->is_in_test_mode(), $options );
+	}
+
+	/**
+	 * Update the customer details with the incoming order data, in a CRON job.
+	 *
+	 * @param \WC_Order $order        WC order id.
+	 * @param string    $customer_id  The customer id to update details for.
+	 * @param bool      $is_test_mode Whether to run the CRON job in test mode.
+	 * @param bool      $is_woopay    Whether CRON job was queued from WooPay.
+	 */
+	public function update_customer_with_order_data( $order, $customer_id, $is_test_mode = false, $is_woopay = false ) {
+		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Order_Service::update_customer_with_order_data' );
+
+		$this->order_service->manage_customer_details_for_order( $order, $customer_id, $is_test_mode, $is_woopay );
 	}
 
 	// End: Deprecated functions.

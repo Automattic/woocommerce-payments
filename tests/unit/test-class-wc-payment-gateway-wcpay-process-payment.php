@@ -19,6 +19,8 @@ require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
  * WC_Payment_Gateway_WCPay unit tests.
  */
 class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
+	const CUSTOMER_ID = 'cus_mock';
+
 	/**
 	 * System under test.
 	 *
@@ -1099,20 +1101,10 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( $customer_id );
 
-		// Assert: UPDATE_CUSTOMER_WITH_ORDER_DATA job scheduled correctly.
-		$this->mock_action_scheduler_service
+		$this->mock_customer_service
 			->expects( $this->once() )
-			->method( 'schedule_job' )
-			->with(
-				$this->anything(),
-				WC_Payment_Gateway_WCPay::UPDATE_CUSTOMER_WITH_ORDER_DATA,
-				[
-					'order_id'     => $mock_order->get_id(),
-					'customer_id'  => $customer_id,
-					'is_test_mode' => false,
-					'is_woopay'    => false,
-				]
-			);
+			->method( 'update_customer_for_user' )
+			->willReturn( self::CUSTOMER_ID );
 
 		// Arrange: Create a mock cart.
 		$mock_cart = $this->createMock( 'WC_Cart' );
