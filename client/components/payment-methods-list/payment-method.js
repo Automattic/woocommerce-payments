@@ -17,7 +17,6 @@ import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants'
 import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
-	formatPillFeesDescription,
 } from 'wcpay/utils/account-fees';
 import './payment-method.scss';
 import { useManualCapture } from 'wcpay/data';
@@ -162,7 +161,7 @@ const PaymentMethod = ( {
 								) }
 							>
 								<span>
-									{ formatPillFeesDescription(
+									{ formatMethodFeesDescription(
 										accountFees[ id ]
 									) }
 								</span>
