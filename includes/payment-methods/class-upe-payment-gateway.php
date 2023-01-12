@@ -94,12 +94,8 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		WC_Payments_Order_Service $order_service
 	) {
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service );
-		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
-		$this->method_description = __( 'WooCommerce Payments gives your store flexibility to accept credit cards, debit cards, and Apple Pay. Enable popular local payment methods and other digital wallets like Google Pay to give customers even more choice.', 'woocommerce-payments' );
-		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
-		$this->description        = '';
-		$this->checkout_title     = __( 'Popular payment methods', 'woocommerce-payments' );
-		$this->payment_methods    = $payment_methods;
+		$this->checkout_title  = __( 'Popular payment methods', 'woocommerce-payments' );
+		$this->payment_methods = $payment_methods;
 
 		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
