@@ -84,19 +84,12 @@ Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName, upeConfig ] ) =>
 		savedTokenComponent: <SavedTokenHandler api={ api } />,
 		canMakePayment: () => !! api.getStripe(),
 		paymentMethodId: upeMethods[ upeName ],
-		// <span> element is an inline element which doesn't take the whole width
-		// of the parent component by default. This is why we need to `width: 95%` -
-		// so that the image can be aligned to the right side of the line with the help
-		// of the `float: right` property.
+		// see .wc-block-checkout__payment-method styles in blocks/style.scss
 		label: (
 			<>
-				<span style={ { width: '95%' } }>
+				<span>
 					{ upeConfig.title }
-					<img
-						style={ { float: 'right' } }
-						src={ upeConfig.icon }
-						alt={ upeConfig.title }
-					/>
+					<img src={ upeConfig.icon } alt={ upeConfig.title } />
 				</span>
 			</>
 		),

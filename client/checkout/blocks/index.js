@@ -42,16 +42,12 @@ registerPaymentMethod( {
 	savedTokenComponent: <SavedTokenHandler api={ api } />,
 	canMakePayment: () => !! api.getStripe(),
 	paymentMethodId: PAYMENT_METHOD_NAME_CARD,
-	// <span> element is an inline element which doesn't take the whole width
-	// of the parent component by default. This is why we need to `width: 95%` -
-	// so that the image can be aligned to the right side of the line with the help
-	// of the `float: right` property.
+	// see .wc-block-checkout__payment-method styles in blocks/style.scss
 	label: (
 		<>
-			<span style={ { width: '95%' } }>
+			<span>
 				{ __( 'Credit card', 'woocommerce-payments' ) }
 				<img
-					style={ { float: 'right' } }
 					src={ getConfig( 'icon' ) }
 					alt={ __( 'Credit card', 'woocommerce-payments' ) }
 				/>
