@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Replace typed payment intent strings with constants saved in an Enum clas

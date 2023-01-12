@@ -54,7 +54,7 @@ class CurrencySwitcherBlock {
 		// Automatically load dependencies and version.
 		$asset_file_path = WCPAY_ABSPATH . 'dist/multi-currency-switcher-block.asset.php';
 		$asset_file      = file_exists( $asset_file_path )
-			? require_once $asset_file_path
+			? require $asset_file_path
 			: [
 				'dependencies' => [],
 				'version'      => false,
