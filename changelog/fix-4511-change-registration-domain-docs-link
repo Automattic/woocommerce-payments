@@ -1,4 +1,4 @@
 Significance: minor
 Type: fix
 
-Change Learn More link for the error notification when Apple Pay domain registration failed
+Point the "Learn more" link to a more appropriate document in the Apple Pay domain registration failure notification.
