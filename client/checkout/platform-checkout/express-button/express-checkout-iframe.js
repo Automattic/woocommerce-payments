@@ -8,9 +8,7 @@ import wcpayTracks from 'tracks';
 export const expressCheckoutIframe = async ( api ) => {
 	let userEmail = '';
 
-	const spinner = document.createElement( 'div' );
 	const parentDiv = document.body;
-	spinner.classList.add( 'wc-block-components-spinner' );
 
 	// Make the otp iframe wrapper.
 	const iframeWrapper = document.createElement( 'div' );
@@ -121,14 +119,17 @@ export const expressCheckoutIframe = async ( api ) => {
 
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
-	const openIframe = ( email ) => {
+	const openIframe = ( email = '' ) => {
 		const urlParams = new URLSearchParams();
-		urlParams.append( 'email', email );
 		urlParams.append(
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
+
+		if ( email ) {
+			urlParams.append( 'email', email );
+		}
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
