@@ -2096,6 +2096,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
+	public function test_return_icon_url() {
+		$returned_icon = $this->payments_checkout->get_payment_fields_js_config()['icon'];
+		$this->assertNotNull( $returned_icon );
+		$this->assertStringContainsString( 'assets/images/payment-methods/cc.svg', $returned_icon );
+	}
+
 	public function is_platform_checkout_falsy_value_provider() {
 		return [
 			[ '0' ],
