@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Repair a potentially corrupted state of enabled payment method settings, that causes an error while saving settings. Example - A frequently reported issue of `Link` payment method appearing in enabled payment methods array of non-us clients leading to error while trying to save.
