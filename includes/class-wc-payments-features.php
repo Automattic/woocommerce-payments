@@ -146,6 +146,24 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Auth & Capture (uncaptured transactions tab, capture from payment details page) is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_auth_and_capture_enabled() {
+		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
+	}
+
+	/**
+	 * Checks whether Payment Request is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_payment_request_enabled() {
+		return 'yes' === WC_Payments::get_gateway()->get_option( 'payment_request' );
+	}
+
+	/**
 	 * Checks whether WooPay Express Checkout is enabled.
 	 *
 	 * @return bool
@@ -153,15 +171,6 @@ class WC_Payments_Features {
 	public static function is_woopay_express_checkout_enabled() {
 		// Confirm platform checkout eligibility as well.
 		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '0' ) && self::is_platform_checkout_eligible();
-	}
-
-	/**
-	 * Checks whether Auth & Capture (uncaptured transactions tab, capture from payment details page) is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_auth_and_capture_enabled() {
-		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
 	}
 
 	/**
@@ -175,6 +184,15 @@ class WC_Payments_Features {
 			WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
 			true
 		);
+	}
+
+	/**
+	 * Checks whether any express checkout method is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_express_checkout_enabled() {
+		return self::is_woopay_express_checkout_enabled() || self::is_payment_request_enabled() || self::is_link_enabled();
 	}
 
 	/**

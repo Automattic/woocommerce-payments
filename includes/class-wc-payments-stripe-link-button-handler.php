@@ -55,7 +55,6 @@ class WC_Payments_Stripe_Link_Button_Handler {
 		}
 
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_button_html' ], -2 );
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_button_separator_html' ], -1 );
 
 		// Don't load for change payment method page.
 		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
