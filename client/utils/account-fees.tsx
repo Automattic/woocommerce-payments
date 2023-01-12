@@ -85,36 +85,39 @@ export const getCurrentBaseFee = (
 		: accountFees.base;
 };
 
-export const getTooltipAndPillBaseFee = (
-	accountFees: FeeStructure
-): BaseFee => {
-	const tooltipAndPillBaseFee = getCurrentBaseFee( accountFees );
-
-	if ( ! tooltipAndPillBaseFee.percentage_rate ) {
-		tooltipAndPillBaseFee.percentage_rate =
-			accountFees.base.percentage_rate;
+// If the current fee doesn't have a fixed or percentage rate, use the base fee's rate. Eg. when there is a promotional discount fee applied.
+const getCurrentFeeWithBaseFallback = (
+	currentFee: BaseFee | DiscountFee,
+	baseFee: BaseFee
+) => {
+	if ( ! currentFee.percentage_rate ) {
+		currentFee.percentage_rate = baseFee.percentage_rate;
 	}
 
-	if ( ! tooltipAndPillBaseFee.fixed_rate ) {
-		tooltipAndPillBaseFee.fixed_rate = accountFees.base.fixed_rate;
+	if ( ! currentFee.fixed_rate ) {
+		currentFee.fixed_rate = baseFee.fixed_rate;
 	}
 
-	return tooltipAndPillBaseFee;
+	return currentFee;
 };
 
 export const formatMethodFeesTooltip = (
 	accountFees: FeeStructure
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
-	const tooltipAndPillBaseFee = getTooltipAndPillBaseFee( accountFees );
+	const currentBaseFee = getCurrentBaseFee( accountFees );
+	const currentFeeWithBaseFallBack = getCurrentFeeWithBaseFallback(
+		currentBaseFee,
+		accountFees.base
+	);
 
 	const total = {
 		percentage_rate:
-			tooltipAndPillBaseFee.percentage_rate +
+			currentFeeWithBaseFallBack.percentage_rate +
 			accountFees.additional.percentage_rate +
 			accountFees.fx.percentage_rate,
 		fixed_rate:
-			tooltipAndPillBaseFee.fixed_rate +
+			currentFeeWithBaseFallBack.fixed_rate +
 			accountFees.additional.fixed_rate +
 			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
@@ -128,7 +131,9 @@ export const formatMethodFeesTooltip = (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
 				<div>Base fee</div>
-				<div>{ getFeeDescriptionString( tooltipAndPillBaseFee ) }</div>
+				<div>
+					{ getFeeDescriptionString( currentFeeWithBaseFallBack ) }
+				</div>
 			</div>
 			{ hasFees( accountFees.additional ) ? (
 				<div>

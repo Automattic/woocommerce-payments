@@ -11,7 +11,6 @@ import {
 	formatAccountFeesDescription,
 	formatMethodFeesDescription,
 	getCurrentBaseFee,
-	getTooltipAndPillBaseFee,
 } from '../account-fees';
 import { formatCurrency } from '../currency';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
@@ -264,53 +263,6 @@ describe( 'Account fees utility functions', () => {
 			expect( formatMethodFeesDescription( undefined ) ).toEqual(
 				'missing fees'
 			);
-		} );
-	} );
-
-	describe( 'getTooltipAndPillBaseFee()', () => {
-		it( 'returns base fee if there are no discounts', () => {
-			const accountFees = mockAccountFees( {
-				percentage_rate: 0.123,
-				fixed_rate: 456.78,
-				currency: 'USD',
-			} );
-
-			expect( getTooltipAndPillBaseFee( accountFees ) ).toEqual(
-				accountFees.base
-			);
-		} );
-
-		it( 'returns base fee percentage rate and base fixed rate if there is a promo discount ', () => {
-			const accountFees = mockAccountFees(
-				{
-					percentage_rate: 0.123,
-					fixed_rate: 456.78,
-					currency: 'USD',
-				},
-				[ { discount: 0.1 } ]
-			);
-
-			expect(
-				getTooltipAndPillBaseFee( accountFees ).percentage_rate
-			).toEqual( 0.123 );
-			expect(
-				getTooltipAndPillBaseFee( accountFees ).fixed_rate
-			).toEqual( 456.78 );
-		} );
-
-		it( 'returns custom fee percentage rate if there is a custom rate present ', () => {
-			const accountFees = mockAccountFees(
-				{
-					percentage_rate: 0.123,
-					fixed_rate: 456.78,
-					currency: 'USD',
-				},
-				[ { percentage_rate: 0.11 } ]
-			);
-
-			expect(
-				getTooltipAndPillBaseFee( accountFees ).percentage_rate
-			).toEqual( 0.11 );
 		} );
 	} );
 } );
