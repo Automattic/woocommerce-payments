@@ -3,8 +3,10 @@
 /**
  * Internal dependencies
  */
+import { validateEmail } from 'wcpay/utils/checkout';
 import {
 	STRIPE_LINK_ACTIVE_CLASS,
+	STRIPE_LINK_AUTHENTICATED_CLASS,
 	getWooPayQueryStatus,
 } from '../utils/link.js';
 
@@ -32,19 +34,6 @@ export default class StripeLinkButton {
 	}
 
 	/**
-	 * Check if WooPay is active.
-	 *
-	 * @return {boolean} True, if WooPay is querying for user email or user email found.
-	 */
-	isWooPayActive() {
-		if ( this.isPlatformCheckoutEnabled ) {
-			return false;
-		}
-
-		return getWooPayQueryStatus();
-	}
-
-	/**
 	 * Queries Stripe Link for user's email address and launches autofill, if account found.
 	 *
 	 * @param {string} email User email address value.
@@ -60,7 +49,32 @@ export default class StripeLinkButton {
 	 * @param {Object} event Keyup event.
 	 */
 	keyupHandler( event ) {
-		this.launchAutofill( event.target.value );
+		if ( ! validateEmail( event.target.value ) ) {
+			return;
+		}
+
+		if ( this.isPlatformCheckoutEnabled ) {
+			const emailInput = document.getElementById( this.options.emailId );
+			switch ( getWooPayQueryStatus( emailInput ) ) {
+				// Email address belongs to registered WooPay user.
+				case 'true':
+					this.enableRequestButton();
+					// Do not open modal.
+					break;
+				// Email address does not belong to registered WooPay user;
+				case 'false':
+					this.launchAutofill( event.target.value );
+					break;
+				// Still querying for WooPay registration.
+				default:
+					// Retry in a second.
+					setTimeout( () => {
+						this.keyupHandler( event );
+					}, 1000 );
+			}
+		} else {
+			this.launchAutofill( event.target.value );
+		}
 	}
 
 	/**
@@ -204,6 +218,10 @@ export default class StripeLinkButton {
 	authenticationHandler( event ) {
 		if ( ! event.empty ) {
 			this.isAuthenticated = true;
+			jQuery( `#${ this.options.emailId }` ).addClass(
+				STRIPE_LINK_AUTHENTICATED_CLASS
+			);
+
 			this.enableRequestButton();
 		}
 	}
@@ -214,7 +232,9 @@ export default class StripeLinkButton {
 	addEmailInputListener() {
 		if ( ! this.isKeyupHandlerAttached ) {
 			const emailInputListener = ( event ) => {
-				this.keyupHandler( event );
+				setTimeout( () => {
+					this.keyupHandler( event );
+				}, 500 );
 			};
 			document
 				.getElementById( this.options.emailId )
