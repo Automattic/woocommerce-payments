@@ -1,0 +1,3 @@
+Significance: patch
+Type: fix
+Comment: Added a check to load either the WooPay express checkout iframe or the email driven iframe. WooPay express checkout is behind a feature flag.
