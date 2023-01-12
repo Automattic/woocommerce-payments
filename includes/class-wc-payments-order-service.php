@@ -853,18 +853,48 @@ class WC_Payments_Order_Service {
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		} else {
 			// Update the customer with order data async.
-			$this->action_scheduler_service->schedule_job(
-				time(),
-				WC_Payment_Gateway_WCPay::UPDATE_CUSTOMER_WITH_ORDER_DATA,
-				[
-					'order_id'     => $order->get_id(),
-					'customer_id'  => $customer_id,
-					'is_test_mode' => $test_mode,
-					'is_woopay'    => $options['is_woopay'] ?? false,
-				]
-			);
+			$this->update_customer_with_order_data( $order, $customer_id, WC_Payments::get_gateway()->is_in_test_mode(), $options['is_woopay'] ?? false );
 		}
 
 		return [ $user, $customer_id ];
+	}
+
+	/**
+	 * Update the customer details with the incoming order data, in a CRON job.
+	 *
+	 * @param \WC_Order $order        WC order id.
+	 * @param string    $customer_id  The customer id to update details for.
+	 * @param bool      $is_test_mode Whether to run the CRON job in test mode.
+	 * @param bool      $is_woopay    Whether CRON job was queued from WooPay.
+	 */
+	public function update_customer_with_order_data( $order, $customer_id, $is_test_mode = false, $is_woopay = false ) {
+		// Since this CRON job may have been created in test_mode, when the CRON job runs, it
+		// may lose the test_mode context. So, instead, we pass that context when creating
+		// the CRON job and apply the context here.
+		$apply_test_mode_context = function () use ( $is_test_mode ) {
+			return $is_test_mode;
+		};
+		add_filter( 'wcpay_test_mode', $apply_test_mode_context );
+
+		$user = $order->get_user();
+		if ( false === $user ) {
+			$user = wp_get_current_user();
+		}
+
+		// Since this function will run in a CRON job, "wp_get_current_user()" will default
+		// to user with ID of 0. So, instead, we replace it with the user from the $order,
+		// when updating a WooPay user.
+		$apply_order_user_email = function ( $params ) use ( $user, $is_woopay ) {
+			if ( $is_woopay ) {
+				$params['email'] = $user->user_email;
+			}
+
+			return $params;
+		};
+		add_filter( 'wcpay_api_request_params', $apply_order_user_email, 20, 1 );
+
+		// Update the existing customer with the current order details.
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+		$this->customer_service->update_customer_for_user( $customer_id, $user, $customer_data );
 	}
 }
