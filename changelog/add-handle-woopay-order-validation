@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Bail out before payment processing for WooPay's order validation request
