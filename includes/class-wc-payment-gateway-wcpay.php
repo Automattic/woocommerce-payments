@@ -725,7 +725,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$customer_details_options   = [
 			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
 		];
-		list( $user, $customer_id ) = $this->order_service->manage_customer_details_for_order( $order, $this->is_in_test_mode(), $customer_details_options );
+		list( $user, $customer_id ) = $this->order_service->manage_customer_details_for_order( $order, $customer_details_options );
 
 		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {

@@ -832,13 +832,12 @@ class WC_Payments_Order_Service {
 	/**
 	 * Manages customer details held on WCPay server for WordPress user associated with an order.
 	 *
-	 * @param WC_Order $order     WC Order object.
-	 * @param boolean  $test_mode Is test mode.
-	 * @param array    $options   Additional options to apply.
+	 * @param WC_Order $order   WC Order object.
+	 * @param array    $options Additional options to apply.
 	 *
 	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
 	 */
-	public function manage_customer_details_for_order( $order, $test_mode, $options = [] ) {
+	public function manage_customer_details_for_order( $order, $options = [] ) {
 		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
