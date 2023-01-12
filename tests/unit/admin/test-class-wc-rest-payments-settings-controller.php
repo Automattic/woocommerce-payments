@@ -200,7 +200,18 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$this->assertEquals(
-			[ 'card', 'au_becs_debit', 'bancontact', 'eps', 'giropay', 'ideal', 'sofort', 'sepa_debit', 'p24', 'link' ],
+			[
+				'card',
+				'au_becs_debit',
+				'bancontact',
+				'eps',
+				'giropay',
+				'ideal',
+				'sofort',
+				'sepa_debit',
+				'p24',
+				'link',
+			],
 			$enabled_method_ids
 		);
 	}
@@ -253,6 +264,30 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$response = rest_do_request( new WP_REST_Request( 'GET', self::$settings_route ) );
 		$this->assertEquals( 200, $response->get_status() );
 		remove_filter( 'user_has_cap', $cb );
+	}
+
+	public function test_get_settings_without_error_when_faulty_enabled_payment_methods() {
+		$this->upe_gateway->update_option(
+			'upe_available_payment_method_ids',
+			[
+				'card',
+				'au_becs_debit',
+				'bancontact',
+				'eps',
+				'giropay',
+				'ideal',
+				'sofort',
+				'sepa_debit',
+				'p24',
+			],
+		);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'enabled_payment_method_ids', [ 'card', 'link' ] );
+
+		$response = $this->upe_controller->get_settings( $request );
+
+		$this->assertEquals( [ 'card' ], $response->get_data()['enabled_payment_method_ids'] );
 	}
 
 	public function test_update_settings_request_returns_status_code_200() {
@@ -312,6 +347,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( [ 'card', 'giropay' ], $this->upe_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
+
 
 	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
 		$request = new WP_REST_Request( 'POST', self::$settings_route );
