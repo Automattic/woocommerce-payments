@@ -2918,7 +2918,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function manage_customer_details_for_order( $order, $options = [] ) {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Order_Service::manage_customer_details_for_order' );
 
-		return $this->order_service->manage_customer_details_for_order( $order, $this->is_in_test_mode(), $options );
+		return $this->order_service->manage_customer_details_for_order( $order, $options );
 	}
 
 	/**
@@ -2932,7 +2932,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function update_customer_with_order_data( $order, $customer_id, $is_test_mode = false, $is_woopay = false ) {
 		wc_deprecated_function( __FUNCTION__, '5.1.0', 'WC_Payments_Order_Service::update_customer_with_order_data' );
 
-		$this->order_service->manage_customer_details_for_order( $order, $customer_id, $is_test_mode, $is_woopay );
+		$this->order_service->update_customer_with_order_data( $order, $customer_id, $is_test_mode, $is_woopay );
 	}
 
 	// End: Deprecated functions.
