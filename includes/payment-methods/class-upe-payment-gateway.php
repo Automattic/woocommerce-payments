@@ -346,7 +346,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function should_use_stripe_platform_on_checkout_page() {
 		if ( 'card' === $this->stripe_id ) {
-			return true;
+			return parent::should_use_stripe_platform_on_checkout_page();
 		}
 		return false;
 	}
