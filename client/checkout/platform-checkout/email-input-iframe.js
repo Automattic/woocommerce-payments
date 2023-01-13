@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { getConfig, validateEmail } from 'wcpay/utils/checkout';
+import { getConfig, validateEmail, Spinner } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
@@ -58,9 +58,8 @@ export const handlePlatformCheckoutEmailInput = async (
 		return;
 	}
 
-	const spinner = document.createElement( 'div' );
+	const spinner = new Spinner( platformCheckoutEmailInput );
 	const parentDiv = platformCheckoutEmailInput.parentNode;
-	spinner.classList.add( 'wc-block-components-spinner' );
 
 	// Make the login session iframe wrapper.
 	const loginSessionIframeWrapper = document.createElement( 'div' );
@@ -255,6 +254,7 @@ export const handlePlatformCheckoutEmailInput = async (
 		}
 
 		document.body.style.overflow = '';
+		setWooPayQueryStatus( platformCheckoutEmailInput, false );
 	};
 
 	iframeWrapper.addEventListener( 'click', closeIframe );
@@ -343,7 +343,7 @@ export const handlePlatformCheckoutEmailInput = async (
 	};
 
 	const platformCheckoutLocateUser = async ( email ) => {
-		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
+		spinner.show();
 
 		if ( parentDiv.contains( errorMessage ) ) {
 			parentDiv.removeChild( errorMessage );
@@ -493,7 +493,7 @@ export const handlePlatformCheckoutEmailInput = async (
 		const emailParam = new URLSearchParams();
 
 		if ( validateEmail( email ) ) {
-			parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
+			spinner.show();
 			emailParam.append( 'email', email );
 			emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
 		}

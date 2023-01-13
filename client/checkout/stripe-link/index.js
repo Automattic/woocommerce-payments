@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { validateEmail } from 'wcpay/utils/checkout';
+import { validateEmail, Spinner } from 'wcpay/utils/checkout';
 import {
 	STRIPE_LINK_ACTIVE_CLASS,
 	STRIPE_LINK_AUTHENTICATED_CLASS,
@@ -30,7 +30,17 @@ export default class StripeLinkButton {
 		this.isUPELoaded = false;
 		this.isPlatformCheckoutEnabled = isPlatformCheckoutEnabled;
 		this.removeEmailInputListener = null;
+		this.spinner = null;
 		this.disableRequestButton();
+	}
+
+	flashSpinner() {
+		if ( ! this.spinner.getSpinner() ) {
+			this.spinner.show();
+		}
+		setTimeout( () => {
+			this.spinner.remove();
+		}, 10 * 1000 );
 	}
 
 	/**
@@ -39,8 +49,32 @@ export default class StripeLinkButton {
 	 * @param {string} email User email address value.
 	 */
 	launchAutofill( email ) {
-		this.linkAutofill.launch( { email } );
-		this.disableRequestButton();
+		if ( this.isPlatformCheckoutEnabled ) {
+			const emailInput = document.getElementById( this.options.emailId );
+			switch ( getWooPayQueryStatus( emailInput ) ) {
+				// Email address belongs to registered WooPay user.
+				case 'true':
+					this.enableRequestButton();
+					// Do not open modal.
+					break;
+				// Email address does not belong to registered WooPay user;
+				case 'false':
+					this.linkAutofill.launch( { email } );
+					this.flashSpinner();
+					this.disableRequestButton();
+					break;
+				// Still querying for WooPay registration.
+				default:
+					// Retry in a second.
+					setTimeout( () => {
+						this.launchAutofill( email );
+					}, 1000 );
+			}
+		} else {
+			this.linkAutofill.launch( email );
+			this.flashSpinner();
+			this.disableRequestButton();
+		}
 	}
 
 	/**
@@ -52,29 +86,7 @@ export default class StripeLinkButton {
 		if ( ! validateEmail( event.target.value ) ) {
 			return;
 		}
-
-		if ( this.isPlatformCheckoutEnabled ) {
-			const emailInput = document.getElementById( this.options.emailId );
-			switch ( getWooPayQueryStatus( emailInput ) ) {
-				// Email address belongs to registered WooPay user.
-				case 'true':
-					this.enableRequestButton();
-					// Do not open modal.
-					break;
-				// Email address does not belong to registered WooPay user;
-				case 'false':
-					this.launchAutofill( event.target.value );
-					break;
-				// Still querying for WooPay registration.
-				default:
-					// Retry in a second.
-					setTimeout( () => {
-						this.keyupHandler( event );
-					}, 1000 );
-			}
-		} else {
-			this.launchAutofill( event.target.value );
-		}
+		this.launchAutofill( event.target.value );
 	}
 
 	/**
@@ -221,7 +233,7 @@ export default class StripeLinkButton {
 			jQuery( `#${ this.options.emailId }` ).addClass(
 				STRIPE_LINK_AUTHENTICATED_CLASS
 			);
-
+			this.spinner.remove();
 			this.enableRequestButton();
 		}
 	}
@@ -298,6 +310,10 @@ export default class StripeLinkButton {
 		this.linkAutofill.on( 'authenticated', ( event ) => {
 			this.authenticationHandler( event );
 		} );
+
+		this.spinner = new Spinner(
+			document.getElementById( options.emailId )
+		);
 	}
 
 	/**

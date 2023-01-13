@@ -47,3 +47,58 @@ export const validateEmail = ( value ) => {
 	/* eslint-enable */
 	return pattern.test( value );
 };
+
+/**
+ * Class interface for preloader spinner for WooPay/Link.
+ */
+export class Spinner {
+	/**
+	 * Constructor for spinner class.
+	 *
+	 * @param {Object} emailInput Email input DOM element.
+	 */
+	constructor( emailInput ) {
+		this.emailInput = emailInput;
+		this.parentDiv = emailInput.parentNode;
+		this.className = 'wc-block-components-spinner';
+	}
+
+	/**
+	 * Find spinner, if present on page.
+	 *
+	 * @return {Object} Preloader DOM object.
+	 */
+	getSpinner() {
+		return this.parentDiv.querySelector( `div.${ this.className }` );
+	}
+
+	/**
+	 * Create preloading element on email input.
+	 */
+	createSpinner() {
+		const spinner = document.createElement( 'div' );
+		spinner.classList.add( this.className );
+		this.parentDiv.insertBefore( spinner, this.emailInput );
+	}
+
+	/**
+	 * Show spinner on page or add task to preloading queue.
+	 */
+	show() {
+		const spinner = this.getSpinner();
+		if ( ! spinner ) {
+			this.createSpinner();
+		}
+	}
+
+	/**
+	 * Hide spinner from page or remove task from preloading queue.
+	 */
+	remove() {
+		const spinner = this.getSpinner();
+		if ( ! spinner ) {
+			return;
+		}
+		spinner.remove();
+	}
+}

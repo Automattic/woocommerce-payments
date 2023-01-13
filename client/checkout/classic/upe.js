@@ -261,13 +261,7 @@ jQuery( function ( $ ) {
 			} );
 
 			upeElement.on( 'ready', () => {
-				stripeLinkButton.enableRequestButton();
-				if (
-					'link' === getSelectedGatewayPaymentMethod() &&
-					! stripeLinkButton.isUPELoaded
-				) {
-					stripeLinkButton.enable();
-				}
+				stripeLinkButton.enable();
 			} );
 		}
 	};
