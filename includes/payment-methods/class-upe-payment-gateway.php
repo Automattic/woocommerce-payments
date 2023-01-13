@@ -340,6 +340,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Whether we should use the platform account to initialize Stripe on the checkout page.
+	 *
+	 * @return bool True if the card payment method is used, false otherwise.
+	 */
+	public function should_use_stripe_platform_on_checkout_page() {
+		if ( 'card' === $this->stripe_id ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Handle AJAX request for creating a setup intent without confirmation for Stripe UPE.
 	 *
 	 * @throws Add_Payment_Method_Exception - If nonce or setup intent is invalid.
