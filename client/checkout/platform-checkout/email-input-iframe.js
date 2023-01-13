@@ -464,6 +464,7 @@ export const handlePlatformCheckoutEmailInput = async (
 				if ( 'AbortError' !== err.name ) {
 					showErrorMessage();
 				}
+				setWooPayQueryStatus( platformCheckoutEmailInput, false );
 			} )
 			.finally( () => {
 				spinner.remove();
