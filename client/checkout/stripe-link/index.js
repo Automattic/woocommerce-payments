@@ -5,7 +5,6 @@
  */
 import { validateEmail, Spinner } from 'wcpay/utils/checkout';
 import {
-	STRIPE_LINK_ACTIVE_CLASS,
 	STRIPE_LINK_AUTHENTICATED_CLASS,
 	getWooPayQueryStatus,
 } from '../utils/link.js';
@@ -326,10 +325,6 @@ export default class StripeLinkButton {
 			return;
 		}
 
-		jQuery( `#${ this.options.emailId }` ).addClass(
-			STRIPE_LINK_ACTIVE_CLASS
-		);
-
 		this.addEmailInputListener();
 
 		if ( this.isAuthenticated ) {
@@ -354,9 +349,6 @@ export default class StripeLinkButton {
 	 * Deactivate Stripe Link at checkout. Stripe no longer listening to email input.
 	 */
 	disable() {
-		jQuery( `#${ this.options.emailId }` ).removeClass(
-			STRIPE_LINK_ACTIVE_CLASS
-		);
 		this.removeEmailInputListener();
 		this.enableRequestButton();
 	}

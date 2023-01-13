@@ -1,23 +1,8 @@
 /**
- * Class name added to email input when Stripe Link checkout has been selected.
- */
-export const STRIPE_LINK_ACTIVE_CLASS = 'stripe-link-checkout-initiated';
-
-/**
  * Class name added to email input when Stripe Link user has authenticated at checkout.
  */
 export const STRIPE_LINK_AUTHENTICATED_CLASS =
 	'stripe-link-checkout-authenticated';
-
-/**
- * Checks whether user in current checkout has selected Stripe Link.
- *
- * @param {Object} emailInput Email field DOM element.
- * @return {boolean} True, if Stripe Link checkout has been selected by user.
- */
-export const isLinkCheckoutActive = ( emailInput ) => {
-	return emailInput.classList.contains( STRIPE_LINK_ACTIVE_CLASS );
-};
 
 /**
  * Checks whether user in current checkout has selected Stripe Link.
