@@ -342,7 +342,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	/**
 	 * Whether we should use the platform account to initialize Stripe on the checkout page.
 	 *
-	 * @return bool True if the card payment method is used, false otherwise.
+	 * @return bool Result of the WCPay gateway checks if the card payment method is used, false otherwise.
 	 */
 	public function should_use_stripe_platform_on_checkout_page() {
 		if ( 'card' === $this->stripe_id ) {
