@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { screen, render } from '@testing-library/react';
+import { screen, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -12,6 +12,7 @@ import { expressCheckoutIframe } from '../express-checkout-iframe';
 import WCPayAPI from 'wcpay/checkout/api';
 import { getConfig } from 'utils/checkout';
 import wcpayTracks from 'tracks';
+import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
 
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
@@ -26,6 +27,8 @@ jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
 } ) );
 
+jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
+
 describe( 'WoopayExpressCheckoutButton', () => {
 	const buttonSettings = {
 		type: 'default',
@@ -34,7 +37,9 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		size: 'medium',
 		theme: 'dark',
 	};
-	const api = new WCPayAPI( {}, jest.fn() );
+	const mockRequest = jest.fn().mockResolvedValue( true );
+	const mockAddToCart = jest.fn().mockResolvedValue( true );
+	const api = new WCPayAPI( {}, mockRequest );
 
 	beforeEach( () => {
 		expressCheckoutIframe.mockImplementation( () => jest.fn() );
@@ -44,6 +49,10 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			PLATFORM_CHECKOUT_EXPRESS_BUTTON_OFFERED:
 				'platform_checkout_express_button_offered',
 		};
+		useExpressCheckoutProductHandler.mockImplementation( () => ( {
+			addToCart: mockAddToCart,
+			isAddToCartDisabled: false,
+		} ) );
 	} );
 
 	afterEach( () => {
@@ -56,6 +65,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				isPreview={ false }
 				buttonSettings={ buttonSettings }
 				api={ api }
+				isProductPage={ false }
 			/>
 		);
 
@@ -70,6 +80,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				isPreview={ false }
 				buttonSettings={ buttonSettings }
 				api={ api }
+				isProductPage={ false }
 			/>
 		);
 
@@ -87,6 +98,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				isPreview={ true }
 				buttonSettings={ buttonSettings }
 				api={ api }
+				isProductPage={ false }
 			/>
 		);
 
@@ -96,5 +108,71 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		userEvent.click( expressButton );
 
 		expect( expressCheckoutIframe ).not.toHaveBeenCalled();
+	} );
+
+	describe( 'Product page', () => {
+		test( 'should enable the button when add to cart button is enabled', () => {
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ true }
+				/>
+			);
+
+			const expressButton = screen.queryByRole( 'button', {
+				name: 'WooPay Express Button',
+			} );
+			expect( expressButton ).toBeEnabled();
+		} );
+
+		test( 'should disable the button when add to cart button is disabled', () => {
+			useExpressCheckoutProductHandler.mockImplementation( () => ( {
+				addToCart: mockAddToCart,
+				isAddToCartDisabled: true,
+			} ) );
+
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ true }
+				/>
+			);
+
+			const expressButton = screen.queryByRole( 'button', {
+				name: 'WooPay Express Button',
+			} );
+			expect( expressButton ).toBeDisabled();
+		} );
+
+		test( 'call `addToCart` and `expressCheckoutIframe` on express button click on product page', async () => {
+			useExpressCheckoutProductHandler.mockImplementation( () => ( {
+				addToCart: mockAddToCart,
+				isAddToCartDisabled: false,
+			} ) );
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ true }
+				/>
+			);
+
+			const expressButton = screen.queryByRole( 'button', {
+				name: 'WooPay Express Button',
+			} );
+
+			userEvent.click( expressButton );
+
+			expect( mockAddToCart ).toHaveBeenCalled();
+
+			await waitFor( () => {
+				expect( expressCheckoutIframe ).toHaveBeenCalledWith( api );
+			} );
+		} );
 	} );
 } );

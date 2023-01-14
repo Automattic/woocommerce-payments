@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -82,7 +84,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 	 */
 	private $setup_intent = [
 		'id'             => self::SETUP_INTENT_ID,
-		'status'         => 'succeeded',
+		'status'         => Payment_Intent_Status::SUCCEEDED,
 		'client_secret'  => 'test_client_secret',
 		'next_action'    => [],
 		'payment_method' => self::PAYMENT_METHOD_ID,
@@ -158,6 +160,11 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 			->with( get_current_user_id() )
 			->willReturn( self::CUSTOMER_ID );
 
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'update_customer_for_user' )
+			->willReturn( self::CUSTOMER_ID );
+
 		$this->token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
 
 		$_POST = [
@@ -188,7 +195,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
-		$this->assertEquals( 'processing', $result_order->get_status() );
+		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
 
 		// Expect add token to order to be called, so it can be reused in renewals.
@@ -224,7 +231,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
-		$this->assertEquals( 'processing', $result_order->get_status() );
+		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
 
 		// Expect add token to order to be called, so it can be reused in renewals.
@@ -292,7 +299,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
 		$result_order = wc_get_order( $order->get_id() );
 
-		$this->assertEquals( 'processing', $result_order->get_status() );
+		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
 		$this->assertEquals( 'success', $result['result'] );
 
 		// Expect add token to order to be called, so it can be reused in renewals.

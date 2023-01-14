@@ -10,7 +10,7 @@ const Agreement = () => {
 		<div className="tos">
 			{ interpolateComponents( {
 				mixedString: __(
-					'By entering your mobile phone number and completing your purchase, you will create a WooPay account, and agree to {{termsOfService/}} and {{privacyPolicy/}}.',
+					"By placing an order, you agree to WooPay's {{termsOfService/}} and {{privacyPolicy/}}, and to receive text messages at the mobile number provided.",
 					'woocommerce-payments'
 				),
 				components: {
