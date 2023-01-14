@@ -15,6 +15,11 @@ import { getConfig } from 'utils/checkout';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 
+global.jQuery = jest.fn( () => ( {
+	on: jest.fn(),
+	off: jest.fn(),
+} ) );
+
 jest.mock( '../../hooks/use-platform-checkout-user', () => jest.fn() );
 jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
 jest.mock( 'utils/checkout', () => ( {
@@ -46,6 +51,10 @@ describe( 'CheckoutPageSaveUser', () => {
 		getConfig.mockImplementation(
 			( setting ) => 'forceNetworkSavedCards' === setting
 		);
+
+		const billingCountryField = document.createElement( 'select' );
+		billingCountryField.setAttribute( 'id', 'billing_country' );
+		document.body.appendChild( billingCountryField );
 	} );
 
 	afterEach( () => {
@@ -216,6 +225,7 @@ describe( 'CheckoutPageSaveUser', () => {
 				namespace: 'platform-checkout',
 				data: {
 					save_user_in_platform_checkout: true,
+					platform_checkout_marketing_optin: true,
 					platform_checkout_user_phone_field: {
 						full: '+12015555555',
 					},

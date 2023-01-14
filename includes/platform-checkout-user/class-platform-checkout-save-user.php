@@ -75,8 +75,9 @@ class Platform_Checkout_Save_User {
 	 * @return array
 	 */
 	public function maybe_add_userdata_to_metadata( $metadata, $order ) {
-		$should_save_platform_customer = $this->platform_checkout_util->should_save_platform_customer();
-		$platform_checkout_phone       = $this->platform_checkout_util->get_platform_checkout_phone();
+		$should_save_platform_customer     = $this->platform_checkout_util->should_save_platform_customer();
+		$platform_checkout_phone           = $this->platform_checkout_util->get_platform_checkout_phone();
+		$platform_checkout_marketing_optin = $this->platform_checkout_util->get_platform_checkout_marketing_optin();
 
 		if ( $should_save_platform_customer && $platform_checkout_phone ) {
 			// Add the metadata.
@@ -89,6 +90,7 @@ class Platform_Checkout_Save_User {
 			$metadata['platform_checkout_secondary_phone']      = wc_clean( $order->get_shipping_phone() );
 			$metadata['platform_checkout_secondary_company']    = wc_clean( $order->get_shipping_company() );
 			$metadata['platform_checkout_phone']                = $platform_checkout_phone;
+			$metadata['platform_checkout_marketing_optin']      = $platform_checkout_marketing_optin;
 		}
 
 		return $metadata;

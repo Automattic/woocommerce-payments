@@ -78,4 +78,15 @@ class Platform_Checkout_Utilities {
 
 		return '';
 	}
+
+	/**
+	 * Get marketing opt-in for creating platform checkout customer.
+	 *
+	 * @return boolean
+	 */
+	public function get_platform_checkout_marketing_optin() {
+		$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+
+		return ( isset( $_POST['platform_checkout_marketing_optin'] ) && filter_var( wp_unslash( $_POST['platform_checkout_marketing_optin'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['platform_checkout_marketing_optin'] ) && filter_var( $session_data['platform_checkout_marketing_optin'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
 }

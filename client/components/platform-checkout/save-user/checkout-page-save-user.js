@@ -1,4 +1,5 @@
 /* eslint-disable max-len */
+/* global jQuery */
 /**
  * External dependencies
  */
@@ -13,6 +14,7 @@ import { useDispatch } from '@wordpress/data';
 import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import AdditionalInformation from './additional-information';
+import PlatformCheckoutMarketingOptIn from './platform-checkout-marketing-optin';
 import PhoneNumberInput from 'settings/phone-input';
 import Agreement from './agreement';
 import { getConfig } from 'utils/checkout';
@@ -20,7 +22,13 @@ import { getConfig } from 'utils/checkout';
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
+	const billingCountryField = document.querySelector( '#billing_country' );
+
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
+	const [ isMarketOptInChecked, setIsMarketOptInChecked ] = useState( true );
+	const [ selectedCountry, setSelectedCountry ] = useState(
+		billingCountryField.value
+	);
 	// eslint-disable-next-line no-unused-vars
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
@@ -56,6 +64,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				? {}
 				: {
 						save_user_in_platform_checkout: isSaveDetailsChecked,
+						platform_checkout_marketing_optin: isMarketOptInChecked,
 						platform_checkout_user_phone_field: {
 							full: phoneNumber,
 						},
@@ -76,7 +85,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				} );
 			} );
 		},
-		[ isSaveDetailsChecked, phoneNumber, cart ]
+		[ isMarketOptInChecked, isSaveDetailsChecked, phoneNumber, cart ]
 	);
 
 	const handleCheckboxClick = ( e ) => {
@@ -133,6 +142,17 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		sendExtensionData,
 	] );
 
+	useEffect( () => {
+		// needed to use jQuery but the change event is emmited by select2.
+		jQuery( billingCountryField ).on( 'change', ( e ) => {
+			setSelectedCountry( e.target.value );
+		} );
+
+		return () => {
+			jQuery( billingCountryField ).off( 'change' );
+		};
+	}, [ billingCountryField, setSelectedCountry ] );
+
 	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
 	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
 	const isWCPayWithNewTokenChosen = isBlocksCheckout
@@ -155,7 +175,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	return (
 		<>
 			<h3>{ __( 'Remember your details?', 'woocommerce-payments' ) }</h3>
-			<span>
+			<div>
 				<label htmlFor="save_user_in_platform_checkout">
 					<input
 						type="checkbox"
@@ -174,39 +194,49 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						) }
 					</span>
 				</label>
-			</span>
+			</div>
 			{ isSaveDetailsChecked && (
-				<div
-					className="save-details-form form-row place-order"
-					data-testid="save-user-form"
-				>
-					<span>
-						{ __( 'Mobile phone number', 'woocommerce-payments' ) }
-					</span>
-					<PhoneNumberInput
-						value={
-							null === phoneNumber
-								? getPhoneFieldValue()
-								: phoneNumber
-						}
-						onValueChange={ setPhoneNumber }
-						onValidationChange={ onPhoneValidationChange }
-						inputProps={ {
-							name:
-								'platform_checkout_user_phone_field[no-country-code]',
-						} }
+				<>
+					<PlatformCheckoutMarketingOptIn
+						country={ selectedCountry }
+						onChange={ setIsMarketOptInChecked }
+						isMarketOptInChecked={ isMarketOptInChecked }
 					/>
-					{ ! isPhoneValid && (
-						<p className="error-text">
+					<div
+						className="save-details-form form-row place-order"
+						data-testid="save-user-form"
+					>
+						<span>
 							{ __(
-								'Please enter a valid mobile phone number.',
+								'Mobile phone number',
 								'woocommerce-payments'
 							) }
-						</p>
-					) }
-					<AdditionalInformation />
-					<Agreement />
-				</div>
+						</span>
+						<PhoneNumberInput
+							value={
+								null === phoneNumber
+									? getPhoneFieldValue()
+									: phoneNumber
+							}
+							onValueChange={ setPhoneNumber }
+							onValidationChange={ onPhoneValidationChange }
+							inputProps={ {
+								name:
+									'platform_checkout_user_phone_field[no-country-code]',
+							} }
+						/>
+						{ ! isPhoneValid && (
+							<p className="error-text">
+								{ __(
+									'Please enter a valid mobile phone number.',
+									'woocommerce-payments'
+								) }
+							</p>
+						) }
+						<AdditionalInformation />
+						<Agreement />
+					</div>
+				</>
 			) }
 		</>
 	);
