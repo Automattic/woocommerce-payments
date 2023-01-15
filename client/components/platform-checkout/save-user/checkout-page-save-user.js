@@ -99,6 +99,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				: {
 						save_user_in_platform_checkout: isSaveDetailsChecked,
 						platform_checkout_marketing_optin: isMarketingOptInChecked,
+						platform_checkout_marketing_source_url:
+							window.location.href,
+						platform_checkout_is_blocks: true,
 						platform_checkout_user_phone_field: {
 							full: phoneNumber,
 						},
@@ -324,6 +327,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						}
 						checked={ isMarketingOptInChecked }
 						isBlocksCheckout={ isBlocksCheckout }
+					/>
+					<input
+						type="hidden"
+						name="platform_checkout_marketing_source_url"
+						value={ window.location.href }
 					/>
 					<PhoneNumberInput
 						value={
