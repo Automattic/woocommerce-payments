@@ -205,8 +205,9 @@ function mock_wcpay_request(
   // The request class you want to mock.
   string $request_class,
 
-  // How many API requests towards the server are expected to be executed.
+  // How many of the same API requests towards the server are expected to be executed. The default number is set to 1 and in the most cases you won't need to update this value
   // Could be `0` to simulate `->never()`.
+  // If you have multiple execution of same request class (like retry mechanism or reusing the same request class instance), update this variable and match it with a number of executed API calls towards server.
   int $total_api_calls = 1,
 
   // ID of the item, which should be updated/retrieved, only needed for certain classes.
