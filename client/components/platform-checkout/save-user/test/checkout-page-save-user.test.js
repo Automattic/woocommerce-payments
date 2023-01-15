@@ -37,6 +37,7 @@ jest.mock( '@wordpress/data', () => ( {
 		setBillingAddress: jest.fn(),
 		setShippingAddress: jest.fn(),
 	} ),
+	useSelect: jest.fn().mockReturnValue( {} ),
 } ) );
 
 describe( 'CheckoutPageSaveUser', () => {

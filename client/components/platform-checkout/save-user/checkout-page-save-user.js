@@ -5,7 +5,7 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { __ } from '@wordpress/i18n';
-import { useDispatch } from '@wordpress/data';
+import { useDispatch, useSelect } from '@wordpress/data';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 import { Icon, info } from '@wordpress/icons';
@@ -27,14 +27,30 @@ import { WC_STORE_CART } from '../../../checkout/constants';
 import WooPayIcon from '../../../../assets/images/woopay.svg';
 import './style.scss';
 
+const useCartCountry = () => {
+	const { customerData } = useSelect( ( select ) => {
+		const store = select( WC_STORE_CART );
+
+		if ( ! store ) {
+			return {};
+		}
+
+		return {
+			customerData: store.getCustomerData(),
+		};
+	} );
+
+	return customerData?.billingAddress?.country;
+};
+
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const billingCountryField = document.querySelector( '#billing_country' );
 
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
-	const [ isMarketOptInChecked, setIsMarketOptInChecked ] = useState( true );
-	const [ selectedCountry, setSelectedCountry ] = useState(
-		billingCountryField.value
+	const [ isMarketingOptInChecked, setIsMarketingOptInChecked ] = useState(
+		true
 	);
+	const [ selectedCountry, setSelectedCountry ] = useState( '' );
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
@@ -52,6 +68,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		isBlocksCheckout
 	);
 	const cart = useDispatch( WC_STORE_CART );
+	const cartCountry = useCartCountry();
 
 	const getPhoneFieldValue = () => {
 		let phoneFieldValue = '';
@@ -81,7 +98,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				? {}
 				: {
 						save_user_in_platform_checkout: isSaveDetailsChecked,
-						platform_checkout_marketing_optin: isMarketOptInChecked,
+						platform_checkout_marketing_optin: isMarketingOptInChecked,
 						platform_checkout_user_phone_field: {
 							full: phoneNumber,
 						},
@@ -102,7 +119,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				} );
 			} );
 		},
-		[ isMarketOptInChecked, isSaveDetailsChecked, phoneNumber, cart ]
+		[ isMarketingOptInChecked, isSaveDetailsChecked, phoneNumber, cart ]
 	);
 
 	const handleCheckboxClick = ( e ) => {
@@ -160,6 +177,12 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	] );
 
 	useEffect( () => {
+		if ( isBlocksCheckout ) {
+			return;
+		}
+
+		setSelectedCountry( billingCountryField.value );
+
 		// needed to use jQuery but the change event is emmited by select2.
 		jQuery( billingCountryField ).on( 'change', ( e ) => {
 			setSelectedCountry( e.target.value );
@@ -168,7 +191,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		return () => {
 			jQuery( billingCountryField ).off( 'change' );
 		};
-	}, [ billingCountryField, setSelectedCountry ] );
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ setSelectedCountry ] );
 
 	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
 	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
@@ -290,9 +314,16 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					data-testid="save-user-form"
 				>
 					<PlatformCheckoutMarketingOptIn
-						country={ selectedCountry }
-						onChange={ setIsMarketOptInChecked }
-						isMarketOptInChecked={ isMarketOptInChecked }
+						country={
+							isBlocksCheckout ? cartCountry : selectedCountry
+						}
+						onChange={ () =>
+							setIsMarketingOptInChecked(
+								! isMarketingOptInChecked
+							)
+						}
+						checked={ isMarketingOptInChecked }
+						isBlocksCheckout={ isBlocksCheckout }
 					/>
 					<PhoneNumberInput
 						value={
