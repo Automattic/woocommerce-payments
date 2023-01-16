@@ -440,6 +440,12 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return false;
 		}
 
+		// Product page, but has unsupported product type.
+		if ( $this->is_product() && ! $this->is_product_supported() ) {
+			Logger::log( 'Product page has unsupported product type ( WooPay Express button disabled )' );
+			return false;
+		}
+
 		/**
 		 * TODO: We need to do some research here and see if there are any product types that we
 		 * absolutely cannot support with WooPay at this time. There are some examples in the
@@ -478,4 +484,47 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		<?php
 	}
 
+	/**
+	 * Whether the product page has a product compatible with the WooPay Express button.
+	 *
+	 * @return boolean
+	 */
+	private function is_product_supported() {
+		$product      = $this->get_product();
+		$is_supported = true;
+
+		if ( ! is_object( $product ) ) {
+			$is_supported = false;
+		}
+
+		// Pre Orders products to be charged upon release are not supported.
+		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
+			$is_supported = false;
+		}
+
+		return apply_filters( 'wcpay_platform_checkout_button_is_product_supported', $is_supported, $product );
+	}
+
+	/**
+	 * Get product from product page or product_page shortcode.
+	 *
+	 * @todo Abstract this. This is a copy of the same method in the `WC_Payments_Payment_Request_Button_Handler` class.
+	 *
+	 * @return WC_Product|false|null Product object.
+	 */
+	private function get_product() {
+		global $post;
+
+		if ( is_product() ) {
+			return wc_get_product( $post->ID );
+		} elseif ( wc_post_content_has_shortcode( 'product_page' ) ) {
+			// Get id from product_page shortcode.
+			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
+			if ( isset( $shortcode_match['id'] ) ) {
+				return wc_get_product( $shortcode_match['id'] );
+			}
+		}
+
+		return false;
+	}
 }
