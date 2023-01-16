@@ -1308,7 +1308,7 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function enqueue_assets_script() {
-		wp_register_script( 'WCPAY_ASSETS', '', [], WCPAY_VERSION_NUMBER, true );
+		wp_register_script( 'WCPAY_ASSETS', '', [], WCPAY_VERSION_NUMBER, false );
 		wp_enqueue_script( 'WCPAY_ASSETS' );
 		wp_localize_script(
 			'WCPAY_ASSETS',
