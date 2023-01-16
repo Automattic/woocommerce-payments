@@ -272,14 +272,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			'available_payment_method_ids',
 			[
 				Payment_Method::CARD,
-				Payment_Method::BECS,
-				Payment_Method::BANCONTACT,
-				Payment_Method::EPS,
-				Payment_Method::GIROPAY,
-				Payment_Method::IDEAL,
-				Payment_Method::SOFORT,
 				Payment_Method::SEPA,
-				Payment_Method::P24,
 			]
 		);
 
