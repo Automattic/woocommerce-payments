@@ -526,7 +526,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			$is_supported = false;
 		}
 
-		return $is_supported;
+		return apply_filters( 'wcpay_platform_checkout_button_are_cart_items_supported', $is_supported );
 	}
 
 	/**
