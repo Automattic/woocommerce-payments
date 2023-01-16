@@ -300,16 +300,4 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		<?php
 	}
 
-	/**
-	 * Display payment request button separator.
-	 */
-	public function display_platform_checkout_button_separator_html() {
-		if ( ! $this->should_show_platform_checkout_button() ) {
-			return;
-		}
-		?>
-		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
-		<?php
-	}
-
 }

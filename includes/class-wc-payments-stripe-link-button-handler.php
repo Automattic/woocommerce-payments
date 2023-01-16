@@ -84,23 +84,6 @@ class WC_Payments_Stripe_Link_Button_Handler {
 	}
 
 	/**
-	 * Display payment request button separator.
-	 */
-	public function display_button_separator_html() {
-		if ( ! WC_Payments_Features::is_link_enabled() ) {
-			return;
-		}
-
-		if ( ! $this->is_checkout() ) {
-			return;
-		}
-		?>
-		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
-		<?php
-	}
-
-
-	/**
 	 * Checks if this is the checkout page or content contains a cart block.
 	 *
 	 * @return boolean
