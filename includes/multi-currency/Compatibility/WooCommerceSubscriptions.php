@@ -9,7 +9,6 @@ namespace WCPay\MultiCurrency\Compatibility;
 
 use WC_Payments_Features;
 use WCPay\MultiCurrency\MultiCurrency;
-use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Subscriptions Plugin and WCPay Subscriptions.
@@ -164,10 +163,9 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			$this->running_filters = true;
 			$order                 = wc_get_order( WC()->session->get( 'order_awaiting_payment' ) );
 			$this->running_filters = false;
-			if ( $order ) {
-				$is_renewal_order = $this->order_contains_renewal( $order );
+			if ( $order && $this->order_contains_renewal( $order ) ) {
+				return $order->get_currency();
 			}
-			return $is_renewal_order ? $order->get_currency() : $return;
 		}
 
 		$switch_id = $this->get_subscription_switch_id_from_superglobal();
