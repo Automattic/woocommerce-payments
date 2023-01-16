@@ -334,6 +334,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_should_not_use_stripe_platform_on_checkout_page_for_upe() {
+		$payment_gateway = $this->mock_payment_gateways[ Payment_Method::SEPA ];
+		$this->assertFalse( $payment_gateway->should_use_stripe_platform_on_checkout_page() );
+	}
+
 	public function test_update_payment_intent_adds_customer_save_payment_and_level3_data() {
 		$order               = WC_Helper_Order::create_order();
 		$order_id            = $order->get_id();

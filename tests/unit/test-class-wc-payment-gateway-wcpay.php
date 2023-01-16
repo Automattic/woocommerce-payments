@@ -2068,6 +2068,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
+	public function test_should_use_stripe_platform_on_checkout_page_not_platform_checkout_eligible() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
+		$this->assertFalse( $this->wcpay_gateway->should_use_stripe_platform_on_checkout_page() );
+	}
+
+	public function test_should_use_stripe_platform_on_checkout_page_not_platform_checkout() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+		$this->wcpay_gateway->update_option( 'platform_checkout', 'no' );
+
+		$this->assertFalse( $this->wcpay_gateway->should_use_stripe_platform_on_checkout_page() );
+	}
+
 	public function test_force_network_saved_cards_is_returned_as_true_if_should_use_stripe_platform() {
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'should_use_stripe_platform_on_checkout_page' ] );
 
