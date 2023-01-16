@@ -268,8 +268,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_settings_without_error_when_faulty_enabled_payment_methods() {
-		$this->upe_gateway->update_option(
-			'upe_available_payment_method_ids',
+		$this->gateway->update_option(
+			'available_payment_method_ids',
 			[
 				Payment_Method::CARD,
 				Payment_Method::BECS,
@@ -286,9 +286,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$request = new WP_REST_Request();
 		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::LINK ] );
 
-		$response = $this->upe_controller->get_settings( $request );
+		$response = $this->controller->get_settings( $request );
 
-		$this->assertEquals( [ Payment_Method::CARD ], $response->get_data()['enabled_payment_method_ids'] );
+		$this->assertSame( [ Payment_Method::CARD ], $response->get_data()['enabled_payment_method_ids'] );
 	}
 
 	public function test_update_settings_request_returns_status_code_200() {
@@ -348,7 +348,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::GIROPAY ], $this->upe_gateway->get_option( 'upe_enabled_payment_method_ids' ) );
 	}
-
 
 	public function test_update_settings_validation_fails_if_invalid_gateway_id_supplied() {
 		$request = new WP_REST_Request( 'POST', self::$settings_route );
