@@ -40,6 +40,7 @@ module.exports = {
 	),
 	output: {
 		clean: true,
+		chunkFilename: 'chunks/[name].js?ver=[chunkhash]',
 	},
 	module: {
 		rules: [
