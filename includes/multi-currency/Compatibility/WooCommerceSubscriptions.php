@@ -25,7 +25,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	/**
 	 * If we are running through our filters.
 	 *
-	 * @var string
+	 * @var bool
 	 */
 	private $running_filters = false;
 
