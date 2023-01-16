@@ -420,6 +420,12 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return bool
 	 */
 	public function should_show_platform_checkout_button() {
+		// WCPay is not available.
+		$gateways = WC()->payment_gateways->get_available_payment_gateways();
+		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
+			return false;
+		}
+
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
@@ -443,12 +449,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		// Product page, but has unsupported product type.
 		if ( $this->is_product() && ! $this->is_product_supported() ) {
 			Logger::log( 'Product page has unsupported product type ( WooPay Express button disabled )' );
-			return false;
-		}
-
-		// Cart has unsupported product type.
-		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
-			Logger::log( 'Items in the cart have unsupported product type ( WooPay Express button disabled )' );
 			return false;
 		}
 
@@ -509,24 +509,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		}
 
 		return apply_filters( 'wcpay_platform_checkout_button_is_product_supported', $is_supported, $product );
-	}
-
-	/**
-	 * Checks the cart to see if the WooPay Express button supports all of the items.
-	 *
-	 * @todo Abstract this. This is a copy of the same method in the `WC_Payments_Payment_Request_Button_Handler` class.
-	 *
-	 * @return boolean
-	 */
-	private function has_allowed_items_in_cart() {
-		$is_supported = true;
-
-		// Pre Orders compatbility where we don't support charge upon release.
-		if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
-			$is_supported = false;
-		}
-
-		return apply_filters( 'wcpay_platform_checkout_button_are_cart_items_supported', $is_supported );
 	}
 
 	/**
