@@ -10,6 +10,7 @@ import React from 'react';
 import {
 	formatAccountFeesDescription,
 	formatMethodFeesDescription,
+	formatMethodFeesTooltip,
 	getCurrentBaseFee,
 } from '../account-fees';
 import { formatCurrency } from '../currency';
@@ -20,6 +21,14 @@ jest.mock( '../currency', () => ( {
 		return sprintf( '$%.2f', amount / 100 );
 	} ),
 } ) );
+
+declare const global: {
+	wcpaySettings: {
+		connect: {
+			country: string;
+		};
+	};
+};
 
 const mockAccountFees = (
 	base: BaseFee,
@@ -262,6 +271,70 @@ describe( 'Account fees utility functions', () => {
 		it( 'returns "missing fees" if no fees are supplied', () => {
 			expect( formatMethodFeesDescription( undefined ) ).toEqual(
 				'missing fees'
+			);
+		} );
+	} );
+
+	describe( 'formatMethodFeesTooltip()', () => {
+		beforeAll( () => {
+			global.wcpaySettings = { connect: { country: 'US' } };
+		} );
+		afterAll( () => {
+			global.wcpaySettings = { connect: { country: '' } };
+		} );
+
+		it( 'displays base percentage and fixed fee - no custom fee nor discount', () => {
+			const methodFees = mockAccountFees( {
+				percentage_rate: 0.123,
+				fixed_rate: 456.78,
+				currency: 'USD',
+			} );
+
+			methodFees.additional = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			methodFees.fx = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			expect( formatMethodFeesTooltip( methodFees ) ).toEqual(
+				<div className="wcpay-fees-tooltip">
+					<div>
+						<div>Base fee</div>
+						<div>12.3% + $4.57</div>
+					</div>
+					<div>
+						<div>International payment method fee</div>
+						<div>1%</div>
+					</div>
+					<div>
+						<div>Foreign exchange fee</div>
+						<div>1%</div>
+					</div>
+					<div>
+						<div>Total per transaction</div>
+						<div className="wcpay-fees-tooltip__bold">
+							14.3% + $4.57
+						</div>
+					</div>
+					<div className="wcpay-fees-tooltip__hint-text">
+						<span>
+							<a
+								href="https://woocommerce.com/document/payments/faq/fees/#united-states"
+								target="_blank"
+								rel="noreferrer"
+							>
+								Learn more
+							</a>
+							about WooCommerce Payments Fees in your country
+						</span>
+					</div>
+				</div>
 			);
 		} );
 	} );
