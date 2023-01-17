@@ -3,6 +3,7 @@
  */
 import { sprintf } from '@wordpress/i18n';
 import React from 'react';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -302,40 +303,69 @@ describe( 'Account fees utility functions', () => {
 				currency: 'USD',
 			};
 
-			expect( formatMethodFeesTooltip( methodFees ) ).toEqual(
-				<div className="wcpay-fees-tooltip">
-					<div>
-						<div>Base fee</div>
-						<div>12.3% + $4.57</div>
-					</div>
-					<div>
-						<div>International payment method fee</div>
-						<div>1%</div>
-					</div>
-					<div>
-						<div>Foreign exchange fee</div>
-						<div>1%</div>
-					</div>
-					<div>
-						<div>Total per transaction</div>
-						<div className="wcpay-fees-tooltip__bold">
-							14.3% + $4.57
-						</div>
-					</div>
-					<div className="wcpay-fees-tooltip__hint-text">
-						<span>
-							<a
-								href="https://woocommerce.com/document/payments/faq/fees/#united-states"
-								target="_blank"
-								rel="noreferrer"
-							>
-								Learn more
-							</a>
-							about WooCommerce Payments Fees in your country
-						</span>
-					</div>
-				</div>
+			const renderMethodFeesTooltip = () => {
+				return render( formatMethodFeesTooltip( methodFees ) );
+			};
+
+			expect( renderMethodFeesTooltip ).toMatchSnapshot();
+		} );
+
+		it( 'displays custom fee details, when applicable', () => {
+			const methodFees = mockAccountFees(
+				{
+					percentage_rate: 0.123,
+					fixed_rate: 456.78,
+					currency: 'USD',
+				},
+				[ { percentage_rate: 0.101, fixed_rate: 400.78 } ]
 			);
+
+			methodFees.additional = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			methodFees.fx = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			const renderMethodFeesTooltip = () => {
+				return render( formatMethodFeesTooltip( methodFees ) );
+			};
+
+			expect( renderMethodFeesTooltip ).toMatchSnapshot();
+		} );
+
+		it( 'displays base fee, when only promo discount without percentage or fixed', () => {
+			const methodFees = mockAccountFees(
+				{
+					percentage_rate: 0.123,
+					fixed_rate: 456.78,
+					currency: 'USD',
+				},
+				[ { discount: 0.2 } ]
+			);
+
+			methodFees.additional = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			methodFees.fx = {
+				percentage_rate: 0.01,
+				fixed_rate: 0,
+				currency: 'USD',
+			};
+
+			const renderMethodFeesTooltip = () => {
+				return render( formatMethodFeesTooltip( methodFees ) );
+			};
+
+			expect( renderMethodFeesTooltip ).toMatchSnapshot();
 		} );
 	} );
 } );

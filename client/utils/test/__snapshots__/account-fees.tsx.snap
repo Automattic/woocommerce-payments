@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Account fees utility functions formatMethodFeesTooltip() displays base fee, when only promo discount without percentage or fixed 1`] = `[Function]`;
+
+exports[`Account fees utility functions formatMethodFeesTooltip() displays base percentage and fixed fee - no custom fee nor discount 1`] = `[Function]`;
+
+exports[`Account fees utility functions formatMethodFeesTooltip() displays custom fee details, when applicable 1`] = `[Function]`;
