@@ -470,6 +470,10 @@ class WC_Payments {
 			add_action( 'woocommerce_after_add_to_cart_quantity', [ __CLASS__, 'display_express_checkout_button_separator_html' ], -1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'display_express_checkout_button_separator_html' ], -1 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'display_express_checkout_button_separator_html' ], -1 );
+
+			if ( WC_Payments_Features::is_payment_request_enabled() ) {
+				add_action( 'before_woocommerce_pay_form', [ __CLASS__, 'display_express_checkout_button_separator_html' ], 2 );
+			}
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
