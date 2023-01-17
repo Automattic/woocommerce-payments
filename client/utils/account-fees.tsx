@@ -85,32 +85,15 @@ export const getCurrentBaseFee = (
 		: accountFees.base;
 };
 
-// If the current fee doesn't have a fixed or percentage rate, use the base fee's rate. Eg. when there is a promotional discount fee applied.
-const getCurrentFeeWithBaseFallback = (
-	currentFee: BaseFee | DiscountFee,
-	baseFee: BaseFee
-) => {
-	if ( ! currentFee.percentage_rate ) {
-		currentFee.percentage_rate = baseFee.percentage_rate;
-	}
-
-	if ( ! currentFee.fixed_rate ) {
-		currentFee.fixed_rate = baseFee.fixed_rate;
-	}
-
-	return currentFee;
-};
-
 export const formatMethodFeesTooltip = (
 	accountFees: FeeStructure
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
 	const currentBaseFee = getCurrentBaseFee( accountFees );
 	// If the current fee doesn't have a fixed or percentage rate, use the base fee's rate. Eg. when there is a promotional discount fee applied. Use this to calculate the total fee too.
-	const currentFeeWithBaseFallBack = getCurrentFeeWithBaseFallback(
-		currentBaseFee,
-		accountFees.base
-	);
+	const currentFeeWithBaseFallBack = currentBaseFee.percentage_rate
+		? currentBaseFee
+		: accountFees.base;
 
 	// Use the current fee with the base fallback, if applicable, to calculate the total fee. Eg. when we have a promotional discount fee applied.
 	const total = {
