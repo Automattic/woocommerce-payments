@@ -5,6 +5,7 @@
  */
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
+import { useState } from '@wordpress/element';
 import moment from 'moment';
 
 /**
@@ -20,15 +21,40 @@ export const getTasks = ( {
 	isAccountOverviewTasksEnabled,
 	numDisputesNeedingResponse = 0,
 } ) => {
-	const { status, currentDeadline, pastDue, accountLink } = accountStatus;
+	// TODO: Figure out how to open the modal from this context?
+	// const [ isModalOpen, setModalOpen ] = useState( false );
+
+	const getErrorMessagesFromRequirements = ( requirements ) => {
+		if ( 'errors' in requirements ) {
+			const errorMessages = requirements.errors.map( ( error ) => {
+				return error.reason;
+			} );
+			return [ ...new Set( errorMessages ) ];
+		}
+
+		return [];
+	};
+
+	const {
+		status,
+		currentDeadline,
+		pastDue,
+		accountLink,
+		requirements,
+	} = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
-	let accountDetailsTaskDescription;
+	const errorMessages = getErrorMessagesFromRequirements( requirements );
+	let accountDetailsTaskDescription,
+		errorMessageDescription,
+		accountDetailsUpdateByDescription;
 
 	const isDisputeTaskVisible = 0 < numDisputesNeedingResponse;
+	const hasMultipleErrors = 1 < errorMessages.length;
+	const hasSingleError = 1 === errorMessages.length;
 
 	if ( accountRestrictedSoon && currentDeadline ) {
-		accountDetailsTaskDescription = sprintf(
+		accountDetailsUpdateByDescription = sprintf(
 			/* translators: %s - formatted requirements current deadline (date) */
 			__(
 				'Update by %s to avoid a disruption in deposits.',
@@ -39,13 +65,27 @@ export const getTasks = ( {
 				moment( currentDeadline * 1000 ).toISOString()
 			)
 		);
-	} else if ( accountDetailsPastDue ) {
-		accountDetailsTaskDescription =
-			/* translators: <a> - dashboard login URL */
-			__(
-				'Payments and deposits are disabled for this account until missing business information is updated.',
-				'woocommerce-payments'
+
+		if ( hasSingleError ) {
+			errorMessageDescription = errorMessages[ 0 ];
+			accountDetailsTaskDescription = errorMessageDescription.concat(
+				' ',
+				accountDetailsUpdateByDescription
 			);
+		} else {
+			accountDetailsTaskDescription = accountDetailsUpdateByDescription;
+		}
+	} else if ( accountDetailsPastDue ) {
+		if ( hasSingleError ) {
+			accountDetailsTaskDescription = errorMessages[ 0 ];
+		} else {
+			accountDetailsTaskDescription =
+				/* translators: <a> - dashboard login URL */
+				__(
+					'Payments and deposits are disabled for this account until missing business information is updated.',
+					'woocommerce-payments'
+				);
+		}
 	}
 
 	return [
@@ -64,9 +104,15 @@ export const getTasks = ( {
 					'complete' === status
 						? undefined
 						: () => {
-								window.open( accountLink, '_blank' );
+								if ( hasMultipleErrors ) {
+									setModalOpen( true );
+								} else {
+									window.open( accountLink, '_blank' );
+								}
 						  },
-				actionLabel: __( 'Update', 'woocommerce-payments' ),
+				actionLabel: hasMultipleErrors
+					? __( 'More details', 'woocommerce-payments')
+					: __( 'Update', 'woocommerce-payments' ),
 				visible: true,
 				type: 'extension',
 				expandable: true,
