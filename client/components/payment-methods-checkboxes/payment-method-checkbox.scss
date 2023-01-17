@@ -1,3 +1,5 @@
+@import './../../stylesheets/abstracts/variables';
+
 .payment-method-checkbox {
 	display: flex;
 	flex-wrap: nowrap;
@@ -11,9 +13,9 @@
 		row-gap: 5px;
 	}
 
-	margin-bottom: $grid-unit-20;
+	margin-bottom: $gap;
 	&:last-child {
-		margin-bottom: 0;
+		margin-bottom: $gap-smallest;
 	}
 
 	& > * {
@@ -83,7 +85,6 @@
 		font-size: 11px;
 		line-height: 1em;
 		color: $gray-700;
-		text-transform: initial;
 	}
 
 	&__info {
