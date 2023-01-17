@@ -56,7 +56,7 @@ const PaymentMethodCheckbox = ( {
 
 	const handleChange = useCallback(
 		( enabled ) => {
-			// If the payment method checkbox control is locked, reject any changes.
+			// If the payment method checkbox is locked, reject any changes.
 			if ( locked ) {
 				return;
 			}
@@ -66,14 +66,14 @@ const PaymentMethodCheckbox = ( {
 		[ locked, name, onChange ]
 	);
 
-	const paymentMethodDisabled = upeCapabilityStatuses.INACTIVE === status;
+	const disabled = upeCapabilityStatuses.INACTIVE === status;
 
-	// Uncheck payment method if it's disabled and checked.
+	// Force uncheck payment method checkbox if it's checked and the payment method is disabled.
 	useEffect( () => {
-		if ( paymentMethodDisabled && checked ) {
+		if ( disabled && checked ) {
 			handleChange( false );
 		}
-	}, [ paymentMethodDisabled, checked, handleChange ] );
+	}, [ disabled, checked, handleChange ] );
 
 	const [ isManualCaptureEnabled ] = useManualCapture();
 	const paymentMethod = PaymentMethodsMap[ name ];
@@ -89,7 +89,7 @@ const PaymentMethodCheckbox = ( {
 			<LoadableCheckboxControl
 				label={ paymentMethod.label }
 				checked={ checked }
-				disabled={ paymentMethodDisabled || locked }
+				disabled={ disabled || locked }
 				onChange={ ( state ) => {
 					handleChange( state );
 				} }
@@ -152,7 +152,7 @@ const PaymentMethodCheckbox = ( {
 							</Pill>
 						</Tooltip>
 					) }
-					{ paymentMethodDisabled && (
+					{ disabled && (
 						<Tooltip
 							content={ sprintf(
 								__(

@@ -35,7 +35,7 @@ const PaymentMethod = ( {
 	required,
 	locked,
 } ) => {
-	const paymentMethodDisabled = upeCapabilityStatuses.INACTIVE === status;
+	const disabled = upeCapabilityStatuses.INACTIVE === status;
 	const { accountFees } = useContext( WCPaySettingsContext );
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
@@ -66,7 +66,7 @@ const PaymentMethod = ( {
 				<LoadableCheckboxControl
 					label={ label }
 					checked={ checked }
-					disabled={ paymentMethodDisabled || locked }
+					disabled={ disabled || locked }
 					onChange={ handleChange }
 					delayMsOnCheck={ 1500 }
 					delayMsOnUncheck={ 0 }
@@ -132,7 +132,7 @@ const PaymentMethod = ( {
 								</Pill>
 							</Tooltip>
 						) }
-						{ paymentMethodDisabled && (
+						{ disabled && (
 							<Tooltip
 								content={ sprintf(
 									__(

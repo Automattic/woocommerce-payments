@@ -261,7 +261,7 @@ const PaymentMethods = () => {
 											getStatusAndRequirements( id )
 												.status
 									}
-									// The card payment method is required when UPE is active and it can't be removed.
+									// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
 									required={ 'card' === id && isUpeEnabled }
 									locked={ 'card' === id && isUpeEnabled }
 									Icon={ Icon }
