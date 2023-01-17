@@ -272,7 +272,7 @@ const WCPayUPEFields = ( {
 			onCheckoutAfterProcessingWithSuccess(
 				( { orderId, processingResponse: { paymentDetails } } ) => {
 					async function updateIntent() {
-						if ( api.handlePreviousOrderPaid( paymentDetails ) ) {
+						if ( api.handleDuplicatePayments( paymentDetails ) ) {
 							return;
 						}
 
