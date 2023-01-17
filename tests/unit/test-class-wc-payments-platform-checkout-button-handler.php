@@ -26,6 +26,13 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	private $pr;
 
 	/**
+	 * Payment request mock instance.
+	 *
+	 * @var Mock_WC_Payments_Platform_Checkout_Button_Handler
+	 */
+	private $mock_pr;
+
+	/**
 	 * WC_Payments_Account instance.
 	 *
 	 * @var WC_Payments_Account
@@ -67,6 +74,23 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
 		$this->pr = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
+
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+				]
+			)
+			->setMethods(
+				[
+					'is_cart',
+					'is_checkout',
+					'is_product',
+					'is_available_at',
+				]
+			)
+			->getMock();
 
 		$simple_product = WC_Helper_Product::create_simple_product();
 
@@ -137,21 +161,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	}
 
 	public function test_should_show_platform_checkout_button_all_good_at_cart() {
-		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-				]
-			)
-			->setMethods(
-				[
-					'is_cart',
-					'is_available_at',
-				]
-			)
-			->getMock();
-
 		$this->mock_pr
 			->method( 'is_cart' )
 			->willReturn( true );
@@ -166,21 +175,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	}
 
 	public function test_should_show_platform_checkout_button_not_available_at_cart() {
-		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-				]
-			)
-			->setMethods(
-				[
-					'is_cart',
-					'is_available_at',
-				]
-			)
-			->getMock();
-
 		$this->mock_pr
 			->method( 'is_cart' )
 			->willReturn( true );
@@ -196,21 +190,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 	public function test_should_show_platform_checkout_button_all_good_at_checkout() {
 		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_true' );
-
-		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-				]
-			)
-			->setMethods(
-				[
-					'is_checkout',
-					'is_available_at',
-				]
-			)
-			->getMock();
 
 		$this->mock_pr
 			->method( 'is_checkout' )
@@ -228,21 +207,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	public function test_should_show_platform_checkout_button_unsupported_product_at_checkout() {
 		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_false' );
 
-		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-				]
-			)
-			->setMethods(
-				[
-					'is_checkout',
-					'is_available_at',
-				]
-			)
-			->getMock();
-
 		$this->mock_pr
 			->method( 'is_checkout' )
 			->willReturn( true );
@@ -258,21 +222,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 	public function test_should_show_platform_checkout_button_all_good_at_product() {
 		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_true' );
-
-		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-				]
-			)
-			->setMethods(
-				[
-					'is_product',
-					'is_available_at',
-				]
-			)
-			->getMock();
 
 		$this->mock_pr
 			->method( 'is_product' )
@@ -290,21 +239,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	public function test_should_show_platform_checkout_button_unsupported_product_at_product() {
 		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_false' );
 
-		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-				]
-			)
-			->setMethods(
-				[
-					'is_product',
-					'is_available_at',
-				]
-			)
-			->getMock();
-
 		$this->mock_pr
 			->method( 'is_product' )
 			->willReturn( true );
@@ -321,21 +255,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	public function test_should_show_platform_checkout_button_not_available_at_product() {
 		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_true' );
 
-		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-				]
-			)
-			->setMethods(
-				[
-					'is_product',
-					'is_available_at',
-				]
-			)
-			->getMock();
-
 		$this->mock_pr
 			->method( 'is_product' )
 			->willReturn( true );
@@ -350,23 +269,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 	}
 
 	public function test_should_show_platform_checkout_button_page_not_supported() {
-		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-				]
-			)
-			->setMethods(
-				[
-					'is_product',
-					'is_cart',
-					'is_checkout',
-					'is_available_at',
-				]
-			)
-			->getMock();
-
 		$this->mock_pr
 			->method( 'is_product' )
 			->willReturn( false );
@@ -388,16 +290,6 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 	public function test_should_show_platform_checkout_button_unavailable_wcpay() {
 		add_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
-
-		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-				]
-			)
-			->setMethods( [ 'is_product' ] )
-			->getMock();
 
 		$this->mock_pr
 			->expects( $this->never() )
