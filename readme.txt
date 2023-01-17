@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 5.1.2
+Stable tag: 5.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,7 +39,7 @@ Our global support team is available to answer questions you may have about WooC
 = Requirements =
 
 * WordPress 5.9 or newer.
-* WooCommerce 7.0 or newer.
+* WooCommerce 7.1 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -97,6 +97,54 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 5.3.0 - 2023-01-11 =
+* Add - Added support for WooPay express checkout on product page. This feature is currently behind a feature flag and is not yet publicly available.
+* Add - Add the processing order_id to WC Session and its handling to prevent duplicate orders
+* Fix - Ensure script dependencies are loaded properly even when trying to register them again in the same request.
+* Fix - Fix an issue which caused synced wcpay subscription to not sync the first payment date when the customer is charged upfront.
+* Fix - Fix subscriptions remaining on-hold after processing a WCPay Subscription renewal on HPOS environments.
+* Fix - Make the webhook processing respect the test/live mode setting for the gateway
+* Fix - Prevent 'No such customer' errors after store is migrated to a new WCPay account.
+* Fix - Prevent occasional fatal errors when creating customers via ActionScheduler jobs
+* Fix - Updates subscriptions' payment token when a new default payment method is set.
+* Update - Bail out before payment processing for WooPay's order validation request
+* Update - Check the status of previously initiated payments and mark orders as processing instead of initiating a new payment.
+* Update - Enhance save my info section on classic and Blocks checkout
+* Dev - Bump minimum required version of WooCommerce to 7.1.1.
+* Dev - Remove redundant compatibility utility class for admin notes.
+* Dev - Replace typed payment intent strings with constants saved in an Enum clas
+* Dev - Retry API requests on network failure if Idempotency-Key header is present.
+* Dev - The PR replaces hard-coded order status constants, with a dedicated Enum class to make it reusable across the codebase.
+
+= 5.2.1 - 2022-12-30 =
+* Fix - UPE not loading on checkout page due to undefined i18n.
+
+= 5.2.0 - 2022-12-21 =
+* Add - Add WooPay Express Checkout button iframe functionality.
+* Add - When deactivating WCPay plugin, warn merchant that active WCPay Subscriptions will continue collecting payment.
+* Fix - Allow the "Your payment information is incomplete." UPE checkout block message to be translated.
+* Fix - Extend Stripe Link availability check with available fees
+* Fix - Prevent `Additional Payment Methods` (UPE) checkboxes within `Payments > Settings` , from getting unchecked and checked automatically while selecting multiple items quickly.
+* Fix - Fix an undefined variable bug in WooPay Express Checkout.
+* Fix - Fix for an issue where a timestamp in the past could be displayed on the update business details task card.
+* Fix - Fix translations job from the post-release workflow
+* Fix - Fix wrong time displayed in the "You need to capture this charge before..." text on the payment details page.
+* Fix - Hide "capture charge" and "cancel authorization" actions on order details page when order status is processing or completed.
+* Fix - Make the tooltips on UPE settings ( Settings > Payments accepted on checkout ) , show the correct custom rates whenever applicable.
+* Fix - PR created by the code freeze workflow is now done by botwoo to allow PR checks to be triggered
+* Fix - Prevent checkboxes from getting unchecked automatically within the UPE onboarding form, when we click multiple selections within a very short time ( 1.5 seconds )
+* Fix - Recurring payments for cards issued by Indian banks.
+* Fix - Remove the UPE notification badge on the Payments > Settings menu item
+* Fix - Set commit author as github-actions bot for the code freeze workflow
+* Fix - Updates subscriptions' payment token when a new default payment method is set.
+* Update - Update currency_rate endpoint to not make a request if currency_from value is not valid/expected value.
+* Dev - Bump minimum required version of WooCommerce to 7.0.
+* Dev - Remove unused pre-release workflow
+* Dev - Replace direct database queries which fetched orders with an invoice ID with an equivalent wc_get_orders() query
+* Dev - Replace direct database queries which fetched subscriptions with a wcpay subscription ID with an equivalent wc_get_orders() query
+* Dev - Show correct authorizations count when switching between live and test modes
+* Dev - Support custom REMOTE_PORT for xDebug
 
 = 5.1.2 - 2022-12-03 =
 * Fix - Import critical package instead of lazy loading.

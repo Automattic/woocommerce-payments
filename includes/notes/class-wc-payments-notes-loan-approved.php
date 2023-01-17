@@ -6,8 +6,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\Admin\Notes\Note;
+use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 
 defined( 'ABSPATH' ) || exit;
@@ -39,8 +39,7 @@ class WC_Payments_Notes_Loan_Approved {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		$note_class  = WC_Payment_Woo_Compat_Utils::get_note_class();
-		$note        = new $note_class();
+		$note        = new Note();
 		$dummy_order = wc_create_order();
 		$dummy_order->set_currency( self::$loan_info['details']['currency'] );
 
@@ -68,14 +67,14 @@ class WC_Payments_Notes_Loan_Approved {
 				'advance_paid_out_at' => self::$loan_info['details']['advance_paid_out_at'],
 			]
 		);
-		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
+		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
 		$note->set_source( 'woocommerce-payments' );
 		$note->add_action(
 			self::NOTE_NAME,
 			__( 'View loan details', 'woocommerce-payments' ),
 			admin_url( 'admin.php?page=wc-admin&path=/payments/loans' ),
-			$note_class::E_WC_ADMIN_NOTE_UNACTIONED,
+			Note::E_WC_ADMIN_NOTE_UNACTIONED,
 			true
 		);
 
@@ -137,21 +136,12 @@ class WC_Payments_Notes_Loan_Approved {
 	 * @return bool
 	 */
 	private static function check_attached_loan_data_is_different() {
-		// Check if the note already exists, and the stored paid out date matches our current loan before adding a new one.
-		/**
-		 * Note class. Suppressed psalm error for WC<=5.5.0 because it uses an old class for the note.
-		 *
-		 * @var WC_Admin_Note|Note
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
-		$note_class  = WC_Payment_Woo_Compat_Utils::get_note_class();
-		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
-		$data_store  = WC_Data_Store::load( 'admin-note' );
-		$note_ids    = $data_store->get_notes_with_name( self::NOTE_NAME );
+		$data_store = WC_Data_Store::load( 'admin-note' );
+		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
 
 		if ( ! empty( $note_ids ) ) {
-			$note = $notes_class::get_note( $note_ids[0] );
-			if ( $note instanceof $note_class ) {
+			$note = Notes::get_note( $note_ids[0] );
+			if ( $note instanceof Note ) {
 				$content_data = (array) $note->get_content_data();
 				if ( isset( $content_data['advance_paid_out_at'], $content_data['advance_amount'] ) ) {
 					if ( self::$loan_info['details']['advance_paid_out_at'] === $content_data['advance_paid_out_at'] &&

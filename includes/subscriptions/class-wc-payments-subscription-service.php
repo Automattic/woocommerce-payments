@@ -159,12 +159,14 @@ class WC_Payments_Subscription_Service {
 		$trial_end = $subscription->get_time( 'trial_end' );
 		$has_sync  = false;
 
-		// TODO: Check if there is a better way to see if sync date is today.
 		if ( WC_Subscriptions_Synchroniser::is_syncing_enabled() && WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 			$has_sync = true;
 
 			foreach ( $subscription->get_items() as $item ) {
-				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $item->get_product() ) ) {
+				$synced_payment_date = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $item->get_product(), 'timestamp' );
+
+				// Check if the subscription starts from today because in those cases we don't need a dynamic trial period to align to the payment date.
+				if ( WC_Subscriptions_Synchroniser::is_today( $synced_payment_date ) ) {
 					$has_sync = false;
 					break;
 				}
