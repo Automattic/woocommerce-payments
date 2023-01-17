@@ -114,6 +114,26 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		jest.useRealTimers();
 	} );
 
+	it( 'shows the required label on payment methods which are required', () => {
+		const handleChange = () => {};
+		const page = render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'card' }
+					onChange={ handleChange }
+					checked={ 1 }
+					name={ 'card' }
+					required={ true }
+					status={ upeCapabilityStatuses.ACTIVE }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+
+		expect( page.container ).toContainHTML(
+			'<span class="payment-method-checkbox__required-label">Required</span>'
+		);
+	} );
+
 	it( 'shows the disabled notice pill on payment methods with disabled statuses', () => {
 		const handleChange = () => {};
 		const page = render(
@@ -131,6 +151,29 @@ describe( 'PaymentMethodsCheckboxes', () => {
 		expect( page.container ).toContainHTML(
 			'<span class="wcpay-pill payment-status-inactive">Contact WooCommerce Support</span>'
 		);
+	} );
+
+	it( 'can not click the payment methods checkbox that are locked', () => {
+		const handleChange = jest.fn();
+		render(
+			<PaymentMethodsCheckboxes>
+				<PaymentMethodsCheckbox
+					key={ 'card' }
+					onChange={ handleChange }
+					checked={ 0 }
+					name={ 'card' }
+					locked={ true }
+					status={ upeCapabilityStatuses.ACTIVE }
+				/>
+			</PaymentMethodsCheckboxes>
+		);
+		const cardCheckbox = screen.getByRole( 'checkbox', {
+			name: 'Credit card / debit card',
+		} );
+		expect( cardCheckbox ).not.toBeChecked();
+		userEvent.click( cardCheckbox );
+		expect( handleChange ).toHaveBeenCalledTimes( 0 ); // Because the input is disabled.
+		expect( cardCheckbox ).not.toBeChecked();
 	} );
 
 	it( 'can not click the payment methods checkbox with disabled statuses', () => {
