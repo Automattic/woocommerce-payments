@@ -73,6 +73,13 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 		WC()->session->init();
 		WC()->cart->add_to_cart( $simple_product->get_id(), 1 );
 		WC()->cart->calculate_totals();
+
+		add_filter(
+			'woocommerce_available_payment_gateways',
+			function() {
+				return [ 'woocommerce_payments' => $this->mock_wcpay_gateway ];
+			}
+		);
 	}
 
 	public function tear_down() {
@@ -127,5 +134,275 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 			],
 			$this->pr->get_button_settings()
 		);
+	}
+
+	public function test_should_show_platform_checkout_button_all_good_at_cart() {
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+				]
+			)
+			->setMethods(
+				[
+					'is_cart',
+					'is_available_at',
+				]
+			)
+			->getMock();
+
+		$this->mock_pr
+			->method( 'is_cart' )
+			->willReturn( true );
+
+		$this->mock_pr
+			->expects( $this->once() )
+			->method( 'is_available_at' )
+			->with( 'cart' )
+			->willReturn( true );
+
+		$this->assertTrue( $this->mock_pr->should_show_platform_checkout_button() );
+	}
+
+	public function test_should_show_platform_checkout_button_not_available_at_cart() {
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+				]
+			)
+			->setMethods(
+				[
+					'is_cart',
+					'is_available_at',
+				]
+			)
+			->getMock();
+
+		$this->mock_pr
+			->method( 'is_cart' )
+			->willReturn( true );
+
+		$this->mock_pr
+			->expects( $this->once() )
+			->method( 'is_available_at' )
+			->with( 'cart' )
+			->willReturn( false );
+
+		$this->assertFalse( $this->mock_pr->should_show_platform_checkout_button() );
+	}
+
+	public function test_should_show_platform_checkout_button_all_good_at_checkout() {
+		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_true' );
+
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+				]
+			)
+			->setMethods(
+				[
+					'is_checkout',
+					'is_available_at',
+				]
+			)
+			->getMock();
+
+		$this->mock_pr
+			->method( 'is_checkout' )
+			->willReturn( true );
+
+		$this->mock_pr
+			->expects( $this->once() )
+			->method( 'is_available_at' )
+			->with( 'checkout' )
+			->willReturn( true );
+
+		$this->assertTrue( $this->mock_pr->should_show_platform_checkout_button() );
+	}
+
+	public function test_should_show_platform_checkout_button_unsupported_product_at_checkout() {
+		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_false' );
+
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+				]
+			)
+			->setMethods(
+				[
+					'is_checkout',
+					'is_available_at',
+				]
+			)
+			->getMock();
+
+		$this->mock_pr
+			->method( 'is_checkout' )
+			->willReturn( true );
+
+		$this->mock_pr
+			->expects( $this->once() )
+			->method( 'is_available_at' )
+			->with( 'checkout' )
+			->willReturn( true );
+
+		$this->assertFalse( $this->mock_pr->should_show_platform_checkout_button() );
+	}
+
+	public function test_should_show_platform_checkout_button_all_good_at_product() {
+		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_true' );
+
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+				]
+			)
+			->setMethods(
+				[
+					'is_product',
+					'is_available_at',
+				]
+			)
+			->getMock();
+
+		$this->mock_pr
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->mock_pr
+			->expects( $this->once() )
+			->method( 'is_available_at' )
+			->with( 'product' )
+			->willReturn( true );
+
+		$this->assertTrue( $this->mock_pr->should_show_platform_checkout_button() );
+	}
+
+	public function test_should_show_platform_checkout_button_unsupported_product_at_product() {
+		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_false' );
+
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+				]
+			)
+			->setMethods(
+				[
+					'is_product',
+					'is_available_at',
+				]
+			)
+			->getMock();
+
+		$this->mock_pr
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->mock_pr
+			->expects( $this->once() )
+			->method( 'is_available_at' )
+			->with( 'product' )
+			->willReturn( true );
+
+		$this->assertFalse( $this->mock_pr->should_show_platform_checkout_button() );
+	}
+
+	public function test_should_show_platform_checkout_button_not_available_at_product() {
+		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_true' );
+
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+				]
+			)
+			->setMethods(
+				[
+					'is_product',
+					'is_available_at',
+				]
+			)
+			->getMock();
+
+		$this->mock_pr
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->mock_pr
+			->expects( $this->once() )
+			->method( 'is_available_at' )
+			->with( 'product' )
+			->willReturn( false );
+
+		$this->assertFalse( $this->mock_pr->should_show_platform_checkout_button() );
+	}
+
+	public function test_should_show_platform_checkout_button_page_not_supported() {
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+				]
+			)
+			->setMethods(
+				[
+					'is_product',
+					'is_cart',
+					'is_checkout',
+					'is_available_at',
+				]
+			)
+			->getMock();
+
+		$this->mock_pr
+			->method( 'is_product' )
+			->willReturn( false );
+
+		$this->mock_pr
+			->method( 'is_cart' )
+			->willReturn( false );
+
+		$this->mock_pr
+			->method( 'is_checkout' )
+			->willReturn( false );
+
+		$this->mock_pr
+			->expects( $this->never() )
+			->method( 'is_available_at' );
+
+		$this->assertFalse( $this->mock_pr->should_show_platform_checkout_button() );
+	}
+
+	public function test_should_show_platform_checkout_button_unavailable_wcpay() {
+		add_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
+
+		$this->mock_pr = $this->getMockBuilder( WC_Payments_Platform_Checkout_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+				]
+			)
+			->setMethods( [ 'is_product' ] )
+			->getMock();
+
+		$this->mock_pr
+			->expects( $this->never() )
+			->method( 'is_product' );
+
+		$this->assertFalse( $this->mock_pr->should_show_platform_checkout_button() );
 	}
 }
