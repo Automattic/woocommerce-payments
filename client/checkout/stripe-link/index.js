@@ -33,6 +33,9 @@ export default class StripeLinkButton {
 		this.disableRequestButton();
 	}
 
+	/**
+	 * Displays preloading spinner for 10s, before hiding.
+	 */
 	flashSpinner() {
 		if ( ! this.spinner.getSpinner() ) {
 			this.spinner.show();
@@ -40,6 +43,17 @@ export default class StripeLinkButton {
 		setTimeout( () => {
 			this.spinner.remove();
 		}, 10 * 1000 );
+	}
+
+	/**
+	 * Try Autofill authentication by querying Stripe for email address.
+	 *
+	 * @param {string} email Email address.
+	 */
+	tryAuthentication( email ) {
+		this.linkAutofill.launch( { email } );
+		this.flashSpinner();
+		this.disableRequestButton();
 	}
 
 	/**
@@ -58,9 +72,7 @@ export default class StripeLinkButton {
 					break;
 				// Email address does not belong to registered WooPay user;
 				case 'false':
-					this.linkAutofill.launch( { email } );
-					this.flashSpinner();
-					this.disableRequestButton();
+					this.tryAuthentication( email );
 					break;
 				// Still querying for WooPay registration.
 				default:
@@ -70,9 +82,7 @@ export default class StripeLinkButton {
 					}, 1000 );
 			}
 		} else {
-			this.linkAutofill.launch( email );
-			this.flashSpinner();
-			this.disableRequestButton();
+			this.tryAuthentication( email );
 		}
 	}
 
