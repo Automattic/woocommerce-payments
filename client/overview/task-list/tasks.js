@@ -49,6 +49,7 @@ export const getTasks = ( {
 	}
 
 	return [
+		// TODO: If more than one error exists, show the modal, if only one error exists, show the error directly to the user here.
 		isAccountOverviewTasksEnabled &&
 			showUpdateDetailsTask && {
 				key: 'update-business-details',
