@@ -95,7 +95,6 @@ export const formatMethodFeesTooltip = (
 		? currentBaseFee
 		: accountFees.base;
 
-	// Use the current fee with the base fallback, if applicable, to calculate the total fee. Eg. when we have a promotional discount fee applied.
 	const total = {
 		percentage_rate:
 			currentFeeWithBaseFallBack.percentage_rate +
