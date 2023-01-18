@@ -7,6 +7,9 @@ import { validateEmail, Spinner } from 'wcpay/utils/checkout';
 import {
 	STRIPE_LINK_AUTHENTICATED_CLASS,
 	getWooPayQueryStatus,
+	isLinkModalOpen,
+	setLinkModalStatus,
+	getLinkModalStatus,
 } from '../utils/link.js';
 
 const STRIPE_LINK_BUTTON_SELECTOR = '#wcpay-stripe-link-button-wrapper button';
@@ -30,7 +33,31 @@ export default class StripeLinkButton {
 		this.isPlatformCheckoutEnabled = isPlatformCheckoutEnabled;
 		this.removeEmailInputListener = null;
 		this.spinner = null;
+		this.isModalClosed = false;
 		this.disableRequestButton();
+	}
+
+	/**
+	 * Interval to check when OTP modal is opened and then closed, when Link can then be disabled.
+	 */
+	startModalWatcher() {
+		const emailInput = document.getElementById( this.options.emailId );
+		const modalWatcherInterval = setInterval( () => {
+			const modalStatus = getLinkModalStatus( emailInput );
+			if ( isLinkModalOpen() && ! modalStatus ) {
+				// Modal is open, status unset.
+				setLinkModalStatus( emailInput, true );
+			} else if ( 'open' === modalStatus ) {
+				// Modal is closed, previously open.
+				if ( ! this.isAuthenticated ) {
+					setLinkModalStatus( emailInput, false );
+					this.isModalClosed = true;
+					this.disableRequestButton();
+					this.removeEmailInputListener();
+				}
+				clearInterval( modalWatcherInterval );
+			}
+		}, 100 );
 	}
 
 	/**
@@ -277,7 +304,9 @@ export default class StripeLinkButton {
 	 * Make payment request button clickable.
 	 */
 	enableRequestButton() {
-		jQuery( STRIPE_LINK_BUTTON_SELECTOR ).prop( 'disabled', false );
+		if ( ! this.isModalClosed ) {
+			jQuery( STRIPE_LINK_BUTTON_SELECTOR ).prop( 'disabled', false );
+		}
 	}
 
 	/**
@@ -335,6 +364,7 @@ export default class StripeLinkButton {
 			return;
 		}
 
+		this.startModalWatcher();
 		this.addEmailInputListener();
 
 		if ( this.isAuthenticated ) {

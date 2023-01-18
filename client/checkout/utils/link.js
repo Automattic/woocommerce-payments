@@ -18,7 +18,7 @@ export const isLinkCheckoutAuthenticated = ( emailInput ) => {
  * Checks whether WooPay is in the process of querying /user/exists or if registered user has been found.
  *
  * @param {Object} emailInput Email field DOM element.
- * @return {boolean} True, if WooPay is querying for registered email or email is valid registered user.
+ * @return {string} 'true', if email is valid registered user. 'false', if email is not registered. undefined, if still querying.
  */
 export const getWooPayQueryStatus = ( emailInput ) => {
 	return emailInput.dataset.foundUser;
@@ -28,7 +28,7 @@ export const getWooPayQueryStatus = ( emailInput ) => {
  * Sets input data attribute to match status of /user/exists query.
  *
  * @param {Object} emailInput Email field DOM element.
- * @param {boolean} value True, if email is registered user. False, if otherwise
+ * @param {boolean} value True, if email is registered user. False, if otherwise.
  */
 export const setWooPayQueryStatus = ( emailInput, value ) => {
 	emailInput.dataset.foundUser = value;
@@ -61,4 +61,25 @@ export const isLinkModalOpen = () => {
 		}
 	}
 	return false;
+};
+
+/**
+ * Set input data attribute to describe presence of Link OTP modal.
+ *
+ * @param {Object} emailInput Email field DOM element.
+ * @param {boolean} value True, if modal is open. False, if otherwise.
+ */
+export const setLinkModalStatus = ( emailInput, value ) => {
+	const status = value ? 'open' : 'closed';
+	emailInput.dataset.linkModalStatus = status;
+};
+
+/**
+ * Get current status of Link OTP modal.
+ *
+ * @param {Object} emailInput Email field DOM element
+ * @return {string} Status of Link OTP modal: 'open', 'closed', or undefined (not yet opened).
+ */
+export const getLinkModalStatus = ( emailInput ) => {
+	return emailInput.dataset.linkModalStatus;
 };
