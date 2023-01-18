@@ -307,7 +307,7 @@ describe( 'Account fees utility functions', () => {
 				return render( formatMethodFeesTooltip( methodFees ) );
 			};
 
-			expect( renderMethodFeesTooltip ).toMatchSnapshot();
+			expect( renderMethodFeesTooltip() ).toMatchSnapshot();
 		} );
 
 		it( 'displays custom fee details, when applicable', () => {
@@ -336,7 +336,7 @@ describe( 'Account fees utility functions', () => {
 				return render( formatMethodFeesTooltip( methodFees ) );
 			};
 
-			expect( renderMethodFeesTooltip ).toMatchSnapshot();
+			expect( renderMethodFeesTooltip() ).toMatchSnapshot();
 		} );
 
 		it( 'displays base fee, when only promo discount without percentage or fixed', () => {
@@ -365,7 +365,7 @@ describe( 'Account fees utility functions', () => {
 				return render( formatMethodFeesTooltip( methodFees ) );
 			};
 
-			expect( renderMethodFeesTooltip ).toMatchSnapshot();
+			expect( renderMethodFeesTooltip() ).toMatchSnapshot();
 		} );
 	} );
 } );
