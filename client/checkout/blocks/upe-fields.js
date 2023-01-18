@@ -412,16 +412,16 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		if ( paymentIntentId || hasRequestedIntent || ! fingerprint ) {
 			return;
 		}
-		async function createIntent( paymentMethodId ) {
+		async function createIntent( paymentMethodType ) {
 			try {
-				const response = await api.createIntent(
+				const response = await api.createIntent( {
 					fingerprint,
-					paymentMethodId
-				);
+					paymentMethodType,
+				} );
 				const cartHash = getCookieValue( 'woocommerce_cart_hash' );
 				if ( cartHash ) {
 					paymentMethodsConfig[
-						paymentMethodId
+						paymentMethodType
 					].upePaymentIntentData =
 						cartHash +
 						'-' +
