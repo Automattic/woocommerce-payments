@@ -75,13 +75,14 @@ class Platform_Checkout_Save_User {
 	 * @return array
 	 */
 	public function maybe_add_userdata_to_metadata( $metadata, $order ) {
-		$should_save_platform_customer          = $this->platform_checkout_util->should_save_platform_customer();
-		$platform_checkout_phone                = $this->platform_checkout_util->get_platform_checkout_phone();
-		$platform_checkout_marketing_optin      = $this->platform_checkout_util->get_platform_checkout_marketing_optin();
-		$platform_checkout_marketing_source_url = $this->platform_checkout_util->get_platform_checkout_marketing_source_url();
-		$platform_checkout_is_blocks            = $this->platform_checkout_util->get_platform_checkout_is_blocks();
+		$should_save_platform_customer = $this->platform_checkout_util->should_save_platform_customer();
+		$platform_checkout_phone       = $this->platform_checkout_util->get_platform_checkout_phone();
 
 		if ( $should_save_platform_customer && $platform_checkout_phone ) {
+			$platform_checkout_marketing_optin      = $this->platform_checkout_util->get_platform_checkout_marketing_optin();
+			$platform_checkout_marketing_source_url = $this->platform_checkout_util->get_platform_checkout_marketing_source_url();
+			$platform_checkout_is_blocks            = $this->platform_checkout_util->get_platform_checkout_is_blocks();
+
 			// Add the metadata.
 			$metadata['platform_checkout_primary_first_name']   = wc_clean( $order->get_billing_first_name() );
 			$metadata['platform_checkout_primary_last_name']    = wc_clean( $order->get_billing_last_name() );
