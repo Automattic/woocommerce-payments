@@ -256,7 +256,8 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			}
 			?>
 
-			<fieldset id="wc-<?php echo esc_attr( $this->gateway->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
+			<!--The padding for this area is set at 7px to align with the 7px padding on the CC fieldset-->
+			<fieldset style="padding: 7px" id="wc-<?php echo esc_attr( $this->gateway->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
 				<div class="wcpay-upe-element" data-payment-method-type="<?php echo esc_attr( $this->gateway->get_selected_stripe_payment_type_id() ); ?>"></div>
 				<?php
 					$is_enabled_for_saved_payments = $this->gateway->is_enabled_for_saved_payments();
