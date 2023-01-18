@@ -4,11 +4,14 @@
 .platform-checkout-save-new-user-container {
 	.save-details {
 		padding: $gap-small;
+		padding-left: $gap-small - 5; // without the padding it cuts the marketing opt-in checkbox focus outline.
 		border: 1px solid rgba( 109, 109, 109, 0.3 );
 	}
 
 	.save-details-header,
 	.save-details-form {
+		padding: 0 0 0 5px !important;
+
 		label {
 			flex: 1;
 			display: flex;
