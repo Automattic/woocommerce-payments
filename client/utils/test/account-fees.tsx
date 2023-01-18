@@ -303,9 +303,11 @@ describe( 'Account fees utility functions', () => {
 				currency: 'USD',
 			};
 
-			expect(
-				render( formatMethodFeesTooltip( methodFees ) ).baseElement
-			).toMatchSnapshot();
+			const { container } = render(
+				formatMethodFeesTooltip( methodFees )
+			);
+
+			expect( container ).toMatchSnapshot();
 		} );
 
 		it( 'displays custom fee details, when applicable', () => {
@@ -330,9 +332,11 @@ describe( 'Account fees utility functions', () => {
 				currency: 'USD',
 			};
 
-			expect(
-				render( formatMethodFeesTooltip( methodFees ) ).baseElement
-			).toMatchSnapshot();
+			const { container } = render(
+				formatMethodFeesTooltip( methodFees )
+			);
+
+			expect( container ).toMatchSnapshot();
 		} );
 
 		it( 'displays base fee, when only promo discount without percentage or fixed', () => {
@@ -357,9 +361,11 @@ describe( 'Account fees utility functions', () => {
 				currency: 'USD',
 			};
 
-			expect(
-				render( formatMethodFeesTooltip( methodFees ) ).baseElement
-			).toMatchSnapshot();
+			const { container } = render(
+				formatMethodFeesTooltip( methodFees )
+			);
+
+			expect( container ).toMatchSnapshot();
 		} );
 	} );
 } );
