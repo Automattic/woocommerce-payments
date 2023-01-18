@@ -482,7 +482,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		return parent::saved_payment_methods();
+		parent::saved_payment_methods();
 	}
 
 	/**
