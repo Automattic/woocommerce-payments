@@ -78,13 +78,10 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_platform_checkout_config' ] );
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_html' ], -2 );
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
 
 		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_platform_checkout_button_html' ], -2 );
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
 
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_html' ], -2 );
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
 	}
 
 	/**
@@ -300,18 +297,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 				<?php // The WooPay express checkout button React component will go here. ?>
 			</div>
 		</div>
-		<?php
-	}
-
-	/**
-	 * Display payment request button separator.
-	 */
-	public function display_platform_checkout_button_separator_html() {
-		if ( ! $this->should_show_platform_checkout_button() ) {
-			return;
-		}
-		?>
-		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php
 	}
 
