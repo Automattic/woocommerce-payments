@@ -3,9 +3,10 @@
 /**
  * External dependencies
  */
+import React from 'react';
+import ReactDOM from 'react-dom';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { dateI18n } from '@wordpress/date';
-import { useState } from '@wordpress/element';
 import moment from 'moment';
 
 /**
@@ -13,6 +14,7 @@ import moment from 'moment';
  */
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
+import UpdateBusinessDetailsModal from '../modal/update-business-details';
 
 export const getTasks = ( {
 	accountStatus,
@@ -21,8 +23,25 @@ export const getTasks = ( {
 	isAccountOverviewTasksEnabled,
 	numDisputesNeedingResponse = 0,
 } ) => {
-	// TODO: Figure out how to open the modal from this context?
-	// const [ isModalOpen, setModalOpen ] = useState( false );
+	const renderModal = (
+		errorMessages,
+		status,
+		accountLink,
+		currentDeadline
+	) => {
+		const container = document.createElement( 'div' );
+		container.id = 'wcpay-update-business-details-container';
+		document.body.appendChild( container );
+		ReactDOM.render(
+			<UpdateBusinessDetailsModal
+				errorMessages={ errorMessages }
+				accountStatus={ status }
+				accountLink={ accountLink }
+				currentDeadline={ currentDeadline }
+			/>,
+			container
+		);
+	};
 
 	const getErrorMessagesFromRequirements = ( requirements ) => {
 		if ( 'errors' in requirements ) {
@@ -105,13 +124,18 @@ export const getTasks = ( {
 						? undefined
 						: () => {
 								if ( hasMultipleErrors ) {
-									setModalOpen( true );
+									renderModal(
+										errorMessages,
+										status,
+										accountLink,
+										currentDeadline
+									);
 								} else {
 									window.open( accountLink, '_blank' );
 								}
 						  },
 				actionLabel: hasMultipleErrors
-					? __( 'More details', 'woocommerce-payments')
+					? __( 'More details', 'woocommerce-payments' )
 					: __( 'Update', 'woocommerce-payments' ),
 				visible: true,
 				type: 'extension',

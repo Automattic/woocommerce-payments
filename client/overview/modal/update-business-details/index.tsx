@@ -9,56 +9,85 @@ import { Button, Modal, Notice } from '@wordpress/components';
  */
 import './index.scss';
 import strings from './strings';
-import { createInterpolateElement } from '@wordpress/element';
+import { useState } from '@wordpress/element';
+import { dateI18n } from '@wordpress/date';
+import { sprintf } from '@wordpress/i18n';
+import moment from 'moment/moment';
 
 interface Props {
-	handleModalSubmit: () => void;
-	handleModalClose: () => void;
 	errorMessages: Array< string >;
 	accountStatus: string;
 	accountLink: string;
+	currentDeadline?: number | null;
 }
 
 const UpdateBusinessDetailsModal = ( {
-	handleModalSubmit,
-	handleModalClose,
 	errorMessages,
 	accountStatus,
+	accountLink,
+	currentDeadline,
 }: Props ): any => {
+	const [ isModalOpen, setModalOpen ] = useState( true );
+
+	const closeModal = () => {
+		setModalOpen( false );
+	};
+
+	const openAccountLink = () => {
+		window.open( accountLink, '_blank' );
+	};
+
 	return (
-		<Modal
-			title={ strings.updateBusinessDetails }
-			isDismissible={ true }
-			className="update-business-details-modal"
-			shouldCloseOnClickOutside={ false }
-			onRequestClose={ handleModalClose }
-		>
-			<p>
-				{ accountStatus === 'restricted'
-					? strings.restrictedDescription
-					: createInterpolateElement(
-							strings.restrictedSoonDescription,
-							{ '%d': '12th January 2023' }
-					  ) }
-			</p>
+		<>
+			{ isModalOpen && (
+				<Modal
+					title={ strings.updateBusinessDetails }
+					isDismissible={ true }
+					className="wcpay-update-business-details-modal"
+					shouldCloseOnClickOutside={ false }
+					onRequestClose={ closeModal }
+				>
+					<div className="wcpay-update-business-details-modal__wrapper">
+						<div className="wcpay-update-business-details-modal__body">
+							<p>
+								{ accountStatus === 'restricted_soon' &&
+								currentDeadline
+									? sprintf(
+											strings.restrictedSoonDescription,
+											dateI18n(
+												'ga M j, Y',
+												moment(
+													currentDeadline * 1000
+												).toISOString()
+											)
+									  )
+									: strings.restrictedDescription }
+							</p>
 
+							{ errorMessages.map( ( errorMessage, index ) => (
+								<Notice
+									key={ index }
+									status="warning"
+									isDismissible={ false }
+								>
+									{ errorMessage }
+								</Notice>
+							) ) }
+						</div>
+					</div>
+					<hr />
+					<div className="wcpay-update-business-details-modal__footer">
+						<Button isSecondary onClick={ closeModal }>
+							{ strings.cancel }
+						</Button>
 
-			{ errorMessages.map( ( errorMessage ) => (
-				// eslint-disable-next-line react/jsx-key
-				<Notice status="warning" isDismissible={ false }>
-					{ errorMessage }
-				</Notice>
-			) ) }
-
-			<div className="wcpay-update-business-details-modal__footer">
-				<Button isSecondary onClick={ handleModalClose }>
-					{ strings.cancel }
-				</Button>
-				<Button isPrimary onClick={ handleModalSubmit }>
-					{ strings.updateBusinessDetails }
-				</Button>
-			</div>
-		</Modal>
+						<Button isPrimary onClick={ openAccountLink }>
+							{ strings.updateBusinessDetails }
+						</Button>
+					</div>
+				</Modal>
+			) }
+		</>
 	);
 };
 
