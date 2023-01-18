@@ -472,6 +472,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Overrides the parent method by adding an additional check to see if the tokens list is empty.
+	 * If it is, the method avoids displaying the HTML element with an empty line to maintain a clean user interface and remove unnecessary space.
+	 *
+	 * @return void
+	 */
+	public function saved_payment_methods() {
+		if ( empty( $this->get_tokens() ) ) {
+			return;
+		}
+
+		return parent::saved_payment_methods();
+	}
+
+	/**
 	 * Checks if the setting to allow the user to save cards is enabled.
 	 *
 	 * @return bool Whether the setting to allow saved cards is enabled or not.
