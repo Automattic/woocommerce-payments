@@ -40,7 +40,7 @@ const renderModal = ( errorMessages, status, accountLink, currentDeadline ) => {
 };
 
 const getErrorMessagesFromRequirements = ( requirements ) => [
-	...new Set( requirements?.errors.map( ( error ) => error.reason ) ),
+	...new Set( requirements?.errors?.map( ( error ) => error.reason ) ),
 ];
 
 export const getTasks = ( {
