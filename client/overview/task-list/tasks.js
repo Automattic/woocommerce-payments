@@ -39,7 +39,7 @@ const renderModal = ( errorMessages, status, accountLink, currentDeadline ) => {
 	);
 };
 
-// Requirements we don't want to show to the user because they are too generic/not useful.
+// Requirements we don't want to show to the user because they are too generic/not useful. These refer to Stripe error codes.
 const requirementBlacklist = [ 'invalid_value_other' ];
 
 const getErrorMessagesFromRequirements = ( requirements ) => [
