@@ -22,10 +22,10 @@ import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
 	usePlatformCheckoutStoreLogo,
-	usePlatformCheckoutButtonType,
-	usePlatformCheckoutButtonSize,
-	usePlatformCheckoutButtonTheme,
 	usePlatformCheckoutLocations,
+	usePaymentRequestButtonType,
+	usePaymentRequestButtonSize,
+	usePaymentRequestButtonTheme,
 } from 'wcpay/data';
 import { WoopayExpressCheckoutButton } from 'wcpay/checkout/platform-checkout/express-button/woopay-express-checkout-button';
 
@@ -129,9 +129,9 @@ const buttonThemeOptions = [
 ];
 
 const PlatformCheckoutSettings = ( { section } ) => {
-	const [ buttonType, setButtonType ] = usePlatformCheckoutButtonType();
-	const [ size, setSize ] = usePlatformCheckoutButtonSize();
-	const [ theme, setTheme ] = usePlatformCheckoutButtonTheme();
+	const [ buttonType, setButtonType ] = usePaymentRequestButtonType();
+	const [ size, setSize ] = usePaymentRequestButtonSize();
+	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
 	const [
 		isPlatformCheckoutEnabled,
 		updateIsPlatformCheckoutEnabled,
