@@ -982,12 +982,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
 			if ( 'woocommerce_payments' !== $upe_payment_method ) {
-				$upe_payment_method = str_replace( 'woocommerce_payments_', '', $upe_payment_method );
+				$upe_payment_method = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
+			} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
+				$upe_payment_method = [ 'card' ];
 			} else {
-				$upe_payment_method = 'card';
+				$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 			}
-
-			$payment_methods = [ $upe_payment_method ];
 
 			$additional_api_parameters['is_platform_payment_method'] = $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() );
 
