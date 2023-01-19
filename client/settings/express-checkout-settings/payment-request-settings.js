@@ -173,11 +173,6 @@ const PaymentRequestSettings = ( { section } ) => {
 							'woocommerce-payments'
 						) }
 					/>
-				</CardBody>
-			) }
-
-			{ 'general' === section && (
-				<CardBody>
 					<h4>
 						{ __(
 							'Show express checkouts on',
@@ -233,6 +228,11 @@ const PaymentRequestSettings = ( { section } ) => {
 							/>
 						</li>
 					</ul>
+				</CardBody>
+			) }
+
+			{ 'general' === section && (
+				<CardBody>
 					<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 					<RadioControl
 						className="payment-method-settings__cta-selection"

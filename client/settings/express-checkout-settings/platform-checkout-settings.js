@@ -221,6 +221,68 @@ const PlatformCheckoutSettings = ( { section } ) => {
 								'woocommerce-payments'
 							) }
 						/>
+						<h4>
+							{ __(
+								'Show express checkouts on',
+								'woocommerce-payments'
+							) }
+						</h4>
+						<ul className="payment-request-settings__location">
+							<li>
+								<CheckboxControl
+									disabled={ ! isPlatformCheckoutEnabled }
+									checked={
+										isPlatformCheckoutEnabled &&
+										platformCheckoutLocations.includes(
+											'checkout'
+										)
+									}
+									onChange={ makeLocationChangeHandler(
+										'checkout'
+									) }
+									label={ __(
+										'Checkout',
+										'woocommerce-payments'
+									) }
+								/>
+							</li>
+							<li>
+								<CheckboxControl
+									disabled={ ! isPlatformCheckoutEnabled }
+									checked={
+										isPlatformCheckoutEnabled &&
+										platformCheckoutLocations.includes(
+											'product'
+										)
+									}
+									onChange={ makeLocationChangeHandler(
+										'product'
+									) }
+									label={ __(
+										'Product page',
+										'woocommerce-payments'
+									) }
+								/>
+							</li>
+							<li>
+								<CheckboxControl
+									disabled={ ! isPlatformCheckoutEnabled }
+									checked={
+										isPlatformCheckoutEnabled &&
+										platformCheckoutLocations.includes(
+											'cart'
+										)
+									}
+									onChange={ makeLocationChangeHandler(
+										'cart'
+									) }
+									label={ __(
+										'Cart',
+										'woocommerce-payments'
+									) }
+								/>
+							</li>
+						</ul>
 					</CardBody>
 				</Card>
 			) }
@@ -288,68 +350,6 @@ const PlatformCheckoutSettings = ( { section } ) => {
 			{ 'general' === section && (
 				<Card style={ { marginTop: 12 } }>
 					<CardBody>
-						<h4>
-							{ __(
-								'Show express checkouts on',
-								'woocommerce-payments'
-							) }
-						</h4>
-						<ul className="payment-request-settings__location">
-							<li>
-								<CheckboxControl
-									disabled={ ! isPlatformCheckoutEnabled }
-									checked={
-										isPlatformCheckoutEnabled &&
-										platformCheckoutLocations.includes(
-											'checkout'
-										)
-									}
-									onChange={ makeLocationChangeHandler(
-										'checkout'
-									) }
-									label={ __(
-										'Checkout',
-										'woocommerce-payments'
-									) }
-								/>
-							</li>
-							<li>
-								<CheckboxControl
-									disabled={ ! isPlatformCheckoutEnabled }
-									checked={
-										isPlatformCheckoutEnabled &&
-										platformCheckoutLocations.includes(
-											'product'
-										)
-									}
-									onChange={ makeLocationChangeHandler(
-										'product'
-									) }
-									label={ __(
-										'Product page',
-										'woocommerce-payments'
-									) }
-								/>
-							</li>
-							<li>
-								<CheckboxControl
-									disabled={ ! isPlatformCheckoutEnabled }
-									checked={
-										isPlatformCheckoutEnabled &&
-										platformCheckoutLocations.includes(
-											'cart'
-										)
-									}
-									onChange={ makeLocationChangeHandler(
-										'cart'
-									) }
-									label={ __(
-										'Cart',
-										'woocommerce-payments'
-									) }
-								/>
-							</li>
-						</ul>
 						<h4>
 							{ __( 'Call to action', 'woocommerce-payments' ) }
 						</h4>
