@@ -31,9 +31,6 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
-	usePlatformCheckoutButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
-	usePlatformCheckoutButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
-	usePlatformCheckoutButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	usePlatformCheckoutLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
@@ -155,7 +152,7 @@ describe( 'ExpressCheckoutSettings', () => {
 
 		expect(
 			screen.queryByRole( 'heading', {
-				name: 'Show express checkouts on',
+				name: 'Call to action',
 			} )
 		).toBeInTheDocument();
 	} );
@@ -167,7 +164,7 @@ describe( 'ExpressCheckoutSettings', () => {
 
 		expect(
 			screen.queryByRole( 'heading', {
-				name: 'Show express checkouts on',
+				name: 'Call to action',
 			} )
 		).not.toBeInTheDocument();
 	} );

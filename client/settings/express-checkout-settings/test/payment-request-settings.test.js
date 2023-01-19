@@ -71,8 +71,10 @@ describe( 'PaymentRequestSettings', () => {
 	it( 'renders enable settings with defaults', () => {
 		render( <PaymentRequestSettings section="enable" /> );
 
-		// confirm no heading
-		expect( screen.queryByRole( 'heading' ) ).not.toBeInTheDocument();
+		// confirm there is a heading
+		expect(
+			screen.queryByText( 'Show express checkouts on' )
+		).toBeInTheDocument();
 
 		// confirm checkbox groups displayed
 		const [ enableCheckbox ] = screen.queryAllByRole( 'checkbox' );
@@ -110,11 +112,6 @@ describe( 'PaymentRequestSettings', () => {
 		expect(
 			screen.queryByRole( 'heading', { name: 'Appearance' } )
 		).toBeInTheDocument();
-
-		// confirm checkbox groups displayed
-		const [ locationCheckbox ] = screen.queryAllByRole( 'checkbox' );
-
-		expect( locationCheckbox ).toBeInTheDocument();
 
 		expect( screen.getByLabelText( 'Checkout' ) ).toBeChecked();
 		expect( screen.getByLabelText( 'Product page' ) ).toBeChecked();
