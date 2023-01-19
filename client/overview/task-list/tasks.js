@@ -39,8 +39,17 @@ const renderModal = ( errorMessages, status, accountLink, currentDeadline ) => {
 	);
 };
 
+// Requirements we don't want to show to the user because they are too generic/not useful.
+const requirementBlacklist = [ 'invalid_value_other' ];
+
 const getErrorMessagesFromRequirements = ( requirements ) => [
-	...new Set( requirements?.errors?.map( ( error ) => error.reason ) ),
+	...new Set(
+		requirements?.errors
+			?.filter(
+				( error ) => ! requirementBlacklist.includes( error.code )
+			)
+			?.map( ( error ) => error.reason )
+	),
 ];
 
 export const getTasks = ( {
