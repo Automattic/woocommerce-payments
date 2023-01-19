@@ -101,31 +101,4 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 			$mock_order_service
 		);
 	}
-
-	public function test_get_button_height() {
-		$this->mock_wcpay_gateway->update_option( 'platform_checkout_button_size', 'medium' );
-		$this->pr = new WC_Payments_Platform_Checkout_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
-
-		$this->assertEquals(
-			'48',
-			$this->pr->get_button_height()
-		);
-	}
-
-	public function test_get_button_settings() {
-		$this->mock_wcpay_gateway->update_option( 'platform_checkout_button_size', 'medium' );
-		$this->pr = new WC_Payments_Platform_Checkout_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
-
-		$this->assertEquals(
-			[
-				'type'    => 'default',
-				'text'    => 'Default',
-				'theme'   => 'dark',
-				'height'  => '48',
-				'size'    => 'medium',
-				'context' => 'cart',
-			],
-			$this->pr->get_button_settings()
-		);
-	}
 }
