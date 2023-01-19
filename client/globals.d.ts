@@ -27,9 +27,8 @@ declare const wcpaySettings: {
 		pastDue?: boolean;
 		accountLink: string;
 		hasSubmittedVatData?: boolean;
-		requirements?: {
-			currentlyDue?: Array< string >;
-			errors?: Array< RequirementError >;
+		requirements: {
+			errors: Array< RequirementError >;
 		};
 	};
 	accountLoans: {

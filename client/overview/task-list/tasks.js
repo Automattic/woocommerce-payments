@@ -16,6 +16,33 @@ import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import UpdateBusinessDetailsModal from '../modal/update-business-details';
 
+const renderModal = ( errorMessages, status, accountLink, currentDeadline ) => {
+	let container = document.querySelector(
+		'#wcpay-update-business-details-container'
+	);
+
+	if ( ! container ) {
+		container = document.createElement( 'div' );
+		container.id = 'wcpay-update-business-details-container';
+		document.body.appendChild( container );
+	}
+
+	ReactDOM.render(
+		<UpdateBusinessDetailsModal
+			key={ Date.now() }
+			errorMessages={ errorMessages }
+			accountStatus={ status }
+			accountLink={ accountLink }
+			currentDeadline={ currentDeadline }
+		/>,
+		container
+	);
+};
+
+const getErrorMessagesFromRequirements = ( requirements ) => [
+	...new Set( requirements?.errors.map( ( error ) => error.reason ) ),
+];
+
 export const getTasks = ( {
 	accountStatus,
 	showUpdateDetailsTask,
@@ -23,37 +50,6 @@ export const getTasks = ( {
 	isAccountOverviewTasksEnabled,
 	numDisputesNeedingResponse = 0,
 } ) => {
-	const renderModal = (
-		errorMessages,
-		status,
-		accountLink,
-		currentDeadline
-	) => {
-		const container = document.createElement( 'div' );
-		container.id = 'wcpay-update-business-details-container';
-		document.body.appendChild( container );
-		ReactDOM.render(
-			<UpdateBusinessDetailsModal
-				errorMessages={ errorMessages }
-				accountStatus={ status }
-				accountLink={ accountLink }
-				currentDeadline={ currentDeadline }
-			/>,
-			container
-		);
-	};
-
-	const getErrorMessagesFromRequirements = ( requirements ) => {
-		if ( 'errors' in requirements ) {
-			const errorMessages = requirements.errors.map( ( error ) => {
-				return error.reason;
-			} );
-			return [ ...new Set( errorMessages ) ];
-		}
-
-		return [];
-	};
-
 	const {
 		status,
 		currentDeadline,
@@ -108,7 +104,6 @@ export const getTasks = ( {
 	}
 
 	return [
-		// TODO: If more than one error exists, show the modal, if only one error exists, show the error directly to the user here.
 		isAccountOverviewTasksEnabled &&
 			showUpdateDetailsTask && {
 				key: 'update-business-details',

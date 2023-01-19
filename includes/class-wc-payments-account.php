@@ -196,12 +196,11 @@ class WC_Payments_Account {
 			'deposits'            => $account['deposits'] ?? [],
 			'depositsStatus'      => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
 			'currentDeadline'     => $account['current_deadline'] ?? false,
-			'pastDue'             => true,
+			'pastDue'             => $account['has_overdue_requirements'] ?? false,
 			'accountLink'         => $this->get_login_url(),
 			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
 			'requirements'        => [
-				'currentlyDue' => $account['requirements']['currently_due'] ?? [],
-				'errors'       => $account['requirements']['errors'] ?? [],
+				'errors' => $account['requirements']['errors'] ?? [],
 			],
 		];
 	}
