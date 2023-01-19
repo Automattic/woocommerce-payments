@@ -96,6 +96,10 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect( updateIsPaymentRequestEnabledHandler ).not.toHaveBeenCalled();
 
+		expect( screen.getByLabelText( 'Checkout' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Product page' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Cart' ) ).toBeChecked();
+
 		userEvent.click( screen.getByLabelText( /Enable Apple Pay/ ) );
 		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
 			false
@@ -113,10 +117,6 @@ describe( 'PaymentRequestSettings', () => {
 			screen.queryByRole( 'heading', { name: 'Appearance' } )
 		).toBeInTheDocument();
 
-		expect( screen.getByLabelText( 'Checkout' ) ).toBeChecked();
-		expect( screen.getByLabelText( 'Product page' ) ).toBeChecked();
-		expect( screen.getByLabelText( 'Cart' ) ).toBeChecked();
-
 		// confirm radio button groups displayed
 		const [ ctaRadio, sizeRadio, themeRadio ] = screen.queryAllByRole(
 			'radio'
@@ -132,12 +132,8 @@ describe( 'PaymentRequestSettings', () => {
 		expect( screen.getByLabelText( /Dark/ ) ).toBeChecked();
 	} );
 
-	it( 'triggers the hooks when the general settings are being interacted with', () => {
+	it( 'triggers the hooks when the enabled settings are being interacted with', () => {
 		const updatePaymentRequestLocationsHandler = jest.fn();
-		const setButtonTypeMock = jest.fn();
-		const setButtonSizeMock = jest.fn();
-		const setButtonThemeMock = jest.fn();
-
 		usePaymentRequestLocations.mockReturnValue(
 			getMockPaymentRequestLocations(
 				false,
@@ -146,25 +142,9 @@ describe( 'PaymentRequestSettings', () => {
 				updatePaymentRequestLocationsHandler
 			)
 		);
-		usePaymentRequestButtonType.mockReturnValue( [
-			'buy',
-			setButtonTypeMock,
-		] );
-		usePaymentRequestButtonSize.mockReturnValue( [
-			'default',
-			setButtonSizeMock,
-		] );
-		usePaymentRequestButtonTheme.mockReturnValue( [
-			'dark',
-			setButtonThemeMock,
-		] );
-
-		render( <PaymentRequestSettings section="general" /> );
+		render( <PaymentRequestSettings section="enable" /> );
 
 		expect( updatePaymentRequestLocationsHandler ).not.toHaveBeenCalled();
-		expect( setButtonTypeMock ).not.toHaveBeenCalled();
-		expect( setButtonSizeMock ).not.toHaveBeenCalled();
-		expect( setButtonThemeMock ).not.toHaveBeenCalled();
 
 		userEvent.click( screen.getByLabelText( /Checkout/ ) );
 		expect(
@@ -180,6 +160,31 @@ describe( 'PaymentRequestSettings', () => {
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'cart' ] );
+	} );
+
+	it( 'triggers the hooks when the general settings are being interacted with', () => {
+		const setButtonTypeMock = jest.fn();
+		const setButtonSizeMock = jest.fn();
+		const setButtonThemeMock = jest.fn();
+
+		usePaymentRequestButtonType.mockReturnValue( [
+			'buy',
+			setButtonTypeMock,
+		] );
+		usePaymentRequestButtonSize.mockReturnValue( [
+			'default',
+			setButtonSizeMock,
+		] );
+		usePaymentRequestButtonTheme.mockReturnValue( [
+			'dark',
+			setButtonThemeMock,
+		] );
+
+		render( <PaymentRequestSettings section="general" /> );
+
+		expect( setButtonTypeMock ).not.toHaveBeenCalled();
+		expect( setButtonSizeMock ).not.toHaveBeenCalled();
+		expect( setButtonThemeMock ).not.toHaveBeenCalled();
 
 		userEvent.click( screen.getByLabelText( /Light/ ) );
 		expect( setButtonThemeMock ).toHaveBeenCalledWith( 'light' );
@@ -203,7 +208,7 @@ describe( 'PaymentRequestSettings', () => {
 			)
 		);
 
-		render( <PaymentRequestSettings section="general" /> );
+		render( <PaymentRequestSettings section="enable" /> );
 
 		// Uncheck each checkbox, and verify them what kind of action should have been called
 		userEvent.click( screen.getByText( 'Product page' ) );
