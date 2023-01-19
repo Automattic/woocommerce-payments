@@ -616,7 +616,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		wp_set_script_translations( 'WCPAY_CHECKOUT', 'woocommerce-payments' );
 
-		if( ! WC()->cart->needs_payment() ) {
+		if ( ! WC()->cart->needs_payment() ) {
 			WC_Payments::get_gateway()->tokenization_script();
 			WC_Payments::get_wc_payments_checkout()->enqueue_payment_scripts();
 		}
