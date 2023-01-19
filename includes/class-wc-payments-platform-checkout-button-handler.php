@@ -345,7 +345,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return boolean
 	 */
 	public function is_available_at( $location ) {
-		$available_locations = $this->gateway->get_option( 'payment_request_button_locations' );
+		$available_locations = $this->gateway->get_option( 'platform_checkout_button_locations' );
 		if ( $available_locations && is_array( $available_locations ) ) {
 			return in_array( $location, $available_locations, true );
 		}
