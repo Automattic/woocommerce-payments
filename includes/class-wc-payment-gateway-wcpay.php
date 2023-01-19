@@ -472,6 +472,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Overrides the parent method by adding an additional check to see if the tokens list is empty.
+	 * If it is, the method avoids displaying the HTML element with an empty line to maintain a clean user interface and remove unnecessary space.
+	 *
+	 * @return void
+	 */
+	public function saved_payment_methods() {
+		if ( empty( $this->get_tokens() ) ) {
+			return;
+		}
+
+		parent::saved_payment_methods();
+	}
+
+	/**
 	 * Checks if the setting to allow the user to save cards is enabled.
 	 *
 	 * @return bool Whether the setting to allow saved cards is enabled or not.
@@ -602,7 +616,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		?>
 		<div <?php echo $should_hide ? 'style="display:none;"' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 			<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
-				<input id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" type="checkbox" value="true" style="width:auto;" <?php echo $force_checked ? 'checked' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?> />
+				<input id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" type="checkbox" value="true" style="width:auto; vertical-align: middle; position: relative; bottom: 1px;" <?php echo $force_checked ? 'checked' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?> />
 				<label for="<?php echo esc_attr( $id ); ?>" style="display:inline;">
 					<?php echo esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) ); ?>
 				</label>
