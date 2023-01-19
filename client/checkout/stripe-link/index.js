@@ -89,6 +89,10 @@ export default class StripeLinkButton {
 	 * @param {string} email User email address value.
 	 */
 	launchAutofill( email ) {
+		if ( ! validateEmail( email ) ) {
+			return;
+		}
+
 		if ( this.isPlatformCheckoutEnabled ) {
 			const emailInput = document.getElementById( this.options.emailId );
 			switch ( getWooPayQueryStatus( emailInput ) ) {
@@ -119,9 +123,6 @@ export default class StripeLinkButton {
 	 * @param {Object} event Keyup event.
 	 */
 	keyupHandler( event ) {
-		if ( ! validateEmail( event.target.value ) ) {
-			return;
-		}
 		this.launchAutofill( event.target.value );
 	}
 
@@ -373,15 +374,7 @@ export default class StripeLinkButton {
 		}
 
 		const emailValue = jQuery( `#${ this.options.emailId }` ).val();
-		// Trigger modal.
-		if ( '' === emailValue ) {
-			this.options.showError(
-				'Please enter your email address to checkout with Link.'
-			);
-			jQuery( `#${ this.options.emailId }` ).focus();
-		} else {
-			this.launchAutofill( emailValue );
-		}
+		this.launchAutofill( emailValue );
 		this.isUPELoaded = true;
 	}
 
