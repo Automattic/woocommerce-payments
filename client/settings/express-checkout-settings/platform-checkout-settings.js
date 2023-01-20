@@ -9,6 +9,7 @@ import {
 	CheckboxControl,
 	RadioControl,
 	TextControl,
+	Notice,
 } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
@@ -18,6 +19,7 @@ import interpolateComponents from 'interpolate-components';
 import CardBody from '../card-body';
 import PlatformCheckoutFileUpload from './file-upload';
 import PlatformCheckoutPreview from './platform-checkout-preview';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
@@ -350,6 +352,27 @@ const PlatformCheckoutSettings = ( { section } ) => {
 			{ 'general' === section && (
 				<Card style={ { marginTop: 12 } }>
 					<CardBody>
+						<Notice
+							status="warning"
+							isDismissible={ false }
+							className="express-checkout__notice"
+						>
+							<span>
+								<NoticeOutlineIcon
+									style={ {
+										color: '#BD8600',
+										fill: 'currentColor',
+										marginBottom: '-5px',
+										marginRight: '16px',
+									} }
+									size={ 20 }
+								/>
+								{ __(
+									'These settings will also apply to the Apple Pay/Google Pay buttons on your store.',
+									'woocommerce-payments'
+								) }
+							</span>
+						</Notice>
 						<h4>
 							{ __( 'Call to action', 'woocommerce-payments' ) }
 						</h4>

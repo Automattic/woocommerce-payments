@@ -4,7 +4,12 @@
  */
 import React, { useMemo } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CheckboxControl, RadioControl } from '@wordpress/components';
+import {
+	Card,
+	CheckboxControl,
+	RadioControl,
+	Notice,
+} from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -15,6 +20,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import { getPaymentRequestData } from '../../payment-request/utils';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
@@ -233,6 +239,27 @@ const PaymentRequestSettings = ( { section } ) => {
 
 			{ 'general' === section && (
 				<CardBody>
+					<Notice
+						status="warning"
+						isDismissible={ false }
+						className="express-checkout__notice"
+					>
+						<span>
+							<NoticeOutlineIcon
+								style={ {
+									color: '#BD8600',
+									fill: 'currentColor',
+									marginBottom: '-5px',
+									marginRight: '16px',
+								} }
+								size={ 20 }
+							/>
+							{ __(
+								'These settings will also apply to the WooPay buttons on your store.',
+								'woocommerce-payments'
+							) }
+						</span>
+					</Notice>
 					<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 					<RadioControl
 						className="payment-method-settings__cta-selection"
