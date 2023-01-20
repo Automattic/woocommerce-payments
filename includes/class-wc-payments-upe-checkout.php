@@ -12,6 +12,7 @@ use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
 use WC_Payments_Utils;
+use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
@@ -159,6 +160,13 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_methods = $this->gateway->get_payment_methods();
 
 		foreach ( $enabled_payment_methods as $payment_method ) {
+			// Link by Stripe should be validated with available fees.
+			if ( Payment_Method::LINK === $payment_method ) {
+				if ( ! in_array( Payment_Method::LINK, array_keys( $this->account->get_fees() ), true ) ) {
+					continue;
+				}
+			}
+
 			$settings[ $payment_method ] = [
 				'isReusable' => $payment_methods[ $payment_method ]->is_reusable(),
 				'title'      => $payment_methods[ $payment_method ]->get_title(),
@@ -251,7 +259,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 
 			</fieldset>
 
-			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
+			<?php if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
 				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
 			<?php endif; ?>
 

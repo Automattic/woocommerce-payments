@@ -13,13 +13,19 @@ import {
 } from '../constants.js';
 import { getConfig } from 'utils/checkout';
 import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
+import { woopayCheckEmailInput } from '../platform-checkout/woopay-check-email-input';
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { isWCPayChosen } from '../utils/upe';
+import {
+	getFingerprint,
+	appendFingerprintInputToForm,
+} from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
 
+	let fingerprint = '';
 	const publishableKey = getConfig( 'publishableKey' );
 
 	if ( ! publishableKey ) {
@@ -176,7 +182,7 @@ jQuery( function ( $ ) {
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
 	// event for this. This part of the page can also reload based on changes to checkout details, so we call unmount
 	// first to ensure the card element is re-mounted correctly.
-	$( document.body ).on( 'updated_checkout', () => {
+	$( document.body ).on( 'updated_checkout', async () => {
 		// If the card element selector doesn't exist, then do nothing (for example, when a 100% discount coupon is applied).
 		// We also don't re-mount if already mounted in DOM.
 		if (
@@ -184,6 +190,19 @@ jQuery( function ( $ ) {
 			! $( '#wcpay-card-element' ).children().length
 		) {
 			cardElement.unmount();
+
+			if ( ! fingerprint ) {
+				try {
+					const { visitorId } = await getFingerprint();
+					fingerprint = visitorId;
+				} catch ( error ) {
+					// Do not mount element if fingerprinting is not available
+					showError( error.message );
+
+					return;
+				}
+			}
+
 			cardElement.mount( '#wcpay-card-element' );
 		}
 
@@ -473,6 +492,8 @@ jQuery( function ( $ ) {
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
+		appendFingerprintInputToForm( $( this ), fingerprint );
+
 		if ( ! isUsingSavedPaymentMethod() ) {
 			let paymentMethodDetails = cardPayment;
 			if ( isWCPaySepaChosen() ) {
@@ -567,6 +588,10 @@ jQuery( function ( $ ) {
 	};
 
 	if ( getConfig( 'isPlatformCheckoutEnabled' ) && ! isPreviewing() ) {
-		handlePlatformCheckoutEmailInput( '#billing_email', api );
+		if ( getConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
+			woopayCheckEmailInput( '#billing_email' );
+		} else {
+			handlePlatformCheckoutEmailInput( '#billing_email', api );
+		}
 	}
 } );

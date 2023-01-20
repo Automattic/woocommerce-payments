@@ -16,6 +16,8 @@ import {
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
 	useManualCapture,
+	useSelectedPaymentMethod,
+	useUnselectedPaymentMethod,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import WcPayUpeContextProvider from '../../settings/wcpay-upe-toggle/provider';
@@ -29,6 +31,8 @@ jest.mock( '../../data', () => ( {
 	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 	useManualCapture: jest.fn(),
+	useSelectedPaymentMethod: jest.fn(),
+	useUnselectedPaymentMethod: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -40,6 +44,8 @@ jest.mock( '@wordpress/data', () => ( {
 describe( 'PaymentMethods', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
+		useSelectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
+		useUnselectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'au_becs_debit',
@@ -129,7 +135,7 @@ describe( 'PaymentMethods', () => {
 
 	test( 'inactive and pending payment methods have notice pills', () => {
 		const updateEnabledMethodsMock = jest.fn( () => {} );
-		useEnabledPaymentMethodIds.mockReturnValue( [
+		useSelectedPaymentMethod.mockReturnValue( [
 			[
 				'Credit card / debit card',
 				'BECS Direct Debit',
@@ -327,9 +333,9 @@ describe( 'PaymentMethods', () => {
 
 	it( 'should render the activation modal when requirements exist for the payment method', () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
-		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'bancontact' ] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: {
+			bancontact_payments: {
 				status: upeCapabilityStatuses.UNREQUESTED,
 				requirements: [ 'company.tax_id' ],
 			},
@@ -342,26 +348,26 @@ describe( 'PaymentMethods', () => {
 		);
 
 		expect(
-			screen.queryByLabelText( 'Credit card / debit card' )
+			screen.queryByRole( 'checkbox', { name: /Bancontact/ } )
 		).toBeInTheDocument();
 
-		const cardCheckbox = screen.getByLabelText(
-			'Credit card / debit card'
-		);
+		const bancontactCheckbox = screen.queryByRole( 'checkbox', {
+			name: /Bancontact/,
+		} );
 
-		expect( cardCheckbox ).not.toBeChecked();
+		expect( bancontactCheckbox ).not.toBeChecked();
 
 		jest.useFakeTimers();
 
 		act( () => {
 			// Enabling a PM with requirements should show the activation modal
-			user.click( cardCheckbox );
+			user.click( bancontactCheckbox );
 			jest.runAllTimers();
 		} );
 
 		expect(
 			screen.queryByText(
-				/You need to provide more information to enable Credit card \/ debit card on your checkout/
+				/You need to provide more information to enable Bancontact on your checkout/
 			)
 		).toBeInTheDocument();
 
@@ -369,10 +375,13 @@ describe( 'PaymentMethods', () => {
 	} );
 
 	it( 'should render the delete modal on an already active payment method', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ], jest.fn() ] );
-		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'bancontact' ],
+			jest.fn(),
+		] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'bancontact' ] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
-			card_payments: {
+			bancontact_payments: {
 				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
 			},
@@ -384,27 +393,23 @@ describe( 'PaymentMethods', () => {
 			</WcPayUpeContextProvider>
 		);
 
-		expect(
-			screen.queryByLabelText( 'Credit card / debit card' )
-		).toBeInTheDocument();
+		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
 
-		const cardCheckbox = screen.getByLabelText(
-			'Credit card / debit card'
-		);
+		const bancontactCheckbox = screen.getByLabelText( 'Bancontact' );
 
-		expect( cardCheckbox ).toBeChecked();
+		expect( bancontactCheckbox ).toBeChecked();
 
 		jest.useFakeTimers();
 
 		act( () => {
 			// Disabling an already active PM should show the delete modal
-			user.click( cardCheckbox );
+			user.click( bancontactCheckbox );
 			jest.runAllTimers();
 		} );
 
 		expect(
 			screen.queryByText(
-				/Your customers will no longer be able to pay using Credit card \/ debit card\./
+				/Your customers will no longer be able to pay using Bancontact\./
 			)
 		).toBeInTheDocument();
 

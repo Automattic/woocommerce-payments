@@ -16,6 +16,7 @@ use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
+use WCPay\Constants\Payment_Intent_Status;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
@@ -171,6 +172,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		 */
 		add_action( 'template_redirect', [ $this, 'remove_order_pay_var' ], 99 );
 		add_action( 'template_redirect', [ $this, 'restore_order_pay_var' ], 101 );
+
+		// Update subscriptions token when user sets a default payment method.
+		add_filter( 'woocommerce_subscriptions_update_subscription_token', [ $this, 'update_subscription_token' ], 10, 3 );
 	}
 
 	/**
@@ -211,12 +215,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$order  = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
 		$intent = $this->payments_api_client->get_intent( $order->get_transaction_id() );
 
-		if ( ! $intent || 'requires_action' !== $intent->get_status() ) {
+		if ( ! $intent || Payment_Intent_Status::REQUIRES_ACTION !== $intent->get_status() ) {
 			return false;
 		}
 
 		$js_config                     = WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-		$js_config['intentSecret']     = $intent->get_client_secret();
+		$js_config['intentSecret']     = WC_Payments_Utils::encrypt_client_secret( $intent->get_stripe_account_id(), $intent->get_client_secret() );
 		$js_config['updateOrderNonce'] = wp_create_nonce( 'wcpay_update_order_status_nonce' );
 		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $js_config );
 		wp_enqueue_script( 'WCPAY_CHECKOUT' );
@@ -274,9 +278,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
+		// Add mandate param to the order payment if needed.
+		$additional_api_parameters = $this->get_mandate_param_for_renewal_order( $renewal_order );
+
 		try {
 			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT() );
-			$this->process_payment_for_order( null, $payment_information );
+			$this->process_payment_for_order( null, $payment_information, $additional_api_parameters );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
@@ -285,7 +292,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			if ( ! empty( $payment_information ) ) {
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the failed payment amount, %2: error message  */
+					/* translators: %1: the failed payment amount, %2: error message  */
 						__(
 							'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
 							'woocommerce-payments'
@@ -482,7 +489,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		$script_src_url    = plugins_url( 'dist/subscription-edit-page.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/subscription-edit-page.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script(
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
@@ -786,6 +793,28 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Update the specified subscription's payment token with a new token.
+	 *
+	 * @param bool             $updated      Whether the token was updated.
+	 * @param WC_Subscription  $subscription The subscription whose payment token need to be updated.
+	 * @param WC_Payment_Token $new_token    The new payment token to be used for the specified subscription.
+	 *
+	 * @return bool Whether this function updates the token or not.
+	 */
+	public function update_subscription_token( $updated, $subscription, $new_token ) {
+		if ( $this->id !== $new_token->get_gateway_id() ) {
+			return $updated;
+		}
+
+		$subscription->set_payment_method( $this->id );
+		$subscription->update_meta_data( '_payment_method_id', $new_token->get_token() );
+		$subscription->add_payment_token( $new_token );
+		$subscription->save();
+
+		return true;
+	}
+
+	/**
 	 * Checks if a renewal order is linked to a WCPay subscription.
 	 *
 	 * @param WC_Order $renewal_order The renewal order to check.
@@ -806,5 +835,114 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get card mandate parameters for the order payment intent if needed.
+	 * Only required for subscriptions creation for cards issued in India.
+	 * More details https://wp.me/pc4etw-ky
+	 *
+	 * @param WC_Order $order The subscription order.
+	 * @return array Params to be included or empty array.
+	 */
+	public function get_mandate_params_for_order( WC_Order $order ): array {
+		$result = [];
+
+		if ( ! $this->is_subscriptions_enabled() ) {
+			return $result;
+		}
+		$subscriptions = wcs_get_subscriptions_for_order( $order->get_id() );
+		$subscription  = reset( $subscriptions );
+
+		if ( ! $subscription ) {
+			return $result;
+		}
+
+		// Get total by adding only subscriptions and get rid of any other product or fee.
+		$subs_amount = 0;
+		foreach ( $subscriptions as $sub ) {
+			$subs_amount += $sub->get_total();
+		}
+
+		$result['setup_future_usage']                                = 'off_session';
+		$result['payment_method_options']['card']['mandate_options'] = [
+			'reference'       => $order->get_id(),
+			'amount'          => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
+			'amount_type'     => 'fixed',
+			'start_date'      => $subscription->get_time( 'date_created' ),
+			'interval'        => $subscription->get_billing_period(),
+			'interval_count'  => $subscription->get_billing_interval(),
+			'supported_types' => [ 'india' ],
+		];
+
+		// Multiple subscriptions per order needs:
+		// - Set amount type to maximum, to allow renews of any amount under the order total.
+		// - Set interval to sporadic, to not follow any specific interval.
+		// - Unset interval count, because it doesn't apply anymore.
+		if ( 1 < count( $subscriptions ) ) {
+			$result['payment_method_options']['card']['mandate_options']['amount_type'] = 'maximum';
+			$result['payment_method_options']['card']['mandate_options']['interval']    = 'sporadic';
+			unset( $result['payment_method_options']['card']['mandate_options']['interval_count'] );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Add an order note if the renew intent customer notification requires the merchant to authenticate the payment.
+	 * The note includes the charge attempt date and let the merchant know the need of an off-session step by the customer.
+	 *
+	 * @param WC_Order $order The renew order.
+	 * @param array    $processing Processing state from Stripe's intent response.
+	 * @return void
+	 */
+	public function maybe_add_customer_notification_note( WC_Order $order, array $processing = [] ) {
+		$approval_requested = $processing['card']['customer_notification']['approval_requested'] ?? false;
+		$completes_at       = $processing['card']['customer_notification']['completes_at'] ?? null;
+		if ( $approval_requested && $completes_at ) {
+			$attempt_date = wp_date( get_option( 'date_format', 'F j, Y' ), $completes_at, wp_timezone() );
+			$attempt_time = wp_date( get_option( 'time_format', 'g:i a' ), $completes_at, wp_timezone() );
+
+			$note = sprintf(
+			/* translators: 1) date in date_format or 'F j, Y'; 2) time in time_format or 'g:i a' */
+				__( 'The customer must authorize this payment via a notification sent to them by the bank which issued their card. The authorization must be completed before %1$s at %2$s, when the charge will be attempted.', 'woocommerce-payments' ),
+				$attempt_date,
+				$attempt_time
+			);
+
+			$order->add_order_note( $note );
+		}
+
+	}
+
+	/**
+	 * Get mandate ID parameter to renewal payment if exists.
+	 * Only required for subscriptions renewals for cards issued in India.
+	 * More details https://wp.me/pc4etw-ky
+	 *
+	 * @param WC_Order $renewal_order The subscription renewal order.
+	 * @return array Param to be included or empty array.
+	 */
+	public function get_mandate_param_for_renewal_order( WC_Order $renewal_order ): array {
+		$subscriptions = wcs_get_subscriptions_for_renewal_order( $renewal_order->get_id() );
+		$subscription  = reset( $subscriptions );
+
+		if ( ! $subscription ) {
+			return [];
+		}
+
+		$parent_order = wc_get_order( $subscription->get_parent_id() );
+
+		if ( ! $parent_order ) {
+			return [];
+		}
+
+		$mandate = $parent_order->get_meta( '_stripe_mandate_id', true );
+
+		if ( empty( $mandate ) ) {
+			return [];
+		}
+
+		return [ 'mandate' => $mandate ];
 	}
 }

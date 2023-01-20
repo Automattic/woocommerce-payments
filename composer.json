@@ -28,7 +28,7 @@
       "automattic/jetpack-identity-crisis": "^0.8.31",
       "automattic/jetpack-sync": "^1.41",
       "myclabs/php-enum": "1.7.7",
-      "woocommerce/subscriptions-core": "2.5.1"
+      "woocommerce/subscriptions-core": "5.1.0"
     },
     "require-dev": {
       "composer/installers": "1.10.0",

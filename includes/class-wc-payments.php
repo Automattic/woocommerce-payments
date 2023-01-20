@@ -150,6 +150,13 @@ class WC_Payments {
 	private static $payment_request_button_handler;
 
 	/**
+	 * Instance of WC_Payments_Platform_Checkout_Button_Handler, created in init function
+	 *
+	 * @var WC_Payments_Platform_Checkout_Button_Handler
+	 */
+	private static $platform_checkout_button_handler;
+
+	/**
 	 * Instance of WC_Payments_Apple_Pay_Registration, created in init function
 	 *
 	 * @var WC_Payments_Apple_Pay_Registration
@@ -265,6 +272,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-status.php';
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
+		include_once __DIR__ . '/class-wc-payments-platform-checkout-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
@@ -273,9 +281,10 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-webhook-data-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
-		include_once __DIR__ . '/compat/class-wc-payment-woo-compat-utils.php';
+		include_once __DIR__ . '/constants/class-order-status.php';
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
+		include_once __DIR__ . '/constants/class-payment-intent-status.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/constants/class-payment-method.php';
 		include_once __DIR__ . '/class-payment-information.php';
@@ -358,8 +367,9 @@ class WC_Payments {
 		self::maybe_register_platform_checkout_hooks();
 
 		// Payment Request and Apple Pay.
-		self::$payment_request_button_handler = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-		self::$apple_pay_registration         = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
+		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
+		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway() );
+		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
@@ -387,11 +397,11 @@ class WC_Payments {
 		WC_Payments_Explicit_Price_Formatter::init();
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 
 		// Add admin screens.
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
-			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
@@ -1079,8 +1089,9 @@ class WC_Payments {
 
 		$session_cookie_name = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
 
-		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 		$user        = wp_get_current_user();
+		$return_url  = ! empty( $_POST['return_url'] ) ? wc_clean( wp_unslash( $_POST['return_url'] ) ) : '';
 		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			// create customer.
@@ -1118,6 +1129,7 @@ class WC_Payments {
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
 				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
+				'return_url'                     => $return_url,
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
