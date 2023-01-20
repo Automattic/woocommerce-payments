@@ -1,3 +1,4 @@
+/* global jQuery */
 /**
  * External dependencies
  */
@@ -43,6 +44,12 @@ const renderPlatformCheckoutExpressButton = () => {
 	}
 };
 
-window.addEventListener( 'load', () => {
-	renderPlatformCheckoutExpressButton();
+jQuery( ( $ ) => {
+	$( window ).on( 'load', () => {
+		renderPlatformCheckoutExpressButton();
+	} );
+
+	$( document.body ).on( 'updated_cart_totals', () => {
+		renderPlatformCheckoutExpressButton();
+	} );
 } );
