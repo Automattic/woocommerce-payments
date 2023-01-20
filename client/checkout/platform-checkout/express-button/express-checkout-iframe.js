@@ -107,7 +107,7 @@ export const expressCheckoutIframe = async ( api, context ) => {
 		);
 
 		// Handle Blocks Cart and Checkout notices.
-		if ( wp.data.dispatch( 'core/notices' ) && 'product' !== context ) {
+		if ( wcSettings.wcBlocksConfig && 'product' !== context ) {
 			// This handles adding the error notice to the cart page.
 			wp.data
 				.dispatch( 'core/notices' )
