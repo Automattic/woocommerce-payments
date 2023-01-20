@@ -181,7 +181,7 @@ const PaymentRequestSettings = ( { section } ) => {
 					/>
 					<h4>
 						{ __(
-							'Show express checkouts on',
+							'Enable Apple Pay and Google Pay on selected pages',
 							'woocommerce-payments'
 						) }
 					</h4>

@@ -225,7 +225,7 @@ const PlatformCheckoutSettings = ( { section } ) => {
 						/>
 						<h4>
 							{ __(
-								'Show express checkouts on',
+								'Enable WooPay on selected pages',
 								'woocommerce-payments'
 							) }
 						</h4>

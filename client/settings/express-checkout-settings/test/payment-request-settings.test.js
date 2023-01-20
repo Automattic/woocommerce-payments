@@ -73,7 +73,9 @@ describe( 'PaymentRequestSettings', () => {
 
 		// confirm there is a heading
 		expect(
-			screen.queryByText( 'Show express checkouts on' )
+			screen.queryByText(
+				'Enable Apple Pay and Google Pay on selected pages'
+			)
 		).toBeInTheDocument();
 
 		// confirm checkbox groups displayed
