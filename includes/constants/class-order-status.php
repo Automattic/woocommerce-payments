@@ -26,4 +26,5 @@ class Order_Status extends Enum {
 	const PENDING    = 'pending';
 	const PROCESSING = 'processing';
 	const REFUNDED   = 'refunded';
+	const TRASH      = 'trash';
 }

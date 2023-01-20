@@ -34,7 +34,10 @@ import paymentMethodsMap from '../../payment-methods-map';
 import ConfirmPaymentMethodActivationModal from 'wcpay/payment-methods/activation-modal';
 
 const usePaymentMethodsCheckboxState = () => {
-	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {} );
+	// For UPE, the card payment method is required and always active.
+	const [ paymentMethodsState, setPaymentMethodsState ] = useState( {
+		card: true,
+	} );
 
 	const handleChange = useCallback(
 		( paymentMethodName, enabled ) => {
@@ -118,7 +121,7 @@ const ContinueButton = ( { paymentMethodsState } ) => {
 			onClick={ handleContinueClick }
 			isPrimary
 		>
-			{ __( 'Add payment methods', 'woocommerce-payments' ) }
+			{ __( 'Continue', 'woocommerce-payments' ) }
 		</Button>
 	);
 };
@@ -222,7 +225,10 @@ const AddPaymentMethodsTask = () => {
 						},
 					} ) }
 				</p>
-				<Card className="add-payment-methods-task__payment-selector-wrapper">
+				<Card
+					className="add-payment-methods-task__payment-selector-wrapper"
+					size="small"
+				>
 					<CardBody>
 						{ /* eslint-disable-next-line max-len */ }
 						<p className="add-payment-methods-task__payment-selector-title wcpay-wizard-task__description-element">
@@ -234,6 +240,18 @@ const AddPaymentMethodsTask = () => {
 						<LoadableBlock numLines={ 10 } isLoading={ ! isActive }>
 							<LoadableSettingsSection numLines={ 10 }>
 								<PaymentMethodCheckboxes>
+									<PaymentMethodCheckbox
+										key="card"
+										checked={ paymentMethodsState.card }
+										// The card payment method is required when UPE is active and it can't be deactivated.
+										required={ true }
+										locked={ true }
+										status={
+											getStatusAndRequirements( 'card' )
+												.status
+										}
+										name="card"
+									/>
 									{ upeMethods.map(
 										( key ) =>
 											availablePaymentMethods.includes(
@@ -289,6 +307,12 @@ const AddPaymentMethodsTask = () => {
 						) }
 					</CardBody>
 				</Card>
+				<p className="add-payment-methods-task__payment-selector-description wcpay-wizard-task__description-element is-muted-color">
+					{ __(
+						'You can always change or add more payment methods later.',
+						'woocommerce-payments'
+					) }
+				</p>
 				<CurrencyInformationForMethods
 					selectedMethods={ selectedMethods }
 				/>

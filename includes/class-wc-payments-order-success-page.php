@@ -16,6 +16,8 @@ class WC_Payments_Order_Success_Page {
 	public function __construct() {
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'show_woopay_thankyou_notice' ], 10, 2 );
 		add_action( 'woocommerce_thankyou_woocommerce_payments', [ $this, 'show_woopay_payment_method_name' ] );
+		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_paid_order' ], 11 );
+		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_successful_intent' ], 11 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
 	}
 
@@ -66,6 +68,42 @@ class WC_Payments_Order_Success_Page {
 		</ul>
 
 		<?php
+	}
+
+	/**
+	 * Add the notice to the thank you page in case a recent order with the same content has already paid.
+	 *
+	 * @param string $text  the default thank you text.
+	 *
+	 * @return string
+	 */
+	public function add_notice_previous_paid_order( string $text ) {
+		if ( isset( $_GET[ WC_Payment_Gateway_WCPay::FLAG_PREVIOUS_ORDER_PAID ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			$text .= sprintf(
+				'<div class="woocommerce-info">%s</div>',
+				esc_attr__( 'We detected and prevented an attempt to pay for a duplicate order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
+			);
+		}
+
+		return $text;
+	}
+
+	/**
+	 * Add the notice to the thank you page in case an existing intention was successful for the order.
+	 *
+	 * @param string $text  the default thank you text.
+	 *
+	 * @return string
+	 */
+	public function add_notice_previous_successful_intent( string $text ) {
+		if ( isset( $_GET[ WC_Payment_Gateway_WCPay::FLAG_PREVIOUS_SUCCESSFUL_INTENT ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			$text .= sprintf(
+				'<div class="woocommerce-info">%s</div>',
+				esc_attr__( 'We prevented multiple payments for the same order. If this was a mistake and you wish to try again, please create a new order.', 'woocommerce-payments' )
+			);
+		}
+
+		return $text;
 	}
 
 	/**

@@ -682,6 +682,16 @@ export default class WCPayAPI {
 		);
 	}
 
+	expressCheckoutAddToCart( productData ) {
+		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
+		const addToCartNonce = getConfig( 'addToCartNonce' );
+
+		return this.request( buildAjaxURL( wcAjaxUrl, 'add_to_cart' ), {
+			security: addToCartNonce,
+			...productData,
+		} );
+	}
+
 	paymentRequestPayForOrder( order, paymentData ) {
 		return this.request( getPaymentRequestAjaxURL( 'pay_for_order' ), {
 			_wpnonce: getPaymentRequestData( 'nonce' )?.pay_for_order,
@@ -707,5 +717,31 @@ export default class WCPayAPI {
 			// There is not any action to take or harm caused by a failed update, so just returning true.
 			return true;
 		} );
+	}
+
+	/**
+	 * Redirect to the order-received page for duplicate payments.
+	 *
+	 * @param {Object} response Response data to check if doing the redirect.
+	 * @return {boolean} Returns true if doing the redirection.
+	 */
+	handleDuplicatePayments( {
+		wcpay_upe_paid_for_previous_order: previouslyPaid,
+		wcpay_upe_previous_successful_intent: previousSuccessfulIntent,
+		redirect,
+	} ) {
+		if ( redirect ) {
+			// Another order has the same cart content and was paid.
+			if ( previouslyPaid ) {
+				return ( window.location = redirect );
+			}
+
+			// Another intent has the equivalent successful status for the order.
+			if ( previousSuccessfulIntent ) {
+				return ( window.location = redirect );
+			}
+		}
+
+		return false;
 	}
 }

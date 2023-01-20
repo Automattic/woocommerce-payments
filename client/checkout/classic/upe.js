@@ -515,13 +515,19 @@ jQuery( function ( $ ) {
 			// Update payment intent with level3 data, customer and maybe setup for future use.
 			const paymentMethodType = getSelectedGatewayPaymentMethod();
 			const upeComponents = gatewayUPEComponents[ paymentMethodType ];
-			await api.updateIntent(
+			const updateResponse = await api.updateIntent(
 				upeComponents.paymentIntentId,
 				orderId,
 				savePaymentMethod,
 				$( '#wcpay_selected_upe_payment_type' ).val(),
 				$( '#wcpay_payment_country' ).val()
 			);
+
+			if ( updateResponse.data ) {
+				if ( api.handleDuplicatePayments( updateResponse.data ) ) {
+					return;
+				}
+			}
 
 			const { error } = await api.handlePaymentConfirmation(
 				upeComponents.elements,
@@ -602,6 +608,11 @@ jQuery( function ( $ ) {
 				formFields,
 				fingerprint ? fingerprint : ''
 			);
+
+			if ( api.handleDuplicatePayments( response ) ) {
+				return;
+			}
+
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {
 				elements: upeComponents.elements,
