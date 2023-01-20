@@ -133,7 +133,7 @@ class WC_Payments_Subscription_Service {
 
 		add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
 		add_action( 'woocommerce_subscription_status_expired', [ $this, 'cancel_subscription' ] );
-		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'suspend_subscription' ] );
+		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'handle_subscription_status_on_hold' ] );
 		add_action( 'woocommerce_subscription_status_pending-cancel', [ $this, 'set_pending_cancel_for_subscription' ] );
 		add_action( 'woocommerce_subscription_status_pending-cancel_to_active', [ $this, 'reactivate_subscription' ] );
 		add_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this, 'reactivate_subscription' ] );
@@ -449,6 +449,24 @@ class WC_Payments_Subscription_Service {
 		} catch ( API_Exception $e ) {
 			Logger::log( sprintf( 'There was a problem canceling the subscription on WCPay server: %s.', $e->getMessage() ) );
 		}
+	}
+
+	/**
+	 * Suspends the WCPay subscription when a WC subscription is put on-hold.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription that was suspended.
+	 *
+	 * @return void
+	 */
+	public function handle_subscription_status_on_hold( WC_Subscription $subscription ) {
+		Logger::log(
+			sprintf(
+				'Suspending WCPay Subscription because subscription status set to on-hold. WC ID: %d WCPay ID: %s.',
+				$subscription->get_id(),
+				self::get_wcpay_subscription_id( $subscription )
+			)
+		);
+		$this->suspend_subscription( $subscription );
 	}
 
 	/**
