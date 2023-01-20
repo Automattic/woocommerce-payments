@@ -794,6 +794,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] );
 
 		$this->mock_api_client
+			->method( 'get_intent' )
+			->willReturn( $payment_intent );
+
+		$this->mock_api_client
 			->expects( $this->exactly( count( $this->mock_payment_gateways ) ) )
 			->method( 'update_intention' )
 			->willReturn(
@@ -855,6 +859,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::PROCESSING ] );
+
+		$this->mock_api_client
+			->method( 'get_intent' )
+			->willReturn( $payment_intent );
 
 		$this->mock_api_client
 			->expects( $this->exactly( 2 ) )
@@ -926,6 +934,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 	public function test_upe_process_payment_check_session_order_redirect_to_previous_order() {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
+		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
 		$same_cart_hash = 'FAKE_SAME_CART_HASH';
 
@@ -951,12 +960,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'update_intention' );
 
 		// Act: process the order but redirect to the previous/session paid order.
-		$result = $this->mock_upe_gateway->process_payment( $current_order_id );
+		$result = $mock_upe_gateway->process_payment( $current_order_id );
 
 		// Assert: the result of check_against_session_processing_order.
 		$this->assertSame( 'yes', $result['wcpay_upe_paid_for_previous_order'] );
 		$this->assertSame( 'success', $result['result'] );
-		$this->assertStringContainsString( $this->mock_upe_gateway->get_return_url( $session_order ), $result['redirect'] );
+		$this->assertStringContainsString( $mock_upe_gateway->get_return_url( $session_order ), $result['redirect'] );
 
 		// Assert: the behaviors of check_against_session_processing_order.
 		$notes = wc_get_order_notes( [ 'order_id' => $session_order->get_id() ] );
@@ -973,6 +982,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 	public function test_upe_process_payment_check_session_with_failed_intent_then_order_id_saved_to_session() {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
+		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
 		// Arrange the order saved in the session.
 		WC()->session->set(
@@ -994,7 +1004,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->will( $this->returnValue( $intent ) );
 
 		// Act: process the order but redirect to the previous/session paid order.
-		$this->mock_upe_gateway->process_payment( $current_order_id );
+		$mock_upe_gateway->process_payment( $current_order_id );
 
 		// Assert: maybe_update_session_processing_order takes action and its value is kept.
 		$this->assertSame(
@@ -1014,6 +1024,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_upe_process_payment_check_session_and_continue_processing( string $session_order_cart_hash, string $session_order_status, string $current_order_cart_hash ) {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
+		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
 		// Arrange the order saved in the session.
 		$session_order = WC_Helper_Order::create_order();
@@ -1041,7 +1052,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->will( $this->returnValue( $intent ) );
 
 		// Act.
-		$this->mock_upe_gateway->process_payment( $current_order_id );
+		$mock_upe_gateway->process_payment( $current_order_id );
 
 		// Assert: no order ID is saved in the session.
 		$this->assertSame(
@@ -1065,6 +1076,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_upe_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment( $invalid_intent_id ) {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
+		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
 		// Arrange order.
 		$order = WC_Helper_Order::create_order();
@@ -1085,7 +1097,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( WC_Helper_Intention::create_intention() );
 
 		// Act: process the order.
-		$this->mock_upe_gateway->process_payment( $order_id );
+		$mock_upe_gateway->process_payment( $order_id );
 	}
 
 	public function provider_check_payment_intent_attached_to_order_succeeded_with_invalid_intent_id_continue_process_payment(): array {
@@ -1109,6 +1121,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		bool $same_order_id
 	) {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
+		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 		// Arrange order.
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_intent_id', $attached_intent_id );
@@ -1138,7 +1151,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( WC_Helper_Intention::create_intention() );
 
 		// Act: process the order.
-		$this->mock_upe_gateway->process_payment( $order_id );
+		$mock_upe_gateway->process_payment( $order_id );
 	}
 
 	public function provider_check_payment_intent_attached_to_order_succeeded_with_invalid_data_continue_process_payment(): array {
@@ -1155,6 +1168,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function test_upe_check_payment_intent_attached_to_order_succeeded_return_redirection( string $intent_successful_status ) {
 		$_POST['wc_payment_intent_id'] = 'pi_mock';
 		$attached_intent_id            = 'pi_attached_intent_id';
+		$mock_upe_gateway              = $this->mock_payment_gateways[ Payment_Method::SEPA ];
 
 		// Arrange order.
 		$order = WC_Helper_Order::create_order();
@@ -1183,12 +1197,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->method( 'update_intention' );
 
 		// Act: process the order but redirect to the order.
-		$result = $this->mock_upe_gateway->process_payment( $order_id );
+		$result = $mock_upe_gateway->process_payment( $order_id );
 
 		// Assert: the result of check_intent_attached_to_order_succeeded.
 		$this->assertSame( 'yes', $result['wcpay_upe_previous_successful_intent'] );
 		$this->assertSame( 'success', $result['result'] );
-		$this->assertStringContainsString( $this->mock_upe_gateway->get_return_url( $order ), $result['redirect'] );
+		$this->assertStringContainsString( $mock_upe_gateway->get_return_url( $order ), $result['redirect'] );
 	}
 
 	public function provider_check_payment_intent_attached_to_order_succeeded_return_redirection(): array {
