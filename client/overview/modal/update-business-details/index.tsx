@@ -49,31 +49,25 @@ const UpdateBusinessDetailsModal = ( {
 				>
 					<div className="wcpay-update-business-details-modal__wrapper">
 						<div className="wcpay-update-business-details-modal__body">
-							<p>
-								{ accountStatus === 'restricted_soon' &&
-								currentDeadline ? (
-									<>
-										<p>
-											{
-												strings.restrictedSoonDescription
-											}
-										</p>
-										<p>
-											{ sprintf(
-												strings.restrictedSoonUpdateBy,
-												dateI18n(
-													'ga M j, Y',
-													moment(
-														currentDeadline * 1000
-													).toISOString()
-												)
-											) }
-										</p>
-									</>
-								) : (
-									<p>{ strings.restrictedDescription }</p>
-								) }
-							</p>
+							{ accountStatus === 'restricted_soon' &&
+							currentDeadline ? (
+								<>
+									<p>{ strings.restrictedSoonDescription }</p>
+									<p>
+										{ sprintf(
+											strings.restrictedSoonUpdateBy,
+											dateI18n(
+												'ga M j, Y',
+												moment(
+													currentDeadline * 1000
+												).toISOString()
+											)
+										) }
+									</p>
+								</>
+							) : (
+								<p>{ strings.restrictedDescription }</p>
+							) }
 
 							{ errorMessages.map( ( errorMessage, index ) => (
 								<Notice

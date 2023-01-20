@@ -50,9 +50,7 @@ exports[`Overview: update business details modal renders correctly when opened f
         class="wcpay-update-business-details-modal__body"
       >
         <p>
-          <p>
-            Payments and deposits are disabled for this account until missing information is updated. Please update the following information in the Stripe dashboard.
-          </p>
+          Payments and deposits are disabled for this account until missing information is updated. Please update the following information in the Stripe dashboard.
         </p>
         <div
           class="components-notice is-warning"
@@ -145,12 +143,10 @@ exports[`Overview: update business details modal renders correctly when opened f
         class="wcpay-update-business-details-modal__body"
       >
         <p>
-          <p>
-            Additional information is required to verify your business.
-          </p>
-          <p>
-            Update by 7pm Dec 31, 2021 to avoid a disruption in deposits.
-          </p>
+          Additional information is required to verify your business.
+        </p>
+        <p>
+          Update by 7pm Dec 31, 2021 to avoid a disruption in deposits.
         </p>
         <div
           class="components-notice is-warning"
@@ -243,9 +239,7 @@ exports[`Overview: update business details modal renders correctly when opened f
         class="wcpay-update-business-details-modal__body"
       >
         <p>
-          <p>
-            Payments and deposits are disabled for this account until missing information is updated. Please update the following information in the Stripe dashboard.
-          </p>
+          Payments and deposits are disabled for this account until missing information is updated. Please update the following information in the Stripe dashboard.
         </p>
         <div
           class="components-notice is-warning"
