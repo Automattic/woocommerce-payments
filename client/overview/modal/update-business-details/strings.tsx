@@ -18,7 +18,12 @@ export default {
 	),
 
 	restrictedSoonDescription: __(
-		'Additional information is required to verify your business. Update by %s to avoid a disruption in deposits.',
+		'Additional information is required to verify your business.',
+		'woocommerce-payments'
+	),
+
+	restrictedSoonUpdateBy: __(
+		'Update by %s to avoid a disruption in deposits.',
 		'woocommerce-payments'
 	),
 

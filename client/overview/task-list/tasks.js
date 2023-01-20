@@ -12,6 +12,7 @@ import moment from 'moment';
 /**
  * Internal dependencies.
  */
+import strings from './strings';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import UpdateBusinessDetailsModal from '../modal/update-business-details';
@@ -48,7 +49,11 @@ const getErrorMessagesFromRequirements = ( requirements ) => [
 			?.filter(
 				( error ) => ! requirementBlacklist.includes( error.code )
 			)
-			?.map( ( error ) => error.reason )
+			?.map( ( error ) =>
+				error.code in strings.errors
+					? strings.errors[ error.code ]
+					: error.reason
+			)
 	),
 ];
 
