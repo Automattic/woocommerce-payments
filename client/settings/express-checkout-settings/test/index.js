@@ -121,7 +121,7 @@ describe( 'ExpressCheckoutSettings', () => {
 
 		expect(
 			screen.queryByRole( 'heading', {
-				name: 'Show express checkouts on',
+				name: 'Enable Apple Pay and Google Pay on selected pages',
 			} )
 		).toBeInTheDocument();
 	} );
