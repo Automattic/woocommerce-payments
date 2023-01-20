@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 
@@ -906,13 +907,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$data_store = WC_Data_Store::load( 'admin-note' );
 		$notes      = $data_store->get_notes_with_name( $note_id );
 		$this->assertCount( 1, $notes );
-		$note      = $notes_class::get_note( $notes[0] );
+		$note      = Notes::get_note( $notes[0] );
 		$note_data = (array) $note->get_content_data();
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
@@ -942,13 +942,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$data_store = WC_Data_Store::load( 'admin-note' );
 		$notes      = $data_store->get_notes_with_name( $note_id );
 		$this->assertCount( 1, $notes );
-		$note      = $notes_class::get_note( $notes[0] );
+		$note      = Notes::get_note( $notes[0] );
 		$note_data = (array) $note->get_content_data();
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );

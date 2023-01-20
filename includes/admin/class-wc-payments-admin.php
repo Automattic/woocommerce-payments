@@ -430,7 +430,7 @@ class WC_Payments_Admin {
 	public function register_payments_scripts() {
 		$script_src_url    = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/index.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
 		wp_register_script(
 			'WCPAY_DASH_APP',
 			$script_src_url,
@@ -539,7 +539,7 @@ class WC_Payments_Admin {
 
 		$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
 		$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
-		$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require_once $tos_script_asset_path : [ 'dependencies' => [] ];
+		$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require $tos_script_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script(
 			'WCPAY_TOS',
@@ -573,7 +573,7 @@ class WC_Payments_Admin {
 
 		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
 		$settings_script_asset_path = WCPAY_ABSPATH . 'dist/settings.asset.php';
-		$settings_script_asset      = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
+		$settings_script_asset      = file_exists( $settings_script_asset_path ) ? require $settings_script_asset_path : [ 'dependencies' => [] ];
 		wp_register_script(
 			'WCPAY_ADMIN_SETTINGS',
 			$settings_script_src_url,
@@ -610,7 +610,7 @@ class WC_Payments_Admin {
 
 		$payment_gateways_script_src_url    = plugins_url( 'dist/payment-gateways.js', WCPAY_PLUGIN_FILE );
 		$payment_gateways_script_asset_path = WCPAY_ABSPATH . 'dist/payment-gateways.asset.php';
-		$payment_gateways_script_asset      = file_exists( $payment_gateways_script_asset_path ) ? require_once $payment_gateways_script_asset_path : [ 'dependencies' => [] ];
+		$payment_gateways_script_asset      = file_exists( $payment_gateways_script_asset_path ) ? require $payment_gateways_script_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script(
 			'WCPAY_PAYMENT_GATEWAYS_PAGE',

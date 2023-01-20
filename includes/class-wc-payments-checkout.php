@@ -201,7 +201,7 @@ class WC_Payments_Checkout {
 
 			</fieldset>
 
-			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
+			<?php if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
 				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
 			<?php endif; ?>
 

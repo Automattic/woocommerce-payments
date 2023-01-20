@@ -223,6 +223,15 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 				),
 				true,
 				false
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'data' => [] ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
 			);
 		$this->customer_service_api->set_default_payment_method_for_customer( 'cus_1234', 'pm_mock' );
 	}

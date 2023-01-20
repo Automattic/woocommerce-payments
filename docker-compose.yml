@@ -10,7 +10,7 @@ services:
       context: .
       dockerfile: ./docker/wordpress_xdebug/Dockerfile
       args:
-        - REMOTE_PORT=9000 # IDE/Editor's listener port
+        - XDEBUG_REMOTE_PORT=9000 # IDE/Editor's listener port
     container_name: woocommerce_payments_wordpress
     image: woocommerce_payments_wordpress
     restart: always

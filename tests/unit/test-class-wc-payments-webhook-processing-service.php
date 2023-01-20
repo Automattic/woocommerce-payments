@@ -6,10 +6,12 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
-use WCPay\Database_Cache;
 
 // Need to use WC_Mock_Data_Store.
 require_once dirname( __FILE__ ) . '/helpers/class-wc-mock-wc-data-store.php';
@@ -621,7 +623,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$this->mock_order
@@ -642,7 +644,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -690,7 +697,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 			'metadata' => [ 'order_id' => 'id_1323' ], // Using order_id inside of the intent metadata to find the order.
 		];
 
@@ -712,7 +719,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -767,7 +779,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$this->mock_order
@@ -787,7 +799,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
 			->willReturn( true );
 
 		$this->mock_order
@@ -839,7 +856,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => 'eur',
-			'status'   => 'succeeded',
+			'status'   => Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$mock_merchant_settings = [
@@ -854,7 +871,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -924,7 +946,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency' => $currency      = 'eur',
-			'status'   => $intent_status = 'succeeded',
+			'status'   => $intent_status = Payment_Intent_Status::SUCCEEDED,
 		];
 
 		$this->mock_order
@@ -946,7 +968,12 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->exactly( 2 ) )
 			->method( 'has_status' )
-			->with( [ 'processing', 'completed' ] )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
 			->willReturn( false );
 
 		$this->mock_order
@@ -1004,7 +1031,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency'           => 'usd',
-			'status'             => 'requires_payment_method',
+			'status'             => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
 		];
 
 		$this->mock_order
@@ -1023,9 +1050,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
-				[ [ 'failed' ] ],
-				[ [ 'processing', 'completed' ] ],
-				[ [ 'processing', 'completed' ] ]
+				[ [ Order_Status::FAILED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ]
 			)
 			->willReturn( false );
 
@@ -1041,7 +1068,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'failed' );
+			->with( Order_Status::FAILED );
 
 		$this->mock_order
 			->method( 'get_data_store' )
@@ -1077,7 +1104,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'currency'           => 'usd',
-			'status'             => 'requires_payment_method',
+			'status'             => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD,
 		];
 
 		$this->mock_order
@@ -1096,9 +1123,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->exactly( 3 ) )
 			->method( 'has_status' )
 			->withConsecutive(
-				[ [ 'failed' ] ],
-				[ [ 'processing', 'completed' ] ],
-				[ [ 'processing', 'completed' ] ]
+				[ [ Order_Status::FAILED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ],
+				[ [ Order_Status::PROCESSING, Order_Status::COMPLETED ] ]
 			)
 			->willReturn( false );
 
@@ -1114,7 +1141,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'failed' );
+			->with( Order_Status::FAILED );
 
 		$this->mock_order
 			->method( 'get_data_store' )
@@ -1155,7 +1182,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'on-hold' );
+			->with( Order_Status::ON_HOLD );
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )
@@ -1192,7 +1219,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_order
 			->expects( $this->once() )
 			->method( 'update_status' )
-			->with( 'completed' );
+			->with( Order_Status::COMPLETED );
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )

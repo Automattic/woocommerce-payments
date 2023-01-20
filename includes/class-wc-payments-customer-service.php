@@ -138,8 +138,10 @@ class WC_Payments_Customer_Service {
 			$this->update_user_customer_id( $user->ID, $customer_id );
 		}
 
-		// Save the customer id in the session for non logged in users to reuse it in payments.
-		WC()->session->set( self::CUSTOMER_ID_SESSION_KEY, $customer_id );
+		if ( isset( WC()->session ) ) {
+			// Save the customer id in the session for non logged in users to reuse it in payments.
+			WC()->session->set( self::CUSTOMER_ID_SESSION_KEY, $customer_id );
+		}
 
 		return $customer_id;
 	}
