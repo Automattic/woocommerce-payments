@@ -459,6 +459,7 @@ class WC_Payments_Subscription_Service {
 	 * @return void
 	 */
 	public function handle_subscription_status_on_hold( WC_Subscription $subscription ) {
+		$this->suspend_subscription( $subscription );
 		$subscription->add_order_note( __( 'Suspended WCPay Subscription because subscription status changed to on-hold.', 'woocommerce-payments' ) );
 		Logger::log(
 			sprintf(
@@ -467,7 +468,6 @@ class WC_Payments_Subscription_Service {
 				self::get_wcpay_subscription_id( $subscription )
 			)
 		);
-		$this->suspend_subscription( $subscription );
 	}
 
 	/**

@@ -71,6 +71,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			if ( ! $subscription->has_status( 'on-hold' ) && 0 !== $subscription->get_time( 'end' ) ) {
 				$this->subscription_service->cancel_subscription( $subscription );
 			} else {
+				$this->subscription_service->suspend_subscription( $subscription );
 				$subscription->add_order_note( __( 'Suspended WCPay Subscription because subscription next_payment date is 0.', 'woocommerce-payments' ) );
 				Logger::log(
 					sprintf(
@@ -79,7 +80,6 @@ class WC_Payments_Subscriptions_Event_Handler {
 						self::get_wcpay_subscription_id( $subscription )
 					)
 				);
-				$this->subscription_service->suspend_subscription( $subscription );
 			}
 		} else {
 			// Translators: %s Scheduled/upcoming payment date in Y-m-d H:i:s format.
