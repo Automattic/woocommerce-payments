@@ -197,6 +197,7 @@ describe( 'CheckoutPageSaveUser', () => {
 					platform_checkout_marketing_optin: true,
 					platform_checkout_marketing_source_url: 'http://localhost/',
 					platform_checkout_is_blocks: true,
+					platform_checkout_viewport: '1920x1080',
 					platform_checkout_user_phone_field: {
 						full: '+12015555555',
 					},

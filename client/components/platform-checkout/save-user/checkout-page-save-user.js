@@ -45,6 +45,8 @@ const useCartCountry = () => {
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const billingCountryField = document.querySelector( '#billing_country' );
+	const viewportWidth = window.document.documentElement.clientWidth;
+	const viewportHeight = window.document.documentElement.clientHeight;
 
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
 	const [ isMarketingOptInChecked, setIsMarketingOptInChecked ] = useState(
@@ -102,6 +104,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						platform_checkout_marketing_source_url:
 							window.location.href,
 						platform_checkout_is_blocks: true,
+						platform_checkout_viewport: `${ viewportWidth }x${ viewportHeight }`,
 						platform_checkout_user_phone_field: {
 							full: phoneNumber,
 						},
@@ -122,7 +125,14 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				} );
 			} );
 		},
-		[ isMarketingOptInChecked, isSaveDetailsChecked, phoneNumber, cart ]
+		[
+			isMarketingOptInChecked,
+			isSaveDetailsChecked,
+			phoneNumber,
+			cart,
+			viewportWidth,
+			viewportHeight,
+		]
 	);
 
 	const handleCheckboxClick = ( e ) => {
@@ -332,6 +342,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						type="hidden"
 						name="platform_checkout_marketing_source_url"
 						value={ window.location.href }
+					/>
+					<input
+						type="hidden"
+						name="platform_checkout_viewport"
+						value={ `${ viewportWidth }x${ viewportHeight }` }
 					/>
 					<PhoneNumberInput
 						value={

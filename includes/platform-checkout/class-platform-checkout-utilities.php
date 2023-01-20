@@ -117,4 +117,21 @@ class Platform_Checkout_Utilities {
 
 		return ( isset( $_POST['platform_checkout_is_blocks'] ) && filter_var( wp_unslash( $_POST['platform_checkout_is_blocks'] ), FILTER_VALIDATE_BOOLEAN ) ) || ( isset( $session_data['platform_checkout_is_blocks'] ) && filter_var( $session_data['platform_checkout_is_blocks'], FILTER_VALIDATE_BOOLEAN ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	}
+
+	/**
+	 * Get the user viewport.
+	 *
+	 * @return mixed|string
+	 */
+	public function get_platform_checkout_viewport() {
+		$session_data = WC()->session->get( Platform_Checkout_Extension::PLATFORM_CHECKOUT_SESSION_KEY );
+
+		if ( ! empty( $_POST['platform_checkout_viewport'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return wc_clean( wp_unslash( $_POST['platform_checkout_viewport'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		} elseif ( ! empty( $session_data['platform_checkout_viewport'] ) ) {
+			return $session_data['platform_checkout_viewport'];
+		}
+
+		return '';
+	}
 }
