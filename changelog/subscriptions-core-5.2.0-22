@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Moved the trash, untrash & delete related `add_actions()` in the `WC_Subscriptions_Manager` class to be added on the `woocommerce_loaded` action.
