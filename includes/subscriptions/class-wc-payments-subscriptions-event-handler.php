@@ -75,9 +75,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 				$subscription->add_order_note( __( 'Suspended WCPay Subscription because subscription next_payment date is 0.', 'woocommerce-payments' ) );
 				Logger::log(
 					sprintf(
-						'Suspended WCPay Subscription because subscription next_payment date is 0. WC ID: %d WCPay ID: %s.',
+						'Suspended WCPay Subscription because subscription next_payment date is 0. WC ID: %d; WCPay ID: %s.',
 						$subscription->get_id(),
-						self::get_wcpay_subscription_id( $subscription )
+						$wcpay_subscription_id
 					)
 				);
 			}
