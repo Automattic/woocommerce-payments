@@ -59,13 +59,13 @@ export const WoopayExpressCheckoutButton = ( {
 		if ( isProductPage ) {
 			addToCart()
 				.then( () => {
-					expressCheckoutIframe( api );
+					expressCheckoutIframe( api, context );
 				} )
 				.catch( () => {
 					// handle error.
 				} );
 		} else {
-			expressCheckoutIframe( api );
+			expressCheckoutIframe( api, context );
 		}
 	};
 

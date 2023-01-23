@@ -89,7 +89,10 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 		userEvent.click( expressButton );
 
-		expect( expressCheckoutIframe ).toHaveBeenCalledWith( api );
+		expect( expressCheckoutIframe ).toHaveBeenCalledWith(
+			api,
+			buttonSettings.context
+		);
 	} );
 
 	test( 'should not call `expressCheckoutIframe` on button click when `isPreview` is true', () => {
@@ -171,7 +174,10 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			expect( mockAddToCart ).toHaveBeenCalled();
 
 			await waitFor( () => {
-				expect( expressCheckoutIframe ).toHaveBeenCalledWith( api );
+				expect( expressCheckoutIframe ).toHaveBeenCalledWith(
+					api,
+					buttonSettings.context
+				);
 			} );
 		} );
 	} );
