@@ -459,11 +459,18 @@ class WC_Payments_Subscription_Service {
 	 * @return void
 	 */
 	public function handle_subscription_status_on_hold( WC_Subscription $subscription ) {
+		// Check if the subscription is a WCPay subscription before proceeding.
+		// In stores that have WC Subscriptions active, or previously had WC S,
+		// this method may be called with regular tokenised subscriptions.
+		if ( ! $this->is_wcpay_subscription( $subscription ) ) {
+			return;
+		}
+
 		$this->suspend_subscription( $subscription );
 		$subscription->add_order_note( __( 'Suspended WCPay Subscription because subscription status changed to on-hold.', 'woocommerce-payments' ) );
 		Logger::log(
 			sprintf(
-				'Suspended WCPay Subscription because subscription status changed to on-hold. WC ID: %d WCPay ID: %s.',
+				'Suspended WCPay Subscription because subscription status changed to on-hold. WC ID: %d; WCPay ID: %s.',
 				$subscription->get_id(),
 				self::get_wcpay_subscription_id( $subscription )
 			)
@@ -478,6 +485,17 @@ class WC_Payments_Subscription_Service {
 	 * @return void
 	 */
 	public function suspend_subscription( WC_Subscription $subscription ) {
+		// Check if the subscription is a WCPay subscription before proceeding.
+		if ( ! $this->is_wcpay_subscription( $subscription ) ) {
+			Logger::log(
+				sprintf(
+					'Aborting WC_Payments_Subscription_Service::suspend_subscription; subscription is a tokenised (non WCPay) subscription. WC ID: %d.',
+					$subscription->get_id()
+				)
+			);
+			return;
+		}
+
 		$this->update_subscription( $subscription, [ 'pause_collection' => [ 'behavior' => 'void' ] ] );
 	}
 
