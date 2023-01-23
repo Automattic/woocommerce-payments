@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Logger;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 
 /**
