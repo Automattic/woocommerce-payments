@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent erroneously resyncing a subscription every time it is loaded from the database on HPOS environments.
