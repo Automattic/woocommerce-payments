@@ -858,6 +858,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return $result;
 		}
 
+		// Temporally fix – Stripe validates mandate params for cards not
+		// issued by Indian banks. Apply them only for INR as Indian banks
+		// only support it for now.
+		$currency = $order->get_currency();
+		if ( 'INR' !== $currency ) {
+			return $result;
+		}
+
 		// Get total by adding only subscriptions and get rid of any other product or fee.
 		$subs_amount = 0;
 		foreach ( $subscriptions as $sub ) {
