@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+emoved the potential for an infinite loop when getting a subscription's related orders while the subscription is being loaded.

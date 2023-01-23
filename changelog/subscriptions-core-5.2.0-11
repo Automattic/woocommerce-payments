@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Check whether the order actually exists before accessing order properties in wcs_order_contains_subscription().

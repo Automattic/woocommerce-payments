@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+On HPOS environments, ensure subscription related order caches are updated when relationship order meta (eg `_subscription_renewal` or `_subscription_switch`) is updated.
