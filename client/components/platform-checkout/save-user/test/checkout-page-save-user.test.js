@@ -184,6 +184,9 @@ describe( 'CheckoutPageSaveUser', () => {
 				namespace: 'platform-checkout',
 				data: {
 					save_user_in_platform_checkout: true,
+					platform_checkout_source_url: 'http://localhost/',
+					platform_checkout_is_blocks: true,
+					platform_checkout_viewport: '0x0',
 					platform_checkout_user_phone_field: {
 						full: '+12015555555',
 					},

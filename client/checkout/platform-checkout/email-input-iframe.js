@@ -226,6 +226,9 @@ export const handlePlatformCheckoutEmailInput = async (
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email ) => {
+		const viewportWidth = window.document.documentElement.clientWidth;
+		const viewportHeight = window.document.documentElement.clientHeight;
+
 		const urlParams = new URLSearchParams();
 		urlParams.append( 'email', email );
 		urlParams.append(
@@ -233,6 +236,12 @@ export const handlePlatformCheckoutEmailInput = async (
 			fullScreenModalBreakpoint > window.innerWidth
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
+		urlParams.append( 'is_blocks', isBlocksCheckout ? 'true' : 'false' );
+		urlParams.append( 'source_url', window.location.href );
+		urlParams.append(
+			'viewport',
+			`${ viewportWidth }x${ viewportHeight }`
+		);
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
@@ -302,6 +311,8 @@ export const handlePlatformCheckoutEmailInput = async (
 	};
 
 	const platformCheckoutLocateUser = async ( email ) => {
+		console.log( spinner );
+		console.log( email );
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
 		if ( parentDiv.contains( errorMessage ) ) {
