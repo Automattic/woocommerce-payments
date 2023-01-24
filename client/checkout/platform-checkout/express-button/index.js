@@ -38,6 +38,7 @@ const renderPlatformCheckoutExpressButton = () => {
 						'data-product_page'
 					)
 				}
+				emailSelector="#billing_email"
 			/>,
 			platformCheckoutContainer
 		);
