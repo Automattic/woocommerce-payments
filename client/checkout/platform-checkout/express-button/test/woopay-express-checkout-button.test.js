@@ -66,6 +66,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				buttonSettings={ buttonSettings }
 				api={ api }
 				isProductPage={ false }
+				emailSelector="#email"
 			/>
 		);
 
@@ -81,6 +82,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				buttonSettings={ buttonSettings }
 				api={ api }
 				isProductPage={ false }
+				emailSelector="#email"
 			/>
 		);
 
@@ -91,7 +93,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 		expect( expressCheckoutIframe ).toHaveBeenCalledWith(
 			api,
-			buttonSettings.context
+			buttonSettings.context,
+			'#email'
 		);
 	} );
 
@@ -102,6 +105,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				buttonSettings={ buttonSettings }
 				api={ api }
 				isProductPage={ false }
+				emailSelector="#email"
 			/>
 		);
 
@@ -121,6 +125,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					buttonSettings={ buttonSettings }
 					api={ api }
 					isProductPage={ true }
+					emailSelector="#email"
 				/>
 			);
 
@@ -142,6 +147,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					buttonSettings={ buttonSettings }
 					api={ api }
 					isProductPage={ true }
+					emailSelector="#email"
 				/>
 			);
 
@@ -162,6 +168,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					buttonSettings={ buttonSettings }
 					api={ api }
 					isProductPage={ true }
+					emailSelector="#email"
 				/>
 			);
 
@@ -176,7 +183,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			await waitFor( () => {
 				expect( expressCheckoutIframe ).toHaveBeenCalledWith(
 					api,
-					buttonSettings.context
+					buttonSettings.context,
+					'#email'
 				);
 			} );
 		} );

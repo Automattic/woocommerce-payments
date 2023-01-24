@@ -1,5 +1,8 @@
 // Waits for the element to exist as in the Blocks checkout, sometimes the field is not immediately available.
 export const getTargetElement = ( selector ) => {
+	if ( ! selector ) {
+		return null;
+	}
 	return new Promise( ( resolve ) => {
 		if ( document.querySelector( selector ) ) {
 			return resolve( document.querySelector( selector ) );
