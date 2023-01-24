@@ -1,0 +1,22 @@
+.wcpay-update-business-details-modal {
+	max-width: 700px !important;
+
+	&.components-modal__frame {
+		@media ( max-width: 600px ) {
+			max-width: 700px;
+		}
+	}
+
+	.components-notice {
+		margin: $gap 0 0;
+	}
+
+	hr {
+		margin: $gap-large -32px 0;
+	}
+
+	.wcpay-update-business-details-modal__footer {
+		@include modal-footer-buttons;
+		margin-top: $gap-large;
+	}
+}
