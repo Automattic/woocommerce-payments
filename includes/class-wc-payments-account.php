@@ -152,6 +152,28 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account is valid: which means it's connected and has valid card_payments capability status (requested, pending_verification, active and other valid ones).
+	 * Card_payments capability is crucial for account to function properly. If it is unrequested, we shouldn't show
+	 * any other options for the merchants since it'll lead to various errors.
+	 *
+	 * @see https://github.com/Automattic/woocommerce-payments/issues/5275
+	 *
+	 * @return bool True if the account have valid stripe account, false otherwise.
+	 */
+	public function is_stripe_account_valid(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+		$account = $this->get_cached_account_data();
+
+		if ( ! isset( $account['capabilities']['card_payments'] ) ) {
+			return false;
+		}
+
+		return 'unrequested' !== $account['capabilities']['card_payments'];
+	}
+
+	/**
 	 * Checks if the account has been rejected, assumes the value of false on any account retrieval error.
 	 * Returns false if the account is not connected.
 	 *
@@ -199,6 +221,9 @@ class WC_Payments_Account {
 			'pastDue'             => $account['has_overdue_requirements'] ?? false,
 			'accountLink'         => $this->get_login_url(),
 			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
+			'requirements'        => [
+				'errors' => $account['requirements']['errors'] ?? [],
+			],
 		];
 	}
 
