@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Card_Error;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -2257,7 +2258,9 @@ class WC_Payments_API_Client {
 
 		// Check error codes for 4xx and 5xx responses.
 		if ( 400 <= $response_code ) {
-			$error_type = null;
+			$error_type   = null;
+			$decline_code = null;
+
 			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
 				throw new Amount_Too_Small_Exception(
 					$response_body['message'],
@@ -2271,6 +2274,13 @@ class WC_Payments_API_Client {
 				$error_code    = $response_body['error']['code'] ?? $response_body['error']['type'] ?? null;
 				$error_message = $response_body['error']['message'] ?? null;
 				$error_type    = $response_body['error']['type'] ?? null;
+
+				if ( isset( $response_body['error']['decline_code'] ) && ! empty( $response_body['error']['decline_code'] ) ) {
+					$decline_code = $response_body['error']['decline_code'];
+				} elseif ( Card_Error::is_card_error( $response_body['error']['code'] ) ) {
+					// This will lead to duplicate error code and decline code, but will make the list flatter and checks easier.
+					$decline_code = $response_body['error']['code'];
+				}
 			} elseif ( isset( $response_body['code'] ) ) {
 				$this->maybe_act_on_fraud_prevention( $response_body['code'] );
 
@@ -2288,7 +2298,11 @@ class WC_Payments_API_Client {
 			);
 
 			Logger::error( "$error_message ($error_code)" );
-			throw new API_Exception( $message, $error_code, $response_code, $error_type );
+			if ( ! empty( $decline_code ) ) {
+				throw new Card_Error( $message, $error_code, $decline_code, $response_code, $error_type );
+			} else {
+				throw new API_Exception( $message, $error_code, $response_code, $error_type );
+			}
 		}
 	}
 
