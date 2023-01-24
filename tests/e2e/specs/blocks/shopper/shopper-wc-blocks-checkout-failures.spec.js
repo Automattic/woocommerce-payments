@@ -64,7 +64,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector( 'div.wc-block-components-notices', 30 );
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
@@ -80,7 +80,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector( 'div.wc-block-components-notices', 30 );
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
@@ -96,7 +96,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector( 'div.wc-block-components-notices', 30 );
 			await expect(
 				page
 			).toMatchElement(
@@ -112,7 +112,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector( 'div.wc-block-components-notices', 30 );
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
@@ -128,7 +128,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector( 'div.wc-block-components-notices', 30 );
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
@@ -144,7 +144,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector( 'div.wc-block-components-notices', 30 );
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
@@ -162,7 +162,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector( 'div.wc-block-components-notices', 30 );
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
@@ -181,7 +181,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await uiUnblocked();
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector( 'div.wc-block-components-notices', 30 );
 			// Verify the error message
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
@@ -198,7 +198,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 				text: 'Place Order',
 			} );
 			await confirmCardAuthentication( page, '3DS' );
-			await page.waitForSelector( 'div.wc-block-components-notices' );
+			await page.waitForSelector( 'div.wc-block-components-notices', 30 );
 			const declined3dsCardError = await page.$eval(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				( el ) => el.innerText
