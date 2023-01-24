@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+When a customer changes their address on their account or subscription, make sure the new address is saved when HPOS is enabled.
