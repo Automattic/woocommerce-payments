@@ -84,7 +84,15 @@ Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName, upeConfig ] ) =>
 		savedTokenComponent: <SavedTokenHandler api={ api } />,
 		canMakePayment: () => !! api.getStripe(),
 		paymentMethodId: upeMethods[ upeName ],
-		label: upeConfig.title,
+		// see .wc-block-checkout__payment-method styles in blocks/style.scss
+		label: (
+			<>
+				<span>
+					{ upeConfig.title }
+					<img src={ upeConfig.icon } alt={ upeConfig.title } />
+				</span>
+			</>
+		),
 		ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
 		supports: {
 			showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,

@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Retry API requests on network failure if Idempotency-Key header is present.

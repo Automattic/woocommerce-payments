@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
@@ -68,7 +69,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_create_intention_success() {
 		$expected_amount = 123;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		$this->set_http_mock_response(
 			200,
@@ -84,7 +85,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -113,7 +114,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_create_intention_with_fingerprinting_data() {
 		$expected_amount = 123;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
 		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
@@ -143,7 +144,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -168,7 +169,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_create_and_confirm_intention_with_fingerprinting_data() {
 		$expected_amount = 123;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
 		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
@@ -198,7 +199,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -224,7 +225,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	public function test_create_and_confirm_intention_with_user_fingerprint_data() {
 		$fingerprint     = 'abc123';
 		$expected_amount = 123;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
 		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
@@ -255,7 +256,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -344,7 +345,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							[
 								'id'     => 'test_refund_id',
 								'amount' => $expected_amount,
-								'status' => 'succeeded',
+								'status' => Payment_Intent_Status::SUCCEEDED,
 							]
 						),
 						'response' => [
@@ -370,7 +371,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_create_intention_authorization_success() {
 		$expected_amount = 123;
-		$expected_status = 'requires_capture';
+		$expected_status = Payment_Intent_Status::REQUIRES_CAPTURE;
 
 		$this->set_http_mock_response(
 			200,
@@ -386,7 +387,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -462,7 +463,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_capture_intention_success() {
 		$expected_amount = 103;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		$this->set_http_mock_response(
 			200,
@@ -479,7 +480,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -499,7 +500,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_cancel_intention_success() {
-		$expected_status = 'canceled';
+		$expected_status = Payment_Intent_Status::CANCELED;
 
 		$this->set_http_mock_response(
 			200,
@@ -515,7 +516,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => 123,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -1159,7 +1160,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$intention_id    = 'test_intention_id';
 		$currency_code   = 'usd';
 		$expected_amount = 123;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		// Mock the HTTP client manually to assert we are sending the correct args.
 		$this->mock_http_client
@@ -1232,7 +1233,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$currency_code           = 'eur';
 		$customer_id             = 'cus_123abc';
 		$expected_amount         = 123;
-		$expected_status         = 'succeeded';
+		$expected_status         = Payment_Intent_Status::SUCCEEDED;
 		$selected_payment_method = 'giropay';
 		$payment_country         = 'US';
 		$save_payment_method     = true;
@@ -1348,7 +1349,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$currency_code           = 'eur';
 		$customer_id             = 'cus_123abc';
 		$expected_amount         = 123;
-		$expected_status         = 'succeeded';
+		$expected_status         = Payment_Intent_Status::SUCCEEDED;
 		$selected_payment_method = 'card';
 		$payment_country         = 'US';
 		$save_payment_method     = true;

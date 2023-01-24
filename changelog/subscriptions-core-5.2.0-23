@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix phpcs violations in the `WC_Subscriptions_Tracker` and `WCS_Admin_System_Status` classes to improve code quality.

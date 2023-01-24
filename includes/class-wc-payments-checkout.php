@@ -127,6 +127,7 @@ class WC_Payments_Checkout {
 			'userExistsEndpoint'             => get_rest_url( null, '/wc/v3/users/exists' ),
 			'platformCheckoutSignatureNonce' => wp_create_nonce( 'platform_checkout_signature_nonce' ),
 			'platformCheckoutMerchantId'     => Jetpack_Options::get_option( 'id' ),
+			'icon'                           => $this->gateway->get_icon_url(),
 		];
 
 		/**
@@ -203,7 +204,7 @@ class WC_Payments_Checkout {
 
 			</fieldset>
 
-			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
+			<?php if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
 				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
 			<?php endif; ?>
 
