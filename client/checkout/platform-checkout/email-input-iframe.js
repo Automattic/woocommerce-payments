@@ -311,8 +311,6 @@ export const handlePlatformCheckoutEmailInput = async (
 	};
 
 	const platformCheckoutLocateUser = async ( email ) => {
-		console.log( spinner );
-		console.log( email );
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
 
 		if ( parentDiv.contains( errorMessage ) ) {
