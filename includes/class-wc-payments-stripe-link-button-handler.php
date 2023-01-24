@@ -63,14 +63,19 @@ class WC_Payments_Stripe_Link_Button_Handler {
 	}
 
 	/**
+	 * Checks if this is the Pay for Order page.
+	 *
+	 * @return boolean
+	 */
+	public function is_pay_for_order_page() {
+		return is_checkout() && isset( $_GET['pay_for_order'] ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
+
+	/**
 	 * Display the payment request button.
 	 */
 	public function display_button_html() {
-		if ( ! WC_Payments_Features::is_link_enabled() ) {
-			return;
-		}
-
-		if ( ! $this->is_checkout() ) {
+		if ( ! $this->should_show_link_button() ) {
 			return;
 		}
 
@@ -81,6 +86,23 @@ class WC_Payments_Stripe_Link_Button_Handler {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Indicates whether the Link express checkout button should be displayed.
+	 *
+	 * @return bool
+	 */
+	public function should_show_link_button() {
+		if ( ! WC_Payments_Features::is_link_enabled() ) {
+			return false;
+		}
+
+		if ( ! $this->is_checkout() || $this->is_pay_for_order_page() ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
