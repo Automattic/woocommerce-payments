@@ -1384,6 +1384,7 @@ class WC_Payments {
 			'store_data'           => [
 				'store_name'                     => get_bloginfo( 'name' ),
 				'store_logo'                     => ! empty( $store_logo ) ? get_rest_url( null, 'wc/v3/payments/file/' . $store_logo ) : '',
+				'checkout_form_fields'           => self::get_checkout_fields(),
 				'custom_message'                 => self::get_gateway()->get_option( 'platform_checkout_custom_message' ),
 				'blog_id'                        => Jetpack_Options::get_option( 'id' ),
 				'blog_url'                       => get_site_url(),
@@ -1632,5 +1633,25 @@ class WC_Payments {
 				'url' => plugins_url( '/dist/', WCPAY_PLUGIN_FILE ),
 			]
 		);
+	}
+
+	/**
+	 * Returns the checkout fields from this store.
+	 *
+	 * May fit better somewhere else.
+	 *
+	 * @return array
+	 */
+	private static function get_checkout_fields() {
+		$wc_checkout = WC()->checkout();
+
+		$woopay_form_fields = [
+			'billing'  => $wc_checkout->get_checkout_fields( 'billing' ),
+			'shipping' => $wc_checkout->get_checkout_fields( 'shipping' ),
+			'order'    => $wc_checkout->get_checkout_fields( 'order' ),
+		];
+
+		// TODO: add a filter here to allow extensions to add their own fields.
+		return $woopay_form_fields;
 	}
 }
