@@ -1,0 +1,82 @@
+.fraud-protection {
+	&-single-radio-wrapper {
+		display: flex;
+		align-items: center;
+		height: 20px;
+		margin-bottom: 8px;
+		&__item {
+			margin-right: 5px;
+			&--recommended {
+				margin-right: 5px;
+				color: #757575;
+			}
+		}
+	}
+
+	input[type='radio'] {
+		margin: 0 10px 0 0;
+		width: 20px;
+		height: 20px;
+		border-color: #757575;
+		&:checked {
+			background-color: #fff;
+			border-color: #757575;
+			&::before {
+				content: '';
+				border-radius: 50%;
+				width: 12px;
+				height: 12px;
+				margin: 3px;
+				background-color: #3582c4;
+				line-height: 1.14285714;
+			}
+		}
+	}
+
+	&__text--help-text {
+		font-size: 12px;
+		color: #757575;
+		margin: 0 0 0 30px;
+		margin-bottom: 1em;
+	}
+}
+
+.components-modal__header {
+	border-bottom: 1px solid #ddd;
+}
+
+.components-modal__body--fraud-protection {
+	padding-top: 24px;
+
+	ul {
+		list-style-type: disc;
+		margin-left: 24px;
+	}
+}
+
+.component-modal__text {
+	&--blocked {
+		color: #b32d2e;
+	}
+	&--review {
+		color: #996800;
+	}
+}
+
+.component-modal__button {
+	&--confirm {
+		float: right;
+	}
+}
+
+.component-notice--is-info {
+	margin-left: 0;
+	margin-right: 0;
+	margin-bottom: 1em;
+	background-color: #f0f6fc;
+	border-left: none;
+}
+
+.component-notice__icon {
+	margin-right: 10px;
+}
