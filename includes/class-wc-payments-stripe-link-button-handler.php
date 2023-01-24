@@ -66,11 +66,7 @@ class WC_Payments_Stripe_Link_Button_Handler {
 	 * Display the payment request button.
 	 */
 	public function display_button_html() {
-		if ( ! WC_Payments_Features::is_link_enabled() ) {
-			return;
-		}
-
-		if ( ! $this->is_checkout() ) {
+		if ( ! $this->should_show_link_separator() ) {
 			return;
 		}
 
@@ -81,6 +77,23 @@ class WC_Payments_Stripe_Link_Button_Handler {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Just an example.
+	 *
+	 * @return bool
+	 */
+	public function should_show_link_separator() {
+		if ( ! WC_Payments_Features::is_link_enabled() ) {
+			return false;
+		}
+
+		if ( ! $this->is_checkout() ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
