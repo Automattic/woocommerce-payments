@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
-import { getTargetElement } from '../utils';
+import { getTargetElement, validateEmail } from '../utils';
 import wcpayTracks from 'tracks';
 
 export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
@@ -167,7 +167,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
 
-		if ( email ) {
+		if ( email && validateEmail( email ) ) {
 			urlParams.append( 'email', email );
 		}
 
