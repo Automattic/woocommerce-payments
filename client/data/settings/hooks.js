@@ -580,3 +580,16 @@ export const usePlatformCheckoutButtonTheme = () => {
 		];
 	} );
 };
+
+export const useCurrentProtectionLevel = () => {
+	const { updateProtectionLevel } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getCurrentProtectionLevel } = select( STORE_NAME );
+
+			return [ getCurrentProtectionLevel(), updateProtectionLevel ];
+		},
+		[ updateProtectionLevel ]
+	);
+};

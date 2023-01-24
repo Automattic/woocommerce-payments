@@ -212,3 +212,7 @@ export const getPlatformCheckoutButtonSize = ( state ) => {
 export const getPlatformCheckoutButtonTheme = ( state ) => {
 	return getSettings( state ).platform_checkout_button_theme || 'dark';
 };
+
+export const getCurrentProtectionLevel = ( state ) => {
+	return getSettings( state ).current_protection_level || 'standard';
+};
