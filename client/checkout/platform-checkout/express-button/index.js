@@ -44,11 +44,9 @@ const renderPlatformCheckoutExpressButton = () => {
 	}
 };
 
-jQuery( ( $ ) => {
-	$( window ).on( 'load', () => {
-		renderPlatformCheckoutExpressButton();
-	} );
+window.addEventListener( 'load', renderPlatformCheckoutExpressButton );
 
+jQuery( ( $ ) => {
 	$( document.body ).on( 'updated_cart_totals', () => {
 		renderPlatformCheckoutExpressButton();
 	} );
