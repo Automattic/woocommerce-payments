@@ -466,6 +466,16 @@ class WC_Payments {
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::get_gateway(), self::$account );
 		}
 
+		if ( WC_Payments_Features::is_express_checkout_enabled() ) {
+			add_action( 'woocommerce_after_add_to_cart_quantity', [ __CLASS__, 'display_express_checkout_button_separator_html' ], -1 );
+			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'display_express_checkout_button_separator_html' ], -1 );
+			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'display_express_checkout_button_separator_html' ], -1 );
+
+			if ( WC_Payments_Features::is_payment_request_enabled() ) {
+				add_action( 'before_woocommerce_pay_form', [ __CLASS__, 'display_express_checkout_button_separator_html' ], 2 );
+			}
+		}
+
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
@@ -1397,5 +1407,19 @@ class WC_Payments {
 		if ( ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) && file_exists( WCPAY_ABSPATH . 'dist/runtime.js' ) ) {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
+	}
+
+	/**
+	 * Display payment request button separator.
+	 */
+	public static function display_express_checkout_button_separator_html() {
+		$should_hide = WC_Payments_Features::is_payment_request_enabled() && ! WC_Payments_Features::is_woopay_express_checkout_enabled() && ! WC_Payments_Features::is_link_enabled();
+
+		if ( WC_Payments_Features::is_payment_request_enabled() && ! self::$payment_request_button_handler->should_show_payment_request_button() ) {
+			return;
+		}
+		?>
+		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;<?php echo $should_hide ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
+		<?php
 	}
 }
