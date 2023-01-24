@@ -68,7 +68,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			await expect( page ).toMatchElement(
 				'div.wc-block-components-notices > div > div.components-notice__content',
 				{
-					text: 'Your card has been declined.',
+					text: 'Your card was declined.',
 				}
 			);
 		} );
@@ -205,7 +205,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			);
 			await expect( page ).toMatch(
 				declined3dsCardError,
-				'Your card has been declined.'
+				'Your card was declined.'
 			);
 		} );
 	}
