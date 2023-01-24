@@ -143,10 +143,7 @@ exports[`Overview: update business details modal renders correctly when opened f
         class="wcpay-update-business-details-modal__body"
       >
         <p>
-          Additional information is required to verify your business.
-        </p>
-        <p>
-          Update by 7pm Dec 31, 2021 to avoid a disruption in deposits.
+          Additional information is required to verify your business. Update by 7pm Dec 31, 2021 to avoid a disruption in deposits.
         </p>
         <div
           class="components-notice is-warning"
