@@ -154,12 +154,18 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 		// Ensure the subscription for a $switch_id is fetched only once per page load,
 		// avoiding an infinite loop that can occur on the product page when `get_subscription()` is used.
-		static $currency_fetched_for_switch_id = null;
-		$switch_id                             = $this->get_subscription_switch_id_from_superglobal();
-		if ( $switch_id && $switch_id !== $currency_fetched_for_switch_id ) {
-			$currency_fetched_for_switch_id = $switch_id;
-			$switch_subscription            = $this->get_subscription( $switch_id );
-			return $switch_subscription ? $switch_subscription->get_currency() : $return;
+		static $switch_id_currencies = []; // switch_id => currency.
+		$switch_id                   = $this->get_subscription_switch_id_from_superglobal();
+		if ( $switch_id && ! isset( $switch_id_currencies[ $switch_id ] ) ) {
+			// Add a placeholder only on the first call.
+			$switch_id_currencies[ $switch_id ] = 'fetching';
+			$switch_subscription                = $this->get_subscription( $switch_id );
+			// Cache the value.
+			$switch_id_currencies[ $switch_id ] = $switch_subscription ? $switch_subscription->get_currency() : $return;
+			return $switch_id_currencies[ $switch_id ];
+		} elseif ( $switch_id && 'fetching' !== $switch_id_currencies[ $switch_id ] ) {
+			// Return the cached value on subsequent calls.
+			return $switch_id_currencies[ $switch_id ];
 		}
 
 		$switch_cart_items = $this->get_subscription_switch_cart_items();
