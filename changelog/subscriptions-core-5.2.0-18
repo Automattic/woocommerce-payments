@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Replace code using wp_count_posts(), get_post_type(), get_posts and wp_delete_post() with equivalent WC Data Store functions to support stores that have HPOS enabled.
