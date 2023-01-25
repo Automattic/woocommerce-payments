@@ -20,13 +20,19 @@ use MyCLabs\Enum\Enum;
  * @psalm-immutable
  */
 class Payment_Method extends Enum {
-	const CARD            = 'card';
-	const SEPA            = 'sepa_debit';
-	const CARD_PRESENT    = 'card_present';
-	const US_BANK_ACCOUNT = 'us_bank_account';
+	const BANCONTACT      = 'bancontact';
 	const BECS            = 'au_becs_debit';
+	const CARD            = 'card';
+	const CARD_PRESENT    = 'card_present';
+	const EPS             = 'eps';
+	const GIROPAY         = 'giropay';
+	const IDEAL           = 'ideal';
 	const INTERAC_PRESENT = 'interac_present';
 	const LINK            = 'link';
+	const P24             = 'p24';
+	const SEPA            = 'sepa_debit';
+	const SOFORT          = 'sofort';
+	const US_BANK_ACCOUNT = 'us_bank_account';
 
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,

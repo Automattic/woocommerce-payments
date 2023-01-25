@@ -83,3 +83,5 @@ setLocaleData(
 	{ '': { domain: 'woocommerce-payments', lang: 'en_US' } },
 	'woocommerce-payments'
 );
+
+global.jQuery = jest.fn();

@@ -90,14 +90,18 @@ export const formatMethodFeesTooltip = (
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
 	const currentBaseFee = getCurrentBaseFee( accountFees );
+	// If the current fee doesn't have a fixed or percentage rate, use the base fee's rate. Eg. when there is a promotional discount fee applied. Use this to calculate the total fee too.
+	const currentFeeWithBaseFallBack = currentBaseFee.percentage_rate
+		? currentBaseFee
+		: accountFees.base;
 
 	const total = {
 		percentage_rate:
-			currentBaseFee.percentage_rate +
+			currentFeeWithBaseFallBack.percentage_rate +
 			accountFees.additional.percentage_rate +
 			accountFees.fx.percentage_rate,
 		fixed_rate:
-			currentBaseFee.fixed_rate +
+			currentFeeWithBaseFallBack.fixed_rate +
 			accountFees.additional.fixed_rate +
 			accountFees.fx.fixed_rate,
 		currency: accountFees.base.currency,
@@ -111,7 +115,9 @@ export const formatMethodFeesTooltip = (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
 				<div>Base fee</div>
-				<div>{ getFeeDescriptionString( currentBaseFee ) }</div>
+				<div>
+					{ getFeeDescriptionString( currentFeeWithBaseFallBack ) }
+				</div>
 			</div>
 			{ hasFees( accountFees.additional ) ? (
 				<div>
