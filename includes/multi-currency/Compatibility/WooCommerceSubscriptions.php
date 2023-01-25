@@ -154,7 +154,10 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 
 		$switch_id = $this->get_subscription_switch_id_from_superglobal();
 		if ( $switch_id ) {
-			return get_post_meta( $switch_id, '_order_currency', true );
+			remove_filter( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', [ $this, 'override_selected_currency' ], 50 );
+			$switch_subscription = $this->get_subscription( $switch_id );
+			add_filter( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', [ $this, 'override_selected_currency' ], 50 );
+			return $switch_subscription ? $switch_subscription->get_currency() : $return;
 		}
 
 		$switch_cart_items = $this->get_subscription_switch_cart_items();
