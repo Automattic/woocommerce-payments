@@ -152,7 +152,7 @@ class WC_Payments_Features {
 	 */
 	public static function is_woopay_express_checkout_enabled() {
 		// Confirm platform checkout eligibility as well.
-		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '0' ) && self::is_platform_checkout_eligible();
+		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_platform_checkout_eligible();
 	}
 
 	/**

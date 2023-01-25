@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+"Subscriptions by Payment Gateway" in WooCommerce → Status now shows the correct values when HPOS is enabled.
