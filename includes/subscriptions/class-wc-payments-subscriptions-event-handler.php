@@ -133,9 +133,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 			 * This ensures the downstream effects take place, e.g. a payment status order note is added and the
 			 * 'woocommerce_subscription_payment_complete' action is fired.
 			 */
-			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 			$subscription->update_status( 'on-hold' );
-			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 
 			/*
 			 * Remove the reactivate_subscription callback that occurs when a subscription transitions from on-hold to active.
@@ -199,9 +199,9 @@ class WC_Payments_Subscriptions_Event_Handler {
 		$subscription->add_order_note( sprintf( _n( 'WCPay subscription renewal attempt %d failed.', 'WCPay subscription renewal attempt %d failed.', $attempts, 'woocommerce-payments' ), $attempts ) );
 
 		if ( self::MAX_RETRIES > $attempts ) {
-			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			remove_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 			$subscription->payment_failed();
-			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'suspend_subscription' ] );
+			add_action( 'woocommerce_subscription_status_on-hold', [ $this->subscription_service, 'handle_subscription_status_on_hold' ] );
 		} else {
 			$subscription->payment_failed( 'cancelled' );
 		}
