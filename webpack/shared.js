@@ -34,7 +34,7 @@ module.exports = {
 			'subscription-product-onboarding-toast':
 				'./client/subscription-product-onboarding/toast.js',
 		},
-		// Override webpack public patch dynamically on every entry.
+		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
 		( entry ) => [ './client/public-path.js', entry ]
 	),
