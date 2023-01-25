@@ -152,20 +152,12 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $order ? $order->get_currency() : $return;
 		}
 
-		// Ensure the subscription for a $switch_id is fetched only once per page load,
-		// avoiding an infinite loop that can occur on the product page when `get_subscription()` is used.
-		static $switch_id_currencies = []; // switch_id => currency.
-		$switch_id                   = $this->get_subscription_switch_id_from_superglobal();
-		if ( $switch_id && ! isset( $switch_id_currencies[ $switch_id ] ) ) {
-			// Add a placeholder only on the first call.
-			$switch_id_currencies[ $switch_id ] = 'fetching';
-			$switch_subscription                = $this->get_subscription( $switch_id );
-			// Cache the value.
-			$switch_id_currencies[ $switch_id ] = $switch_subscription ? $switch_subscription->get_currency() : $return;
-			return $switch_id_currencies[ $switch_id ];
-		} elseif ( $switch_id && 'fetching' !== $switch_id_currencies[ $switch_id ] ) {
-			// Return the cached value on subsequent calls.
-			return $switch_id_currencies[ $switch_id ];
+		$switch_id = $this->get_subscription_switch_id_from_superglobal();
+		if ( $switch_id ) {
+			remove_filter( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', [ $this, 'override_selected_currency' ], 50 );
+			$switch_subscription = $this->get_subscription( $switch_id );
+			add_filter( MultiCurrency::FILTER_PREFIX . 'override_selected_currency', [ $this, 'override_selected_currency' ], 50 );
+			return $switch_subscription ? $switch_subscription->get_currency() : $return;
 		}
 
 		$switch_cart_items = $this->get_subscription_switch_cart_items();
