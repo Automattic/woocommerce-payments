@@ -542,45 +542,6 @@ export const usePlatformCheckoutLocations = () => {
 	} );
 };
 
-export const usePlatformCheckoutButtonType = () => {
-	const { updatePlatformCheckoutButtonType } = useDispatch( STORE_NAME );
-
-	return useSelect( ( select ) => {
-		const { getPlatformCheckoutButtonType } = select( STORE_NAME );
-
-		return [
-			getPlatformCheckoutButtonType(),
-			updatePlatformCheckoutButtonType,
-		];
-	} );
-};
-
-export const usePlatformCheckoutButtonSize = () => {
-	const { updatePlatformCheckoutButtonSize } = useDispatch( STORE_NAME );
-
-	return useSelect( ( select ) => {
-		const { getPlatformCheckoutButtonSize } = select( STORE_NAME );
-
-		return [
-			getPlatformCheckoutButtonSize(),
-			updatePlatformCheckoutButtonSize,
-		];
-	} );
-};
-
-export const usePlatformCheckoutButtonTheme = () => {
-	const { updatePlatformCheckoutButtonTheme } = useDispatch( STORE_NAME );
-
-	return useSelect( ( select ) => {
-		const { getPlatformCheckoutButtonTheme } = select( STORE_NAME );
-
-		return [
-			getPlatformCheckoutButtonTheme(),
-			updatePlatformCheckoutButtonTheme,
-		];
-	} );
-};
-
 export const useCurrentProtectionLevel = () => {
 	const { updateProtectionLevel } = useDispatch( STORE_NAME );
 

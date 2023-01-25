@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { waitFor } from '@testing-library/react';
+
+/**
  * Internal dependencies
  */
 import { expressCheckoutIframe } from '../express-checkout-iframe';
@@ -16,14 +21,16 @@ describe( 'expressCheckoutIframe', () => {
 		getConfig.mockReturnValue( 'http://example.com' );
 	} );
 
-	test( 'should open the iframe', () => {
-		expressCheckoutIframe( api );
+	test( 'should open the iframe', async () => {
+		expressCheckoutIframe( api, null, '#email' );
 
-		const woopayIframe = document.querySelector( 'iframe' );
+		await waitFor( () => {
+			const woopayIframe = document.querySelector( 'iframe' );
 
-		expect( woopayIframe.className ).toContain(
-			'platform-checkout-otp-iframe'
-		);
-		expect( woopayIframe.src ).toContain( 'http://example.com/otp/' );
+			expect( woopayIframe.className ).toContain(
+				'platform-checkout-otp-iframe'
+			);
+			expect( woopayIframe.src ).toContain( 'http://example.com/otp/' );
+		} );
 	} );
 } );
