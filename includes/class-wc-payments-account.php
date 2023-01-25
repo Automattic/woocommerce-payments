@@ -221,6 +221,9 @@ class WC_Payments_Account {
 			'pastDue'             => $account['has_overdue_requirements'] ?? false,
 			'accountLink'         => $this->get_login_url(),
 			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
+			'requirements'        => [
+				'errors' => $account['requirements']['errors'] ?? [],
+			],
 		];
 	}
 

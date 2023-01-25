@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Skip running blocks E2E tests, add comment for the same.
