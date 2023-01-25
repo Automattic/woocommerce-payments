@@ -35,6 +35,11 @@
 		font-style: italic;
 	}
 
+	&__icons {
+		display: flex;
+		align-items: flex-start;
+	}
+
 	&__icon {
 		border-radius: 2px;
 		display: flex;
