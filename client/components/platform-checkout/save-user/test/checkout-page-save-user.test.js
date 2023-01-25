@@ -36,7 +36,7 @@ jest.mock( '@wordpress/data', () => ( {
 
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
-		usePlatformCheckoutUser.mockImplementation( () => false );
+		usePlatformCheckoutUser.mockImplementation( () => [ false, true ] );
 
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: true,
@@ -67,7 +67,18 @@ describe( 'CheckoutPageSaveUser', () => {
 	} );
 
 	it( 'should not render checkbox for saving Platform Checkout user when user is already registered', () => {
-		usePlatformCheckoutUser.mockImplementation( () => true );
+		usePlatformCheckoutUser.mockImplementation( () => [ true, true ] );
+
+		render( <CheckoutPageSaveUser /> );
+		expect(
+			screen.queryByLabelText(
+				'Save my information for a faster and secure checkout'
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'should not render checkbox for saving Platform Checkout user when country is not available', () => {
+		usePlatformCheckoutUser.mockImplementation( () => [ false, false ] );
 
 		render( <CheckoutPageSaveUser /> );
 		expect(

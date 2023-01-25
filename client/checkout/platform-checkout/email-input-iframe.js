@@ -317,12 +317,13 @@ export const handlePlatformCheckoutEmailInput = async (
 			} );
 	}
 
-	const dispatchUserExistEvent = ( userExist ) => {
+	const dispatchUserExistEvent = ( userExist, countryAvailable ) => {
 		const PlatformCheckoutUserCheckEvent = new CustomEvent(
 			'PlatformCheckoutUserCheck',
 			{
 				detail: {
 					isRegisteredUser: userExist,
+					isCountryAvailable: countryAvailable,
 				},
 			}
 		);
@@ -430,7 +431,10 @@ export const handlePlatformCheckoutEmailInput = async (
 			} )
 			.then( ( data ) => {
 				// Dispatch an event after we get the response.
-				dispatchUserExistEvent( data[ 'user-exists' ] );
+				dispatchUserExistEvent(
+					data[ 'user-exists' ],
+					data[ 'country-available' ]
+				);
 
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );

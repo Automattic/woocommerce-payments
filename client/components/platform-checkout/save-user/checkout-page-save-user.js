@@ -39,7 +39,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		() => setIsInfoFlyoutVisible( false ),
 		[]
 	);
-	const isRegisteredUser = usePlatformCheckoutUser();
+	const [ isRegisteredUser, isCountryAvailable ] = usePlatformCheckoutUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
 	);
@@ -159,6 +159,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
 		! isWCPayWithNewTokenChosen ||
+		! isCountryAvailable ||
 		isRegisteredUser
 	) {
 		// Clicking the place order button sets the extension data in backend. If user changes the payment method
