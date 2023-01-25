@@ -27,7 +27,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * @var bool
 	 */
-	private $running_filters = false;
+	private $running_override_selected_currency_filters = false;
 
 	/**
 	 * Init the class.
@@ -148,7 +148,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 */
 	public function override_selected_currency( $return ) {
 		// If it's not false, return it.
-		if ( $return || $this->running_filters ) {
+		if ( $return || $this->running_override_selected_currency_filters ) {
 			return $return;
 		}
 
@@ -158,11 +158,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $order ? $order->get_currency() : $return;
 		}
 
-		// The running_filters property has been added here due to if it isn't, it will create an infinite loop of calls.
+		// The running_override_selected_currency_filters property has been added here due to if it isn't, it will create an infinite loop of calls.
 		if ( WC()->session->get( 'order_awaiting_payment' ) ) {
-			$this->running_filters = true;
-			$order                 = wc_get_order( WC()->session->get( 'order_awaiting_payment' ) );
-			$this->running_filters = false;
+			$this->running_override_selected_currency_filters = true;
+			$order = wc_get_order( WC()->session->get( 'order_awaiting_payment' ) );
+			$this->running_override_selected_currency_filters = false;
 			if ( $order && $this->order_contains_renewal( $order ) ) {
 				return $order->get_currency();
 			}
