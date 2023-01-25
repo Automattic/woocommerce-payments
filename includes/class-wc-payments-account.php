@@ -213,12 +213,12 @@ class WC_Payments_Account {
 		return [
 			'email'               => $account['email'] ?? '',
 			'country'             => $account['country'] ?? 'US',
-			'status'              => 'restricted',
+			'status'              => $account['status'],
 			'paymentsEnabled'     => $account['payments_enabled'],
 			'deposits'            => $account['deposits'] ?? [],
 			'depositsStatus'      => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
 			'currentDeadline'     => $account['current_deadline'] ?? false,
-			'pastDue'             => true,
+			'pastDue'             => $account['has_overdue_requirements'] ?? false,
 			'accountLink'         => $this->get_login_url(),
 			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
 			'requirements'        => [
