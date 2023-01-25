@@ -153,6 +153,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		}
 
 		$switch_id = $this->get_subscription_switch_id_from_superglobal();
+		// test.
 		if ( $switch_id ) {
 			return get_post_meta( $switch_id, '_order_currency', true );
 		}
