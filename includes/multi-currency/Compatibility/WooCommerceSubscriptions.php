@@ -317,9 +317,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	}
 
 	/**
-	 * Checks $_GET superglobal for a switch id and returns it if found.
+	 * Checks $_GET superglobal for a switch ID from the `switch-subscription` param if it exists.
+	 * This `switch-subscription` param is added to the URL when a customer
+	 * has initiated a switch from the My Account → Subscription page.
 	 *
-	 * @return mixed Id of the sub being switched, or false.
+	 * @return int|bool The ID of the subscription being switched, or false if it cannot be found.
 	 */
 	private function get_subscription_switch_id_from_superglobal() {
 		if ( isset( $_GET['_wcsnonce'] ) && wp_verify_nonce( sanitize_key( $_GET['_wcsnonce'] ), 'wcs_switch_request' ) ) {
