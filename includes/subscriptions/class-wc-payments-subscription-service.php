@@ -452,9 +452,9 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Suspends the WCPay subscription when a WC subscription is put on-hold.
+	 * Handle subscription status change to on-hold.
 	 *
-	 * @param WC_Subscription $subscription The WC subscription that was suspended.
+	 * @param WC_Subscription $subscription The WC subscription.
 	 *
 	 * @return void
 	 */
@@ -478,9 +478,9 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Suspends the WCPay subscription when a WC subscription is put on-hold.
+	 * Suspends a WCPay subscription.
 	 *
-	 * @param WC_Subscription $subscription The WC subscription that was suspended.
+	 * @param WC_Subscription $subscription The WC subscription to suspend.
 	 *
 	 * @return void
 	 */
