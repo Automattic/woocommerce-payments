@@ -73,15 +73,15 @@ const buttonActionOptions = [
 		value: 'default',
 	},
 	{
-		label: __( 'Buy', 'woocommerce-payments' ),
+		label: __( 'Buy with', 'woocommerce-payments' ),
 		value: 'buy',
 	},
 	{
-		label: __( 'Donate', 'woocommerce-payments' ),
+		label: __( 'Donate with', 'woocommerce-payments' ),
 		value: 'donate',
 	},
 	{
-		label: __( 'Book', 'woocommerce-payments' ),
+		label: __( 'Book with', 'woocommerce-payments' ),
 		value: 'book',
 	},
 ];
@@ -199,7 +199,7 @@ const PaymentRequestSettings = ( { section } ) => {
 									'checkout'
 								) }
 								label={ __(
-									'Checkout',
+									'Checkout Page',
 									'woocommerce-payments'
 								) }
 							/>
@@ -230,7 +230,10 @@ const PaymentRequestSettings = ( { section } ) => {
 									paymentRequestLocations.includes( 'cart' )
 								}
 								onChange={ makeLocationChangeHandler( 'cart' ) }
-								label={ __( 'Cart', 'woocommerce-payments' ) }
+								label={ __(
+									'Cart Page',
+									'woocommerce-payments'
+								) }
 							/>
 						</li>
 					</ul>
@@ -264,32 +267,29 @@ const PaymentRequestSettings = ( { section } ) => {
 					<RadioControl
 						className="payment-method-settings__cta-selection"
 						hideLabelFromVision
-						help={ __(
-							'Select a button label that fits best with the flow of purchase or payment experience on your store.',
-							'woocommerce-payments'
-						) }
 						selected={ buttonType }
 						options={ buttonActionOptions }
 						onChange={ setButtonType }
 					/>
-					<h4>{ __( 'Appearance', 'woocommerce-payments' ) }</h4>
+					<h4>{ __( 'Button size', 'woocommerce-payments' ) }</h4>
 					<RadioControl
-						help={ __(
-							'Note that larger buttons are more suitable for mobile use.',
-							'woocommerce-payments'
-						) }
-						label={ __( 'Size', 'woocommerce-payments' ) }
 						selected={ size }
 						options={ buttonSizeOptions }
 						onChange={ setSize }
 					/>
+					<h4>{ __( 'Theme', 'woocommerce-payments' ) }</h4>
 					<RadioControl
-						label={ __( 'Theme', 'woocommerce-payments' ) }
 						selected={ theme }
 						options={ buttonThemeOptions }
 						onChange={ setTheme }
 					/>
-					<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
+					<h4>{ __( 'Preview', 'woocommerce-payments' ) }</h4>
+					<div className="payment-method-settings__option-help-text">
+						{ __(
+							'See the preview of enabled express payment buttons.',
+							'woocommerce-payments'
+						) }
+					</div>
 					<Elements stripe={ stripePromise }>
 						<PaymentRequestButtonPreview />
 					</Elements>

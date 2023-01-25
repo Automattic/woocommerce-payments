@@ -133,14 +133,14 @@
 .woopay-express-button {
 	font-size: 20px;
 	font-weight: normal;
-	line-height: 42px;
+	line-height: 39px;
 	background: $white;
 	border: 1px solid $white;
 	color: $studio-woocommerce-purple-60;
 	width: 100%;
 	border-radius: 4px;
-	padding-top: 1px;
-	padding-bottom: 1px;
+	padding-top: 0;
+	padding-bottom: 0;
 
 	&[class*='dark'] {
 		background: $studio-woocommerce-purple-60;
@@ -157,12 +157,12 @@
 
 	&[class*='medium'] {
 		font-size: 24px;
-		line-height: 48px;
+		line-height: 47px;
 	}
 
 	&[class*='large'] {
 		font-size: 32px;
-		line-height: 56px;
+		line-height: 55px;
 	}
 
 	svg {
@@ -174,4 +174,38 @@
 	margin-left: 0;
 	margin-right: 0;
 	border: 0;
+}
+
+.payment-method-settings {
+	&__option-help-text {
+		color: #757575;
+	}
+
+	&__preview-help-text {
+		color: #757575;
+	}
+
+	&__preview {
+		padding: 24px;
+		border: 1px solid rgba( 25, 23, 17, 0.3 );
+		border-radius: 4px;
+		display: flex;
+		justify-content: center;
+
+		.woopay-express-button,
+		.StripeElement {
+			width: 100%;
+			&:not( :last-child ) {
+				margin-right: 8px;
+			}
+		}
+	}
+}
+
+.components-radio-control {
+	.payment-method-settings {
+		&__option-help-text {
+			margin-left: 26px;
+		}
+	}
 }

@@ -15,6 +15,7 @@ import {
  */
 import { shouldUseGooglePayBrand } from 'payment-request/utils';
 import InlineNotice from 'components/inline-notice';
+import { WoopayExpressCheckoutButton } from 'wcpay/checkout/platform-checkout/express-button/woopay-express-checkout-button';
 import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
@@ -97,46 +98,55 @@ const PaymentRequestButtonPreview = () => {
 	 * If stripe finished loading but payment request button failed to load (null), display info section.
 	 * If stripe finished loading and payment request button loads, display the button.
 	 */
-	if ( isLoading ) {
-		return null;
-	}
-
-	if ( ! paymentRequest ) {
-		return (
-			<InlineNotice status="info" isDismissible={ false }>
-				{ __(
-					'To preview the buttons, ' +
-						'ensure your device is configured to accept Apple Pay or Google Pay, ' +
-						'and view this page using the Safari or Chrome browsers.',
-					'woocommerce-payments'
-				) }
-			</InlineNotice>
-		);
-	}
 
 	return (
 		<>
 			<div className="payment-method-settings__preview">
-				<PaymentRequestButtonElement
-					key={ `${ buttonType }-${ theme }-${ size }` }
-					onClick={ ( e ) => {
-						e.preventDefault();
-					} }
-					options={ {
-						paymentRequest: paymentRequest,
-						style: {
-							paymentRequestButton: {
-								type: buttonType,
-								theme: theme,
-								height: `${
-									buttonSizeToPxMap[ size ] ||
-									buttonSizeToPxMap.default
-								}px`,
-							},
-						},
+				<WoopayExpressCheckoutButton
+					isPreview={ true }
+					buttonSettings={ {
+						type: buttonType,
+						text: 'Buy',
+						theme: theme,
+						height: `${
+							buttonSizeToPxMap[ size ] ||
+							buttonSizeToPxMap.default
+						}px`,
+						size,
 					} }
 				/>
+				{ ! isLoading && paymentRequest && (
+					<PaymentRequestButtonElement
+						key={ `${ buttonType }-${ theme }-${ size }` }
+						onClick={ ( e ) => {
+							e.preventDefault();
+						} }
+						options={ {
+							paymentRequest: paymentRequest,
+							style: {
+								paymentRequestButton: {
+									type: buttonType,
+									theme: theme,
+									height: `${
+										buttonSizeToPxMap[ size ] ||
+										buttonSizeToPxMap.default
+									}px`,
+								},
+							},
+						} }
+					/>
+				) }
 			</div>
+			{ ! isLoading && ! paymentRequest && (
+				<InlineNotice status="info" isDismissible={ false }>
+					{ __(
+						'To preview the Apple Pay and Google Pay buttons, ' +
+							'ensure your device is configured to accept Apple Pay or Google Pay, ' +
+							'and view this page using the Safari or Chrome browsers.',
+						'woocommerce-payments'
+					) }
+				</InlineNotice>
+			) }
 			<BrowserHelpText />
 		</>
 	);
