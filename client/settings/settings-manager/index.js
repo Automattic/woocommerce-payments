@@ -22,7 +22,8 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
-import { useDepositDelayDays } from '../../data';
+import { useDepositDelayDays, useSettings } from '../../data';
+import Tour from 'wcpay/components/tour';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -109,6 +110,8 @@ const DepositsDescription = () => {
 };
 
 const SettingsManager = () => {
+	const { isLoading } = useSettings();
+
 	const {
 		featureFlags: {
 			upeSettingsPreview: isUPESettingsPreviewEnabled,
@@ -165,6 +168,76 @@ const SettingsManager = () => {
 			</SettingsSection>
 			<AdvancedSettings />
 			<SaveSettingsSection />
+			{ ! isLoading && (
+				<Tour
+					options={ [
+						{
+							selector: '.settings-section:last-child',
+							content: {
+								title: 'Enhanced fraud protection is here 🔒',
+								image: 'https://picsum.photos/200',
+								description:
+									// eslint-disable-next-line max-len
+									'Incoming transactions will now be screened for common risk factors, at the level of your choosing. Review any transactions caught by these filters and select whether you’d like to approve or decline them',
+								counter: false,
+								previousButton: false,
+								actionButton: {
+									text: 'See what’s new',
+								},
+							},
+						},
+						{
+							selector: '.deposits__bank-information > h4',
+							content: {
+								title: 'Choose your filter level 🚦',
+								image: {
+									src: 'https://picsum.photos/200',
+									mobileOnly: true,
+								},
+								description:
+									'Decide how aggressively you want to filter suspicious payments, from standard to advanced.',
+								counter: true,
+								previousButton: true,
+								actionButton: true,
+							},
+						},
+						{
+							selector: '.express-checkout__label',
+							content: {
+								title: 'Take more control 🎚️',
+								image: {
+									src: 'https://picsum.photos/200',
+									mobileOnly: true,
+								},
+								description:
+									// eslint-disable-next-line max-len
+									'We recommend using one of the preset risk levels, but if you need more control, head to Advanced to fine-tune the various filters.',
+								counter: true,
+								previousButton: true,
+								actionButton: true,
+							},
+						},
+						{
+							selector: '.payment-methods__available-methods',
+							content: {
+								title: 'Ready for review 📥️',
+								image: {
+									src: 'https://picsum.photos/200',
+									mobileOnly: true,
+								},
+								description:
+									// eslint-disable-next-line max-len
+									"Payments that have been caught by a risk filter will appear under Transactions > Payments. We'll let you know why each payment was flagged so that you can determine whether to approve or block it.",
+								counter: true,
+								previousButton: true,
+								actionButton: {
+									text: 'Got it',
+								},
+							},
+						},
+					] }
+				/>
+			) }
 		</SettingsLayout>
 	);
 };
