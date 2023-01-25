@@ -79,4 +79,11 @@
 
 .component-notice__icon {
 	margin-right: 10px;
+	align-self: center;
+}
+
+.component-notice__content--flex {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
 }

@@ -6,6 +6,7 @@ import { __ } from '@wordpress/i18n';
 import { Button, Card, Modal, Notice } from '@wordpress/components';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { useState } from '@wordpress/element';
+import { SVG, Path } from '@wordpress/primitives';
 
 /**
  * Internal dependencies
@@ -14,6 +15,19 @@ import CardBody from '../card-body';
 import { useCurrentProtectionLevel } from '../../data';
 import './style.scss';
 
+const TipIcon = ( props ) => {
+	const svgPathParts = [
+		'M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8 ',
+		'6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z',
+	];
+
+	return (
+		<SVG width="24" height="24" viewBox="0 0 24 24" { ...props }>
+			<Path d={ svgPathParts.join( ' ' ) } />
+		</SVG>
+	);
+};
+
 const StandardNotice = () => {
 	return (
 		<Notice
@@ -21,13 +35,15 @@ const StandardNotice = () => {
 			status="info"
 			isDismissible={ false }
 		>
-			<p>
-				<span className="dashicons dashicons-lightbulb component-notice__icon"></span>
-				{ __(
-					"Provides a standard level of filtering that's suitable for most buisness.",
-					'woocommerce-payments'
-				) }
-			</p>
+			<div className="component-notice__content--flex">
+				<TipIcon className="component-notice__icon" />
+				<p>
+					{ __(
+						"Provides a standard level of filtering that's suitable for most business.",
+						'woocommerce-payments'
+					) }
+				</p>
+			</div>
 		</Notice>
 	);
 };
@@ -39,13 +55,15 @@ const HighNotice = () => {
 			status="info"
 			isDismissible={ false }
 		>
-			<p>
-				<span className="dashicons dashicons-lightbulb component-notice__icon"></span>
-				{ __(
-					'Offers the highest level of filtering for stores, but may catch some legitimate transactions',
-					'woocommerce-payments'
-				) }
-			</p>
+			<div className="component-notice__content--flex">
+				<TipIcon className="component-notice__icon" />
+				<p>
+					{ __(
+						'Offers the highest level of filtering for stores, but may catch some legitimate transactions',
+						'woocommerce-payments'
+					) }
+				</p>
+			</div>
 		</Notice>
 	);
 };
