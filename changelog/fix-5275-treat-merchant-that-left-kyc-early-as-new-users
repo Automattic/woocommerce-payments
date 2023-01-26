@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix TOS acceptance can prevent saving settings or accessing account dashboard

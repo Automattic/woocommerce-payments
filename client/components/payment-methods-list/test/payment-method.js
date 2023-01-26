@@ -20,6 +20,12 @@ describe( 'PaymentMethod', () => {
 	const handleOnUnCheckClickMock = jest.fn( () => {
 		checked = false;
 	} );
+
+	// Clear the mocks (including the mock call count) after each test.
+	afterEach( () => {
+		jest.clearAllMocks();
+	} );
+
 	const getComponent = () => {
 		return (
 			<PaymentMethod
@@ -61,6 +67,61 @@ describe( 'PaymentMethod', () => {
 
 		expect( handleOnUnCheckClickMock ).toHaveBeenCalledTimes( 1 );
 		expect( handleOnUnCheckClickMock ).toHaveBeenCalledWith( 'foo' );
+		jest.useRealTimers();
+	} );
+
+	it( 'shows the required label on payment methods which are required', () => {
+		const component = render(
+			<PaymentMethod
+				label="Foo"
+				id="foo"
+				checked={ checked }
+				onCheckClick={ handleOnCheckClickMock }
+				onUncheckClick={ handleOnUnCheckClickMock }
+				description="Bar"
+				required={ true }
+			/>
+		);
+
+		expect( component.container ).toContainHTML(
+			'<span class="payment-method__required-label">(Required)</span>'
+		);
+	} );
+
+	const getLockedComponent = () => {
+		return (
+			<PaymentMethod
+				label="Locked"
+				id="locked"
+				checked={ checked }
+				onCheckClick={ handleOnCheckClickMock }
+				onUncheckClick={ handleOnUnCheckClickMock }
+				description="Locked payment method"
+				locked={ true }
+			/>
+		);
+	};
+
+	test( 'clicking a locked checkbox does not call onCheckClick or onUnCheckClick', () => {
+		const component = render( getLockedComponent() );
+
+		jest.useFakeTimers();
+		act( () => {
+			user.click( screen.getByLabelText( 'Locked' ) );
+			jest.runAllTimers();
+			// Since we are using a variable instead of a state, we need to re-render the component on each variable change.
+			component.rerender( getLockedComponent() );
+		} );
+
+		expect( handleOnCheckClickMock ).not.toHaveBeenCalled();
+
+		act( () => {
+			user.click( screen.getByLabelText( 'Locked' ) );
+			jest.runAllTimers();
+			component.rerender( getLockedComponent() );
+		} );
+
+		expect( handleOnUnCheckClickMock ).not.toHaveBeenCalled();
 		jest.useRealTimers();
 	} );
 } );

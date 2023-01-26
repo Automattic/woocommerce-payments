@@ -43,19 +43,32 @@ const PaymentMethodDescription = ( { name } ) => {
 	);
 };
 
-const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
+const PaymentMethodCheckbox = ( {
+	onChange,
+	name,
+	checked,
+	fees,
+	status,
+	required,
+	locked,
+} ) => {
 	const { accountFees } = useContext( WCPaySettingsContext );
 
 	const handleChange = useCallback(
 		( enabled ) => {
+			// If the payment method checkbox is locked, reject any changes.
+			if ( locked ) {
+				return;
+			}
+
 			onChange( name, enabled );
 		},
-		[ name, onChange ]
+		[ locked, name, onChange ]
 	);
 
 	const disabled = upeCapabilityStatuses.INACTIVE === status;
 
-	// Uncheck payment method if checked and disabled.
+	// Force uncheck payment method checkbox if it's checked and the payment method is disabled.
 	useEffect( () => {
 		if ( disabled && checked ) {
 			handleChange( false );
@@ -76,7 +89,7 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 			<LoadableCheckboxControl
 				label={ paymentMethod.label }
 				checked={ checked }
-				disabled={ disabled }
+				disabled={ disabled || locked }
 				onChange={ ( state ) => {
 					handleChange( state );
 				} }
@@ -92,8 +105,12 @@ const PaymentMethodCheckbox = ( { onChange, name, checked, fees, status } ) => {
 				<div className={ 'payment-method-checkbox__pills-left' }>
 					<span className="payment-method-checkbox__label">
 						{ paymentMethod.label }
+						{ required && (
+							<span className="payment-method-checkbox__required-label">
+								{ __( 'Required', 'woocommerce-payments' ) }
+							</span>
+						) }
 					</span>
-
 					{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
 						<Tooltip
 							content={ __(

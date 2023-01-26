@@ -1,39 +1,46 @@
 /* eslint-disable */
 const path = require( 'path' );
+const { mapValues } = require( 'lodash' );
 const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
 
 module.exports = {
-	entry: {
-		index: './client/index.js',
-		settings: './client/settings/index.js',
-		'blocks-checkout': './client/checkout/blocks/index.js',
-		'upe-blocks-checkout': './client/checkout/blocks/upe.js',
-		'platform-checkout': './client/checkout/platform-checkout/index.js',
-		'platform-checkout-express-button':
-			'./client/checkout/platform-checkout/express-button/index.js',
-		checkout: './client/checkout/classic/index.js',
-		upe_checkout: './client/checkout/classic/upe.js',
-		'payment-request': './client/payment-request/index.js',
-		'subscription-edit-page': './client/subscription-edit-page.js',
-		tos: './client/tos/index.js',
-		'payment-gateways': './client/payment-gateways/index.js',
-		'multi-currency': './client/multi-currency/index.js',
-		'multi-currency-switcher-block':
-			'./client/multi-currency/blocks/currency-switcher.js',
-		'multi-currency-analytics':
-			'./client/multi-currency-analytics/index.js',
-		order: './client/order/index.js',
-		'subscriptions-empty-state':
-			'./client/subscriptions-empty-state/index.js',
-		'subscription-product-onboarding-modal':
-			'./client/subscription-product-onboarding/modal.js',
-		'subscription-product-onboarding-toast':
-			'./client/subscription-product-onboarding/toast.js',
-	},
+	entry: mapValues(
+		{
+			index: './client/index.js',
+			settings: './client/settings/index.js',
+			'blocks-checkout': './client/checkout/blocks/index.js',
+			'upe-blocks-checkout': './client/checkout/blocks/upe.js',
+			'platform-checkout': './client/checkout/platform-checkout/index.js',
+			'platform-checkout-express-button':
+				'./client/checkout/platform-checkout/express-button/index.js',
+			checkout: './client/checkout/classic/index.js',
+			upe_checkout: './client/checkout/classic/upe.js',
+			'payment-request': './client/payment-request/index.js',
+			'subscription-edit-page': './client/subscription-edit-page.js',
+			tos: './client/tos/index.js',
+			'payment-gateways': './client/payment-gateways/index.js',
+			'multi-currency': './client/multi-currency/index.js',
+			'multi-currency-switcher-block':
+				'./client/multi-currency/blocks/currency-switcher.js',
+			'multi-currency-analytics':
+				'./client/multi-currency-analytics/index.js',
+			order: './client/order/index.js',
+			'subscriptions-empty-state':
+				'./client/subscriptions-empty-state/index.js',
+			'subscription-product-onboarding-modal':
+				'./client/subscription-product-onboarding/modal.js',
+			'subscription-product-onboarding-toast':
+				'./client/subscription-product-onboarding/toast.js',
+		},
+		// Override webpack public path dynamically on every entry.
+		// Required for chunks loading to work on sites with JS concatenation.
+		( entry ) => [ './client/public-path.js', entry ]
+	),
 	output: {
 		clean: true,
+		chunkFilename: 'chunks/[name].js?ver=[chunkhash]',
 	},
 	module: {
 		rules: [
