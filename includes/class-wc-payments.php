@@ -26,6 +26,7 @@ use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Platform_Checkout_Tracker;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Platform_Checkout\Platform_Checkout_Order_Status_Sync;
@@ -42,11 +43,18 @@ use WCPay\Core\WC_Payments_Customer_Service_API;
  */
 class WC_Payments {
 	/**
-	 * Instance of WC_Payment_Gateway_WCPay, created in init function.
+	 * Main payment gateway controller instance, created in init function.
+	 *
+	 * @var WC_Payment_Gateway_WCPay|UPE_Payment_Gateway
+	 */
+	private static $card_gateway;
+
+	/**
+	 * Instance of WC_Payment_Gateway_WCPay to register as payment gateway.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
 	 */
-	private static $card_gateway;
+	private static $legacy_card_gateway;
 
 	/**
 	 * Instance of WC_Payments_API_Client, created in init function.
@@ -194,6 +202,27 @@ class WC_Payments {
 	 * @var WC_Payments_Webhook_Processing_Service
 	 */
 	private static $webhook_processing_service;
+
+	/**
+	 * Maps all availabled Stripe payment method IDs to UPE Payment Method instances.
+	 *
+	 * @var array
+	 */
+	private static $upe_payment_method_map = [];
+
+	/**
+	 * Maps all availabled Stripe payment method IDs to UPE Payment Gateway instances.
+	 *
+	 * @var array
+	 */
+	private static $upe_payment_gateway_map = [];
+
+	/**
+	 * Map to store all the available split upe checkouts
+	 *
+	 * @var array
+	 */
+	private static $upe_checkout_map = [];
 
 	/**
 	 * Instance of WC_Payments_Webhook_Reliability_Service, created in init function
@@ -401,8 +430,10 @@ class WC_Payments {
 		self::$onboarding_service                  = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache );
 		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
 
+		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
+		$payments_checkout         = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$platform_checkout_util, self::$account, self::$customer_service );
+
 		if ( WC_Payments_Features::is_upe_enabled() ) {
-			$payment_methods        = [];
 			$payment_method_classes = [
 				CC_Payment_Method::class,
 				Bancontact_Payment_Method::class,
@@ -415,17 +446,17 @@ class WC_Payments {
 				Eps_Payment_Method::class,
 				Link_Payment_Method::class,
 			];
-
-			foreach ( $payment_method_classes as $payment_method_class ) {
-				$payment_method                               = new $payment_method_class( self::$token_service );
-				$payment_methods[ $payment_method->get_id() ] = $payment_method;
+			foreach ( $payment_method_classes as $class ) {
+				$payment_method = new $class( self::$token_service );
+				self::$upe_payment_method_map[ $payment_method->get_id() ]  = $payment_method;
+				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, self::$failed_transaction_rate_limiter, self::$order_service );
 			}
 
-			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		} else {
-			self::$card_gateway         = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
-			self::$wc_payments_checkout = new WC_Payments_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
+			self::$card_gateway         = self::$legacy_card_gateway;
+			self::$wc_payments_checkout = $payments_checkout;
 		}
 
 		self::$mode = new Mode( self::$card_gateway );
@@ -595,7 +626,33 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooCommerce Payments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$gateways[] = self::get_gateway();
+		$gateways[] = self::$legacy_card_gateway;
+
+		if ( WC_Payments_Features::is_upe_enabled() ) {
+			$all_upe_gateways = [];
+			$reusable_methods = [];
+
+			foreach ( self::$card_gateway->get_payment_method_ids_enabled_at_checkout() as $payment_method_id ) {
+				if ( 'card' === $payment_method_id ) {
+					continue;
+				}
+				$upe_gateway        = self::get_payment_gateway_by_id( $payment_method_id );
+				$upe_payment_method = self::get_payment_method_by_id( $payment_method_id );
+
+				if ( $upe_payment_method->is_reusable() ) {
+					$reusable_methods[] = $upe_gateway;
+				}
+
+				$all_upe_gateways[] = $upe_gateway;
+
+			}
+
+			if ( is_add_payment_method_page() ) {
+				return array_merge( $gateways, $reusable_methods );
+			}
+
+			return array_merge( $gateways, $all_upe_gateways );
+		}
 
 		return $gateways;
 	}
@@ -604,13 +661,13 @@ class WC_Payments {
 	 * Called on Payments setting page.
 	 *
 	 * Remove all WCPay gateways except CC one. Comparison is done against
-	 * $self::card_gateway because it should be the same instance as
+	 * $self::legacy_card_gateway because it should be the same instance as
 	 * registered with WooCommerce and class can change depending on
 	 * environment (see `init` method where $card_gateway is set).
 	 */
 	public static function hide_gateways_on_settings_page() {
 		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
-			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && self::get_gateway() !== $payment_gateway ) {
+			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== self::$legacy_card_gateway ) {
 				unset( WC()->payment_gateways->payment_gateways[ $index ] );
 			}
 		}
@@ -883,6 +940,41 @@ class WC_Payments {
 			return (string) filemtime( WCPAY_ABSPATH . trim( $file, '/' ) );
 		}
 		return WCPAY_VERSION_NUMBER;
+	}
+
+	/**
+	 * Returns payment method instance by Stripe ID.
+	 *
+	 * @param string $payment_method_id Stripe payment method type ID.
+	 * @return false|UPE_Payment_Method Matching UPE Payment Method instance.
+	 */
+	public static function get_payment_method_by_id( $payment_method_id ) {
+		if ( ! isset( self::$upe_payment_method_map[ $payment_method_id ] ) ) {
+			return false;
+		}
+		return self::$upe_payment_method_map[ $payment_method_id ];
+	}
+
+	/**
+	 * Returns payment gateway instance by Stripe ID.
+	 *
+	 * @param string $payment_method_id Stripe payment method type ID.
+	 * @return false|UPE_Payment_Gateway Matching UPE Payment Gateway instance.
+	 */
+	public static function get_payment_gateway_by_id( $payment_method_id ) {
+		if ( ! isset( self::$upe_payment_gateway_map[ $payment_method_id ] ) ) {
+			return false;
+		}
+		return self::$upe_payment_gateway_map[ $payment_method_id ];
+	}
+
+	/**
+	 * Returns Payment Method map.
+	 *
+	 * @return array
+	 */
+	public static function get_payment_method_map() {
+		return self::$upe_payment_method_map;
 	}
 
 	/**

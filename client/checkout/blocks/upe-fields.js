@@ -22,10 +22,14 @@ import { __ } from '@wordpress/i18n';
  */
 import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
-import { getConfig } from 'utils/checkout';
-import { getTerms } from '../utils/upe';
+import { getConfig, getUPEConfig } from 'utils/checkout';
+import {
+	getTerms,
+	getPaymentIntentFromSession,
+	getCookieValue,
+} from '../utils/upe';
+import { WC_STORE_CART } from '../constants.js';
 import { decryptClientSecret } from '../utils/encryption';
-import { PAYMENT_METHOD_NAME_CARD, WC_STORE_CART } from '../constants.js';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
 import { useFingerprint } from './hooks';
@@ -60,12 +64,15 @@ const useCustomerData = () => {
 const WCPayUPEFields = ( {
 	api,
 	activePaymentMethod,
+	testingInstructions,
 	billing: { billingData },
 	eventRegistration: {
 		onPaymentProcessing,
 		onCheckoutAfterProcessingWithSuccess,
 	},
 	emitResponse,
+	paymentMethodId,
+	upeMethods,
 	paymentIntentId,
 	paymentIntentSecret,
 	errorMessage,
@@ -82,15 +89,11 @@ const WCPayUPEFields = ( {
 	const [ paymentCountry, setPaymentCountry ] = useState( null );
 
 	const paymentMethodsConfig = getConfig( 'paymentMethodsConfig' );
-	const testMode = getConfig( 'testMode' );
-	const testCopy = (
-		<p>
-			<strong>Test mode:</strong> use the test VISA card 4242424242424242
-			with any expiry date and CVC.
-		</p>
-	);
-
-	const gatewayConfig = getPaymentMethods()[ PAYMENT_METHOD_NAME_CARD ];
+	const isTestMode = getConfig( 'testMode' );
+	const testingInstructionsIfAppropriate = isTestMode
+		? testingInstructions
+		: '';
+	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
 	const customerData = useCustomerData();
 
 	useEffect( () => {
@@ -204,7 +207,7 @@ const WCPayUPEFields = ( {
 	useEffect(
 		() =>
 			onPaymentProcessing( () => {
-				if ( PAYMENT_METHOD_NAME_CARD !== activePaymentMethod ) {
+				if ( upeMethods[ paymentMethodId ] !== activePaymentMethod ) {
 					return;
 				}
 
@@ -245,7 +248,7 @@ const WCPayUPEFields = ( {
 					type: 'success',
 					meta: {
 						paymentMethodData: {
-							paymentMethod: PAYMENT_METHOD_NAME_CARD,
+							paymentMethod: paymentMethodId,
 							wc_payment_intent_id: paymentIntentId,
 							wcpay_selected_upe_payment_type: selectedUPEPaymentType,
 							'wcpay-fraud-prevention-token':
@@ -358,7 +361,12 @@ const WCPayUPEFields = ( {
 
 	return (
 		<>
-			{ testMode ? testCopy : '' }
+			<p
+				className="content"
+				dangerouslySetInnerHTML={ {
+					__html: testingInstructionsIfAppropriate,
+				} }
+			></p>
 			<PaymentElement
 				options={ elementOptions }
 				onChange={ upeOnChange }
@@ -385,6 +393,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 	);
 	const [ fontRules ] = useState( getFontRulesFromPage() );
 	const [ fingerprint, fingerprintErrorMessage ] = useFingerprint();
+	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
@@ -407,10 +416,23 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		if ( paymentIntentId || hasRequestedIntent || ! fingerprint ) {
 			return;
 		}
-
-		async function createIntent() {
+		async function createIntent( paymentMethodId ) {
 			try {
-				const response = await api.createIntent( fingerprint );
+				const response = await api.createIntent(
+					fingerprint,
+					paymentMethodId
+				);
+				const cartHash = getCookieValue( 'woocommerce_cart_hash' );
+				if ( cartHash ) {
+					paymentMethodsConfig[
+						paymentMethodId
+					].upePaymentIntentData =
+						cartHash +
+						'-' +
+						response.id +
+						'-' +
+						response.client_secret;
+				}
 				setPaymentIntentId( response.id );
 				setClientSecret( response.client_secret );
 			} catch ( error ) {
@@ -421,10 +443,29 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 				);
 			}
 		}
+
+		function getOrCreateIntent( paymentMethodId ) {
+			const {
+				intentId,
+				clientSecret: paymentClientSecret,
+			} = getPaymentIntentFromSession(
+				paymentMethodsConfig,
+				paymentMethodId
+			);
+			if ( ! intentId ) {
+				createIntent( paymentMethodId );
+			} else {
+				setPaymentIntentId( intentId );
+				setClientSecret( paymentClientSecret );
+			}
+		}
+
 		setHasRequestedIntent( true );
-		createIntent();
+		getOrCreateIntent( props.paymentMethodId );
 	}, [
+		props.paymentMethodId,
 		paymentIntentId,
+		paymentMethodsConfig,
 		hasRequestedIntent,
 		api,
 		errorMessage,

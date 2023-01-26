@@ -103,7 +103,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
 
-		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 'woocommerce_payments_sepa_debit', $token->get_gateway_id() );
 		$this->assertEquals( 1, $token->get_user_id() );
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
@@ -124,7 +124,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
 
-		$this->assertSame( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertSame( 'woocommerce_payments_link', $token->get_gateway_id() );
 		$this->assertSame( 1, $token->get_user_id() );
 		$this->assertSame( 'pm_mock', $token->get_token() );
 		$this->assertSame( 'test@test.com', $token->get_email() );
@@ -370,6 +370,170 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( [ new WC_Payment_Token_CC() ], $result );
 	}
 
+	public function test_woocommerce_get_customer_payment_tokens_card_token_not_added_twice_for_non_gateway_specific_request() {
+		$gateway_id      = '';
+		$token           = $this->generate_card_token( 'pm_mock0' );
+		$tokens          = [ $token ];
+		$payment_methods = [ Payment_Method::CARD ];
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->settings['upe_enabled_payment_method_ids'] = $payment_methods;
+
+		$mock_payment_methods = [
+			$this->generate_card_pm_response( 'pm_mock0' ),
+		];
+
+		$this->mock_customer_service
+			->expects( $this->any() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( 'cus_12345' )
+			->willReturn( $mock_payment_methods );
+
+		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
+		$result_tokens = array_values( $result );
+
+		$this->assertEquals( 1, count( $result_tokens ) );
+		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_not_added_twice_for_non_gateway_specific_request() {
+		$gateway_id      = '';
+		$card_token      = $this->generate_card_token( 'pm_mock0' );
+		$sepa_token      = $this->generate_sepa_token( 'pm_mock1' );
+		$tokens          = [ $card_token, $sepa_token ];
+		$payment_methods = [ Payment_Method::CARD, Payment_Method::SEPA ];
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->settings['upe_enabled_payment_method_ids'] = $payment_methods;
+
+		$this->mock_customer_service
+			->expects( $this->any() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_payment_methods_for_customer' )
+			->withConsecutive(
+				[ 'cus_12345', Payment_Method::CARD ],
+				[ 'cus_12345', Payment_Method::SEPA ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					$this->generate_card_pm_response( 'pm_mock0' ),
+					$this->generate_card_pm_response( 'pm_222' ),
+				],
+				[
+					$this->generate_sepa_pm_response( 'pm_mock1' ),
+					$this->generate_sepa_pm_response( 'pm_444' ),
+				]
+			);
+
+		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
+		$result_tokens = array_values( $result );
+
+		$this->assertEquals( 4, count( $result_tokens ) );
+		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
+		$this->assertEquals( 'pm_mock1', $result_tokens[1]->get_token() );
+		$this->assertEquals( 'pm_222', $result_tokens[2]->get_token() );
+		$this->assertEquals( 'pm_444', $result_tokens[3]->get_token() );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_not_added_from_different_gateway() {
+		$gateway_id      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$tokens          = [];
+		$payment_methods = [ Payment_Method::CARD, Payment_Method::SEPA ];
+
+		$gateway = WC_Payments::get_gateway();
+		$gateway->settings['upe_enabled_payment_method_ids'] = $payment_methods;
+
+		$this->mock_customer_service
+			->expects( $this->any() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_12345' );
+
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_payment_methods_for_customer' )
+			->withConsecutive(
+				[ 'cus_12345', Payment_Method::CARD ],
+				[ 'cus_12345', Payment_Method::SEPA ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					$this->generate_card_pm_response( 'pm_mock0' ),
+					$this->generate_card_pm_response( 'pm_222' ),
+				],
+				[
+					$this->generate_sepa_pm_response( 'other_gateway_pm_111' ),
+					$this->generate_sepa_pm_response( 'other_gateway_pm_222' ),
+					$this->generate_sepa_pm_response( 'other_gateway_pm_333' ),
+					$this->generate_sepa_pm_response( 'other_gateway_pm_444' ),
+					$this->generate_sepa_pm_response( 'other_gateway_pm_555' ),
+				]
+			);
+
+		$result        = $this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
+		$result_tokens = array_values( $result );
+
+		$this->assertEquals( 2, count( $result_tokens ) );
+		$this->assertEquals( $gateway_id, $result_tokens[0]->get_gateway_id() );
+		$this->assertEquals( $gateway_id, $result_tokens[1]->get_gateway_id() );
+		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
+		$this->assertEquals( 'pm_222', $result_tokens[1]->get_token() );
+	}
+
+	public function test_woocommerce_get_customer_payment_tokens_payment_methods_only_for_retrievable_types() {
+		$enabled_upe_payment_methods = [
+			Payment_Method::CARD,
+			Payment_Method::SEPA,
+			Payment_Method::LINK,
+			Payment_Method::BECS,
+			Payment_Method::EPS,
+			Payment_Method::GIROPAY,
+			Payment_Method::IDEAL,
+			Payment_Method::P24,
+			Payment_Method::SOFORT,
+		];
+		$gateway                     = WC_Payments::get_gateway();
+		$gateway->settings['upe_enabled_payment_method_ids'] = $enabled_upe_payment_methods;
+		$tokens      = [];
+		$gateway_id  = 'woocommerce_payments';
+		$customer_id = 'cus_12345';
+
+		$this->mock_customer_service
+			->expects( $this->any() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( $customer_id );
+
+		$this->mock_customer_service
+			->expects( $this->exactly( 3 ) )
+			->method( 'get_payment_methods_for_customer' )
+			->withConsecutive(
+				[ $customer_id, Payment_Method::CARD ],
+				[ $customer_id, Payment_Method::SEPA ],
+				[ $customer_id, Payment_Method::LINK ]
+			)
+			->willReturnOnConsecutiveCalls(
+				[
+					$this->generate_card_pm_response( 'pm_mock0' ),
+				],
+				[
+					$this->generate_sepa_pm_response( 'pm_mock_2' ),
+				],
+				[
+					$this->generate_link_pm_response( 'pm_mock_3' ),
+				]
+			);
+
+		$this->token_service->woocommerce_get_customer_payment_tokens( $tokens, 1, $gateway_id );
+	}
+
 	private function generate_card_pm_response( $stripe_id ) {
 		return [
 			'type' => Payment_Method::CARD,
@@ -421,7 +585,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	private function generate_sepa_token( $stripe_id, $wp_id = 0 ) {
 		$token = new WC_Payment_Token_WCPay_SEPA();
 		$token->set_id( $wp_id );
-		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
 		$token->set_token( $stripe_id );
 		$token->set_last4( '3000' );
 		$token->save();
