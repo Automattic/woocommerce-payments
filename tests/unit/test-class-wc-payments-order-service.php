@@ -392,8 +392,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_expired() {
 		// Arrange: Set the intent and order statuses.
-		$intent_status = Payment_Intent_Status::CANCELED;  // Stripe uses single 'l'.
-		$order_status  = Order_Status::CANCELLED; // WooCommerce uses double 'l'.
+		$intent_status     = Payment_Intent_Status::CANCELED;  // Stripe uses single 'l'.
+		$order_status      = Order_Status::CANCELLED; // WooCommerce uses double 'l'.
+		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
 		$this->order_service->mark_payment_capture_expired( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -406,7 +407,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to Cancelled', $notes[1]->content );
+		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[1]->content );
 		$this->assertStringContainsString( 'Payment authorization has <strong>expired</strong>', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
 
@@ -424,8 +425,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_cancelled() {
 		// Arrange: Set the intent and order statuses.
-		$intent_status = Payment_Intent_Status::CANCELED;  // Stripe uses single 'l'.
-		$order_status  = Order_Status::CANCELLED; // WooCommerce uses double 'l'.
+		$intent_status     = Payment_Intent_Status::CANCELED;  // Stripe uses single 'l'.
+		$order_status      = Order_Status::CANCELLED; // WooCommerce uses double 'l' in the background.
+		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
 		$this->order_service->mark_payment_capture_cancelled( $this->order, $this->intent_id, $intent_status );
@@ -438,7 +440,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to Cancelled', $notes[1]->content );
+		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[1]->content );
 		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.

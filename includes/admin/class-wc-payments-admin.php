@@ -219,7 +219,7 @@ class WC_Payments_Admin {
 		global $submenu;
 
 		try {
-			$should_render_full_menu = $this->account->try_is_stripe_connected();
+			$should_render_full_menu = $this->account->is_stripe_account_valid();
 		} catch ( Exception $e ) {
 			// There is an issue with connection but render full menu anyways to provide access to settings.
 			$should_render_full_menu = true;
