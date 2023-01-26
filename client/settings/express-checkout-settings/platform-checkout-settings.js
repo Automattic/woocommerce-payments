@@ -4,14 +4,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CheckboxControl,
-	RadioControl,
-	TextControl,
-	Notice,
-} from '@wordpress/components';
-import interpolateComponents from 'interpolate-components';
+import { Card, CheckboxControl, TextControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -19,121 +12,17 @@ import interpolateComponents from 'interpolate-components';
 import CardBody from '../card-body';
 import PlatformCheckoutFileUpload from './file-upload';
 import PlatformCheckoutPreview from './platform-checkout-preview';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
 	usePlatformCheckoutStoreLogo,
 	usePlatformCheckoutLocations,
-	usePaymentRequestButtonType,
-	usePaymentRequestButtonSize,
-	usePaymentRequestButtonTheme,
 } from 'wcpay/data';
-import { WoopayExpressCheckoutButton } from 'wcpay/checkout/platform-checkout/express-button/woopay-express-checkout-button';
+import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 
 const CUSTOM_MESSAGE_MAX_LENGTH = 100;
 
-const makeButtonSizeText = ( string ) =>
-	interpolateComponents( {
-		mixedString: string,
-		components: {
-			helpText: (
-				<span className="payment-method-settings__option-muted-text" />
-			),
-		},
-	} );
-const buttonSizeOptions = [
-	{
-		label: makeButtonSizeText(
-			__(
-				'Default {{helpText}}(40 px){{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
-		value: 'default',
-	},
-	{
-		label: makeButtonSizeText(
-			__(
-				'Medium {{helpText}}(48 px){{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
-		value: 'medium',
-	},
-	{
-		label: makeButtonSizeText(
-			__(
-				'Large {{helpText}}(56 px){{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
-		value: 'large',
-	},
-];
-const buttonActionOptions = [
-	{
-		label: __( 'Only icon', 'woocommerce-payments' ),
-		value: 'default',
-	},
-	{
-		label: __( 'Buy', 'woocommerce-payments' ),
-		value: 'buy',
-	},
-	{
-		label: __( 'Donate', 'woocommerce-payments' ),
-		value: 'donate',
-	},
-	{
-		label: __( 'Book', 'woocommerce-payments' ),
-		value: 'book',
-	},
-];
-
-const makeButtonThemeText = ( string ) =>
-	interpolateComponents( {
-		mixedString: string,
-		components: {
-			br: <br />,
-			helpText: (
-				<span className="payment-method-settings__option-help-text" />
-			),
-		},
-	} );
-const buttonThemeOptions = [
-	{
-		label: makeButtonThemeText(
-			__(
-				'Dark {{br/}}{{helpText}}Recommended for white or light-colored backgrounds with high contrast.{{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
-		value: 'dark',
-	},
-	{
-		label: makeButtonThemeText(
-			__(
-				'Light {{br/}}{{helpText}}Recommended for dark or colored backgrounds with high contrast.{{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
-		value: 'light',
-	},
-	{
-		label: makeButtonThemeText(
-			__(
-				'Outline {{br/}}{{helpText}}Recommended for white or light-colored backgrounds with insufficient contrast.{{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
-		value: 'light-outline',
-	},
-];
-
 const PlatformCheckoutSettings = ( { section } ) => {
-	const [ buttonType, setButtonType ] = usePaymentRequestButtonType();
-	const [ size, setSize ] = usePaymentRequestButtonSize();
-	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
 	const [
 		isPlatformCheckoutEnabled,
 		updateIsPlatformCheckoutEnabled,
@@ -169,128 +58,82 @@ const PlatformCheckoutSettings = ( { section } ) => {
 		}
 	};
 
-	const getButtonSettings = () => {
-		let text = '';
-		switch ( buttonType ) {
-			case 'buy':
-				text = 'Buy';
-				break;
-			case 'donate':
-				text = 'Donate';
-				break;
-			case 'book':
-				text = 'Book';
-				break;
-			default:
-				text = '';
-		}
-
-		let height = 0;
-		switch ( size ) {
-			case 'medium':
-				height = 48;
-				break;
-			case 'large':
-				height = 56;
-				break;
-			default:
-				height = 40;
-		}
-
-		return {
-			type: buttonType,
-			text,
-			theme,
-			height,
-			size,
-		};
-	};
-
 	return (
-		<div className="platform-checkout-settings">
+		<Card className="platform-checkout-settings">
 			{ 'enable' === section && (
-				<Card>
-					<CardBody>
-						<CheckboxControl
-							checked={ isPlatformCheckoutEnabled }
-							onChange={ updateIsPlatformCheckoutEnabled }
-							label={ __(
-								'Enable WooPay',
-								'woocommerce-payments'
-							) }
-							help={ __(
-								'When enabled, customers will be able to checkout using WooPay',
-								'woocommerce-payments'
-							) }
-						/>
-						<h4>
-							{ __(
-								'Enable WooPay on selected pages',
-								'woocommerce-payments'
-							) }
-						</h4>
-						<ul className="payment-request-settings__location">
-							<li>
-								<CheckboxControl
-									disabled={ ! isPlatformCheckoutEnabled }
-									checked={
-										isPlatformCheckoutEnabled &&
-										platformCheckoutLocations.includes(
-											'checkout'
-										)
-									}
-									onChange={ makeLocationChangeHandler(
+				<CardBody>
+					<CheckboxControl
+						checked={ isPlatformCheckoutEnabled }
+						onChange={ updateIsPlatformCheckoutEnabled }
+						label={ __( 'Enable WooPay', 'woocommerce-payments' ) }
+						help={ __(
+							'When enabled, customers will be able to checkout using WooPay',
+							'woocommerce-payments'
+						) }
+					/>
+					<h4>
+						{ __(
+							'Enable WooPay on selected pages',
+							'woocommerce-payments'
+						) }
+					</h4>
+					<ul className="payment-request-settings__location">
+						<li>
+							<CheckboxControl
+								disabled={ ! isPlatformCheckoutEnabled }
+								checked={
+									isPlatformCheckoutEnabled &&
+									platformCheckoutLocations.includes(
 										'checkout'
-									) }
-									label={ __(
-										'Checkout',
-										'woocommerce-payments'
-									) }
-								/>
-							</li>
-							<li>
-								<CheckboxControl
-									disabled={ ! isPlatformCheckoutEnabled }
-									checked={
-										isPlatformCheckoutEnabled &&
-										platformCheckoutLocations.includes(
-											'product'
-										)
-									}
-									onChange={ makeLocationChangeHandler(
+									)
+								}
+								onChange={ makeLocationChangeHandler(
+									'checkout'
+								) }
+								label={ __(
+									'Checkout Page',
+									'woocommerce-payments'
+								) }
+							/>
+						</li>
+						<li>
+							<CheckboxControl
+								disabled={ ! isPlatformCheckoutEnabled }
+								checked={
+									isPlatformCheckoutEnabled &&
+									platformCheckoutLocations.includes(
 										'product'
-									) }
-									label={ __(
-										'Product page',
-										'woocommerce-payments'
-									) }
-								/>
-							</li>
-							<li>
-								<CheckboxControl
-									disabled={ ! isPlatformCheckoutEnabled }
-									checked={
-										isPlatformCheckoutEnabled &&
-										platformCheckoutLocations.includes(
-											'cart'
-										)
-									}
-									onChange={ makeLocationChangeHandler(
-										'cart'
-									) }
-									label={ __(
-										'Cart',
-										'woocommerce-payments'
-									) }
-								/>
-							</li>
-						</ul>
-					</CardBody>
-				</Card>
+									)
+								}
+								onChange={ makeLocationChangeHandler(
+									'product'
+								) }
+								label={ __(
+									'Product page',
+									'woocommerce-payments'
+								) }
+							/>
+						</li>
+						<li>
+							<CheckboxControl
+								disabled={ ! isPlatformCheckoutEnabled }
+								checked={
+									isPlatformCheckoutEnabled &&
+									platformCheckoutLocations.includes( 'cart' )
+								}
+								onChange={ makeLocationChangeHandler( 'cart' ) }
+								label={ __(
+									'Cart Page',
+									'woocommerce-payments'
+								) }
+							/>
+						</li>
+					</ul>
+				</CardBody>
 			) }
 
 			{ 'appearance' === section && (
-				<Card style={ { marginTop: 12 } }>
+				<CardBody style={ { marginTop: 12 } }>
 					<div className="platform-checkout-settings__preview">
 						<PlatformCheckoutPreview
 							storeName={ wcSettings.siteTitle }
@@ -298,121 +141,56 @@ const PlatformCheckoutSettings = ( { section } ) => {
 						></PlatformCheckoutPreview>
 						<div className="platform-checkout-settings__preview-fade"></div>
 					</div>
-					<CardBody>
-						<div className="platform-checkout-settings__custom-message-wrapper">
-							<h4>
-								{ __(
-									'Store logo on checkout',
-									'woocommerce-payments'
-								) }
-							</h4>
-							<PlatformCheckoutFileUpload
-								fieldKey="woopay-store-logo"
-								accept="image/png, image/jpeg"
-								disabled={ false }
-								help={ __(
-									'Use a custom logo to WooPay if the one taken from your store doesn’t look right.' +
-										' For best results, upload a high-resolution horizontal image' +
-										' with white or transparent background.',
-									'woocommerce-payments'
-								) }
-								purpose="business_logo"
-								fileID={ platformCheckoutStoreLogo }
-								updateFileID={ setPlatformCheckoutStoreLogo }
-							/>
-						</div>
-						<div className="platform-checkout-settings__custom-message-wrapper">
-							<h4>
-								{ __(
-									'Custom message',
-									'woocommerce-payments'
-								) }
-							</h4>
-							<TextControl
-								help={ __(
-									'Inform your customers about the return, refund, and exchange policy, or include any other useful' +
-										' message. Note that you can add plain text and links, but not images.',
-									'woocommerce-payments'
-								) }
-								value={ platformCheckoutCustomMessage }
-								onChange={ setPlatformCheckoutCustomMessage }
-								maxLength={ CUSTOM_MESSAGE_MAX_LENGTH }
-							/>
-							<span
-								className="input-help-text"
-								aria-hidden="true"
-							>
-								{ `${ platformCheckoutCustomMessage.length } / ${ CUSTOM_MESSAGE_MAX_LENGTH }` }
-							</span>
-						</div>
-					</CardBody>
-				</Card>
+					<div className="platform-checkout-settings__custom-message-wrapper">
+						<h4>
+							{ __(
+								'Store logo on checkout',
+								'woocommerce-payments'
+							) }
+						</h4>
+						<PlatformCheckoutFileUpload
+							fieldKey="woopay-store-logo"
+							accept="image/png, image/jpeg"
+							disabled={ false }
+							help={ __(
+								'Use a custom logo to WooPay if the one taken from your store doesn’t look right.' +
+									' For best results, upload a high-resolution horizontal image' +
+									' with white or transparent background.',
+								'woocommerce-payments'
+							) }
+							purpose="business_logo"
+							fileID={ platformCheckoutStoreLogo }
+							updateFileID={ setPlatformCheckoutStoreLogo }
+						/>
+					</div>
+					<div className="platform-checkout-settings__custom-message-wrapper">
+						<h4>
+							{ __( 'Custom message', 'woocommerce-payments' ) }
+						</h4>
+						<TextControl
+							help={ __(
+								'Inform your customers about the return, refund, and exchange policy, or include any other useful' +
+									' message. Note that you can add plain text and links, but not images.',
+								'woocommerce-payments'
+							) }
+							value={ platformCheckoutCustomMessage }
+							onChange={ setPlatformCheckoutCustomMessage }
+							maxLength={ CUSTOM_MESSAGE_MAX_LENGTH }
+						/>
+						<span
+							className="input-help-text light-text"
+							aria-hidden="true"
+						>
+							{ `${ platformCheckoutCustomMessage.length } / ${ CUSTOM_MESSAGE_MAX_LENGTH }` }
+						</span>
+					</div>
+				</CardBody>
 			) }
 
 			{ 'general' === section && (
-				<Card style={ { marginTop: 12 } }>
-					<CardBody>
-						<Notice
-							status="warning"
-							isDismissible={ false }
-							className="express-checkout__notice"
-						>
-							<span>
-								<NoticeOutlineIcon
-									style={ {
-										color: '#BD8600',
-										fill: 'currentColor',
-										marginBottom: '-5px',
-										marginRight: '16px',
-									} }
-									size={ 20 }
-								/>
-								{ __(
-									'These settings will also apply to the Apple Pay/Google Pay buttons on your store.',
-									'woocommerce-payments'
-								) }
-							</span>
-						</Notice>
-						<h4>
-							{ __( 'Call to action', 'woocommerce-payments' ) }
-						</h4>
-						<RadioControl
-							className="payment-method-settings__cta-selection"
-							hideLabelFromVision
-							help={ __(
-								'Select a button label that fits best with the flow of purchase or payment experience on your store.',
-								'woocommerce-payments'
-							) }
-							selected={ buttonType }
-							options={ buttonActionOptions }
-							onChange={ setButtonType }
-						/>
-						<h4>{ __( 'Appearance', 'woocommerce-payments' ) }</h4>
-						<RadioControl
-							help={ __(
-								'Note that larger buttons are more suitable for mobile use.',
-								'woocommerce-payments'
-							) }
-							label={ __( 'Size', 'woocommerce-payments' ) }
-							selected={ size }
-							options={ buttonSizeOptions }
-							onChange={ setSize }
-						/>
-						<RadioControl
-							label={ __( 'Theme', 'woocommerce-payments' ) }
-							selected={ theme }
-							options={ buttonThemeOptions }
-							onChange={ setTheme }
-						/>
-						<p>{ __( 'Preview', 'woocommerce-payments' ) }</p>
-						<WoopayExpressCheckoutButton
-							isPreview={ true }
-							buttonSettings={ getButtonSettings() }
-						/>
-					</CardBody>
-				</Card>
+				<GeneralPaymentRequestButtonSettings type="woopay" />
 			) }
-		</div>
+		</Card>
 	);
 };
 
