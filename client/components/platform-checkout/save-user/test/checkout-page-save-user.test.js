@@ -201,5 +201,61 @@ describe( 'CheckoutPageSaveUser', () => {
 				data: {},
 			} )
 		);
+
+		document.body.removeChild(
+			document.querySelector(
+				'button.wc-block-components-checkout-place-order-button'
+			)
+		);
+	} );
+
+	it( 'call `extensionCartUpdate` on blocks checkout when checkbox is clicked with a phone without country code', async () => {
+		jest.clearAllMocks();
+		extensionCartUpdate.mockResolvedValue( {} );
+		const placeOrderButton = document.createElement( 'button' );
+		placeOrderButton.classList.add(
+			'wc-block-components-checkout-place-order-button'
+		);
+		document.body.appendChild( placeOrderButton );
+		const phoneField = document.createElement( 'input' );
+		phoneField.setAttribute( 'id', 'phone' );
+		phoneField.value = '2015555555';
+		document.body.appendChild( phoneField );
+
+		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
+
+		const label = screen.getByLabelText(
+			'Save my information for a faster and secure checkout'
+		);
+
+		expect( label ).not.toBeChecked();
+		expect( extensionCartUpdate ).not.toHaveBeenCalled();
+
+		// click on the checkbox to select
+		userEvent.click( label );
+
+		expect( label ).toBeChecked();
+		await waitFor( () =>
+			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
+				namespace: 'platform-checkout',
+				data: {
+					save_user_in_platform_checkout: true,
+					platform_checkout_user_phone_field: {
+						full: '+12015555555',
+					},
+				},
+			} )
+		);
+
+		// click on the checkbox to unselect
+		userEvent.click( label );
+
+		expect( label ).not.toBeChecked();
+		await waitFor( () =>
+			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
+				namespace: 'platform-checkout',
+				data: {},
+			} )
+		);
 	} );
 } );
