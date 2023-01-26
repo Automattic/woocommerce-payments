@@ -254,7 +254,7 @@ export const handlePlatformCheckoutEmailInput = async (
 		}
 
 		document.body.style.overflow = '';
-		setWooPayQueryStatus( platformCheckoutEmailInput, false );
+		clearWooPayQueryStatus( platformCheckoutEmailInput );
 	};
 
 	iframeWrapper.addEventListener( 'click', closeIframe );
@@ -529,7 +529,7 @@ export const handlePlatformCheckoutEmailInput = async (
 
 		const email = e.currentTarget.value;
 
-		clearWooPayQueryStatus( platformCheckoutEmailInput );
+		setWooPayQueryStatus( platformCheckoutEmailInput, 'checking' );
 		clearTimeout( timer );
 		spinner.remove();
 

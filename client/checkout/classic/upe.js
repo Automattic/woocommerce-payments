@@ -261,7 +261,9 @@ jQuery( function ( $ ) {
 			} );
 
 			upeElement.on( 'ready', () => {
-				stripeLinkButton.enable();
+				if ( 'link' === getSelectedGatewayPaymentMethod() ) {
+					stripeLinkButton.enable();
+				}
 			} );
 		}
 	};

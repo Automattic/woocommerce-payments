@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { validateEmail, Spinner } from 'wcpay/utils/checkout';
+import { getConfig, validateEmail, Spinner } from 'wcpay/utils/checkout';
 import {
 	STRIPE_LINK_AUTHENTICATED_CLASS,
 	getWooPayQueryStatus,
@@ -64,6 +64,10 @@ export default class StripeLinkButton {
 	 * Displays preloading spinner for 10s, before hiding.
 	 */
 	flashSpinner() {
+		if ( getConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
+			return;
+		}
+
 		if ( ! this.spinner.getSpinner() ) {
 			this.spinner.show();
 		}
@@ -106,11 +110,14 @@ export default class StripeLinkButton {
 					this.tryAuthentication( email );
 					break;
 				// Still querying for WooPay registration.
-				default:
+				case 'checking':
 					// Retry in a second.
 					setTimeout( () => {
 						this.launchAutofill( email );
 					}, 1000 );
+					break;
+				default:
+					this.tryAuthentication( email );
 			}
 		} else {
 			this.tryAuthentication( email );
@@ -329,7 +336,6 @@ export default class StripeLinkButton {
 		}
 		this.options = options;
 
-		this.disableRequestButton();
 		const api = this.options.api;
 		this.linkAutofill = api
 			.getStripe()
@@ -353,6 +359,7 @@ export default class StripeLinkButton {
 		this.spinner = new Spinner(
 			document.getElementById( options.emailId )
 		);
+		this.enableRequestButton();
 	}
 
 	/**
