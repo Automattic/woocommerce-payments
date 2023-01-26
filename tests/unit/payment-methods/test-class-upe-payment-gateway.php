@@ -512,7 +512,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 							],
 						],
 						'customer_reference' => (string) $order_id,
-					],
+					]
 				);
 
 			$request->expects( $this->once() )
