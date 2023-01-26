@@ -32,6 +32,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
+use WCPay\Blocks_Data_Extractor;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -1079,6 +1080,8 @@ class WC_Payments {
 	 */
 	public static function ajax_init_platform_checkout() {
 		$is_nonce_valid = check_ajax_referer( 'wcpay_init_platform_checkout_nonce', false, false );
+		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
+		$blocks_data_extractor = new Blocks_Data_Extractor( $asset_api );
 
 		if ( ! $is_nonce_valid ) {
 			wp_send_json_error(
@@ -1132,6 +1135,7 @@ class WC_Payments {
 				'return_url'                     => $return_url,
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
+			'blocks_data'          => $blocks_data_extractor->get_data(),
 		];
 		$args = [
 			'url'     => $url,
