@@ -272,10 +272,40 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 		$order->set_currency( 'JPY' );
 		$order->save();
 
-		// Mock that order as the renewal in the cart.
+		// Mock that order has the renewal in the cart.
 		$this->mock_wcs_cart_contains_renewal( 42, $order->get_id() );
 
 		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
+	}
+
+	// Returns order currency code when order awaiting payment has renewal in it.
+	public function test_override_selected_currency_returns_order_currency_code_when_order_awaiting_payment_has_renewal() {
+		// Set up an order with a non-default currency.
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'JPY' );
+		$order->save();
+		WC()->session->set( 'order_awaiting_payment', $order->get_id() );
+
+		// Mock that order has the renewal in the cart.
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->mock_wcs_order_contains_renewal( true );
+
+		$this->assertSame( 'JPY', $this->woocommerce_subscriptions->override_selected_currency( false ) );
+	}
+
+	// Returns false when order awaiting payment does not have a renewal in it.
+	public function test_override_selected_currency_return_false_when_order_awaiting_payment_has_no_renewal() {
+		// Set up an order with a non-default currency.
+		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'JPY' );
+		$order->save();
+		WC()->session->set( 'order_awaiting_payment', $order->get_id() );
+
+		// Mock that order  renewal in the cart.
+		$this->mock_wcs_cart_contains_renewal( false );
+		$this->mock_wcs_order_contains_renewal( false );
+
+		$this->assertFalse( $this->woocommerce_subscriptions->override_selected_currency( false ) );
 	}
 
 	// Test correct currency when shopper clicks upgrade/downgrade button in My Account – "switch".
@@ -625,6 +655,14 @@ class WCPay_Multi_Currency_WooCommerceSubscriptions_Tests extends WCPAY_UnitTest
 				}
 
 				return false;
+			}
+		);
+	}
+
+	private function mock_wcs_order_contains_renewal( $renewal = false ) {
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () use ( $renewal ) {
+				return $renewal;
 			}
 		);
 	}
