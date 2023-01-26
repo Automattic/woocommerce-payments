@@ -73,10 +73,10 @@ class WC_Payments_Subscriptions_Event_Handler {
 				$this->subscription_service->cancel_subscription( $subscription );
 			} else {
 				$this->subscription_service->suspend_subscription( $subscription );
-				$subscription->add_order_note( __( 'Suspended WCPay Subscription because subscription next_payment date is 0.', 'woocommerce-payments' ) );
+				$subscription->add_order_note( __( 'Suspended WCPay Subscription in invoice.upcoming webhook handler because subscription next_payment date is 0.', 'woocommerce-payments' ) );
 				Logger::log(
 					sprintf(
-						'Suspended WCPay Subscription because subscription next_payment date is 0. WC ID: %d; WCPay ID: %s.',
+						'Suspended WCPay Subscription in invoice.upcoming webhook handler because subscription next_payment date is 0. WC ID: %d; WCPay ID: %s.',
 						$subscription->get_id(),
 						$wcpay_subscription_id
 					)
