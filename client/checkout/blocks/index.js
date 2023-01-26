@@ -54,11 +54,12 @@ registerPaymentMethod( {
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 
 // Call handlePlatformCheckoutEmailInput if platform checkout is enabled and this is the checkout page.
-if (
-	getConfig( 'isPlatformCheckoutEnabled' ) &&
-	document.querySelector( '[data-block-name="woocommerce/checkout"]' )
-) {
-	handlePlatformCheckoutEmailInput( '#email', api, true );
+if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
+	if (
+		document.querySelector( '[data-block-name="woocommerce/checkout"]' )
+	) {
+		handlePlatformCheckoutEmailInput( '#email', api, true );
+	}
 
 	if ( getConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
 		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
