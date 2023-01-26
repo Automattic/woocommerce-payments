@@ -430,6 +430,9 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
+
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 	}
 
 	/**
@@ -1295,5 +1298,23 @@ class WC_Payments {
 		if ( ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) && file_exists( WCPAY_ABSPATH . 'dist/runtime.js' ) ) {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
+	}
+
+	/**
+	 * Inject an inline script with WCPay assets properties.
+	 * window.wcpayAssets.url – Dist URL, required to properly load chunks on sites with JS concatenation enabled.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_assets_script() {
+		wp_register_script( 'WCPAY_ASSETS', '', [], WCPAY_VERSION_NUMBER, false );
+		wp_enqueue_script( 'WCPAY_ASSETS' );
+		wp_localize_script(
+			'WCPAY_ASSETS',
+			'wcpayAssets',
+			[
+				'url' => plugins_url( '/dist/', WCPAY_PLUGIN_FILE ),
+			]
+		);
 	}
 }
