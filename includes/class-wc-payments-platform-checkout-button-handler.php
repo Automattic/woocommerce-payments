@@ -416,13 +416,13 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return array
 	 */
 	public function get_button_settings() {
-		$button_type = $this->gateway->get_option( 'platform_checkout_button_type', 'default' );
+		$button_type = $this->gateway->get_option( 'payment_request_button_type', 'default' );
 		return [
 			'type'    => $button_type,
 			'text'    => ucfirst( $button_type ),
-			'theme'   => $this->gateway->get_option( 'platform_checkout_button_theme', 'dark' ),
+			'theme'   => $this->gateway->get_option( 'payment_request_button_theme', 'dark' ),
 			'height'  => $this->get_button_height(),
-			'size'    => $this->gateway->get_option( 'platform_checkout_button_size' ),
+			'size'    => $this->gateway->get_option( 'payment_request_button_size' ),
 			'context' => $this->get_button_context(),
 		];
 	}
@@ -433,7 +433,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return string
 	 */
 	public function get_button_height() {
-		$height = $this->gateway->get_option( 'platform_checkout_button_size' );
+		$height = $this->gateway->get_option( 'payment_request_button_size' );
 		if ( 'medium' === $height ) {
 			return '48';
 		}
