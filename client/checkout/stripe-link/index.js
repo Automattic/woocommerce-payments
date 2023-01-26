@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getConfig, validateEmail, Spinner } from 'wcpay/utils/checkout';
+import { validateEmail, Spinner } from 'wcpay/utils/checkout';
 import {
 	STRIPE_LINK_AUTHENTICATED_CLASS,
 	getWooPayQueryStatus,
@@ -64,10 +64,6 @@ export default class StripeLinkButton {
 	 * Displays preloading spinner for 10s, before hiding.
 	 */
 	flashSpinner() {
-		if ( getConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
-			return;
-		}
-
 		if ( ! this.spinner.getSpinner() ) {
 			this.spinner.show();
 		}

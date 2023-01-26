@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
 import wcpayTracks from 'tracks';
+import { clearWooPayQueryStatus } from '../../utils/link.js';
 
 export const expressCheckoutIframe = async ( api, context ) => {
 	let userEmail = '';
@@ -153,6 +154,8 @@ export const expressCheckoutIframe = async ( api, context ) => {
 		iframe.classList.remove( 'open' );
 
 		document.body.style.overflow = '';
+
+		clearWooPayQueryStatus( null );
 	};
 
 	iframeWrapper.addEventListener( 'click', closeIframe );

@@ -15,12 +15,28 @@ export const isLinkCheckoutAuthenticated = ( emailInput ) => {
 };
 
 /**
+ * Returns DOM object for checkout email input field.
+ *
+ * @param {Object} emailInput Email input DOM object or null.
+ * @return {Object} Email input DOM object.
+ */
+const getEmailInput = ( emailInput ) => {
+	if ( null === emailInput ) {
+		emailInput =
+			document.querySelector( '#billing_email' ) ||
+			document.querySelector( '#email' );
+	}
+	return emailInput;
+};
+
+/**
  * Checks whether WooPay is in the process of querying /user/exists or if registered user has been found.
  *
  * @param {Object} emailInput Email field DOM element.
  * @return {string} 'true', if email is valid registered user. 'false', if email is not registered. undefined, if still querying.
  */
 export const getWooPayQueryStatus = ( emailInput ) => {
+	emailInput = getEmailInput( emailInput );
 	return emailInput.dataset.foundUser;
 };
 
@@ -31,6 +47,7 @@ export const getWooPayQueryStatus = ( emailInput ) => {
  * @param {boolean} value True, if email is registered user. False, if otherwise.
  */
 export const setWooPayQueryStatus = ( emailInput, value ) => {
+	emailInput = getEmailInput( emailInput );
 	emailInput.dataset.foundUser = value;
 };
 
@@ -40,6 +57,7 @@ export const setWooPayQueryStatus = ( emailInput, value ) => {
  * @param {Object} emailInput Email field DOM element.
  */
 export const clearWooPayQueryStatus = ( emailInput ) => {
+	emailInput = getEmailInput( emailInput );
 	emailInput.removeAttribute( 'data-found-user' );
 };
 
