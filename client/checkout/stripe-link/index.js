@@ -3,7 +3,8 @@
 /**
  * Internal dependencies
  */
-import { validateEmail, Spinner } from 'wcpay/utils/checkout';
+import { Spinner } from 'wcpay/utils/checkout';
+import { validateEmail } from '../platform-checkout/utils.js';
 import {
 	STRIPE_LINK_AUTHENTICATED_CLASS,
 	getWooPayQueryStatus,

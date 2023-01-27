@@ -3,10 +3,12 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
+import { getTargetElement, validateEmail } from '../utils';
 import wcpayTracks from 'tracks';
 import { clearWooPayQueryStatus } from '../../utils/link.js';
 
-export const expressCheckoutIframe = async ( api, context ) => {
+export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
+	const platformCheckoutEmailInput = await getTargetElement( emailSelector );
 	let userEmail = '';
 
 	const parentDiv = document.body;
@@ -168,7 +170,7 @@ export const expressCheckoutIframe = async ( api, context ) => {
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
 
-		if ( email ) {
+		if ( email && validateEmail( email ) ) {
 			urlParams.append( 'email', email );
 		}
 
@@ -253,5 +255,5 @@ export const expressCheckoutIframe = async ( api, context ) => {
 		}
 	} );
 
-	openIframe();
+	openIframe( platformCheckoutEmailInput?.value );
 };

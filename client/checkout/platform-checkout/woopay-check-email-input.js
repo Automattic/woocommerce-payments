@@ -1,45 +1,17 @@
 /**
  * External dependencies
  */
-import { getConfig, validateEmail } from 'wcpay/utils/checkout';
+import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from '../../payment-request/utils';
 import { setWooPayQueryStatus } from '../utils/link.js';
-
-// Waits for the element to exist as in the Blocks checkout, sometimes the field is not immediately available.
-const waitForElement = ( selector ) => {
-	return new Promise( ( resolve ) => {
-		if ( document.querySelector( selector ) ) {
-			return resolve( document.querySelector( selector ) );
-		}
-
-		const checkoutBlock = document.querySelector(
-			'[data-block-name="woocommerce/checkout"]'
-		);
-
-		if ( ! checkoutBlock ) {
-			return resolve( null );
-		}
-
-		const observer = new MutationObserver( ( mutationList, obs ) => {
-			if ( document.querySelector( selector ) ) {
-				resolve( document.querySelector( selector ) );
-				obs.disconnect();
-			}
-		} );
-
-		observer.observe( checkoutBlock, {
-			childList: true,
-			subtree: true,
-		} );
-	} );
-};
+import { getTargetElement, validateEmail } from './utils';
 
 export const woopayCheckEmailInput = async ( field ) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = await waitForElement( field );
+	const platformCheckoutEmailInput = await getTargetElement( field );
 
 	// If we can't find the input, return.
 	if ( ! platformCheckoutEmailInput ) {

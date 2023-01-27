@@ -858,16 +858,32 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return $result;
 		}
 
+		// TEMP Fix – Stripe validates mandate params for cards not
+		// issued by Indian banks. Apply them only for INR as Indian banks
+		// only support it for now.
+		$currency = $order->get_currency();
+		if ( 'INR' !== $currency ) {
+			return $result;
+		}
+
 		// Get total by adding only subscriptions and get rid of any other product or fee.
-		$subs_amount = 0;
+		$subs_amount = 0.0;
 		foreach ( $subscriptions as $sub ) {
 			$subs_amount += $sub->get_total();
+		}
+
+		$amount = WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() );
+
+		// TEMP Fix – Prevent stale free subscription data to throw
+		// an error due amount < 1.
+		if ( 0 === $amount ) {
+			return $result;
 		}
 
 		$result['setup_future_usage']                                = 'off_session';
 		$result['payment_method_options']['card']['mandate_options'] = [
 			'reference'       => $order->get_id(),
-			'amount'          => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
+			'amount'          => $amount,
 			'amount_type'     => 'fixed',
 			'start_date'      => $subscription->get_time( 'date_created' ),
 			'interval'        => $subscription->get_billing_period(),
