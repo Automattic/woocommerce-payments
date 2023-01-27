@@ -387,7 +387,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		$button_type = $this->gateway->get_option( 'payment_request_button_type', 'default' );
 		return [
 			'type'    => $button_type,
-			'text'    => ucfirst( $button_type ),
 			'theme'   => $this->gateway->get_option( 'payment_request_button_theme', 'dark' ),
 			'height'  => $this->get_button_height(),
 			'size'    => $this->gateway->get_option( 'payment_request_button_size' ),
