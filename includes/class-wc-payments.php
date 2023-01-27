@@ -1411,7 +1411,7 @@ class WC_Payments {
 	}
 
 	/**
-	 * Just an example. All the variables are named randomly.
+	 * Display express checkout separator only when express buttons are displayed.
 	 *
 	 * @return void
 	 */

@@ -64,10 +64,11 @@ const api = new WCPayAPI(
 
 Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName, upeConfig ] ) =>
 	registerPaymentMethod( {
-		name: upeName,
+		name: upeMethods[ upeName ],
 		content: (
 			<WCPayUPEFields
 				paymentMethodId={ upeName }
+				upeMethods={ upeMethods }
 				api={ api }
 				testingInstructions={ upeConfig.testingInstructions }
 			/>
@@ -75,6 +76,7 @@ Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName, upeConfig ] ) =>
 		edit: (
 			<WCPayUPEFields
 				paymentMethodId={ upeName }
+				upeMethods={ upeMethods }
 				api={ api }
 				testingInstructions={ upeConfig.testingInstructions }
 			/>

@@ -3,7 +3,14 @@
 /**
  * Internal dependencies
  */
-import { STRIPE_LINK_ACTIVE_CLASS } from '../utils/link.js';
+import { validateEmail, Spinner } from 'wcpay/utils/checkout';
+import {
+	STRIPE_LINK_AUTHENTICATED_CLASS,
+	getWooPayQueryStatus,
+	isLinkModalOpen,
+	setLinkModalStatus,
+	getLinkModalStatus,
+} from '../utils/link.js';
 
 const STRIPE_LINK_BUTTON_SELECTOR = '#wcpay-stripe-link-button-wrapper button';
 const STRIPE_LINK_RADIO_SELECTOR = '#payment_method_woocommerce_payments_link';
@@ -14,14 +21,65 @@ const STRIPE_LINK_RADIO_SELECTOR = '#payment_method_woocommerce_payments_link';
 export default class StripeLinkButton {
 	/**
 	 * Constructor to set properties.
+	 *
+	 * @param {boolean} isPlatformCheckoutEnabled Is WooPay available at checkout.
 	 */
-	constructor() {
+	constructor( isPlatformCheckoutEnabled ) {
 		this.options = null;
 		this.linkAutofill = null;
-		this.isKeyupHandlerAttached = false;
 		this.isAuthenticated = false;
+		this.isKeyupHandlerAttached = false;
 		this.isUPELoaded = false;
+		this.isPlatformCheckoutEnabled = isPlatformCheckoutEnabled;
 		this.removeEmailInputListener = null;
+		this.spinner = null;
+		this.isModalClosed = false;
+		this.disableRequestButton();
+	}
+
+	/**
+	 * Interval to check when OTP modal is opened and then closed, when Link can then be disabled.
+	 */
+	startModalWatcher() {
+		const emailInput = document.getElementById( this.options.emailId );
+		const modalWatcherInterval = setInterval( () => {
+			const modalStatus = getLinkModalStatus( emailInput );
+			if ( isLinkModalOpen() && ! modalStatus ) {
+				// Modal is open, status unset.
+				setLinkModalStatus( emailInput, true );
+			} else if ( 'open' === modalStatus ) {
+				// Modal is closed, previously open.
+				if ( ! this.isAuthenticated ) {
+					setLinkModalStatus( emailInput, false );
+					this.isModalClosed = true;
+					this.disableRequestButton();
+					this.removeEmailInputListener();
+				}
+				clearInterval( modalWatcherInterval );
+			}
+		}, 100 );
+	}
+
+	/**
+	 * Displays preloading spinner for 10s, before hiding.
+	 */
+	flashSpinner() {
+		if ( ! this.spinner.getSpinner() ) {
+			this.spinner.show();
+		}
+		setTimeout( () => {
+			this.spinner.remove();
+		}, 10 * 1000 );
+	}
+
+	/**
+	 * Try Autofill authentication by querying Stripe for email address.
+	 *
+	 * @param {string} email Email address.
+	 */
+	tryAuthentication( email ) {
+		this.linkAutofill.launch( { email } );
+		this.flashSpinner();
 		this.disableRequestButton();
 	}
 
@@ -31,8 +89,28 @@ export default class StripeLinkButton {
 	 * @param {string} email User email address value.
 	 */
 	launchAutofill( email ) {
-		this.linkAutofill.launch( { email } );
-		this.disableRequestButton();
+		if ( this.isPlatformCheckoutEnabled ) {
+			const emailInput = document.getElementById( this.options.emailId );
+			switch ( getWooPayQueryStatus( emailInput ) ) {
+				// Email address belongs to registered WooPay user.
+				case 'true':
+					this.enableRequestButton();
+					// Do not open modal.
+					break;
+				// Email address does not belong to registered WooPay user;
+				case 'false':
+					this.tryAuthentication( email );
+					break;
+				// Still querying for WooPay registration.
+				default:
+					// Retry in a second.
+					setTimeout( () => {
+						this.launchAutofill( email );
+					}, 1000 );
+			}
+		} else {
+			this.tryAuthentication( email );
+		}
 	}
 
 	/**
@@ -41,6 +119,9 @@ export default class StripeLinkButton {
 	 * @param {Object} event Keyup event.
 	 */
 	keyupHandler( event ) {
+		if ( ! validateEmail( event.target.value ) ) {
+			return;
+		}
 		this.launchAutofill( event.target.value );
 	}
 
@@ -185,6 +266,10 @@ export default class StripeLinkButton {
 	authenticationHandler( event ) {
 		if ( ! event.empty ) {
 			this.isAuthenticated = true;
+			jQuery( `#${ this.options.emailId }` ).addClass(
+				STRIPE_LINK_AUTHENTICATED_CLASS
+			);
+			this.spinner.remove();
 			this.enableRequestButton();
 		}
 	}
@@ -195,7 +280,9 @@ export default class StripeLinkButton {
 	addEmailInputListener() {
 		if ( ! this.isKeyupHandlerAttached ) {
 			const emailInputListener = ( event ) => {
-				this.keyupHandler( event );
+				setTimeout( () => {
+					this.keyupHandler( event );
+				}, 500 );
 			};
 			document
 				.getElementById( this.options.emailId )
@@ -217,7 +304,9 @@ export default class StripeLinkButton {
 	 * Make payment request button clickable.
 	 */
 	enableRequestButton() {
-		jQuery( STRIPE_LINK_BUTTON_SELECTOR ).prop( 'disabled', false );
+		if ( ! this.isModalClosed ) {
+			jQuery( STRIPE_LINK_BUTTON_SELECTOR ).prop( 'disabled', false );
+		}
 	}
 
 	/**
@@ -259,6 +348,10 @@ export default class StripeLinkButton {
 		this.linkAutofill.on( 'authenticated', ( event ) => {
 			this.authenticationHandler( event );
 		} );
+
+		this.spinner = new Spinner(
+			document.getElementById( options.emailId )
+		);
 	}
 
 	/**
@@ -271,10 +364,7 @@ export default class StripeLinkButton {
 			return;
 		}
 
-		jQuery( `#${ this.options.emailId }` ).addClass(
-			STRIPE_LINK_ACTIVE_CLASS
-		);
-
+		this.startModalWatcher();
 		this.addEmailInputListener();
 
 		if ( this.isAuthenticated ) {
@@ -299,9 +389,6 @@ export default class StripeLinkButton {
 	 * Deactivate Stripe Link at checkout. Stripe no longer listening to email input.
 	 */
 	disable() {
-		jQuery( `#${ this.options.emailId }` ).removeClass(
-			STRIPE_LINK_ACTIVE_CLASS
-		);
 		this.removeEmailInputListener();
 		this.enableRequestButton();
 	}
