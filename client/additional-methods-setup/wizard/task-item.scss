@@ -1,3 +1,5 @@
+@import './../../stylesheets/abstracts/variables';
+
 .wcpay-wizard-task {
 	margin-bottom: 0;
 
@@ -96,7 +98,7 @@
 		display: flex;
 		flex-direction: column;
 		padding: 0 30px;
-		font-size: 14px;
+		font-size: 13px;
 	}
 
 	// this class can be applied to `p` elements, for example, but also to `div` elements.
@@ -112,6 +114,24 @@
 		.components-external-link svg {
 			width: 1em;
 			height: 1em;
+		}
+	}
+
+	.add-payment-methods-task {
+		&__payment-selector {
+			&-wrapper {
+				// Reduce the wrapper's bottom margin and move the difference on the description.
+				margin-bottom: $gap-smallest;
+			}
+
+			&-title {
+				font-weight: 600;
+				font-size: 16px;
+			}
+
+			&-description {
+				margin-bottom: $gap-large;
+			}
 		}
 	}
 }

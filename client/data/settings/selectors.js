@@ -200,15 +200,3 @@ export const getPlatformCheckoutLocations = ( state ) => {
 		getSettings( state ).platform_checkout_enabled_locations || EMPTY_ARR
 	);
 };
-
-export const getPlatformCheckoutButtonType = ( state ) => {
-	return getSettings( state ).platform_checkout_button_type || 'default';
-};
-
-export const getPlatformCheckoutButtonSize = ( state ) => {
-	return getSettings( state ).platform_checkout_button_size || 'default';
-};
-
-export const getPlatformCheckoutButtonTheme = ( state ) => {
-	return getSettings( state ).platform_checkout_button_theme || 'dark';
-};

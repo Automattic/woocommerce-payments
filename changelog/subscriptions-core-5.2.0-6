@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Set the `download_permissions_granted` value when purchasing a downloadable subscription product when HPOS is enabled.
