@@ -74,7 +74,7 @@ export const WoopayExpressCheckoutButton = ( {
 	return (
 		<button
 			key={ `${ buttonType }-${ theme }-${ size }` }
-			aria-label={ 'default' !== buttonType ? __( 'WooPay' ) : text }
+			aria-label={ 'default' !== buttonType ? text : __( 'WooPay' ) }
 			onClick={ initPlatformCheckout }
 			className="woopay-express-button"
 			disabled={ isAddToCartDisabled }
@@ -83,6 +83,7 @@ export const WoopayExpressCheckoutButton = ( {
 			data-theme={ theme }
 			style={ { height: `${ height }px` } }
 		>
+			{ text }
 			<WoopayIcon />
 		</button>
 	);
