@@ -123,11 +123,12 @@
 }
 
 .woopay-express-button {
-	font-size: 20px;
-	font-weight: normal;
+	font-size: 14px;
+	font-weight: 500;
 	font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial',
 		sans-serif;
-	line-height: 42px;
+	letter-spacing: 0.8px;
+	line-height: 36px;
 	background: $white;
 	border: 1px solid $white;
 	color: $studio-woocommerce-purple-60;
@@ -149,6 +150,7 @@
 	&[data-theme='dark'] {
 		background: $studio-woocommerce-purple-60;
 		color: $white;
+		border-color: $studio-woocommerce-purple-60;
 
 		svg {
 			fill: $white;
@@ -160,8 +162,8 @@
 	}
 
 	&[data-size='medium'] {
-		font-size: 25px;
-		line-height: 47px;
+		font-size: 18px;
+		line-height: 44px;
 
 		svg {
 			top: 2px;
@@ -171,8 +173,8 @@
 	}
 
 	&[data-size='large'] {
-		font-size: 29px;
-		line-height: 55px;
+		font-size: 19px;
+		line-height: 52px;
 
 		svg {
 			top: 3px;

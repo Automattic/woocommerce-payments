@@ -135,46 +135,6 @@
 	}
 }
 
-.woopay-express-button {
-	font-size: 20px;
-	font-weight: normal;
-	line-height: 39px;
-	background: $white;
-	border: 1px solid $white;
-	color: $studio-woocommerce-purple-60;
-	width: 100%;
-	border-radius: 4px;
-	padding-top: 0;
-	padding-bottom: 0;
-
-	&[class*='dark'] {
-		background: $studio-woocommerce-purple-60;
-		color: $white;
-
-		svg {
-			fill: $white;
-		}
-	}
-
-	&[class*='outline'] {
-		border-color: $studio-woocommerce-purple-60;
-	}
-
-	&[class*='medium'] {
-		font-size: 24px;
-		line-height: 47px;
-	}
-
-	&[class*='large'] {
-		font-size: 32px;
-		line-height: 55px;
-	}
-
-	svg {
-		fill: $studio-woocommerce-purple-60;
-	}
-}
-
 .express-checkout__notice {
 	margin-left: 0;
 	margin-right: 0;
