@@ -467,13 +467,13 @@ class WC_Payments {
 		}
 
 		if ( WC_Payments_Features::is_express_checkout_enabled() ) {
-			add_action( 'woocommerce_after_add_to_cart_quantity', [ __CLASS__, 'should_express_checkout_separator_be_displayed' ], -1 );
-			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'should_express_checkout_separator_be_displayed' ], -1 );
-			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'should_express_checkout_separator_be_displayed' ], -1 );
+			add_action( 'woocommerce_after_add_to_cart_quantity', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
+			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
+			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
 
 			if ( WC_Payments_Features::is_payment_request_enabled() ) {
 				// Load payment request buttons on the Pay for Order page.
-				add_action( 'before_woocommerce_pay_form', [ __CLASS__, 'should_express_checkout_separator_be_displayed' ], 2 );
+				add_action( 'before_woocommerce_pay_form', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
 			}
 		}
 
@@ -1415,7 +1415,7 @@ class WC_Payments {
 	 *
 	 * @return void
 	 */
-	public static function should_express_checkout_separator_be_displayed() {
+	public static function display_express_checkout_separator_if_necessary() {
 		$woopay          = self::$platform_checkout_button_handler->should_show_platform_checkout_button() && self::$platform_checkout_button_handler->is_woopay_enabled();
 		$payment_request = self::$payment_request_button_handler->should_show_payment_request_button();
 		$link            = self::$stripe_link_button_handler->should_show_link_button();
