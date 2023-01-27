@@ -143,6 +143,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Displays HTML tags for WC payment gateway radio button.
+	 */
+	public function display_gateway_html() {
+		?>
+			<div id="wcpay-upe-element"></div>
+			<div id="wcpay-upe-errors" role="alert"></div>
+			<input id="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" />
+			<input id="wcpay_selected_upe_payment_type" type="hidden" name="wcpay_selected_upe_payment_type" />
+			<input id="wcpay_payment_country" type="hidden" name="wcpay_payment_country" />
+		<?php
+	}
+
+	/**
 	 * Gets UPE_Payment_Method instance from ID.
 	 *
 	 * @param string $payment_method_type Stripe payment method type ID.
@@ -1024,6 +1037,17 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		return $payment_method->is_reusable()
 			&& ( is_admin() || $payment_method->is_currency_valid() );
 	}
+
+	/**
+	 * Returns boolean for whether payment gateway supports saved payments.
+	 *
+	 * @return bool True, if gateway supports saved payments. False, otherwise.
+	 */
+	public function should_support_saved_payments() {
+		$methods_enabled_for_saved_payments = array_filter( $this->get_upe_enabled_payment_method_ids(), [ $this, 'is_enabled_for_saved_payments' ] );
+		return ! empty( $methods_enabled_for_saved_payments );
+	}
+
 
 	/**
 	 * Log UPE Payment Errors on Checkout.

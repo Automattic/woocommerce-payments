@@ -519,8 +519,8 @@ jQuery( function ( $ ) {
 				upeComponents.paymentIntentId,
 				orderId,
 				savePaymentMethod,
-				$( '#wcpay_selected_upe_payment_type' ).val(),
-				$( '#wcpay_payment_country' ).val()
+				paymentMethodType,
+				upeComponents.country
 			);
 
 			const { error } = await api.handlePaymentConfirmation(

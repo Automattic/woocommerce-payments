@@ -127,6 +127,24 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	}
 
 	/**
+	 * Displays HTML tags for WC payment gateway radio button content.
+	 */
+	public function display_gateway_html() {
+		?>
+			<div class="wcpay-upe-element" data-payment-method-type="<?php echo esc_attr( $this->stripe_id ); ?>"></div>
+		<?php
+	}
+
+	/**
+	 * Returns boolean for whether payment gateway supports saved payments.
+	 *
+	 * @return bool True, if gateway supports saved payments. False, otherwise.
+	 */
+	public function should_support_saved_payments() {
+		return $this->is_enabled_for_saved_payments( $this->stripe_id );
+	}
+
+	/**
 	 * Gets UPE_Payment_Method instance from ID.
 	 *
 	 * @param string $payment_method_type Stripe payment method type ID.
