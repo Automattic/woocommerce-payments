@@ -1380,6 +1380,29 @@ class WC_Payments_API_Client {
 			self::POST
 		);
 	}
+	/**
+	 * Get customer.
+	 *
+	 * @param string $customer_id   ID of customer to update.
+	 *
+	 * @throws API_Exception Error updating customer.
+	 */
+	public function get_customer( $customer_id ) {
+		if ( null === $customer_id || '' === trim( $customer_id ) ) {
+			throw new API_Exception(
+				__( 'Customer ID is required', 'woocommerce-payments' ),
+				'wcpay_mandatory_customer_id_missing',
+				400
+			);
+		}
+
+		$data = $this->request(
+			[],
+			self::CUSTOMERS_API . '/' . $customer_id,
+			self::GET
+		);
+		return new WC_Payments_API_Customer( $data['id'], $data['name'], $data['default_sorce']);
+	}
 
 	/**
 	 * Create a product.
@@ -2658,7 +2681,80 @@ class WC_Payments_API_Client {
 	 * @param string $payment_intent_id id of requested transaction.
 	 * @return array authorization object.
 	 */
-	public function get_authorization( string $payment_intent_id ) {
-		return $this->request( [], self::AUTHORIZATIONS_API . '/' . $payment_intent_id, self::GET );
+	public function get_authorization( string $payment_intent_id, $is_confirmed = true ) {
+		if ( $is_confirmed ) {
+			return $this->request( [], self::AUTHORIZATIONS_API . '/' . $payment_intent_id, self::GET );
+		}
+		return $this->request( [], self::INTENTIONS_API . '/' . $payment_intent_id, self::GET );
+	}
+
+	/**
+	 * Create authorization.
+	 *
+	 * @param int $amount Amount.
+	 * @param int $order_id Order id.
+	 * @param string $currency_code Currency.
+	 * @param string $customer_id Customer id.
+	 * @param string $payment_method Payment method id.
+	 * @param string|null $order_number Order number
+	 *
+	 * @return WC_Payments_API_Authorization
+	 * @throws API_Exception
+	 */
+	public function create_authorization (int $amount, int $order_id, string $currency_code, string $customer_id, string $payment_method, string $order_number = null) {
+		/**
+		 * this is where we separate different payment gateways for different authorization endpoints. For now, we only have stripe, so we don't have to do that.
+		 */
+		$metadata = [
+			'order_id' => $order_id,
+		];
+		$request                         = [];
+		$request['amount']               = $amount;
+		$request['currency']             = $currency_code;
+		$request['description']          = $this->get_intent_description( $order_number );
+		$request['payment_method']       = $payment_method;
+		$request['capture_method']       = 'manual';
+		$request['metadata']             = array_merge( $metadata, $this->get_fingerprint_metadata() );
+		$request['customer'] = $customer_id;
+
+
+		$response_array = $this->request( $request, self::INTENTIONS_API, self::POST );
+		return new WC_Payments_API_Authorization( $response_array['id'], $amount, $response_array['status'] );
+	}
+
+	/**
+	 * @param string $id Authorization id.
+	 * @param int $amount Amount to capture
+	 *
+	 * @return WC_Payments_API_Authorization
+	 * @throws API_Exception
+	 */
+	public function capture_authorization (string $id, int $amount ) {
+		/**
+		 * this is where we separate different payment gateways for different authorization endpoints. For now, we only have stripe, so we don't have to do that.
+		 */
+		$request = [
+			'amount_to_capture' => $amount,
+		];
+
+		$response_array = $this->request_with_level3_data(
+			$request,
+			self::INTENTIONS_API . '/' . $id . '/confirm',
+			self::POST
+		);
+
+		$authorization = new WC_Payments_API_Authorization( $response_array['id'], $amount, $response_array['status'] );
+
+		// Capture payment if needed.
+		if ( 'requires_capture' === $authorization->get_status() ) {
+			$response_array = $this->request_with_level3_data(
+				$request,
+				self::INTENTIONS_API . '/' . $id . '/capture',
+				self::POST
+			);
+			$authorization = new WC_Payments_API_Authorization( $response_array['id'], $amount, $response_array['status'] );
+		}
+
+		return $authorization;
 	}
 }

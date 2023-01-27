@@ -306,6 +306,8 @@ class WC_Payments {
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
 
+		include_once __DIR__. '/wc-payment-api/models/class-wc-payments-api-authorization.php';
+
 		// Load customer multi-currency if feature is enabled.
 		if ( WC_Payments_Features::is_customer_multi_currency_enabled() ) {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
@@ -788,7 +790,7 @@ class WC_Payments {
 		$payment_intents_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
-		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
+		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client, self::$customer_service, );
 		$authorizations_controller->register_routes();
 	}
 
