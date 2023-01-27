@@ -1140,6 +1140,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	}
 
 	/**
+	 * Returns the UPE payment method for the gateway (default card gateway).
+	 *
+	 * @return UPE_Payment_Method
+	 */
+	public function get_payment_method() {
+		return $this->payment_methods['card'];
+	}
+
+	/**
 	 * This function wraps WC_Payments::get_payment_gateway_by_id, useful for unit testing.
 	 *
 	 * @param string $payment_method_id Stripe payment method type ID.
