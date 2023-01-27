@@ -20,6 +20,8 @@ import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	usePaymentRequestButtonType,
+	usePaymentRequestEnabledSettings,
+	usePlatformCheckoutEnabledSettings,
 } from '../../data';
 
 /**
@@ -66,6 +68,8 @@ const PaymentRequestButtonPreview = () => {
 	const [ buttonType ] = usePaymentRequestButtonType();
 	const [ size ] = usePaymentRequestButtonSize();
 	const [ theme ] = usePaymentRequestButtonTheme();
+	const [ isPlatformCheckoutEnabled ] = usePlatformCheckoutEnabledSettings();
+	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 
 	useEffect( () => {
 		if ( ! stripe ) {
@@ -101,42 +105,58 @@ const PaymentRequestButtonPreview = () => {
 
 	return (
 		<>
-			<div className="payment-method-settings__preview">
-				<WoopayExpressCheckoutButton
-					isPreview={ true }
-					buttonSettings={ {
-						type: buttonType,
-						text: 'Buy',
-						theme: theme,
-						height: `${
-							buttonSizeToPxMap[ size ] ||
-							buttonSizeToPxMap.default
-						}px`,
-						size,
-					} }
-				/>
-				{ ! isLoading && paymentRequest && (
-					<PaymentRequestButtonElement
-						key={ `${ buttonType }-${ theme }-${ size }` }
-						onClick={ ( e ) => {
-							e.preventDefault();
-						} }
-						options={ {
-							paymentRequest: paymentRequest,
-							style: {
-								paymentRequestButton: {
-									type: buttonType,
-									theme: theme,
-									height: `${
-										buttonSizeToPxMap[ size ] ||
-										buttonSizeToPxMap.default
-									}px`,
-								},
-							},
-						} }
-					/>
-				) }
-			</div>
+			{ ( isPlatformCheckoutEnabled ||
+				( isPaymentRequestEnabled && paymentRequest ) ) && (
+				<div className="payment-method-settings__preview">
+					{ isPlatformCheckoutEnabled && (
+						<WoopayExpressCheckoutButton
+							isPreview={ true }
+							buttonSettings={ {
+								type: buttonType,
+								text: 'Buy',
+								theme: theme,
+								height: `${
+									buttonSizeToPxMap[ size ] ||
+									buttonSizeToPxMap.default
+								}px`,
+								size,
+							} }
+						/>
+					) }
+					{ isPaymentRequestEnabled &&
+						! isLoading &&
+						paymentRequest && (
+							<PaymentRequestButtonElement
+								key={ `${ buttonType }-${ theme }-${ size }` }
+								onClick={ ( e ) => {
+									e.preventDefault();
+								} }
+								options={ {
+									paymentRequest: paymentRequest,
+									style: {
+										paymentRequestButton: {
+											type: buttonType,
+											theme: theme,
+											height: `${
+												buttonSizeToPxMap[ size ] ||
+												buttonSizeToPxMap.default
+											}px`,
+										},
+									},
+								} }
+							/>
+						) }
+				</div>
+			) }
+			{ ! isPlatformCheckoutEnabled && ! isPaymentRequestEnabled && (
+				<InlineNotice status="info" isDismissible={ false }>
+					{ __(
+						'To preview the express checkout buttons, ' +
+							'activate at least one express checkout.',
+						'woocommerce-payments'
+					) }
+				</InlineNotice>
+			) }
 			{ ! isLoading && ! paymentRequest && (
 				<InlineNotice status="info" isDismissible={ false }>
 					{ __(
