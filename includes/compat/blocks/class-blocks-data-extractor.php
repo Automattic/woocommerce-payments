@@ -26,7 +26,7 @@ class Blocks_Data_Extractor {
 	/**
 	 * An array of blocks to extract data fields.
 	 *
-	 * @var IntegrationRegistry
+	 * @var array
 	 */
 	private $blocks = [];
 
@@ -46,10 +46,18 @@ class Blocks_Data_Extractor {
 	private function get_available_blocks() {
 		$blocks = [];
 		if ( class_exists( '\AutomateWoo\Blocks\Marketing_Optin_Block' ) ) {
-			array_push( $blocks, new Marketing_Optin_Block() );
+			// phpcs:ignore
+			/**
+			 * @psalm-suppress UndefinedClass
+			 */
+			array_push( $blocks, new \Automatewoo\Blocks\Marketing_Optin_Block() );
 		}
 
 		if ( class_exists( '\Mailchimp_Woocommerce_Newsletter_Blocks_Integration' ) ) {
+			// phpcs:ignore
+			/**
+			 * @psalm-suppress UndefinedClass
+			 */
 			array_push( $blocks, new \Mailchimp_Woocommerce_Newsletter_Blocks_Integration() );
 		}
 
@@ -70,12 +78,22 @@ class Blocks_Data_Extractor {
 	 *  from the parent class. This method fetches the data fields without registering the plugin.
 	 */
 	private function get_mailpoet_data() {
-		$this->mailpoet_wc_subscription = \MailPoet\DI\ContainerWrapper::getInstance()->get( \MailPoet\WooCommerce\Subscription::class );
-		$settings_instance              = \MailPoet\Settings\SettingsController::getInstance();
-		$settings                       = [
+		// phpcs:ignore
+		/**
+		 * We check whether relevant MailPoet classes exists before invoking this method.
+		 *
+		 * @psalm-suppress UndefinedClass
+		 */
+		$mailpoet_wc_subscription = \MailPoet\DI\ContainerWrapper::getInstance()->get( \MailPoet\WooCommerce\Subscription::class );
+		// phpcs:ignore
+		/**
+		 * @psalm-suppress UndefinedClass
+		 */
+		$settings_instance = \MailPoet\Settings\SettingsController::getInstance();
+		$settings          = [
 			'defaultText'   => $settings_instance->get( 'woocommerce.optin_on_checkout.message', '' ),
 			'optinEnabled'  => $settings_instance->get( 'woocommerce.optin_on_checkout.enabled', false ),
-			'defaultStatus' => $this->mailpoet_wc_subscription->isCurrentUserSubscribed(),
+			'defaultStatus' => $mailpoet_wc_subscription->isCurrentUserSubscribed(),
 		];
 		return $settings;
 	}
