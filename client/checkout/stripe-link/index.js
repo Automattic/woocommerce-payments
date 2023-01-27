@@ -355,7 +355,13 @@ export default class StripeLinkButton {
 		this.spinner = new Spinner(
 			document.getElementById( options.emailId )
 		);
-		this.enableRequestButton();
+
+		if ( this.isPlatformCheckoutEnabled ) {
+			this.enableRequestButton();
+		} else {
+			this.enable();
+			this.disableRequestButton();
+		}
 	}
 
 	/**
