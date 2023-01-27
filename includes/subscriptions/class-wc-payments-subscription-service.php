@@ -133,7 +133,7 @@ class WC_Payments_Subscription_Service {
 
 		add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
 		add_action( 'woocommerce_subscription_status_expired', [ $this, 'cancel_subscription' ] );
-		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'suspend_subscription' ] );
+		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'handle_subscription_status_on_hold' ] );
 		add_action( 'woocommerce_subscription_status_pending-cancel', [ $this, 'set_pending_cancel_for_subscription' ] );
 		add_action( 'woocommerce_subscription_status_pending-cancel_to_active', [ $this, 'reactivate_subscription' ] );
 		add_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this, 'reactivate_subscription' ] );
@@ -452,13 +452,59 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Suspends the WCPay subscription when a WC subscription is put on-hold.
+	 * Handle subscription status change to on-hold.
 	 *
-	 * @param WC_Subscription $subscription The WC subscription that was suspended.
+	 * @param WC_Subscription $subscription The WC subscription.
+	 *
+	 * @return void
+	 */
+	public function handle_subscription_status_on_hold( WC_Subscription $subscription ) {
+		// Check if the subscription is a WCPay subscription before proceeding.
+		// In stores that have WC Subscriptions active, or previously had WC S,
+		// this method may be called with regular tokenised subscriptions.
+		if ( ! $this->is_wcpay_subscription( $subscription ) ) {
+			return;
+		}
+
+		$this->suspend_subscription( $subscription );
+
+		// Add an order note as a visible record of suspend.
+		$subscription->add_order_note( __( 'Suspended WCPay Subscription because subscription status changed to on-hold.', 'woocommerce-payments' ) );
+
+		// Log that the subscription was suspended.
+		// Include a brief stack trace to help determine where status change originated.
+		// For example, admin user action, or a code interaction with customizations.
+		$e     = new Exception();
+		$trace = $e->getTraceAsString();
+		Logger::log(
+			sprintf(
+				'Suspended WCPay Subscription because subscription status changed to on-hold. WC ID: %d; WCPay ID: %s; stack: %s',
+				$subscription->get_id(),
+				self::get_wcpay_subscription_id( $subscription ),
+				$trace
+			)
+		);
+	}
+
+	/**
+	 * Suspends a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription to suspend.
 	 *
 	 * @return void
 	 */
 	public function suspend_subscription( WC_Subscription $subscription ) {
+		// Check if the subscription is a WCPay subscription before proceeding.
+		if ( ! $this->is_wcpay_subscription( $subscription ) ) {
+			Logger::log(
+				sprintf(
+					'Aborting WC_Payments_Subscription_Service::suspend_subscription; subscription is a tokenised (non WCPay) subscription. WC ID: %d.',
+					$subscription->get_id()
+				)
+			);
+			return;
+		}
+
 		$this->update_subscription( $subscription, [ 'pause_collection' => [ 'behavior' => 'void' ] ] );
 	}
 

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed issues where multiple subscription purchases wouldn't appear on the My Account > Subscriptions screen on HPOS environments.

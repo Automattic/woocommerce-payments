@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Repair a potentially corrupted state of enabled payment method settings, that causes an error while saving settings.
