@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Check the status of previously initiated payments and mark orders as processing instead of initiating a new payment.

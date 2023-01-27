@@ -87,6 +87,9 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_html' ], -2 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
+
+		add_action( 'wp_ajax_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
+		add_action( 'wp_ajax_nopriv_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 	}
 
 	/**
@@ -97,8 +100,9 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return array The modified config array.
 	 */
 	public function add_platform_checkout_config( $config ) {
-		$config['platformCheckoutButton'] = $this->get_button_settings();
-		$config['addToCartNonce']         = wp_create_nonce( 'wcpay-add-to-cart' );
+		$config['platformCheckoutButton']      = $this->get_button_settings();
+		$config['platformCheckoutButtonNonce'] = wp_create_nonce( 'platform_checkout_button_nonce' );
+		$config['addToCartNonce']              = wp_create_nonce( 'wcpay-add-to-cart' );
 
 		return $config;
 	}
@@ -140,6 +144,34 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		);
 
 		wp_enqueue_style( 'WCPAY_PLATFORM_CHECKOUT' );
+	}
+
+	/**
+	 * Returns the error notice HTML.
+	 */
+	public function show_error_notice() {
+		$is_nonce_valid = check_ajax_referer( 'platform_checkout_button_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		$message = isset( $_POST['message'] ) ? sanitize_text_field( wp_unslash( $_POST['message'] ) ) : '';
+
+		// $message has already been translated.
+		wc_add_notice( $message, 'error' );
+		$notice = wc_print_notices( true );
+
+		wp_send_json_success(
+			[
+				'notice' => $notice,
+			]
+		);
+
+		wp_die();
 	}
 
 	/**
@@ -384,13 +416,13 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return array
 	 */
 	public function get_button_settings() {
-		$button_type = $this->gateway->get_option( 'platform_checkout_button_type', 'default' );
+		$button_type = $this->gateway->get_option( 'payment_request_button_type', 'default' );
 		return [
 			'type'    => $button_type,
 			'text'    => ucfirst( $button_type ),
-			'theme'   => $this->gateway->get_option( 'platform_checkout_button_theme', 'dark' ),
+			'theme'   => $this->gateway->get_option( 'payment_request_button_theme', 'dark' ),
 			'height'  => $this->get_button_height(),
-			'size'    => $this->gateway->get_option( 'platform_checkout_button_size' ),
+			'size'    => $this->gateway->get_option( 'payment_request_button_size' ),
 			'context' => $this->get_button_context(),
 		];
 	}
@@ -401,7 +433,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return string
 	 */
 	public function get_button_height() {
-		$height = $this->gateway->get_option( 'platform_checkout_button_size' );
+		$height = $this->gateway->get_option( 'payment_request_button_size' );
 		if ( 'medium' === $height ) {
 			return '48';
 		}

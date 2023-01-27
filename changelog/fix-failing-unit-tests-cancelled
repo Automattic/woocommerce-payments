@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix failing unit tests due to spelling change in WooCommerce core.

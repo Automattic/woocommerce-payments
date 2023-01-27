@@ -1,5 +1,24 @@
 *** WooCommerce Payments Changelog ***
 
+= 5.3.0 - 2023-01-11 =
+* Add - Added support for WooPay express checkout on product page. This feature is currently behind a feature flag and is not yet publicly available.
+* Add - Add the processing order_id to WC Session and its handling to prevent duplicate orders
+* Fix - Ensure script dependencies are loaded properly even when trying to register them again in the same request.
+* Fix - Fix an issue which caused synced wcpay subscription to not sync the first payment date when the customer is charged upfront.
+* Fix - Fix subscriptions remaining on-hold after processing a WCPay Subscription renewal on HPOS environments.
+* Fix - Make the webhook processing respect the test/live mode setting for the gateway
+* Fix - Prevent 'No such customer' errors after store is migrated to a new WCPay account.
+* Fix - Prevent occasional fatal errors when creating customers via ActionScheduler jobs
+* Fix - Updates subscriptions' payment token when a new default payment method is set.
+* Update - Bail out before payment processing for WooPay's order validation request
+* Update - Check the status of previously initiated payments and mark orders as processing instead of initiating a new payment.
+* Update - Enhance save my info section on classic and Blocks checkout
+* Dev - Bump minimum required version of WooCommerce to 7.1.1.
+* Dev - Remove redundant compatibility utility class for admin notes.
+* Dev - Replace typed payment intent strings with constants saved in an Enum clas
+* Dev - Retry API requests on network failure if Idempotency-Key header is present.
+* Dev - The PR replaces hard-coded order status constants, with a dedicated Enum class to make it reusable across the codebase.
+
 = 5.2.1 - 2022-12-30 =
 * Fix - UPE not loading on checkout page due to undefined i18n.
 
