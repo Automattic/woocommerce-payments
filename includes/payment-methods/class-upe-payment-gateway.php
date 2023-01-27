@@ -104,20 +104,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this, 'init_setup_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this, 'log_payment_error_ajax' ] );
 
-		add_action( 'wp_ajax_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
-		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this, 'save_upe_appearance_ajax' ] );
-		add_action( 'switch_theme', [ $this, 'clear_upe_appearance_transient' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_upe_appearance_transient' ] );
-
-		add_action( 'wp', [ $this, 'maybe_process_upe_redirect' ] );
-
 		if ( ! is_admin() ) {
 			add_filter( 'woocommerce_gateway_title', [ $this, 'maybe_filter_gateway_title' ], 10, 2 );
 		}
-
-		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'remove_upe_payment_intent_from_session' ], 10, 0 );
-		add_action( 'woocommerce_after_account_payment_methods', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
-		add_action( 'woocommerce_subscription_payment_method_updated', [ $this, 'remove_upe_setup_intent_from_session' ], 10, 0 );
 	}
 
 	/**
@@ -1148,5 +1137,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function get_payment_methods() {
 		return $this->payment_methods;
+	}
+
+	/**
+	 * This function wraps WC_Payments::get_payment_gateway_by_id, useful for unit testing.
+	 *
+	 * @param string $payment_method_id Stripe payment method type ID.
+	 * @return false|UPE_Payment_Gateway Matching UPE Payment Gateway instance.
+	 */
+	public function wc_payments_get_payment_gateway_by_id( $payment_method_id ) {
+		return $this;
 	}
 }
