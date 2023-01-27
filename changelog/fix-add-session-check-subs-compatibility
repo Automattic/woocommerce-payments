@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add check for session before getting properties from session to avoid fatals in WooCommerce Subscriptions Mulit-Currency compatibility.
