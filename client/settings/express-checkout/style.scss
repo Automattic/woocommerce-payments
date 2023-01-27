@@ -41,6 +41,17 @@
 				}
 			}
 
+			&__icons {
+				display: flex;
+				.express-checkout__icon {
+					flex: unset;
+					width: 29px;
+					&:not( :last-child ) {
+						margin-right: 4px;
+					}
+				}
+			}
+
 			&__label {
 				display: inline-block;
 				font-size: 14px;

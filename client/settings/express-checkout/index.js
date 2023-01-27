@@ -19,11 +19,12 @@ import {
 	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
 import CardBody from '../card-body';
-import PaymentRequestIcon from '../../gateway-icons/payment-request';
 import WooIcon from '../../gateway-icons/woo';
 import './style.scss';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import LinkIcon from '../../gateway-icons/link';
+import ApplePay from 'wcpay/gateway-icons/apple-pay';
+import GooglePay from 'wcpay/gateway-icons/google-pay';
 
 const ExpressCheckout = () => {
 	const [
@@ -149,8 +150,13 @@ const ExpressCheckout = () => {
 								onChange={ updateIsPaymentRequestEnabled }
 							/>
 						</div>
-						<div className="express-checkout__icon">
-							<PaymentRequestIcon />
+						<div className="express-checkout__icons">
+							<div className="express-checkout__icon">
+								<ApplePay />
+							</div>
+							<div className="express-checkout__icon">
+								<GooglePay />
+							</div>
 						</div>
 						<div className="express-checkout__label-container">
 							<div className="express-checkout__label">
