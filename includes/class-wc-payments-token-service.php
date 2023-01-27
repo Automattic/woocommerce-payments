@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Logger;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Constants\Payment_Method;
+use WCPay\WC_Payments_Features;
 
 /**
  * Handles and process WC payment tokens API.
@@ -106,6 +107,21 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
+	 * Returns boolean value if payment method type matches relevant payment gateway.
+	 *
+	 * @param string $payment_method_type Stripe payment method type ID.
+	 * @param string $gateway_id          WC payment gateway ID.
+	 * @return bool                       True, if payment method type matches gateway, false if otherwise.
+	 */
+	public function is_valid_payment_method_type_for_gateway( $payment_method_type, $gateway_id ) {
+		if ( WC_Payments_Features::is_upe_split_enabled() ) {
+			return self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD[ $payment_method_type ] === $gateway_id;
+		} else {
+			return WC_Payments::get_gateway()->id === $gateway_id;
+		}
+	}
+
+	/**
 	 * Gets saved tokens from API if they don't already exist in WooCommerce.
 	 *
 	 * @param array  $tokens     Array of tokens.
@@ -170,7 +186,7 @@ class WC_Payments_Token_Service {
 			if ( ! isset( $payment_method['type'] ) ) {
 				continue;
 			}
-			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) && ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD[ $payment_method['type'] ] === $gateway_id || empty( $gateway_id ) ) ) {
+			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) && ( $this->is_valid_payment_method_type_for_gateway( $payment_method['type'], $gateway_id ) || empty( $gateway_id ) ) ) {
 				$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
 				$tokens[ $token->get_id() ] = $token;
 			} else {
