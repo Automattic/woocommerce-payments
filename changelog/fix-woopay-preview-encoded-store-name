@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Decode entities for the store name in the WooPay preview section.

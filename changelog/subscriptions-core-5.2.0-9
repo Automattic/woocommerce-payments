@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Refactor `WC_Subscriptions_Renewal_Order` and `WC_Subscriptions_Tracker` classes to support HPOS stores.

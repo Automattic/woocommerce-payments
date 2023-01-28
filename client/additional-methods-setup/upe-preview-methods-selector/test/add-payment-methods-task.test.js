@@ -147,13 +147,11 @@ describe( 'AddPaymentMethodsTask', () => {
 				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
 			)
 		).not.toBeInTheDocument();
-		expect(
-			screen.queryByText( 'Add payment methods' )
-		).not.toBeInTheDocument();
+		expect( screen.queryByText( 'Continue' ) ).not.toBeInTheDocument();
 		expect( useSettings ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should not allow to move forward if no payment methods are selected', () => {
+	it( 'should allow to move forward when no payment methods are selected', () => {
 		const setCompletedMock = jest.fn();
 		render(
 			<SettingsContextProvider>
@@ -182,10 +180,6 @@ describe( 'AddPaymentMethodsTask', () => {
 			expect( screen.getByLabelText( checkboxName ) ).not.toBeChecked();
 		} );
 
-		expect(
-			screen.queryByRole( 'checkbox', { name: /Credit/ } )
-		).not.toBeInTheDocument();
-
 		// No add currency text when no elements are checked.
 		expect(
 			screen.queryByText(
@@ -197,7 +191,7 @@ describe( 'AddPaymentMethodsTask', () => {
 				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
 			)
 		).not.toBeInTheDocument();
-		expect( screen.getByText( 'Add payment methods' ) ).not.toBeEnabled();
+		expect( screen.getByText( 'Continue' ) ).toBeEnabled();
 	} );
 
 	it( 'should move forward when the payment methods are selected', async () => {
@@ -222,7 +216,7 @@ describe( 'AddPaymentMethodsTask', () => {
 				/(we\'ll add|and) Polish złoty \(zł\) (and|to your store)/
 			)
 		).not.toBeInTheDocument();
-		expect( screen.getByText( 'Add payment methods' ) ).not.toBeEnabled();
+		expect( screen.getByText( 'Continue' ) ).toBeEnabled();
 		expect( useSettings ).toHaveBeenCalled();
 
 		// The payment methods should all be checked.
@@ -241,7 +235,7 @@ describe( 'AddPaymentMethodsTask', () => {
 		} );
 		expect(
 			screen.queryByRole( 'checkbox', { name: /Credit/ } )
-		).not.toBeInTheDocument();
+		).toBeInTheDocument();
 
 		jest.useFakeTimers();
 		act( () => {
@@ -249,7 +243,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			jest.runAllTimers();
 		} );
 
-		expect( screen.getByText( 'Add payment methods' ) ).toBeEnabled();
+		expect( screen.getByText( 'Continue' ) ).toBeEnabled();
 
 		expect(
 			screen.queryByText(
@@ -257,7 +251,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			)
 		).toBeInTheDocument();
 
-		userEvent.click( screen.getByText( 'Add payment methods' ) );
+		userEvent.click( screen.getByText( 'Continue' ) );
 
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
 			'card',
@@ -322,7 +316,7 @@ describe( 'AddPaymentMethodsTask', () => {
 			} );
 		} );
 
-		userEvent.click( screen.getByText( 'Add payment methods' ) );
+		userEvent.click( screen.getByText( 'Continue' ) );
 
 		// Methods are removed.
 		expect( updateEnabledPaymentMethodsMock ).toHaveBeenCalledWith( [
