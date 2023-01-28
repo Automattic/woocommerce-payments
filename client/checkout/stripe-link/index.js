@@ -79,6 +79,7 @@ export default class StripeLinkButton {
 	 * @param {string} email Email address.
 	 */
 	tryAuthentication( email ) {
+		jQuery( STRIPE_LINK_RADIO_SELECTOR ).click();
 		this.linkAutofill.launch( { email } );
 		this.flashSpinner();
 		this.disableRequestButton();
@@ -138,7 +139,6 @@ export default class StripeLinkButton {
 	 */
 	clickHandler( event ) {
 		event.preventDefault();
-		jQuery( STRIPE_LINK_RADIO_SELECTOR ).click();
 		this.enable();
 	}
 
