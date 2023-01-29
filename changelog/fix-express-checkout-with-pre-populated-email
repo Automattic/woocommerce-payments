@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix WooPay redirection with express checkout when email is prepopulated. The WooPay express checkout is currently behind a feature flag.

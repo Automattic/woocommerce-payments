@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Shipping address correctly set when resubscribing to subscriptions that contains different billing and shipping addresses.

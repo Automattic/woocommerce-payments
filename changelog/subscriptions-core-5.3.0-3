@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-When processing customer requests to update all their subscription payment methods, ensure the updated subscription is used to fetch the new payment meta, not and old instance.
