@@ -5,9 +5,15 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody, CardHeader } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+	FlexItem,
+	FlexBlock,
+} from '@wordpress/components';
 import { Badge } from '@woocommerce/components';
-import { CollapsibleList, TaskItem, Text } from '@woocommerce/experimental';
+import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
 import { useDispatch } from '@wordpress/data';
 import { useCallback, useEffect, useState } from '@wordpress/element';
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -163,15 +169,15 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 			size="large"
 			className="woocommerce-task-card woocommerce-homescreen-card"
 		>
-			<CardHeader size="medium">
-				<div className="wooocommerce-task-card__header">
-					<Text variant="title.small">
-						{ __( 'Things to do', 'woocommerce-payments' ) }
-					</Text>
+			<CardHeader size="medium" justify="left">
+				<FlexItem>
+					{ __( 'Things to do', 'woocommerce-payments' ) }
+				</FlexItem>
+				<FlexBlock>
 					{ 0 < pendingTaskCount && (
 						<Badge count={ pendingTaskCount } />
 					) }
-				</div>
+				</FlexBlock>
 			</CardHeader>
 			<CardBody>
 				<CollapsibleList

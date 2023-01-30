@@ -173,6 +173,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
 
 		if ( email && validateEmail( email ) ) {
+			userEmail = email;
 			urlParams.append( 'email', email );
 		}
 
