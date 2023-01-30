@@ -79,6 +79,12 @@ declare module '@woocommerce/components' {
 		isSortable?: boolean;
 		defaultSort?: boolean;
 	}
+
+	interface TableCardBodyColumn {
+		value?: string | number | boolean;
+		display?: React.ReactNode;
+	}
+
 	interface TableCardProps {
 		className?: string;
 		title?: string;
@@ -86,10 +92,7 @@ declare module '@woocommerce/components' {
 		rowsPerPage?: number;
 		totalRows?: number;
 		headers?: TableCardColumn[];
-		rows?: {
-			value?: string | number | boolean;
-			display?: React.ReactNode;
-		}[][];
+		rows?: TableCardBodyColumn[][];
 		summary?: { label: string; value: string | number | boolean }[];
 		query?: Query;
 		onQueryChange?: unknown;
