@@ -195,7 +195,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			add_action(
 				'wp_footer',
 				function() use ( $payment_fields ) {
-					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_config', $payment_fields );
+					wp_localize_script( 'wcpay-upe-checkout', 'wcpayConfig', $payment_fields );
 				}
 			);
 

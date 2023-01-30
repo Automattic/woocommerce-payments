@@ -1,4 +1,4 @@
-/* global wcpay_config, wc */
+/* global wcpayConfig, wc */
 
 /**
  * Retrieves a configuration value.
@@ -9,8 +9,8 @@
 export const getConfig = ( name ) => {
 	// Classic checkout or blocks-based one.
 	const config =
-		'undefined' !== typeof wcpay_config
-			? wcpay_config
+		'undefined' !== typeof wcpayConfig
+			? wcpayConfig
 			: wc.wcSettings.getSetting( 'woocommerce_payments_data' );
 
 	return config[ name ] || null;

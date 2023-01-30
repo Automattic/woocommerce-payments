@@ -123,7 +123,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		wp_add_inline_script(
 			'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON',
 			"
-			var wcpay_config = wcpay_config || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
+			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
 			",
 			'before'
 		);
