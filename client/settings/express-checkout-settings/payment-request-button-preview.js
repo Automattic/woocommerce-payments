@@ -157,7 +157,7 @@ const PaymentRequestButtonPreview = () => {
 					) }
 				</InlineNotice>
 			) }
-			{ ! isLoading && ! paymentRequest && (
+			{ isPaymentRequestEnabled && ! isLoading && ! paymentRequest && (
 				<InlineNotice status="info" isDismissible={ false }>
 					{ __(
 						'To preview the Apple Pay and Google Pay buttons, ' +

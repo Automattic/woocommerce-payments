@@ -109,7 +109,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 	} );
 
-	describe( 'Product page', () => {
+	describe( 'Product Page', () => {
 		test( 'should enable the button when add to cart button is enabled', () => {
 			render(
 				<WoopayExpressCheckoutButton

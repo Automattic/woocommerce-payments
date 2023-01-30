@@ -95,7 +95,7 @@ const PaymentRequestSettings = ( { section } ) => {
 									'product'
 								) }
 								label={ __(
-									'Product page',
+									'Product Page',
 									'woocommerce-payments'
 								) }
 							/>
