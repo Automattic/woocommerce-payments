@@ -159,7 +159,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		}
 
 		// The running_override_selected_currency_filters property has been added here due to if it isn't, it will create an infinite loop of calls.
-		if ( WC()->session->get( 'order_awaiting_payment' ) ) {
+		if ( isset( WC()->session ) && WC()->session->get( 'order_awaiting_payment' ) ) {
 			$this->running_override_selected_currency_filters = true;
 			$order = wc_get_order( WC()->session->get( 'order_awaiting_payment' ) );
 			$this->running_override_selected_currency_filters = false;
