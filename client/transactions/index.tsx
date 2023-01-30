@@ -29,6 +29,7 @@ import {
 	useAuthorizationsSummary,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
+import RiskReviewList from './risk-review';
 
 declare const window: any;
 
@@ -48,30 +49,53 @@ const onTabSelected = ( tab: string ) => {
 	);
 };
 
-export const TransactionsPage = (): JSX.Element => {
-	const defaultExperience = (
-		<>
-			<TestModeNotice topic={ topics.transactions } />
-			<TransactionsList />
-		</>
-	);
+const defaultExperience = (
+	<>
+		<TestModeNotice topic={ topics.transactions } />
+		<TransactionsList />
+	</>
+);
 
+const treatmentExperience = wcpaySettings.accountStatus.status ? (
+	defaultExperience
+) : (
+	<EmptyStateTable
+		headers={ EmptyStateTableHeaders }
+		title="Transactions"
+		content={ <EmptyStateList listBanner={ ListBanner } /> }
+	/>
+);
+
+const tabsComponentMap = {
+	'transactions-page': (
+		<Experiment
+			name="wcpay_empty_state_preview_mode_v5"
+			treatmentExperience={ treatmentExperience }
+			defaultExperience={ defaultExperience }
+		/>
+	),
+	'uncaptured-page': (
+		<>
+			<TestModeNotice topic={ topics.authorizations } />
+			<Authorizations />
+		</>
+	),
+	'review-page': (
+		<>
+			<TestModeNotice topic={ topics.riskReview } />
+			<RiskReviewList />
+		</>
+	),
+	'blocked-page': <p>Blocked page</p>,
+};
+
+export const TransactionsPage = (): JSX.Element => {
 	const {
 		featureFlags: { isAuthAndCaptureEnabled },
 	} = useContext( WCPaySettingsContext );
 	const [ getIsManualCaptureEnabled ] = useManualCapture();
 	const { isLoading: isLoadingSettings } = useSettings();
 	const { authorizationsSummary } = useAuthorizationsSummary( {} );
-
-	const treatmentExperience = wcpaySettings.accountStatus.status ? (
-		defaultExperience
-	) : (
-		<EmptyStateTable
-			headers={ EmptyStateTableHeaders }
-			title="Transactions"
-			content={ <EmptyStateList listBanner={ ListBanner } /> }
-		/>
-	);
 
 	// The Uncaptured authorizations screen will be shown only if:
 	// 1. The feature is turned on for all accounts
@@ -82,65 +106,65 @@ export const TransactionsPage = (): JSX.Element => {
 		( ! isLoadingSettings && getIsManualCaptureEnabled ) ||
 		( authorizationsSummary.total && authorizationsSummary.total > 0 );
 
-	if ( isAuthAndCaptureEnabled && shouldShowUncapturedTab ) {
-		return (
-			<Page>
-				<TabPanel
-					className="wcpay-transactions-page"
-					activeClass="active-tab"
-					onSelect={ onTabSelected }
-					initialTabName={ initialTab || 'transactions-page' }
-					tabs={ [
-						{
-							name: 'transactions-page',
-							title: __( 'Transactions', 'woocommerce-payments' ),
-							className: 'transactions-list',
-						},
-						{
-							name: 'uncaptured-page',
-							title: sprintf(
-								/* translators: %1: number of uncaptured authorizations */
-								__(
-									'Uncaptured (%1$s)',
-									'woocommerce-payments'
-								),
-								authorizationsSummary.count ?? '...'
-							),
-							className: 'authorizations-list',
-						},
-					] }
-				>
-					{ ( tab ) => {
-						if ( 'uncaptured-page' === tab.name ) {
-							return (
-								<>
-									<TestModeNotice
-										topic={ topics.authorizations }
-									/>
-									<Authorizations />
-								</>
-							);
-						}
+	const tabs = [
+		{
+			name: 'transactions-page',
+			title: __( 'Transactions', 'woocommerce-payments' ),
+			className: 'transactions-list',
+		},
+		{
+			name: 'uncaptured-page',
+			title: sprintf(
+				/* translators: %1: number of uncaptured authorizations */
+				__( 'Uncaptured (%1$s)', 'woocommerce-payments' ),
+				authorizationsSummary.count ?? '...'
+			),
+			className: 'authorizations-list',
+		},
+		{
+			name: 'review-page',
+			title: sprintf(
+				/* translators: %1: number of transactions hold for review */
+				__( 'Risk Review (%1$s)', 'woocommerce-payments' ),
+				authorizationsSummary.count ?? '...'
+			),
+			className: 'review-list',
+		},
+		{
+			name: 'blocked-page',
+			title: sprintf(
+				__( 'Blocked', 'woocommerce-payments' ),
+				authorizationsSummary.count ?? '...'
+			),
+			className: 'blocked-list',
+		},
+	].filter( ( item ) => {
+		if ( 'uncaptured-page' !== item.name ) return true;
 
-						return (
-							<Experiment
-								name="wcpay_empty_state_preview_mode_v5"
-								treatmentExperience={ treatmentExperience }
-								defaultExperience={ defaultExperience }
-							/>
-						);
-					} }
-				</TabPanel>
-			</Page>
-		);
-	}
+		return isAuthAndCaptureEnabled && shouldShowUncapturedTab;
+	} );
+
+	if ( typeof shouldShowUncapturedTab === 'undefined' )
+		return tabsComponentMap[ 'transactions-page' ];
 
 	return (
-		<Experiment
-			name="wcpay_empty_state_preview_mode_v5"
-			treatmentExperience={ treatmentExperience }
-			defaultExperience={ defaultExperience }
-		/>
+		<Page>
+			<TabPanel
+				className="wcpay-transactions-page"
+				activeClass="active-tab"
+				onSelect={ onTabSelected }
+				initialTabName={ initialTab || 'transactions-page' }
+				tabs={ tabs }
+			>
+				{ ( tab ) => {
+					return (
+						tabsComponentMap[
+							tab.name as keyof typeof tabsComponentMap
+						] || tabsComponentMap[ 'transactions-page' ]
+					);
+				} }
+			</TabPanel>
+		</Page>
 	);
 };
 
