@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Updates to the styling of the task list title on the main account overview page to match the component default.
