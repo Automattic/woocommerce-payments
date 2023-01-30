@@ -17,6 +17,7 @@ export const WoopayExpressCheckoutButton = ( {
 	buttonSettings,
 	api,
 	isProductPage = false,
+	emailSelector = '#email',
 } ) => {
 	const { type: buttonType, height, size, theme, context } = buttonSettings;
 	const text =
@@ -61,13 +62,13 @@ export const WoopayExpressCheckoutButton = ( {
 		if ( isProductPage ) {
 			addToCart()
 				.then( () => {
-					expressCheckoutIframe( api );
+					expressCheckoutIframe( api, context, emailSelector );
 				} )
 				.catch( () => {
 					// handle error.
 				} );
 		} else {
-			expressCheckoutIframe( api );
+			expressCheckoutIframe( api, context, emailSelector );
 		}
 	};
 

@@ -25,7 +25,6 @@ describe( 'WCPayAPI', () => {
 		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
 			_wpnonce: 'foo',
 			email: 'foo@bar.com',
-			return_url: 'http://localhost/',
 			user_session: 'qwerty123',
 		} );
 	} );

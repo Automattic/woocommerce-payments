@@ -87,6 +87,9 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_html' ], -2 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
+
+		add_action( 'wp_ajax_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
+		add_action( 'wp_ajax_nopriv_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 	}
 
 	/**
@@ -97,8 +100,9 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return array The modified config array.
 	 */
 	public function add_platform_checkout_config( $config ) {
-		$config['platformCheckoutButton'] = $this->get_button_settings();
-		$config['addToCartNonce']         = wp_create_nonce( 'wcpay-add-to-cart' );
+		$config['platformCheckoutButton']      = $this->get_button_settings();
+		$config['platformCheckoutButtonNonce'] = wp_create_nonce( 'platform_checkout_button_nonce' );
+		$config['addToCartNonce']              = wp_create_nonce( 'wcpay-add-to-cart' );
 
 		return $config;
 	}
@@ -140,6 +144,34 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		);
 
 		wp_enqueue_style( 'WCPAY_PLATFORM_CHECKOUT' );
+	}
+
+	/**
+	 * Returns the error notice HTML.
+	 */
+	public function show_error_notice() {
+		$is_nonce_valid = check_ajax_referer( 'platform_checkout_button_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren’t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		$message = isset( $_POST['message'] ) ? sanitize_text_field( wp_unslash( $_POST['message'] ) ) : '';
+
+		// $message has already been translated.
+		wc_add_notice( $message, 'error' );
+		$notice = wc_print_notices( true );
+
+		wp_send_json_success(
+			[
+				'notice' => $notice,
+			]
+		);
+
+		wp_die();
 	}
 
 	/**
