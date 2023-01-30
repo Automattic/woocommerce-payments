@@ -364,32 +364,40 @@ class WC_Payments {
 		self::$platform_checkout_util              = new Platform_Checkout_Utilities();
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
-		$payments_checkout         = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$platform_checkout_util, self::$account, self::$customer_service );
 
-		if ( WC_Payments_Features::is_upe_enabled() ) {
-			$payment_method_classes = [
-				CC_Payment_Method::class,
-				Bancontact_Payment_Method::class,
-				Sepa_Payment_Method::class,
-				Giropay_Payment_Method::class,
-				Sofort_Payment_Method::class,
-				P24_Payment_Method::class,
-				Ideal_Payment_Method::class,
-				Becs_Payment_Method::class,
-				Eps_Payment_Method::class,
-				Link_Payment_Method::class,
-			];
+		$payment_method_classes = [
+			CC_Payment_Method::class,
+			Bancontact_Payment_Method::class,
+			Sepa_Payment_Method::class,
+			Giropay_Payment_Method::class,
+			Sofort_Payment_Method::class,
+			P24_Payment_Method::class,
+			Ideal_Payment_Method::class,
+			Becs_Payment_Method::class,
+			Eps_Payment_Method::class,
+			Link_Payment_Method::class,
+		];
+		if ( WC_Payments_Features::is_upe_split_enabled() ) {
 			foreach ( $payment_method_classes as $class ) {
 				$payment_method = new $class( self::$token_service );
 				self::$upe_payment_method_map[ $payment_method->get_id() ]  = $payment_method;
-				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, self::$failed_transaction_rate_limiter, self::$order_service );
+				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, self::$failed_transaction_rate_limiter, self::$order_service );
 			}
 
 			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
+		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
+			$payment_methods = [];
+			foreach ( $payment_method_classes as $payment_method_class ) {
+				$payment_method                               = new $payment_method_class( self::$token_service );
+				$payment_methods[ $payment_method->get_id() ] = $payment_method;
+			}
+
+			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
+			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		} else {
 			self::$card_gateway         = self::$legacy_card_gateway;
-			self::$wc_payments_checkout = $payments_checkout;
+			self::$wc_payments_checkout = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$platform_checkout_util, self::$account, self::$customer_service );
 		}
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
@@ -543,9 +551,8 @@ class WC_Payments {
 	 * @return array The list of payment gateways that will be available, including WooCommerce Payments' Gateway class.
 	 */
 	public static function register_gateway( $gateways ) {
-		$gateways[] = self::$legacy_card_gateway;
-
-		if ( WC_Payments_Features::is_upe_enabled() ) {
+		if ( WC_Payments_Features::is_upe_split_enabled() ) {
+			$gateways[]       = self::$legacy_card_gateway;
 			$all_upe_gateways = [];
 			$reusable_methods = [];
 
@@ -569,6 +576,10 @@ class WC_Payments {
 			}
 
 			return array_merge( $gateways, $all_upe_gateways );
+		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
+			$gateways[] = self::$card_gateway;
+		} else {
+			$gateways[] = self::$legacy_card_gateway;
 		}
 
 		return $gateways;
@@ -583,8 +594,9 @@ class WC_Payments {
 	 * environment (see `init` method where $card_gateway is set).
 	 */
 	public static function hide_gateways_on_settings_page() {
+		$default_gateway = WC_Payments_Features::is_upe_split_enabled() ? self::$legacy_card_gateway : self::get_gateway();
 		foreach ( WC()->payment_gateways->payment_gateways as $index => $payment_gateway ) {
-			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== self::$legacy_card_gateway ) {
+			if ( $payment_gateway instanceof WC_Payment_Gateway_WCPay && $payment_gateway !== $default_gateway ) {
 				unset( WC()->payment_gateways->payment_gateways[ $index ] );
 			}
 		}
