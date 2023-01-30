@@ -49,6 +49,39 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	}
 
 	/**
+	 * Indicates eligibility for WooPay via feature flag.
+	 *
+	 * @var bool
+	 */
+	private $is_platform_checkout_eligible;
+
+	/**
+	 * Indicates whether WooPay is enabled.
+	 *
+	 * @var bool
+	 */
+	private $is_platform_checkout_enabled;
+
+	/**
+	 * Indicates whether WooPay express checkout is enabled.
+	 *
+	 * @var bool
+	 */
+	private $is_platform_checkout_express_button_enabled;
+
+	/**
+	 * Indicates whether WooPay and WooPay express checkout are enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_woopay_enabled() {
+		if ( ! ( $this->is_platform_checkout_eligible && $this->is_platform_checkout_enabled && $this->is_platform_checkout_express_button_enabled ) ) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Initialize hooks.
 	 *
 	 * @return  void
@@ -60,11 +93,11 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		}
 
 		// Checks if WooPay is enabled.
-		$is_platform_checkout_eligible               = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		$is_platform_checkout_enabled                = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
-		$is_platform_checkout_express_button_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
+		$this->is_platform_checkout_eligible               = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
+		$this->is_platform_checkout_enabled                = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
+		$this->is_platform_checkout_express_button_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
 
-		if ( ! ( $is_platform_checkout_eligible && $is_platform_checkout_enabled && $is_platform_checkout_express_button_enabled ) ) {
+		if ( ! $this->is_woopay_enabled() ) {
 			return;
 		}
 
@@ -469,6 +502,10 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 
 		// Cart page, but not available in settings.
 		if ( $this->is_cart() && ! $this->is_available_at( 'cart' ) ) {
+			return false;
+		}
+
+		if ( $this->is_pay_for_order_page() ) {
 			return false;
 		}
 
