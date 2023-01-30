@@ -274,47 +274,47 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						</span>
 					</div>
 				</div>
-				<div
-					className={ `save-details-form form-row ${
-						isSaveDetailsChecked ? 'visible' : ''
-					}` }
-					data-testid="save-user-form"
-				>
-					<input
-						type="hidden"
-						name="platform_checkout_source_url"
-						value={ window.location.href }
-					/>
-					<input
-						type="hidden"
-						name="platform_checkout_viewport"
-						value={ `${ viewportWidth }x${ viewportHeight }` }
-					/>
-					<PhoneNumberInput
-						value={
-							null === phoneNumber
-								? getPhoneFieldValue()
-								: phoneNumber
-						}
-						onValueChange={ setPhoneNumber }
-						onValidationChange={ onPhoneValidationChange }
-						inputProps={ {
-							name:
-								'platform_checkout_user_phone_field[no-country-code]',
-						} }
-						isBlocksCheckout={ isBlocksCheckout }
-					/>
-					{ ! isPhoneValid && (
-						<p className="error-text">
-							{ __(
-								'Please enter a valid mobile phone number.',
-								'woocommerce-payments'
-							) }
-						</p>
-					) }
-					<AdditionalInformation />
-					<Agreement />
-				</div>
+				{ isSaveDetailsChecked && (
+					<div
+						className="save-details-form form-row"
+						data-testid="save-user-form"
+					>
+						<input
+							type="hidden"
+							name="platform_checkout_source_url"
+							value={ window.location.href }
+						/>
+						<input
+							type="hidden"
+							name="platform_checkout_viewport"
+							value={ `${ viewportWidth }x${ viewportHeight }` }
+						/>
+						<PhoneNumberInput
+							value={
+								null === phoneNumber
+									? getPhoneFieldValue()
+									: phoneNumber
+							}
+							onValueChange={ setPhoneNumber }
+							onValidationChange={ onPhoneValidationChange }
+							inputProps={ {
+								name:
+									'platform_checkout_user_phone_field[no-country-code]',
+							} }
+							isBlocksCheckout={ isBlocksCheckout }
+						/>
+						{ ! isPhoneValid && (
+							<p className="error-text">
+								{ __(
+									'Please enter a valid mobile phone number.',
+									'woocommerce-payments'
+								) }
+							</p>
+						) }
+						<AdditionalInformation />
+						<Agreement />
+					</div>
+				) }
 			</div>
 		</Container>
 	);

@@ -9,7 +9,6 @@ namespace WCPay\MultiCurrency\Compatibility;
 
 use WC_Payments_Features;
 use WCPay\MultiCurrency\MultiCurrency;
-use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Subscriptions Plugin and WCPay Subscriptions.
@@ -22,6 +21,13 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @var string
 	 */
 	public $switch_cart_item = '';
+
+	/**
+	 * If we are running through our filters.
+	 *
+	 * @var bool
+	 */
+	private $running_override_selected_currency_filters = false;
 
 	/**
 	 * Init the class.
@@ -142,7 +148,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 */
 	public function override_selected_currency( $return ) {
 		// If it's not false, return it.
-		if ( $return ) {
+		if ( $return || $this->running_override_selected_currency_filters ) {
 			return $return;
 		}
 
@@ -150,6 +156,16 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		if ( $subscription_renewal ) {
 			$order = wc_get_order( $subscription_renewal['subscription_renewal']['renewal_order_id'] );
 			return $order ? $order->get_currency() : $return;
+		}
+
+		// The running_override_selected_currency_filters property has been added here due to if it isn't, it will create an infinite loop of calls.
+		if ( isset( WC()->session ) && WC()->session->get( 'order_awaiting_payment' ) ) {
+			$this->running_override_selected_currency_filters = true;
+			$order = wc_get_order( WC()->session->get( 'order_awaiting_payment' ) );
+			$this->running_override_selected_currency_filters = false;
+			if ( $order && $this->order_contains_renewal( $order ) ) {
+				return $order->get_currency();
+			}
 		}
 
 		$switch_id = $this->get_subscription_switch_id_from_superglobal();
@@ -282,6 +298,20 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return false;
 		}
 		return wcs_cart_contains_renewal();
+	}
+
+	/**
+	 * Checks an order  to see if it contains a subscription product renewal.
+	 *
+	 * @param object $order Order object.
+	 *
+	 * @return bool The cart item containing the renewal as an array, else false.
+	 */
+	private function order_contains_renewal( $order ): bool {
+		if ( ! function_exists( 'wcs_order_contains_renewal' ) ) {
+			return false;
+		}
+		return wcs_order_contains_renewal( $order );
 	}
 
 	/**

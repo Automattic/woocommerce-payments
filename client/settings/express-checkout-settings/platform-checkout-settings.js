@@ -9,6 +9,7 @@ import {
 	CheckboxControl,
 	RadioControl,
 	TextControl,
+	Notice,
 } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 
@@ -18,14 +19,15 @@ import interpolateComponents from 'interpolate-components';
 import CardBody from '../card-body';
 import PlatformCheckoutFileUpload from './file-upload';
 import PlatformCheckoutPreview from './platform-checkout-preview';
+import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
 	usePlatformCheckoutStoreLogo,
-	usePlatformCheckoutButtonType,
-	usePlatformCheckoutButtonSize,
-	usePlatformCheckoutButtonTheme,
 	usePlatformCheckoutLocations,
+	usePaymentRequestButtonType,
+	usePaymentRequestButtonSize,
+	usePaymentRequestButtonTheme,
 } from 'wcpay/data';
 import { WoopayExpressCheckoutButton } from 'wcpay/checkout/platform-checkout/express-button/woopay-express-checkout-button';
 
@@ -129,9 +131,9 @@ const buttonThemeOptions = [
 ];
 
 const PlatformCheckoutSettings = ( { section } ) => {
-	const [ buttonType, setButtonType ] = usePlatformCheckoutButtonType();
-	const [ size, setSize ] = usePlatformCheckoutButtonSize();
-	const [ theme, setTheme ] = usePlatformCheckoutButtonTheme();
+	const [ buttonType, setButtonType ] = usePaymentRequestButtonType();
+	const [ size, setSize ] = usePaymentRequestButtonSize();
+	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
 	const [
 		isPlatformCheckoutEnabled,
 		updateIsPlatformCheckoutEnabled,
@@ -221,6 +223,68 @@ const PlatformCheckoutSettings = ( { section } ) => {
 								'woocommerce-payments'
 							) }
 						/>
+						<h4>
+							{ __(
+								'Enable WooPay on selected pages',
+								'woocommerce-payments'
+							) }
+						</h4>
+						<ul className="payment-request-settings__location">
+							<li>
+								<CheckboxControl
+									disabled={ ! isPlatformCheckoutEnabled }
+									checked={
+										isPlatformCheckoutEnabled &&
+										platformCheckoutLocations.includes(
+											'checkout'
+										)
+									}
+									onChange={ makeLocationChangeHandler(
+										'checkout'
+									) }
+									label={ __(
+										'Checkout',
+										'woocommerce-payments'
+									) }
+								/>
+							</li>
+							<li>
+								<CheckboxControl
+									disabled={ ! isPlatformCheckoutEnabled }
+									checked={
+										isPlatformCheckoutEnabled &&
+										platformCheckoutLocations.includes(
+											'product'
+										)
+									}
+									onChange={ makeLocationChangeHandler(
+										'product'
+									) }
+									label={ __(
+										'Product page',
+										'woocommerce-payments'
+									) }
+								/>
+							</li>
+							<li>
+								<CheckboxControl
+									disabled={ ! isPlatformCheckoutEnabled }
+									checked={
+										isPlatformCheckoutEnabled &&
+										platformCheckoutLocations.includes(
+											'cart'
+										)
+									}
+									onChange={ makeLocationChangeHandler(
+										'cart'
+									) }
+									label={ __(
+										'Cart',
+										'woocommerce-payments'
+									) }
+								/>
+							</li>
+						</ul>
 					</CardBody>
 				</Card>
 			) }
@@ -288,68 +352,27 @@ const PlatformCheckoutSettings = ( { section } ) => {
 			{ 'general' === section && (
 				<Card style={ { marginTop: 12 } }>
 					<CardBody>
-						<h4>
-							{ __(
-								'Show express checkouts on',
-								'woocommerce-payments'
-							) }
-						</h4>
-						<ul className="payment-request-settings__location">
-							<li>
-								<CheckboxControl
-									disabled={ ! isPlatformCheckoutEnabled }
-									checked={
-										isPlatformCheckoutEnabled &&
-										platformCheckoutLocations.includes(
-											'checkout'
-										)
-									}
-									onChange={ makeLocationChangeHandler(
-										'checkout'
-									) }
-									label={ __(
-										'Checkout',
-										'woocommerce-payments'
-									) }
+						<Notice
+							status="warning"
+							isDismissible={ false }
+							className="express-checkout__notice"
+						>
+							<span>
+								<NoticeOutlineIcon
+									style={ {
+										color: '#BD8600',
+										fill: 'currentColor',
+										marginBottom: '-5px',
+										marginRight: '16px',
+									} }
+									size={ 20 }
 								/>
-							</li>
-							<li>
-								<CheckboxControl
-									disabled={ ! isPlatformCheckoutEnabled }
-									checked={
-										isPlatformCheckoutEnabled &&
-										platformCheckoutLocations.includes(
-											'product'
-										)
-									}
-									onChange={ makeLocationChangeHandler(
-										'product'
-									) }
-									label={ __(
-										'Product page',
-										'woocommerce-payments'
-									) }
-								/>
-							</li>
-							<li>
-								<CheckboxControl
-									disabled={ ! isPlatformCheckoutEnabled }
-									checked={
-										isPlatformCheckoutEnabled &&
-										platformCheckoutLocations.includes(
-											'cart'
-										)
-									}
-									onChange={ makeLocationChangeHandler(
-										'cart'
-									) }
-									label={ __(
-										'Cart',
-										'woocommerce-payments'
-									) }
-								/>
-							</li>
-						</ul>
+								{ __(
+									'These settings will also apply to the Apple Pay/Google Pay buttons on your store.',
+									'woocommerce-payments'
+								) }
+							</span>
+						</Notice>
 						<h4>
 							{ __( 'Call to action', 'woocommerce-payments' ) }
 						</h4>

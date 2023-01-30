@@ -104,37 +104,39 @@ describe( 'CheckoutPageSaveUser', () => {
 	it( 'should render the save user form when checkbox is checked for classic checkout', () => {
 		render( <CheckoutPageSaveUser /> );
 
-		const saveUserForm = screen.getByTestId( 'save-user-form' );
 		const label = screen.getByLabelText(
 			'Save my information for a faster and secure checkout'
 		);
 
 		expect( label ).not.toBeChecked();
-		expect( saveUserForm.classList.contains( 'visible' ) ).toBe( false );
+		expect(
+			screen.queryByTestId( 'save-user-form' )
+		).not.toBeInTheDocument();
 
 		// click on the checkbox
 		userEvent.click( label );
 
 		expect( label ).toBeChecked();
-		expect( saveUserForm.classList.contains( 'visible' ) ).toBe( true );
+		expect( screen.queryByTestId( 'save-user-form' ) ).toBeInTheDocument();
 	} );
 
 	it( 'should render the save user form when checkbox is checked for blocks checkout', () => {
 		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
 
-		const saveUserForm = screen.getByTestId( 'save-user-form' );
 		const label = screen.getByLabelText(
 			'Save my information for a faster and secure checkout'
 		);
 
 		expect( label ).not.toBeChecked();
-		expect( saveUserForm.classList.contains( 'visible' ) ).toBe( false );
+		expect(
+			screen.queryByTestId( 'save-user-form' )
+		).not.toBeInTheDocument();
 
 		// click on the checkbox
 		userEvent.click( label );
 
 		expect( label ).toBeChecked();
-		expect( saveUserForm.classList.contains( 'visible' ) ).toBe( true );
+		expect( screen.queryByTestId( 'save-user-form' ) ).toBeInTheDocument();
 	} );
 
 	it( 'should not call `extensionCartUpdate` on classic checkout when checkbox is clicked', () => {
