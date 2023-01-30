@@ -22,6 +22,7 @@ use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
+use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
@@ -286,6 +287,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-upe-checkout.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-gateway.php';
+		include_once __DIR__ . '/payment-methods/class-upe-split-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
@@ -365,6 +367,7 @@ class WC_Payments {
 
 		self::$legacy_card_gateway = new CC_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, self::$failed_transaction_rate_limiter, self::$order_service );
 
+		$payment_methods        = [];
 		$payment_method_classes = [
 			CC_Payment_Method::class,
 			Bancontact_Payment_Method::class,
@@ -377,22 +380,20 @@ class WC_Payments {
 			Eps_Payment_Method::class,
 			Link_Payment_Method::class,
 		];
+		foreach ( $payment_method_classes as $payment_method_class ) {
+			$payment_method                               = new $payment_method_class( self::$token_service );
+			$payment_methods[ $payment_method->get_id() ] = $payment_method;
+		}
 		if ( WC_Payments_Features::is_upe_split_enabled() ) {
 			foreach ( $payment_method_classes as $class ) {
 				$payment_method = new $class( self::$token_service );
 				self::$upe_payment_method_map[ $payment_method->get_id() ]  = $payment_method;
-				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, self::$failed_transaction_rate_limiter, self::$order_service );
+				self::$upe_payment_gateway_map[ $payment_method->get_id() ] = new UPE_Split_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 			}
 
 			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
-			$payment_methods = [];
-			foreach ( $payment_method_classes as $payment_method_class ) {
-				$payment_method                               = new $payment_method_class( self::$token_service );
-				$payment_methods[ $payment_method->get_id() ] = $payment_method;
-			}
-
 			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		} else {
