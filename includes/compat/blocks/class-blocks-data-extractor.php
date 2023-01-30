@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Asset_Data_Registry_Wrapper
+ * Class Blocks_Data_Extractor
  *
  * @package WooCommerce\Payments
  */
