@@ -392,8 +392,9 @@ class WC_Payments {
 			}
 
 			self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
+			$card_payments_checkout     = new WC_Payments_Checkout( self::$legacy_card_gateway, self::$platform_checkout_util, self::$account, self::$customer_service );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
-		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
+		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			self::$card_gateway         = new UPE_Payment_Gateway( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_methods, self::$failed_transaction_rate_limiter, self::$order_service );
 			self::$wc_payments_checkout = new WC_Payments_UPE_Checkout( self::get_gateway(), self::$platform_checkout_util, self::$account, self::$customer_service );
 		} else {
