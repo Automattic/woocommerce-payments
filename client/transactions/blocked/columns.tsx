@@ -14,8 +14,6 @@ import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { formatExplicitCurrency } from 'utils/currency';
-import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
-import wcpayTracks from 'tracks';
 import { Authorization } from '../../types/authorizations';
 
 interface Column extends TableCardColumn {
@@ -28,7 +26,7 @@ const rowDataFallback: TableCardBodyColumn = {
 	display: null,
 };
 
-export const getRiskReviewListColumns = (): Column[] =>
+export const getBlockedListColumns = (): Column[] =>
 	[
 		{
 			key: 'created',
@@ -71,16 +69,9 @@ export const getRiskReviewListColumns = (): Column[] =>
 			visible: true,
 			isLeftAligned: true,
 		},
-		{
-			key: 'action',
-			label: '',
-			screenReaderLabel: '',
-			visible: true,
-			required: true,
-		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
-export const getRiskReviewListRowContent = (
+export const getBlockedListRowContent = (
 	data: Authorization
 ): Record< string, TableCardBodyColumn > => {
 	const riskLevel = <RiskLevel risk={ data.risk_level } />;
@@ -93,15 +84,6 @@ export const getRiskReviewListRowContent = (
 	const clickable = ( children: JSX.Element | string ) => (
 		<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 	);
-
-	const handleActionButtonClick = () => {
-		wcpayTracks.recordEvent(
-			'payments_transactions_risk_review_list_review_button_click',
-			{
-				payment_intent_id: data.payment_intent_id,
-			}
-		);
-	};
 
 	return {
 		status: {
@@ -126,23 +108,14 @@ export const getRiskReviewListRowContent = (
 			value: data.customer_name,
 			display: clickable( data.customer_name ),
 		},
-		action: {
-			display: (
-				<CaptureAuthorizationButton
-					orderId={ data.order_id }
-					paymentIntentId={ data.payment_intent_id }
-					onClick={ handleActionButtonClick }
-				/>
-			),
-		},
 	};
 };
 
-export const getRiskReviewListColumnsStructure = (
+export const getBlockedListColumnsStructure = (
 	data: Authorization,
 	columns: Column[]
 ): TableCardBodyColumn[] => {
-	const content = getRiskReviewListRowContent( data );
+	const content = getBlockedListRowContent( data );
 
 	return columns.map( ( { key } ) => content[ key ] || rowDataFallback );
 };

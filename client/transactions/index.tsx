@@ -30,6 +30,7 @@ import {
 } from 'wcpay/data';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import RiskReviewList from './risk-review';
+import BlockedList from './blocked';
 
 declare const window: any;
 
@@ -82,11 +83,16 @@ const tabsComponentMap = {
 	),
 	'review-page': (
 		<>
-			<TestModeNotice topic={ topics.riskReview } />
+			<TestModeNotice topic={ topics.riskReviewTransactions } />
 			<RiskReviewList />
 		</>
 	),
-	'blocked-page': <p>Blocked page</p>,
+	'blocked-page': (
+		<>
+			<TestModeNotice topic={ topics.blockedTransactions } />
+			<BlockedList />
+		</>
+	),
 };
 
 export const TransactionsPage = (): JSX.Element => {

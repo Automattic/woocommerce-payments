@@ -16,12 +16,12 @@ import Page from '../../components/page';
 import { formatExplicitCurrency } from 'utils/currency';
 import wcpayTracks from 'tracks';
 import {
-	getRiskReviewListColumns,
-	getRiskReviewListColumnsStructure,
+	getBlockedListColumns,
+	getBlockedListColumnsStructure,
 } from './columns';
 
-export const RiskReviewList = (): JSX.Element => {
-	const columnsToDisplay = getRiskReviewListColumns();
+export const BlockedList = (): JSX.Element => {
+	const columnsToDisplay = getBlockedListColumns();
 	const {
 		authorizationsSummary,
 		isLoading: isSummaryLoading,
@@ -30,7 +30,7 @@ export const RiskReviewList = (): JSX.Element => {
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 
 	const rows = authorizations.map( ( auth ) =>
-		getRiskReviewListColumnsStructure( auth, columnsToDisplay )
+		getBlockedListColumnsStructure( auth, columnsToDisplay )
 	);
 
 	let summary;
@@ -70,7 +70,7 @@ export const RiskReviewList = (): JSX.Element => {
 
 	useEffect( () => {
 		wcpayTracks.recordEvent( 'page_view', {
-			path: 'payments_transactions_risk_review',
+			path: 'payments_transactions_blocked',
 		} );
 	}, [] );
 
@@ -78,7 +78,7 @@ export const RiskReviewList = (): JSX.Element => {
 		<Page>
 			<TableCard
 				className="authorizations-list woocommerce-report-table has-search"
-				title={ __( 'Flagged transactions', 'woocommerce-payments' ) }
+				title={ __( 'Blocked transactions', 'woocommerce-payments' ) }
 				isLoading={ isLoading || isSummaryLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
 				totalRows={ totalRows }
@@ -92,4 +92,4 @@ export const RiskReviewList = (): JSX.Element => {
 	);
 };
 
-export default RiskReviewList;
+export default BlockedList;

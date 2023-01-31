@@ -43,8 +43,12 @@ export const topics = {
 		'Viewing test uncaptured transactions. To view live uncaptured transactions, disable test mode in WooCommerce Payments settings.',
 		'woocommerce-payments'
 	),
-	riskReview: __(
+	riskReviewTransactions: __(
 		'Viewing test on review transactions. To view live on review transactions, disable test mode in WooCommerce Payments settings.',
+		'woocommerce-payments'
+	),
+	blockedTransactions: __(
+		'Viewing test blocked transactions. To view live blocked transactions, disable test mode in WooCommerce Payments settings.',
 		'woocommerce-payments'
 	),
 };
