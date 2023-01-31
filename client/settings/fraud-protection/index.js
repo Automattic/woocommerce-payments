@@ -13,11 +13,10 @@ import { useState } from '@wordpress/element';
 import CardBody from '../card-body';
 import { useCurrentProtectionLevel, useCurrencies } from '../../data';
 import './style.scss';
-// import ExceedsDollarAmountRule from './components/exceeds-dollar-amount-rule';
-// import ProtectionLevelModalNotice from './components/protection-level-modal-notice';
 import {
 	ExceedsDollarAmountRule,
 	ProtectionLevelModalNotice,
+	FraudProtectionHelpText,
 } from './components';
 
 const ProtectionLevels = () => {
@@ -176,12 +175,7 @@ const ProtectionLevels = () => {
 								</Modal>
 							) }
 						</div>
-						<p className={ 'fraud-protection__text--help-text' }>
-							{ __(
-								"Standard protection: Provides a standard level of filtering that's suitable for most businesses.",
-								'woocommerce-payments'
-							) }
-						</p>
+						<FraudProtectionHelpText level="standard" />
 					</label>
 				</li>
 				<li>
@@ -351,13 +345,7 @@ const ProtectionLevels = () => {
 								</Modal>
 							) }
 						</div>
-						<p className={ 'fraud-protection__text--help-text' }>
-							{ __(
-								'High protection: Offers the highest level of filtering for stores, ' +
-									'but may catch some legitimate transactions.',
-								'woocommerce-payments'
-							) }
-						</p>
+						<FraudProtectionHelpText level="high" />
 					</label>
 				</li>
 			</ul>
