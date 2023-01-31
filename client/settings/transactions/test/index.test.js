@@ -10,6 +10,8 @@ import Transactions from '..';
 import {
 	useGetSavingError,
 	useAccountStatementDescriptor,
+	useAccountBusinessSupportEmail,
+	useAccountBusinessSupportPhone,
 	useManualCapture,
 	useSavedCards,
 	useCardPresentEligible,
@@ -17,15 +19,25 @@ import {
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
+	useAccountBusinessSupportEmail: jest.fn(),
+	useAccountBusinessSupportPhone: jest.fn(),
 	useManualCapture: jest.fn(),
 	useGetSavingError: jest.fn(),
 	useSavedCards: jest.fn(),
 	useCardPresentEligible: jest.fn(),
 } ) );
 
-describe( 'TransactionsAndDeposits', () => {
+describe( 'Settings - Transactions', () => {
 	beforeEach( () => {
 		useAccountStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
+		useAccountBusinessSupportEmail.mockReturnValue( [
+			'test@test.com',
+			jest.fn(),
+		] );
+		useAccountBusinessSupportPhone.mockReturnValue( [
+			'+12345678901',
+			jest.fn(),
+		] );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		useGetSavingError.mockReturnValue( null );
 		useSavedCards.mockReturnValue( [ false, jest.fn() ] );

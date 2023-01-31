@@ -27,7 +27,7 @@ const SupportPhoneInput = ( { onErrorMessage } ) => {
 
 	if ( ! isPhoneValid ) {
 		supportPhoneError = __(
-			'Please enter a valid mobile phone number.',
+			'Please enter a valid phone number.',
 			'woocommerce-payments'
 		);
 	}

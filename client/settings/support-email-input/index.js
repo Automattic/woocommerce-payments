@@ -43,7 +43,7 @@ const SupportEmailInput = ( { onErrorMessage } ) => {
 					'This may be visible on receipts, invoices, and automated emails from your store.',
 					'woocommerce-payments'
 				) }
-				label={ __( 'Support email address', 'woocommerce-payments' ) }
+				label={ __( 'Support email', 'woocommerce-payments' ) }
 				value={ supportEmail }
 				onChange={ setSupportEmail }
 				data-testid={ 'account-business-support-email-input' }
