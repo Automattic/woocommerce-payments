@@ -32,6 +32,8 @@ const PaymentMethod = ( {
 	onUncheckClick,
 	className,
 	isAllowingManualCapture,
+	required,
+	locked,
 } ) => {
 	const disabled = upeCapabilityStatuses.INACTIVE === status;
 	const { accountFees } = useContext( WCPaySettingsContext );
@@ -40,6 +42,11 @@ const PaymentMethod = ( {
 	const needsOverlay = isManualCaptureEnabled && ! isAllowingManualCapture;
 
 	const handleChange = ( newStatus ) => {
+		// If the payment method control is locked, reject any changes.
+		if ( locked ) {
+			return;
+		}
+
 		if ( newStatus ) {
 			return onCheckClick( id );
 		}
@@ -59,7 +66,7 @@ const PaymentMethod = ( {
 				<LoadableCheckboxControl
 					label={ label }
 					checked={ checked }
-					disabled={ disabled }
+					disabled={ disabled || locked }
 					onChange={ handleChange }
 					delayMsOnCheck={ 1500 }
 					delayMsOnUncheck={ 0 }
@@ -74,6 +81,13 @@ const PaymentMethod = ( {
 				<div className="payment-method__label-container">
 					<div className="payment-method__label">
 						{ label }
+						{ required && (
+							<span className="payment-method__required-label">
+								{ '(' +
+									__( 'Required', 'woocommerce-payments' ) +
+									')' }
+							</span>
+						) }
 						{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
 							<Tooltip
 								content={ __(
