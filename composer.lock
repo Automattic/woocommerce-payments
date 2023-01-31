@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "41836a9d944c0ebfae18044da0409615",
+    "content-hash": "ee0e616f719539b151c9c42e436fc31f",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1060,16 +1060,16 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "5.1.0",
+            "version": "5.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "121ef4b833aa9ae47e91e22389fca8d30057deba"
+                "reference": "d37bd4db47ccaf156fc57b4dc61761f9ab56d686"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/121ef4b833aa9ae47e91e22389fca8d30057deba",
-                "reference": "121ef4b833aa9ae47e91e22389fca8d30057deba",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/d37bd4db47ccaf156fc57b4dc61761f9ab56d686",
+                "reference": "d37bd4db47ccaf156fc57b4dc61761f9ab56d686",
                 "shasum": ""
             },
             "require": {
@@ -1110,10 +1110,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/5.1.0",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/5.3.0",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2022-11-24T01:28:40+00:00"
+            "time": "2023-01-27T00:00:35+00:00"
         }
     ],
     "packages-dev": [
@@ -6581,5 +6581,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.2.0"
 }

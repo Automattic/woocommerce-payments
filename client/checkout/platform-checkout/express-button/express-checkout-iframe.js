@@ -3,14 +3,14 @@
  */
 import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
+import { getTargetElement, validateEmail } from '../utils';
 import wcpayTracks from 'tracks';
 
-export const expressCheckoutIframe = async ( api ) => {
+export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
+	const platformCheckoutEmailInput = await getTargetElement( emailSelector );
 	let userEmail = '';
 
-	const spinner = document.createElement( 'div' );
 	const parentDiv = document.body;
-	spinner.classList.add( 'wc-block-components-spinner' );
 
 	// Make the otp iframe wrapper.
 	const iframeWrapper = document.createElement( 'div' );
@@ -101,13 +101,51 @@ export const expressCheckoutIframe = async ( api ) => {
 	// Add the iframe to the wrapper.
 	iframeWrapper.insertBefore( iframe, null );
 
-	// Error message to display when there's an error contacting WooPay.
-	const errorMessage = document.createElement( 'div' );
-	errorMessage.style[ 'white-space' ] = 'normal';
-	errorMessage.textContent = __(
-		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
-		'woocommerce-payments'
-	);
+	const showErrorMessage = () => {
+		// Set the notice text.
+		const errorMessage = __(
+			'WooPay is unavailable at this time. Sorry for the inconvenience.',
+			'woocommerce-payments'
+		);
+
+		// Handle Blocks Cart and Checkout notices.
+		if ( wcSettings.wcBlocksConfig && 'product' !== context ) {
+			// This handles adding the error notice to the cart page.
+			wp.data
+				.dispatch( 'core/notices' )
+				?.createNotice( 'error', errorMessage, {
+					context: `wc/${ context }`,
+				} );
+		} else {
+			// We're either on a shortcode cart/checkout or single product page.
+			fetch( getConfig( 'ajaxUrl' ), {
+				method: 'POST',
+				body: new URLSearchParams( {
+					action: 'woopay_express_checkout_button_show_error_notice',
+					_ajax_nonce: getConfig( 'platformCheckoutButtonNonce' ),
+					context,
+					message: errorMessage,
+				} ),
+			} )
+				.then( ( response ) => response.json() )
+				.then( ( response ) => {
+					if ( response.success ) {
+						// We need to manually add the notice to the page.
+						const noticesWrapper = document.querySelector(
+							'.woocommerce-notices-wrapper'
+						);
+						const wrapper = document.createElement( 'div' );
+						wrapper.innerHTML = response.data.notice;
+						noticesWrapper.insertBefore( wrapper, null );
+
+						noticesWrapper.scrollIntoView( {
+							behavior: 'smooth',
+							block: 'center',
+						} );
+					}
+				} );
+		}
+	};
 
 	const closeIframe = () => {
 		window.removeEventListener( 'resize', getWindowSize );
@@ -121,14 +159,24 @@ export const expressCheckoutIframe = async ( api ) => {
 
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
-	const openIframe = ( email ) => {
+	const openIframe = ( email = '' ) => {
+		// check and return if another otp iframe is already open.
+		if ( document.querySelector( '.platform-checkout-otp-iframe' ) ) {
+			return;
+		}
+
 		const urlParams = new URLSearchParams();
-		urlParams.append( 'email', email );
+		urlParams.append( 'testMode', getConfig( 'testMode' ) );
 		urlParams.append(
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
+
+		if ( email && validateEmail( email ) ) {
+			userEmail = email;
+			urlParams.append( 'email', email );
+		}
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
@@ -141,10 +189,6 @@ export const expressCheckoutIframe = async ( api ) => {
 
 		// Focus the iframe.
 		iframe.focus();
-	};
-
-	const showErrorMessage = () => {
-		parentDiv.insertBefore( errorMessage );
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
@@ -215,5 +259,5 @@ export const expressCheckoutIframe = async ( api ) => {
 		}
 	} );
 
-	openIframe();
+	openIframe( platformCheckoutEmailInput?.value );
 };

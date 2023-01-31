@@ -94,12 +94,10 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		WC_Payments_Order_Service $order_service
 	) {
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $failed_transaction_rate_limiter, $order_service );
-		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
-		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
-		$this->title              = __( 'WooCommerce Payments', 'woocommerce-payments' );
-		$this->description        = '';
-		$this->checkout_title     = __( 'Popular payment methods', 'woocommerce-payments' );
-		$this->payment_methods    = $payment_methods;
+		$this->title           = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		$this->description     = '';
+		$this->checkout_title  = __( 'Popular payment methods', 'woocommerce-payments' );
+		$this->payment_methods = $payment_methods;
 
 		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this, 'create_payment_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this, 'update_payment_intent_ajax' ] );
@@ -463,13 +461,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
 
 			if ( $payment_needed ) {
-				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
-					throw new Process_Payment_Exception(
-						__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
-						'fraud_prevention_enabled'
-					);
+				// Check if session exists before instantiating Fraud_Prevention_Service.
+				if ( WC()->session ) {
+					$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+					// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
+						throw new Process_Payment_Exception(
+							__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
+							'fraud_prevention_enabled'
+						);
+					}
 				}
 
 				if ( $this->failed_transaction_rate_limiter->is_limited() ) {

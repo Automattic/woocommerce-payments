@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: This fix is in relation to the WooPay express checkout button which is currently behind a feature flag and is not public.
+
+

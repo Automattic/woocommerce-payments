@@ -66,6 +66,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				buttonSettings={ buttonSettings }
 				api={ api }
 				isProductPage={ false }
+				emailSelector="#email"
 			/>
 		);
 
@@ -81,6 +82,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				buttonSettings={ buttonSettings }
 				api={ api }
 				isProductPage={ false }
+				emailSelector="#email"
 			/>
 		);
 
@@ -89,7 +91,11 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 		userEvent.click( expressButton );
 
-		expect( expressCheckoutIframe ).toHaveBeenCalledWith( api );
+		expect( expressCheckoutIframe ).toHaveBeenCalledWith(
+			api,
+			buttonSettings.context,
+			'#email'
+		);
 	} );
 
 	test( 'should not call `expressCheckoutIframe` on button click when `isPreview` is true', () => {
@@ -99,6 +105,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				buttonSettings={ buttonSettings }
 				api={ api }
 				isProductPage={ false }
+				emailSelector="#email"
 			/>
 		);
 
@@ -118,6 +125,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					buttonSettings={ buttonSettings }
 					api={ api }
 					isProductPage={ true }
+					emailSelector="#email"
 				/>
 			);
 
@@ -139,6 +147,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					buttonSettings={ buttonSettings }
 					api={ api }
 					isProductPage={ true }
+					emailSelector="#email"
 				/>
 			);
 
@@ -159,6 +168,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					buttonSettings={ buttonSettings }
 					api={ api }
 					isProductPage={ true }
+					emailSelector="#email"
 				/>
 			);
 
@@ -171,7 +181,11 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			expect( mockAddToCart ).toHaveBeenCalled();
 
 			await waitFor( () => {
-				expect( expressCheckoutIframe ).toHaveBeenCalledWith( api );
+				expect( expressCheckoutIframe ).toHaveBeenCalledWith(
+					api,
+					buttonSettings.context,
+					'#email'
+				);
 			} );
 		} );
 	} );
