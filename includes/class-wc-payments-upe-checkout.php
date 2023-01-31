@@ -183,10 +183,24 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 					]
 				),
 				'icon'                 => $payment_method->get_icon(),
+				'showSaveOption'       => $this->should_upe_payment_method_show_save_option( $payment_method_id ),
 			];
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Checks if the save option for a payment method should be displayed or not.
+	 *
+	 * @param string $payment_method_id Payment method ID, e.g. sepa_debit or bancontact.
+	 * @return bool - True if the payment method is SEPA and the saved cards feature is enabled for the gateway and there is no subscription item in the cart, false otherwise.
+	 */
+	private function should_upe_payment_method_show_save_option( $payment_method_id ) {
+		if ( Payment_Method::SEPA === $payment_method_id ) {
+			return $this->gateway->is_saved_cards_enabled() && ! $this->gateway->is_subscription_item_in_cart();
+		}
+		return false;
 	}
 
 	/**
