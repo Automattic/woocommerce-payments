@@ -160,6 +160,9 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email = '' ) => {
+		const viewportWidth = window.document.documentElement.clientWidth;
+		const viewportHeight = window.document.documentElement.clientHeight;
+
 		const urlParams = new URLSearchParams();
 		urlParams.append(
 			'needsHeader',
@@ -171,6 +174,14 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			userEmail = email;
 			urlParams.append( 'email', email );
 		}
+		urlParams.append( 'is_blocks', !! wcSettings.wcBlocksConfig );
+		urlParams.append( 'is_express', 'true' );
+		urlParams.append( 'express_context', context );
+		urlParams.append( 'source_url', window.location.href );
+		urlParams.append(
+			'viewport',
+			`${ viewportWidth }x${ viewportHeight }`
+		);
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
