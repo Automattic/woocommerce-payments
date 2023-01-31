@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Card, Modal } from '@wordpress/components';
+import { Card } from '@wordpress/components';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { useState } from '@wordpress/element';
 
@@ -11,12 +11,12 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import CardBody from '../card-body';
-import { useCurrentProtectionLevel, useCurrencies } from '../../data';
+import { useCurrentProtectionLevel, useCurrencies } from 'wcpay/data';
 import './style.scss';
 import {
-	ExceedsDollarAmountRule,
-	ProtectionLevelModalNotice,
 	FraudProtectionHelpText,
+	HighFraudProtectionModal,
+	StandardFraudProtectionModal,
 } from './components';
 
 const ProtectionLevels = () => {
@@ -72,108 +72,12 @@ const ProtectionLevels = () => {
 								title="Standard level help icon"
 								onClick={ () => setStandardModalOpen( true ) }
 							/>
-							{ isStandardModalOpen && (
-								<Modal
-									title={ __(
-										'Standard filter level',
-										'woocommerce-payments'
-									) }
-									isDismissible={ true }
-									shouldCloseOnClickOutside={ true }
-									shouldCloseOnEsc={ true }
-									onRequestClose={ () =>
-										setStandardModalOpen( false )
-									}
-									className="fraud-protection-level-modal"
-								>
-									<div className="components-modal__body--fraud-protection">
-										<ProtectionLevelModalNotice level="standard" />
-										<p>
-											{ __(
-												'Payments will be ',
-												'woocommerce-payments'
-											) }
-											<span className="component-modal__text--blocked">
-												{ __(
-													'blocked ',
-													'woocommerce-payments'
-												) }
-											</span>
-											{ __(
-												'if: ',
-												'woocommerce-payments'
-											) }
-										</p>
-										<ul>
-											<li>
-												{ __(
-													'The billing address does not match what is on file with the card issuer.',
-													'woocommerce-payments'
-												) }
-											</li>
-										</ul>
-										<p>
-											{ __(
-												'Payments will be ',
-												'woocommerce-payments'
-											) }
-											<span className="component-modal__text--review">
-												{ __(
-													'authorized and held for review ',
-													'woocommerce-payments'
-												) }
-											</span>
-											{ __(
-												'if:',
-												'woocommerce-payments'
-											) }
-										</p>
-										<ul>
-											<li>
-												{ __(
-													"The card's issuing bank cannot verify the CVV.",
-													'woocommerce-payments'
-												) }
-											</li>
-											<li>
-												{ __(
-													'An order originates from an IP address outside your country.',
-													'woocommerce-payments'
-												) }
-											</li>
-											<ExceedsDollarAmountRule
-												level="standard"
-												storeCurrency={ storeCurrency }
-											/>
-											<li>
-												{ __(
-													'The same card or IP address submits',
-													'woocommerce-payments'
-												) }{ ' ' }
-												<strong>
-													{ __( '5 orders' ) }
-												</strong>{ ' ' }
-												{ __( 'within' ) }{ ' ' }
-												<strong>
-													{ __( '72 hours.' ) }
-												</strong>
-											</li>
-										</ul>
-										<Button
-											className="component-modal__button--confirm"
-											onClick={ () =>
-												setStandardModalOpen( false )
-											}
-											isTertiary
-										>
-											{ __(
-												'Got it',
-												'woocommerce-payments'
-											) }
-										</Button>
-									</div>
-								</Modal>
-							) }
+							<StandardFraudProtectionModal
+								level="standard"
+								isStandardModalOpen={ isStandardModalOpen }
+								setStandardModalOpen={ setStandardModalOpen }
+								storeCurrency={ storeCurrency }
+							/>
 						</div>
 						<FraudProtectionHelpText level="standard" />
 					</label>
@@ -199,151 +103,12 @@ const ProtectionLevels = () => {
 								title="High level help icon"
 								onClick={ () => setHighModalOpen( true ) }
 							/>
-							{ isHighModalOpen && (
-								<Modal
-									title={ __(
-										'High filter level',
-										'woocommerce-payments'
-									) }
-									isDismissible={ true }
-									shouldCloseOnClickOutside={ true }
-									shouldCloseOnEsc={ true }
-									onRequestClose={ () =>
-										setHighModalOpen( false )
-									}
-									className="fraud-protection-level-modal"
-								>
-									<div className="components-modal__body--fraud-protection">
-										<ProtectionLevelModalNotice level="high" />
-										<p>
-											{ __(
-												'Payments will be ',
-												'woocommerce-payments'
-											) }
-											<span className="component-modal__text--blocked">
-												{ __(
-													'blocked ',
-													'woocommerce-payments'
-												) }
-											</span>
-											{ __(
-												'if: ',
-												'woocommerce-payments'
-											) }
-										</p>
-										<ul>
-											<li>
-												{ __(
-													'The billing address does not match what is on file with the card issuer.',
-													'woocommerce-payments'
-												) }
-											</li>
-											<li>
-												{ __(
-													'An order originates from an IP address outside your country',
-													'woocommerce-payments'
-												) }
-											</li>
-											<ExceedsDollarAmountRule
-												level="high"
-												storeCurrency={ storeCurrency }
-											/>
-											<li>
-												{ __(
-													'The same card or IP address submits ',
-													'woocommerce-payments'
-												) }{ ' ' }
-												<strong>
-													{ __(
-														'5 orders ',
-														'woocommerce-payments'
-													) }
-												</strong>{ ' ' }
-												{ __(
-													'within ',
-													'woocommerce-payments'
-												) }{ ' ' }
-												<strong>
-													{ __(
-														'72 hours.',
-														'woocommerce-payments'
-													) }
-												</strong>
-											</li>
-										</ul>
-										<p>
-											{ __(
-												'Payments will be ',
-												'woocommerce-payments'
-											) }
-											<span className="component-modal__text--review">
-												{ __(
-													'authorized and held for review ',
-													'woocommerce-payments'
-												) }
-											</span>
-											{ __(
-												'if:',
-												'woocommerce-payments'
-											) }
-										</p>
-										<ul>
-											<li>
-												{ __(
-													"The card's issuing bank cannot verify the CVV.",
-													'woocommerce-payments'
-												) }
-											</li>
-											<li>
-												{ __(
-													'An order has less than ',
-													'woocommerce-payments'
-												) }{ ' ' }
-												<strong>
-													{ __(
-														'2 items ',
-														'woocommerce-payments'
-													) }
-												</strong>{ ' ' }
-												{ __(
-													'or more than ',
-													'woocommerce-payments'
-												) }{ ' ' }
-												<strong>
-													{ __(
-														'10 items.',
-														'woocommerce-payments'
-													) }
-												</strong>
-											</li>
-											<li>
-												{ __(
-													"The shipping and billing addresses don't match.",
-													'woocommerce-payments'
-												) }
-											</li>
-											<li>
-												{ __(
-													'An order is shipping or billing to a non-domestic address.',
-													'woocommerce-payments'
-												) }
-											</li>
-										</ul>
-										<Button
-											className="component-modal__button--confirm"
-											onClick={ () =>
-												setHighModalOpen( false )
-											}
-											isTertiary
-										>
-											{ __(
-												'Got it',
-												'woocommerce-payments'
-											) }
-										</Button>
-									</div>
-								</Modal>
-							) }
+							<HighFraudProtectionModal
+								level="high"
+								isHighModalOpen={ isHighModalOpen }
+								setHighModalOpen={ setHighModalOpen }
+								storeCurrency={ storeCurrency }
+							/>
 						</div>
 						<FraudProtectionHelpText level="high" />
 					</label>
