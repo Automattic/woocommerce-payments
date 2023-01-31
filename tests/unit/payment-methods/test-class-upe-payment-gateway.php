@@ -1958,6 +1958,62 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'][ Payment_Method::SEPA ]['showSaveOption'], false );
 	}
 
+	public function test_no_save_option_for_sepa_due_to_saved_cards_disabled() {
+		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_payment_methods[ Payment_Method::SEPA ],
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethods(
+				[
+					'get_payment_method_ids_enabled_at_checkout',
+					'wc_payments_get_payment_method_by_id',
+					'is_saved_cards_enabled',
+					'is_subscription_item_in_cart',
+				]
+			)
+			->getMock();
+
+		// saved cards disabled.
+		$mock_upe_gateway
+			->method( 'is_saved_cards_enabled' )
+			->will(
+				$this->returnValue( false )
+			);
+
+		// no subscription item in cart.
+		$mock_upe_gateway
+			->method( 'is_subscription_item_in_cart' )
+			->will(
+				$this->returnValue( false )
+			);
+
+		$mock_upe_gateway->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ Payment_Method::SEPA ] );
+
+		$mock_upe_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->with( Payment_Method::SEPA )
+			->willReturn( $this->mock_payment_methods[ Payment_Method::SEPA ] );
+
+		$upe_checkout = new WC_Payments_UPE_Checkout(
+			$mock_upe_gateway,
+			$this->mock_platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
+
+		$this->assertSame( $upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'][ Payment_Method::SEPA ]['showSaveOption'], false );
+	}
+
 	public function test_save_option_for_sepa_debit() {
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
 			->setConstructorArgs(
