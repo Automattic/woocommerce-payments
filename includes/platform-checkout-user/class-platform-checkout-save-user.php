@@ -42,6 +42,10 @@ class Platform_Checkout_Save_User {
 			return;
 		}
 
+		if ( ! $this->platform_checkout_util->is_country_available( $gateways['woocommerce_payments'] ) ) {
+			return;
+		}
+
 		$script_src_url    = plugins_url( 'dist/platform-checkout.js', WCPAY_PLUGIN_FILE );
 		$style_url         = plugins_url( 'dist/platform-checkout.css', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/platform-checkout.asset.php';

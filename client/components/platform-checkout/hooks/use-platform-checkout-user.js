@@ -6,13 +6,11 @@ import { useEffect, useRef, useState } from 'react';
 // hook for handling API calls to get and create platform checkout user.
 const usePlatformCheckoutUser = () => {
 	const [ isRegisteredUser, setIsRegisteredUser ] = useState( false );
-	const [ isCountryAvailable, setIsCountryAvailable ] = useState( false );
 	const windowRef = useRef( window );
 
 	useEffect( () => {
 		const handlePlatformCheckoutUserCheck = ( e ) => {
 			setIsRegisteredUser( e.detail.isRegisteredUser );
-			setIsCountryAvailable( e.detail.isCountryAvailable );
 		};
 
 		const currentWindowRef = windowRef.current;
@@ -29,7 +27,7 @@ const usePlatformCheckoutUser = () => {
 		};
 	}, [] );
 
-	return [ isRegisteredUser, isCountryAvailable ];
+	return isRegisteredUser;
 };
 
 export default usePlatformCheckoutUser;
