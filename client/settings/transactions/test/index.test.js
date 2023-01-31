@@ -107,4 +107,12 @@ describe( 'Settings - Transactions', () => {
 			)
 		).toBeInTheDocument();
 	} );
+
+	it( 'display support email and phone inputs', async () => {
+		render( <Transactions /> );
+		expect(
+			screen.getByLabelText( 'Support phone number' )
+		).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Support email' ) ).toBeInTheDocument();
+	} );
 } );
