@@ -21,13 +21,15 @@ import {
 } from './columns';
 
 export const RiskReviewList = (): JSX.Element => {
+	const query = getQuery();
 	const columnsToDisplay = getRiskReviewListColumns();
+
 	const {
 		authorizationsSummary,
 		isLoading: isSummaryLoading,
-	} = useAuthorizationsSummary( getQuery() );
+	} = useAuthorizationsSummary( query );
 
-	const { authorizations, isLoading } = useAuthorizations( getQuery() );
+	const { authorizations, isLoading } = useAuthorizations( query );
 
 	const rows = authorizations.map( ( auth ) =>
 		getRiskReviewListColumnsStructure( auth, columnsToDisplay )
@@ -44,7 +46,7 @@ export const RiskReviewList = (): JSX.Element => {
 	if ( isAuthorizationsSummaryLoaded ) {
 		summary = [
 			{
-				label: __( 'authorization(s)', 'woocommerce-payments' ),
+				label: __( 'transactions(s)', 'woocommerce-payments' ),
 				value: String( authorizationsSummary.count ),
 			},
 		];
@@ -57,7 +59,7 @@ export const RiskReviewList = (): JSX.Element => {
 		) {
 			// Only show the total if there is one currency available
 			summary.push( {
-				label: __( 'total', 'woocommerce-payments' ),
+				label: __( 'pending', 'woocommerce-payments' ),
 				value: `${ formatExplicitCurrency(
 					// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
 					// that so we remove the `undefined` in the type manually.

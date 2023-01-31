@@ -44,7 +44,7 @@ export const BlockedList = (): JSX.Element => {
 	if ( isAuthorizationsSummaryLoaded ) {
 		summary = [
 			{
-				label: __( 'authorization(s)', 'woocommerce-payments' ),
+				label: __( 'transactions(s)', 'woocommerce-payments' ),
 				value: String( authorizationsSummary.count ),
 			},
 		];
@@ -57,7 +57,7 @@ export const BlockedList = (): JSX.Element => {
 		) {
 			// Only show the total if there is one currency available
 			summary.push( {
-				label: __( 'total', 'woocommerce-payments' ),
+				label: __( 'blocked', 'woocommerce-payments' ),
 				value: `${ formatExplicitCurrency(
 					// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
 					// that so we remove the `undefined` in the type manually.
