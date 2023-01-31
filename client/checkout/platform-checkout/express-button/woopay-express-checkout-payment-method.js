@@ -24,12 +24,14 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 		<WoopayExpressCheckoutButton
 			buttonSettings={ getConfig( 'platformCheckoutButton' ) }
 			api={ api }
+			emailSelector="#email"
 		/>
 	),
 	edit: (
 		<WoopayExpressCheckoutButton
 			buttonSettings={ getConfig( 'platformCheckoutButton' ) }
 			isPreview={ true }
+			emailSelector="#email"
 		/>
 	),
 	canMakePayment: () => true,

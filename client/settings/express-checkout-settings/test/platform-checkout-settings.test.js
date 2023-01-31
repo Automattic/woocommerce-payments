@@ -14,9 +14,9 @@ import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
 	usePlatformCheckoutStoreLogo,
-	usePlatformCheckoutButtonType,
-	usePlatformCheckoutButtonSize,
-	usePlatformCheckoutButtonTheme,
+	usePaymentRequestButtonType,
+	usePaymentRequestButtonSize,
+	usePaymentRequestButtonTheme,
 	usePlatformCheckoutLocations,
 } from '../../../data';
 
@@ -24,9 +24,9 @@ jest.mock( '../../../data', () => ( {
 	usePlatformCheckoutEnabledSettings: jest.fn(),
 	usePlatformCheckoutCustomMessage: jest.fn(),
 	usePlatformCheckoutStoreLogo: jest.fn(),
-	usePlatformCheckoutButtonType: jest.fn(),
-	usePlatformCheckoutButtonSize: jest.fn(),
-	usePlatformCheckoutButtonTheme: jest.fn(),
+	usePaymentRequestButtonType: jest.fn(),
+	usePaymentRequestButtonSize: jest.fn(),
+	usePaymentRequestButtonTheme: jest.fn(),
 	usePlatformCheckoutLocations: jest.fn(),
 } ) );
 
@@ -48,18 +48,18 @@ const getMockPlatformCheckoutStoreLogo = (
 	updatePlatformCheckoutStoreLogoHandler
 ) => [ message, updatePlatformCheckoutStoreLogoHandler ];
 
-const getMockPlatformCheckoutButtonType = (
+const getMockPaymentRequestButtonType = (
 	message,
-	updatePlatformCheckoutButtonTypeHandler
-) => [ message, updatePlatformCheckoutButtonTypeHandler ];
-const getMockPlatformCheckoutButtonSize = (
+	updatePaymentRequestButtonTypeHandler
+) => [ message, updatePaymentRequestButtonTypeHandler ];
+const getMockPaymentRequestButtonSize = (
 	message,
-	updatePlatformCheckoutButtonSizeHandler
-) => [ message, updatePlatformCheckoutButtonSizeHandler ];
-const getMockPlatformCheckoutButtonTheme = (
+	updatePaymentRequestButtonSizeHandler
+) => [ message, updatePaymentRequestButtonSizeHandler ];
+const getMockPaymentRequestButtonTheme = (
 	message,
-	updatePlatformCheckoutButtonThemeHandler
-) => [ message, updatePlatformCheckoutButtonThemeHandler ];
+	updatePaymentRequestButtonThemeHandler
+) => [ message, updatePaymentRequestButtonThemeHandler ];
 const getMockPlatformCheckoutLocations = (
 	message,
 	updatePlatformCheckoutLocationsHandler
@@ -79,16 +79,16 @@ describe( 'PlatformCheckoutSettings', () => {
 			getMockPlatformCheckoutStoreLogo( '', jest.fn() )
 		);
 
-		usePlatformCheckoutButtonType.mockReturnValue(
-			getMockPlatformCheckoutButtonType( [ 'buy' ], jest.fn() )
+		usePaymentRequestButtonType.mockReturnValue(
+			getMockPaymentRequestButtonType( [ 'buy' ], jest.fn() )
 		);
 
-		usePlatformCheckoutButtonSize.mockReturnValue(
-			getMockPlatformCheckoutButtonSize( [ 'default' ], jest.fn() )
+		usePaymentRequestButtonSize.mockReturnValue(
+			getMockPaymentRequestButtonSize( [ 'default' ], jest.fn() )
 		);
 
-		usePlatformCheckoutButtonTheme.mockReturnValue(
-			getMockPlatformCheckoutButtonTheme( [ 'dark' ], jest.fn() )
+		usePaymentRequestButtonTheme.mockReturnValue(
+			getMockPaymentRequestButtonTheme( [ 'dark' ], jest.fn() )
 		);
 
 		usePlatformCheckoutLocations.mockReturnValue(

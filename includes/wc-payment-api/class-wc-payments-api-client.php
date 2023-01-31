@@ -2302,7 +2302,7 @@ class WC_Payments_API_Client {
 	private function maybe_act_on_fraud_prevention( string $error_code ) {
 		// Might be flagged by Stripe Radar or WCPay card testing prevention services.
 		$is_fraudulent = 'fraudulent' === $error_code || 'wcpay_card_testing_prevention' === $error_code;
-		if ( $is_fraudulent ) {
+		if ( $is_fraudulent && WC()->session ) {
 			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 			if ( $fraud_prevention_service->is_enabled() ) {
 				$fraud_prevention_service->regenerate_token();

@@ -340,6 +340,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$input_data                 = [ 'pause_collection' => [ 'behavior' => 'void' ] ];
 
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, $mock_wcpay_subscription_id );
+		$mock_subscription->payment_method = 'woocommerce_payments';
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_subscription' )
