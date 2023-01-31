@@ -17,6 +17,7 @@ import { formatExplicitCurrency } from 'utils/currency';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import wcpayTracks from 'tracks';
 import { Authorization } from '../../types/authorizations';
+import TransactionStatusChip from 'wcpay/components/transaction-status-chip';
 
 interface Column extends TableCardColumn {
 	key: 'created' | 'amount' | 'customer' | 'risk_level' | 'status';
@@ -106,7 +107,9 @@ export const getRiskReviewListRowContent = (
 	return {
 		status: {
 			value: ( data as any ).status,
-			display: ( data as any ).status,
+			display: (
+				<TransactionStatusChip status={ ( data as any ).status } />
+			),
 		},
 		created: {
 			value: formattedCreatedDate,

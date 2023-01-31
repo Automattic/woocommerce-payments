@@ -15,6 +15,7 @@ import ClickableCell from 'components/clickable-cell';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { formatExplicitCurrency } from 'utils/currency';
 import { Authorization } from '../../types/authorizations';
+import TransactionStatusChip from '../../components/transaction-status-chip';
 
 interface Column extends TableCardColumn {
 	key: 'created' | 'amount' | 'customer' | 'risk_level' | 'status';
@@ -88,7 +89,9 @@ export const getBlockedListRowContent = (
 	return {
 		status: {
 			value: ( data as any ).status,
-			display: ( data as any ).status,
+			display: (
+				<TransactionStatusChip status={ ( data as any ).status } />
+			),
 		},
 		created: {
 			value: formattedCreatedDate,
