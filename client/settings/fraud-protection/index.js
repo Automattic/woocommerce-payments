@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React from 'react';
-import { sprintf, __ } from '@wordpress/i18n';
-import { Button, Card, Modal, Notice } from '@wordpress/components';
+import { __ } from '@wordpress/i18n';
+import { Button, Card, Modal } from '@wordpress/components';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { useState } from '@wordpress/element';
 
@@ -12,111 +12,19 @@ import { useState } from '@wordpress/element';
  */
 import CardBody from '../card-body';
 import { useCurrentProtectionLevel, useCurrencies } from '../../data';
-import TipIcon from 'wcpay/icons';
 import './style.scss';
-
-const ExceedsDollarAmountRuleUSDStore = ( props ) => {
-	if ( 'high' === props.level ) {
-		return (
-			<li>
-				{ __( 'An order exceeds ', 'woocommerce-payments' ) }{ ' ' }
-				<strong>{ __( '$1,000.00.', 'woocommerce-payments' ) }</strong>
-			</li>
-		);
-	}
-
-	return (
-		<li>
-			{ __( 'An order exceeds', 'woocommerce-payments' ) }{ ' ' }
-			<strong>{ __( '$1,000.00', 'woocommerce-payments' ) } </strong>
-			{ __( 'or', 'woocommerce-payments' ) }{ ' ' }
-			<strong>{ __( '10 items.', 'woocommerce-payments' ) }</strong>
-		</li>
-	);
-};
-
-const ExceedsDollarAmountRuleNotUSDStore = ( props ) => {
-	if ( 'high' === props.level ) {
-		return (
-			<li>
-				{ __(
-					'An order exceeds the equivalent of',
-					'woocommerce-payments'
-				) }{ ' ' }
-				<strong>
-					{ __( '$1,000.00 USD', 'woocommerce-payments' ) }
-				</strong>{ ' ' }
-				{ sprintf(
-					__( 'in %s.', 'woocommerce-payments' ),
-					props.defaultCurrency
-				) }
-			</li>
-		);
-	}
-
-	return (
-		<li>
-			{ __(
-				'An order exceeds the equivalent of',
-				'woocommerce-payments'
-			) }{ ' ' }
-			<strong>{ __( '$1,000.00 USD', 'woocommerce-payments' ) } </strong>{ ' ' }
-			{ sprintf(
-				__( 'in %s', 'woocommerce-payments' ),
-				props.defaultCurrency
-			) }{ ' ' }
-			{ __( 'or', 'woocommerce-payments' ) }{ ' ' }
-			<strong>{ __( '10 items.', 'woocommerce-payments' ) }</strong>
-		</li>
-	);
-};
-
-const ProtectionLevelModalNotice = ( props ) => {
-	if ( 'high' === props.level ) {
-		return (
-			<Notice
-				className="component-notice--is-info"
-				status="info"
-				isDismissible={ false }
-			>
-				<div className="component-notice__content--flex">
-					<TipIcon className="component-notice__icon" />
-					<p>
-						{ __(
-							'Offers the highest level of filtering for stores, but may catch some legitimate transactions',
-							'woocommerce-payments'
-						) }
-					</p>
-				</div>
-			</Notice>
-		);
-	}
-
-	return (
-		<Notice
-			className="component-notice--is-info"
-			status="info"
-			isDismissible={ false }
-		>
-			<div className="component-notice__content--flex">
-				<TipIcon className="component-notice__icon" />
-				<p>
-					{ __(
-						"Provides a standard level of filtering that's suitable for most business.",
-						'woocommerce-payments'
-					) }
-				</p>
-			</div>
-		</Notice>
-	);
-};
+// import ExceedsDollarAmountRule from './components/exceeds-dollar-amount-rule';
+// import ProtectionLevelModalNotice from './components/protection-level-modal-notice';
+import {
+	ExceedsDollarAmountRule,
+	ProtectionLevelModalNotice,
+} from './components';
 
 const ProtectionLevels = () => {
 	const [ isStandardModalOpen, setStandardModalOpen ] = useState( false );
 	const [ isHighModalOpen, setHighModalOpen ] = useState( false );
 	const { currencies } = useCurrencies();
 	const storeCurrency = currencies.default ? currencies.default : {};
-	const isDefaultCurrencyUSD = 'USD' === storeCurrency.code;
 
 	const [
 		currentProtectionLevel,
@@ -237,16 +145,12 @@ const ProtectionLevels = () => {
 														'woocommerce-payments'
 													) }
 												</li>
-												{ isDefaultCurrencyUSD ? (
-													<ExceedsDollarAmountRuleUSDStore level="standard" />
-												) : (
-													<ExceedsDollarAmountRuleNotUSDStore
-														level="standard"
-														defaultCurrency={
-															storeCurrency.name
-														}
-													/>
-												) }
+												<ExceedsDollarAmountRule
+													level="standard"
+													storeCurrency={
+														storeCurrency
+													}
+												/>
 												<li>
 													{ __(
 														'The same card or IP address submits',
@@ -361,16 +265,12 @@ const ProtectionLevels = () => {
 														'woocommerce-payments'
 													) }
 												</li>
-												{ isDefaultCurrencyUSD ? (
-													<ExceedsDollarAmountRuleUSDStore level="high" />
-												) : (
-													<ExceedsDollarAmountRuleNotUSDStore
-														level="high"
-														defaultCurrency={
-															storeCurrency.name
-														}
-													/>
-												) }
+												<ExceedsDollarAmountRule
+													level="high"
+													storeCurrency={
+														storeCurrency
+													}
+												/>
 												<li>
 													{ __(
 														'The same card or IP address submits ',
