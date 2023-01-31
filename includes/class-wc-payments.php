@@ -1083,8 +1083,6 @@ class WC_Payments {
 	 */
 	public static function ajax_init_platform_checkout() {
 		$is_nonce_valid = check_ajax_referer( 'wcpay_init_platform_checkout_nonce', false, false );
-		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
-		$blocks_data_extractor = new Blocks_Data_Extractor();
 
 		if ( ! $is_nonce_valid ) {
 			wp_send_json_error(
@@ -1110,6 +1108,9 @@ class WC_Payments {
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
+
+		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
+		$blocks_data_extractor = new Blocks_Data_Extractor();
 
 		$body = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,

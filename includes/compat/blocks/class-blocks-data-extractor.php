@@ -23,25 +23,18 @@ class Blocks_Data_Extractor {
 	 */
 	private $integration_registry;
 
-	/**
-	 * An array of blocks to extract data fields.
-	 *
-	 * @var array
-	 */
-	private $blocks = [];
 
 	/**
 	 * Constructor.
 	 */
 	public function __construct() {
 		$this->integration_registry = new IntegrationRegistry();
-		$this->blocks               = $this->get_available_blocks();
-
-		$this->register_blocks();
 	}
 
 	/**
 	 * Get a list of available Blocks.
+	 *
+	 * @return array
 	 */
 	private function get_available_blocks() {
 		$blocks = [];
@@ -50,7 +43,7 @@ class Blocks_Data_Extractor {
 			/**
 			 * @psalm-suppress UndefinedClass
 			 */
-			array_push( $blocks, new \Automatewoo\Blocks\Marketing_Optin_Block() );
+			$blocks[] = new \Automatewoo\Blocks\Marketing_Optin_Block();
 		}
 
 		if ( class_exists( '\Mailchimp_Woocommerce_Newsletter_Blocks_Integration' ) ) {
@@ -58,7 +51,7 @@ class Blocks_Data_Extractor {
 			/**
 			 * @psalm-suppress UndefinedClass
 			 */
-			array_push( $blocks, new \Mailchimp_Woocommerce_Newsletter_Blocks_Integration() );
+			$blocks[] = new \Mailchimp_Woocommerce_Newsletter_Blocks_Integration();
 		}
 
 		return $blocks;
@@ -66,16 +59,33 @@ class Blocks_Data_Extractor {
 
 	/**
 	 * Register all the blocks.
+	 *
+	 * @param array $blocks A list of blocks to register.
+	 * @return void
 	 */
-	private function register_blocks() {
-		foreach ( $this->blocks as $block ) {
+	private function register_blocks( $blocks ) {
+		foreach ( $blocks as $block ) {
 			$this->integration_registry->register( $block );
 		}
 	}
 
 	/**
-	 *  Mailpoet's block registration is different from the other two plugins. Data fields are passed
-	 *  from the parent class. This method fetches the data fields without registering the plugin.
+	 * Unregister all blocks.
+	 *
+	 * @param array $blocks A list of blocks to unregister.
+	 * @return void
+	 */
+	private function unregister_blocks( $blocks ) {
+		foreach ( $blocks as $block ) {
+			$this->integration_registry->unregister( $block );
+		}
+	}
+
+	/**
+	 * Mailpoet's block registration is different from the other two plugins. Data fields are passed
+	 * from the parent class. This method fetches the data fields without registering the plugin.
+	 *
+	 * @return array
 	 */
 	private function get_mailpoet_data() {
 		// phpcs:ignore
@@ -100,14 +110,21 @@ class Blocks_Data_Extractor {
 
 	/**
 	 * Retrieve data fields.
+	 *
+	 * @return array
 	 */
 	public function get_data() {
+		$blocks = $this->get_available_blocks();
+
+		$this->register_blocks( $blocks );
+
 		$blocks_data = $this->integration_registry->get_all_registered_script_data();
 
 		if ( class_exists( 'MailPoet\DI\ContainerWrapper' ) && class_exists( 'MailPoet\WooCommerce\Subscription' ) ) {
-			$mailpoet_data = [ 'mailpoet_data' => $this->get_mailpoet_data() ];
-			$blocks_data   = array_merge( $blocks_data, $mailpoet_data );
+			$blocks_data += [ 'mailpoet_data' => $this->get_mailpoet_data() ];
 		}
+
+		$this->unregister_blocks( $blocks );
 
 		return $blocks_data;
 	}
