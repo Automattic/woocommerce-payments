@@ -1136,9 +1136,9 @@ class WC_Payments {
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
 				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
 				'return_url'                     => wc_get_cart_url(),
+				'blocks_data'                    => $blocks_data_extractor->get_data(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
-			'blocks_data'          => $blocks_data_extractor->get_data(),
 		];
 		$args = [
 			'url'     => $url,
