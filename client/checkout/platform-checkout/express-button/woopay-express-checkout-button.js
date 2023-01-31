@@ -9,12 +9,15 @@ import { useEffect } from 'react';
  */
 import WoopayIcon from './woopay-icon';
 import { expressCheckoutIframe } from './express-checkout-iframe';
+import useExpressCheckoutProductHandler from './use-express-checkout-product-handler';
 import wcpayTracks from 'tracks';
 
 export const WoopayExpressCheckoutButton = ( {
 	isPreview = false,
 	buttonSettings,
 	api,
+	isProductPage = false,
+	emailSelector = '#email',
 } ) => {
 	const {
 		type: buttonType,
@@ -24,6 +27,10 @@ export const WoopayExpressCheckoutButton = ( {
 		theme,
 		context,
 	} = buttonSettings;
+	const { addToCart, isAddToCartDisabled } = useExpressCheckoutProductHandler(
+		api,
+		isProductPage
+	);
 
 	useEffect( () => {
 		if ( ! isPreview ) {
@@ -50,7 +57,17 @@ export const WoopayExpressCheckoutButton = ( {
 			}
 		);
 
-		expressCheckoutIframe( api );
+		if ( isProductPage ) {
+			addToCart()
+				.then( () => {
+					expressCheckoutIframe( api, context, emailSelector );
+				} )
+				.catch( () => {
+					// handle error.
+				} );
+		} else {
+			expressCheckoutIframe( api, context, emailSelector );
+		}
 	};
 
 	return (
@@ -59,6 +76,7 @@ export const WoopayExpressCheckoutButton = ( {
 			aria-label={ text }
 			onClick={ initPlatformCheckout }
 			className="woopay-express-button"
+			disabled={ isAddToCartDisabled }
 			data-type={ buttonType }
 			data-size={ size }
 			data-theme={ theme }

@@ -685,6 +685,16 @@ export default class WCPayAPI {
 		);
 	}
 
+	expressCheckoutAddToCart( productData ) {
+		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
+		const addToCartNonce = getConfig( 'addToCartNonce' );
+
+		return this.request( buildAjaxURL( wcAjaxUrl, 'add_to_cart' ), {
+			security: addToCartNonce,
+			...productData,
+		} );
+	}
+
 	paymentRequestPayForOrder( order, paymentData ) {
 		return this.request( getPaymentRequestAjaxURL( 'pay_for_order' ), {
 			_wpnonce: getPaymentRequestData( 'nonce' )?.pay_for_order,

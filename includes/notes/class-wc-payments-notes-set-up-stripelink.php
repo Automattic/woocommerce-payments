@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use Automattic\WooCommerce\Admin\Notes\Note;
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -71,13 +72,12 @@ class WC_Payments_Notes_Set_Up_StripeLink {
 			return;
 		}
 
-		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
-		$note       = new $note_class();
+		$note = new Note();
 
 		$note->set_title( __( 'Increase conversion at checkout', 'woocommerce-payments' ) );
 		$note->set_content( __( 'Reduce cart abandonment and create a frictionless checkout experience with Link by Stripe. Link autofills your customer’s payment and shipping details, so they can check out in just six seconds with the Link optimized experience.', 'woocommerce-payments' ) );
 		$note->set_content_data( (object) [] );
-		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
+		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
 		$note->set_source( 'woocommerce-payments' );
 		$note->add_action(

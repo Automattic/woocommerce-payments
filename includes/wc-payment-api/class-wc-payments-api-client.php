@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Connection_Exception;
@@ -2300,7 +2301,7 @@ class WC_Payments_API_Client {
 	private function maybe_act_on_fraud_prevention( string $error_code ) {
 		// Might be flagged by Stripe Radar or WCPay card testing prevention services.
 		$is_fraudulent = 'fraudulent' === $error_code || 'wcpay_card_testing_prevention' === $error_code;
-		if ( $is_fraudulent ) {
+		if ( $is_fraudulent && WC()->session ) {
 			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 			if ( $fraud_prevention_service->is_enabled() ) {
 				$fraud_prevention_service->regenerate_token();
@@ -2497,7 +2498,7 @@ class WC_Payments_API_Client {
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 		$customer           = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method     = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
-		$processing         = $intention_array['processing'] ?? [];
+		$processing         = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 

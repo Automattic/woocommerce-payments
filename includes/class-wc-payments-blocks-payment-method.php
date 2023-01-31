@@ -114,7 +114,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return  string
 	 */
 	public function maybe_add_card_testing_token( $content ) {
-		if ( ! wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) ) {
+		if ( ! wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) || ! WC()->session ) {
 			return $content;
 		}
 

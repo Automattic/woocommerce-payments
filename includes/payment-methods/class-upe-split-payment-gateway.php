@@ -147,6 +147,18 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	}
 
 	/**
+	 * Whether we should use the platform account to initialize Stripe on the checkout page.
+	 *
+	 * @return bool Result of the WCPay gateway checks if the card payment method is used, false otherwise.
+	 */
+	public function should_use_stripe_platform_on_checkout_page() {
+		if ( 'card' === $this->stripe_id ) {
+			return parent::should_use_stripe_platform_on_checkout_page();
+		}
+		return false;
+	}
+
+	/**
 	 * Gets UPE_Payment_Method instance from ID.
 	 *
 	 * @param string $payment_method_type Stripe payment method type ID.
