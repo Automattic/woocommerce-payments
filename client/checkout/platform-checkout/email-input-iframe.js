@@ -226,6 +226,11 @@ export const handlePlatformCheckoutEmailInput = async (
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email ) => {
+		// check and return if another otp iframe is already open.
+		if ( document.querySelector( '.platform-checkout-otp-iframe' ) ) {
+			return;
+		}
+
 		const urlParams = new URLSearchParams();
 		urlParams.append( 'email', email );
 		urlParams.append(
