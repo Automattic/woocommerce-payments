@@ -128,8 +128,7 @@ class Platform_Checkout_Utilities {
 			return true;
 		}
 
-		$ip_address    = WC_Geolocation::get_ip_address();
-		$location_data = WC_Geolocation::geolocate_ip( $ip_address );
+		$location_data = WC_Geolocation::geolocate_ip();
 
 		$available_countries = $this->get_woopay_available_countries();
 
