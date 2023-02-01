@@ -2194,7 +2194,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'upeSetupIntentData'   => null,
 					'testingInstructions'  => '',
 					'icon'                 => $this->icon_url,
-					'showSaveOption'       => false,
+					'showSaveOption'       => true,
 				],
 			]
 		);
