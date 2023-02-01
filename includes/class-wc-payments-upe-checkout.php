@@ -16,6 +16,7 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
 use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 
 
 /**
@@ -193,7 +194,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	/**
 	 * Checks if the save option for a payment method should be displayed or not.
 	 *
-	 * @param string $payment_method Payment method.
+	 * @param UPE_Payment_Method $payment_method UPE Payment Method instance.
 	 * @return bool - True if the payment method is reusable and the saved cards feature is enabled for the gateway and there is no subscription item in the cart, false otherwise.
 	 */
 	private function should_upe_payment_method_show_save_option( $payment_method ) {
