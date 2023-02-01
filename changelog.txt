@@ -12,6 +12,7 @@
 * Fix - Check whether the order actually exists before accessing order properties in wcs_order_contains_subscription().
 * Fix - Decode entities for the store name in the WooPay preview section.
 * Fix - Edit, add, and list Subscription admin pages now work when HPOS is enabled.
+* Fix - Fatal error when loading the Edit Subscription page with custom admin billing or shipping fields.
 * Fix - Fix ability to change currency when a subscription renewal is in the cart.
 * Fix - Fixed issues where multiple subscription purchases wouldn't appear on the My Account > Subscriptions screen on HPOS environments.
 * Fix - Fix TOS acceptance can prevent saving settings or accessing account dashboard
@@ -49,6 +50,7 @@
 * Dev - Skip running blocks E2E tests, add comment for the same.
 * Dev - unified express checkout settings
 * Dev - Update subscriptions-core to 5.2.0.
+* Dev - Update subscriptions-core to 5.3.1.
 
 = 5.3.0 - 2023-01-11 =
 * Add - Added support for WooPay express checkout on product page. This feature is currently behind a feature flag and is not yet publicly available.
