@@ -158,7 +158,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_woopay_express_checkout_enabled_returns_false_when_platform_checkout_eligible_is_false() {
 		add_filter(
-			'pre_option__wcpay_feature_woopay_express_checkout',
+			'pre_option__' . WC_Payments_Features::PROGRESSIVE_ONBOARDING_FLAG_NAME,
 			function ( $pre_option, $option, $default ) {
 				return '1';
 			},
@@ -171,7 +171,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_progressive_onboarding_enabled_returns_true() {
 		add_filter(
-			'pre_option__wcpay_feature_progressive_onboarding',
+			'pre_option_' . WC_Payments_Features::PROGRESSIVE_ONBOARDING_FLAG_NAME,
 			function ( $pre_option, $option, $default ) {
 				return '1';
 			},
@@ -183,7 +183,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_progressive_onboarding_enabled_returns_false_when_flag_is_false() {
 		add_filter(
-			'pre_option__wcpay_feature_progressive_onboarding',
+			'pre_option_' . WC_Payments_Features::PROGRESSIVE_ONBOARDING_FLAG_NAME,
 			function ( $pre_option, $option, $default ) {
 				return '0';
 			},
