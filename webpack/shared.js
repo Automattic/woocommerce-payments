@@ -10,6 +10,7 @@ module.exports = {
 		settings: './client/settings/index.js',
 		'blocks-checkout': './client/checkout/blocks/index.js',
 		'upe-blocks-checkout': './client/checkout/blocks/upe.js',
+		'upe-split-blocks-checkout': './client/checkout/blocks/upe-split.js',
 		'platform-checkout': './client/checkout/platform-checkout/index.js',
 		'platform-checkout-express-button':
 			'./client/checkout/platform-checkout/express-button/index.js',

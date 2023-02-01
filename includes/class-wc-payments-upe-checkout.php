@@ -105,7 +105,6 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['gatewayId']                = UPE_Payment_Gateway::GATEWAY_ID;
 		$payment_fields['isCheckout']               = is_checkout();
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
-		$payment_fields['saveUPEAppearanceNonce']   = wp_create_nonce( 'wcpay_save_upe_appearance_nonce' );
 		$payment_fields['testMode']                 = $this->gateway->is_in_test_mode();
 		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );

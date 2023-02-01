@@ -43,6 +43,7 @@ jQuery( function ( $ ) {
 	const publishableKey = getUPEConfig( 'publishableKey' );
 	const isChangingPayment = getUPEConfig( 'isChangingPayment' );
 	const isUPEEnabled = getUPEConfig( 'isUPEEnabled' );
+	const isUPESplitEnabled = getUPEConfig( 'isUPESplitEnabled' );
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
 	const isStripeLinkEnabled =
@@ -74,6 +75,7 @@ jQuery( function ( $ ) {
 			forceNetworkSavedCards: getUPEConfig( 'forceNetworkSavedCards' ),
 			locale: getUPEConfig( 'locale' ),
 			isUPEEnabled,
+			isUPESplitEnabled,
 			isStripeLinkEnabled,
 		},
 		apiRequest

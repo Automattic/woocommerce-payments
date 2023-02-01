@@ -1025,7 +1025,10 @@ class WC_Payments {
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
-		if ( WC_Payments_Features::is_upe_enabled() ) {
+		if ( WC_Payments_Features::is_upe_split_enabled() ) {
+			require_once __DIR__ . '/class-wc-payments-upe-split-blocks-payment-method.php';
+			$payment_method_registry->register( new WC_Payments_UPE_Split_Blocks_Payment_Method() );
+		} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			require_once __DIR__ . '/class-wc-payments-upe-blocks-payment-method.php';
 			$payment_method_registry->register( new WC_Payments_UPE_Blocks_Payment_Method() );
 		} else {
