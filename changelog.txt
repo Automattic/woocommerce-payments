@@ -1,5 +1,57 @@
 *** WooCommerce Payments Changelog ***
 
+= 5.4.0 - 2023-02-01 =
+* Add - Add logging and order notes when WCPay Subscriptions are suspended or put on-hold.
+* Add - Highlight subscriptions with overdue payment in list view with red icon & tooltip.
+* Add - More context to the business details to show the actual message from Stripe, shows a modal if there is more than one error from Stripe.
+* Add - New wcs_set_order_address() helper function to set an array of address fields on an order or subscription.
+* Add - Skipping the email input step for WooPay express checkout flow when the email input field has already a value. The WooPay express checkout feature is behind a feature flag currently.
+* Fix - "Subscriptions by Payment Gateway" in WooCommerce → Status now shows the correct values when HPOS is enabled.
+* Fix - Add check for session before getting properties from session to avoid fatals in WooCommerce Subscriptions Multi-Currency compatibility.
+* Fix - Catch exceptions when changing payment method associated with a subscription to avoid fatal errors.
+* Fix - Check whether the order actually exists before accessing order properties in wcs_order_contains_subscription().
+* Fix - Decode entities for the store name in the WooPay preview section.
+* Fix - Edit, add, and list Subscription admin pages now work when HPOS is enabled.
+* Fix - Fatal error when loading the Edit Subscription page with custom admin billing or shipping fields.
+* Fix - Fix ability to change currency when a subscription renewal is in the cart.
+* Fix - Fixed issues where multiple subscription purchases wouldn't appear on the My Account > Subscriptions screen on HPOS environments.
+* Fix - Fix TOS acceptance can prevent saving settings or accessing account dashboard
+* Fix - Fix WooPay redirection with express checkout when email is prepopulated. The WooPay express checkout is currently behind a feature flag.
+* Fix - Make the tooltip and fee description pill in Payments > Settings, show the correct Base rate when we have promotional rates applied.
+* Fix - Merge any custom meta_query args passed to wcs_get_orders_with_meta_query() to avoid overriding WC core args that map onto meta_query.
+* Fix - On HPOS environments, ensure subscription related order caches are updated when relationship order meta (eg `_subscription_renewal` or `_subscription_switch`) is updated.
+* Fix - On HPOS environments, update related orders cache when subscription is trashed, deleted, or restored / untrashed.
+* Fix - Prevent erroneously resyncing a subscription every time it is loaded from the database on HPOS environments.
+* Fix - Prevent initializing `Fraud_Prevention_Service` on contexts without session
+* Fix - Refactor `WCS_Meta_Box_Subscription_Data::save` to support HPOS stores, fixing a PHP warning notice when updating an order via the Edit Order screen.
+* Fix - Refactor `WC_Subscriptions_Renewal_Order` and `WC_Subscriptions_Tracker` classes to support HPOS stores.
+* Fix - Removed the potential for an infinite loop when getting a subscription's related orders while the subscription is being loaded.
+* Fix - Repair a potentially corrupted state of enabled payment method settings, that causes an error while saving settings.
+* Fix - Replace code using wp_count_posts(), get_post_type(), get_posts and wp_delete_post() with equivalent WC Data Store functions to support stores that have HPOS enabled.
+* Fix - Set the `download_permissions_granted` value when purchasing a downloadable subscription product when HPOS is enabled.
+* Fix - Shipping address correctly set when resubscribing to subscriptions that contains different billing and shipping addresses.
+* Fix - Updates to the styling of the task list title on the main account overview page to match the component default.
+* Fix - When a customer changes their address on their account or subscription, make sure the new address is saved when HPOS is enabled.
+* Fix - When a subscription's parent order is trashed or deleted, make sure the related subscription is also trashed or deleted on stores with HPOS enabled.
+* Fix - When a subscription is trashed or deleted, make sure it is cancelled first on stores with HPOS enabled.
+* Fix - When processing customer requests to update all their subscription payment methods, ensure the updated subscription is used to fetch the new payment meta, not and old instance.
+* Update - Add Apple Pay and Google Pay as supported payment methods in gateway descriptions.
+* Update - Enable WooPay Express Checkout button feature by default.
+* Update - Generate mandate only for orders using INR currency
+* Update - Show the cards payment method when using UPE and make it active and locked as per UPE requirements.
+* Dev - Add subscriptions-core library version to the WooCommerce system status report.
+* Dev - Allow loading chunks with JS concatenation enabled.
+* Dev - Fix failing unit tests due to spelling change in WooCommerce core.
+* Dev - Fix phpcs violations in the `WC_Subscriptions_Tracker` and `WCS_Admin_System_Status` classes to improve code quality.
+* Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
+* Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
+* Dev - Moved the trash, untrash & delete related `add_actions()` in the `WC_Subscriptions_Manager` class to be added on the `woocommerce_loaded` action.
+* Dev - Remove deprecated `strptime` function in favour of `DateTime::createFromFormat`.
+* Dev - Skip running blocks E2E tests, add comment for the same.
+* Dev - unified express checkout settings
+* Dev - Update subscriptions-core to 5.2.0.
+* Dev - Update subscriptions-core to 5.3.1.
+
 = 5.3.0 - 2023-01-11 =
 * Add - Added support for WooPay express checkout on product page. This feature is currently behind a feature flag and is not yet publicly available.
 * Add - Add the processing order_id to WC Session and its handling to prevent duplicate orders
