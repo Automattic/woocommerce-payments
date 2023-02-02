@@ -431,6 +431,17 @@ class WC_Payments_Admin {
 		$script_src_url    = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/index.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
+
+		// In case when require is not an array, the whole flow will break. In that case  make sure that $script_asset is an array.
+		if ( ! is_array( $script_asset ) ) {
+			$script_asset = [ 'dependencies' => [] ];
+		}
+
+		// If the key is missing, the code that follows could break. Make sure that we have that key.
+		// In case dependencies key is in array, but it is not an array, redeclare it to empty array to prevent unwanted cases.
+		if ( ! array_key_exists( 'dependencies', $script_asset ) || ! is_array( $script_asset['dependencies'] ) ) {
+			$script_asset['dependencies'] = [];
+		}
 		wp_register_script(
 			'WCPAY_DASH_APP',
 			$script_src_url,
