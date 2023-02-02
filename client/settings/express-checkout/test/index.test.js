@@ -54,7 +54,7 @@ describe( 'ExpressCheckout', () => {
 
 		usePlatformCheckoutEnabledSettings.mockReturnValue(
 			getMockPlatformCheckoutEnabledSettings(
-				false,
+				true,
 				updateIsPlatformCheckoutEnabledHandler
 			)
 		);
@@ -82,7 +82,7 @@ describe( 'ExpressCheckout', () => {
 		userEvent.click( paymentRequestCheckbox );
 
 		expect( updateIsPlatformCheckoutEnabledHandler ).toHaveBeenCalledWith(
-			true
+			false
 		);
 		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
 			true
@@ -171,5 +171,42 @@ describe( 'ExpressCheckout', () => {
 		);
 		const linkCheckbox = container.getByLabelText( 'Link by Stripe' );
 		expect( linkCheckbox ).not.toBeChecked();
+	} );
+
+	it( 'should display a notice when the merchant attempts to enable both Link and WooPay at the same time', async () => {
+		const updateIsPlatformCheckoutEnabledHandler = jest.fn();
+		usePlatformCheckoutEnabledSettings.mockReturnValue(
+			getMockPlatformCheckoutEnabledSettings(
+				false,
+				updateIsPlatformCheckoutEnabledHandler
+			)
+		);
+		const context = { featureFlags: { platformCheckout: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText( 'Link compatibility notice' )
+		).not.toBeInTheDocument();
+		expect( screen.getByLabelText( 'WooPay' ) ).not.toBeChecked();
+		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeChecked();
+
+		userEvent.click( screen.getByLabelText( 'WooPay' ) );
+
+		expect( screen.getByLabelText( 'WooPay' ) ).not.toBeChecked();
+		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeChecked();
+		expect( updateIsPlatformCheckoutEnabledHandler ).not.toHaveBeenCalled();
+		expect(
+			screen.queryByText( 'Link compatibility notice' )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( 'Yes, disable Link by Stripe' )
+		).toBeInTheDocument();
 	} );
 } );

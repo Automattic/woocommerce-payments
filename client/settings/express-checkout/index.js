@@ -52,7 +52,7 @@ const LinkWoopayCompatibilityConfirmationModal = ( {
 										'woocommerce-payments'
 								  )
 								: __(
-										'Yes, disable Link',
+										'Yes, disable Link by Stripe',
 										'woocommerce-payments'
 								  ) }
 						</Button>
@@ -169,6 +169,10 @@ const ExpressCheckout = () => {
 								<CheckboxControl
 									checked={ isPlatformCheckoutEnabled }
 									onChange={ handleExpressCheckoutChange }
+									label={ __(
+										'WooPay',
+										'woocommerce-payments'
+									) }
 								/>
 							</div>
 							<div className="express-checkout__icon">
