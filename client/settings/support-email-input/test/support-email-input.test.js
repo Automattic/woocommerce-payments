@@ -43,13 +43,13 @@ describe( 'SupportEmailInput', () => {
 		expect( setSupportEmail ).toHaveBeenCalledWith( newEmail );
 	} );
 
-	it( 'displays the error message for empty email input', async () => {
+	it( 'no error message for empty email input when it has not been set', async () => {
 		useAccountBusinessSupportEmail.mockReturnValue( [ '', jest.fn() ] );
 
 		const { container } = render( <SupportEmailInput /> );
 		expect(
 			container.querySelector( '.components-notice.is-error' )
-		).not.toBeNull();
+		).toBeNull();
 	} );
 
 	it( 'displays the error message for invalid email', async () => {
