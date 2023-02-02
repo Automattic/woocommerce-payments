@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixed issue with dependencies array key in script loading
