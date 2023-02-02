@@ -14,7 +14,6 @@ use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
-use WC_Payments_Features;
 
 /**
  * Class handling any account connection functionality
