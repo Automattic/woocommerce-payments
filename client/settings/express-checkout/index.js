@@ -165,7 +165,7 @@ const ExpressCheckout = () => {
 				<ul className="express-checkouts-list">
 					{ isPlatformCheckoutFeatureFlagEnabled && (
 						<li className="express-checkout has-icon-border">
-							<div className="express-checkout__checkbox">
+							<div className="express-checkout__checkbox loadable-checkbox label-hidden">
 								<CheckboxControl
 									checked={ isPlatformCheckoutEnabled }
 									onChange={ handleExpressCheckoutChange }
