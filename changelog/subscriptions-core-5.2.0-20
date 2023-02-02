@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.

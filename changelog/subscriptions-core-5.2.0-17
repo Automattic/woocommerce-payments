@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-On HPOS environments, update related orders cache when subscription is trashed, deleted, or restored / untrashed.

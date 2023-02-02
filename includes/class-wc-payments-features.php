@@ -17,6 +17,7 @@ class WC_Payments_Features {
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
+	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
 
 	/**
 	 * Checks whether the UPE gateway is enabled
@@ -165,6 +166,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Progressive Onboarding is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_progressive_onboarding_enabled(): bool {
+		return '1' === get_option( self::PROGRESSIVE_ONBOARDING_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -182,6 +192,7 @@ class WC_Payments_Features {
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
+				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
 			]
 		);
 	}
