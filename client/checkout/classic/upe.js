@@ -806,6 +806,12 @@ jQuery( function ( $ ) {
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
+		if (
+			'woocommerce_payments' ===
+			$( "#order_review input:checked[name='payment_method']" ).val()
+		) {
+			return;
+		}
 		const paymentMethodType = getSelectedGatewayPaymentMethod();
 		if (
 			! isUsingSavedPaymentMethod( paymentMethodType ) &&
