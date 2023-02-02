@@ -129,9 +129,10 @@ export const getDepositScheduleDescriptor = ( {
 		);
 	}
 
+	const learnMoreHref =
+		'https://woocommerce.com/document/payments/faq/deposit-schedule/';
+
 	if ( ! last ) {
-		const learnMoreHref =
-			'https://woocommerce.com/document/payments/faq/deposit-schedule/';
 		return createInterpolateElement(
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
@@ -158,7 +159,10 @@ export const getDepositScheduleDescriptor = ( {
 		return createInterpolateElement(
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - Settings page URL */
-				__( '%s <a>Change</a>', 'woocommerce-payments' ),
+				__(
+					'%s <a>Change this</a> or <learn_more_href/>',
+					'woocommerce-payments'
+				),
 				formatDepositSchedule( schedule )
 			),
 			{
@@ -171,6 +175,16 @@ export const getDepositScheduleDescriptor = ( {
 							tab: 'checkout',
 						} ) }
 					/>
+				),
+				learn_more_href: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						href={ learnMoreHref }
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{ __( 'learn more' ) }
+					</a>
 				),
 			}
 		);
