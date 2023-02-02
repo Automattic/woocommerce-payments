@@ -10,7 +10,7 @@ const USDollarComponent = ( { level } ) => {
 	if ( isHighProtectionLevel ) {
 		return (
 			<li>
-				{ __( 'An order exceeds ', 'woocommerce-payments' ) }{ ' ' }
+				{ __( 'An order exceeds', 'woocommerce-payments' ) }{ ' ' }
 				<strong>{ __( '$1,000.00.', 'woocommerce-payments' ) }</strong>
 			</li>
 		);

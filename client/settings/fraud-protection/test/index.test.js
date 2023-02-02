@@ -37,14 +37,10 @@ describe( 'FraudProtection', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		const recommended = screen.getByText( /Recommended/ );
-		expect( recommended ).toBeInTheDocument();
-		expect( recommended ).toHaveTextContent( '(Recommended)' );
-
-		const standardHelp = screen.getByText( /Standard protection:/ );
-		expect( standardHelp ).toBeInTheDocument();
-		expect( standardHelp ).toHaveTextContent(
-			"Standard protection: Provides a standard level of filtering that's suitable for most businesses."
+		const highHelp = screen.getByText( /High protection:/ );
+		expect( highHelp ).toBeInTheDocument();
+		expect( highHelp ).toHaveTextContent(
+			'High protection: Offers the highest level of filtering for stores, but may catch some legitimate transactions.'
 		);
 	} );
 } );

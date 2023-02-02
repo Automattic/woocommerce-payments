@@ -8,8 +8,8 @@ import { Button, Modal } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import ExceedsDollarAmountRule from './exceeds-dollar-amount-rule';
-import ProtectionLevelModalNotice from './protection-level-modal-notice';
+import ExceedsDollarAmountRule from '../exceeds-dollar-amount-rule';
+import ProtectionLevelModalNotice from '../protection-level-modal-notice';
 
 export const HighFraudProtectionModal = ( {
 	level,
