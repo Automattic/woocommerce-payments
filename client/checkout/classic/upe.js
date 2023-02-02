@@ -806,6 +806,7 @@ jQuery( function ( $ ) {
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
+		// Skip handling legacy cards as UPE payment methods.
 		if (
 			'woocommerce_payments' ===
 			$( "#order_review input:checked[name='payment_method']" ).val()
