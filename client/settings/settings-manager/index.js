@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -115,6 +115,7 @@ const SettingsManager = () => {
 			upe: isUpeEnabled,
 		},
 	} = useContext( WCPaySettingsContext );
+	const [ isSaveDisabled, setSaveDisabled ] = useState( false );
 
 	return (
 		<SettingsLayout>
@@ -151,7 +152,7 @@ const SettingsManager = () => {
 						<WcPayUpeContextProvider
 							defaultIsUpeEnabled={ isUpeEnabled }
 						>
-							<Transactions />
+							<Transactions setSaveDisabled={ setSaveDisabled } />
 						</WcPayUpeContextProvider>
 					</ErrorBoundary>
 				</LoadableSettingsSection>
@@ -164,7 +165,7 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<AdvancedSettings />
-			<SaveSettingsSection />
+			<SaveSettingsSection disabled={ isSaveDisabled } />
 		</SettingsLayout>
 	);
 };

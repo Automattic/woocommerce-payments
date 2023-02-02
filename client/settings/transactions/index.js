@@ -25,7 +25,7 @@ import SupportEmailInput from 'wcpay/settings/support-email-input';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
-const Transactions = () => {
+const Transactions = ( { setSaveDisabled } ) => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
 	const [
 		accountStatementDescriptor,
@@ -85,8 +85,8 @@ const Transactions = () => {
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
 					</span>
 
-					<SupportPhoneInput />
-					<SupportEmailInput />
+					<SupportEmailInput onErrorMessage={ setSaveDisabled } />
+					<SupportPhoneInput onErrorMessage={ setSaveDisabled } />
 				</div>
 			</CardBody>
 		</Card>
