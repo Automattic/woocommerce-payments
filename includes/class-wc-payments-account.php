@@ -14,6 +14,7 @@ use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
+use WC_Payments_Features;
 
 /**
  * Class handling any account connection functionality
@@ -1468,18 +1469,22 @@ class WC_Payments_Account {
 	}
 
 	/**
-	 * Check if the server is connect, try to connect it otherwise, and redirect to onboarding prototype page.
+	 * Redirects to the onboarding prototype page if the feature flag is enabled.
+	 * Also checks if the server is connect and try to connect it otherwise.
 	 *
 	 * @return void
 	 */
 	private function redirect_to_prototype_onboarding_page() {
+		if ( ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			return;
+		}
+
 		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding-prototype' );
 
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-				$this->payments_api_client->start_server_connection( $onboarding_url );
+			$this->payments_api_client->start_server_connection( $onboarding_url );
 		} else {
 			$this->redirect_to( $onboarding_url );
-
 		}
 	}
 }

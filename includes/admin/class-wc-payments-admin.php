@@ -273,7 +273,8 @@ class WC_Payments_Admin {
 					]
 				);
 				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
-			} else {
+			}
+			if ( WC_Payments_Features::is_progressive_onboarding_enabled() ) {
 				wc_admin_register_page(
 					[
 						'id'         => 'wc-payments-onboarding-prototype',
