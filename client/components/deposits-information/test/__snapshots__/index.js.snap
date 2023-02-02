@@ -91,7 +91,15 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
           <a
             href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
           >
-            Change
+            Change this
+          </a>
+           or 
+          <a
+            href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            learn more
           </a>
         </p>
       </div>
@@ -232,7 +240,15 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
           <a
             href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
           >
-            Change
+            Change this
+          </a>
+           or 
+          <a
+            href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            learn more
           </a>
         </p>
       </div>
@@ -378,7 +394,15 @@ exports[`Deposits information renders instant deposit button only where applicab
           <a
             href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
           >
-            Change
+            Change this
+          </a>
+           or 
+          <a
+            href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            learn more
           </a>
         </p>
       </div>
@@ -526,7 +550,15 @@ exports[`Deposits information renders instant deposit button only where applicab
           <a
             href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
           >
-            Change
+            Change this
+          </a>
+           or 
+          <a
+            href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            learn more
           </a>
         </p>
       </div>
