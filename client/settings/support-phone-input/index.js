@@ -3,7 +3,7 @@
  */
 import { BaseControl, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * Internal dependencies
@@ -17,17 +17,20 @@ const SupportPhoneInput = ( { onErrorMessage } ) => {
 	let supportPhoneError = useGetSavingError()?.data?.details
 		?.account_business_support_phone?.message;
 
-	if ( '' === supportPhone ) {
+	const currentPhone = useRef( supportPhone ).current;
+	const isEmptyPhoneValid = '' === supportPhone && '' === currentPhone;
+
+	const [ isPhoneValid, setPhoneValidity ] = useState( true );
+	if ( ! isPhoneValid && ! isEmptyPhoneValid ) {
 		supportPhoneError = __(
-			'Support phone number cannot be empty, please specify.',
+			'Please enter a valid phone number.',
 			'woocommerce-payments'
 		);
 	}
-	const [ isPhoneValid, setPhoneValidity ] = useState( true );
 
-	if ( ! isPhoneValid ) {
+	if ( '' === supportPhone && '' !== currentPhone ) {
 		supportPhoneError = __(
-			'Please enter a valid phone number.',
+			'Support phone number cannot be empty once it has been set before, please specify.',
 			'woocommerce-payments'
 		);
 	}

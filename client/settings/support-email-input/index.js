@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useAccountBusinessSupportEmail, useGetSavingError } from 'wcpay/data';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const SupportEmailInput = ( { onErrorMessage } ) => {
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();
@@ -16,9 +16,10 @@ const SupportEmailInput = ( { onErrorMessage } ) => {
 	let supportEmailError = useGetSavingError()?.data?.details
 		?.account_business_support_email?.message;
 
-	if ( '' === supportEmail ) {
+	const currentEmail = useRef( supportEmail ).current;
+	if ( '' === supportEmail && '' !== currentEmail ) {
 		supportEmailError = __(
-			'Support email cannot be empty, please specify.',
+			'Support email cannot be empty once it has been set before, please specify.',
 			'woocommerce-payments'
 		);
 	}
