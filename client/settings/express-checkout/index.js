@@ -4,9 +4,9 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card, CheckboxControl } from '@wordpress/components';
+import { Button, Card, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
-import { useContext } from '@wordpress/element';
+import { useContext, useState } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -24,8 +24,65 @@ import WooIcon from '../../gateway-icons/woo';
 import './style.scss';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import LinkIcon from '../../gateway-icons/link';
+import ConfirmationModal from 'wcpay/components/confirmation-modal';
+
+const LinkWoopayCompatibilityConfirmationModal = ( {
+	invoker,
+	onCancel,
+	onConfirm,
+} ) => {
+	return (
+		<>
+			<ConfirmationModal
+				className="disable-modal-section"
+				title={ __(
+					'Link compatibility notice',
+					'woocommerce-payments'
+				) }
+				onRequestClose={ onCancel }
+				actions={
+					<>
+						<Button isSecondary onClick={ onCancel }>
+							{ __( 'Cancel', 'woocommerce-payments' ) }
+						</Button>
+						<Button isPrimary isDestructive onClick={ onConfirm }>
+							{ 'link' === invoker
+								? __(
+										'Yes, disable WooPay',
+										'woocommerce-payments'
+								  )
+								: __(
+										'Yes, disable Link',
+										'woocommerce-payments'
+								  ) }
+						</Button>
+					</>
+				}
+			>
+				<p>
+					{ 'link' === invoker
+						? __(
+								// eslint-disable-next-line max-len
+								'Link and WooPay are currently incompatible. In order to enable Link, you must first disable WooPay. Would you like to proceed?',
+								'woocommerce-payments'
+						  )
+						: __(
+								// eslint-disable-next-line max-len
+								'Link and WooPay are currently incompatible. In order to enable WooPay, you must first disable Link. Would you like to proceed?',
+								'woocommerce-payments'
+						  ) }
+				</p>
+			</ConfirmationModal>
+		</>
+	);
+};
 
 const ExpressCheckout = () => {
+	const [
+		compatibilityModalInvoker,
+		setCompatibilityModalInvoker,
+	] = useState( '' );
+
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
@@ -33,7 +90,7 @@ const ExpressCheckout = () => {
 
 	const [
 		isPlatformCheckoutEnabled,
-		updateIsPlatformCheckoutEnabled,
+		toggleIsPlatformCheckoutEnabled,
 	] = usePlatformCheckoutEnabledSettings();
 
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
@@ -43,7 +100,7 @@ const ExpressCheckout = () => {
 		updateEnabledMethodIds,
 	] = useEnabledPaymentMethodIds();
 
-	const updateStripeLinkCheckout = ( isEnabled ) => {
+	const toggleStripeLinkCheckout = ( isEnabled ) => {
 		//this handles the link payment method checkbox. If it's enable we should add link to the rest of the
 		//enabled payment method.
 		// If false - we should remove link payment method from the enabled payment methods
@@ -69,16 +126,49 @@ const ExpressCheckout = () => {
 		},
 	} = useContext( WCPaySettingsContext );
 
+	const handleCompatibilityModalConfirmation = () => {
+		toggleIsPlatformCheckoutEnabled( 'link' !== compatibilityModalInvoker );
+		toggleStripeLinkCheckout( 'link' === compatibilityModalInvoker );
+		setCompatibilityModalInvoker( '' );
+	};
+
+	const handleExpressCheckoutChange = ( isEnabled ) => {
+		if ( isEnabled && isStripeLinkEnabled ) {
+			setCompatibilityModalInvoker( 'woopay' );
+
+			return;
+		}
+
+		toggleIsPlatformCheckoutEnabled( isEnabled );
+	};
+
+	const handleStripeLinkChange = ( isEnabled ) => {
+		if ( isEnabled && isPlatformCheckoutEnabled ) {
+			setCompatibilityModalInvoker( 'link' );
+
+			return;
+		}
+
+		toggleStripeLinkCheckout( isEnabled );
+	};
+
 	return (
 		<Card className="express-checkouts">
 			<CardBody size={ 0 }>
+				{ compatibilityModalInvoker && (
+					<LinkWoopayCompatibilityConfirmationModal
+						invoker={ compatibilityModalInvoker }
+						onCancel={ () => setCompatibilityModalInvoker( '' ) }
+						onConfirm={ handleCompatibilityModalConfirmation }
+					/>
+				) }
 				<ul className="express-checkouts-list">
 					{ isPlatformCheckoutFeatureFlagEnabled && (
 						<li className="express-checkout has-icon-border">
 							<div className="express-checkout__checkbox">
 								<CheckboxControl
 									checked={ isPlatformCheckoutEnabled }
-									onChange={ updateIsPlatformCheckoutEnabled }
+									onChange={ handleExpressCheckoutChange }
 								/>
 							</div>
 							<div className="express-checkout__icon">
@@ -216,7 +306,7 @@ const ExpressCheckout = () => {
 										'woocommerce-payments'
 									) }
 									checked={ isStripeLinkEnabled }
-									onChange={ updateStripeLinkCheckout }
+									onChange={ handleStripeLinkChange }
 								/>
 							</div>
 							<div className="express-checkout__icon">
