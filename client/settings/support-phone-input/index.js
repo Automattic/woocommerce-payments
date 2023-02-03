@@ -11,7 +11,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAccountBusinessSupportPhone, useGetSavingError } from 'wcpay/data';
 import PhoneNumberInput from 'wcpay/settings/phone-input';
 
-const SupportPhoneInput = ( { onErrorMessage } ) => {
+const SupportPhoneInput = ( { setInputVallid } ) => {
 	const [ supportPhone, setSupportPhone ] = useAccountBusinessSupportPhone();
 
 	let supportPhoneError = useGetSavingError()?.data?.details
@@ -36,10 +36,10 @@ const SupportPhoneInput = ( { onErrorMessage } ) => {
 	}
 
 	useEffect( () => {
-		if ( onErrorMessage ) {
-			onErrorMessage( !! supportPhoneError );
+		if ( setInputVallid ) {
+			setInputVallid( ! supportPhoneError );
 		}
-	}, [ supportPhoneError, onErrorMessage ] );
+	}, [ supportPhoneError, setInputVallid ] );
 
 	return (
 		<>

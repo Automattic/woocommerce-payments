@@ -115,7 +115,9 @@ const SettingsManager = () => {
 			upe: isUpeEnabled,
 		},
 	} = useContext( WCPaySettingsContext );
-	const [ isSaveDisabled, setSaveDisabled ] = useState( false );
+	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
+		true
+	);
 
 	return (
 		<SettingsLayout>
@@ -152,7 +154,11 @@ const SettingsManager = () => {
 						<WcPayUpeContextProvider
 							defaultIsUpeEnabled={ isUpeEnabled }
 						>
-							<Transactions setSaveDisabled={ setSaveDisabled } />
+							<Transactions
+								setTransactionInputsValid={
+									setTransactionInputsValid
+								}
+							/>
 						</WcPayUpeContextProvider>
 					</ErrorBoundary>
 				</LoadableSettingsSection>
@@ -165,7 +171,7 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<AdvancedSettings />
-			<SaveSettingsSection disabled={ isSaveDisabled } />
+			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>
 	);
 };

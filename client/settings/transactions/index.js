@@ -22,10 +22,11 @@ import './style.scss';
 import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';
 import SupportPhoneInput from 'wcpay/settings/support-phone-input';
 import SupportEmailInput from 'wcpay/settings/support-email-input';
+import React, { useEffect, useState } from 'react';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
-const Transactions = ( { setSaveDisabled } ) => {
+const Transactions = ( { setTransactionInputsValid } ) => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
 	const [
 		accountStatementDescriptor,
@@ -33,6 +34,15 @@ const Transactions = ( { setSaveDisabled } ) => {
 	] = useAccountStatementDescriptor();
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
+
+	const [ isEmailInputValid, setEmailInputValid ] = useState( true );
+	const [ isPhoneInputValid, setPhoneInputValid ] = useState( true );
+
+	useEffect( () => {
+		if ( setTransactionInputsValid ) {
+			setTransactionInputsValid( isEmailInputValid && isPhoneInputValid );
+		}
+	}, [ isEmailInputValid, isPhoneInputValid, setTransactionInputsValid ] );
 
 	return (
 		<Card className="transactions">
@@ -85,8 +95,8 @@ const Transactions = ( { setSaveDisabled } ) => {
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
 					</span>
 
-					<SupportEmailInput onErrorMessage={ setSaveDisabled } />
-					<SupportPhoneInput onErrorMessage={ setSaveDisabled } />
+					<SupportEmailInput setInputVallid={ setEmailInputValid } />
+					<SupportPhoneInput setInputVallid={ setPhoneInputValid } />
 				</div>
 			</CardBody>
 		</Card>

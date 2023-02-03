@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 import { useAccountBusinessSupportEmail, useGetSavingError } from 'wcpay/data';
 import { useEffect, useRef } from 'react';
 
-const SupportEmailInput = ( { onErrorMessage } ) => {
+const SupportEmailInput = ( { setInputVallid } ) => {
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();
 
 	let supportEmailError = useGetSavingError()?.data?.details
@@ -25,10 +25,10 @@ const SupportEmailInput = ( { onErrorMessage } ) => {
 	}
 
 	useEffect( () => {
-		if ( onErrorMessage ) {
-			onErrorMessage( !! supportEmailError );
+		if ( setInputVallid ) {
+			setInputVallid( ! supportEmailError );
 		}
-	}, [ supportEmailError, onErrorMessage ] );
+	}, [ supportEmailError, setInputVallid ] );
 
 	return (
 		<>
