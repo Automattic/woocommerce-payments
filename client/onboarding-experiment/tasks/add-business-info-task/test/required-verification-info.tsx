@@ -9,9 +9,9 @@ import { mocked } from 'ts-jest/utils';
  * Internal dependencies
  */
 import RequiredVerificationInfo from '../required-verification-info';
-import { useRequiredVerificationInfo } from 'onboarding/hooks';
+import { useRequiredVerificationInfo } from 'onboarding-experiment/hooks';
 
-jest.mock( 'onboarding/hooks', () => ( {
+jest.mock( 'onboarding-experiment/hooks', () => ( {
 	useRequiredVerificationInfo: jest.fn(),
 } ) );
 
