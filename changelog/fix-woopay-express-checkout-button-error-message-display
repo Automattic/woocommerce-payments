@@ -1,5 +1,0 @@
-Significance: patch
-Type: update
-Comment: Updates the way error notices are displayed for the WooPay express checkout button. This feature is behind a feature flag and is not yet public.
-
-
