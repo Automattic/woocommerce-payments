@@ -519,7 +519,7 @@ jQuery( function ( $ ) {
 				upeComponents.paymentIntentId,
 				orderId,
 				savePaymentMethod,
-				$( '#wcpay_selected_upe_payment_type' ).val(),
+				paymentMethodType,
 				$( '#wcpay_payment_country' ).val()
 			);
 
@@ -785,12 +785,7 @@ jQuery( function ( $ ) {
 	// Handle the add payment method form for WooCommerce Payments.
 	$( 'form#add_payment_method' ).on( 'submit', function () {
 		// Skip adding legacy cards as UPE payment methods.
-		if (
-			'woocommerce_payments' ===
-			$(
-				"#add_payment_method input:checked[name='payment_method']"
-			).val()
-		) {
+		if ( isWCPayChosen() ) {
 			return;
 		}
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
@@ -807,17 +802,11 @@ jQuery( function ( $ ) {
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
 		// Skip handling legacy cards as UPE payment methods.
-		if (
-			'woocommerce_payments' ===
-			$( "#order_review input:checked[name='payment_method']" ).val()
-		) {
+		if ( isWCPayChosen() ) {
 			return;
 		}
 		const paymentMethodType = getSelectedGatewayPaymentMethod();
-		if (
-			! isUsingSavedPaymentMethod( paymentMethodType ) &&
-			isWCPayChosen()
-		) {
+		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
 				return false;
