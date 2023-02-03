@@ -10,9 +10,9 @@ import { NAMESPACE } from 'data/constants';
  */
 import { useApiFetch } from 'hooks/use-api-fetch';
 import { Country, OnboardingProps } from './types';
-import businessTypeStrings from 'onboarding/translations/types';
-import businessStructureStrings from 'onboarding/translations/structures';
-import businessTypeDescriptionStrings from 'onboarding/translations/descriptions';
+import businessTypeStrings from 'onboarding-experiment/translations/types';
+import businessStructureStrings from 'onboarding-experiment/translations/structures';
+import businessTypeDescriptionStrings from 'onboarding-experiment/translations/descriptions';
 
 type VerificationInfoData = string[];
 
