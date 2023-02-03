@@ -32,6 +32,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
+use WCPay\Blocks_Data_Extractor;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -1108,6 +1109,9 @@ class WC_Payments {
 
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
 
+		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
+		$blocks_data_extractor = new Blocks_Data_Extractor();
+
 		$body = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
 			'user_id'              => $user->ID,
@@ -1132,6 +1136,7 @@ class WC_Payments {
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
 				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
 				'return_url'                     => wc_get_cart_url(),
+				'blocks_data'                    => $blocks_data_extractor->get_data(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
