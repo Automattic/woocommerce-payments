@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 
 /**
  * WC_Payments_Platform_Checkout_Button_Handler class.
@@ -454,6 +455,12 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	public function should_show_platform_checkout_button() {
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
+			return false;
+		}
+
+		// Check if WooPay is available in the user country.
+		$platform_checkout_utilities = new Platform_Checkout_Utilities();
+		if ( ! $platform_checkout_utilities->is_country_available( $this->gateway ) ) {
 			return false;
 		}
 

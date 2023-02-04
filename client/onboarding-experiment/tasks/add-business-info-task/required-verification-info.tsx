@@ -8,10 +8,10 @@ import { Card, CardBody } from '@wordpress/components';
  * Internal dependencies
  */
 import { LoadableBlock } from 'components/loadable';
-import { useRequiredVerificationInfo } from 'onboarding/hooks';
-import Requirements from 'onboarding/requirements';
-import { OnboardingProps } from 'onboarding/types';
-import strings from 'onboarding/strings';
+import { useRequiredVerificationInfo } from 'onboarding-experiment/hooks';
+import Requirements from 'onboarding-experiment/requirements';
+import { OnboardingProps } from 'onboarding-experiment/types';
+import strings from 'onboarding-experiment/strings';
 
 const RequiredVerificationInfo = ( {
 	country,
