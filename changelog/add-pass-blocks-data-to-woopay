@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Pass settings fields of the plugins that use newsletter block to woopay.
