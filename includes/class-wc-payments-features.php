@@ -146,6 +146,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Payment Request is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_payment_request_enabled() {
+		return 'yes' === WC_Payments::get_gateway()->get_option( 'payment_request' );
+	}
+
+	/**
 	 * Checks whether WooPay Express Checkout is enabled.
 	 *
 	 * @return bool
@@ -162,6 +171,15 @@ class WC_Payments_Features {
 	 */
 	public static function is_auth_and_capture_enabled() {
 		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
+	}
+
+	/**
+	 * Checks whether any express checkout method is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_express_checkout_enabled() {
+		return self::is_woopay_express_checkout_enabled() || self::is_payment_request_enabled();
 	}
 
 	/**
