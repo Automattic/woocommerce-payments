@@ -15,6 +15,7 @@ import {
 	PAYMENT_METHOD_NAME_EPS,
 	PAYMENT_METHOD_NAME_GIROPAY,
 	PAYMENT_METHOD_NAME_IDEAL,
+	PAYMENT_METHOD_NAME_LINK,
 	PAYMENT_METHOD_NAME_P24,
 	PAYMENT_METHOD_NAME_SEPA,
 	PAYMENT_METHOD_NAME_SOFORT,
@@ -29,7 +30,7 @@ import {
 	getPaymentIntentFromSession,
 } from '../utils/upe';
 import { decryptClientSecret } from '../utils/encryption';
-import enableStripeLinkPaymentMethod from '../stripe-link';
+import StripeLinkButton from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 import {
@@ -45,6 +46,9 @@ jQuery( function ( $ ) {
 	const isUPEEnabled = getUPEConfig( 'isUPEEnabled' );
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const enabledBillingFields = getUPEConfig( 'enabledBillingFields' );
+	const isPlatformCheckoutEnabled = getUPEConfig(
+		'isPlatformCheckoutEnabled'
+	);
 	const isStripeLinkEnabled =
 		paymentMethodsConfig.link !== undefined &&
 		paymentMethodsConfig.card !== undefined;
@@ -56,10 +60,11 @@ jQuery( function ( $ ) {
 			upeElement: null,
 			paymentIntentId: null,
 			paymentIntentClientSecret: null,
-			isUPEComplete: null,
+			isUPEComplete: false,
 			country: null,
 		};
 	}
+	const stripeLinkButton = new StripeLinkButton( isPlatformCheckoutEnabled );
 
 	if ( ! publishableKey ) {
 		// If no configuration is present, probably this is not the checkout page.
@@ -205,6 +210,65 @@ jQuery( function ( $ ) {
 	};
 
 	/**
+	 * Passes appropriate elements to Link component and enables button.
+	 *
+	 * @param {string} paymentMethodType Stripe payment method type.
+	 */
+	const maybeEnableLink = function ( paymentMethodType ) {
+		if ( isStripeLinkEnabled && 'link' === paymentMethodType ) {
+			const elements = gatewayUPEComponents[ paymentMethodType ].elements;
+			const upeElement =
+				gatewayUPEComponents[ paymentMethodType ].upeElement;
+
+			stripeLinkButton.init( {
+				api: api,
+				elements: elements,
+				emailId: 'billing_email',
+				complete_billing: () => {
+					return true;
+				},
+				complete_shipping: () => {
+					return (
+						document.getElementById(
+							'ship-to-different-address-checkbox'
+						) &&
+						document.getElementById(
+							'ship-to-different-address-checkbox'
+						).checked
+					);
+				},
+				shipping_fields: {
+					line1: 'shipping_address_1',
+					line2: 'shipping_address_2',
+					city: 'shipping_city',
+					state: 'shipping_state',
+					postal_code: 'shipping_postcode',
+					country: 'shipping_country',
+					first_name: 'shipping_first_name',
+					last_name: 'shipping_last_name',
+				},
+				billing_fields: {
+					line1: 'billing_address_1',
+					line2: 'billing_address_2',
+					city: 'billing_city',
+					state: 'billing_state',
+					postal_code: 'billing_postcode',
+					country: 'billing_country',
+					first_name: 'billing_first_name',
+					last_name: 'billing_last_name',
+				},
+				showError: showErrorCheckout,
+			} );
+
+			upeElement.on( 'ready', () => {
+				if ( 'link' === getSelectedGatewayPaymentMethod() ) {
+					stripeLinkButton.enable();
+				}
+			} );
+		}
+	};
+
+	/**
 	 * Mounts Stripe UPE element if feature is enabled.
 	 *
 	 * @param {string} paymentMethodType Stripe payment method type.
@@ -310,47 +374,6 @@ jQuery( function ( $ ) {
 		} );
 		gatewayUPEComponents[ paymentMethodType ].elements = elements;
 
-		if ( isStripeLinkEnabled ) {
-			enableStripeLinkPaymentMethod( {
-				api: api,
-				elements: elements,
-				emailId: 'billing_email',
-				complete_billing: () => {
-					return true;
-				},
-				complete_shipping: () => {
-					return (
-						document.getElementById(
-							'ship-to-different-address-checkbox'
-						) &&
-						document.getElementById(
-							'ship-to-different-address-checkbox'
-						).checked
-					);
-				},
-				shipping_fields: {
-					line1: 'shipping_address_1',
-					line2: 'shipping_address_2',
-					city: 'shipping_city',
-					state: 'shipping_state',
-					postal_code: 'shipping_postcode',
-					country: 'shipping_country',
-					first_name: 'shipping_first_name',
-					last_name: 'shipping_last_name',
-				},
-				billing_fields: {
-					line1: 'billing_address_1',
-					line2: 'billing_address_2',
-					city: 'billing_city',
-					state: 'billing_state',
-					postal_code: 'billing_postcode',
-					country: 'billing_country',
-					first_name: 'billing_first_name',
-					last_name: 'billing_last_name',
-				},
-			} );
-		}
-
 		const upeSettings = {};
 		if ( getUPEConfig( 'cartContainsSubscription' ) ) {
 			upeSettings.terms = getTerms( paymentMethodsConfig, 'always' );
@@ -371,13 +394,18 @@ jQuery( function ( $ ) {
 		upeElement.mount( upeDOMElement );
 		unblockUI( $upeContainer );
 		upeElement.on( 'change', ( event ) => {
-			const selectedUPEPaymentType = event.value.type;
+			let selectedUPEPaymentType = event.value.type;
+			if ( 'card' === selectedUPEPaymentType ) {
+				selectedUPEPaymentType = 'link';
+			}
 			gatewayUPEComponents[ selectedUPEPaymentType ].country =
 				event.value.country;
 			gatewayUPEComponents[ selectedUPEPaymentType ].isUPEComplete =
 				event.complete;
 		} );
 		gatewayUPEComponents[ paymentMethodType ].upeElement = upeElement;
+
+		maybeEnableLink( paymentMethodType );
 	};
 
 	// Only attempt to mount the card element once that section of the page has loaded. We can use the updated_checkout
@@ -761,6 +789,7 @@ jQuery( function ( $ ) {
 		PAYMENT_METHOD_NAME_EPS,
 		PAYMENT_METHOD_NAME_GIROPAY,
 		PAYMENT_METHOD_NAME_IDEAL,
+		PAYMENT_METHOD_NAME_LINK,
 		PAYMENT_METHOD_NAME_P24,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
@@ -843,6 +872,12 @@ jQuery( function ( $ ) {
 			}
 		}
 	);
+
+	$( document ).on( 'payment_method_selected', () => {
+		if ( 'link' === getSelectedGatewayPaymentMethod() ) {
+			stripeLinkButton.enable();
+		}
+	} );
 
 	// On every page load, check to see whether we should display the authentication
 	// modal and display it if it should be displayed.

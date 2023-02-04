@@ -146,6 +146,24 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Auth & Capture (uncaptured transactions tab, capture from payment details page) is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_auth_and_capture_enabled() {
+		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
+	}
+
+	/**
+	 * Checks whether Payment Request is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_payment_request_enabled() {
+		return 'yes' === WC_Payments::get_gateway()->get_option( 'payment_request' );
+	}
+
+	/**
 	 * Checks whether WooPay Express Checkout is enabled.
 	 *
 	 * @return bool
@@ -156,12 +174,25 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Auth & Capture (uncaptured transactions tab, capture from payment details page) is enabled.
+	 * Checks whether Link is enabled as UPE payment method.
 	 *
 	 * @return bool
 	 */
-	public static function is_auth_and_capture_enabled() {
-		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
+	public static function is_link_enabled() {
+		return in_array(
+			WCPay\Payment_Methods\Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
+			true
+		);
+	}
+
+	/**
+	 * Checks whether any express checkout method is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_express_checkout_enabled() {
+		return self::is_woopay_express_checkout_enabled() || self::is_payment_request_enabled() || self::is_link_enabled();
 	}
 
 	/**
@@ -174,6 +205,7 @@ class WC_Payments_Features {
 			[
 				'upe'                     => self::is_upe_enabled(),
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
+				'link'                    => self::is_link_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
 				'platformCheckout'        => self::is_platform_checkout_eligible(),

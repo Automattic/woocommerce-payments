@@ -32,9 +32,8 @@ use WC_Payment_Token_CC;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
+use WC_Payments_Features;
 use WP_User;
-
-
 
 /**
  * UPE Payment method extended from WCPay generic Gateway.
@@ -318,12 +317,16 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				'wcpay_upe_intent_error'
 			);
 		}
+		$payment_method_types = [ $this->payment_method->get_id() ];
+		if ( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $this->payment_method->get_id() && WC_Payments_Features::is_link_enabled() ) {
+			$payment_method_types[] = CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		}
 
 		try {
 			$payment_intent = $this->payments_api_client->create_intention(
 				$converted_amount,
 				strtolower( $currency ),
-				[ $this->payment_method->get_id() ],
+				$payment_method_types,
 				$order_id ?? 0,
 				$capture_method,
 				[ 'fingerprint' => $fingerprint ]
@@ -426,10 +429,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				'invalid_payment_method'
 			);
 		}
+		$payment_method_types = [ $this->payment_method->get_id() ];
+		if ( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $this->payment_method->get_id() && WC_Payments_Features::is_link_enabled() ) {
+			$payment_method_types[] = CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		}
 
 		$setup_intent = $this->payments_api_client->create_setup_intention(
 			$customer_id,
-			[ $this->payment_method->get_id() ]
+			$payment_method_types
 		);
 		return [
 			'id'            => $setup_intent['id'],
@@ -671,7 +678,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				return;
 			}
 
-			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );
+			Logger::log( "Begin processing UPE redirect payment for order #$order_id for the amount of {$order->get_total()}" );
 
 			// Get user/customer for order.
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );

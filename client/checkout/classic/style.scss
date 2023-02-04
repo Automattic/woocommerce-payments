@@ -45,17 +45,38 @@
 	position: relative;
 }
 
-.wcpay-checkout-email-field button.wcpay-stripelink-modal-trigger {
-	display: none;
-	position: absolute;
-	right: 5px;
-	width: 64px;
+#wcpay-stripe-link-button-wrapper button {
 	height: 40px;
-	background: no-repeat
-		url( '../../../assets/images/payment-methods/link.svg' );
-	background-color: none;
+	width: 100%;
+	background-color: #fff;
 	cursor: pointer;
-	border: none;
+	margin: 0 auto;
+	border: 2px solid rgb( 247, 247, 247 );
+}
+#wcpay-stripe-link-button-wrapper button:active {
+	background-color: rgb( 247, 247, 247 );
+}
+
+#wcpay-stripe-link-button-wrapper button:disabled {
+	background: none;
+	outline: 0;
+	box-shadow: none;
+}
+
+#wcpay-stripe-link-button-wrapper button {
+	font-size: 1em;
+	text-align: center;
+	padding: 0;
+	margin: 0;
+}
+
+#wcpay-stripe-link-button-wrapper button #logo {
+	height: 40px;
+	width: 50px;
+	background: no-repeat
+		url( '../../../assets/images/payment-methods/link.svg' ) center -3px;
+	background-color: none;
+	display: inline-block;
 }
 
 @import '../platform-checkout/style';

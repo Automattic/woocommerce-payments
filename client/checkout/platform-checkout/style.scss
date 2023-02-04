@@ -9,6 +9,7 @@
 /* stylelint-enable selector-id-pattern */
 
 #contact-fields,
+.wcpay-checkout-email-field,
 .platform-checkout-billing-email {
 	.wc-block-components-text-input,
 	.woocommerce-input-wrapper {
@@ -18,6 +19,8 @@
 
 		.wc-block-components-spinner {
 			right: 10px;
+			top: 12px;
+			height: 24px;
 			width: 24px;
 		}
 	}

@@ -344,16 +344,8 @@ class WC_Payments_API_Client {
 		if ( '' !== $selected_upe_payment_type ) {
 			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
 			$request['payment_method_types'] = [ $selected_upe_payment_type ];
-
-			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
-				$is_link_enabled = in_array(
-					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-					\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
-					true
-				);
-				if ( $is_link_enabled ) {
-					$request['payment_method_types'][] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-				}
+			if ( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type && WC_Payments_Features::is_link_enabled() ) {
+				$request['payment_method_types'][] = CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 			}
 		}
 		if ( $payment_country && ! $this->is_in_dev_mode() ) {

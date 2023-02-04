@@ -165,6 +165,13 @@ class WC_Payments {
 	private static $platform_checkout_button_handler;
 
 	/**
+	 * Instance of WC_Payments_Stripe_Link_Button_Handler, created in init function
+	 *
+	 * @var WC_Payments_Stripe_Link_Button_Handler
+	 */
+	private static $stripe_link_button_handler;
+
+	/**
 	 * Instance of WC_Payments_Apple_Pay_Registration, created in init function
 	 *
 	 * @var WC_Payments_Apple_Pay_Registration
@@ -302,6 +309,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-token-service.php';
 		include_once __DIR__ . '/class-wc-payments-payment-request-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-platform-checkout-button-handler.php';
+		include_once __DIR__ . '/class-wc-payments-stripe-link-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
 		include_once __DIR__ . '/exceptions/class-add-payment-method-exception.php';
 		include_once __DIR__ . '/exceptions/class-amount-too-small-exception.php';
@@ -400,6 +408,7 @@ class WC_Payments {
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
 		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway() );
+		self::$stripe_link_button_handler       = new WC_Payments_Stripe_Link_Button_Handler( self::$account, self::get_gateway() );
 		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -455,6 +464,17 @@ class WC_Payments {
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::get_gateway(), self::$account );
+		}
+
+		if ( WC_Payments_Features::is_express_checkout_enabled() ) {
+			add_action( 'woocommerce_after_add_to_cart_quantity', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
+			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
+			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
+
+			if ( WC_Payments_Features::is_payment_request_enabled() ) {
+				// Load payment request buttons on the Pay for Order page.
+				add_action( 'before_woocommerce_pay_form', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
+			}
 		}
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
@@ -1387,6 +1407,23 @@ class WC_Payments {
 	public static function enqueue_dev_runtime_scripts() {
 		if ( ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) && file_exists( WCPAY_ABSPATH . 'dist/runtime.js' ) ) {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
+		}
+	}
+
+	/**
+	 * Display express checkout separator only when express buttons are displayed.
+	 *
+	 * @return void
+	 */
+	public static function display_express_checkout_separator_if_necessary() {
+		$woopay          = self::$platform_checkout_button_handler->should_show_platform_checkout_button() && self::$platform_checkout_button_handler->is_woopay_enabled();
+		$payment_request = self::$payment_request_button_handler->should_show_payment_request_button();
+		$link            = self::$stripe_link_button_handler->should_show_link_button();
+		$should_hide     = $payment_request && ! $woopay && ! $link;
+		if ( $woopay || $link || $payment_request ) {
+			?>
+			<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;<?php echo $should_hide ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
+			<?php
 		}
 	}
 }

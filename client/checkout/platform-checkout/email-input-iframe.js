@@ -2,11 +2,17 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { getConfig } from 'wcpay/utils/checkout';
+import { getConfig, Spinner } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 import { buildAjaxURL } from '../../payment-request/utils';
+import {
+	isLinkCheckoutAuthenticated,
+	isLinkModalOpen,
+	setWooPayQueryStatus,
+	clearWooPayQueryStatus,
+} from '../utils/link.js';
 import { getTargetElement, validateEmail } from './utils';
 
 export const handlePlatformCheckoutEmailInput = async (
@@ -24,9 +30,8 @@ export const handlePlatformCheckoutEmailInput = async (
 		return;
 	}
 
-	const spinner = document.createElement( 'div' );
+	const spinner = new Spinner( platformCheckoutEmailInput );
 	const parentDiv = platformCheckoutEmailInput.parentNode;
-	spinner.classList.add( 'wc-block-components-spinner' );
 
 	// Make the login session iframe wrapper.
 	const loginSessionIframeWrapper = document.createElement( 'div' );
@@ -221,11 +226,19 @@ export const handlePlatformCheckoutEmailInput = async (
 		}
 
 		document.body.style.overflow = '';
+		clearWooPayQueryStatus( platformCheckoutEmailInput );
 	};
 
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email ) => {
+		if (
+			isLinkCheckoutAuthenticated( platformCheckoutEmailInput ) ||
+			isLinkModalOpen()
+		) {
+			spinner.remove();
+			return;
+		}
 		const urlParams = new URLSearchParams();
 		urlParams.append( 'email', email );
 		urlParams.append(
@@ -302,7 +315,7 @@ export const handlePlatformCheckoutEmailInput = async (
 	};
 
 	const platformCheckoutLocateUser = async ( email ) => {
-		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
+		spinner.show();
 
 		if ( parentDiv.contains( errorMessage ) ) {
 			parentDiv.removeChild( errorMessage );
@@ -403,6 +416,10 @@ export const handlePlatformCheckoutEmailInput = async (
 			.then( ( data ) => {
 				// Dispatch an event after we get the response.
 				dispatchUserExistEvent( data[ 'user-exists' ] );
+				setWooPayQueryStatus(
+					platformCheckoutEmailInput,
+					data[ 'user-exists' ]
+				);
 
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
@@ -419,6 +436,7 @@ export const handlePlatformCheckoutEmailInput = async (
 				if ( 'AbortError' !== err.name ) {
 					showErrorMessage();
 				}
+				setWooPayQueryStatus( platformCheckoutEmailInput, false );
 			} )
 			.finally( () => {
 				spinner.remove();
@@ -437,10 +455,18 @@ export const handlePlatformCheckoutEmailInput = async (
 	};
 
 	const openLoginSessionIframe = ( email ) => {
+		if (
+			isLinkCheckoutAuthenticated( platformCheckoutEmailInput ) ||
+			isLinkModalOpen()
+		) {
+			spinner.remove();
+			return;
+		}
+
 		const emailParam = new URLSearchParams();
 
 		if ( validateEmail( email ) ) {
-			parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
+			spinner.show();
 			emailParam.append( 'email', email );
 			emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
 		}
@@ -475,6 +501,7 @@ export const handlePlatformCheckoutEmailInput = async (
 
 		const email = e.currentTarget.value;
 
+		setWooPayQueryStatus( platformCheckoutEmailInput, 'checking' );
 		clearTimeout( timer );
 		spinner.remove();
 

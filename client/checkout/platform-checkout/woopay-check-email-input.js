@@ -5,6 +5,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from '../../payment-request/utils';
+import { setWooPayQueryStatus } from '../utils/link.js';
 import { getTargetElement, validateEmail } from './utils';
 
 export const woopayCheckEmailInput = async ( field ) => {
@@ -90,13 +91,20 @@ export const woopayCheckEmailInput = async ( field ) => {
 			.then( ( data ) => {
 				// Dispatch an event after we get the response.
 				dispatchUserExistEvent( data[ 'user-exists' ] );
+				setWooPayQueryStatus(
+					platformCheckoutEmailInput,
+					data[ 'user-exists' ]
+				);
 			} )
-			.catch( () => {} );
+			.catch( () => {
+				setWooPayQueryStatus( platformCheckoutEmailInput, false );
+			} );
 	};
 
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
 		const email = e.currentTarget.value;
 
+		setWooPayQueryStatus( platformCheckoutEmailInput, 'checking' );
 		clearTimeout( timer );
 
 		timer = setTimeout( () => {
