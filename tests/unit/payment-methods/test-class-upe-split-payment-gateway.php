@@ -289,6 +289,8 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$this->mock_payment_gateways[ $payment_method_id ] = $mock_gateway;
 
 			WC_Helper_Site_Currency::$mock_site_currency = '';
+
+			update_option( '_wcpay_feature_upe_split', '1' );
 		}
 	}
 

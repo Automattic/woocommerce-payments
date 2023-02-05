@@ -445,6 +445,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens_not_added_from_different_gateway() {
+		update_option( '_wcpay_feature_upe_split', '1' );
 		$gateway_id      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$tokens          = [];
 		$payment_methods = [ Payment_Method::CARD, Payment_Method::SEPA ];
@@ -486,6 +487,8 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $gateway_id, $result_tokens[1]->get_gateway_id() );
 		$this->assertEquals( 'pm_mock0', $result_tokens[0]->get_token() );
 		$this->assertEquals( 'pm_222', $result_tokens[1]->get_token() );
+
+		update_option( '_wcpay_feature_upe_split', '0' );
 	}
 
 	public function test_woocommerce_get_customer_payment_tokens_payment_methods_only_for_retrievable_types() {
