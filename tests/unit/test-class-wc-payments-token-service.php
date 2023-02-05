@@ -103,7 +103,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
 
-		$this->assertEquals( 'woocommerce_payments_sepa_debit', $token->get_gateway_id() );
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
 		$this->assertEquals( 1, $token->get_user_id() );
 		$this->assertEquals( 'pm_mock', $token->get_token() );
 		$this->assertEquals( '3000', $token->get_last4() );
@@ -124,7 +124,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
 
-		$this->assertSame( 'woocommerce_payments_link', $token->get_gateway_id() );
+		$this->assertSame( 'woocommerce_payments', $token->get_gateway_id() );
 		$this->assertSame( 1, $token->get_user_id() );
 		$this->assertSame( 'pm_mock', $token->get_token() );
 		$this->assertSame( 'test@test.com', $token->get_email() );
@@ -585,7 +585,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	private function generate_sepa_token( $stripe_id, $wp_id = 0 ) {
 		$token = new WC_Payment_Token_WCPay_SEPA();
 		$token->set_id( $wp_id );
-		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
+		$token->set_gateway_id( 'woocommerce_payments' );
 		$token->set_token( $stripe_id );
 		$token->set_last4( '3000' );
 		$token->save();
