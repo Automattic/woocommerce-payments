@@ -12,7 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Logger;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Constants\Payment_Method;
-use WC_Payments_Features;
 
 /**
  * Handles and process WC payment tokens API.
