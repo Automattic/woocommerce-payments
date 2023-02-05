@@ -175,6 +175,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$token_service,
 			$action_scheduler_service,
 			$mock_payment_methods['card'],
+			$mock_payment_methods,
 			$mock_rate_limiter,
 			$order_service
 		);

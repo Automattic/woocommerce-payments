@@ -39,12 +39,7 @@ use WC_Subscriptions;
 use WC_Subscriptions_Cart;
 use WP_User;
 
-/**
- * Overriding global function within namespace for testing
- */
-function get_woocommerce_currency() {
-	return UPE_Payment_Gateway_Test::$mock_site_currency ? UPE_Payment_Gateway_Test::$mock_site_currency : \get_woocommerce_currency();
-}
+require_once dirname( __FILE__ ) . '/../helpers/class-wc-helper-site-currency.php';
 
 /**
  * UPE_Payment_Gateway unit tests
@@ -520,7 +515,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->set_cart_contains_subscription_items( false );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$result = $this->mock_upe_gateway->create_payment_intent( $order_id );
+		$result = $this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order_id );
 	}
 
 	public function test_create_payment_intent_defaults_to_automatic_capture() {
@@ -540,7 +535,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( $order_id );
+		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order_id );
 	}
 
 	public function test_create_payment_intent_with_automatic_capture() {
@@ -561,7 +556,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( $order_id );
+		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order_id );
 	}
 
 	public function test_create_payment_intent_with_manual_capture() {
@@ -582,7 +577,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( $order_id );
+		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order_id );
 	}
 
 	public function test_create_payment_intent_with_fingerprint() {
@@ -604,7 +599,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( $order_id, $fingerprint );
+		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order_id, $fingerprint );
 	}
 
 	public function test_create_payment_intent_with_no_fingerprint() {
@@ -625,7 +620,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( $order_id );
+		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order_id );
 	}
 
 	public function test_create_setup_intent_existing_customer() {
@@ -653,7 +648,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_cart_contains_subscription_items( false );
 
-		$result = $this->mock_upe_gateway->create_setup_intent();
+		$result = $this->mock_upe_gateway->create_setup_intent( [ 'card' ] );
 
 		$this->assertEquals( 'seti_mock', $result['id'] );
 		$this->assertEquals( 'client_secret_mock', $result['client_secret'] );
@@ -685,7 +680,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->set_cart_contains_subscription_items( false );
 
-		$result = $this->mock_upe_gateway->create_setup_intent();
+		$result = $this->mock_upe_gateway->create_setup_intent( [ 'card' ] );
 
 		$this->assertEquals( 'seti_mock', $result['id'] );
 		$this->assertEquals( 'client_secret_mock', $result['client_secret'] );
@@ -1525,7 +1520,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$ideal_method      = $this->mock_payment_methods['ideal'];
 		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
 
-		self::$mock_site_currency = 'EUR';
+		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
 
 		$this->assertTrue( $card_method->is_currency_valid() );
 		$this->assertTrue( $giropay_method->is_currency_valid() );
@@ -1537,7 +1532,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $ideal_method->is_currency_valid() );
 		$this->assertFalse( $becs_method->is_currency_valid() );
 
-		self::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
 		$this->assertTrue( $card_method->is_currency_valid() );
 		$this->assertFalse( $giropay_method->is_currency_valid() );
@@ -1549,10 +1544,10 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $ideal_method->is_currency_valid() );
 		$this->assertFalse( $becs_method->is_currency_valid() );
 
-		self::$mock_site_currency = 'AUD';
+		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
 		$this->assertTrue( $becs_method->is_currency_valid() );
 
-		self::$mock_site_currency = '';
+		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
 
 	public function test_create_token_from_setup_intent_adds_token() {
@@ -1605,7 +1600,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->willReturn( $intent );
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$this->mock_upe_gateway->create_payment_intent( $order->get_id() );
+		$this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order->get_id() );
 	}
 
 	public function test_create_payment_intent_creates_new_intent_with_minimum_amount() {
@@ -1636,7 +1631,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			);
 		$this->set_get_upe_enabled_payment_method_statuses_return_value();
 
-		$result = $this->mock_upe_gateway->create_payment_intent( $order->get_id() );
+		$result = $this->mock_upe_gateway->create_payment_intent( [ 'card' ], $order->get_id() );
 		$this->assertsame( 'cs_mock', $result['client_secret'] );
 	}
 
@@ -1690,7 +1685,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$data           = $data[0];
 		$default_option = $this->mock_upe_gateway->get_option( 'upe_enabled_payment_method_ids' );
 		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $data['methods'] );
-		self::$mock_site_currency = $data['currency'];
+		WC_Helper_Site_Currency::$mock_site_currency = $data['currency'];
 		$this->set_get_upe_enabled_payment_method_statuses_return_value( $data['statuses'] );
 		$this->assertSame( $data['expected'], $this->mock_upe_gateway->maybe_filter_gateway_title( $data['title'], $data['id'] ) );
 		$this->mock_upe_gateway->update_option( 'upe_enabled_payment_method_ids', $default_option );
@@ -1743,7 +1738,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_link_payment_method_if_card_enabled() {
-		self::$mock_site_currency = 'USD';
+		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
 		$mock_upe_gateway = $this->getMockBuilder( UPE_Payment_Gateway::class )
 			->setConstructorArgs(
