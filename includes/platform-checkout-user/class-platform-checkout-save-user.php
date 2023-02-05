@@ -83,6 +83,10 @@ class Platform_Checkout_Save_User {
 		$platform_checkout_phone       = $this->platform_checkout_util->get_platform_checkout_phone();
 
 		if ( $should_save_platform_customer && $platform_checkout_phone ) {
+			$platform_checkout_source_url = $this->platform_checkout_util->get_platform_checkout_source_url();
+			$platform_checkout_is_blocks  = $this->platform_checkout_util->get_platform_checkout_is_blocks();
+			$platform_checkout_viewport   = $this->platform_checkout_util->get_platform_checkout_viewport();
+
 			// Add the metadata.
 			$metadata['platform_checkout_primary_first_name']   = wc_clean( $order->get_billing_first_name() );
 			$metadata['platform_checkout_primary_last_name']    = wc_clean( $order->get_billing_last_name() );
@@ -93,6 +97,9 @@ class Platform_Checkout_Save_User {
 			$metadata['platform_checkout_secondary_phone']      = wc_clean( $order->get_shipping_phone() );
 			$metadata['platform_checkout_secondary_company']    = wc_clean( $order->get_shipping_company() );
 			$metadata['platform_checkout_phone']                = $platform_checkout_phone;
+			$metadata['platform_checkout_source_url']           = $platform_checkout_source_url;
+			$metadata['platform_checkout_is_blocks']            = $platform_checkout_is_blocks;
+			$metadata['platform_checkout_viewport']             = $platform_checkout_viewport;
 		}
 
 		return $metadata;
