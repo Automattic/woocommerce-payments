@@ -164,7 +164,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		if ( document.querySelector( '.platform-checkout-otp-iframe' ) ) {
 			return;
 		}
-    
+
 		const viewportWidth = window.document.documentElement.clientWidth;
 		const viewportHeight = window.document.documentElement.clientHeight;
 
