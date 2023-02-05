@@ -69,13 +69,19 @@ class WC_Payments_Token_Service {
 
 		switch ( $payment_method['type'] ) {
 			case Payment_Method::SEPA:
-				$token = new WC_Payment_Token_WCPay_SEPA();
-				$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
+				$token      = new WC_Payment_Token_WCPay_SEPA();
+				$gateway_id = WC_Payments_Features::is_upe_split_enabled() ?
+					WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA :
+					CC_Payment_Gateway::GATEWAY_ID;
+				$token->set_gateway_id( $gateway_id );
 				$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
 				break;
 			case Payment_Method::LINK:
-				$token = new WC_Payment_Token_WCPay_Link();
-				$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK );
+				$token      = new WC_Payment_Token_WCPay_Link();
+				$gateway_id = WC_Payments_Features::is_upe_split_enabled() ?
+					WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK :
+					CC_Payment_Gateway::GATEWAY_ID;
+				$token->set_gateway_id( $gateway_id );
 				$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
 				break;
 			default:
