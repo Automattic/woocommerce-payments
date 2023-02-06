@@ -1,7 +1,7 @@
 name: "Build branch"
 
-# This action will run when it is triggered manually.
 on:
+  pull_request:
   workflow_dispatch:
 
 jobs:
