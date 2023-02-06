@@ -24,16 +24,11 @@ jobs:
           echo ":information_source: Unzipping to a folder to prevent double-zip issue ([known limitation](https://github.com/actions/upload-artifact#zipped-artifact-downloads)). Increase in artifact size is expected since we're uploading the folder." >> $GITHUB_STEP_SUMMARY
           unzip ${{ steps.build_plugin.outputs.release-filename }} -d zipfile
 
-      - name: "Get the branch name"
-        id: get_branch_name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        
       - name: "Upload the zip file as an artifact"
         uses: actions/upload-artifact@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: ${{ steps.get_branch_name.outputs.branch }}
+          name: "woocommerce-payments-${{ github.ref_name }}"
           path: zipfile
           retention-days: 7
