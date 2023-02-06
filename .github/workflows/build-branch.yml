@@ -27,7 +27,7 @@ jobs:
       - name: "Get the branch name"
         id: get_branch_name
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF##*/})"
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         
       - name: "Upload the zip file as an artifact"
         uses: actions/upload-artifact@v3
