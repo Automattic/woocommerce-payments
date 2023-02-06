@@ -29,6 +29,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: "woocommerce-payments-${{ github.ref_name }}"
+          name: "woocommerce-payments-live-branches"
           path: zipfile
           retention-days: 7
