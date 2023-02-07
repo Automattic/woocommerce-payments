@@ -322,7 +322,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 
 		$converted_amount = WC_Payments_Utils::prepare_amount( $amount, $currency );
 		if ( 1 > $converted_amount ) {
-			return $this->create_setup_intent();
+			return $this->create_setup_intent( $displayed_payment_methods );
 		}
 
 		$minimum_amount = WC_Payments_Utils::get_cached_minimum_amount( $currency );
