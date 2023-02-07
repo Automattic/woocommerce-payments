@@ -12,6 +12,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Connection_Exception;
@@ -133,6 +134,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $return_url = 'test_url';
 
 	/**
+	 * @var string Mocked value of return_url.
+	 */
+	private $icon_url = 'test_icon_url';
+
+	/**
 	 * Mocked object to be used as response from process_payment_using_saved_method()
 	 *
 	 * @var array
@@ -219,7 +225,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
 				->setConstructorArgs( [ $this->mock_token_service ] )
-				->setMethods( [ 'is_subscription_item_in_cart' ] )
+				->setMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
 				->getMock();
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 		}
@@ -1781,6 +1787,17 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 				)
 			);
 
+		$this->mock_payment_methods[ Payment_Method::LINK ]->expects( $this->any() )
+			->method( 'get_icon' )
+			->will(
+				$this->returnValue( $this->icon_url )
+			);
+		$this->mock_payment_methods[ Payment_Method::CARD ]->expects( $this->any() )
+			->method( 'get_icon' )
+			->will(
+				$this->returnValue( $this->icon_url )
+			);
+
 		$upe_checkout = new WC_Payments_UPE_Checkout(
 			$mock_upe_gateway,
 			$this->mock_platform_checkout_utilities,
@@ -1792,12 +1809,18 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$upe_checkout->get_payment_fields_js_config()['paymentMethodsConfig'],
 			[
 				'card' => [
-					'isReusable' => true,
-					'title'      => 'Credit card / debit card',
+					'isReusable'     => true,
+					'title'          => 'Credit card / debit card',
+					'icon'           => $this->icon_url,
+					'showSaveOption' => true,
+
 				],
 				'link' => [
-					'isReusable' => true,
-					'title'      => 'Link',
+					'isReusable'     => true,
+					'title'          => 'Link',
+					'icon'           => $this->icon_url,
+					'showSaveOption' => true,
+
 				],
 			]
 		);

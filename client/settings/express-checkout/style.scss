@@ -23,6 +23,10 @@
 				align-items: center;
 				justify-content: center;
 
+				label {
+					display: none;
+				}
+
 				.components-base-control__field {
 					margin: 0 4px 0 0;
 				}
