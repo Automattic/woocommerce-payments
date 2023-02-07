@@ -113,8 +113,8 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 
 		if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			$payment_fields['checkoutTitle']        = $this->gateway->get_checkout_title();
-			$payment_fields['upePaymentIntentData'] = WC()->session->get( UPE_Payment_Gateway::KEY_UPE_PAYMENT_INTENT );
-			$payment_fields['upeSetupIntentData']   = WC()->session->get( UPE_Payment_Gateway::KEY_UPE_SETUP_INTENT );
+			$payment_fields['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session();
+			$payment_fields['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session();
 		}
 
 		$enabled_billing_fields = [];
