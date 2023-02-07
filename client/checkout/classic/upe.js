@@ -139,11 +139,11 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Finds selected payment gateway and returns matching Stripe payment method for gateway.
+	 * Finds selected UPE payment gateway and returns matching Stripe payment method for gateway.
 	 *
-	 * @return {string} Stripe payment method type
+	 * @return {string} Stripe payment method type in case of type UPE, null otherwise
 	 */
-	const getSelectedGatewayPaymentMethod = () => {
+	const getSelectedUPEGatewayPaymentMethod = () => {
 		const gatewayCardId = getUPEConfig( 'gatewayId' );
 		let selectedGatewayId = null;
 
@@ -453,7 +453,7 @@ jQuery( function ( $ ) {
 	 * @return {boolean} false if incomplete.
 	 */
 	const checkUPEForm = async ( $form, returnUrl = '#' ) => {
-		const paymentMethodType = getSelectedGatewayPaymentMethod();
+		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 		const upeElement = upeComponents.upeElement;
 		const elements = upeComponents.elements;
@@ -513,7 +513,7 @@ jQuery( function ( $ ) {
 
 		try {
 			// Update payment intent with level3 data, customer and maybe setup for future use.
-			const paymentMethodType = getSelectedGatewayPaymentMethod();
+			const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 			const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 			const updateResponse = await api.updateIntent(
 				upeComponents.paymentIntentId,
@@ -563,7 +563,7 @@ jQuery( function ( $ ) {
 		blockUI( $form );
 
 		try {
-			const paymentMethodType = getSelectedGatewayPaymentMethod();
+			const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 			const upeComponents = gatewayUPEComponents[ paymentMethodType ];
 			const { error } = await api.getStripe().confirmSetup( {
 				elements: upeComponents.elements,
@@ -769,7 +769,7 @@ jQuery( function ( $ ) {
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
-		const paymentMethodType = getSelectedGatewayPaymentMethod();
+		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
 			const paymentIntentId =
 				gatewayUPEComponents[ paymentMethodType ].paymentIntentId;
@@ -789,7 +789,7 @@ jQuery( function ( $ ) {
 			return;
 		}
 		if ( ! $( '#wcpay-setup-intent' ).val() ) {
-			const paymentMethodType = getSelectedGatewayPaymentMethod();
+			const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 			const paymentIntentId =
 				gatewayUPEComponents[ paymentMethodType ].paymentIntentId;
 			if ( isUPEEnabled && paymentIntentId ) {
@@ -801,12 +801,12 @@ jQuery( function ( $ ) {
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
-		// Skip handling legacy cards as UPE payment methods.
-		if ( isWCPayChosen() ) {
+		// Skip handling non-UPE payment methods.
+		const upePaymentMethodType = getSelectedUPEGatewayPaymentMethod();
+		if ( null === getSelectedUPEGatewayPaymentMethod() ) {
 			return;
 		}
-		const paymentMethodType = getSelectedGatewayPaymentMethod();
-		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
+		if ( ! isUsingSavedPaymentMethod( upePaymentMethodType ) ) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
 				return false;
@@ -826,7 +826,7 @@ jQuery( function ( $ ) {
 			)
 				? 'always'
 				: 'never';
-			const paymentMethodType = getSelectedGatewayPaymentMethod();
+			const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 			if ( ! paymentMethodType ) {
 				return;
 			}
