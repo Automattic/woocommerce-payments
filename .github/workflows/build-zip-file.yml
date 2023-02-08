@@ -39,7 +39,7 @@ jobs:
 
   smoke-tests:
     runs-on: ubuntu-20.04
-    if: ${{ inputs.skip_smoke_tests }}
+    if: ${{ ! inputs.skip_smoke_tests }}
     needs: build-zip
 
     strategy:
