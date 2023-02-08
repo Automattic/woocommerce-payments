@@ -45,6 +45,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: woocommerce-payments
+          path: woocommerce-payments-build
 
       - name: Display structure of downloaded files
-        run: ls -R
+        run: ls -l
