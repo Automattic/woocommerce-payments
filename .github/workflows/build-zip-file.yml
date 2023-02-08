@@ -32,3 +32,14 @@ jobs:
           name: "woocommerce-payments"
           path: release/woocommerce-payments
           retention-days: 7
+
+  smoke-tests:
+    name: "Run smoke tests on build"
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: woocommerce-payments
+
+      - name: Display structure of downloaded files
+        run: ls -R
