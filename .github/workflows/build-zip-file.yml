@@ -81,6 +81,7 @@ jobs:
           zip -r woocommerce-payments-build.zip woocommerce-payments-build
           rm -rf woocommerce-payments-build
           echo "PLUGIN_FILE=woocommerce-payments-build.zip" >> $GITHUB_ENV
+          ls -l
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
