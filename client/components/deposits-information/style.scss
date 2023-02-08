@@ -59,3 +59,100 @@
 		padding: 8px 0;
 	}
 }
+
+.jackpot {
+	user-select: none;
+	.wcpay-deposits-information-block {
+		flex: initial;
+		padding: initial;
+		border: 0;
+	}
+}
+
+.jackpot-enabled {
+	font-weight: bold;
+	font-size: 200%;
+	.wcpay-deposits-information-block__title {
+		font-size: 100%;
+		color: green;
+	}
+	.wcpay-deposits-information-block__value {
+		font-size: 100%;
+		animation: blinkEffect 1s ease-out infinite;
+		text-align: center;
+	}
+
+	position: absolute;
+	width: 678px;
+	background: white;
+	height: 214px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+.jackpot-gif {
+	position: absolute;
+	width: 100%;
+	top: 950px;
+	left: 0;
+	right: 0;
+	z-index: 9999;
+	outline: 10px solid white;
+}
+
+.jackpot-message {
+	background: white;
+	text-align: center;
+	position: absolute;
+	width: 100%;
+	top: 1400px;
+	left: 0;
+	right: 0;
+	z-index: 9999;
+	outline: 10px solid white;
+	font-size: 48px;
+}
+
+.clickEffect {
+	position: fixed;
+	box-sizing: border-box;
+	border-style: solid;
+	border-color: #7f54b3;
+	border-radius: 50%;
+	animation: clickEffect 0.25s ease-out;
+	z-index: 99999;
+}
+@keyframes clickEffect {
+	0% {
+		opacity: 1;
+		width: 0.5em;
+		height: 0.5em;
+		margin: -0.25em;
+		border-width: 0.5em;
+	}
+	100% {
+		opacity: 0.2;
+		width: 15em;
+		height: 15em;
+		margin: -7.5em;
+		border-width: 0.03em;
+	}
+}
+
+@keyframes blinkEffect {
+	0% {
+		color: black;
+	}
+	50% {
+		color: green;
+	}
+	100% {
+		color: black;
+	}
+}
+
+.woocommerce-layout__header {
+	display: none;
+}

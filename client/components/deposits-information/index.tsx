@@ -24,6 +24,7 @@ import { formatCurrency, formatCurrencyName } from 'utils/currency';
 import { useAllDepositsOverviews } from 'wcpay/data';
 
 import './style.scss';
+import EasterEgg from './easter-egg';
 
 interface OverviewProps {
 	overview: AccountOverview.Overview;
@@ -108,11 +109,25 @@ const DepositsInformationOverview: React.FunctionComponent< OverviewProps > = (
 			</CardHeader>
 
 			<Flex className="wcpay-deposits-information-row" align="normal">
-				<DepositsInformationBlock
-					title={ __( 'Pending balance', 'woocommerce-payments' ) }
-					value={ formatCurrency( pendingAmount, currency ) }
-					children={ pendingDepositsLink }
-				/>
+				<EasterEgg>
+					{ ( amount, easterEggMode ) => (
+						<DepositsInformationBlock
+							title={
+								easterEggMode
+									? '🤑 Jackpot Mode 🤑'
+									: __(
+											'Pending balance',
+											'woocommerce-payments'
+									  )
+							}
+							value={ formatCurrency(
+								amount + 112399,
+								currency
+							) }
+							children={ pendingDepositsLink }
+						/>
+					) }
+				</EasterEgg>
 				<DepositsInformationBlock
 					title={ __( 'Next deposit', 'woocommerce-payments' ) }
 					value={ formatCurrency( nextScheduledAmount, currency ) }
