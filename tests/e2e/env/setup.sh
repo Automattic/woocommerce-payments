@@ -218,7 +218,7 @@ cli wp user delete "$WC_GUEST_EMAIL" --yes
 echo "Adding customer account ..."
 cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer --user_pass="$WC_CUSTOMER_PASSWORD"
 
-if [[ -n $PLUGIN_FILE ]]; then
+if [[ -n $PLUGIN_FILE_PATH ]]; then
 	ls -l
 	echo "Installing & activating WooCommerce Payments from zip file..."
 	cli wp plugin install "$PLUGIN_FILE" --activate
