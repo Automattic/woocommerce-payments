@@ -385,14 +385,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( UPE_Split_Payment_Gateway::class !== get_class( $this ) ) {
 			// Check if subscriptions are enabled and add support for them.
 			$this->maybe_init_subscriptions();
+			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		}
 
 		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
-		if ( $this->is_saved_cards_enabled() ) {
+		if ( $this->is_saved_cards_enabled() || true ) {
 			array_push( $this->supports, 'tokenization', 'add_payment_method' );
 		}
 
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
 		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );

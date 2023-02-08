@@ -74,6 +74,8 @@ class WC_Payments_Checkout {
 		$this->customer_service       = $customer_service;
 
 		add_action( 'wc_payments_add_payment_fields', [ $this, 'payment_fields' ] );
+
+		$this->gateway->setup_hooks();
 	}
 
 	/**

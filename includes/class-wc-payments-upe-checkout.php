@@ -88,6 +88,8 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this->gateway, 'init_setup_intent_ajax' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 
+		$this->gateway->setup_hooks();
+
 	}
 
 	/**
@@ -288,15 +290,16 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			?>
 
 			<fieldset style="padding: 7px" id="wc-<?php echo esc_attr( $this->gateway->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
-				<?php
-					$this->gateway->display_gateway_html();
-				if ( $this->gateway->is_saved_cards_enabled() && $this->gateway->should_support_saved_payments() ) {
-					$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
-					if ( is_user_logged_in() || $force_save_payment ) {
-						$this->gateway->save_payment_method_checkbox( $force_save_payment );
-					}
+
+			<?php
+				$this->gateway->display_gateway_html();
+			if ( $this->gateway->is_saved_cards_enabled() && $this->gateway->should_support_saved_payments() ) {
+				$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
+				if ( is_user_logged_in() || $force_save_payment ) {
+					$this->gateway->save_payment_method_checkbox( $force_save_payment );
 				}
-				?>
+			}
+			?>
 
 			</fieldset>
 
