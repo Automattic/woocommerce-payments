@@ -1137,7 +1137,7 @@ class WC_Payments {
 				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
 				'return_url'                     => wc_get_cart_url(),
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
-				'checkout_schema'                => $blocks_data_extractor->get_checkout_schema(),
+				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];

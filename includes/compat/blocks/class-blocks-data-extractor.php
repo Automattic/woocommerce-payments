@@ -133,19 +133,27 @@ class Blocks_Data_Extractor {
 	}
 
 	/**
-	 * Retrieves the Store API checkout schema.
+	 * Retrieves the namespaces in the Store API checkout schema.
 	 *
-	 * @return object|array
+	 * @return array
 	 */
-	public function get_checkout_schema() {
+	public function get_checkout_schema_namespaces() : array {
+		$namespaces = [];
+
 		if (
 			class_exists( StoreApi::class ) &&
 			class_exists( ExtendSchema::class ) &&
 			class_exists( CheckoutSchema::class )
 		) {
-			return StoreApi::container()->get( ExtendSchema::class )->get_endpoint_schema( CheckoutSchema::IDENTIFIER );
+			try {
+				$checkout_schema = StoreApi::container()->get( ExtendSchema::class )->get_endpoint_schema( CheckoutSchema::IDENTIFIER );
+			} catch ( \Exception $e ) {
+				return $namespaces;
+			}
+
+			$namespaces = array_keys( (array) $checkout_schema );
 		}
 
-		return [];
+		return $namespaces;
 	}
 }
