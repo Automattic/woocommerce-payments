@@ -37,6 +37,9 @@ jobs:
     name: "Run smoke tests on build"
     runs-on: ubuntu-20.04
     steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+
       - uses: actions/download-artifact@v3
         with:
           name: woocommerce-payments
