@@ -135,9 +135,17 @@ class Blocks_Data_Extractor {
 	/**
 	 * Retrieves the Store API checkout schema.
 	 *
-	 * @return object
+	 * @return object|array
 	 */
 	public function get_checkout_schema() {
-		return StoreApi::container()->get( ExtendSchema::class )->get_endpoint_schema( CheckoutSchema::IDENTIFIER );
+		if (
+			class_exists( StoreApi::class ) &&
+			class_exists( ExtendSchema::class ) &&
+			class_exists( CheckoutSchema::class )
+		) {
+			return StoreApi::container()->get( ExtendSchema::class )->get_endpoint_schema( CheckoutSchema::IDENTIFIER );
+		}
+
+		return [];
 	}
 }
