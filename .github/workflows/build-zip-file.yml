@@ -37,6 +37,10 @@ jobs:
     name: "Run smoke tests on build"
     runs-on: ubuntu-20.04
     needs: build-zip
+
+    env:
+      SKIP_BUILD_STEP: true
+
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
