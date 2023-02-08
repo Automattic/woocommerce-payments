@@ -3,6 +3,10 @@ name: "Build zip file"
 # This action will run when it is triggered manually.
 on:
   workflow_dispatch:
+    inputs:
+      skip_smoke_tests:
+        type: boolean
+        description: Skip running smoke tests
 
 jobs:
   build-zip:
@@ -35,6 +39,7 @@ jobs:
 
   smoke-tests:
     runs-on: ubuntu-20.04
+    if: ${{ inputs.skip_smoke_tests }}
     needs: build-zip
 
     strategy:
