@@ -457,13 +457,15 @@ class WC_Payments {
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::get_gateway(), self::$account );
 		}
 
-		if ( WC_Payments_Features::is_express_checkout_enabled() ) {
+		$is_woopay_express_checkout_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
+
+		if ( $is_woopay_express_checkout_enabled || self::get_gateway()->get_option( 'payment_request' ) ) {
 			add_action( 'woocommerce_after_add_to_cart_quantity', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
 
-			if ( WC_Payments_Features::is_payment_request_enabled() ) {
-				// Load payment request buttons on the Pay for Order page.
+			if ( self::get_gateway()->get_option( 'payment_request' ) ) {
+				// Load separator on the Pay for Order page.
 				add_action( 'before_woocommerce_pay_form', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
 			}
 		}

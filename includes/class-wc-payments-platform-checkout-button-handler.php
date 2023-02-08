@@ -75,10 +75,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return bool
 	 */
 	public function is_woopay_enabled() {
-		if ( ! ( $this->is_platform_checkout_eligible && $this->is_platform_checkout_enabled && $this->is_platform_checkout_express_button_enabled ) ) {
-			return false;
-		}
-		return true;
+		return $this->is_platform_checkout_eligible && $this->is_platform_checkout_enabled && $this->is_platform_checkout_express_button_enabled;
 	}
 
 	/**
