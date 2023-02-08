@@ -19,6 +19,11 @@ jobs:
         id: build_plugin
         uses: ./.github/actions/build
 
+      - name: "Unzip the file (prevents double zip issue)"
+        run: |
+          echo ":information_source: Please ignore the artifact size mentioned, since GitHub calculates the size of the source folder instead of the zip file created." >> $GITHUB_STEP_SUMMARY
+          unzip ${{ steps.build_plugin.outputs.release-filename }} -d zipfile
+
       - name: "Upload the zip file as an artifact"
         uses: actions/upload-artifact@v3
         env:
