@@ -141,9 +141,9 @@ class Blocks_Data_Extractor {
 		$namespaces = [];
 
 		if (
-			class_exists( StoreApi::class ) &&
-			class_exists( ExtendSchema::class ) &&
-			class_exists( CheckoutSchema::class )
+			class_exists( 'Automattic\WooCommerce\StoreApi\StoreApi' ) &&
+			class_exists( 'Automattic\WooCommerce\StoreApi\Schemas\ExtendSchema' ) &&
+			class_exists( 'Automattic\WooCommerce\Blocks\StoreApi\Schemas\CheckoutSchema' )
 		) {
 			try {
 				$checkout_schema = StoreApi::container()->get( ExtendSchema::class )->get_endpoint_schema( CheckoutSchema::IDENTIFIER );
