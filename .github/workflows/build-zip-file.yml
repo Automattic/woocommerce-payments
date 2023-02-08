@@ -51,5 +51,12 @@ jobs:
           name: woocommerce-payments
           path: woocommerce-payments-build
 
-      - name: Display structure of downloaded files
-        run: ls -l
+      - name: "Zip the build file"
+        shell: bash
+        run: |
+          zip -r woocommerce-payments-build.zip woocommerce-payments-build
+          rm -rf woocommerce-payments-build
+          echo "PLUGIN_FILE=woocommerce-payments-build.zip" >> $GITHUB_ENV
+
+      - name: Setup E2E environment
+        uses: ./.github/actions/e2e/env-setup
