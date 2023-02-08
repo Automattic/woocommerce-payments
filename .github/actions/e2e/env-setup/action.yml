@@ -58,6 +58,7 @@ runs:
 
     # Build WCPay client
     - name: Build WCPay Client
+      if: ${{ ! env.SKIP_BUILD_STEP }}
       shell: bash
       run: |
         echo "::group::Build WCPay client"
