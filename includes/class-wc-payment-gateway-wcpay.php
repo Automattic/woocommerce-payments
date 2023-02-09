@@ -846,7 +846,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_filter( 'wcpay_test_mode', $apply_test_mode_context );
 
 		$order = wc_get_order( $order_id );
-		$user  = $order->get_user();
+		// If we fail to retrieve the order it doesn't make sense to continue since we won't have
+		// the necessary information to update the customer information.
+		if ( false === $order ) {
+			return;
+		}
+
+		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
 		}
