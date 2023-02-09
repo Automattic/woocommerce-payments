@@ -35,7 +35,7 @@ jobs:
         exclude:
           - test_groups: 'upe'
             test_branches: 'merchant'
-          - test_ groups: 'upeSplit'
+          - test_groups: 'upeSplit'
             test_brances: 'merchant'
 
     name: WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
