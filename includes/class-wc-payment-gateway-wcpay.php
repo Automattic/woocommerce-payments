@@ -70,8 +70,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		Payment_Intent_Status::PROCESSING,
 	];
 
-	const UPDATE_SAVED_PAYMENT_METHOD     = 'wcpay_update_saved_payment_method';
-	const UPDATE_CUSTOMER_WITH_ORDER_DATA = 'wcpay_update_customer_with_order_data';
+	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';
 
 	/**
 	 * Set a large limit argument for retrieving user tokens.
@@ -410,7 +409,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'set_logged_in_cookie', [ $this, 'set_cookie_on_current_request' ] );
 
 		add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 3 );
-		add_action( self::UPDATE_CUSTOMER_WITH_ORDER_DATA, [ $this, 'update_customer_with_order_data' ], 10, 4 );
 
 		// Update the email field position.
 		add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
@@ -892,16 +890,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Create a new customer.
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		} else {
-			// Update the customer with order data async.
-			$this->action_scheduler_service->schedule_job(
-				time() + MINUTE_IN_SECONDS,
-				self::UPDATE_CUSTOMER_WITH_ORDER_DATA,
-				[
-					'order_id'     => $order->get_id(),
-					'customer_id'  => $customer_id,
-					'is_test_mode' => $this->is_in_test_mode(),
-					'is_woopay'    => $options['is_woopay'] ?? false,
-				]
+			$test_mode = $this->is_in_test_mode();
+
+			// Defer the customer update to the shutdown hook.
+			add_action(
+				'shutdown',
+				function() use ( $order, $customer_id, $test_mode, $options ) {
+					$this->update_customer_with_order_data( $order->get_id(), $customer_id, $test_mode, $options['is_woopay'] ?? false );
+				}
 			);
 		}
 
