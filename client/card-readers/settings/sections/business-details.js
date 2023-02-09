@@ -12,7 +12,7 @@ import { useState } from '@wordpress/element';
  */
 import { useAccountBusinessName, useAccountBusinessURL } from '../../../data';
 
-const BusinessDetailsSection = ( { setSaveDisabled } ) => {
+const BusinessDetailsSection = ( { setInputsValid } ) => {
 	const [ hasError, setHasError ] = useState( false );
 
 	const [
@@ -36,10 +36,10 @@ const BusinessDetailsSection = ( { setSaveDisabled } ) => {
 	const validateBusinessURL = ( event ) => {
 		if ( event.target.checkValidity() ) {
 			setHasError( false );
-			setSaveDisabled( false );
+			setInputsValid( true );
 		} else {
 			setHasError( true );
-			setSaveDisabled( true );
+			setInputsValid( false );
 		}
 	};
 

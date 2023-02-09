@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bd06b19952cc565f91ba95745ba35192",
+    "content-hash": "d032c145eb48f2cef46bbb7b18e2d19e",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1060,16 +1060,16 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "5.2.0",
+            "version": "5.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "5caa38170bacf46b7c80e952a5f53fe3cd74d6ef"
+                "reference": "d9befd7c6c62ada15dab9bc095084ab8746b0fa9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/5caa38170bacf46b7c80e952a5f53fe3cd74d6ef",
-                "reference": "5caa38170bacf46b7c80e952a5f53fe3cd74d6ef",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/d9befd7c6c62ada15dab9bc095084ab8746b0fa9",
+                "reference": "d9befd7c6c62ada15dab9bc095084ab8746b0fa9",
                 "shasum": ""
             },
             "require": {
@@ -1110,10 +1110,10 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/5.2.0",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/5.3.1",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
-            "time": "2023-01-23T04:18:03+00:00"
+            "time": "2023-02-01T00:09:00+00:00"
         }
     ],
     "packages-dev": [

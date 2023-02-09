@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Skipping the email input step for WooPay express checkout flow when the email input field has already a value. The WooPay express checkout feature is behind a feature flag currently.

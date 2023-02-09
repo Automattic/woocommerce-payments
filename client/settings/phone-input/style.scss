@@ -43,16 +43,12 @@
 		transition: max-height 0.5s ease-in-out;
 		margin: 0 !important;
 		padding: 0 !important;
-		max-height: 0;
 		overflow-y: hidden;
+		max-height: 21.875rem;
 
 		&::before,
 		&::after {
 			display: none;
-		}
-
-		&.visible {
-			max-height: 21.875rem;
 		}
 
 		> div {
@@ -131,6 +127,10 @@
 .iti {
 	width: 100%;
 	margin-top: $gap-large;
+}
+
+.no-top-margin .iti {
+	margin-top: 0;
 }
 
 .iti__selected-flag {

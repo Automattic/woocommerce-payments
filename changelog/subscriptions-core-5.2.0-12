@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-When a subscription's parent order is trashed or deleted, make sure the related subscription is also trashed or deleted on stores with HPOS enabled.

@@ -3,6 +3,7 @@
  * External dependencies
  */
 import React from 'react';
+import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal dependencies.
@@ -139,7 +140,7 @@ export default ( { storeName, storeLogo, ...props } ) => {
 								dominantBaseline="middle"
 								textAnchor="middle"
 							>
-								{ storeName }
+								{ decodeEntities( storeName ) }
 							</text>
 						) }
 					</g>
