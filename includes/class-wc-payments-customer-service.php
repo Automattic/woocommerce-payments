@@ -353,7 +353,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @throws API_Exception Error creating customer.
 	 */
-	private function recreate_customer( WP_User $user, array $customer_data ): string {
+	public function recreate_customer( WP_User $user, array $customer_data ): string {
 		if ( $user->ID > 0 ) {
 			$result = delete_user_option( $user->ID, $this->get_customer_id_option() );
 			if ( ! $result ) {
