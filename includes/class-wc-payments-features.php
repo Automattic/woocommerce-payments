@@ -20,7 +20,7 @@ class WC_Payments_Features {
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
 
 	/**
-	 * Checks whether amy UPE gateway is enabled.
+	 * Checks whether any UPE gateway is enabled.
 	 *
 	 * @return bool
 	 */
