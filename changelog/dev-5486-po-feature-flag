@@ -1,0 +1,4 @@
+Significance: minor
+Type: dev
+
+Adding a feature flag to allow further development of onboarding UX - currently this will have no effect on live stores.

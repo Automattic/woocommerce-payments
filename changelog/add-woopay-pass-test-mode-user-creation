@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Pass the store's test mode value to WooPay requests to the OTP endpoint.
