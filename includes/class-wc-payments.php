@@ -582,12 +582,10 @@ class WC_Payments {
 
 			return array_merge( $gateways, $all_upe_gateways );
 		} elseif ( WC_Payments_Features::is_upe_enabled() ) {
-			$gateways[] = self::$card_gateway;
+			return array_merge( $gateways, [ self::$card_gateway ] );
 		} else {
-			$gateways[] = self::$legacy_card_gateway;
+			return array_merge( $gateways, [ self::$legacy_card_gateway ] );
 		}
-
-		return $gateways;
 	}
 
 	/**
