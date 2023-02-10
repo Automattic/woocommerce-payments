@@ -43,7 +43,9 @@ const ReadersSettingsDescription = (): JSX.Element => (
 );
 
 const ReceiptSettings = (): JSX.Element => {
-	const [ isSaveDisabled, setSaveDisabled ] = useState( false );
+	const [ isBusinessInputsValid, setBusinessInputsValid ] = useState( true );
+	const [ isContactsInputsValid, setContactsInputsValid ] = useState( true );
+	const areInputsValid = isBusinessInputsValid && isContactsInputsValid;
 
 	return (
 		<SettingsLayout displayBanner={ false }>
@@ -52,10 +54,10 @@ const ReceiptSettings = (): JSX.Element => {
 					<Card className="card-readers-settings__wrapper">
 						<CardBody>
 							<BusinessDetailsSection
-								setSaveDisabled={ setSaveDisabled }
+								setInputsValid={ setBusinessInputsValid }
 							/>
 							<ContactsDetailsSection
-								setSaveDisabled={ setSaveDisabled }
+								setInputsValid={ setContactsInputsValid }
 							/>
 							<AddressDetailsSection />
 							<BrandingDetailsSection />
@@ -63,7 +65,7 @@ const ReceiptSettings = (): JSX.Element => {
 					</Card>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SaveSettingsSection disabled={ isSaveDisabled } />
+			<SaveSettingsSection disabled={ ! areInputsValid } />
 		</SettingsLayout>
 	);
 };

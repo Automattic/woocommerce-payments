@@ -32,6 +32,7 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
+use WCPay\Blocks_Data_Extractor;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -430,6 +431,9 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_dev_runtime_scripts' ] );
+
+		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 	}
 
 	/**
@@ -1091,7 +1095,6 @@ class WC_Payments {
 
 		$email       = ! empty( $_POST['email'] ) ? wc_clean( wp_unslash( $_POST['email'] ) ) : '';
 		$user        = wp_get_current_user();
-		$return_url  = ! empty( $_POST['return_url'] ) ? wc_clean( wp_unslash( $_POST['return_url'] ) ) : '';
 		$customer_id = self::$customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			// create customer.
@@ -1105,6 +1108,9 @@ class WC_Payments {
 		$url                    = $platform_checkout_host . '/wp-json/platform-checkout/v1/init';
 
 		$store_logo = self::get_gateway()->get_option( 'platform_checkout_store_logo' );
+
+		include_once WCPAY_ABSPATH . 'includes/compat/blocks/class-blocks-data-extractor.php';
+		$blocks_data_extractor = new Blocks_Data_Extractor();
 
 		$body = [
 			'wcpay_version'        => WCPAY_VERSION_NUMBER,
@@ -1129,7 +1135,8 @@ class WC_Payments {
 				'is_subscriptions_plugin_active' => self::get_gateway()->is_subscriptions_plugin_active(),
 				'woocommerce_tax_display_cart'   => get_option( 'woocommerce_tax_display_cart' ),
 				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
-				'return_url'                     => $return_url,
+				'return_url'                     => wc_get_cart_url(),
+				'blocks_data'                    => $blocks_data_extractor->get_data(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];
@@ -1296,5 +1303,23 @@ class WC_Payments {
 		if ( ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) && file_exists( WCPAY_ABSPATH . 'dist/runtime.js' ) ) {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
+	}
+
+	/**
+	 * Inject an inline script with WCPay assets properties.
+	 * window.wcpayAssets.url – Dist URL, required to properly load chunks on sites with JS concatenation enabled.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_assets_script() {
+		wp_register_script( 'WCPAY_ASSETS', '', [], WCPAY_VERSION_NUMBER, false );
+		wp_enqueue_script( 'WCPAY_ASSETS' );
+		wp_localize_script(
+			'WCPAY_ASSETS',
+			'wcpayAssets',
+			[
+				'url' => plugins_url( '/dist/', WCPAY_PLUGIN_FILE ),
+			]
+		);
 	}
 }
