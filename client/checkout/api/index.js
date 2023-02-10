@@ -340,7 +340,7 @@ export default class WCPayAPI {
 	 */
 	initSetupIntent( paymentMethodType = '' ) {
 		let path = 'init_setup_intent';
-		if ( '' !== paymentMethodType ) {
+		if ( this.options.isUPESplitEnabled && paymentMethodType ) {
 			path += `_${ paymentMethodType }`;
 		}
 		return this.request( buildAjaxURL( getConfig( 'wcAjaxUrl' ), path ), {
@@ -404,7 +404,7 @@ export default class WCPayAPI {
 			'wcpay-fingerprint': fingerprint,
 		};
 
-		if ( paymentMethodType ) {
+		if ( this.options.isUPESplitEnabled && paymentMethodType ) {
 			path += `_${ paymentMethodType }`;
 		}
 		if ( orderId ) {
