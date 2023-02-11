@@ -8,6 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 use Exception;
+use WC_Payments_Features;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Payment_Type;
@@ -93,6 +94,20 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
 			$this->method_title = "WooCommerce Payments ($this->title)";
 		}
+
+		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'add_sepa_gateway' ], 100, 1 );
+	}
+
+	/**
+	 * Adds SEPA gateway
+	 *
+	 * @param array $gateways                  - Filtered gateways.
+	 */
+	public function add_sepa_gateway( $gateways ) {
+		if ( WC_Payments_Features::is_upe_split_enabled() && 'sepa_debit' === $this->stripe_id ) {
+			$gateways[ self::GATEWAY_ID . '_' . $this->stripe_id ] = $this;
+		}
+		return $gateways;
 	}
 
 	/**
