@@ -171,9 +171,6 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
-			if ( WC_Payments_Features::is_upe_split_enabled() && 'card' === $payment_method_id ) {
-				continue;
-			}
 			// Link by Stripe should be validated with available fees.
 			if ( Payment_Method::LINK === $payment_method_id ) {
 				if ( ! in_array( Payment_Method::LINK, array_keys( $this->account->get_fees() ), true ) ) {
@@ -200,6 +197,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 					]
 				);
+
 			}
 		}
 
@@ -242,6 +240,9 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 					wp_localize_script( 'wcpay-upe-checkout', $upe_object_name, $payment_fields );
 				}
 			);
+			if ( WC_Payments_Features::is_upe_split_enabled() && in_array( Payment_Method::LINK, $this->gateway->get_payment_method_ids_enabled_at_checkout(), true ) ) {
+				add_action( 'wp_footer', [ $this, 'enqueue_payment_scripts' ] );
+			}
 
 			$prepared_customer_data = $this->customer_service->get_prepared_customer_data();
 			if ( ! empty( $prepared_customer_data ) ) {

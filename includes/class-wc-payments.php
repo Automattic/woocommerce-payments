@@ -35,6 +35,7 @@ use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\Blocks_Data_Extractor;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -574,10 +575,13 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		if ( WC_Payments_Features::is_upe_split_enabled() ) {
-			$gateways[]       = self::$legacy_card_gateway;
+			if ( self::$platform_checkout_button_handler->is_woopay_enabled() ) {
+				$gateways[] = self::$legacy_card_gateway;
+			} else {
+				$gateways[] = self::$card_gateway;
+			}
 			$all_upe_gateways = [];
 			$reusable_methods = [];
-
 			foreach ( self::$card_gateway->get_payment_method_ids_enabled_at_checkout() as $payment_method_id ) {
 				if ( 'card' === $payment_method_id ) {
 					continue;
