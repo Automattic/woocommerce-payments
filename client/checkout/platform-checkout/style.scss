@@ -128,7 +128,7 @@
 	font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial',
 		sans-serif;
 	letter-spacing: 0.8px;
-	line-height: 36px;
+	height: 40px;
 	background: $white;
 	border: 1px solid $white;
 	color: $studio-woocommerce-purple-60;
@@ -163,7 +163,7 @@
 
 	&[data-size='medium'] {
 		font-size: 18px;
-		line-height: 44px;
+		height: 48px;
 
 		svg {
 			top: 2px;
@@ -174,7 +174,7 @@
 
 	&[data-size='large'] {
 		font-size: 19px;
-		line-height: 52px;
+		height: 56px;
 
 		svg {
 			top: 3px;
