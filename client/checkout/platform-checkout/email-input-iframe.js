@@ -551,14 +551,19 @@ export const handlePlatformCheckoutEmailInput = async (
 				api.initPlatformCheckout(
 					platformCheckoutEmailInput.value,
 					e.data.platformCheckoutUserSession
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						window.location = response.url;
-					} else {
+				)
+					.then( ( response ) => {
+						if ( 'success' === response.result ) {
+							window.location = response.url;
+						} else {
+							showErrorMessage();
+							closeIframe( false );
+						}
+					} )
+					.catch( () => {
 						showErrorMessage();
 						closeIframe( false );
-					}
-				} );
+					} );
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(
