@@ -23,10 +23,10 @@ jobs:
         id: build_plugin
         uses: ./.github/actions/build
 
-      - name: "Delete the zip file created by build script"
+      - name: "Unzip the build zip (prevents double zip issue)"
         run: |
-          echo ":information_source: Please ignore the artifact size mentioned. GitHub calculates the size of the source folder instead of the zip file created." >> $GITHUB_STEP_SUMMARY
-          rm -rf release/${{ steps.build_plugin.outputs.release-filename }}
+          echo ":information_source: Unzipping to a folder to prevent double-zip issue ([known limitation](https://github.com/actions/upload-artifact#zipped-artifact-downloads)). Ignore the artifact size mentioned since GitHub calculates the size of the source folder instead of the zip file created." >> $GITHUB_STEP_SUMMARY
+          unzip ${{ steps.build_plugin.outputs.release-filename }} -d zipfile
 
       - name: "Upload the zip file as an artifact"
         uses: actions/upload-artifact@v3
@@ -34,7 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: "woocommerce-payments"
-          path: release
+          path: zipfile
           retention-days: 7
 
   smoke-tests:
