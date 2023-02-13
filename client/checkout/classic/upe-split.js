@@ -12,6 +12,7 @@ import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_BANCONTACT,
 	PAYMENT_METHOD_NAME_BECS,
+	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_EPS,
 	PAYMENT_METHOD_NAME_GIROPAY,
 	PAYMENT_METHOD_NAME_IDEAL,
@@ -595,7 +596,6 @@ jQuery( function ( $ ) {
 		if ( ! isUPEFormValid ) {
 			return;
 		}
-
 		blockUI( $form );
 		// Create object where keys are form field names and keys are form field values
 		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
@@ -762,11 +762,16 @@ jQuery( function ( $ ) {
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
 	];
+	if ( isStripeLinkEnabled ) {
+		wcpayPaymentMethods.push( PAYMENT_METHOD_NAME_CARD );
+	}
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
+		console.log( 'I am doing a thing' );
+		console.log( paymentMethodType );
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
 			const paymentIntentId =
 				gatewayUPEComponents[ paymentMethodType ].paymentIntentId;
