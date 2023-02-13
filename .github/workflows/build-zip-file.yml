@@ -23,10 +23,10 @@ jobs:
         id: build_plugin
         uses: ./.github/actions/build
 
-      - name: "Unzip the file (prevents double zip issue)"
+      - name: "Delete the zip file created by build script"
         run: |
-          echo ":information_source: Please ignore the artifact size mentioned, since GitHub calculates the size of the source folder instead of the zip file created." >> $GITHUB_STEP_SUMMARY
-          unzip ${{ steps.build_plugin.outputs.release-filename }} -d zipfile
+          echo ":information_source: Please ignore the artifact size mentioned. GitHub calculates the size of the source folder instead of the zip file created." >> $GITHUB_STEP_SUMMARY
+          rm -rf release/${{ steps.build_plugin.outputs.release-filename }}
 
       - name: "Upload the zip file as an artifact"
         uses: actions/upload-artifact@v3
@@ -34,7 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: "woocommerce-payments"
-          path: release/woocommerce-payments
+          path: release
           retention-days: 7
 
   smoke-tests:
@@ -74,17 +74,17 @@ jobs:
       - name: "Checkout repository"
         uses: actions/checkout@v3
 
-      - name: "Download WooCommerce Payments build"
+      - name: "Download WooCommerce Payments build file"
         uses: actions/download-artifact@v3
         with:
           name: woocommerce-payments
-          path: woocommerce-payments-build
 
-      - name: "Zip the build file"
+      - name: "Zip the downloaded artifact"
         shell: bash
         run: |
-          zip -r woocommerce-payments-build.zip woocommerce-payments-build
-          rm -rf woocommerce-payments-build
+          mv woocommerce-payments/woocommerce-payments woocommerce-payments/woocommerce-payments-build
+          zip -r woocommerce-payments-build.zip woocommerce-payments
+          rm -rf woocommerce-payments
           echo "PLUGIN_FILE_PATH=./woocommerce-payments-build.zip" >> $GITHUB_ENV
 
       # - name: Setup E2E environment
