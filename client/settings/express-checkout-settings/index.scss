@@ -164,6 +164,23 @@
 				margin-right: 8px;
 			}
 		}
+		@media screen and ( max-width: 782px ) {
+			flex-wrap: wrap;
+
+			& > * {
+				display: block;
+				margin-top: 14px;
+			}
+
+			& > *:first-child {
+				margin-top: 0;
+			}
+		}
+
+		&[data-theme='light'],
+		&[data-theme='light-outline'] {
+			background: #2b2b2b;
+		}
 	}
 }
 

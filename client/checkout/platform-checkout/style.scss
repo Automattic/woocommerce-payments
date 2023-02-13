@@ -123,13 +123,13 @@
 }
 
 .woopay-express-button {
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 500;
 	font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial',
 		sans-serif;
 	letter-spacing: 0.8px;
 	height: 40px;
-	background: $white;
+	background: #f2deff;
 	border: 1px solid $white;
 	color: $studio-woocommerce-purple-60;
 	width: 100%;
@@ -140,6 +140,10 @@
 	align-items: center;
 	justify-content: center;
 	white-space: nowrap;
+
+	&:hover {
+		background: #d9baff;
+	}
 
 	svg {
 		fill: $studio-woocommerce-purple-60;
@@ -155,14 +159,20 @@
 		svg {
 			fill: $white;
 		}
+		&:hover {
+			background: #533582;
+		}
 	}
 
 	&[data-theme='light-outline'] {
-		border-color: $studio-woocommerce-purple-60;
+		border-color: #674399;
+		&:hover {
+			background: #d9baff;
+		}
 	}
 
 	&[data-size='medium'] {
-		font-size: 18px;
+		font-size: 14px;
 		height: 48px;
 
 		svg {
@@ -173,7 +183,7 @@
 	}
 
 	&[data-size='large'] {
-		font-size: 19px;
+		font-size: 16px;
 		height: 56px;
 
 		svg {
@@ -187,13 +197,11 @@
 	&[data-type='book'],
 	&[data-type='donate'] {
 		svg {
-			margin-left: 8px;
+			margin-left: 6px;
 		}
-
-		&[data-size='medium'],
 		&[data-size='large'] {
 			svg {
-				margin-left: 10px;
+				margin-left: 8px;
 			}
 		}
 	}

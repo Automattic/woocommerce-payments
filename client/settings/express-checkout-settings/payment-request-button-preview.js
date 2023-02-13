@@ -107,7 +107,10 @@ const PaymentRequestButtonPreview = () => {
 		<>
 			{ ( isPlatformCheckoutEnabled ||
 				( isPaymentRequestEnabled && paymentRequest ) ) && (
-				<div className="payment-method-settings__preview">
+				<div
+					className="payment-method-settings__preview"
+					data-theme={ theme }
+				>
 					{ isPlatformCheckoutEnabled && (
 						<WoopayExpressCheckoutButton
 							isPreview={ true }

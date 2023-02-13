@@ -94,14 +94,23 @@ const ExpressCheckout = () => {
 										/* eslint-disable jsx-a11y/anchor-has-content */
 										interpolateComponents( {
 											mixedString: __(
-												'By using WooPay, you agree to our {{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
+												'Boost conversion and customer loyalty by offering a single click, secure way to pay. ' +
+													'By using {{woopayLink}}WooPay{{/woopayLink}}, you agree to our ' +
+													'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
 													'and and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
 													'You understand you will be sharing data with us. ' +
-													'{{trackingLink}}Click here{{/trackingLink}} to learn more about data sharing, ' +
-													'which you can opt-out of by disabling WooPay.',
+													'Click {{trackingLink}}here{{/trackingLink}} to learn more about the ' +
+													'data you will be sharing and opt-out options.',
 												'woocommerce-payments'
 											),
 											components: {
+												wooPayLink: (
+													<a
+														target="_blank"
+														rel="noreferrer"
+														href="https://woocommerce.com/document/woopay-merchant-documentation/"
+													/>
+												),
 												tosLink: (
 													<a
 														target="_blank"

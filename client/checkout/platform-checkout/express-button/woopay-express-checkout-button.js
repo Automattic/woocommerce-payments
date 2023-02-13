@@ -8,6 +8,7 @@ import { useEffect } from 'react';
  * Internal dependencies
  */
 import WoopayIcon from './woopay-icon';
+import WoopayIconLight from './woopay-icon-light';
 import { expressCheckoutIframe } from './express-checkout-iframe';
 import useExpressCheckoutProductHandler from './use-express-checkout-product-handler';
 import wcpayTracks from 'tracks';
@@ -28,6 +29,7 @@ export const WoopayExpressCheckoutButton = ( {
 						buttonType.slice( 1 ).toLowerCase()
 			  )
 			: '';
+	const ThemedWooPayIcon = 'dark' === theme ? WoopayIcon : WoopayIconLight;
 
 	const { addToCart, isAddToCartDisabled } = useExpressCheckoutProductHandler(
 		api,
@@ -85,7 +87,7 @@ export const WoopayExpressCheckoutButton = ( {
 			style={ { height: `${ height }px` } }
 		>
 			{ text }
-			<WoopayIcon />
+			<ThemedWooPayIcon />
 		</button>
 	);
 };
