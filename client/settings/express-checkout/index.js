@@ -95,11 +95,11 @@ const ExpressCheckout = () => {
 										interpolateComponents( {
 											mixedString: __(
 												'Boost conversion and customer loyalty by offering a single click, secure way to pay. ' +
-													'By using {{woopayLink}}WooPay{{/woopayLink}}, you agree to our ' +
+													'By using {{wooPayLink}}WooPay{{/wooPayLink}}, you agree to our ' +
 													'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
 													'and and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
 													'You understand you will be sharing data with us. ' +
-													'Click {{trackingLink}}here{{/trackingLink}} to learn more about the ' +
+													'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
 													'data you will be sharing and opt-out options.',
 												'woocommerce-payments'
 											),
