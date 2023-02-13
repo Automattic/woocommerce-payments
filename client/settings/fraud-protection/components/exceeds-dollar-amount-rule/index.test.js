@@ -7,28 +7,8 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import ExceedsDollarAmountRule from './index';
-import { useCurrencies } from 'wcpay/data';
-
-jest.mock( 'wcpay/data', () => ( {
-	useCurrencies: jest.fn(),
-} ) );
 
 describe( 'ExceedsDollarAmountRule', () => {
-	beforeEach( () =>
-		useCurrencies.mockReturnValue( {
-			isLoading: false,
-			currencies: {
-				available: {
-					EUR: { name: 'Euro', symbol: '€', code: 'EUR' },
-					USD: { name: 'US Dollar', symbol: '$', code: 'USD' },
-					PLN: { name: 'Polish złoty', symbol: 'zł', code: 'PLN' },
-				},
-				default: {
-					USD: { name: 'US Dollar', symbol: '$', code: 'usd' },
-				},
-			},
-		} )
-	);
 	it( 'renders the high level dollar amount rule when USD is store currency', () => {
 		const storeCurrency = { name: 'US Dollar', symbol: '$', code: 'USD' };
 
