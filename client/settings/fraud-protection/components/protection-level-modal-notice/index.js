@@ -24,7 +24,7 @@ const ProtectionLevelModalNotice = ( { level } ) => {
 				<p>
 					{ isHighProtectionLevel
 						? __(
-								'Offers the highest level of filtering for stores, but may catch some legitimate transactions',
+								'Offers the highest level of filtering for stores, but may catch some legitimate transactions.',
 								'woocommerce-payments'
 						  )
 						: __(
