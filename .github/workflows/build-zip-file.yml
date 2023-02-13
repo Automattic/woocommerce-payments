@@ -94,7 +94,6 @@ jobs:
       #   uses: ./.github/actions/e2e/run-log-tests
 
       - name: Archive e2e test screenshots & logs
-        if: ${{ failure() }}
         uses: actions/upload-artifact@v3
         with:
             name: wc-payments-build
