@@ -12,6 +12,7 @@ use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
 use WC_Payments_Utils;
+use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -75,13 +76,18 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
 		add_action( 'woocommerce_after_account_payment_methods', [ $this->gateway, 'remove_upe_setup_intent_from_session' ], 10, 0 );
 		add_action( 'woocommerce_subscription_payment_method_updated', [ $this->gateway, 'remove_upe_setup_intent_from_session' ], 10, 0 );
-		add_action( 'woocommerce_order_payment_status_changed', [ 'WCPay\Payment_Methods\UPE_Payment_Gateway', 'remove_upe_payment_intent_from_session' ], 10, 0 );
+		add_action( 'woocommerce_order_payment_status_changed', [ get_class( $this->gateway ), 'remove_upe_payment_intent_from_session' ], 10, 0 );
 		add_action( 'wp', [ $this->gateway, 'maybe_process_upe_redirect' ] );
 		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
 		add_action( 'wp_ajax_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
 		add_action( 'switch_theme', [ $this->gateway, 'clear_upe_appearance_transient' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this->gateway, 'clear_upe_appearance_transient' ] );
+		add_action( 'wc_ajax_wcpay_create_payment_intent', [ $this->gateway, 'create_payment_intent_ajax' ] );
+		add_action( 'wc_ajax_wcpay_update_payment_intent', [ $this->gateway, 'update_payment_intent_ajax' ] );
+		add_action( 'wc_ajax_wcpay_init_setup_intent', [ $this->gateway, 'init_setup_intent_ajax' ] );
+		add_action( 'wc_ajax_wcpay_log_payment_error', [ $this->gateway, 'log_payment_error_ajax' ] );
+
 	}
 
 	/**
@@ -104,6 +110,12 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
+
+		if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
+			$payment_fields['checkoutTitle']        = $this->gateway->get_checkout_title();
+			$payment_fields['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session();
+			$payment_fields['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session();
+		}
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
@@ -159,7 +171,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
-			if ( 'card' === $payment_method_id ) {
+			if ( WC_Payments_Features::is_upe_split_enabled() && 'card' === $payment_method_id ) {
 				continue;
 			}
 			// Link by Stripe should be validated with available fees.
@@ -171,21 +183,24 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 
 			$payment_method                 = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
 			$settings[ $payment_method_id ] = [
-				'isReusable'           => $payment_method->is_reusable(),
-				'title'                => $payment_method->get_title(),
-				'upePaymentIntentData' => $this->gateway->get_payment_intent_data_from_session( $payment_method_id ),
-				'upeSetupIntentData'   => $this->gateway->get_setup_intent_data_from_session( $payment_method_id ),
-				'testingInstructions'  => WC_Payments_Utils::esc_interpolated_html(
+				'isReusable'     => $payment_method->is_reusable(),
+				'title'          => $payment_method->get_title(),
+				'icon'           => $payment_method->get_icon(),
+				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
+			];
+
+			if ( WC_Payments_Features::is_upe_split_enabled() ) {
+				$settings[ $payment_method_id ]['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session( $payment_method_id );
+				$settings[ $payment_method_id ]['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session( $payment_method_id );
+				$settings[ $payment_method_id ]['testingInstructions']  = WC_Payments_Utils::esc_interpolated_html(
 					/* translators: link to Stripe testing page */
 					$payment_method->get_testing_instructions(),
 					[
 						'strong' => '<strong>',
 						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 					]
-				),
-				'icon'                 => $payment_method->get_icon(),
-				'showSaveOption'       => $this->should_upe_payment_method_show_save_option( $payment_method ),
-			];
+				);
+			}
 		}
 
 		return $settings;
@@ -218,12 +233,13 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			 * but we need `$this->get_payment_fields_js_config` to be called
 			 * before `$this->saved_payment_methods()`.
 			 */
-			$payment_fields = $this->get_payment_fields_js_config();
+			$payment_fields  = $this->get_payment_fields_js_config();
+			$upe_object_name = WC_Payments_Features::is_upe_split_enabled() ? 'wcpay_upe_config' : 'wcpay_config';
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 			add_action(
 				'wp_footer',
-				function() use ( $payment_fields ) {
-					wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
+				function() use ( $payment_fields, $upe_object_name ) {
+					wp_localize_script( 'wcpay-upe-checkout', $upe_object_name, $payment_fields );
 				}
 			);
 
@@ -271,12 +287,10 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			}
 			?>
 
-			<!--The padding for this area is set at 7px to align with the 7px padding on the CC fieldset-->
 			<fieldset style="padding: 7px" id="wc-<?php echo esc_attr( $this->gateway->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
-				<div class="wcpay-upe-element" data-payment-method-type="<?php echo esc_attr( $this->gateway->get_selected_stripe_payment_type_id() ); ?>"></div>
 				<?php
-					$is_enabled_for_saved_payments = $this->gateway->is_enabled_for_saved_payments();
-				if ( $this->gateway->is_saved_cards_enabled() && $is_enabled_for_saved_payments ) {
+					$this->gateway->display_gateway_html();
+				if ( $this->gateway->is_saved_cards_enabled() && $this->gateway->should_support_saved_payments() ) {
 					$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
 					if ( is_user_logged_in() || $force_save_payment ) {
 						$this->gateway->save_payment_method_checkbox( $force_save_payment );

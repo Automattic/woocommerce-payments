@@ -283,7 +283,44 @@ export const merchantWCP = {
 
 		if ( ! ( await page.$( '#_wcpay_feature_upe:checked' ) ) ) {
 			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout',
+				text: 'Enable UPE checkout (legacy)',
+			} );
+		}
+
+		const isSplitUPEEnabled = await page.$(
+			'#_wcpay_feature_upe_split:checked'
+		);
+
+		if ( isSplitUPEEnabled ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Enable Split UPE checkout',
+			} );
+		}
+
+		const isAdditionalPaymentsActive = await page.$(
+			'#_wcpay_feature_upe_additional_payment_methods:checked'
+		);
+
+		if ( ! isAdditionalPaymentsActive ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Add UPE additional payment methods',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	activateSplitUpe: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( ! ( await page.$( '#_wcpay_feature_upe_split:checked' ) ) ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Enable Split UPE checkout',
 			} );
 		}
 
@@ -310,7 +347,34 @@ export const merchantWCP = {
 
 		if ( await page.$( '#_wcpay_feature_upe:checked' ) ) {
 			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout',
+				text: 'Enable UPE checkout (legacy)',
+			} );
+		}
+
+		const isAdditionalPaymentsActive = await page.$(
+			'#_wcpay_feature_upe_additional_payment_methods:checked'
+		);
+
+		if ( isAdditionalPaymentsActive ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Add UPE additional payment methods',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	deactivateSplitUpe: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( await page.$( '#_wcpay_feature_upe_split:checked' ) ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Enable Split UPE checkout',
 			} );
 		}
 

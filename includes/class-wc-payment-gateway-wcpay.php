@@ -660,6 +660,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			WC_Payments_Features::is_platform_checkout_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
+			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
 			! WC()->cart->is_empty() &&
@@ -1039,12 +1040,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
 			if ( 'woocommerce_payments' !== $upe_payment_method ) {
-				$upe_payment_method = str_replace( 'woocommerce_payments_', '', $upe_payment_method );
+				$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
+			} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
+				$payment_methods = [ 'card' ];
 			} else {
-				$upe_payment_method = 'card';
+				$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
 			}
-
-			$payment_methods = [ $upe_payment_method ];
 
 			$additional_api_parameters['is_platform_payment_method'] = $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() );
 

@@ -68,13 +68,19 @@ class WC_Payments_Token_Service {
 
 		switch ( $payment_method['type'] ) {
 			case Payment_Method::SEPA:
-				$token = new WC_Payment_Token_WCPay_SEPA();
-				$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA );
+				$token      = new WC_Payment_Token_WCPay_SEPA();
+				$gateway_id = WC_Payments_Features::is_upe_split_enabled() ?
+					WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA :
+					CC_Payment_Gateway::GATEWAY_ID;
+				$token->set_gateway_id( $gateway_id );
 				$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
 				break;
 			case Payment_Method::LINK:
-				$token = new WC_Payment_Token_WCPay_Link();
-				$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK );
+				$token      = new WC_Payment_Token_WCPay_Link();
+				$gateway_id = WC_Payments_Features::is_upe_split_enabled() ?
+					WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK :
+					CC_Payment_Gateway::GATEWAY_ID;
+				$token->set_gateway_id( $gateway_id );
 				$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
 				break;
 			default:
@@ -103,6 +109,21 @@ class WC_Payments_Token_Service {
 	public function add_payment_method_to_user( $payment_method_id, $user ) {
 		$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
 		return $this->add_token_to_user( $payment_method_object, $user );
+	}
+
+	/**
+	 * Returns boolean value if payment method type matches relevant payment gateway.
+	 *
+	 * @param string $payment_method_type Stripe payment method type ID.
+	 * @param string $gateway_id          WC payment gateway ID.
+	 * @return bool                       True, if payment method type matches gateway, false if otherwise.
+	 */
+	public function is_valid_payment_method_type_for_gateway( $payment_method_type, $gateway_id ) {
+		if ( WC_Payments_Features::is_upe_split_enabled() ) {
+			return self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD[ $payment_method_type ] === $gateway_id;
+		} else {
+			return WC_Payments::get_gateway()->id === $gateway_id;
+		}
 	}
 
 	/**
@@ -170,7 +191,7 @@ class WC_Payments_Token_Service {
 			if ( ! isset( $payment_method['type'] ) ) {
 				continue;
 			}
-			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) && ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD[ $payment_method['type'] ] === $gateway_id || empty( $gateway_id ) ) ) {
+			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) && ( $this->is_valid_payment_method_type_for_gateway( $payment_method['type'], $gateway_id ) || empty( $gateway_id ) ) ) {
 				$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
 				$tokens[ $token->get_id() ] = $token;
 			} else {
