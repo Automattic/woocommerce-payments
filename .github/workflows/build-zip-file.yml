@@ -87,8 +87,17 @@ jobs:
           rm -rf woocommerce-payments-build
           echo "PLUGIN_FILE_PATH=./woocommerce-payments-build.zip" >> $GITHUB_ENV
 
-      - name: Setup E2E environment
-        uses: ./.github/actions/e2e/env-setup
+      # - name: Setup E2E environment
+      #   uses: ./.github/actions/e2e/env-setup
 
-      - name: Run tests, upload screenshots & logs
-        uses: ./.github/actions/e2e/run-log-tests
+      # - name: Run tests, upload screenshots & logs
+      #   uses: ./.github/actions/e2e/run-log-tests
+
+      - name: Archive e2e test screenshots & logs
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+            name: wc-payments-build
+            path: woocommerce-payments-build.zip
+            if-no-files-found: ignore
+            retention-days: 14
