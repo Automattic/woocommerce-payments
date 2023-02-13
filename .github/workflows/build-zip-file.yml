@@ -85,7 +85,7 @@ jobs:
         run: |
           mv zipfile/woocommerce-payments zipfile/woocommerce-payments-build
           cd zipfile && zip -r ../woocommerce-payments-build.zip . && cd ..
-          echo "PLUGIN_FILE_PATH=woocommerce-payments-build.zip" >> $GITHUB_ENV
+          echo "PLUGIN_FILE_PATH=wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip" >> $GITHUB_ENV
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
