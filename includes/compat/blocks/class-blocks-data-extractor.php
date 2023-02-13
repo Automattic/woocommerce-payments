@@ -7,6 +7,9 @@
 
 namespace WCPay;
 
+use Automattic\WooCommerce\StoreApi\StoreApi;
+use Automattic\WooCommerce\StoreApi\Schemas\ExtendSchema;
+use Automattic\WooCommerce\Blocks\StoreApi\Schemas\CheckoutSchema;
 use Automattic\WooCommerce\Blocks\Integrations\IntegrationRegistry;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
@@ -127,5 +130,30 @@ class Blocks_Data_Extractor {
 		$this->unregister_blocks( $blocks );
 
 		return $blocks_data;
+	}
+
+	/**
+	 * Retrieves the namespaces in the Store API checkout schema.
+	 *
+	 * @return array
+	 */
+	public function get_checkout_schema_namespaces() : array {
+		$namespaces = [];
+
+		if (
+			class_exists( 'Automattic\WooCommerce\StoreApi\StoreApi' ) &&
+			class_exists( 'Automattic\WooCommerce\StoreApi\Schemas\ExtendSchema' ) &&
+			class_exists( 'Automattic\WooCommerce\Blocks\StoreApi\Schemas\CheckoutSchema' )
+		) {
+			try {
+				$checkout_schema = StoreApi::container()->get( ExtendSchema::class )->get_endpoint_schema( CheckoutSchema::IDENTIFIER );
+			} catch ( \Exception $e ) {
+				return $namespaces;
+			}
+
+			$namespaces = array_keys( (array) $checkout_schema );
+		}
+
+		return $namespaces;
 	}
 }
