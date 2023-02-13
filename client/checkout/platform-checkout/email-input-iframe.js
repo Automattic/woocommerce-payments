@@ -226,13 +226,28 @@ export const handlePlatformCheckoutEmailInput = async (
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email ) => {
+		// check and return if another otp iframe is already open.
+		if ( document.querySelector( '.platform-checkout-otp-iframe' ) ) {
+			return;
+		}
+
+		const viewportWidth = window.document.documentElement.clientWidth;
+		const viewportHeight = window.document.documentElement.clientHeight;
+
 		const urlParams = new URLSearchParams();
 		urlParams.append( 'email', email );
+		urlParams.append( 'testMode', getConfig( 'testMode' ) );
 		urlParams.append(
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
+		urlParams.append( 'is_blocks', isBlocksCheckout ? 'true' : 'false' );
+		urlParams.append( 'source_url', window.location.href );
+		urlParams.append(
+			'viewport',
+			`${ viewportWidth }x${ viewportHeight }`
+		);
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Merge any custom meta_query args passed to wcs_get_orders_with_meta_query() to avoid overriding WC core args that map onto meta_query.
