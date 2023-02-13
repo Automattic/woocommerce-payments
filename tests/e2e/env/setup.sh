@@ -220,7 +220,7 @@ cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer 
 
 if [[ -n $PLUGIN_FILE_PATH ]]; then
 	echo "Installing & activating WooCommerce Payments from zip file..."
-	cli wp plugin install "$PLUGIN_FILE" --activate
+	cli wp plugin install "$PLUGIN_FILE_PATH" --activate
 else
 	echo "Activating the WooCommerce Payments plugin..."
 	cli wp plugin activate woocommerce-payments
