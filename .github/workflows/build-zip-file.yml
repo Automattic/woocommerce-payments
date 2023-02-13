@@ -78,14 +78,16 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: woocommerce-payments
+          path: zipfile
 
       - name: "Zip the downloaded artifact"
         shell: bash
         run: |
-          mv woocommerce-payments/woocommerce-payments woocommerce-payments/woocommerce-payments-build
-          zip -r woocommerce-payments-build.zip woocommerce-payments
-          rm -rf woocommerce-payments
-          echo "PLUGIN_FILE_PATH=./woocommerce-payments-build.zip" >> $GITHUB_ENV
+          # mv woocommerce-payments/woocommerce-payments woocommerce-payments/woocommerce-payments-build
+          # zip -r woocommerce-payments-build.zip woocommerce-payments
+          # rm -rf woocommerce-payments
+          # echo "PLUGIN_FILE_PATH=./woocommerce-payments-build.zip" >> $GITHUB_ENV
+          ls -R zipfile
 
       # - name: Setup E2E environment
       #   uses: ./.github/actions/e2e/env-setup
