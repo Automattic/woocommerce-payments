@@ -84,7 +84,7 @@ jobs:
         shell: bash
         run: |
           mv zipfile/woocommerce-payments zipfile/woocommerce-payments-build
-          zip -r woocommerce-payments-build.zip zipfile
+          cd zipfile && zip -r ../woocommerce-payments-build.zip . && cd ..
           echo "PLUGIN_FILE_PATH=./woocommerce-payments-build.zip" >> $GITHUB_ENV
 
       # - name: Setup E2E environment
