@@ -585,7 +585,7 @@ class WC_Payments {
 			$all_upe_gateways = [];
 			$reusable_methods = [];
 			foreach ( self::$card_gateway->get_payment_method_ids_enabled_at_checkout() as $payment_method_id ) {
-				if ( 'card' === $payment_method_id ) {
+				if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
 					continue;
 				}
 				$upe_gateway        = self::get_payment_gateway_by_id( $payment_method_id );
