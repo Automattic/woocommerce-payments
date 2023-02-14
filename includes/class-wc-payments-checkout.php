@@ -80,7 +80,7 @@ class WC_Payments_Checkout {
 	 * Enqueues and localizes WCPay's checkout scripts.
 	 */
 	public function enqueue_payment_scripts() {
-		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
+		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayConfig', $this->get_payment_fields_js_config() );
 		wp_enqueue_script( 'WCPAY_CHECKOUT' );
 	}
 
