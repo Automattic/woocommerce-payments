@@ -65,7 +65,9 @@ const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
 			const checkbox = document.querySelector(
 				'.wc-block-components-payment-methods__save-card-info'
 			);
-			checkbox.style.display = 'none';
+			if ( checkbox ) {
+				checkbox.style.display = 'none';
+			}
 		};
 
 		const updateIsWCPayChosen = () => {
