@@ -20,12 +20,13 @@ import {
 	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
 import CardBody from '../card-body';
-import PaymentRequestIcon from '../../gateway-icons/payment-request';
 import WooIcon from '../../gateway-icons/woo';
 import './style.scss';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import LinkIcon from '../../gateway-icons/link';
 import Tooltip from 'components/tooltip';
+import ApplePay from 'wcpay/gateway-icons/apple-pay';
+import GooglePay from 'wcpay/gateway-icons/google-pay';
 
 const ExpressCheckout = () => {
 	const [
@@ -128,14 +129,23 @@ const ExpressCheckout = () => {
 										/* eslint-disable jsx-a11y/anchor-has-content */
 										interpolateComponents( {
 											mixedString: __(
-												'By using WooPay, you agree to the {{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
-													'and acknowledge you have read our {{privacyLink}}Privacy Policy{{/privacyLink}} and ' +
-													'understand you will be sharing data with us. ' +
-													'{{trackingLink}}Click here{{/trackingLink}} to learn more about data sharing. ' +
-													'You can opt out of data sharing by disabling WooPay.',
+												'Boost conversion and customer loyalty by offering a single click, secure way to pay. ' +
+													'By using {{wooPayLink}}WooPay{{/wooPayLink}}, you agree to our ' +
+													'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
+													'and and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
+													'You understand you will be sharing data with us. ' +
+													'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
+													'data you will be sharing and opt-out options.',
 												'woocommerce-payments'
 											),
 											components: {
+												wooPayLink: (
+													<a
+														target="_blank"
+														rel="noreferrer"
+														href="https://woocommerce.com/document/woopay-merchant-documentation/"
+													/>
+												),
 												tosLink: (
 													<a
 														target="_blank"
@@ -188,8 +198,13 @@ const ExpressCheckout = () => {
 								onChange={ updateIsPaymentRequestEnabled }
 							/>
 						</div>
-						<div className="express-checkout__icon">
-							<PaymentRequestIcon />
+						<div className="express-checkout__icons">
+							<div className="express-checkout__icon">
+								<ApplePay />
+							</div>
+							<div className="express-checkout__icon">
+								<GooglePay />
+							</div>
 						</div>
 						<div className="express-checkout__label-container">
 							<div className="express-checkout__label">
