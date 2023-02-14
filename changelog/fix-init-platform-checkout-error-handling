@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Display an error when the request for initiating the platform checkout fails.

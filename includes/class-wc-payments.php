@@ -457,8 +457,6 @@ class WC_Payments {
 
 			new WC_Payments_Admin_Settings( self::get_gateway() );
 
-			add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ __CLASS__, 'add_plugin_links' ] );
-
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 
@@ -552,21 +550,6 @@ class WC_Payments {
 			);
 		}
 		return self::$plugin_headers;
-	}
-
-	/**
-	 * Adds links to the plugin's row in the "Plugins" Wp-Admin page.
-	 *
-	 * @see https://codex.wordpress.org/Plugin_API/Filter_Reference/plugin_action_links_(plugin_file_name)
-	 * @param array $links The existing list of links that will be rendered.
-	 * @return array The list of links that will be rendered, after adding some links specific to this plugin.
-	 */
-	public static function add_plugin_links( $links ) {
-		$plugin_links = [
-			'<a href="' . esc_attr( WC_Payments_Admin_Settings::get_settings_url() ) . '">' . esc_html__( 'Settings', 'woocommerce-payments' ) . '</a>',
-		];
-
-		return array_merge( $plugin_links, $links );
 	}
 
 	/**
@@ -1266,6 +1249,7 @@ class WC_Payments {
 				'ship_to_billing_address_only'   => wc_ship_to_billing_address_only(),
 				'return_url'                     => wc_get_cart_url(),
 				'blocks_data'                    => $blocks_data_extractor->get_data(),
+				'checkout_schema_namespaces'     => $blocks_data_extractor->get_checkout_schema_namespaces(),
 			],
 			'user_session'         => isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null,
 		];

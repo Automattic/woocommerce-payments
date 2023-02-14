@@ -1073,6 +1073,9 @@ class WC_Payments_Account {
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
 
+		// Automatically enable split UPE for new stores.
+		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+
 		wp_safe_redirect(
 			add_query_arg(
 				[

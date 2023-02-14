@@ -770,8 +770,6 @@ jQuery( function ( $ ) {
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
-		console.log( 'I am doing a thing' );
-		console.log( paymentMethodType );
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
 			const paymentIntentId =
 				gatewayUPEComponents[ paymentMethodType ].paymentIntentId;

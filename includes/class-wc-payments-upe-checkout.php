@@ -197,7 +197,6 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 						'a'      => '<a href="https://woocommerce.com/document/payments/testing/#test-cards" target="_blank">',
 					]
 				);
-
 			}
 		}
 
@@ -281,7 +280,10 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 
 			if ( $display_tokenization ) {
 				$this->gateway->tokenization_script();
-				$this->gateway->saved_payment_methods();
+				// avoid showing saved payment methods on my-accounts add payment method page.
+				if ( ! is_add_payment_method_page() ) {
+					$this->gateway->saved_payment_methods();
+				}
 			}
 			?>
 
