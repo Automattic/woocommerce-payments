@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Split UPE: fallback to legacy UPE when SEPA is enabled.
+
+
