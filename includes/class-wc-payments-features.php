@@ -35,14 +35,32 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_legacy_enabled() {
-		return '1' === get_option( self::UPE_FLAG_NAME, '0' );
+		$upe_flag_value = '1' === get_option( self::UPE_FLAG_NAME, '0' );
+		if ( $upe_flag_value ) {
+			return true;
+		}
+
+		// if the merchant is not eligible for the Split UPE, but they have the flag enabled, fallback to the "legacy" UPE (for now).
+		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && ! self::is_upe_split_eligible();
 	}
 
 	/**
 	 * Checks whether the Split-UPE gateway is enabled
 	 */
 	public static function is_upe_split_enabled() {
-		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
+		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
+	}
+
+	/**
+	 * Checks for the requirements to have the split-UPE enabled.
+	 */
+	private static function is_upe_split_eligible() {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		if ( empty( $account['capabilities']['sepa_debit_payments'] ) ) {
+			return true;
+		}
+
+		return 'active' !== $account['capabilities']['sepa_debit_payments'];
 	}
 
 	/**
@@ -51,7 +69,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function did_merchant_disable_upe() {
-		return 'disabled' === get_option( self::UPE_FLAG_NAME, '0' );
+		return 'disabled' === get_option( self::UPE_FLAG_NAME, '0' ) || 'disabled' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
 	}
 
 	/**
