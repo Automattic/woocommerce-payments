@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Catch exceptions when changing payment method associated with a subscription to avoid fatal errors.

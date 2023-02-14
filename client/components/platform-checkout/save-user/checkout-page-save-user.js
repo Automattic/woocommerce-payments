@@ -44,6 +44,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		isBlocksCheckout
 	);
 	const cart = useDispatch( WC_STORE_CART );
+	const viewportWidth = window.document.documentElement.clientWidth;
+	const viewportHeight = window.document.documentElement.clientHeight;
 
 	const getPhoneFieldValue = () => {
 		let phoneFieldValue = '';
@@ -73,6 +75,9 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				? {}
 				: {
 						save_user_in_platform_checkout: isSaveDetailsChecked,
+						platform_checkout_source_url: window.location.href,
+						platform_checkout_is_blocks: true,
+						platform_checkout_viewport: `${ viewportWidth }x${ viewportHeight }`,
 						platform_checkout_user_phone_field: {
 							full: phoneNumber,
 						},
@@ -93,7 +98,13 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 				} );
 			} );
 		},
-		[ isSaveDetailsChecked, phoneNumber, cart ]
+		[
+			isSaveDetailsChecked,
+			phoneNumber,
+			cart,
+			viewportWidth,
+			viewportHeight,
+		]
 	);
 
 	const handleCheckboxClick = ( e ) => {
@@ -268,6 +279,16 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						className="save-details-form form-row"
 						data-testid="save-user-form"
 					>
+						<input
+							type="hidden"
+							name="platform_checkout_source_url"
+							value={ window.location.href }
+						/>
+						<input
+							type="hidden"
+							name="platform_checkout_viewport"
+							value={ `${ viewportWidth }x${ viewportHeight }` }
+						/>
 						<PhoneNumberInput
 							value={
 								null === phoneNumber

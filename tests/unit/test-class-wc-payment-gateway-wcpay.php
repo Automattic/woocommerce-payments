@@ -1728,6 +1728,76 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
+	public function test_process_payment_for_order_cc_payment_method() {
+		$payment_method                              = 'woocommerce_payments';
+		$expected_upe_payment_method_for_pi_creation = 'card';
+		$order                                       = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_and_confirm_intention' )
+			->with(
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				[ $expected_upe_payment_method_for_pi_creation ],
+				$this->anything()
+			)
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
+	public function test_process_payment_for_order_upe_payment_method() {
+		$payment_method                              = 'woocommerce_payments_sepa_debit';
+		$expected_upe_payment_method_for_pi_creation = 'sepa_debit';
+		$order                                       = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_and_confirm_intention' )
+			->with(
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				[ $expected_upe_payment_method_for_pi_creation ],
+				$this->anything()
+			)
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
 	public function test_process_payment_caches_mimimum_amount_and_displays_error_upon_exception() {
 		delete_transient( 'wcpay_minimum_amount_usd' );
 
@@ -1999,6 +2069,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
 	}
 
+	public function test_should_use_stripe_platform_on_checkout_page_not_platform_checkout_eligible() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => false ] );
+		$this->assertFalse( $this->wcpay_gateway->should_use_stripe_platform_on_checkout_page() );
+	}
+
+	public function test_should_use_stripe_platform_on_checkout_page_not_platform_checkout() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
+		$this->wcpay_gateway->update_option( 'platform_checkout', 'no' );
+
+		$this->assertFalse( $this->wcpay_gateway->should_use_stripe_platform_on_checkout_page() );
+	}
+
 	public function test_force_network_saved_cards_is_returned_as_true_if_should_use_stripe_platform() {
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'should_use_stripe_platform_on_checkout_page' ] );
 
@@ -2025,6 +2107,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_is_platform_checkout_enabled_returns_false_if_ineligible_and_enabled() {
 		$this->wcpay_gateway->update_option( 'platform_checkout', 'yes' );
 		$this->assertFalse( $this->payments_checkout->get_payment_fields_js_config()['isPlatformCheckoutEnabled'] );
+	}
+
+	public function test_return_icon_url() {
+		$returned_icon = $this->payments_checkout->get_payment_fields_js_config()['icon'];
+		$this->assertNotNull( $returned_icon );
+		$this->assertStringContainsString( 'assets/images/payment-methods/cc.svg', $returned_icon );
 	}
 
 	public function is_platform_checkout_falsy_value_provider() {

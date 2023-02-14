@@ -7,6 +7,7 @@ import {
 	CardElement,
 } from '@stripe/react-stripe-js';
 import { useEffect, useState } from '@wordpress/element';
+import { getConfig } from 'utils/checkout';
 
 /**
  * Internal dependencies
@@ -30,6 +31,18 @@ const WCPayFields = ( {
 	shouldSavePayment,
 } ) => {
 	const [ errorMessage, setErrorMessage ] = useState( null );
+	const isTestMode = getConfig( 'testMode' );
+	const testingInstructions = (
+		<p>
+			<strong>Test mode:</strong> use the test VISA card 4242424242424242
+			with any expiry date and CVC, or any test card numbers listed{ ' ' }
+			<a href="https://woocommerce.com/document/payments/testing/#test-cards">
+				here
+			</a>
+			.
+		</p>
+	);
+
 	const [ fingerprint, fingerprintErrorMessage ] = useFingerprint();
 
 	useEffect( () => {
@@ -92,12 +105,15 @@ const WCPayFields = ( {
 	};
 
 	return (
-		<div className="wc-block-gateway-container wc-inline-card-element">
-			<CardElement
-				options={ elementOptions }
-				onChange={ checkForErrors }
-			/>
-		</div>
+		<>
+			{ isTestMode ? testingInstructions : '' }
+			<div className="wc-block-gateway-container wc-inline-card-element">
+				<CardElement
+					options={ elementOptions }
+					onChange={ checkForErrors }
+				/>
+			</div>
+		</>
 	);
 };
 

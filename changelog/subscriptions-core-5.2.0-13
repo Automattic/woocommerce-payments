@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-When a subscription is trashed or deleted, make sure it is cancelled first on stores with HPOS enabled.

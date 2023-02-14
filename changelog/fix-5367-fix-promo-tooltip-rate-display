@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Make the tooltip and fee description pill in Payments > Settings, show the correct Base rate when we have promotional rates applied.
