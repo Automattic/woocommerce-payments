@@ -51,7 +51,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function did_merchant_disable_upe() {
-		return 'disabled' === get_option( self::UPE_FLAG_NAME, '0' );
+		return 'disabled' === get_option( self::UPE_FLAG_NAME, '0' ) || 'disabled' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
 	}
 
 	/**
