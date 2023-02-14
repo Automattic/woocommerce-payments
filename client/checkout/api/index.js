@@ -70,7 +70,6 @@ export default class WCPayAPI {
 			}
 			return this.stripePlatform;
 		}
-
 		if ( ! this.stripe ) {
 			if ( isUPEEnabled ) {
 				let betas = [ 'card_country_event_beta_1' ];

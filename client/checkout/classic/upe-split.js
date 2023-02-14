@@ -374,10 +374,8 @@ jQuery( function ( $ ) {
 		upeElement.mount( upeDOMElement );
 		unblockUI( $upeContainer );
 		upeElement.on( 'change', ( event ) => {
-			let selectedUPEPaymentType = event.value.type;
-			if ( 'link' === selectedUPEPaymentType ) {
-				selectedUPEPaymentType = 'card';
-			}
+			const selectedUPEPaymentType =
+				'link' !== event.value.type ? event.value.type : 'card';
 			gatewayUPEComponents[ selectedUPEPaymentType ].country =
 				event.value.country;
 			gatewayUPEComponents[ selectedUPEPaymentType ].isUPEComplete =
