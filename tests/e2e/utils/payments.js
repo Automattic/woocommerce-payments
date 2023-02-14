@@ -89,6 +89,31 @@ export async function clearCardDetails() {
 	await page.keyboard.press( 'Backspace' );
 }
 
+export async function fillCardDetailsPayForOrder( page, card ) {
+	await page.waitForSelector( '.__PrivateStripeElement' );
+	const frameHandle = await page.waitForSelector(
+		'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+	);
+	const stripeFrame = await frameHandle.contentFrame();
+
+	const cardNumberInput = await stripeFrame.waitForSelector(
+		'[name="cardnumber"]',
+		{ timeout: 30000 }
+	);
+	await cardNumberInput.type( card.number, { delay: 20 } );
+
+	const cardDateInput = await stripeFrame.waitForSelector(
+		'[name="exp-date"]'
+	);
+
+	await cardDateInput.type( card.expires.month + card.expires.year, {
+		delay: 20,
+	} );
+
+	const cardCvcInput = await stripeFrame.waitForSelector( '[name="cvc"]' );
+	await cardCvcInput.type( card.cvc, { delay: 20 } );
+}
+
 // WooCommerce Blocks Checkout
 export async function fillCardDetailsWCB( page, card ) {
 	await page.waitForSelector( '.__PrivateStripeElement' );
