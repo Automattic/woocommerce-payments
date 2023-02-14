@@ -50,6 +50,36 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	}
 
 	/**
+	 * Indicates eligibility for WooPay via feature flag.
+	 *
+	 * @var bool
+	 */
+	private $is_platform_checkout_eligible;
+
+	/**
+	 * Indicates whether WooPay is enabled.
+	 *
+	 * @var bool
+	 */
+	private $is_platform_checkout_enabled;
+
+	/**
+	 * Indicates whether WooPay express checkout is enabled.
+	 *
+	 * @var bool
+	 */
+	private $is_platform_checkout_express_button_enabled;
+
+	/**
+	 * Indicates whether WooPay and WooPay express checkout are enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_woopay_enabled() {
+		return $this->is_platform_checkout_eligible && $this->is_platform_checkout_enabled && $this->is_platform_checkout_express_button_enabled;
+	}
+
+	/**
 	 * Initialize hooks.
 	 *
 	 * @return  void
@@ -61,11 +91,11 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		}
 
 		// Checks if WooPay is enabled.
-		$is_platform_checkout_eligible               = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
-		$is_platform_checkout_enabled                = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
-		$is_platform_checkout_express_button_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
+		$this->is_platform_checkout_eligible               = WC_Payments_Features::is_platform_checkout_eligible(); // Feature flag.
+		$this->is_platform_checkout_enabled                = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
+		$this->is_platform_checkout_express_button_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
 
-		if ( ! ( $is_platform_checkout_eligible && $is_platform_checkout_enabled && $is_platform_checkout_express_button_enabled ) ) {
+		if ( ! $this->is_woopay_enabled() ) {
 			return;
 		}
 
@@ -81,13 +111,10 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		add_action( 'wc_ajax_wcpay_add_to_cart', [ $this, 'ajax_add_to_cart' ] );
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_html' ], -2 );
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
 
 		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_platform_checkout_button_html' ], -2 );
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
 
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_html' ], -2 );
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_platform_checkout_button_separator_html' ], -1 );
 
 		add_action( 'wp_ajax_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
 		add_action( 'wp_ajax_nopriv_woopay_express_checkout_button_show_error_notice', [ $this, 'show_error_notice' ] );
@@ -478,6 +505,10 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return false;
 		}
 
+		if ( $this->is_pay_for_order_page() ) {
+			return false;
+		}
+
 		/**
 		 * TODO: We need to do some research here and see if there are any product types that we
 		 * absolutely cannot support with WooPay at this time. There are some examples in the
@@ -501,18 +532,6 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 				<?php // The WooPay express checkout button React component will go here. ?>
 			</div>
 		</div>
-		<?php
-	}
-
-	/**
-	 * Display payment request button separator.
-	 */
-	public function display_platform_checkout_button_separator_html() {
-		if ( ! $this->should_show_platform_checkout_button() ) {
-			return;
-		}
-		?>
-		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php
 	}
 

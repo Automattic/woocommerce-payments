@@ -117,12 +117,17 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 		$is_upe_enabled = $request->get_param( 'is_upe_enabled' );
 
 		if ( $is_upe_enabled ) {
-			update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
+			update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
 			return;
 		}
 
-		// marking the flag as "disabled", so that we can keep track that the merchant explicitly disabled it.
-		update_option( WC_Payments_Features::UPE_FLAG_NAME, 'disabled' );
+		// If the legacy UPE flag has been enabled, we need to disable the legacy UPE flag.
+		if ( '1' === get_option( WC_Payments_Features::UPE_FLAG_NAME ) ) {
+			update_option( WC_Payments_Features::UPE_FLAG_NAME, 'disabled' );
+		} else {
+			// marking the flag as "disabled", so that we can keep track that the merchant explicitly disabled it.
+			update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, 'disabled' );
+		}
 
 		// resetting a few other things:
 		// removing the UPE payment methods and _only_ leaving "card",
