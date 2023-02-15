@@ -22,7 +22,7 @@ const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
 const sepaPaymentMethod = '#inspector-checkbox-control-8';
 const card = config.get( 'cards.basic' );
 
-describe.skip( 'Enabled UPE', () => {
+describe( 'Enabled UPE', () => {
 	beforeAll( async () => {
 		await merchant.login();
 		await merchantWCP.activateUpe();
