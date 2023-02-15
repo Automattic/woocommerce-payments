@@ -235,7 +235,6 @@ class WC_Payments_Features {
 		return array_filter(
 			[
 				'upe'                     => self::is_upe_enabled(),
-				'upeType'                 => self::get_enabled_upe_type(),
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
