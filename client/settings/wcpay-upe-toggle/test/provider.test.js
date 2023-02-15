@@ -54,6 +54,7 @@ describe( 'WcPayUpeContextProvider', () => {
 			isUpeEnabled: false,
 			setIsUpeEnabled: expect.any( Function ),
 			status: 'resolved',
+			upeType: '',
 		} );
 		expect( apiFetch ).not.toHaveBeenCalled();
 	} );
@@ -106,12 +107,14 @@ describe( 'WcPayUpeContextProvider', () => {
 			isUpeEnabled: false,
 			setIsUpeEnabled: expect.any( Function ),
 			status: 'resolved',
+			upeType: '',
 		} );
 
 		expect( childrenMock ).toHaveBeenCalledWith( {
 			isUpeEnabled: false,
 			setIsUpeEnabled: expect.any( Function ),
 			status: 'pending',
+			upeType: '',
 		} );
 
 		await waitFor( () =>
@@ -129,6 +132,7 @@ describe( 'WcPayUpeContextProvider', () => {
 			isUpeEnabled: true,
 			setIsUpeEnabled: expect.any( Function ),
 			status: 'resolved',
+			upeType: 'split',
 		} );
 		expect( setEnabledPaymentMethodIds ).not.toHaveBeenCalled();
 	} );
@@ -165,12 +169,14 @@ describe( 'WcPayUpeContextProvider', () => {
 			isUpeEnabled: true,
 			setIsUpeEnabled: expect.any( Function ),
 			status: 'resolved',
+			upeType: 'legacy',
 		} );
 
 		expect( childrenMock ).toHaveBeenCalledWith( {
 			isUpeEnabled: true,
 			setIsUpeEnabled: expect.any( Function ),
 			status: 'pending',
+			upeType: 'legacy',
 		} );
 
 		await waitFor( () =>
@@ -188,6 +194,7 @@ describe( 'WcPayUpeContextProvider', () => {
 			isUpeEnabled: false,
 			setIsUpeEnabled: expect.any( Function ),
 			status: 'resolved',
+			upeType: '',
 		} );
 		expect( setEnabledPaymentMethodIds ).toHaveBeenCalledWith( [ 'card' ] );
 		expect( updateAvailablePaymentMethodIds ).toHaveBeenCalledWith( [

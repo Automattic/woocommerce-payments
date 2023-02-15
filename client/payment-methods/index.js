@@ -81,7 +81,6 @@ const UpeSetupBanner = () => {
 		<>
 			<CardDivider />
 			<CardBody className="payment-methods__express-checkouts">
-				<Pill>{ __( 'Early access', 'woocommerce-payments' ) }</Pill>
 				<h3>
 					{ __(
 						'Enable the new WooCommerce Payments checkout experience',
@@ -193,7 +192,7 @@ const PaymentMethods = () => {
 		featureFlags: { upeSettingsPreview: isUpeSettingsPreviewEnabled },
 	} = useContext( WCPaySettingsContext );
 
-	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
+	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
 
 	return (
@@ -229,10 +228,18 @@ const PaymentMethods = () => {
 									'Payment methods',
 									'woocommerce-payments'
 								) }
-							</span>{ ' ' }
-							<Pill>
-								{ __( 'Early access', 'woocommerce-payments' ) }
-							</Pill>
+							</span>
+							{ 'split' !== upeType && (
+								<>
+									{ ' ' }
+									<Pill>
+										{ __(
+											'Early access',
+											'woocommerce-payments'
+										) }
+									</Pill>
+								</>
+							) }
 						</h4>
 						<PaymentMethodsDropdownMenu
 							setOpenModal={ setOpenModalIdentifier }

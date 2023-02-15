@@ -18,7 +18,7 @@ import Pill from '../../components/pill';
 import './enable-upe-preview-task.scss';
 
 const EnableUpePreviewTask = () => {
-	const { setIsUpeEnabled, status } = useContext( WcPayUpeContext );
+	const { setIsUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 
 	const { setCompleted } = useContext( WizardTaskContext );
 
@@ -30,17 +30,29 @@ const EnableUpePreviewTask = () => {
 
 	return (
 		<WizardTaskItem
-			title={ interpolateComponents( {
-				mixedString: __(
-					'{{wrapper}}Enable the new WooCommerce Payments checkout experience{{/wrapper}} ' +
-						'{{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
-					'woocommerce-payments'
-				),
-				components: {
-					wrapper: <span />,
-					earlyAccessWrapper: <Pill />,
-				},
-			} ) }
+			title={
+				'split' === upeType
+					? interpolateComponents( {
+							mixedString: __(
+								'{{wrapper}}Enable the new WooCommerce Payments checkout experience{{/wrapper}}',
+								'woocommerce-payments'
+							),
+							components: {
+								wrapper: <span />,
+							},
+					  } )
+					: interpolateComponents( {
+							mixedString: __(
+								'{{wrapper}}Enable the new WooCommerce Payments checkout experience{{/wrapper}} ' +
+									'{{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
+								'woocommerce-payments'
+							),
+							components: {
+								wrapper: <span />,
+								earlyAccessWrapper: <Pill />,
+							},
+					  } )
+			}
 			index={ 1 }
 		>
 			<CollapsibleBody className="enable-upe-preview__body">

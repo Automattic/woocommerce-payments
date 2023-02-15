@@ -30,6 +30,23 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Returns the "type" of UPE that ill be displayed at checkout.
+	 *
+	 * @return string
+	 */
+	public static function get_enabled_upe_type() {
+		if ( self::is_upe_split_enabled() ) {
+			return 'split';
+		}
+
+		if ( self::is_upe_legacy_enabled() ) {
+			return 'legacy';
+		}
+
+		return '';
+	}
+
+	/**
 	 * Checks whether the legacy UPE gateway is enabled
 	 *
 	 * @return bool
@@ -218,6 +235,7 @@ class WC_Payments_Features {
 		return array_filter(
 			[
 				'upe'                     => self::is_upe_enabled(),
+				'upeType'                 => self::get_enabled_upe_type(),
 				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
 				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
 				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
