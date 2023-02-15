@@ -9,7 +9,6 @@ import { useDispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import WcPayUpeContext from './context';
-import wcpayTracks from '../../tracks';
 import { NAMESPACE, STORE_NAME } from '../../data/constants';
 import { useEnabledPaymentMethodIds } from '../../data';
 
@@ -42,12 +41,6 @@ const WcPayUpeContextProvider = ( {
 					// new "toggles" will continue being "split" UPE
 					setUpeType( value ? 'split' : '' );
 					setIsUpeEnabled( Boolean( value ) );
-
-					// Track enabling/disabling UPE.
-					const event = Boolean( value )
-						? wcpayTracks.events.UPE_ENABLED
-						: wcpayTracks.events.UPE_DISABLED;
-					wcpayTracks.recordEvent( event );
 
 					// the backend already takes care of this,
 					// we're just duplicating the effort
