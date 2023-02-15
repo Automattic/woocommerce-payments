@@ -6,7 +6,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import ProtectionLevels from '.';
+import ProtectionLevels from '../index';
 
 describe( 'ProtectionLevels', () => {
 	it( 'renders', () => {

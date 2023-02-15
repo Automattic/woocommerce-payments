@@ -6,7 +6,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import ExceedsDollarAmountRule from './index';
+import ExceedsDollarAmountRule from '../index';
 
 describe( 'ExceedsDollarAmountRule', () => {
 	it( 'renders the high level dollar amount rule when USD is store currency', () => {

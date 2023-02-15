@@ -9,7 +9,7 @@ import { render, screen } from '@testing-library/react';
 import {
 	HighFraudProtectionModal,
 	StandardFraudProtectionModal,
-} from './index';
+} from '../index';
 
 describe( 'HighFraudProtectionModal', () => {
 	const setHighModalOpen = jest.fn();
