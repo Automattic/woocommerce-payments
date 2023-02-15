@@ -13,9 +13,16 @@ import wcpayTracks from '../../tracks';
 import { NAMESPACE, STORE_NAME } from '../../data/constants';
 import { useEnabledPaymentMethodIds } from '../../data';
 
-const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
+const WcPayUpeContextProvider = ( {
+	children,
+	defaultIsUpeEnabled,
+	defaultUpeType,
+} ) => {
 	const [ isUpeEnabled, setIsUpeEnabled ] = useState(
 		Boolean( defaultIsUpeEnabled )
+	);
+	const [ upeType, setUpeType ] = useState(
+		defaultIsUpeEnabled ? defaultUpeType || 'legacy' : ''
 	);
 	const [ status, setStatus ] = useState( 'resolved' );
 	const [ , setEnabledPaymentMethods ] = useEnabledPaymentMethodIds();
@@ -32,6 +39,8 @@ const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
 				data: { is_upe_enabled: Boolean( value ) },
 			} )
 				.then( () => {
+					// new "toggles" will continue being "split" UPE
+					setUpeType( value ? 'split' : '' );
 					setIsUpeEnabled( Boolean( value ) );
 
 					// Track enabling/disabling UPE.
@@ -56,14 +65,20 @@ const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
 		[
 			setStatus,
 			setIsUpeEnabled,
+			setUpeType,
 			setEnabledPaymentMethods,
 			updateAvailablePaymentMethodIds,
 		]
 	);
 
 	const contextValue = useMemo(
-		() => ( { isUpeEnabled, setIsUpeEnabled: updateFlag, status } ),
-		[ isUpeEnabled, updateFlag, status ]
+		() => ( {
+			isUpeEnabled,
+			setIsUpeEnabled: updateFlag,
+			status,
+			upeType,
+		} ),
+		[ isUpeEnabled, updateFlag, status, upeType ]
 	);
 
 	return (
