@@ -34,7 +34,7 @@ const EnableUpePreviewTask = () => {
 				'split' === upeType
 					? interpolateComponents( {
 							mixedString: __(
-								'{{wrapper}}Enable the new WooCommerce Payments checkout experience{{/wrapper}}',
+								'{{wrapper}}Enable the improved WooCommerce Payments checkout experience{{/wrapper}}',
 								'woocommerce-payments'
 							),
 							components: {
@@ -57,24 +57,42 @@ const EnableUpePreviewTask = () => {
 		>
 			<CollapsibleBody className="enable-upe-preview__body">
 				<p className="wcpay-wizard-task__description-element is-muted-color">
-					{ interpolateComponents( {
-						mixedString: __(
-							'Get early access to additional payment methods and an improved checkout experience, ' +
-								'coming soon to WooCommerce payments. {{learnMoreLink /}}',
-							'woocommerce-payments'
-						),
-						components: {
-							learnMoreLink: (
-								// eslint-disable-next-line max-len
-								<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#introduction">
-									{ __(
-										'Learn more',
-										'woocommerce-payments'
-									) }
-								</ExternalLink>
-							),
-						},
-					} ) }
+					{ 'split' === upeType
+						? interpolateComponents( {
+								mixedString: __(
+									'Get access to additional payment methods and an improved checkout experience. {{learnMoreLink /}}',
+									'woocommerce-payments'
+								),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line max-len
+										<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#introduction">
+											{ __(
+												'Learn more',
+												'woocommerce-payments'
+											) }
+										</ExternalLink>
+									),
+								},
+						  } )
+						: interpolateComponents( {
+								mixedString: __(
+									'Get early access to additional payment methods and an improved checkout experience, ' +
+										'coming soon to WooCommerce payments. {{learnMoreLink /}}',
+									'woocommerce-payments'
+								),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line max-len
+										<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#introduction">
+											{ __(
+												'Learn more',
+												'woocommerce-payments'
+											) }
+										</ExternalLink>
+									),
+								},
+						  } ) }
 				</p>
 				<div className="enable-upe-preview__advantages-wrapper">
 					<Card className="enable-upe-preview__advantage">

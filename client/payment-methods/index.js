@@ -90,7 +90,7 @@ const UpeSetupBanner = () => {
 				<p>
 					{ __(
 						/* eslint-disable-next-line max-len */
-						'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.',
+						'Get access to additional payment methods and an improved checkout experience.',
 						'woocommerce-payments'
 					) }
 				</p>
