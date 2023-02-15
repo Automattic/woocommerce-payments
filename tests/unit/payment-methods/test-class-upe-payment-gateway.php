@@ -1813,12 +1813,14 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					'title'          => 'Credit card / debit card',
 					'icon'           => $this->icon_url,
 					'showSaveOption' => true,
+
 				],
 				'link' => [
 					'isReusable'     => true,
 					'title'          => 'Link',
 					'icon'           => $this->icon_url,
 					'showSaveOption' => true,
+
 				],
 			]
 		);

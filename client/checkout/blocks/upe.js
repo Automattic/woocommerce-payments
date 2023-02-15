@@ -39,6 +39,7 @@ const api = new WCPayAPI(
 	},
 	request
 );
+
 registerPaymentMethod( {
 	name: PAYMENT_METHOD_NAME_CARD,
 	content: <WCPayUPEFields api={ api } />,
