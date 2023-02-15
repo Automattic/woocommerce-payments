@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -31,16 +31,12 @@ describe( 'FraudProtection', () => {
 	);
 
 	it( 'renders', () => {
-		render(
+		const { container: fraudProtectionSettings } = render(
 			<WCPaySettingsContext.Provider>
 				<FraudProtection />
 			</WCPaySettingsContext.Provider>
 		);
 
-		const highHelp = screen.getByText( /High protection:/ );
-		expect( highHelp ).toBeInTheDocument();
-		expect( highHelp ).toHaveTextContent(
-			'High protection: Offers the highest level of filtering for stores, but may catch some legitimate transactions.'
-		);
+		expect( fraudProtectionSettings ).toMatchSnapshot();
 	} );
 } );
