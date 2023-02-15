@@ -16,13 +16,6 @@ use WCPay\Payment_Process\Order_Payment;
  */
 class Filesystem_Order_Storage extends Filesystem_Storage {
 	/**
-	 * Used to associate payments with orders through meta data.
-	 *
-	 * @var string
-	 */
-	const ORDER_META_KEY = '_wcpay_payment_key';
-
-	/**
 	 * Loads a payment from the storage.
 	 *
 	 * @param Payment $payment The payment object.
