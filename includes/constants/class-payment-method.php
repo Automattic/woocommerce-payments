@@ -21,6 +21,7 @@ use MyCLabs\Enum\Enum;
  */
 class Payment_Method extends Enum {
 	const BANCONTACT      = 'bancontact';
+	const BASC            = 'bacs_debit';
 	const BECS            = 'au_becs_debit';
 	const CARD            = 'card';
 	const CARD_PRESENT    = 'card_present';
