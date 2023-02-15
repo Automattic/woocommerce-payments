@@ -30,7 +30,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Returns the "type" of UPE that ill be displayed at checkout.
+	 * Returns the "type" of UPE that will be displayed at checkout.
 	 *
 	 * @return string
 	 */
