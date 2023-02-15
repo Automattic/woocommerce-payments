@@ -113,6 +113,7 @@ const SettingsManager = () => {
 		featureFlags: {
 			upeSettingsPreview: isUPESettingsPreviewEnabled,
 			upe: isUpeEnabled,
+			upeType,
 		},
 	} = useContext( WCPaySettingsContext );
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
@@ -134,6 +135,7 @@ const SettingsManager = () => {
 						<ErrorBoundary>
 							<WcPayUpeContextProvider
 								defaultIsUpeEnabled={ isUpeEnabled }
+								defaultUpeType={ upeType }
 							>
 								<PaymentMethods />
 							</WcPayUpeContextProvider>

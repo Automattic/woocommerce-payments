@@ -217,10 +217,15 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								</svg>
 							) }
 							<span>
-								{ __(
-									'Save my information for a faster and secure checkout',
-									'woocommerce-payments'
-								) }
+								{ isBlocksCheckout
+									? __(
+											'Save my information for a faster and secure checkout',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Save my information for a faster checkout',
+											'woocommerce-payments'
+									  ) }
 							</span>
 						</label>
 					</div>

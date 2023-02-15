@@ -520,6 +520,7 @@ class WC_Payments_Admin {
 			'wpcomReconnectUrl'          => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup'     => [
 				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
+				'upeType'      => WC_Payments_Features::get_enabled_upe_type(),
 			],
 			'multiCurrencySetup'         => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
@@ -749,6 +750,7 @@ class WC_Payments_Admin {
 			[
 				'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 				'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
+				'upeType'         => WC_Payments_Features::get_enabled_upe_type(),
 			],
 			WC_Payments_Features::to_array()
 		);
