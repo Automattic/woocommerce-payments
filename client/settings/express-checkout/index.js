@@ -220,7 +220,8 @@ const ExpressCheckout = () => {
 												? 'Apple Pay is an easy and secure way for customers to pay on your store. '
 												: interpolateComponents( {
 														mixedString: __(
-															'Apple Pay is an easy and secure way for customers to pay on your store. ' +
+															/* eslint-disable-next-line max-len */
+															'Apple Pay is an easy and secure way for customers to pay on your store. {{br/}}' +
 																/* eslint-disable-next-line max-len */
 																'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}} and' +
 																"{{appleLink}} Apple{{/appleLink}}'s terms of use.",
@@ -242,6 +243,7 @@ const ExpressCheckout = () => {
 																	href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/"
 																/>
 															),
+															br: <br />,
 														},
 												  } )
 											/* eslint-enable jsx-a11y/anchor-has-content */
@@ -267,7 +269,8 @@ const ExpressCheckout = () => {
 												? 'Offer customers a fast, secure checkout experience with Google Pay. '
 												: interpolateComponents( {
 														mixedString: __(
-															'Offer customers a fast, secure checkout experience with Google Pay. ' +
+															/* eslint-disable-next-line max-len */
+															'Offer customers a fast, secure checkout experience with Google Pay. {{br/}}' +
 																/* eslint-disable-next-line max-len */
 																'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
 																"and {{googleLink}}Google{{/googleLink}}'s terms of use.",
@@ -288,6 +291,7 @@ const ExpressCheckout = () => {
 																	href="https://androidpay.developers.google.com/terms/sellertos"
 																/>
 															),
+															br: <br />,
 														},
 												  } )
 											/* eslint-enable jsx-a11y/anchor-has-content */
