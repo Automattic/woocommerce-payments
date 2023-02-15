@@ -198,57 +198,93 @@ const ExpressCheckout = () => {
 								onChange={ updateIsPaymentRequestEnabled }
 							/>
 						</div>
-						<div className="express-checkout__icons">
-							<div className="express-checkout__icon">
-								<ApplePay />
-							</div>
-							<div className="express-checkout__icon">
-								<GooglePay />
-							</div>
-						</div>
-						<div className="express-checkout__label-container">
-							<div className="express-checkout__label">
-								{ __(
-									'Apple Pay / Google Pay',
-									'woocommerce-payments'
-								) }
-							</div>
-							<div className="express-checkout__description">
-								{
-									/* eslint-disable jsx-a11y/anchor-has-content */
-									interpolateComponents( {
-										mixedString: __(
-											'Boost sales by offering a fast, simple, and secure checkout experience.' +
-												'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
-												"{{appleLink}}Apple{{/appleLink}}, and {{googleLink}}Google{{/googleLink}}'s terms of use.",
+						<div>
+							<div className="express-checkout__subgroup">
+								<div className="express-checkout__icon">
+									<ApplePay />
+								</div>
+								<div className="express-checkout__label-container">
+									<div className="express-checkout__label">
+										{ __(
+											'Apple Pay',
 											'woocommerce-payments'
-										),
-										components: {
-											stripeLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://stripe.com/apple-pay/legal"
-												/>
-											),
-											appleLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/"
-												/>
-											),
-											googleLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://androidpay.developers.google.com/terms/sellertos"
-												/>
-											),
-										},
-									} )
-									/* eslint-enable jsx-a11y/anchor-has-content */
-								}
+										) }
+									</div>
+									<div className="express-checkout__description">
+										{
+											/* eslint-disable jsx-a11y/anchor-has-content */
+											interpolateComponents( {
+												mixedString: __(
+													'Apple Pay is an easy and secure way for customers to pay on your store. ' +
+														'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}} and' +
+														"{{appleLink}} Apple{{/appleLink}}'s terms of use.",
+													'woocommerce-payments'
+												),
+												components: {
+													stripeLink: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://stripe.com/apple-pay/legal"
+														/>
+													),
+													appleLink: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															/* eslint-disable-next-line max-len */
+															href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/"
+														/>
+													),
+												},
+											} )
+											/* eslint-enable jsx-a11y/anchor-has-content */
+										}
+									</div>
+								</div>
+							</div>
+							<div className="express-checkout__subgroup">
+								<div className="express-checkout__icon">
+									<GooglePay />
+								</div>
+								<div className="express-checkout__label-container">
+									<div className="express-checkout__label">
+										{ __(
+											'Google Pay',
+											'woocommerce-payments'
+										) }
+									</div>
+									<div className="express-checkout__description">
+										{
+											/* eslint-disable jsx-a11y/anchor-has-content */
+											interpolateComponents( {
+												mixedString: __(
+													'Offer customers a fast, secure checkout experience with Google Pay. ' +
+														'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
+														"and {{googleLink}}Google{{/googleLink}}'s terms of use.",
+													'woocommerce-payments'
+												),
+												components: {
+													stripeLink: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://stripe.com/apple-pay/legal"
+														/>
+													),
+													googleLink: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://androidpay.developers.google.com/terms/sellertos"
+														/>
+													),
+												},
+											} )
+											/* eslint-enable jsx-a11y/anchor-has-content */
+										}
+									</div>
+								</div>
 							</div>
 						</div>
 						<div className="express-checkout__link">

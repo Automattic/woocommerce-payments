@@ -80,6 +80,12 @@
 					white-space: nowrap;
 				}
 			}
+			&__subgroup {
+				display: flex;
+				&:not( :last-child ) {
+					margin-bottom: 1.4em;
+				}
+			}
 		}
 	}
 }
