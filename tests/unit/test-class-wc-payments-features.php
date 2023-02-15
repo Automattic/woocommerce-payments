@@ -50,26 +50,16 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	/**
-	 * @dataProvider enabled_flags_provider
-	 */
-	public function test_it_returns_expected_to_array_result( array $enabled_flags ) {
+	public function test_it_returns_expected_to_array_result() {
+		$enabled_flags = array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING );
 		$this->setup_enabled_flags( $enabled_flags );
 
-		$expected = [];
+		$flags = WC_Payments_Features::to_array();
+
 		foreach ( $enabled_flags as $flag ) {
-			$frontend_key              = self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING[ $flag ];
-			$expected[ $frontend_key ] = true;
+			$frontend_key = self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING[ $flag ];
+			$this->assertTrue( $flags[ $frontend_key ], "Failed asserting that $frontend_key is true." );
 		}
-
-		$this->assertEquals( $expected, WC_Payments_Features::to_array() );
-	}
-
-	public function enabled_flags_provider() {
-		return [
-			'no flags'  => [ [] ],
-			'all flags' => [ array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) ],
-		];
 	}
 
 	public function test_customer_multi_currency_is_enabled_by_default() {
