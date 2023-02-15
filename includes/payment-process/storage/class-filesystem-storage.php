@@ -7,9 +7,10 @@
 
 namespace WCPay\Payment_Process\Storage;
 
-use WCPay\Payment_Process\Payment;
 use WP_Filesystem_Base;
 use Exception;
+use WCPay\Payment_Process\Payment;
+use WCPay\Payment_Process\Order_Payment;
 
 /**
  * A class for storing and loading payments from the filesystem.
@@ -20,7 +21,7 @@ class Filesystem_Storage implements Payment_Storage {
 	 *
 	 * @var string
 	 */
-	private $path;
+	protected $path;
 
 	/**
 	 * Initializes the storage and its directory.
@@ -41,51 +42,93 @@ class Filesystem_Storage implements Payment_Storage {
 	/**
 	 * Stores the payment.
 	 *
-	 * @param string $key     The key of the payment.
-	 * @param array  $payment The payment data.
-	 *
-	 * @throws \Exception In case the payment could not be stored.
+	 * @param Payment $payment The payment object.
+	 * @throws \Exception      In case the payment could not be stored.
 	 */
-	public function store( string $key, array $payment ) {
-		$full_path = $this->generate_path( $key );
-		$json      = wp_json_encode( $payment, WP_DEBUG ? JSON_PRETTY_PRINT : 0 );
+	public function store( Payment $payment ) {
+		$fs   = $this->get_filesystem();
+		$data = $payment->get_data();
 
-		$this->get_filesystem()->put_contents( $full_path, $json );
+		// Load the ID or generate a new one if needed.
+		$id = $payment->get_id();
+		if ( ! $id ) {
+			$id = time() . md5( time() );
+			$payment->set_id( $id );
+		}
+
+		// Add the ID to the data.
+		$data['id'] = $id;
+
+		// Finally, store it.
+		$path = $this->generate_path( $payment );
+
+		// Make sure there's a directory.
+		$dir = dirname( $path );
+		if ( ! $fs->exists( $dir ) ) {
+			$fs->mkdir( $dir );
+		}
+
+		$json = wp_json_encode( $data, WP_DEBUG ? JSON_PRETTY_PRINT : 0 );
+		$fs->put_contents( $path, $json );
 	}
 
 	/**
-	 * Loads a payment from the storage.
+	 * Loads a payment from the storage. The mayment must have an ID if its being loaded.
 	 *
-	 * @param string $key The key of the payment.
-	 * @return array      Payment data.
-	 *
-	 * @throws \Exception In case the payment could not be loaded.
+	 * @param Payment $payment The payment object.
+	 * @throws \Exception      In case the payment could not be loaded.
 	 */
-	public function load( string $key ) {
-		$fs        = $this->get_filesystem();
-		$full_path = $this->generate_path( $key );
+	public function load( Payment $payment ) {
+		if ( ! $payment->get_id() ) {
+			throw new Exception( 'Cannot load a payment without an ID from the filesystem.' );
+		}
 
-		if ( $fs->exists( $full_path ) ) {
-			$options = [
-				'associative' => true,
-			];
-			$payment = wp_json_file_decode( $full_path, $options );
-			if ( ! empty( $payment ) ) {
-				return $payment;
+		$data = $this->read_json_from_file( $this->generate_path( $payment ) );
+
+		if ( ! isset( $data['id'] ) ) {
+			throw new Exception( 'The payment file does not contain an identifier.' );
+		}
+
+		$id = $data['id'];
+		unset( $data['id'] );
+
+		$payment->set_id( $id );
+		$payment->load_data( $data );
+	}
+
+	/**
+	 * Attempts to read a file, and parse its content to JSON.
+	 *
+	 * @param string $path The path to the file.
+	 * @return array       Parsed JSON data as an array.
+	 * @throws \Exception  Whenever the file could not be read.
+	 */
+	protected function read_json_from_file( string $path ) {
+		$fs = $this->get_filesystem();
+
+		$options = [
+			'associative' => true,
+		];
+
+		if ( $fs->exists( $path ) ) {
+			$data = wp_json_file_decode( $path, $options );
+
+			if ( ! empty( $data ) ) {
+				return $data;
 			}
 		}
 
-		throw new Exception( 'Could not load the existing payment!' );
+		throw new \Exception( 'Payment file does not exist, cannot be opened, or does not contain valid data.' );
 	}
 
 	/**
 	 * Generates the path for a given payment.
 	 *
-	 * @param string $key The key for the payment.
-	 * @return string     The full path for the file.
+	 * @param Payment $payment The payment object.
+	 * @return string          The full path for the file.
 	 */
-	protected function generate_path( $key ) {
-		return $this->path . $key . '.json';
+	protected function generate_path( Payment $payment ) {
+		return $this->path . $payment->get_id() . '.json';
 	}
 
 	/**

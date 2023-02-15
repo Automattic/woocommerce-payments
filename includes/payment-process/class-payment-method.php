@@ -1,6 +1,15 @@
 <?php
+/**
+ * Class Payment_Method
+ *
+ * @package WooCommerce\Payments
+ */
+
 namespace WCPay\Payment_Process;
 
+/**
+ * Base class, representing payment methods.
+ */
 abstract class Payment_Method {
 	/**
 	 * Returns the type of the payment method,

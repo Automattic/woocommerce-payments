@@ -7,6 +7,8 @@
 
 namespace WCPay\Payment_Process\Storage;
 
+use WCPay\Payment_Process\Payment;
+
 /**
  * An interface for storing payments.
  *
@@ -17,20 +19,16 @@ interface Payment_Storage {
 	/**
 	 * Stores the payment.
 	 *
-	 * @param string $key     The key of the payment.
-	 * @param array  $payment The payment data.
-	 *
-	 * @throws \Exception In case the payment could not be stored.
+	 * @param Payment $payment The payment object.
+	 * @throws \Exception      In case the payment could not be stored.
 	 */
-	public function store( string $key, array $payment );
+	public function store( Payment $payment );
 
 	/**
 	 * Loads a payment from the storage.
 	 *
-	 * @param string $key The key of the payment.
-	 * @return array      Payment data.
-	 *
-	 * @throws \Exception In case the payment could not be loaded.
+	 * @param Payment $payment The payment object.
+	 * @throws \Exception      In case the payment could not be loaded.
 	 */
-	public function load( string $key );
+	public function load( Payment $payment );
 }
