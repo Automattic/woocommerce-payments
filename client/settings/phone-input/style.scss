@@ -129,6 +129,10 @@
 	margin-top: $gap-large;
 }
 
+.no-top-margin .iti {
+	margin-top: 0;
+}
+
 .iti__selected-flag {
 	background-color: inherit !important;
 
