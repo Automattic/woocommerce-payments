@@ -160,7 +160,7 @@ export const getDepositScheduleDescriptor = ( {
 			sprintf(
 				/** translators: %s - deposit schedule, <a> - Settings page URL */
 				__(
-					'%s <a>Change this</a> or <learn_more_href/>',
+					'%s <a>Change this</a> or <learn_more_href/>.',
 					'woocommerce-payments'
 				),
 				formatDepositSchedule( schedule )
@@ -169,11 +169,13 @@ export const getDepositScheduleDescriptor = ( {
 				a: (
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
-						href={ getAdminUrl( {
-							page: 'wc-settings',
-							section: 'woocommerce_payments',
-							tab: 'checkout',
-						} ) }
+						href={
+							getAdminUrl( {
+								page: 'wc-settings',
+								section: 'woocommerce_payments',
+								tab: 'checkout',
+							} ) + '#deposit-schedule'
+						}
 					/>
 				),
 				learn_more_href: (
