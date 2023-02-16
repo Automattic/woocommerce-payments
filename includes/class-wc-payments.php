@@ -435,9 +435,7 @@ class WC_Payments {
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 
-		add_action( 'template_redirect', function() {
-			require_once __DIR__ . '/payment-process/test.php';
-		} );
+		require_once __DIR__ . '/payment-process/test.php';
 	}
 
 	/**

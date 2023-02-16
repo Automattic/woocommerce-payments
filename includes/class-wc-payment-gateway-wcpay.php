@@ -26,6 +26,10 @@ use WCPay\Platform_Checkout\Platform_Checkout_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 
+use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
+use WCPay\Payment_Process\Storage\Filesystem_Order_Storage;
+use WCPay\Payment_Process\Order_Payment_Factory;
+
 /**
  * Gateway class for WooCommerce Payments
  */
@@ -935,6 +939,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
+		$storage         = new Filesystem_Order_Storage();
+		$pm_factory      = new Payment_Method_Factory();
+		$payment_factory = new Order_Payment_Factory( $storage, $pm_factory );
+
+		// Basic payment.
+		$payment = $payment_factory->load_or_create_order_payment( $payment_information->get_order() );
+
+		// phpcs:ignore WordPress.Security.NonceVerification
+		$payment_method = $pm_factory->from_request( $_POST );
+		$payment->set_payment_method( $payment_method );
+
+		$payment->save();
+		if ( $payment ) {
+			return;
+		}
+
 		$order                                       = $payment_information->get_order();
 		$save_payment_method_to_store                = $payment_information->should_save_payment_method_to_store();
 		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();

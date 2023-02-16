@@ -8,6 +8,8 @@
 namespace WCPay\Payment_Process;
 
 use WCPay\Payment_Process\Storage\Payment_Storage;
+use WCPay\Payment_Process\Payment_Method\Payment_Method;
+use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
 
 /**
  * Main class, representing payments.
@@ -28,19 +30,31 @@ abstract class Payment {
 	protected $id;
 
 	/**
-	 * Holds the ID of the used payment method.
+	 * The factory for payment methods.
 	 *
-	 * @var string
+	 * @var Payment_Method_Factory
+	 */
+	protected $payment_method_factory;
+
+	/**
+	 * Holds the payment method.
+	 *
+	 * @var Payment_Method
 	 */
 	protected $payment_method;
 
 	/**
 	 * Instantiates the class.
 	 *
-	 * @param Payment_Storage $storage The payment storage object.
+	 * @param Payment_Storage        $storage                Storage to load/save payments from/to.
+	 * @param Payment_Method_Factory $payment_method_factory Factory for payment methods.
 	 */
-	public function __construct( Payment_Storage $storage ) {
-		$this->payment_storage = $storage;
+	public function __construct(
+		Payment_Storage $storage,
+		Payment_Method_Factory $payment_method_factory
+	) {
+		$this->payment_storage        = $storage;
+		$this->payment_method_factory = $payment_method_factory;
 	}
 
 	/**
@@ -49,7 +63,9 @@ abstract class Payment {
 	 * @param array $data The pre-existing payment data.
 	 */
 	public function load_data( array $data ) {
-		$this->payment_method = $data['payment_method'];
+		if ( isset( $data['payment_method'] ) && ! empty( $data['payment_method'] ) ) {
+			$this->payment_method = $this->payment_method_factory->from_storage( $data['payment_method'] );
+		}
 	}
 
 	/**
@@ -59,7 +75,7 @@ abstract class Payment {
 	 */
 	public function get_data() {
 		return [
-			'payment_method' => $this->payment_method,
+			'payment_method' => $this->payment_method->get_data(),
 		];
 	}
 
@@ -80,9 +96,18 @@ abstract class Payment {
 	}
 
 	/**
-	 * Returns the ID of the order if any.
+	 * Returns the ID of the payment if any.
 	 */
 	public function get_id() {
 		return $this->id;
+	}
+
+	/**
+	 * Changes the payment method, used for the payment.
+	 *
+	 * @param Payment_Method $payment_method The used payment method.
+	 */
+	public function set_payment_method( Payment_Method $payment_method ) {
+		$this->payment_method = $payment_method;
 	}
 }

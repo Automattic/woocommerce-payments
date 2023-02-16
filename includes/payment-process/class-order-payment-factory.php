@@ -7,10 +7,10 @@
 
 namespace WCPay\Payment_Process;
 
-use Automattic\WooCommerce\Admin\Features\OnboardingTasks\Tasks\Payments;
 use WC_Order;
 use WCPay\Payment_Process\Storage\Payment_Storage;
 use WCPay\Payment_Process\Order_Payment;
+use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
 
 /**
  * Manages payment objects based on orders.
@@ -24,12 +24,24 @@ class Order_Payment_Factory {
 	protected $payment_storage;
 
 	/**
+	 * The factory for payment methods.
+	 *
+	 * @var Payment_Method_Factory
+	 */
+	protected $payment_method_factory;
+
+	/**
 	 * Initializes the factory.
 	 *
-	 * @param Payment_Storage $storage The storage to load/save payments from/to.
+	 * @param Payment_Storage        $storage                Storage to load/save payments from/to.
+	 * @param Payment_Method_Factory $payment_method_factory Factory for payment methods.
 	 */
-	public function __construct( Payment_Storage $storage ) {
-		$this->payment_storage = $storage;
+	public function __construct(
+		Payment_Storage $storage,
+		Payment_Method_Factory $payment_method_factory
+	) {
+		$this->payment_storage        = $storage;
+		$this->payment_method_factory = $payment_method_factory;
 	}
 
 	/**
@@ -40,7 +52,7 @@ class Order_Payment_Factory {
 	 * @return Order_Payment  Either a newly created payment object, or an existing one.
 	 */
 	public function load_or_create_order_payment( WC_Order $order ) {
-		$payment = new Order_Payment( $this->payment_storage );
+		$payment = new Order_Payment( $this->payment_storage, $this->payment_method_factory );
 		$payment->set_order( $order );
 		$this->payment_storage->load( $payment );
 
@@ -63,7 +75,7 @@ class Order_Payment_Factory {
 	 * @return Order_Payment   A newly created object.
 	 */
 	public function create_order_payment( WC_Order $order ) {
-		$payment = new Order_Payment( $this->payment_storage );
+		$payment = new Order_Payment( $this->payment_storage, $this->payment_method_factory );
 		$payment->set_order( $order );
 		$payment->save();
 		return $payment;

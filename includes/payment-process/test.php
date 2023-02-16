@@ -27,9 +27,3 @@ function wcpay_load_payment_process_class( $class_name ) {
 	require_once __DIR__ . '/' . implode( '/', $parts ) . '/class-' . $last . '.php';
 }
 spl_autoload_register( 'wcpay_load_payment_process_class' );
-
-$storage = new Filesystem_Order_Storage();
-$factory = new Order_Payment_Factory( $storage );
-
-$the_order = wc_get_order( 1092 );
-$payment   = $factory->load_or_create_order_payment( $the_order );
