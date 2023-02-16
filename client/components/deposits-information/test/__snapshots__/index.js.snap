@@ -89,7 +89,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
           </svg>
           Deposits set to every Thursday. 
           <a
-            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout#deposit-schedule"
           >
             Change this
           </a>
@@ -101,6 +101,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
           >
             learn more
           </a>
+          .
         </p>
       </div>
     </div>
@@ -238,7 +239,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
           </svg>
           Deposits set to every Thursday. 
           <a
-            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout#deposit-schedule"
           >
             Change this
           </a>
@@ -250,6 +251,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
           >
             learn more
           </a>
+          .
         </p>
       </div>
     </div>
@@ -392,7 +394,7 @@ exports[`Deposits information renders instant deposit button only where applicab
           </svg>
           Deposits set to every Thursday. 
           <a
-            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout#deposit-schedule"
           >
             Change this
           </a>
@@ -404,6 +406,7 @@ exports[`Deposits information renders instant deposit button only where applicab
           >
             learn more
           </a>
+          .
         </p>
       </div>
     </div>
@@ -548,7 +551,7 @@ exports[`Deposits information renders instant deposit button only where applicab
           </svg>
           Deposits set to every Thursday. 
           <a
-            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout"
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout#deposit-schedule"
           >
             Change this
           </a>
@@ -560,6 +563,7 @@ exports[`Deposits information renders instant deposit button only where applicab
           >
             learn more
           </a>
+          .
         </p>
       </div>
     </div>
