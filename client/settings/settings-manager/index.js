@@ -3,6 +3,7 @@
  * External dependencies
  */
 import React, { useContext, useState } from 'react';
+import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
@@ -49,13 +50,9 @@ const ExpressCheckoutDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<a
-			target="_blank"
-			rel="noreferrer"
-			href="https://woocommerce.com/document/payments/settings-guide/#section-4"
-		>
-			Learn more
-		</a>
+		<ExternalLink href="https://woocommerce.com/document/payments/settings-guide/#section-4">
+			{ __( 'Learn more', 'woocommerce-payments' ) }
+		</ExternalLink>
 	</>
 );
 
@@ -80,13 +77,9 @@ const TransactionsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<a
-			target="_blank"
-			rel="noreferrer"
-			href="https://woocommerce.com/document/payments/faq/"
-		>
-			View frequently asked questions
-		</a>
+		<ExternalLink href="https://woocommerce.com/document/payments/faq/">
+			{ __( 'View frequently asked questions', 'woocommerce-payments' ) }
+		</ExternalLink>
 	</>
 );
 
@@ -105,13 +98,12 @@ const DepositsDescription = () => {
 					depositDelayDays
 				) }
 			</p>
-			<a
-				target="_blank"
-				rel="noreferrer"
-				href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2"
-			>
-				Learn more about pending schedules
-			</a>
+			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
+				{ __(
+					'Learn more about pending schedules',
+					'woocommerce-payments'
+				) }
+			</ExternalLink>
 		</>
 	);
 };
