@@ -762,10 +762,8 @@ jQuery( function ( $ ) {
 		PAYMENT_METHOD_NAME_P24,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
+		PAYMENT_METHOD_NAME_CARD,
 	];
-	if ( isStripeLinkEnabled ) {
-		wcpayPaymentMethods.push( PAYMENT_METHOD_NAME_CARD );
-	}
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
