@@ -29,6 +29,7 @@ use WCPay\Tracker;
 use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
 use WCPay\Payment_Process\Storage\Filesystem_Order_Storage;
 use WCPay\Payment_Process\Order_Payment_Factory;
+use WCPay\Payment_Process\Payment;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -950,8 +951,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_method = $pm_factory->from_request( $_POST );
 		$payment->set_payment_method( $payment_method );
 
+		$payment->set_flag( Payment::MANUAL_CAPTURE );
+		$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_PLATFORM );
+
 		$payment->save();
 		if ( $payment ) {
+			var_dump($payment); exit;
 			return;
 		}
 
