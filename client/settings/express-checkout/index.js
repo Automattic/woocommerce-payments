@@ -128,7 +128,10 @@ const ExpressCheckout = () => {
 									{
 										/* eslint-disable jsx-a11y/anchor-has-content */
 										isPlatformCheckoutEnabled
-											? 'Boost conversion and customer loyalty by offering a single click, secure way to pay.'
+											? __(
+													'Boost conversion and customer loyalty by offering a single click, secure way to pay.',
+													'woocommerce-payments'
+											  )
 											: interpolateComponents( {
 													mixedString: __(
 														/* eslint-disable-next-line max-len */
@@ -217,7 +220,10 @@ const ExpressCheckout = () => {
 										{
 											/* eslint-disable jsx-a11y/anchor-has-content */
 											isPaymentRequestEnabled
-												? 'Apple Pay is an easy and secure way for customers to pay on your store. '
+												? __(
+														'Apple Pay is an easy and secure way for customers to pay on your store. ',
+														'woocommerce-payments'
+												  )
 												: interpolateComponents( {
 														mixedString: __(
 															/* eslint-disable-next-line max-len */
@@ -266,7 +272,10 @@ const ExpressCheckout = () => {
 										{
 											/* eslint-disable jsx-a11y/anchor-has-content */
 											isPaymentRequestEnabled
-												? 'Offer customers a fast, secure checkout experience with Google Pay. '
+												? __(
+														'Offer customers a fast, secure checkout experience with Google Pay. ',
+														'woocommerce-payments'
+												  )
 												: interpolateComponents( {
 														mixedString: __(
 															/* eslint-disable-next-line max-len */
@@ -363,8 +372,11 @@ const ExpressCheckout = () => {
 									{
 										/* eslint-disable jsx-a11y/anchor-has-content */
 										isStripeLinkEnabled
-											? /* eslint-disable-next-line max-len */
-											  'Link autofills your customers’ payment and shipping details to deliver an easy and seamless checkout experience.'
+											? /* eslint-disable max-len */
+											  __(
+													'Link autofills your customers’ payment and shipping details to deliver an easy and seamless checkout experience.',
+													'woocommerce-payments'
+											  )
 											: interpolateComponents( {
 													mixedString: __(
 														'Link autofills your customers’ payment and shipping details to ' +
@@ -393,6 +405,7 @@ const ExpressCheckout = () => {
 													},
 											  } )
 										/* eslint-enable jsx-a11y/anchor-has-content */
+										/* eslint-enable max-len */
 									}
 								</div>
 							</div>
