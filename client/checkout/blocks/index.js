@@ -22,7 +22,6 @@ import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
-import { woopayCheckEmailInput } from '../platform-checkout/woopay-check-email-input';
 import wooPayExpressCheckoutPaymentMethod from '../platform-checkout/express-button/woopay-express-checkout-payment-method';
 
 // Create an API object, which will be used throughout the checkout.
@@ -43,26 +42,41 @@ registerPaymentMethod( {
 	savedTokenComponent: <SavedTokenHandler api={ api } />,
 	canMakePayment: () => !! api.getStripe(),
 	paymentMethodId: PAYMENT_METHOD_NAME_CARD,
-	label: __( 'Credit card', 'woocommerce-payments' ),
+	// see .wc-block-checkout__payment-method styles in blocks/style.scss
+	label: (
+		<>
+			<span>
+				{ __( 'Credit card', 'woocommerce-payments' ) }
+				<img
+					src={ getConfig( 'icon' ) }
+					alt={ __( 'Credit card', 'woocommerce-payments' ) }
+				/>
+			</span>
+		</>
+	),
 	ariaLabel: __( 'Credit card', 'woocommerce-payments' ),
 	supports: {
 		showSavedCards: getConfig( 'isSavedCardsEnabled' ) ?? false,
-		showSaveOption: getConfig( 'isSavedCardsEnabled' ) ?? false,
+		showSaveOption:
+			( getConfig( 'isSavedCardsEnabled' ) &&
+				! getConfig( 'isPlatformCheckoutEnabled' ) ) ??
+			false,
 		features: getConfig( 'features' ),
 	},
 } );
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 
+// Call handlePlatformCheckoutEmailInput if platform checkout is enabled and this is the checkout page.
 if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
-	// Call handlePlatformCheckoutEmailInput if platform checkout is enabled and this is the checkout page.
-	if ( getConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
-		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
-		woopayCheckEmailInput( '#email' );
-	} else if (
+	if (
 		document.querySelector( '[data-block-name="woocommerce/checkout"]' )
 	) {
 		handlePlatformCheckoutEmailInput( '#email', api, true );
+	}
+
+	if ( getConfig( 'isWoopayExpressCheckoutEnabled' ) ) {
+		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
 	}
 }
 
