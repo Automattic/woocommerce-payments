@@ -162,6 +162,15 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	}
 
 	/**
+	 * Checks if WooPay is enabled.
+	 *
+	 * @return bool - True if WooPay enabled, false otherwise.
+	 */
+	private function is_woopay_enabled() {
+		return WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' ) && WC_Payments_Features::is_woopay_express_checkout_enabled();
+	}
+
+	/**
 	 * Gets payment method settings to pass to client scripts
 	 *
 	 * @return array
@@ -171,6 +180,9 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
+			if ( WC_Payments_Features::is_upe_split_enabled() && $this->is_woopay_enabled() && 'card' === $payment_method_id ) {
+				continue;
+			}
 			// Link by Stripe should be validated with available fees.
 			if ( Payment_Method::LINK === $payment_method_id ) {
 				if ( ! in_array( Payment_Method::LINK, array_keys( $this->account->get_fees() ), true ) ) {
