@@ -103,13 +103,14 @@ export const getDepositScheduleDescriptor = ( {
 		window.wcpaySettings?.accountStatus?.deposits
 			?.completed_waiting_period ?? false;
 
+	const learnMoreHref =
+		'https://woocommerce.com/document/payments/faq/deposit-schedule/';
+
 	if (
 		disabled ||
 		blocked ||
 		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval )
 	) {
-		const learnMoreHref =
-			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
 		return createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
 			__(
@@ -120,7 +121,9 @@ export const getDepositScheduleDescriptor = ( {
 				a: (
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
-						href={ learnMoreHref }
+						href={
+							'https://woocommerce.com/document/payments/faq/deposits-suspended/'
+						}
 						target="_blank"
 						rel="noopener noreferrer"
 					/>
@@ -128,9 +131,6 @@ export const getDepositScheduleDescriptor = ( {
 			}
 		);
 	}
-
-	const learnMoreHref =
-		'https://woocommerce.com/document/payments/faq/deposit-schedule/';
 
 	if ( ! last ) {
 		return createInterpolateElement(
@@ -183,7 +183,7 @@ export const getDepositScheduleDescriptor = ( {
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{ __( 'learn more' ) }
+						{ __( 'learn more', 'woocommerce-payments' ) }
 					</a>
 				),
 			}
