@@ -119,11 +119,15 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
 
+		$script_src_url    = plugins_url( 'dist/upe_split_checkout.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path = WCPAY_ABSPATH . 'dist/upe_split_checkout.asset.php';
+		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => $script_dependencies ];
+
 		wp_register_script(
 			'wcpay-upe-checkout',
-			plugins_url( 'dist/upe_split_checkout.js', WCPAY_PLUGIN_FILE ),
-			$script_dependencies,
-			WC_Payments::get_file_version( 'dist/upe_split_checkout.js' ),
+			$script_src_url,
+			$script_asset['dependencies'],
+			\WC_Payments::get_file_version( 'dist/upe_split_checkout.js' ),
 			true
 		);
 	}
