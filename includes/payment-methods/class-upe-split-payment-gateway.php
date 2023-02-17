@@ -127,7 +127,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			true
 		);
 
-		if ( ! WC()->cart->needs_payment() ) {
+		if ( ! WC()->cart->needs_payment() && is_checkout() && ! has_block( 'woocommerce/checkout' ) ) {
 			WC_Payments::get_gateway()->tokenization_script();
 			WC_Payments::get_wc_payments_checkout()->enqueue_payment_scripts();
 		}
