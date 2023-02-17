@@ -135,6 +135,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			WC_Payments::get_file_version( 'dist/upe_checkout.js' ),
 			true
 		);
+
+		if ( ! WC()->cart->needs_payment() ) {
+			WC_Payments::get_gateway()->tokenization_script();
+			WC_Payments::get_wc_payments_checkout()->enqueue_payment_scripts();
+		}
 	}
 
 	/**
