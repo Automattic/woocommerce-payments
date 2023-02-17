@@ -756,9 +756,10 @@ class WC_Payments_Payment_Request_Button_Handler {
 			'total_label'        => $this->get_total_label(),
 		];
 
-		$script_src_url    = plugins_url( 'dist/payment-request.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/payment-request.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [ 'jquery', 'stripe' ] ];
+		$script_src_url               = plugins_url( 'dist/payment-request.js', WCPAY_PLUGIN_FILE );
+		$script_asset_path            = WCPAY_ABSPATH . 'dist/payment-request.asset.php';
+		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset['dependencies'] = array_merge( $script_asset['dependencies'], [ 'jquery', 'stripe' ] );
 		wp_register_script(
 			'WCPAY_PAYMENT_REQUEST',
 			$script_src_url,
