@@ -42,6 +42,15 @@ class New_Payment_Method implements Payment_Method {
 	}
 
 	/**
+	 * Returns the ID of the payment method.
+	 *
+	 * @return string
+	 */
+	public function get_id() {
+		return $this->id;
+	}
+
+	/**
 	 * Checks if the new payment method should be saved.
 	 *
 	 * During normal orders the payment method is saved when the customer enters a new one and chooses to save it.

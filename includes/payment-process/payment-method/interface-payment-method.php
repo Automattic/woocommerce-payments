@@ -14,4 +14,11 @@ interface Payment_Method {
 	 * @return array
 	 */
 	public function get_data();
+
+	/**
+	 * Returns the ID of the payment method.
+	 *
+	 * @return string
+	 */
+	public function get_id();
 }
