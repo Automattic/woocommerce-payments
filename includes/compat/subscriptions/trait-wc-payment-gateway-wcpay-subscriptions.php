@@ -18,6 +18,7 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Payment_Process\Payment;
+use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
@@ -266,8 +267,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// Subs-specific behavior starts here.
 		$payment->set_flag( Payment::RECURRING );
-		// The payment method is always saved for subscriptions.
-		$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
+
+		// The payment method is always saved for subscriptions, unless already saved.
+		if ( $payment->get_payment_method() instanceof New_Payment_Method ) {
+			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
+		}
+
 		if ( $this->is_changing_payment_method_for_subscription() ) {
 			$payment->set_flag( Payment::CHANGING_SUBSCRIPTION_PAYMENT_METHOD );
 		}

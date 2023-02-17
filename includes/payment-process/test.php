@@ -22,8 +22,14 @@ function wcpay_load_payment_process_class( $class_name ) {
 	$parts      = explode( '\\', $class_name );
 	array_shift( $parts ); // Remove WCPay.
 	array_shift( $parts ); // Remove Payment_Process.
-	$last = array_pop( $parts );
+	$last     = array_pop( $parts );
+	$template = __DIR__ . '/' . implode( '/', $parts ) . '/%s-' . $last . '.php';
 
-	require_once __DIR__ . '/' . implode( '/', $parts ) . '/class-' . $last . '.php';
+	foreach ( [ 'class', 'interface' ] as $type ) {
+		$path = sprintf( $template, $type );
+		if ( file_exists( $path ) ) {
+			require_once $path;
+		}
+	}
 }
 spl_autoload_register( 'wcpay_load_payment_process_class' );
