@@ -113,7 +113,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			true
 		);
 
-		$script_dependencies = [ 'stripe', 'wc-checkout' ];
+		$script_dependencies = [ 'stripe', 'wc-checkout', 'wp-i18n' ];
 
 		if ( $this->supports( 'tokenization' ) ) {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
