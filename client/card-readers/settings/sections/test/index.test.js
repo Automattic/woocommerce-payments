@@ -14,7 +14,7 @@ import BrandingFileUpload from '../../file-upload';
 
 jest.mock( '../../file-upload', () => jest.fn() );
 
-const setDisabledMock = jest.fn();
+const setInputsValidMock = jest.fn();
 
 describe( 'Card Reader Business Details section', () => {
 	beforeEach( () => {
@@ -33,7 +33,7 @@ describe( 'Card Reader Business Details section', () => {
 
 	test( 'Renders Business section', () => {
 		render(
-			<BusinessDetailsSection setSaveDisabled={ setDisabledMock } />
+			<BusinessDetailsSection setInputsValid={ setInputsValidMock } />
 		);
 
 		const heading = screen.queryByRole( 'heading', {
@@ -44,7 +44,7 @@ describe( 'Card Reader Business Details section', () => {
 
 	test( 'Renders Business settings', () => {
 		render(
-			<BusinessDetailsSection setSaveDisabled={ setDisabledMock } />
+			<BusinessDetailsSection setInputsValid={ setInputsValidMock } />
 		);
 
 		const name = screen.getByLabelText( 'Business name' );
@@ -58,7 +58,7 @@ describe( 'Card Reader Business Details section', () => {
 describe( 'Card Reader Contact Details section', () => {
 	test( 'Renders Contacts section', () => {
 		render(
-			<ContactsDetailsSection setSaveDisabled={ setDisabledMock } />
+			<ContactsDetailsSection setInputsValid={ setInputsValidMock } />
 		);
 
 		const heading = screen.queryByRole( 'heading', {
@@ -69,7 +69,7 @@ describe( 'Card Reader Contact Details section', () => {
 
 	test( 'Renders Contacts settings', () => {
 		render(
-			<ContactsDetailsSection setSaveDisabled={ setDisabledMock } />
+			<ContactsDetailsSection setInputsValid={ setInputsValidMock } />
 		);
 
 		const email = screen.getByLabelText( 'Support email' );

@@ -71,8 +71,12 @@ describe( 'PaymentRequestSettings', () => {
 	it( 'renders enable settings with defaults', () => {
 		render( <PaymentRequestSettings section="enable" /> );
 
-		// confirm no heading
-		expect( screen.queryByRole( 'heading' ) ).not.toBeInTheDocument();
+		// confirm there is a heading
+		expect(
+			screen.queryByText(
+				'Enable Apple Pay and Google Pay on selected pages'
+			)
+		).toBeInTheDocument();
 
 		// confirm checkbox groups displayed
 		const [ enableCheckbox ] = screen.queryAllByRole( 'checkbox' );
@@ -94,6 +98,10 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect( updateIsPaymentRequestEnabledHandler ).not.toHaveBeenCalled();
 
+		expect( screen.getByLabelText( 'Checkout Page' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Product Page' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Cart Page' ) ).toBeChecked();
+
 		userEvent.click( screen.getByLabelText( /Enable Apple Pay/ ) );
 		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
 			false
@@ -108,17 +116,16 @@ describe( 'PaymentRequestSettings', () => {
 			screen.queryByRole( 'heading', { name: 'Call to action' } )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByRole( 'heading', { name: 'Appearance' } )
+			screen.queryByRole( 'heading', { name: 'Button size' } )
 		).toBeInTheDocument();
 
-		// confirm checkbox groups displayed
-		const [ locationCheckbox ] = screen.queryAllByRole( 'checkbox' );
+		expect(
+			screen.queryByRole( 'heading', { name: 'Theme' } )
+		).toBeInTheDocument();
 
-		expect( locationCheckbox ).toBeInTheDocument();
-
-		expect( screen.getByLabelText( 'Checkout' ) ).toBeChecked();
-		expect( screen.getByLabelText( 'Product page' ) ).toBeChecked();
-		expect( screen.getByLabelText( 'Cart' ) ).toBeChecked();
+		expect(
+			screen.queryByRole( 'heading', { name: 'Preview' } )
+		).toBeInTheDocument();
 
 		// confirm radio button groups displayed
 		const [ ctaRadio, sizeRadio, themeRadio ] = screen.queryAllByRole(
@@ -130,17 +137,13 @@ describe( 'PaymentRequestSettings', () => {
 		expect( themeRadio ).toBeInTheDocument();
 
 		// confirm default values
-		expect( screen.getByLabelText( 'Buy' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Buy with' ) ).toBeChecked();
 		expect( screen.getByLabelText( 'Default (40 px)' ) ).toBeChecked();
 		expect( screen.getByLabelText( /Dark/ ) ).toBeChecked();
 	} );
 
-	it( 'triggers the hooks when the general settings are being interacted with', () => {
+	it( 'triggers the hooks when the enabled settings are being interacted with', () => {
 		const updatePaymentRequestLocationsHandler = jest.fn();
-		const setButtonTypeMock = jest.fn();
-		const setButtonSizeMock = jest.fn();
-		const setButtonThemeMock = jest.fn();
-
 		usePaymentRequestLocations.mockReturnValue(
 			getMockPaymentRequestLocations(
 				false,
@@ -149,6 +152,31 @@ describe( 'PaymentRequestSettings', () => {
 				updatePaymentRequestLocationsHandler
 			)
 		);
+		render( <PaymentRequestSettings section="enable" /> );
+
+		expect( updatePaymentRequestLocationsHandler ).not.toHaveBeenCalled();
+
+		userEvent.click( screen.getByLabelText( /Checkout/ ) );
+		expect(
+			updatePaymentRequestLocationsHandler
+		).toHaveBeenLastCalledWith( [ 'checkout' ] );
+
+		userEvent.click( screen.getByLabelText( /Product Page/ ) );
+		expect(
+			updatePaymentRequestLocationsHandler
+		).toHaveBeenLastCalledWith( [ 'product' ] );
+
+		userEvent.click( screen.getByLabelText( /Cart/ ) );
+		expect(
+			updatePaymentRequestLocationsHandler
+		).toHaveBeenLastCalledWith( [ 'cart' ] );
+	} );
+
+	it( 'triggers the hooks when the general settings are being interacted with', () => {
+		const setButtonTypeMock = jest.fn();
+		const setButtonSizeMock = jest.fn();
+		const setButtonThemeMock = jest.fn();
+
 		usePaymentRequestButtonType.mockReturnValue( [
 			'buy',
 			setButtonTypeMock,
@@ -164,30 +192,14 @@ describe( 'PaymentRequestSettings', () => {
 
 		render( <PaymentRequestSettings section="general" /> );
 
-		expect( updatePaymentRequestLocationsHandler ).not.toHaveBeenCalled();
 		expect( setButtonTypeMock ).not.toHaveBeenCalled();
 		expect( setButtonSizeMock ).not.toHaveBeenCalled();
 		expect( setButtonThemeMock ).not.toHaveBeenCalled();
 
-		userEvent.click( screen.getByLabelText( /Checkout/ ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'checkout' ] );
-
-		userEvent.click( screen.getByLabelText( /Product page/ ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'product' ] );
-
-		userEvent.click( screen.getByLabelText( /Cart/ ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'cart' ] );
-
 		userEvent.click( screen.getByLabelText( /Light/ ) );
 		expect( setButtonThemeMock ).toHaveBeenCalledWith( 'light' );
 
-		userEvent.click( screen.getByLabelText( 'Book' ) );
+		userEvent.click( screen.getByLabelText( 'Book with' ) );
 		expect( setButtonTypeMock ).toHaveBeenCalledWith( 'book' );
 
 		userEvent.click( screen.getByLabelText( 'Large (56 px)' ) );
@@ -206,20 +218,20 @@ describe( 'PaymentRequestSettings', () => {
 			)
 		);
 
-		render( <PaymentRequestSettings section="general" /> );
+		render( <PaymentRequestSettings section="enable" /> );
 
 		// Uncheck each checkbox, and verify them what kind of action should have been called
-		userEvent.click( screen.getByText( 'Product page' ) );
+		userEvent.click( screen.getByText( 'Product Page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'cart' ] );
 
-		userEvent.click( screen.getByText( 'Checkout' ) );
+		userEvent.click( screen.getByText( 'Checkout Page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product', 'cart' ] );
 
-		userEvent.click( screen.getByText( 'Cart' ) );
+		userEvent.click( screen.getByText( 'Cart Page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );

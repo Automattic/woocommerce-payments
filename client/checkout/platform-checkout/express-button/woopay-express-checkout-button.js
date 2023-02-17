@@ -8,6 +8,7 @@ import { useEffect } from 'react';
  * Internal dependencies
  */
 import WoopayIcon from './woopay-icon';
+import WoopayIconLight from './woopay-icon-light';
 import { expressCheckoutIframe } from './express-checkout-iframe';
 import useExpressCheckoutProductHandler from './use-express-checkout-product-handler';
 import wcpayTracks from 'tracks';
@@ -17,15 +18,19 @@ export const WoopayExpressCheckoutButton = ( {
 	buttonSettings,
 	api,
 	isProductPage = false,
+	emailSelector = '#email',
 } ) => {
-	const {
-		type: buttonType,
-		text,
-		height,
-		size,
-		theme,
-		context,
-	} = buttonSettings;
+	const { type: buttonType, height, size, theme, context } = buttonSettings;
+	const text =
+		'default' !== buttonType
+			? sprintf(
+					__( `%s with`, 'woocommerce-payments' ),
+					buttonType.charAt( 0 ).toUpperCase() +
+						buttonType.slice( 1 ).toLowerCase()
+			  )
+			: '';
+	const ThemedWooPayIcon = 'dark' === theme ? WoopayIcon : WoopayIconLight;
+
 	const { addToCart, isAddToCartDisabled } = useExpressCheckoutProductHandler(
 		api,
 		isProductPage
@@ -59,20 +64,20 @@ export const WoopayExpressCheckoutButton = ( {
 		if ( isProductPage ) {
 			addToCart()
 				.then( () => {
-					expressCheckoutIframe( api );
+					expressCheckoutIframe( api, context, emailSelector );
 				} )
 				.catch( () => {
 					// handle error.
 				} );
 		} else {
-			expressCheckoutIframe( api );
+			expressCheckoutIframe( api, context, emailSelector );
 		}
 	};
 
 	return (
 		<button
 			key={ `${ buttonType }-${ theme }-${ size }` }
-			aria-label={ text }
+			aria-label={ 'default' !== buttonType ? text : __( 'WooPay' ) }
 			onClick={ initPlatformCheckout }
 			className="woopay-express-button"
 			disabled={ isAddToCartDisabled }
@@ -81,10 +86,8 @@ export const WoopayExpressCheckoutButton = ( {
 			data-theme={ theme }
 			style={ { height: `${ height }px` } }
 		>
-			{ 'default' !== buttonType
-				? sprintf( __( `%s with`, 'woocommerce-payments' ), text )
-				: '' }
-			<WoopayIcon />
+			{ text }
+			<ThemedWooPayIcon />
 		</button>
 	);
 };

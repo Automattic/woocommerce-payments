@@ -230,7 +230,7 @@ jQuery( function ( $ ) {
 			try {
 				const newIntent = isSetupIntent
 					? await api.initSetupIntent()
-					: await api.createIntent( fingerprint, orderId );
+					: await api.createIntent( { fingerprint, orderId } );
 				intentId = newIntent.id;
 				clientSecret = newIntent.client_secret;
 			} catch ( error ) {

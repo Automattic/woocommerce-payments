@@ -4,9 +4,10 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Card, CheckboxControl } from '@wordpress/components';
+import { Card, CheckboxControl, VisuallyHidden } from '@wordpress/components';
 import interpolateComponents from 'interpolate-components';
 import { useContext } from '@wordpress/element';
+import { Icon, warning } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -19,11 +20,13 @@ import {
 	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
 import CardBody from '../card-body';
-import PaymentRequestIcon from '../../gateway-icons/payment-request';
 import WooIcon from '../../gateway-icons/woo';
 import './style.scss';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import LinkIcon from '../../gateway-icons/link';
+import Tooltip from 'components/tooltip';
+import ApplePay from 'wcpay/gateway-icons/apple-pay';
+import GooglePay from 'wcpay/gateway-icons/google-pay';
 
 const ExpressCheckout = () => {
 	const [
@@ -74,12 +77,45 @@ const ExpressCheckout = () => {
 			<CardBody size={ 0 }>
 				<ul className="express-checkouts-list">
 					{ isPlatformCheckoutFeatureFlagEnabled && (
-						<li className="express-checkout has-icon-border">
+						<li className="express-checkout">
 							<div className="express-checkout__checkbox">
-								<CheckboxControl
-									checked={ isPlatformCheckoutEnabled }
-									onChange={ updateIsPlatformCheckoutEnabled }
-								/>
+								{ isStripeLinkEnabled ? (
+									<Tooltip
+										content={ __(
+											'To enable WooPay, you must first disable Link by Stripe.',
+											'woocommerce-payments'
+										) }
+									>
+										<div className="loadable-checkbox__icon">
+											<Icon
+												icon={ warning }
+												fill={ '#ffc83f' }
+											/>
+											<div
+												className="loadable-checkbox__icon-warning"
+												data-testid="loadable-checkbox-icon-warning"
+											>
+												<VisuallyHidden>
+													{ __(
+														'WooPay cannot be enabled at checkout. Click to expand.',
+														'woocommerce-payments'
+													) }
+												</VisuallyHidden>
+											</div>
+										</div>
+									</Tooltip>
+								) : (
+									<CheckboxControl
+										label={ __(
+											'WooPay',
+											'woocommerce-payments'
+										) }
+										checked={ isPlatformCheckoutEnabled }
+										onChange={
+											updateIsPlatformCheckoutEnabled
+										}
+									/>
+								) }
 							</div>
 							<div className="express-checkout__icon">
 								<WooIcon />
@@ -93,14 +129,23 @@ const ExpressCheckout = () => {
 										/* eslint-disable jsx-a11y/anchor-has-content */
 										interpolateComponents( {
 											mixedString: __(
-												'By using WooPay, you agree to the {{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
-													'and acknowledge you have read our {{privacyLink}}Privacy Policy{{/privacyLink}} and ' +
-													'understand you will be sharing data with us. ' +
-													'{{trackingLink}}Click here{{/trackingLink}} to learn more about data sharing. ' +
-													'You can opt out of data sharing by disabling WooPay.',
+												'Boost conversion and customer loyalty by offering a single click, secure way to pay. ' +
+													'By using {{wooPayLink}}WooPay{{/wooPayLink}}, you agree to our ' +
+													'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
+													'and and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
+													'You understand you will be sharing data with us. ' +
+													'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
+													'data you will be sharing and opt-out options.',
 												'woocommerce-payments'
 											),
 											components: {
+												wooPayLink: (
+													<a
+														target="_blank"
+														rel="noreferrer"
+														href="https://woocommerce.com/document/woopay-merchant-documentation/"
+													/>
+												),
 												tosLink: (
 													<a
 														target="_blank"
@@ -142,15 +187,24 @@ const ExpressCheckout = () => {
 							</div>
 						</li>
 					) }
-					<li className="express-checkout has-icon-border">
+					<li className="express-checkout">
 						<div className="express-checkout__checkbox">
 							<CheckboxControl
+								label={ __(
+									'Apple Pay / Google Pay',
+									'woocommerce-payments'
+								) }
 								checked={ isPaymentRequestEnabled }
 								onChange={ updateIsPaymentRequestEnabled }
 							/>
 						</div>
-						<div className="express-checkout__icon">
-							<PaymentRequestIcon />
+						<div className="express-checkout__icons">
+							<div className="express-checkout__icon">
+								<ApplePay />
+							</div>
+							<div className="express-checkout__icon">
+								<GooglePay />
+							</div>
 						</div>
 						<div className="express-checkout__label-container">
 							<div className="express-checkout__label">
@@ -208,16 +262,43 @@ const ExpressCheckout = () => {
 						</div>
 					</li>
 					{ displayLinkPaymentMethod && (
-						<li className="express-checkout has-icon-border">
-							<div className="express-checkout__checkbox loadable-checkbox label-hidden">
-								<CheckboxControl
-									label={ __(
-										'Link by Stripe',
-										'woocommerce-payments'
-									) }
-									checked={ isStripeLinkEnabled }
-									onChange={ updateStripeLinkCheckout }
-								/>
+						<li className="express-checkout">
+							<div className="express-checkout__checkbox">
+								{ isPlatformCheckoutEnabled ? (
+									<Tooltip
+										content={ __(
+											'To enable Link by Stripe, you must first disable WooPay.',
+											'woocommerce-payments'
+										) }
+									>
+										<div className="loadable-checkbox__icon">
+											<Icon
+												icon={ warning }
+												fill={ '#ffc83f' }
+											/>
+											<div
+												className="loadable-checkbox__icon-warning"
+												data-testid="loadable-checkbox-icon-warning"
+											>
+												<VisuallyHidden>
+													{ __(
+														'Link by Stripe cannot be enabled at checkout. Click to expand.',
+														'woocommerce-payments'
+													) }
+												</VisuallyHidden>
+											</div>
+										</div>
+									</Tooltip>
+								) : (
+									<CheckboxControl
+										label={ __(
+											'Link by Stripe',
+											'woocommerce-payments'
+										) }
+										checked={ isStripeLinkEnabled }
+										onChange={ updateStripeLinkCheckout }
+									/>
+								) }
 							</div>
 							<div className="express-checkout__icon">
 								<LinkIcon />
