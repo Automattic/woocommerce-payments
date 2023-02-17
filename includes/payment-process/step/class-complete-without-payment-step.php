@@ -67,7 +67,6 @@ class Complete_Without_Payment_Step extends Abstract_Step {
 		}
 
 		$order->set_payment_method_title( __( 'Credit / Debit Card', 'woocommerce-payments' ) );
-		$order->save();
 
 		$payment->complete(
 			[

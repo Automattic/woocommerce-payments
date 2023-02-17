@@ -13,6 +13,7 @@ use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
 use WCPay\Payment_Process\Step\Metadata_Step;
 use WCPay\Payment_Process\Step\Abstract_Step;
 use WCPay\Payment_Process\Step\Add_Token_To_Order;
+use WCPay\Payment_Process\Step\Add_Token_To_Order_Step;
 use WCPay\Payment_Process\Step\Complete_Without_Payment_Step;
 use WCPay\Payment_Process\Step\Customer_Details_Step;
 use WCPay\Payment_Process\Step\Store_Metadata_step;
@@ -244,7 +245,7 @@ abstract class Payment {
 				Customer_Details_Step::class, // Prepare & act.
 				Complete_Without_Payment_Step::class,
 				Store_Metadata_Step::class, // Complete.
-				Add_Token_To_Order::class, // Complete.
+				Add_Token_To_Order_Step::class, // Complete.
 			]
 		);
 	}
@@ -290,6 +291,11 @@ abstract class Payment {
 		foreach ( $steps as $step ) {
 			$step->complete( $this );
 			$this->save();
+		}
+
+		// Whatever was updated during the process, save the order.
+		if ( $this instanceof Order_Payment ) {
+			$this->order->save();
 		}
 
 		return $this->response;

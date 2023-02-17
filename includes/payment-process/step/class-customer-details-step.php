@@ -31,7 +31,7 @@ class Customer_Details_Step extends Abstract_Step {
 		}
 
 		$this->user = $payment->get_order()->get_user();
-		if ( false === $user ) {
+		if ( false === $this->user ) {
 			// Default to the current user when the order is not associated.
 			$this->user = wp_get_current_user();
 		}
