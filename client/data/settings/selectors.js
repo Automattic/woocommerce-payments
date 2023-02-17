@@ -201,6 +201,7 @@ export const getPlatformCheckoutLocations = ( state ) => {
 	);
 };
 
+// TODO: Finish implementation once server API endpoints are deployed.
 export const getCurrentProtectionLevel = ( state ) => {
 	return getSettings( state ).current_protection_level || 'standard';
 };
