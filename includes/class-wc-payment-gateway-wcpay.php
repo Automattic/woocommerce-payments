@@ -847,7 +847,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param bool      $is_test_mode Whether to run the CRON job in test mode.
 	 * @param bool      $is_woopay    Whether CRON job was queued from WooPay.
 	 */
-	protected function update_customer_with_order_data( $order, $customer_id, $is_test_mode = false, $is_woopay = false ) {
+	public function update_customer_with_order_data( $order, $customer_id, $is_test_mode = false, $is_woopay = false ) {
 		// Since this CRON job may have been created in test_mode, when the CRON job runs, it
 		// may lose the test_mode context. So, instead, we pass that context when creating
 		// the CRON job and apply the context here.
@@ -886,7 +886,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
 	 */
-	public function manage_customer_details_for_order( $order, $options = [] ) {
+	protected function manage_customer_details_for_order( $order, $options = [] ) {
 		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
@@ -942,9 +942,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function new_payment_process( WC_Order $order ) {
 		$this->prepare_payment_objects();
 
-		/**
-		 * Preparation part, defining the payment.
-		 */
 		$payment = $this->payment_factory->load_or_create_order_payment( $order );
 
 		// phpcs:ignore WordPress.Security.NonceVerification
@@ -955,7 +952,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment->set_flag( Payment::MANUAL_CAPTURE );
 		}
 
-		if ( $payment_method instanceof New_Payment_Method && New_Payment_Method::should_be_saved( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( New_Payment_Method::should_be_saved( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
 		}
 
@@ -966,17 +963,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->maybe_prepare_subscription_payment( $payment, $order );
 
-		/**
-		 * Fun part: Processing the payment.
-		 */
-		$response = $payment->process();
-
 		$payment->save();
-
-		if ( $response ) {
-			return $response;
-		}
-
 		if ( $payment ) {
 			var_dump($payment); exit;
 			return;

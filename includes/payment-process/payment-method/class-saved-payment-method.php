@@ -33,24 +33,6 @@ class Saved_Payment_Method implements Payment_Method {
 	}
 
 	/**
-	 * Returns the ID of the payment method.
-	 *
-	 * @return string
-	 */
-	public function get_id() {
-		return $this->token->get_token();
-	}
-
-	/**
-	 * Returns the complete token object.
-	 *
-	 * @return WC_Payment_Token
-	 */
-	public function get_token() {
-		return $this->token;
-	}
-
-	/**
 	 * Retrieves the data of the payment method for storage.
 	 *
 	 * @return array

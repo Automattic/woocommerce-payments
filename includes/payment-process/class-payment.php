@@ -10,12 +10,6 @@ namespace WCPay\Payment_Process;
 use WCPay\Payment_Process\Storage\Payment_Storage;
 use WCPay\Payment_Process\Payment_Method\Payment_Method;
 use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
-use WCPay\Payment_Process\Step\Metadata_Step;
-use WCPay\Payment_Process\Step\Abstract_Step;
-use WCPay\Payment_Process\Step\Add_Token_To_Order;
-use WCPay\Payment_Process\Step\Complete_Without_Payment_Step;
-use WCPay\Payment_Process\Step\Customer_Details_Step;
-use WCPay\Payment_Process\Step\Store_Metadata_step;
 
 /**
  * Main class, representing payments.
@@ -94,20 +88,6 @@ abstract class Payment {
 	protected $payment_method;
 
 	/**
-	 * Holds all variables, related to the payment.
-	 *
-	 * @var array
-	 */
-	protected $vars = [];
-
-	/**
-	 * Holds the response, which should be provided at the end.
-	 *
-	 * @var mixed
-	 */
-	protected $response;
-
-	/**
 	 * Instantiates the class.
 	 *
 	 * @param Payment_Storage        $storage                Storage to load/save payments from/to.
@@ -128,7 +108,7 @@ abstract class Payment {
 	 */
 	public function load_data( array $data ) {
 		if ( isset( $data['flags'] ) ) {
-			// $this->flags = $data['flags'];
+			$this->flags = $data['flags'];
 		}
 
 		if ( isset( $data['payment_method'] ) && ! empty( $data['payment_method'] ) ) {
@@ -142,13 +122,9 @@ abstract class Payment {
 	 * @return array An array with everything important.
 	 */
 	public function get_data() {
-		$payment_method = isset( $this->payment_method )
-			? $this->payment_method->get_data()
-			: null;
-
 		return [
 			'flags'          => $this->flags,
-			'payment_method' => $payment_method,
+			'payment_method' => $this->payment_method->get_data(),
 		];
 	}
 
@@ -213,102 +189,11 @@ abstract class Payment {
 		$this->payment_method = $payment_method;
 	}
 
-	/**
-	 * Returns the used payment method.
-	 *
-	 * @return Payment_Method
-	 */
-	public function get_payment_method() {
-		return $this->payment_method;
-	}
 
-	/**
-	 * Returns all possible steps, needed for the payment.
-	 *
-	 * @return string[] An array of class names.
-	 */
-	protected function get_available_steps() {
-		/**
-		 * Allows the list of payment steps, and their order to be modified.
-		 *
-		 * This filter only contains the names of classes for available steps.
-		 * Those will be later instantiated, and the process will check whether
-		 * the step is applicable or not, hence no further context for this filter.
-		 *
-		 * @param string[] $steps An array of class names.
-		 */
-		return apply_filters(
-			'wcpay_payment_available_steps',
-			[
-				Metadata_Step::class, // Prepare.
-				Customer_Details_Step::class, // Prepare & act.
-				Complete_Without_Payment_Step::class,
-				Store_Metadata_Step::class, // Complete.
-				Add_Token_To_Order::class, // Complete.
-			]
-		);
-	}
 
-	public function process() {
-		// Clear any previous responses.
-		$this->response = null;
 
-		$steps = [];
 
-		// Prepare all steps first.
-		foreach ( $this->get_available_steps() as $class_name ) {
-			if ( ! is_subclass_of( $class_name, Abstract_Step::class ) ) {
-				// Ignore steps, which do not use the base class.
-				continue;
-			}
 
-			$step = new $class_name();
 
-			// Check if the step is applicable to the process.
-			if ( ! $step->is_applicable( $this ) ) {
-				continue;
-			}
 
-			// Let the step collect data.
-			$step->collect_data( $this );
-
-			$steps[] = $step;
-		}
-
-		// Preparation step done, time to act.
-		foreach ( $steps as $step ) {
-			$step->action( $this );
-			$this->save();
-
-			// Once there's a response, there should be no further action.
-			if ( ! is_null( $this->response ) ) {
-				break;
-			}
-		}
-
-		// Action is done, time to cleanup.
-		foreach ( $steps as $step ) {
-			$step->complete( $this );
-			$this->save();
-		}
-
-		return $this->response;
-	}
-
-	public function set_var( $key, $value ) {
-		$this->vars[ $key ] = $value;
-	}
-
-	public function get_var( $key ) {
-		return isset( $this->vars[ $key ] ) ? $this->vars[ $key ] : null;
-	}
-
-	/**
-	 * Allows the payment to be completed, ending the main part of the processing.
-	 *
-	 * Completion steps will still be performed after this call.
-	 */
-	public function complete( $response ) {
-		$this->response = $response;
-	}
 }
