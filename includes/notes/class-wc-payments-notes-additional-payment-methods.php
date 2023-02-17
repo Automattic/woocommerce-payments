@@ -116,7 +116,7 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		if ( ! WC_Payments_Features::is_upe_enabled() && class_exists( 'WC_Tracks' ) ) {
 			// We're not using Tracker::track_admin() here because
 			// WC_Pay\record_tracker_events() is never triggered due to the redirect below.
-			WC_Tracks::record_event( 'wcpay_upe_enabled' );
+			WC_Tracks::record_event( 'wcpay_split_upe_enabled' );
 		}
 
 		// Enable UPE, deletes the note and redirect to onboarding task.

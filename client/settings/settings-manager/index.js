@@ -135,6 +135,7 @@ const SettingsManager = () => {
 		featureFlags: {
 			upeSettingsPreview: isUPESettingsPreviewEnabled,
 			upe: isUpeEnabled,
+			upeType,
 		},
 	} = useContext( WCPaySettingsContext );
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
@@ -152,10 +153,11 @@ const SettingsManager = () => {
 			</SettingsSection>
 			{ isUPESettingsPreviewEnabled && (
 				<SettingsSection description={ PaymentMethodsDescription }>
-					<LoadableSettingsSection numLines={ 20 }>
+					<LoadableSettingsSection numLines={ 60 }>
 						<ErrorBoundary>
 							<WcPayUpeContextProvider
 								defaultIsUpeEnabled={ isUpeEnabled }
+								defaultUpeType={ upeType }
 							>
 								<PaymentMethods />
 							</WcPayUpeContextProvider>
@@ -186,11 +188,13 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection description={ DepositsDescription }>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<Deposits />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
+				<div id={ 'deposit-schedule' }>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<Deposits />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</div>
 			</SettingsSection>
 			<SettingsSection description={ FraudProtectionDescription }>
 				<LoadableSettingsSection numLines={ 20 }>
