@@ -30,6 +30,7 @@ use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
 use WCPay\Payment_Process\Storage\Filesystem_Order_Storage;
 use WCPay\Payment_Process\Order_Payment_Factory;
 use WCPay\Payment_Process\Payment;
+use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
 
 /**
  * Gateway class for WooCommerce Payments
@@ -167,6 +168,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @var Platform_Checkout_Utilities
 	 */
 	protected $platform_checkout_util;
+
+	protected $payment_method_factory;
+	protected $payment_factory;
 
 	/**
 	 * WC_Payment_Gateway_WCPay constructor.
@@ -731,8 +735,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_existing_intention;
 			}
 
-			$payment_information = $this->prepare_payment_information( $order );
-			return $this->process_payment_for_order( WC()->cart, $payment_information );
+			// $payment_information = $this->prepare_payment_information( $order );
+			// return $this->process_payment_for_order( WC()->cart, $payment_information );
+
+			return $this->new_payment_process( $order );
 		} catch ( Exception $e ) {
 			/**
 			 * TODO: Determine how to do this update with Order_Service.
@@ -927,6 +933,43 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 	}
 
+	protected function prepare_payment_objects() {
+		$storage                      = new Filesystem_Order_Storage();
+		$this->payment_method_factory = new Payment_Method_Factory();
+		$this->payment_factory         = new Order_Payment_Factory( $storage, $this->payment_method_factory );
+	}
+
+	protected function new_payment_process( WC_Order $order ) {
+		$this->prepare_payment_objects();
+
+		$payment = $this->payment_factory->load_or_create_order_payment( $order );
+
+		// phpcs:ignore WordPress.Security.NonceVerification
+		$payment_method = $this->payment_method_factory->from_request( $_POST );
+		$payment->set_payment_method( $payment_method );
+
+		if ( Payment_Capture_Type::MANUAL() === $this->get_capture_type() ) {
+			$payment->set_flag( Payment::MANUAL_CAPTURE );
+		}
+
+		if ( New_Payment_Method::should_be_saved( $_POST ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_STORE );
+		}
+
+		if ( $this->platform_checkout_util->should_save_platform_customer() ) {
+			do_action( 'woocommerce_payments_save_user_in_platform_checkout' );
+			$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_PLATFORM );
+		}
+
+		$this->maybe_prepare_subscription_payment( $payment, $order );
+
+		$payment->save();
+		if ( $payment ) {
+			var_dump($payment); exit;
+			return;
+		}
+	}
+
 	/**
 	 * Process the payment for a given order.
 	 *
@@ -940,26 +983,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Intent_Authentication_Exception When the payment intent could not be authenticated.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $additional_api_parameters = [] ) {
-		$storage         = new Filesystem_Order_Storage();
-		$pm_factory      = new Payment_Method_Factory();
-		$payment_factory = new Order_Payment_Factory( $storage, $pm_factory );
-
-		// Basic payment.
-		$payment = $payment_factory->load_or_create_order_payment( $payment_information->get_order() );
-
-		// phpcs:ignore WordPress.Security.NonceVerification
-		$payment_method = $pm_factory->from_request( $_POST );
-		$payment->set_payment_method( $payment_method );
-
-		$payment->set_flag( Payment::MANUAL_CAPTURE );
-		$payment->set_flag( Payment::SAVE_PAYMENT_METHOD_TO_PLATFORM );
-
-		$payment->save();
-		if ( $payment ) {
-			var_dump($payment); exit;
-			return;
-		}
-
 		$order                                       = $payment_information->get_order();
 		$save_payment_method_to_store                = $payment_information->should_save_payment_method_to_store();
 		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();

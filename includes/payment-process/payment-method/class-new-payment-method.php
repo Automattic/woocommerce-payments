@@ -7,6 +7,8 @@
 
 namespace WCPay\Payment_Process\Payment_Method;
 
+use WC_Payment_Gateway_WCPay;
+
 /**
  * Representation of a newly entered payment method.
  */
@@ -37,5 +39,18 @@ class New_Payment_Method implements Payment_Method {
 			'type' => 'new',
 			'id'   => $this->id,
 		];
+	}
+
+	/**
+	 * Checks if the new payment method should be saved.
+	 *
+	 * During normal orders the payment method is saved when the customer enters a new one and chooses to save it.
+	 * This is just a helper, use the payment object to check if the payment method should be saved.
+	 *
+	 * @param array $request The current request.
+	 * @return bool          A boolean flag.
+	 */
+	public static function should_be_saved( $request ) {
+		return ! empty( $request[ 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-new-payment-method' ] );
 	}
 }

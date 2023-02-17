@@ -20,13 +20,13 @@ abstract class Payment {
 	 * If the flag is not present, it means that it's a standard
 	 * payment, initiated by a customer action on the site.
 	 */
-	const MERCHANT_INITIATED = 0b1;
+	const MERCHANT_INITIATED = 1;
 
 	/**
 	 * Indicates if manual capture should be used for the payment.
 	 * If the flag is not present, it's automatic capture.
 	 */
-	const MANUAL_CAPTURE = 0b10;
+	const MANUAL_CAPTURE = 2;
 
 	/**
 	 * Indicates if this payment will be recurring.
@@ -34,23 +34,23 @@ abstract class Payment {
 	 *
 	 * @todo: Check if this flag is only required for the initial payment.
 	 */
-	const RECURRING = 0b100;
+	const RECURRING = 4;
 
 	/**
 	 * Indicates whether the payment is related to changing
 	 * the payment method for a subscription.
 	 */
-	const CHANGING_SUBSCRIPTION_PAYMENT_METHOD = 0b1000;
+	const CHANGING_SUBSCRIPTION_PAYMENT_METHOD = 8;
 
 	/**
 	 * Whether the payment method should be saved upon payment success.
 	 */
-	const SAVE_PAYMENT_METHOD_TO_STORE = 0b10000;
+	const SAVE_PAYMENT_METHOD_TO_STORE = 16;
 
 	/**
 	 * Indicates whether the payment method should be saved to the platform.
 	 */
-	const SAVE_PAYMENT_METHOD_TO_PLATFORM = 0b100000;
+	const SAVE_PAYMENT_METHOD_TO_PLATFORM = 32;
 
 	/**
 	 * Payment storage, used to store the payment.
