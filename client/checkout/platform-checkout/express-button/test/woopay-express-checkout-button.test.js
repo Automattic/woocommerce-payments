@@ -32,7 +32,6 @@ jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
 describe( 'WoopayExpressCheckoutButton', () => {
 	const buttonSettings = {
 		type: 'default',
-		text: 'WooPay Express Button',
 		height: '48px',
 		size: 'medium',
 		theme: 'dark',
@@ -71,7 +70,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		);
 
 		expect(
-			screen.queryByRole( 'button', { name: 'WooPay Express Button' } )
+			screen.queryByRole( 'button', { name: 'WooPay' } )
 		).toBeInTheDocument();
 	} );
 
@@ -87,7 +86,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		);
 
 		const expressButton = screen.queryByRole( 'button', {
-			name: 'WooPay Express Button',
+			name: 'WooPay',
 		} );
 		userEvent.click( expressButton );
 
@@ -110,14 +109,14 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		);
 
 		const expressButton = screen.queryByRole( 'button', {
-			name: 'WooPay Express Button',
+			name: 'WooPay',
 		} );
 		userEvent.click( expressButton );
 
 		expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 	} );
 
-	describe( 'Product page', () => {
+	describe( 'Product Page', () => {
 		test( 'should enable the button when add to cart button is enabled', () => {
 			render(
 				<WoopayExpressCheckoutButton
@@ -130,7 +129,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			);
 
 			const expressButton = screen.queryByRole( 'button', {
-				name: 'WooPay Express Button',
+				name: 'WooPay',
 			} );
 			expect( expressButton ).toBeEnabled();
 		} );
@@ -152,7 +151,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			);
 
 			const expressButton = screen.queryByRole( 'button', {
-				name: 'WooPay Express Button',
+				name: 'WooPay',
 			} );
 			expect( expressButton ).toBeDisabled();
 		} );
@@ -173,7 +172,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			);
 
 			const expressButton = screen.queryByRole( 'button', {
-				name: 'WooPay Express Button',
+				name: 'WooPay',
 			} );
 
 			userEvent.click( expressButton );
