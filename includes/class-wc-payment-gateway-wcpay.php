@@ -889,42 +889,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Manages customer details held on WCPay server for WordPress user associated with an order.
-	 *
-	 * @param WC_Order $order   WC Order object.
-	 * @param array    $options Additional options to apply.
-	 *
-	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
-	 */
-	protected function manage_customer_details_for_order( $order, $options = [] ) {
-		$user = $order->get_user();
-		if ( false === $user ) {
-			$user = wp_get_current_user();
-		}
-
-		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-
-		if ( null === $customer_id ) {
-			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
-			// Create a new customer.
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
-		} else {
-			$test_mode = $this->is_in_test_mode();
-
-			// Defer the customer update to the shutdown hook.
-			add_action(
-				'shutdown',
-				function() use ( $order, $customer_id, $test_mode, $options ) {
-					$this->update_customer_with_order_data( $order->get_id(), $customer_id, $test_mode, $options['is_woopay'] ?? false );
-				}
-			);
-		}
-
-		return [ $user, $customer_id ];
-	}
-
-	/**
 	 * Update the saved payment method information with checkout values, in a CRON job.
 	 *
 	 * @param string $payment_method The payment method to update.
@@ -971,10 +935,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$amount   = $order->get_total();
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
-		$customer_details_options   = [
-			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
-		];
-		list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
+		$user = $this->get_user_for_order( $order );
+
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			$customer_id = $this->create_customer_using_order( $order, $user );
+		} else {
+			// No need to update the customer object if we just created it.
+			$customer_details_options = [
+				'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			];
+			$this->update_customer_with_order_data_on_shutdown( $customer_id, $order, $customer_details_options );
+		}
 
 		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
@@ -3323,6 +3296,61 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	// End: Deprecated functions.
+
+
+	/**
+	 * Returns the WP User associated with the provided order, or the current user if no
+	 * user is associated with the order.
+	 *
+	 * @param \WC_Order $order The order that should contain the user object we want.
+	 *
+	 * @returns \WP_User  The user associated with the order or the current user.
+	 */
+	protected function get_user_for_order( \WC_Order $order ): \WP_User {
+		$user = $order->get_user();
+		if ( false === $user ) {
+			$user = wp_get_current_user();
+		}
+		return $user;
+	}
+
+	/**
+	 * Returns the customer ID for the user associated with the provided order, or creates one
+	 * if no customer is associated with the order.
+	 *
+	 * @param \WC_Order $order The order that contains the information for the new customer.
+	 * @param \WP_User  $user  The user that should be associated with the new customer.
+	 *
+	 * @return string The customer ID.
+	 */
+	protected function create_customer_using_order( \WC_Order $order, \WP_User $user ): string {
+		$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+		// Create a new customer.
+		$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
+
+		return $customer_id;
+	}
+
+	/**
+	 * Updates the provided customer with data from the order during the shutdown hook.
+	 *
+	 * @param string    $customer_id The customer ID for the customer that should be updated.
+	 * @param \WC_Order $order       The order with the data.
+	 * @param array     $options     Additional parameters to send with the update request.
+	 *
+	 * @return void
+	 */
+	protected function update_customer_with_order_data_on_shutdown( string $customer_id, \WC_Order $order, array $options = [] ) {
+		$test_mode = $this->is_in_test_mode();
+
+		// Defer the customer update to the shutdown hook.
+		add_action(
+			'shutdown',
+			function() use ( $order, $customer_id, $test_mode, $options ) {
+				$this->update_customer_with_order_data( $order->get_id(), $customer_id, $test_mode, $options['is_woopay'] ?? false );
+			}
+		);
+	}
 
 	/**
 	 * Determine if current payment method is a platform payment method.

@@ -235,8 +235,21 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$currency = $order->get_currency();
 
 		if ( $payment_intent_id ) {
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
-			$payment_type               = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
+			$user = $this->get_user_for_order( $order );
+
+			// Determine the customer making the payment, create one if we don't have one already.
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+			if ( null === $customer_id ) {
+				$customer_id = $this->create_customer_using_order( $order, $user );
+			} else {
+				// No need to update the customer object if we just created it.
+				$customer_details_options = [
+					'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+				];
+				$this->update_customer_with_order_data_on_shutdown( $customer_id, $order, $customer_details_options );
+			}
+
+			$payment_type = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 
 			$this->payments_api_client->update_intention(
 				$payment_intent_id,
@@ -475,7 +488,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $payment_intent_id ) {
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+			$user = $this->get_user_for_order( $order );
+
+			// Determine the customer making the payment, create one if we don't have one already.
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+			if ( null === $customer_id ) {
+				$customer_id = $this->create_customer_using_order( $order, $user );
+			} else {
+				// No need to update the customer object if we just created it.
+				$customer_details_options = [
+					'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+				];
+				$this->update_customer_with_order_data_on_shutdown( $customer_id, $order, $customer_details_options );
+			}
 
 			if ( $payment_needed ) {
 				// Check if session exists before instantiating Fraud_Prevention_Service.
@@ -695,7 +720,19 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			Logger::log( "Begin processing UPE redirect payment for order $order_id for the amount of {$order->get_total()}" );
 
 			// Get user/customer for order.
-			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order );
+			$user = $this->get_user_for_order( $order );
+
+			// Determine the customer making the payment, create one if we don't have one already.
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+			if ( null === $customer_id ) {
+				$customer_id = $this->create_customer_using_order( $order, $user );
+			} else {
+				// No need to update the customer object if we just created it.
+				$customer_details_options = [
+					'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+				];
+				$this->update_customer_with_order_data_on_shutdown( $customer_id, $order, $customer_details_options );
+			}
 
 			$payment_needed = 0 < $order->get_total();
 
