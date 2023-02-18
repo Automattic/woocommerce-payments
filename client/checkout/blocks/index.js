@@ -65,8 +65,6 @@ registerPaymentMethod( {
 	},
 } );
 
-registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
-
 // Call handlePlatformCheckoutEmailInput if platform checkout is enabled and this is the checkout page.
 if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
 	if (
@@ -79,6 +77,8 @@ if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
 		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
 	}
 }
+
+registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
