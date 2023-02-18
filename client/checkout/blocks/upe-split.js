@@ -62,46 +62,47 @@ const api = new WCPayAPI(
 	},
 	request
 );
-
-Object.entries( enabledPaymentMethodsConfig ).map( ( [ upeName, upeConfig ] ) =>
-	registerPaymentMethod( {
-		name: upeMethods[ upeName ],
-		content: (
-			<WCPayUPEFields
-				paymentMethodId={ upeName }
-				upeMethods={ upeMethods }
-				api={ api }
-				testingInstructions={ upeConfig.testingInstructions }
-			/>
-		),
-		edit: (
-			<WCPayUPEFields
-				paymentMethodId={ upeName }
-				upeMethods={ upeMethods }
-				api={ api }
-				testingInstructions={ upeConfig.testingInstructions }
-			/>
-		),
-		savedTokenComponent: <SavedTokenHandler api={ api } />,
-		canMakePayment: () => !! api.getStripe(),
-		paymentMethodId: upeMethods[ upeName ],
-		// see .wc-block-checkout__payment-method styles in blocks/style.scss
-		label: (
-			<>
-				<span>
-					{ upeConfig.title }
-					<img src={ upeConfig.icon } alt={ upeConfig.title } />
-				</span>
-			</>
-		),
-		ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
-		supports: {
-			showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,
-			showSaveOption: upeConfig.showSaveOption ?? false,
-			features: getUPEConfig( 'features' ),
-		},
-	} )
-);
+Object.entries( enabledPaymentMethodsConfig )
+	.filter( ( [ upeName ] ) => 'link' !== upeName )
+	.map( ( [ upeName, upeConfig ] ) =>
+		registerPaymentMethod( {
+			name: upeMethods[ upeName ],
+			content: (
+				<WCPayUPEFields
+					paymentMethodId={ upeName }
+					upeMethods={ upeMethods }
+					api={ api }
+					testingInstructions={ upeConfig.testingInstructions }
+				/>
+			),
+			edit: (
+				<WCPayUPEFields
+					paymentMethodId={ upeName }
+					upeMethods={ upeMethods }
+					api={ api }
+					testingInstructions={ upeConfig.testingInstructions }
+				/>
+			),
+			savedTokenComponent: <SavedTokenHandler api={ api } />,
+			canMakePayment: () => !! api.getStripe(),
+			paymentMethodId: upeMethods[ upeName ],
+			// see .wc-block-checkout__payment-method styles in blocks/style.scss
+			label: (
+				<>
+					<span>
+						{ upeConfig.title }
+						<img src={ upeConfig.icon } alt={ upeConfig.title } />
+					</span>
+				</>
+			),
+			ariaLabel: __( 'WooCommerce Payments', 'woocommerce-payments' ),
+			supports: {
+				showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,
+				showSaveOption: upeConfig.showSaveOption ?? false,
+				features: getUPEConfig( 'features' ),
+			},
+		} )
+	);
 
 registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 window.addEventListener( 'load', () => {
