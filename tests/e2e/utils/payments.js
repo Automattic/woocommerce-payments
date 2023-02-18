@@ -7,9 +7,13 @@ const { shopper, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 // WooCommerce Checkout
 export async function fillCardDetails( page, card ) {
-	if ( await page.$( '#payment .wcpay-upe-element' ) ) {
+	if (
+		await page.$(
+			'#payment .payment_method_woocommerce_payments .wcpay-upe-element'
+		)
+	) {
 		const frameHandle = await page.waitForSelector(
-			'#payment #wcpay-upe-element iframe'
+			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
 		);
 
 		const stripeFrame = await frameHandle.contentFrame();
