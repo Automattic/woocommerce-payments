@@ -8,7 +8,7 @@ import config from 'config';
  */
 import { merchantWCP, shopperWCP } from '../../../utils/flows';
 import { fillCardDetails, setupProductCheckout } from '../../../utils/payments';
-const { shopper, merchant } = require( '@woocommerce/e2e-utils' );
+const { shopper, merchant, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 const MIN_WAIT_TIME_BETWEEN_PAYMENT_METHODS = 20000;
 
@@ -41,6 +41,8 @@ describe( 'Enabled Split UPE', () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
+			await shopper.goToCheckout();
+			await uiUnblocked();
 			await shopperWCP.selectNewPaymentMethod();
 			await fillCardDetails( page, card );
 			await shopperWCP.toggleSavePaymentMethod();
@@ -59,6 +61,8 @@ describe( 'Enabled Split UPE', () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
+			await shopper.goToCheckout();
+			await uiUnblocked();
 			await shopperWCP.selectSavedPaymentMethod(
 				`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 			);
