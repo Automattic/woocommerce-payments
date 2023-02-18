@@ -36,8 +36,7 @@ describe( 'Enabled Split UPE', () => {
 		await merchant.logout();
 	} );
 
-	// the tests are a bit flakey, so disabling for now.
-	describe.skip( 'Shortcode checkout', () => {
+	describe( 'Shortcode checkout', () => {
 		it( 'should save the card', async () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
