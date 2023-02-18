@@ -786,9 +786,10 @@ jQuery( function ( $ ) {
 		// Skip adding legacy cards as UPE payment methods.
 		if (
 			'woocommerce_payments' ===
-			$(
-				"#add_payment_method input:checked[name='payment_method']"
-			).val()
+				$(
+					"#add_payment_method input:checked[name='payment_method']"
+				).val() &&
+			'0' === isUPESplitEnabled
 		) {
 			return;
 		}
