@@ -319,11 +319,13 @@ const WCPayUPEFields = ( {
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const upeOnChange = ( event ) => {
 		// Update WC Blocks gateway config based on selected UPE payment method.
+		const paymentType =
+			'link' !== event.value.type ? event.value.type : 'card';
 		gatewayConfig.supports.showSaveOption =
-			paymentMethodsConfig[ event.value.type ].showSaveOption;
+			paymentMethodsConfig[ paymentType ].showSaveOption;
 
 		setIsUPEComplete( event.complete );
-		setSelectedUPEPaymentType( event.value.type );
+		setSelectedUPEPaymentType( paymentType );
 		setPaymentCountry( event.value.country );
 	};
 

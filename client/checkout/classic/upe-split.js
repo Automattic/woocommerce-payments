@@ -12,6 +12,7 @@ import './style.scss';
 import {
 	PAYMENT_METHOD_NAME_BANCONTACT,
 	PAYMENT_METHOD_NAME_BECS,
+	PAYMENT_METHOD_NAME_CARD,
 	PAYMENT_METHOD_NAME_EPS,
 	PAYMENT_METHOD_NAME_GIROPAY,
 	PAYMENT_METHOD_NAME_IDEAL,
@@ -373,7 +374,8 @@ jQuery( function ( $ ) {
 		upeElement.mount( upeDOMElement );
 		unblockUI( $upeContainer );
 		upeElement.on( 'change', ( event ) => {
-			const selectedUPEPaymentType = event.value.type;
+			const selectedUPEPaymentType =
+				'link' !== event.value.type ? event.value.type : 'card';
 			gatewayUPEComponents[ selectedUPEPaymentType ].country =
 				event.value.country;
 			gatewayUPEComponents[ selectedUPEPaymentType ].isUPEComplete =
@@ -595,7 +597,6 @@ jQuery( function ( $ ) {
 		if ( ! isUPEFormValid ) {
 			return;
 		}
-
 		blockUI( $form );
 		// Create object where keys are form field names and keys are form field values
 		const formFields = $form.serializeArray().reduce( ( obj, field ) => {
@@ -701,14 +702,11 @@ jQuery( function ( $ ) {
 	/**
 	 * Checks if the customer is using a saved payment method.
 	 *
-	 * @param {string} paymentMethodType Stripe payment method type ID.
 	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
 	 */
-	function isUsingSavedPaymentMethod( paymentMethodType ) {
+	function isUsingSavedPaymentMethod() {
 		const paymentMethodSelector =
-			'#wc-woocommerce_payments_' +
-			paymentMethodType +
-			'-payment-token-new';
+			'#wc-woocommerce_payments-payment-token-new';
 		return (
 			$( paymentMethodSelector ).length &&
 			! $( paymentMethodSelector ).is( ':checked' )
@@ -761,13 +759,14 @@ jQuery( function ( $ ) {
 		PAYMENT_METHOD_NAME_P24,
 		PAYMENT_METHOD_NAME_SEPA,
 		PAYMENT_METHOD_NAME_SOFORT,
-	];
+		paymentMethodsConfig.card !== undefined && PAYMENT_METHOD_NAME_CARD,
+	].filter( Boolean );
 	const checkoutEvents = wcpayPaymentMethods
 		.map( ( method ) => `checkout_place_order_${ method }` )
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
-		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
+		if ( ! isUsingSavedPaymentMethod() ) {
 			const paymentIntentId =
 				gatewayUPEComponents[ paymentMethodType ].paymentIntentId;
 			if ( isUPEEnabled && paymentIntentId ) {
@@ -784,9 +783,10 @@ jQuery( function ( $ ) {
 		// Skip adding legacy cards as UPE payment methods.
 		if (
 			'woocommerce_payments' ===
-			$(
-				"#add_payment_method input:checked[name='payment_method']"
-			).val()
+				$(
+					"#add_payment_method input:checked[name='payment_method']"
+				).val() &&
+			'0' === isUPESplitEnabled
 		) {
 			return;
 		}
@@ -803,11 +803,7 @@ jQuery( function ( $ ) {
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
-		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
-		if (
-			! isUsingSavedPaymentMethod( paymentMethodType ) &&
-			isWCPayChosen()
-		) {
+		if ( ! isUsingSavedPaymentMethod() && isWCPayChosen() ) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
 				return false;
