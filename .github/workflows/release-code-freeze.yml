@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: 'develop'
-    
+
       - name: "Get current version"
         id: current-version
         run: |
@@ -39,23 +39,23 @@ jobs:
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
-        
+
       - name: "Calculate the next version"
         id: next-version
         env:
           RELEASE_VERSION: ${{ steps.current-version.outputs.VERSION }}
-        run: php .github/workflows/scripts/get-next-version.php   
-          
+        run: php .github/workflows/scripts/get-next-version.php
+
       - name: "Define the release planned date"
         id: define_var
         run: |
           RELEASE_PLANNED_DATE=$( date "+%Y-%m-%d" -d "next Wednesday" ) # Date formatted as YYYY-MM-DD
           echo "RELEASE_PLANNED_DATE=$RELEASE_PLANNED_DATE" >> $GITHUB_OUTPUT
-      
+
       - name: "Check if the next version needs a code freeze"
         id: check-freeze
         env:
-          NEXT_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }} 
+          NEXT_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
         run: |
           git fetch --tags origin
           NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
@@ -94,7 +94,7 @@ jobs:
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
         with:
           # For posting a rich message using Block Kit (https://api.slack.com/messaging/interactivity)
-          payload: |       
+          payload: |
             {
                 "blocks": [
                     {
@@ -127,3 +127,9 @@ jobs:
                     }
                 ]
             }
+
+  build-zip-smoke-tests:
+    name: "Build zip & Smoke tests"
+    needs: create-release-pr
+    uses: ./.github/workflows/build-zip-file.yml
+    secrets: inherit
