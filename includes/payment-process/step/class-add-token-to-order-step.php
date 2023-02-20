@@ -1,26 +1,51 @@
 <?php
+/**
+ * Class Store_Metadata_Step
+ *
+ * @package WooCommerce\Payments
+ */
+
 namespace WCPay\Payment_Process\Step;
 
 use WC_Order;
 use WC_Payment_Tokens;
 use WC_Subscriptions;
+use WC_Payments_Subscriptions_Utilities;
 use WCPay\Payment_Process\Order_Payment;
 use WCPay\Payment_Process\Payment;
 use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
 
 /**
- * In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
+ * Associates payment tokens with orders and subscriptions.
  */
 class Add_Token_To_Order_Step extends Abstract_Step {
+	use WC_Payments_Subscriptions_Utilities;
+
+	/**
+	 * Returns the ID of the step.
+	 *
+	 * @return string
+	 */
 	public function get_id() {
 		return 'add-token-to-order';
 	}
 
+	/**
+	 * Checks if the step is applicable.
+	 *
+	 * @param Payment $payment The processing payment.
+	 * @return bool
+	 */
 	public function is_applicable( Payment $payment ) {
 		return $payment instanceof Order_Payment
 			&& $payment->get_payment_method() instanceof Saved_Payment_Method;
 	}
 
+	/**
+	 * Completes the step.
+	 *
+	 * @param Payment $payment The processing payment.
+	 */
 	public function complete( Payment $payment ) {
 		if ( ! $payment instanceof Order_Payment ) {
 			return;
@@ -65,7 +90,7 @@ class Add_Token_To_Order_Step extends Abstract_Step {
 	 * Retrieves the payment token, associated with an order.
 	 *
 	 * @param WC_Order $order Order, which might have a token.
-	 * @param WC_Payment_Token|null
+	 * @return WC_Payment_Token|null
 	 */
 	protected function get_order_token( WC_Order $order ) {
 		$tokens   = $order->get_payment_tokens();
@@ -73,40 +98,5 @@ class Add_Token_To_Order_Step extends Abstract_Step {
 		$token    = $token_id ? null : WC_Payment_Tokens::get( $token_id );
 
 		return $token;
-	}
-
-	/**
-	 * Checks if subscriptions are enabled on the site.
-	 *
-	 * Subscriptions functionality is enabled if the WC Subscriptions plugin is active and greater than v 2.2, or the base feature is turned on.
-	 *
-	 * @return bool Whether subscriptions is enabled or not.
-	 * @todo: This should definitely not be here, temporarily copied from the subscriptions trait.
-	 */
-	public function is_subscriptions_enabled() {
-		if ( $this->is_subscriptions_plugin_active() ) {
-			return version_compare( $this->get_subscriptions_plugin_version(), '2.2.0', '>=' );
-		}
-
-		// TODO update this once we know how the base library feature will be enabled.
-		return class_exists( 'WC_Subscriptions_Core_Plugin' );
-	}
-
-	/**
-	 * Checks if the WC Subscriptions plugin is active.
-	 *
-	 * @return bool Whether the plugin is active or not.
-	 */
-	public function is_subscriptions_plugin_active() {
-		return class_exists( 'WC_Subscriptions' );
-	}
-
-	/**
-	 * Gets the version of WooCommerce Subscriptions that is active.
-	 *
-	 * @return null|string The plugin version. Returns null when WC Subscriptions is not active/loaded.
-	 */
-	public function get_subscriptions_plugin_version() {
-		return class_exists( 'WC_Subscriptions' ) ? WC_Subscriptions::$version : null;
 	}
 }

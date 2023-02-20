@@ -1,20 +1,48 @@
 <?php
+/**
+ * Class Metadata_Step
+ *
+ * @package WooCommerce\Payments
+ */
+
 namespace WCPay\Payment_Process\Step;
 
 use WC_Order;
 use WC_Payments_Subscription_Service;
+use WC_Payments_Subscriptions_Utilities;
 use WCPay\Payment_Process\Order_Payment;
 use WCPay\Payment_Process\Payment;
 
+/**
+ * Prepares metadata from the order.
+ */
 class Metadata_Step extends Abstract_Step {
+	use WC_Payments_Subscriptions_Utilities;
+
+	/**
+	 * Returns the ID of the step.
+	 *
+	 * @return string
+	 */
 	public function get_id() {
 		return 'metadata';
 	}
 
+	/**
+	 * Checks if the step is applicable.
+	 *
+	 * @param Payment $payment A payment, which is being processed.
+	 * @return bool
+	 */
 	public function is_applicable( Payment $payment ) {
 		return is_a( $payment, Order_Payment::class );
 	}
 
+	/**
+	 * Collects data after the payment action.
+	 *
+	 * @param Payment $payment A payment, which is being processed.
+	 */
 	public function collect_data( Payment $payment ) {
 		if ( ! $payment instanceof Order_Payment ) {
 			return; // Make IDEs happy.
@@ -58,14 +86,5 @@ class Metadata_Step extends Abstract_Step {
 
 		// Store within the payment.
 		$payment->set_var( 'metadata', $metadata );
-	}
-
-	/**
-	 * Checks if the WC Subscriptions plugin is active.
-	 *
-	 * @return bool Whether the plugin is active or not.
-	 */
-	public function is_subscriptions_plugin_active() {
-		return class_exists( 'WC_Subscriptions' );
 	}
 }

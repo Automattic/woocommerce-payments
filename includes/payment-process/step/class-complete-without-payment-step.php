@@ -1,4 +1,10 @@
 <?php
+/**
+ * Class Complete_Without_Payment_Step
+ *
+ * @package WooCommerce\Payments
+ */
+
 namespace WCPay\Payment_Process\Step;
 
 use WC_Payment_Token_CC;
@@ -19,15 +25,29 @@ class Complete_Without_Payment_Step extends Abstract_Step {
 	 */
 	protected $gateway;
 
+	/**
+	 * Instantiates the step.
+	 */
 	public function __construct() {
 		// @todo: Change this with proper dependencies.
 		$this->gateway = WC_Payments::get_gateway();
 	}
 
+	/**
+	 * Returns the ID of the order.
+	 *
+	 * @return string
+	 */
 	public function get_id() {
 		return 'complete-without-payment';
 	}
 
+	/**
+	 * Checks if the step is applicable to a given payment.
+	 *
+	 * @param Payment $payment A payment, which will be processed.
+	 * @return bool
+	 */
 	public function is_applicable( Payment $payment ) {
 		if ( ! $payment instanceof Order_Payment ) {
 			return false;
@@ -40,6 +60,11 @@ class Complete_Without_Payment_Step extends Abstract_Step {
 		return apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store );
 	}
 
+	/**
+	 * Performs the main actions, related to the step.
+	 *
+	 * @param Payment $payment The payment, which is being processed.
+	 */
 	public function action( Payment $payment ) {
 		if ( ! $payment instanceof Order_Payment ) {
 			return;

@@ -169,7 +169,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	protected $platform_checkout_util;
 
+	/**
+	 * Payment method factory for the payment process.
+	 *
+	 * @var Payment_Method_Factory
+	 */
 	protected $payment_method_factory;
+
+	/**
+	 * A factory for payment objects.
+	 *
+	 * @var Order_Payment_Factory
+	 */
 	protected $payment_factory;
 
 	/**
@@ -735,10 +746,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_existing_intention;
 			}
 
-			// $payment_information = $this->prepare_payment_information( $order );
-			// return $this->process_payment_for_order( WC()->cart, $payment_information );
+			if ( ! empty( $_SERVER ) ) {
+				return $this->new_payment_process( $order );
+			}
 
-			return $this->new_payment_process( $order );
+			$payment_information = $this->prepare_payment_information( $order );
+			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 			/**
 			 * TODO: Determine how to do this update with Order_Service.
@@ -933,19 +946,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 	}
 
+	/**
+	 * Prepares the objects, needed for the payment process.
+	 *
+	 * Those should be injected as a dependency in the constructor.
+	 * This is just more flexible during development.
+	 */
 	protected function prepare_payment_objects() {
 		$storage                      = new Filesystem_Order_Storage();
 		$this->payment_method_factory = new Payment_Method_Factory();
-		$this->payment_factory         = new Order_Payment_Factory( $storage, $this->payment_method_factory );
+		$this->payment_factory        = new Order_Payment_Factory( $storage, $this->payment_method_factory );
 	}
 
+	/**
+	 * Performs payment through the new payment process.
+	 *
+	 * @param WC_Order $order Order which will be paid.
+	 * @return array          The same response as `process_payment`.
+	 */
 	protected function new_payment_process( WC_Order $order ) {
 		$this->prepare_payment_objects();
 
 		/**
 		 * Preparation part, defining the payment.
 		 */
-		$payment = $this->payment_factory->load_or_create_order_payment( $order );
+		$payment = $this->payment_factory->create_order_payment( $order );
 
 		// phpcs:ignore WordPress.Security.NonceVerification
 		$payment_method = $this->payment_method_factory->from_request( $_POST );
@@ -973,14 +998,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$payment->save();
 
-		if ( $response ) {
-			return $response;
-		}
-
-		if ( $payment ) {
-			var_dump($payment); exit;
-			return;
-		}
+		return $response;
 	}
 
 	/**

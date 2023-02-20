@@ -129,7 +129,7 @@ abstract class Payment {
 	 */
 	public function load_data( array $data ) {
 		if ( isset( $data['flags'] ) ) {
-			// $this->flags = $data['flags'];
+			$this->flags = $data['flags'];
 		}
 
 		if ( isset( $data['payment_method'] ) && ! empty( $data['payment_method'] ) ) {
@@ -250,13 +250,17 @@ abstract class Payment {
 		);
 	}
 
+	/**
+	 * Processes the payment, once all external set-up is done.
+	 *
+	 * @return mixed The result of the successful action call.
+	 */
 	public function process() {
 		// Clear any previous responses.
 		$this->response = null;
 
+		// Contains all steps, applicable to the payment.
 		$steps = [];
-
-		// Prepare all steps first.
 		foreach ( $this->get_available_steps() as $class_name ) {
 			if ( ! is_subclass_of( $class_name, Abstract_Step::class ) ) {
 				// Ignore steps, which do not use the base class.
@@ -270,16 +274,30 @@ abstract class Payment {
 				continue;
 			}
 
-			// Let the step collect data.
+			/**
+			 * Stage 1: Collect data.
+			 *
+			 * This allows each step to collect the necessary data.
+			 * Note: This step is in the initial loop, because follow-up
+			 * steps might depend on the data, collected by previous ones.
+			 */
 			$step->collect_data( $this );
 
 			$steps[] = $step;
 		}
 
-		// Preparation step done, time to act.
+		/**
+		 * Stage 2: Act.
+		 *
+		 * Allow every step to try and process the payment.
+		 * Once a single step has called `$payment->complete()`, the
+		 * loop will be broken, and no further *actions* will be executed.
+		 *
+		 * This was `Complete_Without_Payment_Step` can complete the processing,
+		 * and other steps (ex. intent creation) will be skipped. Order is important.
+		 */
 		foreach ( $steps as $step ) {
 			$step->action( $this );
-			$this->save();
 
 			// Once there's a response, there should be no further action.
 			if ( ! is_null( $this->response ) ) {
@@ -287,10 +305,14 @@ abstract class Payment {
 			}
 		}
 
-		// Action is done, time to cleanup.
+		/**
+		 * Stage 3: Complete all steps.
+		 *
+		 * This allows each step to go ahead and save the necessary data
+		 * like payment tokens, meta, update subscriptions and etc.
+		 */
 		foreach ( $steps as $step ) {
 			$step->complete( $this );
-			$this->save();
 		}
 
 		// Whatever was updated during the process, save the order.
@@ -301,10 +323,28 @@ abstract class Payment {
 		return $this->response;
 	}
 
+	/**
+	 * Allows any step to store variables, related to the process.
+	 *
+	 * Those variables will be stored with the payment, so using
+	 * simple types is strongly recommended.
+	 *
+	 * Example: Instead of storing a `$user` object here, store
+	 * just `$user_id`, and keep the full object in the step.
+	 *
+	 * @param string $key   Name of the value.
+	 * @param mixed  $value Value to set.
+	 */
 	public function set_var( $key, $value ) {
 		$this->vars[ $key ] = $value;
 	}
 
+	/**
+	 * Retrieves variables, set in previous steps.
+	 *
+	 * @param string $key Key of the value.
+	 * @return mixed|null
+	 */
 	public function get_var( $key ) {
 		return isset( $this->vars[ $key ] ) ? $this->vars[ $key ] : null;
 	}
@@ -313,6 +353,8 @@ abstract class Payment {
 	 * Allows the payment to be completed, ending the main part of the processing.
 	 *
 	 * Completion steps will still be performed after this call.
+	 *
+	 * @param mixed $response The response, which will be provided to `process_payment()`.
 	 */
 	public function complete( $response ) {
 		$this->response = $response;
