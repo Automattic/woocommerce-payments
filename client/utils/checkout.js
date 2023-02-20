@@ -8,10 +8,14 @@
  */
 export const getConfig = ( name ) => {
 	// Classic checkout or blocks-based one.
-	const config =
-		'undefined' !== typeof wcpayConfig
-			? wcpayConfig
-			: wc.wcSettings.getSetting( 'woocommerce_payments_data' );
+	let config = null;
+	if ( 'undefined' !== typeof wcpayConfig ) {
+		config = wcpayConfig;
+	} else if ( 'undefined' !== typeof wcpay_upe_config ) {
+		config = wcpay_upe_config;
+	} else {
+		config = wc.wcSettings.getSetting( 'woocommerce_payments_data' );
+	}
 
 	return config[ name ] || null;
 };

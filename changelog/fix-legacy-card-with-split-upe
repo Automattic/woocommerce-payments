@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Fixes legacy card payment with split UPE (when WooPay is enabled).
+
+

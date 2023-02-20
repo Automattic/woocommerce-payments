@@ -296,7 +296,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_upe_gateway->payment_fields();
 
-		$this->expectOutputRegex( '/<div id="wcpay-upe-element"><\/div>/' );
+		$this->expectOutputRegex( '/<div id="wcpay-upe-element" class="wcpay-upe-element"><\/div>/' );
 	}
 
 	public function test_update_payment_intent_adds_customer_save_payment_and_level3_data() {

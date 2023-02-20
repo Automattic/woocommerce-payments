@@ -154,7 +154,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function display_gateway_html() {
 		?>
-			<div id="wcpay-upe-element"></div>
+			<div id="wcpay-upe-element" class="wcpay-upe-element"></div>
 			<div id="wcpay-upe-errors" role="alert"></div>
 			<input id="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" />
 			<input id="wcpay_selected_upe_payment_type" type="hidden" name="wcpay_selected_upe_payment_type" />
