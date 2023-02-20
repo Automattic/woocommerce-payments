@@ -61,6 +61,13 @@ jobs:
       - name: Checkout WCPay repository
         uses: actions/checkout@v2
 
+      - name: "Download WooCommerce Payments build file"
+        if: ${{ inputs.wcpay-use-build-artifact }}
+        uses: actions/download-artifact@v3
+        with:
+          name: woocommerce-payments
+          path: ${{ inputs.wcpay-artifact-directory }}
+
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
 
