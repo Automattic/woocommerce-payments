@@ -37,4 +37,6 @@ jobs:
     name: "Smoke tests"
     needs: build-zip
     uses: ./.github/workflows/e2e-pull-request.yml
+    with:
+      wcpay-use-build-artifact: true
     secrets: inherit
