@@ -26,10 +26,10 @@ jobs:
         id: build_plugin
         uses: ./.github/actions/build
 
-      - name: "Unzip the file (prevents double zip issue)"
+      - name: "Add file size notice & delete build zip"
         run: |
-          echo ":information_source: Unzipping to a folder to prevent double-zip issue ([known limitation](https://github.com/actions/upload-artifact#zipped-artifact-downloads)). Increase in artifact size is expected since we're uploading the folder." >> $GITHUB_STEP_SUMMARY
-          unzip ${{ steps.build_plugin.outputs.release-filename }} -d zipfile
+          echo ":information_source: Ignore the artifact size mentioned since GitHub calculates the size of the source folder instead of the zip file created." >> $GITHUB_STEP_SUMMARY
+          rm -rf release/${{ steps.build_plugin.outputs.release-filename }}
 
       - name: "Upload the zip file as an artifact"
         uses: actions/upload-artifact@v3
