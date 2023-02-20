@@ -39,4 +39,8 @@ class Payment_Method extends Enum {
 		self::CARD_PRESENT,
 		self::INTERAC_PRESENT,
 	];
+
+	const SUBSCRIPTIONS_SUPPORTED_PAYMENT_METHODS = [
+		self::SEPA,
+	];
 }

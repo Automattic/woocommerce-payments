@@ -8,6 +8,7 @@
 namespace WCPay\Payment_Methods;
 
 use Exception;
+use Square\Models\Payment;
 use WC_Payments_Features;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
@@ -95,19 +96,9 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			$this->method_title = "WooCommerce Payments ($this->title)";
 		}
 
-		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'add_sepa_gateway' ], 100, 1 );
-	}
-
-	/**
-	 * Adds SEPA gateway
-	 *
-	 * @param array $gateways                  - Filtered gateways.
-	 */
-	public function add_sepa_gateway( $gateways ) {
-		if ( WC_Payments_Features::is_upe_split_enabled() && 'sepa_debit' === $this->stripe_id ) {
-			$gateways[ self::GATEWAY_ID . '_' . $this->stripe_id ] = $this;
+		if ( \WC_Payments_Features::is_wcpay_subscriptions_enabled() && in_array( $this->stripe_id, Payment_Method::SUBSCRIPTIONS_SUPPORTED_PAYMENT_METHODS, true ) ) {
+			add_filter( 'woocommerce_available_payment_gateways', [ $this, 'maybe_attach_new_gateways_for_subscriptions' ], 100, 1 );
 		}
-		return $gateways;
 	}
 
 	/**
@@ -187,6 +178,20 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		return $this->payment_method;
 	}
 
+	/**
+	 * This method ensures, that any split UPE gateway that should be supported for subscription products but was
+	 * filtered out by Subscriptions Core, is added and ready to be used.
+	 *
+	 * @param array $available_gateways Available gateways after filters.
+	 *
+	 * @return array Available gateways after adding gateways which were missed.
+	 */
+	public function maybe_attach_new_gateways_for_subscriptions( $available_gateways ) {
+		if ( ! in_array( $this->id, $available_gateways, true ) ) {
+			$available_gateways[ $this->id ] = $this;
+		}
+		return $available_gateways;
+	}
 
 	/**
 	 * Handle AJAX request for updating a payment intent for Stripe UPE.

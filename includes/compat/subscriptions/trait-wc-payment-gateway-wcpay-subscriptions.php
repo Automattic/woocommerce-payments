@@ -75,9 +75,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * For split UPE and other use-cases, WCPay requires additional gateways.
 	 * This method adds back any gateways previously filtered out by Subscriptions Core, making them available for subscription products.
 	 *
-	 * @return array All available gateways.
+	 * @param array $available_gateways Available gateways after filters.
+	 *
+	 * @return array Available gateways after adding gateways which were missed.
 	 */
-	abstract protected function maybe_attach_new_gateways_for_subscriptions();
+	abstract protected function maybe_attach_new_gateways_for_subscriptions( $available_gateways );
 
 	/**
 	 * Stores the payment method meta table name

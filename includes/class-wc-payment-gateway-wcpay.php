@@ -1423,6 +1423,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * In its current state, this method is not expected to add any new gateways, because WCPay gateway
+	 * is only one, its of type woocommerce_payments and is already present in the input array.
+	 *
+	 * @param array $available_gateways Available gateways after filters.
+	 *
+	 * @return array Available gateways after adding gateways which were missed.
+	 */
+	private function maybe_attach_new_gateways_for_subscriptions( $available_gateways ) {
+		return $available_gateways;
+	}
+
+	/**
 	 * Saves the payment token to the order.
 	 *
 	 * @param WC_Order         $order The order.
