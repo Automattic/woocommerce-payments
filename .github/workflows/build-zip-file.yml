@@ -37,8 +37,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: "woocommerce-payments"
-          path: zipfile
-          retention-days: 7
+          path: release
+          retention-days: 14
 
   smoke-tests:
     name: "Smoke tests"
