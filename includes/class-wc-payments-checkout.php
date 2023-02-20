@@ -80,10 +80,10 @@ class WC_Payments_Checkout {
 	 * Enqueues and localizes WCPay's checkout scripts.
 	 */
 	public function enqueue_payment_scripts() {
-		if( WC_Payments_Features::is_upe_legacy_enabled() ) {
+		if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
 			wp_localize_script( 'wcpay-upe-checkout', 'wcpayConfig', WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
 			wp_enqueue_script( 'wcpay-upe-checkout' );
-		}  else if ( WC_Payments_Features::is_upe_split_enabled() ) {
+		} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
 			wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
 			wp_enqueue_script( 'wcpay-upe-checkout' );
 		} else {
