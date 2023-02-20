@@ -73,7 +73,7 @@ const PlatformCheckoutSettings = ( { section } ) => {
 					/>
 					<h4>
 						{ __(
-							'Enable WooPay on selected pages',
+							'Enable WooPay button on selected pages',
 							'woocommerce-payments'
 						) }
 					</h4>
