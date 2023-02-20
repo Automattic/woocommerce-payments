@@ -71,6 +71,15 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	abstract protected function prepare_payment_information( $order );
 
 	/**
+	 * Subscriptions Core filters out all gateways except woocommerce_payments when enabled.
+	 * For split UPE and other use-cases, WCPay requires additional gateways.
+	 * This method adds back any gateways previously filtered out by Subscriptions Core, making them available for subscription products.
+	 *
+	 * @return array All available gateways.
+	 */
+	abstract protected function maybe_attach_new_gateways_for_subscriptions();
+
+	/**
 	 * Stores the payment method meta table name
 	 *
 	 * @var string
