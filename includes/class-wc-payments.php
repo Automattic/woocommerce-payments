@@ -35,6 +35,7 @@ use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\Blocks_Data_Extractor;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -474,9 +475,9 @@ class WC_Payments {
 		$is_woopay_express_checkout_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
 
 		if ( $is_woopay_express_checkout_enabled || self::get_gateway()->get_option( 'payment_request' ) ) {
-			add_action( 'woocommerce_after_add_to_cart_quantity', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
-			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
-			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], -1 );
+			add_action( 'woocommerce_after_add_to_cart_quantity', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
+			add_action( 'woocommerce_proceed_to_checkout', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
+			add_action( 'woocommerce_checkout_before_customer_details', [ __CLASS__, 'display_express_checkout_separator_if_necessary' ], 2 );
 
 			if ( self::get_gateway()->get_option( 'payment_request' ) ) {
 				// Load separator on the Pay for Order page.
@@ -559,12 +560,15 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		if ( WC_Payments_Features::is_upe_split_enabled() ) {
-			$gateways[]       = self::$legacy_card_gateway;
+			if ( self::$platform_checkout_button_handler->is_woopay_enabled() ) {
+				$gateways[] = self::$legacy_card_gateway;
+			} else {
+				$gateways[] = self::$card_gateway;
+			}
 			$all_upe_gateways = [];
 			$reusable_methods = [];
-
 			foreach ( self::$card_gateway->get_payment_method_ids_enabled_at_checkout() as $payment_method_id ) {
-				if ( 'card' === $payment_method_id ) {
+				if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
 					continue;
 				}
 				$upe_gateway        = self::get_payment_gateway_by_id( $payment_method_id );
