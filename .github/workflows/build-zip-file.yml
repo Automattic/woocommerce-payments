@@ -3,6 +3,10 @@ name: "Build zip file"
 # This action will run when it is triggered manually.
 on:
   workflow_dispatch:
+    inputs:
+      skip-smoke-tests:
+        type: boolean
+        description: Skip running smoke tests
 
 jobs:
   build-zip:
@@ -36,6 +40,7 @@ jobs:
   smoke-tests:
     name: "Smoke tests"
     needs: build-zip
+    if: ${{ ! inputs.skip-smoke-tests }}
     uses: ./.github/workflows/e2e-pull-request.yml
     with:
       wcpay-use-build-artifact: true
