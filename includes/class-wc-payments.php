@@ -127,7 +127,7 @@ class WC_Payments {
 	 *
 	 * @var WC_Payments_Order_Service
 	 */
-	private static $order_service;
+	public static $order_service;
 
 	/**
 	 * Instance of WC_Payments_Order_Success_Page, created in init function

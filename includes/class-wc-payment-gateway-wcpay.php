@@ -3322,7 +3322,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @return boolean True if it is a platform payment method.
 	 */
-	private function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+	public function is_platform_payment_method( bool $is_using_saved_payment_method ) {
 		// Return false for express checkout method.
 		if ( isset( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return false;
