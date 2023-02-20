@@ -37,3 +37,4 @@ jobs:
     name: "Smoke tests"
     needs: build-zip
     uses: ./.github/workflows/e2e-pull-request.yml
+    secrets: inherit
