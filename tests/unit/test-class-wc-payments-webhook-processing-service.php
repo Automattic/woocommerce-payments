@@ -130,6 +130,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->any() )
 			->method( 'get_id' )
 			->willReturn( 1234 );
+
+		WC_Payments::mode()->live();
 	}
 
 	/**
@@ -171,11 +173,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'content' => 'hello',
 		];
 
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'is_in_test_mode' )
-			->willReturn( false );
-
 		$this->mock_remote_note_service
 			->expects( $this->never() )
 			->method( 'put_note' )
@@ -200,10 +197,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'title'   => 'test',
 			'content' => 'hello',
 		];
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'is_in_test_mode' )
-			->willReturn( true );
+
+		WC_Payments::mode()->test();
 
 		$this->mock_remote_note_service
 			->expects( $this->never() )

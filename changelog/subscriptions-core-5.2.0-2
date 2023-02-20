@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-New wcs_set_order_address() helper function to set an array of address fields on an order or subscription.

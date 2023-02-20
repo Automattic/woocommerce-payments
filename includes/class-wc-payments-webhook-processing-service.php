@@ -213,7 +213,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Event mode does not match the gateway mode.
 	 */
 	private function is_webhook_mode_mismatch( array $event_body ): bool {
-		$is_gateway_live_mode = ! $this->wcpay_gateway->is_in_test_mode();
+		$is_gateway_live_mode = WC_Payments::mode()->is_live();
 		$is_event_live_mode   = $this->read_webhook_property( $event_body, 'livemode' );
 
 		if ( $is_gateway_live_mode !== $is_event_live_mode ) {

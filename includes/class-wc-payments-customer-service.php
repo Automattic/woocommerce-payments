@@ -8,6 +8,7 @@
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
+use WCPay\Constants\Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -268,8 +269,10 @@ class WC_Payments_Customer_Service {
 		if ( WC_Payments::is_network_saved_cards_enabled() ) {
 			return; // No need to do anything, payment methods will never be cached in this case.
 		}
-		$customer_id = $this->get_customer_id_by_user_id( $user_id );
-		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
+
+		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::SEPA ];
+		$customer_id                      = $this->get_customer_id_by_user_id( $user_id );
+		foreach ( $retrievable_payment_method_types as $type ) {
 			$this->database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
 		}
 	}

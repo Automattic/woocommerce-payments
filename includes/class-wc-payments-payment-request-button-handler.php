@@ -74,16 +74,12 @@ class WC_Payments_Payment_Request_Button_Handler {
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_html' ], 1 );
-		add_action( 'woocommerce_after_add_to_cart_quantity', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
 		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_html' ], 1 );
-		add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
 		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_html' ], 1 );
-		add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
 		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
-		add_action( 'before_woocommerce_pay_form', [ $this, 'display_payment_request_button_separator_html' ], 2 );
 
 		add_action( 'wc_ajax_wcpay_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
 		add_action( 'wc_ajax_wcpay_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
@@ -787,18 +783,6 @@ class WC_Payments_Payment_Request_Button_Handler {
 				<!-- A Stripe Element will be inserted here. -->
 			</div>
 		</div>
-		<?php
-	}
-
-	/**
-	 * Display payment request button separator.
-	 */
-	public function display_payment_request_button_separator_html() {
-		if ( ! $this->should_show_payment_request_button() ) {
-			return;
-		}
-		?>
-		<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;display:none;">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 		<?php
 	}
 

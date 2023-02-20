@@ -40,6 +40,8 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_product    = $this->get_mock_product();
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		$this->product_service = new WC_Payments_Product_Service( $this->mock_api_client );
+
+		WC_Payments::mode()->live();
 	}
 
 	public function tear_down() {

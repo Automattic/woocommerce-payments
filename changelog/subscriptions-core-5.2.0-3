@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Edit, add, and list Subscription admin pages now work when HPOS is enabled.
