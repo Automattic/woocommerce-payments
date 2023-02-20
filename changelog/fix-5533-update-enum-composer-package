@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Bump of PHP enum package to support the newest versions of PHP
