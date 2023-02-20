@@ -7,6 +7,15 @@ on:
       - trunk
   workflow_dispatch:
   workflow_call:
+    inputs:
+      wcpay-use-build-artifact:
+        type: boolean
+        required: false
+        default: false
+      wcpay-artifact-directory:
+        type: string
+        required: false
+        default: 'zipfile'
 
 env:
   E2E_GH_TOKEN:          ${{ secrets.E2E_GH_TOKEN }}
