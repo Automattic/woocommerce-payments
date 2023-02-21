@@ -30,7 +30,7 @@ jobs:
   build-zip:
     name: "Build the zip file"
     runs-on: ubuntu-20.04
-    if: ${{ ! inputs.skip-build-zip }}
+    if: ${{ inputs.skip-build-zip != true }}
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
@@ -61,7 +61,7 @@ jobs:
   smoke-tests:
     name: "Smoke tests"
     needs: build-zip
-    if: ${{ ! inputs.skip-smoke-tests }}
+    if: ${{ inputs.skip-build-zip != true || inputs.skip-smoke-tests != true }}
     uses: ./.github/workflows/e2e-pull-request.yml
     with:
       wcpay-use-build-artifact: true
