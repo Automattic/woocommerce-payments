@@ -101,6 +101,7 @@ module.exports = {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [ path.join( process.cwd(), 'client' ), 'node_modules' ],
 		alias: {
+			assets: path.resolve( process.cwd(), 'assets' ),
 			wcpay: path.resolve( process.cwd(), 'client' ),
 			iti: path.resolve(
 				process.cwd(),
