@@ -3,8 +3,12 @@ name: "Build zip file"
 # This action will run when it is triggered manually.
 on:
   workflow_call:
-  workflow_dispatch:
     inputs:
+      skip-build-zip:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running build zip"
       skip-smoke-tests:
         type: boolean
         required: false
@@ -13,18 +17,25 @@ on:
       build-branch:
         type: string
         required: false
-        default: ${{ github.sha }}
         description: "Branch to be used for building zip file"
+  workflow_dispatch:
+    inputs:
+      skip-smoke-tests:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running smoke tests"
 
 jobs:
   build-zip:
     name: "Build the zip file"
     runs-on: ubuntu-20.04
+    if: ${{ ! inputs.skip-build-zip }}
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.build-branch }}
+          ref: ${{ inputs.build-branch || github.sha }}
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
