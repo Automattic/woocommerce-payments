@@ -35,7 +35,7 @@ jobs:
         run: |
           VERSION=$(jq '.version' package.json -r)
           echo "Current version found: $VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "VERSION=100.0.0" >> $GITHUB_OUTPUT
+          echo "VERSION=9.9.9" >> $GITHUB_OUTPUT
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
