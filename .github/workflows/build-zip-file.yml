@@ -14,7 +14,7 @@ on:
         required: false
         default: false
         description: "Skip running smoke tests"
-      build-branch:
+      repo-branch:
         type: string
         required: false
         description: "Branch to be used for building zip file"
@@ -35,7 +35,7 @@ jobs:
       - name: "Checkout repository"
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.build-branch || github.ref }}
+          ref: ${{ inputs.repo-branch || github.ref }}
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
@@ -65,4 +65,5 @@ jobs:
     uses: ./.github/workflows/e2e-pull-request.yml
     with:
       wcpay-use-build-artifact: true
+      repo-branch: ${{ inputs.repo-branch }}
     secrets: inherit
