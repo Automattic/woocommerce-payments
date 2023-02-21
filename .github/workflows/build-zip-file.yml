@@ -35,7 +35,7 @@ jobs:
       - name: "Checkout repository"
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.build-branch || github.sha }}
+          ref: ${{ inputs.build-branch || github.ref }}
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
