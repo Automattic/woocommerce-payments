@@ -15,15 +15,15 @@ import Page from 'components/page';
 import strings from './strings';
 import wcpayTracks from 'tracks';
 import Banner from '../banner';
-import Visa from './cards/visa.js';
-import MasterCard from './cards/mastercard.js';
-import Amex from './cards/amex.js';
-import ApplePay from './cards/applepay.js';
-import DinersClub from './cards/diners.js';
-import Discover from './cards/discover.js';
-import GPay from './cards/gpay.js';
-import JCB from './cards/jcb.js';
-import UnionPay from './cards/unionpay.js';
+import Visa from 'assets/images/cards/visa.svg';
+import MasterCard from 'assets/images/cards/mastercard.svg';
+import Amex from 'assets/images/cards/amex.svg';
+import ApplePay from 'assets/images/cards/apple-pay.svg';
+import DinersClub from 'assets/images/cards/diners.svg';
+import Discover from 'assets/images/cards/discover.svg';
+import GPay from 'assets/images/cards/google-pay.svg';
+import JCB from 'assets/images/cards/jcb.svg';
+import UnionPay from 'assets/images/cards/unionpay.svg';
 import LightbulbIcon from '../../assets/images/icons/lightbulb.svg';
 import './style.scss';
 
@@ -47,15 +47,15 @@ const LearnMore = () => {
 
 const PaymentMethods = () => (
 	<div className="wcpay-connect-account-page-payment-methods">
-		<Visa />
-		<MasterCard />
-		<Amex />
-		<DinersClub />
-		<Discover />
-		<UnionPay />
-		<JCB />
-		<GPay />
-		<ApplePay />
+		<img src={ Visa } alt="Visa" />
+		<img src={ MasterCard } alt="MasterCard" />
+		<img src={ Amex } alt="Amex" />
+		<img src={ DinersClub } alt="Diners Club" />
+		<img src={ Discover } alt="Discover" />
+		<img src={ UnionPay } alt="UnionPay" />
+		<img src={ JCB } alt="JCB" />
+		<img src={ GPay } alt="Google Pay" />
+		<img src={ ApplePay } alt="Apple Pay" />
 	</div>
 );
 

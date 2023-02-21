@@ -13,7 +13,7 @@ import './styles.scss';
 import { useGetAvailablePaymentMethodIds } from '../data';
 import PaymentMethodIcon from '../settings/payment-method-icon';
 import PaymentDeleteIllustration from '../components/payment-delete-illustration';
-import WooCardIcon from '../gateway-icons/woo-card';
+import WooCardIcon from 'assets/images/cards/woo-card.svg';
 import ConfirmationModal from '../components/confirmation-modal';
 
 const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
@@ -37,7 +37,11 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 				</>
 			}
 		>
-			<PaymentDeleteIllustration icon={ WooCardIcon } />
+			<PaymentDeleteIllustration
+				icon={ ( props ) => (
+					<img src={ WooCardIcon } alt="Card" { ...props } />
+				) }
+			/>
 			<p>
 				{ interpolateComponents( {
 					mixedString: __(
