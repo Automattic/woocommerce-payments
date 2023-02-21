@@ -324,6 +324,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		$currency = get_woocommerce_currency();
 		$number   = 0;
 		$order    = wc_get_order( $order_id );
+		$metadata = [];
 		if ( is_a( $order, 'WC_Order' ) ) {
 			$amount                   = $order->get_total();
 			$currency                 = $order->get_currency();
@@ -348,7 +349,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$request->set_amount( $converted_amount );
 			$request->set_currency_code( strtolower( $currency ) );
 			$request->set_payment_method_types( array_values( $displayed_payment_methods ) );
-			$request->set_metadata( $metadata );
+			if ( ! empty( $metadata ) ) {
+				$request->set_metadata( $metadata );
+			}
 			$request->set_capture_method( $manual_capture );
 			$request->set_fingerprint( $fingerprint );
 			$payment_intent = $request->send( 'create_wcpay_intent_request', $order );
