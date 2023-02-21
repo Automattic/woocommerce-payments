@@ -16,6 +16,10 @@ on:
         type: string
         required: false
         default: 'zipfile'
+      repo-branch:
+        type: string
+        required: false
+        description: "Branch to be used for running tests"
 
 env:
   E2E_GH_TOKEN:             ${{ secrets.E2E_GH_TOKEN }}
@@ -59,7 +63,9 @@ jobs:
 
     steps:
       - name: Checkout WCPay repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.repo-branch || github.ref }}
 
       - name: "Download WooCommerce Payments build file"
         if: ${{ inputs.wcpay-use-build-artifact }}
