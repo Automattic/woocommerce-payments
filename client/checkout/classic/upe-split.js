@@ -702,15 +702,34 @@ jQuery( function ( $ ) {
 	/**
 	 * Checks if the customer is using a saved payment method.
 	 *
+	 * @param {string} paymentMethodType Stripe payment method type ID.
 	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
 	 */
-	function isUsingSavedPaymentMethod() {
-		const paymentMethodSelector =
+	function isUsingSavedPaymentMethod( paymentMethodType ) {
+		const ccSavedPaymentMethodSelector =
 			'#wc-woocommerce_payments-payment-token-new';
-		return (
-			$( paymentMethodSelector ).length &&
-			! $( paymentMethodSelector ).is( ':checked' )
-		);
+		const sepaPaymentMethodSelector =
+			'#wc-woocommerce_payments_sepa_debit-payment-token-new';
+		const tokenizedPaymentMethods = [ 'sepa_debit', 'card' ];
+
+		// The payment method used cannot be saved, which means that we are not using saved tokens for sure.
+		if ( ! tokenizedPaymentMethods.includes( paymentMethodType ) ) {
+			return false;
+		}
+
+		if ( 'sepa_debit' === paymentMethodType ) {
+			return (
+				$( sepaPaymentMethodSelector ).length &&
+				! $( sepaPaymentMethodSelector ).is( ':checked' )
+			);
+		}
+
+		if ( 'card' === paymentMethodType ) {
+			return (
+				$( ccSavedPaymentMethodSelector ).length &&
+				! $( ccSavedPaymentMethodSelector ).is( ':checked' )
+			);
+		}
 	}
 
 	/**
@@ -766,7 +785,7 @@ jQuery( function ( $ ) {
 		.join( ' ' );
 	$( 'form.checkout' ).on( checkoutEvents, function () {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
-		if ( ! isUsingSavedPaymentMethod() ) {
+		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
 			const paymentIntentId =
 				gatewayUPEComponents[ paymentMethodType ].paymentIntentId;
 			if ( isUPEEnabled && paymentIntentId ) {
@@ -803,7 +822,11 @@ jQuery( function ( $ ) {
 
 	// Handle the Pay for Order form if WooCommerce Payments is chosen.
 	$( '#order_review' ).on( 'submit', () => {
-		if ( ! isUsingSavedPaymentMethod() && isWCPayChosen() ) {
+		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
+		if (
+			! isUsingSavedPaymentMethod( paymentMethodType ) &&
+			isWCPayChosen()
+		) {
 			if ( isChangingPayment ) {
 				handleUPEAddPayment( $( '#order_review' ) );
 				return false;
