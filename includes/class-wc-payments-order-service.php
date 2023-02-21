@@ -6,7 +6,6 @@
  */
 
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Method;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -305,6 +304,72 @@ class WC_Payments_Order_Service {
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
+	// TODO: Do we need any additional methods here?
+
+	/**
+	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param string   $intent_id     The ID of the intent associated with this order.
+	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	public function mark_order_payment_capture_completed_after_fraud_check( $order, $intent_id, $intent_status, $charge_id ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		$this->update_order_status( $order, 'payment_complete', $intent_id );
+		$order->update_meta_data( '_wcpay_fraud_outcome_status', 'passed' );
+		// TODO: What note do we want to add?
+		$this->add_capture_success_note( $order, $intent_id, $charge_id );
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Changes status to On-Hold and adds the fraud held for review note.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param string   $intent_id     The ID of the intent associated with this order.
+	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	public function mark_order_held_for_review_for_fraud( $order, $intent_id, $intent_status, $charge_id ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
+		$order->update_meta_data( '_wcpay_fraud_outcome_status', 'held' );
+		$this->add_fraud_held_for_review_note( $order, $intent_id, $charge_id );
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Changes status to Cancelled and adds the fraud blocked note.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param string   $intent_id     The ID of the intent associated with this order.
+	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	public function mark_order_blocked_for_fraud( $order, $intent_id, $intent_status, $charge_id ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		$this->update_order_status( $order, Order_Status::CANCELLED );
+		$order->update_meta_data( '_wcpay_fraud_outcome_status', 'blocked' );
+		$this->add_fraud_blocked_note( $order, $intent_id, $charge_id );
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
 	/**
 	 * Check if a note content has already existed in the order.
 	 *
@@ -582,6 +647,58 @@ class WC_Payments_Order_Service {
 		$note = WC_Payments_Utils::esc_interpolated_html(
 			__( 'Payment authorization was successfully <strong>cancelled</strong>.', 'woocommerce-payments' ),
 			[ 'strong' => '<strong>' ]
+		);
+
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Adds the fraud held for review note to an order.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	private function add_fraud_held_for_review_note( $order, $intent_id, $charge_id ) {
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				__( '&#x26D4 A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$this->get_order_amount( $order )
+		);
+
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Adds the fraud blocked note to an order.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	private function add_fraud_blocked_note( $order, $intent_id, $charge_id ) {
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				__( '&#x1F6AB A payment of %1$s was <strong>blocked</strong> by one or more risk filters.<br><br><a>View more details</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$this->get_order_amount( $order )
 		);
 
 		$order->add_order_note( $note );

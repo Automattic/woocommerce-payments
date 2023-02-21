@@ -311,7 +311,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests if the payument was captured successfully.
+	 * Tests if the payment was captured successfully.
 	 */
 	public function test_mark_payment_capture_completed() {
 		// Arrange: Set the intent status.
@@ -554,6 +554,97 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertStringContainsString( 'Pending payment to Completed', $notes[0]->content );
+
+		// Assert: Check that the order was unlocked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Tests if the payment was captured successfully after a fraud check.
+	 */
+	public function test_mark_order_payment_capture_completed_after_fraud_check() {
+		// Arrange: Set the intent status.
+		$intent_status = Payment_Intent_Status::SUCCEEDED;
+
+		// Act: Attempt to mark the payment/order complete.
+		$this->order_service->mark_order_payment_capture_completed_after_fraud_check( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+
+		// Assert: Check to make sure the intent/transaction id was set, and that intent_status meta was set.
+		$this->assertEquals( $this->intent_id, $this->order->get_transaction_id() );
+		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
+
+		// Assert: Check to make sure the _wcpay_fraud_outcome_status meta was set.
+		$this->assertEquals( 'passed', $this->order->get_meta( '_wcpay_fraud_outcome_status' ) );
+
+		// Assert: Check that the order status was updated to a paid status.
+		$this->assertTrue( $this->order->has_status( wc_get_is_paid_statuses() ) );
+
+		// Assert: Check that the notes were updated.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'Pending payment to Processing', $notes[1]->content );
+		$this->assertStringContainsString( 'successfully captured</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=pi_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
+
+		// Assert: Check that the order was unlocked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Tests to see if the order correctly get set on hold for review.
+	 */
+	public function test_mark_order_held_for_review_for_fraud() {
+		// Arrange: Set the intent and order statuses.
+		$intent_status = Payment_Intent_Status::REQUIRES_CAPTURE;
+		$order_status  = Order_Status::ON_HOLD;
+
+		// Act: Attempt to mark the payment/order on-hold.
+		$this->order_service->mark_order_held_for_review_for_fraud( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+
+		// Assert: Check to make sure the intent_status meta was set.
+		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
+
+		// Assert: Check to make sure the _wcpay_fraud_outcome_status meta was set.
+		$this->assertEquals( 'held', $this->order->get_meta( '_wcpay_fraud_outcome_status' ) );
+
+		// Assert: Check that the order status was updated to on-hold status.
+		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
+
+		// Assert: Check that the notes were updated.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
+		$this->assertStringContainsString( 'held for review</strong> by one or more risk filters', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=pi_123" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
+
+		// Assert: Check that the order was unlocked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+	/**
+	 * Tests to see if the order is correctly set to blocked for fraud reasons.
+	 */
+	public function test_mark_order_blocked_for_fraud() {
+		// Arrange: Set the intent and order statuses.
+		$intent_status     = Payment_Intent_Status::CANCELED;
+		$order_status      = Order_Status::CANCELLED; // WooCommerce uses double 'l'.
+		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
+
+		// Act: Attempt to mark the payment/order as blocked/cancelled.
+		$this->order_service->mark_order_blocked_for_fraud( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+
+		// Assert: Check to make sure the intent_status meta was set.
+		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
+
+		// Assert: Check to make sure the _wcpay_fraud_outcome_status meta was set.
+		$this->assertEquals( 'blocked', $this->order->get_meta( '_wcpay_fraud_outcome_status' ) );
+
+		// Assert: Check that the order status was updated to cancelled status.
+		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
+
+		// Assert: Check that the notes were updated.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[1]->content );
+		$this->assertStringContainsString( 'blocked</strong> by one or more risk filters', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=pi_123" target="_blank" rel="noopener noreferrer">View more details', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );

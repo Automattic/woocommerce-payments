@@ -397,8 +397,9 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
 
-		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
+		include_once WCPAY_ABSPATH . 'includes/class-wc-payments-captured-event-note.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
+		include_once WCPAY_ABSPATH . 'includes/fraud-prevention/class-order-fraud-and-risk-meta-box.php';
 
 		// Add admin screens.
 		if ( is_admin() ) {
@@ -419,6 +420,12 @@ class WC_Payments {
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
+
+			// TODO: Need to have an actual check here once the feature flag is created.
+			$fraud_and_risk_tools_enabled = true;
+			if ( $fraud_and_risk_tools_enabled ) {
+				new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box();
+			}
 		}
 
 		// Load WCPay Subscriptions.
