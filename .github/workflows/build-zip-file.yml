@@ -9,7 +9,12 @@ on:
         type: boolean
         required: false
         default: false
-        description: Skip running smoke tests
+        description: "Skip running smoke tests"
+      build-branch:
+        type: string
+        required: false
+        default: ${{ github.sha }}
+        description: "Branch to be used for building zip file"
 
 jobs:
   build-zip:
@@ -18,6 +23,8 @@ jobs:
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.build-branch }}
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
