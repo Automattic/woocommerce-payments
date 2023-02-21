@@ -88,16 +88,12 @@ module.exports = {
 			},
 			{
 				test: /\.(svg|png)$/,
-				exclude: [
-					/node_modules/,
-					/client\/components\/platform-checkout\/icons/,
-				],
-				type: 'asset/inline',
-			},
-			{
-				test: /\.svg$/,
-				use: [ '@svgr/webpack' ],
-				include: [ /client\/components\/platform-checkout/ ],
+				exclude: [ /node_modules/ ],
+				type: 'asset/resource',
+				generator: {
+					emit: false,
+					filename: '../[file]?ver=[hash]',
+				},
 			},
 		],
 	},
