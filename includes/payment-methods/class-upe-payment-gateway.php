@@ -349,9 +349,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$request->set_amount( $converted_amount );
 			$request->set_currency_code( strtolower( $currency ) );
 			$request->set_payment_method_types( array_values( $displayed_payment_methods ) );
-			if ( ! empty( $metadata ) ) {
-				$request->set_metadata( $metadata );
-			}
+			$request->set_metadata( $metadata );
 			$request->set_capture_method( $manual_capture );
 			$request->set_fingerprint( $fingerprint );
 			$payment_intent = $request->send( 'create_wcpay_intent_request', $order );
