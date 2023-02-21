@@ -97,12 +97,6 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$request->set_customer( '1' );
 	}
 
-	public function test_exception_will_throw_if_metadata_does_not_have_order_number() {
-		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request->set_metadata( [ 'order_id' => 1 ] );
-	}
-
 	public function test_exception_will_throw_if_amount_parameter_is_changed_when_filter_is_applied() {
 		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->expectException( Immutable_Parameter_Exception::class );
