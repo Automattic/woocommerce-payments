@@ -11,6 +11,16 @@ on:
         type: boolean
         required: false
         default: false
+      skip-build-zip:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running build zip"
+      skip-smoke-tests:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running smoke tests"
 
 defaults:
   run:
