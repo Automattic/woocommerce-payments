@@ -30,6 +30,23 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Returns the "type" of UPE that will be displayed at checkout.
+	 *
+	 * @return string
+	 */
+	public static function get_enabled_upe_type() {
+		if ( self::is_upe_split_enabled() ) {
+			return 'split';
+		}
+
+		if ( self::is_upe_legacy_enabled() ) {
+			return 'legacy';
+		}
+
+		return '';
+	}
+
+	/**
 	 * Checks whether the legacy UPE gateway is enabled
 	 *
 	 * @return bool
@@ -120,7 +137,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_account_overview_task_list_enabled() {
-		return get_option( '_wcpay_feature_account_overview_task_list', '1' );
+		return '1' === get_option( '_wcpay_feature_account_overview_task_list', '1' );
 	}
 
 	/**

@@ -113,7 +113,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			true
 		);
 
-		$script_dependencies = [ 'stripe', 'wc-checkout' ];
+		$script_dependencies = [ 'stripe', 'wc-checkout', 'wp-i18n' ];
 
 		if ( $this->supports( 'tokenization' ) ) {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
@@ -235,6 +235,11 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 				);
 			}
 			$displayed_payment_methods = [ $this->payment_method->get_id() ];
+			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $this->payment_method->get_id() ) {
+				if ( in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) ) {
+					$displayed_payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+				}
+			}
 
 			$response = $this->create_payment_intent( $displayed_payment_methods, $order_id, $fingerprint );
 

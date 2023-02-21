@@ -9,13 +9,19 @@ import { useDispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import WcPayUpeContext from './context';
-import wcpayTracks from '../../tracks';
 import { NAMESPACE, STORE_NAME } from '../../data/constants';
 import { useEnabledPaymentMethodIds } from '../../data';
 
-const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
+const WcPayUpeContextProvider = ( {
+	children,
+	defaultIsUpeEnabled,
+	defaultUpeType,
+} ) => {
 	const [ isUpeEnabled, setIsUpeEnabled ] = useState(
 		Boolean( defaultIsUpeEnabled )
+	);
+	const [ upeType, setUpeType ] = useState(
+		defaultIsUpeEnabled ? defaultUpeType || 'legacy' : ''
 	);
 	const [ status, setStatus ] = useState( 'resolved' );
 	const [ , setEnabledPaymentMethods ] = useEnabledPaymentMethodIds();
@@ -32,13 +38,9 @@ const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
 				data: { is_upe_enabled: Boolean( value ) },
 			} )
 				.then( () => {
+					// new "toggles" will continue being "split" UPE
+					setUpeType( value ? 'split' : '' );
 					setIsUpeEnabled( Boolean( value ) );
-
-					// Track enabling/disabling UPE.
-					const event = Boolean( value )
-						? wcpayTracks.events.UPE_ENABLED
-						: wcpayTracks.events.UPE_DISABLED;
-					wcpayTracks.recordEvent( event );
 
 					// the backend already takes care of this,
 					// we're just duplicating the effort
@@ -56,14 +58,20 @@ const WcPayUpeContextProvider = ( { children, defaultIsUpeEnabled } ) => {
 		[
 			setStatus,
 			setIsUpeEnabled,
+			setUpeType,
 			setEnabledPaymentMethods,
 			updateAvailablePaymentMethodIds,
 		]
 	);
 
 	const contextValue = useMemo(
-		() => ( { isUpeEnabled, setIsUpeEnabled: updateFlag, status } ),
-		[ isUpeEnabled, updateFlag, status ]
+		() => ( {
+			isUpeEnabled,
+			setIsUpeEnabled: updateFlag,
+			status,
+			upeType,
+		} ),
+		[ isUpeEnabled, updateFlag, status, upeType ]
 	);
 
 	return (
