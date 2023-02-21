@@ -639,6 +639,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_id = $order->get_id();
 		$intent   = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 		$mock_payment_gateway->settings['manual_capture'] = 'yes';
+
 		$request = $this->mock_wcpay_request( Create_Intention::class );
 		$request->expects( $this->once() )->method( 'set_capture_method' )->with( true );
 		$request->expects( $this->once() )
