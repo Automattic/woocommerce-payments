@@ -3,7 +3,7 @@
  */
 import { isUsingSavedPaymentMethod } from '../upe-split';
 
-describe( 'testing isUsingSavedPaymentMethod', () => {
+describe( 'isUsingSavedPaymentMethod', () => {
 	let container;
 
 	beforeAll( () => {
