@@ -119,6 +119,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Remove unnecessary style dependency from WooPay checkbox.
 * Fix - Track user viewport and url when using WooPay
 * Update - Removed saved methods listing in My Account Add Payment Method page
+* Update - Updated express payment method UI in settings page
 * Update - Updated the Express checkout settings page
 * Update - WooPay CTA text in shortcode checkout
 * Dev - Adding a feature flag to allow further development of onboarding UX - currently this will have no effect on live stores.
