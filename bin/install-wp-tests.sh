@@ -132,6 +132,9 @@ configure_wp() {
 		wp config create --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
 	fi
 
+	# Add db-error.php for detailed logging
+	echo '<?php global $wpdb; $wpdb->print_error(); ?>' >  $WP_CORE_DIR/wp-content/db-error.php
+
     # MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
     sed $ioption -E "s/(Happy publishing.+)/\1\nmysqli_report(MYSQLI_REPORT_OFF);/" "$WP_CORE_DIR/wp-config.php"
 
