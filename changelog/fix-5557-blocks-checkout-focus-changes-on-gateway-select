@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixes focus change on gateway select with split UPE enabled.

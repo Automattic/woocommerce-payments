@@ -77,6 +77,7 @@ const PhoneNumberInput = ( {
 				separateDialCode: true,
 				hiddenInput: 'full',
 				utilsScript: utils,
+				dropdownContainer: document.body,
 			} );
 			setInputInstance( iti );
 
