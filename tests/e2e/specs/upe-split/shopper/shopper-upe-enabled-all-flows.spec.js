@@ -41,6 +41,9 @@ describe( 'Enabled Split UPE', () => {
 			await setupProductCheckout(
 				config.get( 'addresses.customer.billing' )
 			);
+			// TODO re-activate two lines below as soon as SEPA will be supported in the split UPE.
+			// await shopper.goToCheckout();
+			// await uiUnblocked();
 			await shopperWCP.selectNewPaymentMethod();
 			await fillCardDetails( page, card );
 			await shopperWCP.toggleSavePaymentMethod();
