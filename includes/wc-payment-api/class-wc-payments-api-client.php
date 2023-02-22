@@ -7,8 +7,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
@@ -32,7 +34,9 @@ class WC_Payments_API_Client {
 	const GET    = 'GET';
 	const DELETE = 'DELETE';
 
-	const API_TIMEOUT_SECONDS = 70;
+	const API_TIMEOUT_SECONDS      = 70;
+	const API_RETRIES_LIMIT        = 3;
+	const API_RETRIES_BACKOFF_MSEC = 250;
 
 	const ACCOUNTS_API                 = 'accounts';
 	const CAPABILITIES_API             = 'accounts/capabilities';
@@ -251,7 +255,6 @@ class WC_Payments_API_Client {
 		if ( ! empty( $cvc_confirmation ) ) {
 			$request['cvc_confirmation'] = $cvc_confirmation;
 		}
-
 		$response_array = $this->request_with_level3_data( $request, self::INTENTIONS_API, self::POST );
 
 		return $this->deserialize_intention_object_from_array( $response_array );
@@ -1205,20 +1208,25 @@ class WC_Payments_API_Client {
 	 * @param array  $business_data  - Data to prefill the form.
 	 * @param array  $site_data      - Data to track ToS agreement.
 	 * @param array  $actioned_notes - Actioned WCPay note names to be sent to the on-boarding flow.
+	 * @param array  $account_data   - Data to prefill the progressive onboarding.
+	 * @param bool   $collect_payout_requirements - Whether we need to redirect user to Stripe KYC to complete their payouts data.
 	 *
 	 * @return array An array containing the url and state fields.
 	 *
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [] ) {
+	public function get_onboarding_data( $return_url, array $business_data = [], array $site_data = [], array $actioned_notes = [], $account_data = [], $collect_payout_requirements = false ) {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
-				'return_url'          => $return_url,
-				'business_data'       => $business_data,
-				'site_data'           => $site_data,
-				'create_live_account' => ! WC_Payments::mode()->is_dev(),
-				'actioned_notes'      => $actioned_notes,
+				'return_url'                  => $return_url,
+				'business_data'               => $business_data,
+				'site_data'                   => $site_data,
+				'create_live_account'         => ! WC_Payments::mode()->is_dev(),
+				'actioned_notes'              => $actioned_notes,
+				'progressive'                 => ! empty( $account_data ),
+				'collect_payout_requirements' => $collect_payout_requirements,
+				'account_data'                => $account_data,
 			]
 		);
 
@@ -2089,42 +2097,66 @@ class WC_Payments_API_Client {
 			);
 		}
 
-		$response = $this->http_client->remote_request(
-			[
-				'url'             => $url,
-				'method'          => $method,
-				'headers'         => apply_filters( 'wcpay_api_request_headers', $headers ),
-				'timeout'         => self::API_TIMEOUT_SECONDS,
-				'connect_timeout' => self::API_TIMEOUT_SECONDS,
-			],
-			$body,
-			$is_site_specific,
-			$use_user_token
-		);
+		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
+		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
+		$retries        = 0;
+		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
 
-		try {
-			$response = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
-			$this->check_response_for_errors( $response );
-		} catch ( API_Exception $e ) {
-			if ( ! isset( $params['level3'] ) || 'invalid_request_error' !== $e->get_error_code() ) {
+		while ( true ) {
+			$response_code  = null;
+			$last_exception = null;
+
+			try {
+				$response = $this->http_client->remote_request(
+					[
+						'url'             => $url,
+						'method'          => $method,
+						'headers'         => $headers,
+						'timeout'         => self::API_TIMEOUT_SECONDS,
+						'connect_timeout' => self::API_TIMEOUT_SECONDS,
+					],
+					$body,
+					$is_site_specific,
+					$use_user_token
+				);
+
+				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+				$response_code = wp_remote_retrieve_response_code( $response );
+
+				$this->check_response_for_errors( $response );
+			} catch ( Connection_Exception $e ) {
+				$last_exception = $e;
+			} catch ( API_Exception $e ) {
+				if ( isset( $params['level3'] ) && 'invalid_request_error' === $e->get_error_code() ) {
+					// phpcs:disable WordPress.PHP.DevelopmentFunctions
+
+					// Log the issue so we could debug it.
+					Logger::error(
+						'Level3 data error: ' . PHP_EOL
+						. print_r( $e->getMessage(), true ) . PHP_EOL
+						. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
+						. print_r( $params['level3'], true )
+					);
+
+					// phpcs:enable WordPress.PHP.DevelopmentFunctions
+
+					// Retry without level3 data.
+					unset( $params['level3'] );
+					return $this->request( $params, $api, $method, $is_site_specific, $use_user_token, $raw_response );
+				}
 				throw $e;
 			}
 
-			// phpcs:disable WordPress.PHP.DevelopmentFunctions
+			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
+				if ( null !== $last_exception ) {
+					throw $last_exception;
+				}
+				break;
+			}
 
-			// Log the issue so we could debug it.
-			Logger::error(
-				'Level3 data error: ' . PHP_EOL
-				. print_r( $e->getMessage(), true ) . PHP_EOL
-				. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
-				. print_r( $params['level3'], true )
-			);
-
-			// phpcs:enable WordPress.PHP.DevelopmentFunctions
-
-			// Retry without level3 data.
-			unset( $params['level3'] );
-			return $this->request( $params, $api, $method, $is_site_specific, $use_user_token, $raw_response );
+			// Use exponential backoff to not overload backend.
+			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
+			$retries++;
 		}
 
 		if ( ! $raw_response ) {
@@ -2276,7 +2308,7 @@ class WC_Payments_API_Client {
 	private function maybe_act_on_fraud_prevention( string $error_code ) {
 		// Might be flagged by Stripe Radar or WCPay card testing prevention services.
 		$is_fraudulent = 'fraudulent' === $error_code || 'wcpay_card_testing_prevention' === $error_code;
-		if ( $is_fraudulent ) {
+		if ( $is_fraudulent && WC()->session ) {
 			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 			if ( $fraud_prevention_service->is_enabled() ) {
 				$fraud_prevention_service->regenerate_token();
@@ -2473,7 +2505,7 @@ class WC_Payments_API_Client {
 		$metadata           = ! empty( $intention_array['metadata'] ) ? $intention_array['metadata'] : [];
 		$customer           = $intention_array['customer'] ?? $charge_array['customer'] ?? null;
 		$payment_method     = $intention_array['payment_method'] ?? $intention_array['source'] ?? null;
-		$processing         = $intention_array['processing'] ?? [];
+		$processing         = $intention_array[ Payment_Intent_Status::PROCESSING ] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
 

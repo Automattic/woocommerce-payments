@@ -5,13 +5,14 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
-use WCPay\Database_Cache;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -212,7 +213,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Event mode does not match the gateway mode.
 	 */
 	private function is_webhook_mode_mismatch( array $event_body ): bool {
-		$is_gateway_live_mode = ! $this->wcpay_gateway->is_in_test_mode();
+		$is_gateway_live_mode = WC_Payments::mode()->is_live();
 		$is_event_live_mode   = $this->read_webhook_property( $event_body, 'livemode' );
 
 		if ( $is_gateway_live_mode !== $is_event_live_mode ) {
@@ -307,8 +308,8 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Update order status if order is fully refunded.
 		$current_order_status = $order->get_status();
-		if ( 'refunded' === $current_order_status ) {
-			$order->update_status( 'failed' );
+		if ( Order_Status::REFUNDED === $current_order_status ) {
+			$order->update_status( Order_Status::FAILED );
 		}
 
 		$order->add_order_note( $note );

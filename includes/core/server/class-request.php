@@ -209,7 +209,13 @@ abstract class Request {
 		if ( array_key_exists( $key, $this->params ) ) {
 			return $this->params[ $key ];
 		}
-		throw new Invalid_Request_Parameter_Exception( 'The passed key does not exist in Request class', 'wcpay_core_invalid_request_parameter_uninitialized_param' );
+		throw new Invalid_Request_Parameter_Exception(
+			sprintf(
+				'The passed key %s does not exist in Request class',
+				$key
+			),
+			'wcpay_core_invalid_request_parameter_uninitialized_param'
+		);
 	}
 
 	/**

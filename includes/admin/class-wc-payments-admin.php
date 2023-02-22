@@ -219,7 +219,7 @@ class WC_Payments_Admin {
 		global $submenu;
 
 		try {
-			$should_render_full_menu = $this->account->try_is_stripe_connected();
+			$should_render_full_menu = $this->account->is_stripe_account_valid();
 		} catch ( Exception $e ) {
 			// There is an issue with connection but render full menu anyways to provide access to settings.
 			$should_render_full_menu = true;
@@ -258,7 +258,8 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() && ! $should_render_full_menu ) {
+		if ( ! $should_render_full_menu ) {
+			if ( WC_Payments_Utils::is_in_onboarding_treatment_mode() ) {
 				wc_admin_register_page(
 					[
 						'id'         => 'wc-payments-onboarding',
@@ -271,8 +272,23 @@ class WC_Payments_Admin {
 						],
 					]
 				);
-				global $submenu;
 				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding' );
+			}
+			if ( WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+				wc_admin_register_page(
+					[
+						'id'         => 'wc-payments-onboarding-prototype',
+						'title'      => __( 'Onboarding Prototype', 'woocommerce-payments' ),
+						'parent'     => 'wc-payments',
+						'path'       => '/payments/onboarding-prototype',
+						'capability' => 'manage_woocommerce',
+						'nav_args'   => [
+							'parent' => 'wc-payments',
+						],
+					]
+				);
+				remove_submenu_page( 'wc-admin&path=/payments/connect', 'wc-admin&path=/payments/onboarding-prototype' );
+			}
 		}
 
 		if ( $should_render_full_menu ) {
@@ -430,7 +446,7 @@ class WC_Payments_Admin {
 	public function register_payments_scripts() {
 		$script_src_url    = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/index.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
 		wp_register_script(
 			'WCPAY_DASH_APP',
 			$script_src_url,
@@ -504,6 +520,7 @@ class WC_Payments_Admin {
 			'wpcomReconnectUrl'          => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'additionalMethodsSetup'     => [
 				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
+				'upeType'      => WC_Payments_Features::get_enabled_upe_type(),
 			],
 			'multiCurrencySetup'         => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
@@ -539,7 +556,7 @@ class WC_Payments_Admin {
 
 		$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
 		$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
-		$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require_once $tos_script_asset_path : [ 'dependencies' => [] ];
+		$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require $tos_script_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script(
 			'WCPAY_TOS',
@@ -573,7 +590,7 @@ class WC_Payments_Admin {
 
 		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
 		$settings_script_asset_path = WCPAY_ABSPATH . 'dist/settings.asset.php';
-		$settings_script_asset      = file_exists( $settings_script_asset_path ) ? require_once $settings_script_asset_path : [ 'dependencies' => [] ];
+		$settings_script_asset      = file_exists( $settings_script_asset_path ) ? require $settings_script_asset_path : [ 'dependencies' => [] ];
 		wp_register_script(
 			'WCPAY_ADMIN_SETTINGS',
 			$settings_script_src_url,
@@ -610,7 +627,7 @@ class WC_Payments_Admin {
 
 		$payment_gateways_script_src_url    = plugins_url( 'dist/payment-gateways.js', WCPAY_PLUGIN_FILE );
 		$payment_gateways_script_asset_path = WCPAY_ABSPATH . 'dist/payment-gateways.asset.php';
-		$payment_gateways_script_asset      = file_exists( $payment_gateways_script_asset_path ) ? require_once $payment_gateways_script_asset_path : [ 'dependencies' => [] ];
+		$payment_gateways_script_asset      = file_exists( $payment_gateways_script_asset_path ) ? require $payment_gateways_script_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script(
 			'WCPAY_PAYMENT_GATEWAYS_PAGE',
@@ -733,6 +750,7 @@ class WC_Payments_Admin {
 			[
 				'paymentTimeline' => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.4.0', '>=' ),
 				'customSearch'    => self::version_compare( WC_ADMIN_VERSION_NUMBER, '1.3.0', '>=' ),
+				'upeType'         => WC_Payments_Features::get_enabled_upe_type(),
 			],
 			WC_Payments_Features::to_array()
 		);
@@ -1018,7 +1036,7 @@ class WC_Payments_Admin {
 	 * @return int The number of uncaptured transactions.
 	 */
 	private function get_uncaptured_transactions_count() {
-		$test_mode = $this->wcpay_gateway->is_in_test_mode();
+		$test_mode = WC_Payments::mode()->is_test();
 		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
 
 		$authorization_summary = $this->database_cache->get_or_add(

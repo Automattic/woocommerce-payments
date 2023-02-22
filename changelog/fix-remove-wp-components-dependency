@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove unnecessary style dependency from WooPay checkbox.

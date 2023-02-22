@@ -80,7 +80,7 @@ class WC_Payments_Checkout {
 	 * Enqueues and localizes WCPay's checkout scripts.
 	 */
 	public function enqueue_payment_scripts() {
-		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $this->get_payment_fields_js_config() );
+		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayConfig', $this->get_payment_fields_js_config() );
 		wp_enqueue_script( 'WCPAY_CHECKOUT' );
 	}
 
@@ -105,7 +105,9 @@ class WC_Payments_Checkout {
 			'createSetupIntentNonce'         => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'createPaymentIntentNonce'       => wp_create_nonce( 'wcpay_create_payment_intent_nonce' ),
 			'updatePaymentIntentNonce'       => wp_create_nonce( 'wcpay_update_payment_intent_nonce' ),
+			'logPaymentErrorNonce'           => wp_create_nonce( 'wcpay_log_payment_error_nonce' ),
 			'initPlatformCheckoutNonce'      => wp_create_nonce( 'wcpay_init_platform_checkout_nonce' ),
+			'saveUPEAppearanceNonce'         => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
 			'genericErrorMessage'            => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'                  => $this->account->get_fraud_services_config(),
 			'features'                       => $this->gateway->supports,
@@ -113,6 +115,7 @@ class WC_Payments_Checkout {
 			'locale'                         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isPreview'                      => is_preview(),
 			'isUPEEnabled'                   => WC_Payments_Features::is_upe_enabled(),
+			'isUPESplitEnabled'              => WC_Payments_Features::is_upe_split_enabled(),
 			'isSavedCardsEnabled'            => $this->gateway->is_saved_cards_enabled(),
 			'isPlatformCheckoutEnabled'      => $this->platform_checkout_util->should_enable_platform_checkout( $this->gateway ),
 			'isWoopayExpressCheckoutEnabled' => $this->platform_checkout_util->is_woopay_express_checkout_enabled(),
@@ -125,6 +128,7 @@ class WC_Payments_Checkout {
 			'userExistsEndpoint'             => get_rest_url( null, '/wc/v3/users/exists' ),
 			'platformCheckoutSignatureNonce' => wp_create_nonce( 'platform_checkout_signature_nonce' ),
 			'platformCheckoutMerchantId'     => Jetpack_Options::get_option( 'id' ),
+			'icon'                           => $this->gateway->get_icon_url(),
 		];
 
 		/**
@@ -183,7 +187,10 @@ class WC_Payments_Checkout {
 
 			if ( $display_tokenization ) {
 				$this->gateway->tokenization_script();
-				$this->gateway->saved_payment_methods();
+				// avoid showing saved payment methods on my-accounts add payment method page.
+				if ( ! is_add_payment_method_page() ) {
+					$this->gateway->saved_payment_methods();
+				}
 			}
 			?>
 
@@ -201,7 +208,7 @@ class WC_Payments_Checkout {
 
 			</fieldset>
 
-			<?php if ( Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
+			<?php if ( WC()->session && Fraud_Prevention_Service::get_instance()->is_enabled() ) : ?>
 				<input type="hidden" name="wcpay-fraud-prevention-token" value="<?php echo esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ); ?>">
 			<?php endif; ?>
 

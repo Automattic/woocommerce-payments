@@ -239,36 +239,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'default'           => [],
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'platform_checkout_button_type'       => [
-						'description'       => __( '1-click checkout button types.', 'woocommerce-payments' ),
-						'type'              => 'string',
-						'items'             => [
-							'type' => 'string',
-							'enum' => array_keys( $wcpay_form_fields['payment_request_button_type']['options'] ),
-						],
-						'default'           => 'default',
-						'validate_callback' => 'rest_validate_request_arg',
-					],
-					'platform_checkout_button_size'       => [
-						'description'       => __( '1-click checkout button sizes.', 'woocommerce-payments' ),
-						'type'              => 'string',
-						'items'             => [
-							'type' => 'string',
-							'enum' => array_keys( isset( $wcpay_form_fields['payment_request_button_size']['options'] ) ? $wcpay_form_fields['payment_request_button_size']['options'] : [] ),
-						],
-						'default'           => 'default',
-						'validate_callback' => 'rest_validate_request_arg',
-					],
-					'platform_checkout_button_theme'      => [
-						'description'       => __( '1-click checkout button themes.', 'woocommerce-payments' ),
-						'type'              => 'string',
-						'items'             => [
-							'type' => 'string',
-							'enum' => array_keys( $wcpay_form_fields['payment_request_button_theme']['options'] ),
-						],
-						'default'           => 'dark',
-						'validate_callback' => 'rest_validate_request_arg',
-					],
 				],
 			]
 		);
@@ -384,10 +354,23 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return WP_REST_Response
 	 */
 	public function get_settings(): WP_REST_Response {
+		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
+		/**
+		 * It might be possible that enabled payment methods settings have an invalid state. As an example,
+		 * if an account is switched to a new country and earlier country had PM's that are no longer valid; or if the PM is not available anymore.
+		 * To keep saving settings working, we are ensuring the enabled payment methods are yet available.
+		 */
+		$enabled_payment_methods = array_values(
+			array_intersect(
+				$this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
+				$available_upe_payment_methods
+			)
+		);
+
 		return new WP_REST_Response(
 			[
-				'enabled_payment_method_ids'          => $this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
-				'available_payment_method_ids'        => $this->wcpay_gateway->get_upe_available_payment_methods(),
+				'enabled_payment_method_ids'          => $enabled_payment_methods,
+				'available_payment_method_ids'        => $available_upe_payment_methods,
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
@@ -420,9 +403,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'platform_checkout_custom_message'    => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'platform_checkout_store_logo'        => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
 				'platform_checkout_enabled_locations' => $this->wcpay_gateway->get_option( 'platform_checkout_button_locations', [] ),
-				'platform_checkout_button_size'       => $this->wcpay_gateway->get_option( 'platform_checkout_button_size', 'default' ),
-				'platform_checkout_button_type'       => $this->wcpay_gateway->get_option( 'platform_checkout_button_type', 'default' ),
-				'platform_checkout_button_theme'      => $this->wcpay_gateway->get_option( 'platform_checkout_button_theme', 'dark' ),
 				'deposit_schedule_interval'           => $this->wcpay_gateway->get_option( 'deposit_schedule_interval' ),
 				'deposit_schedule_monthly_anchor'     => $this->wcpay_gateway->get_option( 'deposit_schedule_monthly_anchor' ),
 				'deposit_schedule_weekly_anchor'      => $this->wcpay_gateway->get_option( 'deposit_schedule_weekly_anchor' ),
@@ -453,10 +433,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_saved_cards_enabled( $request );
 		$this->update_account( $request );
 		$this->update_is_platform_checkout_enabled( $request );
-		$this->update_platform_checkout_custom_message( $request );
 		$this->update_platform_checkout_store_logo( $request );
+		$this->update_platform_checkout_custom_message( $request );
 		$this->update_platform_checkout_enabled_locations( $request );
-		$this->update_platform_checkout_appearance( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -779,26 +758,5 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$platform_checkout_enabled_locations = $request->get_param( 'platform_checkout_enabled_locations' );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $platform_checkout_enabled_locations );
-	}
-
-	/**
-	 * Updates appearance attributes of the payment request button.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	private function update_platform_checkout_appearance( WP_REST_Request $request ) {
-		$attributes = [
-			'platform_checkout_button_type'  => 'platform_checkout_button_type',
-			'platform_checkout_button_size'  => 'platform_checkout_button_size',
-			'platform_checkout_button_theme' => 'platform_checkout_button_theme',
-		];
-		foreach ( $attributes as $request_key => $attribute ) {
-			if ( ! $request->has_param( $request_key ) ) {
-				continue;
-			}
-
-			$value = $request->get_param( $request_key );
-			$this->wcpay_gateway->update_option( $attribute, $value );
-		}
 	}
 }

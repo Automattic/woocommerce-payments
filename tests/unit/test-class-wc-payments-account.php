@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 
@@ -406,6 +407,99 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
+	}
+
+	public function test_is_stripe_account_valid_when_not_connected() {
+		$this->mock_empty_cache();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_account_data' )
+			->willThrowException( new API_Exception( 'test', 'wcpay_mock', 500 ) );
+
+		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_empty_account_data() {
+		$this->mock_empty_cache();
+
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->returnValue( [] )
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_unrequested() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'unrequested',
+				],
+			]
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_requested() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'requested',
+				],
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_active() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'active',
+				],
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_pending_verification() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'pending_verification',
+				],
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
 	}
 
 	public function test_get_publishable_key_returns_for_live() {
@@ -906,13 +1000,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$data_store = WC_Data_Store::load( 'admin-note' );
 		$notes      = $data_store->get_notes_with_name( $note_id );
 		$this->assertCount( 1, $notes );
-		$note      = $notes_class::get_note( $notes[0] );
+		$note      = Notes::get_note( $notes[0] );
 		$note_data = (array) $note->get_content_data();
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
@@ -942,13 +1035,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$data_store = WC_Data_Store::load( 'admin-note' );
 		$notes      = $data_store->get_notes_with_name( $note_id );
 		$this->assertCount( 1, $notes );
-		$note      = $notes_class::get_note( $notes[0] );
+		$note      = Notes::get_note( $notes[0] );
 		$note_data = (array) $note->get_content_data();
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );

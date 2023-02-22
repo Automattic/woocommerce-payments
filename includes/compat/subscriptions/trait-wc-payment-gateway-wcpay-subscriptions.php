@@ -17,6 +17,7 @@ use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
+use WCPay\Constants\Payment_Intent_Status;
 
 /**
  * Gateway class for WooCommerce Payments, with added compatibility with WooCommerce Subscriptions.
@@ -217,14 +218,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$request = Get_Intention::create( $order->get_transaction_id() );
 		$intent  = $request->send( 'wcpay_get_intent_request', $order );
 
-		if ( ! $intent || 'requires_action' !== $intent->get_status() ) {
+		if ( ! $intent || Payment_Intent_Status::REQUIRES_ACTION !== $intent->get_status() ) {
 			return false;
 		}
 
 		$js_config                     = WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
 		$js_config['intentSecret']     = WC_Payments_Utils::encrypt_client_secret( $intent->get_stripe_account_id(), $intent->get_client_secret() );
 		$js_config['updateOrderNonce'] = wp_create_nonce( 'wcpay_update_order_status_nonce' );
-		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpay_config', $js_config );
+		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayConfig', $js_config );
 		wp_enqueue_script( 'WCPAY_CHECKOUT' );
 		return true;
 	}
@@ -488,7 +489,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		$script_src_url    = plugins_url( 'dist/subscription-edit-page.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/subscription-edit-page.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
 
 		wp_register_script(
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
@@ -862,15 +863,32 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return $result;
 		}
 
+		// TEMP Fix – Stripe validates mandate params for cards not
+		// issued by Indian banks. Apply them only for INR as Indian banks
+		// only support it for now.
+		$currency = $order->get_currency();
+		if ( 'INR' !== $currency ) {
+			return $result;
+		}
+
 		// Get total by adding only subscriptions and get rid of any other product or fee.
-		$subs_amount = 0;
+		$subs_amount = 0.0;
 		foreach ( $subscriptions as $sub ) {
 			$subs_amount += $sub->get_total();
 		}
 
-		$result['card']['mandate_options'] = [
+		$amount = WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() );
+
+		// TEMP Fix – Prevent stale free subscription data to throw
+		// an error due amount < 1.
+		if ( 0 === $amount ) {
+			return $result;
+		}
+
+		$result['setup_future_usage']                                = 'off_session';
+		$result['payment_method_options']['card']['mandate_options'] = [
 			'reference'       => $order->get_id(),
-			'amount'          => WC_Payments_Utils::prepare_amount( $subs_amount, $order->get_currency() ),
+			'amount'          => $amount,
 			'amount_type'     => 'fixed',
 			'start_date'      => $subscription->get_time( 'date_created' ),
 			'interval'        => $subscription->get_billing_period(),

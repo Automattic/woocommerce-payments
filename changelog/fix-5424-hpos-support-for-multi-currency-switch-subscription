@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+For stores using HPOS, ensure the originating subscription's currency is used when initiating a subscription switch.

@@ -1,3 +1,4 @@
+/* global jQuery */
 /**
  * External dependencies
  */
@@ -32,12 +33,22 @@ const renderPlatformCheckoutExpressButton = () => {
 			<WoopayExpressCheckoutButton
 				buttonSettings={ getConfig( 'platformCheckoutButton' ) }
 				api={ api }
+				isProductPage={
+					!! platformCheckoutContainer.getAttribute(
+						'data-product_page'
+					)
+				}
+				emailSelector="#billing_email"
 			/>,
 			platformCheckoutContainer
 		);
 	}
 };
 
-window.addEventListener( 'load', () => {
-	renderPlatformCheckoutExpressButton();
+window.addEventListener( 'load', renderPlatformCheckoutExpressButton );
+
+jQuery( ( $ ) => {
+	$( document.body ).on( 'updated_cart_totals', () => {
+		renderPlatformCheckoutExpressButton();
+	} );
 } );

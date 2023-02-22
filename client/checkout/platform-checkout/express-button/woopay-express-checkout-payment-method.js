@@ -24,15 +24,17 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 		<WoopayExpressCheckoutButton
 			buttonSettings={ getConfig( 'platformCheckoutButton' ) }
 			api={ api }
+			emailSelector="#email"
 		/>
 	),
 	edit: (
 		<WoopayExpressCheckoutButton
 			buttonSettings={ getConfig( 'platformCheckoutButton' ) }
 			isPreview={ true }
+			emailSelector="#email"
 		/>
 	),
-	canMakePayment: () => true,
+	canMakePayment: () => 'undefined' !== typeof wcpayConfig,
 	paymentMethodId: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	supports: {
 		features: getConfig( 'features' ),

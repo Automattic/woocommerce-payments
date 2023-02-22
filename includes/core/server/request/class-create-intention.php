@@ -113,17 +113,15 @@ class Create_Intention extends Request {
 	 * @throws Invalid_Request_Parameter_Exception In case there is no order number provided.
 	 */
 	public function set_metadata( array $metadata ) {
+		$this->set_param( 'metadata', $metadata );
+
 		if ( ! isset( $metadata['order_number'] ) ) {
-			throw new Invalid_Request_Parameter_Exception(
-				__( 'An order number is required!', 'woocommerce-payments' ),
-				'wcpay_core_invalid_request_parameter_metadata_order_number'
-			);
+			return; // No description to generate.
 		}
 
 		// The description is based on the order number here.
 		$description = $this->get_intent_description( $metadata['order_number'] ?? 0 );
 		$this->set_param( 'description', $description );
-		$this->set_param( 'metadata', $metadata );
 	}
 
 	/**
