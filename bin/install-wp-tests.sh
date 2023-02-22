@@ -129,7 +129,7 @@ configure_wp() {
 	wait_db
 
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
-		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
+		wp config create --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
 	fi
 
     # MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
