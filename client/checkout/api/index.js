@@ -523,7 +523,7 @@ export default class WCPayAPI {
 	 * Saves the calculated UPE appearance values in a transient.
 	 *
 	 * @param {Object} appearance The UPE appearance object with style values
-	 * @param {boolean} isBlocksCheckout True if save request is for Blocks Checkout. Default false.
+	 * @param {string} isBlocksCheckout 'true' if save request is for Blocks Checkout. Default 'false'.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
