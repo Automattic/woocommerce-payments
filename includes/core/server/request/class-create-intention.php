@@ -46,7 +46,7 @@ class Create_Intention extends Request {
 	 * @return void
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function set_payment_method( $payment_method_id ) {
+	public function set_payment_method( string $payment_method_id ) {
 		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src' ] );
 		$this->set_param( 'payment_method', $payment_method_id );
 	}
@@ -112,7 +112,7 @@ class Create_Intention extends Request {
 	 * @param  array $metadata                     Meta data values to be sent along with payment intent creation.
 	 * @throws Invalid_Request_Parameter_Exception In case there is no order number provided.
 	 */
-	public function set_metadata( $metadata ) {
+	public function set_metadata( array $metadata ) {
 		$this->set_param( 'metadata', $metadata );
 
 		if ( ! isset( $metadata['order_number'] ) ) {
@@ -145,7 +145,7 @@ class Create_Intention extends Request {
 	 * @return void
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	public function set_fingerprint( $fingerprint = '' ) {
+	public function set_fingerprint( string $fingerprint = '' ) {
 		$metadata = $this->get_param( 'metadata' );
 		$metadata = array_merge( $metadata, $this->get_fingerprint_metadata( $fingerprint ) );
 		$this->set_param( 'metadata', $metadata );

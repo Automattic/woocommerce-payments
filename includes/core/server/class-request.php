@@ -166,11 +166,11 @@ abstract class Request {
 	 * @throws Invalid_Request_Parameter_Exception If the request has not been initialized yet.
 	 */
 	final public function get_params() {
-		$defaults = $this->get_default_params();
+		$defaults = static::get_default_params();
 		$params   = array_merge( $defaults, $this->params );
 
 		$missing_params = [];
-		foreach ( $this->get_required_params() as $name ) {
+		foreach ( static::get_required_params() as $name ) {
 			if ( ! isset( $params[ $name ] ) ) {
 				$missing_params[] = $name;
 			}
@@ -282,7 +282,7 @@ abstract class Request {
 	 * @param mixed  $value And the value to set.
 	 */
 	final protected function set_param( string $key, $value ) {
-		if ( $this->protected_mode && in_array( $key, $this->get_immutable_params(), true ) ) {
+		if ( $this->protected_mode && in_array( $key, static::get_immutable_params(), true ) ) {
 			$this->throw_immutable_exception( $key );
 		}
 
@@ -295,7 +295,7 @@ abstract class Request {
 	 * @param string $key The key of the parameter.
 	 */
 	final protected function unset_param( string $key ) {
-		if ( $this->protected_mode && in_array( $key, $this->get_immutable_params(), true ) ) {
+		if ( $this->protected_mode && in_array( $key, static::get_immutable_params(), true ) ) {
 			$this->throw_immutable_exception( $key );
 		}
 
@@ -386,7 +386,7 @@ abstract class Request {
 			return $replacement;
 		}
 
-		foreach ( $this->get_immutable_params() as $param ) {
+		foreach ( static::get_immutable_params() as $param ) {
 			if ( isset( $difference[ $param ] ) ) {
 				$this->throw_immutable_exception( $param );
 			}
@@ -417,8 +417,8 @@ abstract class Request {
 	 *
 	 * @return string[] The names of those params.
 	 */
-	private function get_immutable_params() {
-		return $this->traverse_class_constants( 'IMMUTABLE_PARAMS', true );
+	public static function get_immutable_params() {
+		return static::traverse_class_constants( 'IMMUTABLE_PARAMS', true );
 	}
 
 	/**
@@ -426,15 +426,15 @@ abstract class Request {
 	 *
 	 * @return string[] The names of those params.
 	 */
-	private function get_required_params() {
-		return $this->traverse_class_constants( 'REQUIRED_PARAMS', true );
+	public static function get_required_params() {
+		return static::traverse_class_constants( 'REQUIRED_PARAMS', true );
 	}
 
 	/**
 	 * Returns an array with the combined default params from all classes.
 	 */
-	private function get_default_params() {
-		return $this->traverse_class_constants( 'DEFAULT_PARAMS' );
+	public static function get_default_params() {
+		return static::traverse_class_constants( 'DEFAULT_PARAMS' );
 	}
 
 	/**
@@ -444,9 +444,9 @@ abstract class Request {
 	 * @param  bool   $unique        Whether to return unique items. Useful with numeric keys.
 	 * @return string[] The unique combined values from the arrays.
 	 */
-	private function traverse_class_constants( string $constant_name, bool $unique = false ) {
+	public static function traverse_class_constants( string $constant_name, bool $unique = false ) {
 		$keys       = [];
-		$class_name = get_class( $this );
+		$class_name = static::class;
 
 		do {
 			$constant = "$class_name::$constant_name";
