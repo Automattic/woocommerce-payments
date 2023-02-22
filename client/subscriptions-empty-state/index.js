@@ -13,8 +13,8 @@ import { Button } from '@wordpress/components';
 
 import wcpayTracks from '../tracks';
 
-import connectedImage from '../../assets/images/subscriptions-empty-state-connected.svg';
-import unconnectedImage from '../../assets/images/subscriptions-empty-state-unconnected.svg';
+import ConnectedImage from 'assets/images/subscriptions-empty-state-connected.svg';
+import UnconnectedImage from 'assets/images/subscriptions-empty-state-unconnected.svg';
 
 import './style.scss';
 
@@ -22,9 +22,7 @@ const {
 	wcpay: { connectUrl, isConnected, newProductUrl },
 } = window;
 
-const Image = () => (
-	<img src={ isConnected ? connectedImage : unconnectedImage } alt="" />
-);
+const Image = () => ( isConnected ? <ConnectedImage /> : <UnconnectedImage /> );
 
 const Description = () => (
 	<p className="wcpay-empty-subscriptions__description">

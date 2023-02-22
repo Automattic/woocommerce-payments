@@ -47,15 +47,15 @@ const LearnMore = () => {
 
 const PaymentMethods = () => (
 	<div className="wcpay-connect-account-page-payment-methods">
-		<img src={ Visa } alt="Visa" />
-		<img src={ MasterCard } alt="MasterCard" />
-		<img src={ Amex } alt="Amex" />
-		<img src={ DinersClub } alt="Diners Club" />
-		<img src={ Discover } alt="Discover" />
-		<img src={ UnionPay } alt="UnionPay" />
-		<img src={ JCB } alt="JCB" />
-		<img src={ GPay } alt="Google Pay" />
-		<img src={ ApplePay } alt="Apple Pay" />
+		<Visa />
+		<MasterCard />
+		<Amex />
+		<DinersClub />
+		<Discover />
+		<UnionPay />
+		<JCB />
+		<GPay />
+		<ApplePay />
 	</div>
 );
 
@@ -184,7 +184,7 @@ const ConnectPageInfoNotice = () => {
 	return (
 		<>
 			<div className="wcpay-connect-info-notice">
-				<img src={ LightbulbIcon } alt="" />
+				<LightbulbIcon />
 				<div>
 					{ strings.infoNotice.description }
 					<Button

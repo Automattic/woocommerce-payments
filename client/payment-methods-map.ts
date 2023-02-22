@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import React from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -21,7 +20,7 @@ export interface PaymentMethodMapEntry {
 	id: string;
 	label: string;
 	description: string;
-	icon: ( { className }: { className: string } ) => JSX.Element;
+	icon: typeof import('*.svg').default;
 	currencies: string[];
 	stripe_key: string;
 	allows_manual_capture: boolean;
@@ -38,9 +37,7 @@ const PaymentMethodInformationObject: Record<
 			'Let your customers pay with major credit and debit cards without leaving your store.',
 			'woocommerce-payments'
 		),
-		icon: ( props ) => (
-			<img src={ CreditCardIcon } alt="Credit Card" { ...props } />
-		),
+		icon: CreditCardIcon,
 		currencies: [],
 		stripe_key: 'card_payments',
 		allows_manual_capture: true,
@@ -52,9 +49,7 @@ const PaymentMethodInformationObject: Record<
 			'Bulk Electronic Clearing System — Accept secure bank transfer from Australia.',
 			'woocommerce-payments'
 		),
-		icon: ( props ) => (
-			<img src={ BankDebitIcon } alt="BECS Direct Debit" { ...props } />
-		),
+		icon: BankDebitIcon,
 		currencies: [ 'AUD' ],
 		stripe_key: 'au_becs_debit_payments',
 		allows_manual_capture: false,
@@ -66,9 +61,7 @@ const PaymentMethodInformationObject: Record<
 			'Bancontact is a bank redirect payment method offered by more than 80% of online businesses in Belgium.',
 			'woocommerce-payments'
 		),
-		icon: ( props ) => (
-			<img src={ BancontactIcon } alt="Bancontact" { ...props } />
-		),
+		icon: BancontactIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'bancontact_payments',
 		allows_manual_capture: false,
@@ -80,7 +73,7 @@ const PaymentMethodInformationObject: Record<
 			'Accept your payment with EPS — a common payment method in Austria.',
 			'woocommerce-payments'
 		),
-		icon: ( props ) => <img src={ EpsIcon } alt="EPS" { ...props } />,
+		icon: EpsIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'eps_payments',
 		allows_manual_capture: false,
@@ -92,9 +85,7 @@ const PaymentMethodInformationObject: Record<
 			'Expand your business with giropay — Germany’s second most popular payment system.',
 			'woocommerce-payments'
 		),
-		icon: ( props ) => (
-			<img src={ GiropayIcon } alt="giropay" { ...props } />
-		),
+		icon: GiropayIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'giropay_payments',
 		allows_manual_capture: false,
@@ -106,7 +97,7 @@ const PaymentMethodInformationObject: Record<
 			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
 			'woocommerce-payments'
 		),
-		icon: ( props ) => <img src={ IdealIcon } alt="iDEAL" { ...props } />,
+		icon: IdealIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'ideal_payments',
 		allows_manual_capture: false,
@@ -118,9 +109,7 @@ const PaymentMethodInformationObject: Record<
 			'Accept payments with Przelewy24 (P24), the most popular payment method in Poland.',
 			'woocommerce-payments'
 		),
-		icon: ( props ) => (
-			<img src={ P24Icon } alt="Przelewy24 (P24)" { ...props } />
-		),
+		icon: P24Icon,
 		currencies: [ 'EUR', 'PLN' ],
 		stripe_key: 'p24_payments',
 		allows_manual_capture: false,
@@ -132,9 +121,7 @@ const PaymentMethodInformationObject: Record<
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
 			'woocommerce-payments'
 		),
-		icon: ( props ) => (
-			<img src={ SepaIcon } alt="SEPA Direct Debit" { ...props } />
-		),
+		icon: SepaIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'sepa_debit_payments',
 		allows_manual_capture: false,
@@ -146,7 +133,7 @@ const PaymentMethodInformationObject: Record<
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, Netherlands, and Spain.',
 			'woocommerce-payments'
 		),
-		icon: ( props ) => <img src={ SofortIcon } alt="Sofort" { ...props } />,
+		icon: SofortIcon,
 		currencies: [ 'EUR' ],
 		stripe_key: 'sofort_payments',
 		allows_manual_capture: false,

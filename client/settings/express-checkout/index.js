@@ -118,7 +118,7 @@ const ExpressCheckout = () => {
 								) }
 							</div>
 							<div className="express-checkout__icon">
-								<img src={ WooIcon } alt="WooPay" />
+								<WooIcon />
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label">
@@ -200,10 +200,10 @@ const ExpressCheckout = () => {
 						</div>
 						<div className="express-checkout__icons">
 							<div className="express-checkout__icon">
-								<img src={ ApplePay } alt="ApplePay" />
+								<ApplePay />
 							</div>
 							<div className="express-checkout__icon">
-								<img src={ GooglePay } alt="GooglePay" />
+								<GooglePay />
 							</div>
 						</div>
 						<div className="express-checkout__label-container">
@@ -301,7 +301,7 @@ const ExpressCheckout = () => {
 								) }
 							</div>
 							<div className="express-checkout__icon">
-								<img src={ LinkIcon } alt="Link" />
+								<LinkIcon />
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label">

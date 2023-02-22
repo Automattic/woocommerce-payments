@@ -25,9 +25,7 @@ describe( 'PaymentDeleteIllustration', () => {
 
 	test( 'renders with icon', () => {
 		const { container } = render(
-			<PaymentDeleteIllustration
-				icon={ () => <img src={ WooCardIcon } alt="WooPay" /> }
-			/>
+			<PaymentDeleteIllustration icon={ WooCardIcon } />
 		);
 		expect( container ).toMatchSnapshot();
 	} );

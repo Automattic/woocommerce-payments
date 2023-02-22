@@ -20,7 +20,7 @@ import {
 	EmptyStateTableHeaders,
 } from '../empty-state-table/list';
 import EmptyStateTable from 'empty-state-table';
-import ListBanner from '../empty-state-table/transactions-banner.svg';
+import ListBanner from 'assets/images/transactions-banner.svg';
 import Authorizations from './uncaptured';
 import './style.scss';
 import {

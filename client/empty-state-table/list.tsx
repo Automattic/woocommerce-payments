@@ -12,7 +12,7 @@ import { useState, createInterpolateElement } from '@wordpress/element';
 import wcpayTracks from 'tracks';
 
 interface EmptyStateListProps {
-	listBanner: string;
+	listBanner: typeof import('*.svg').default;
 }
 
 export const EmptyStateTableHeaders: { text: string; classNames?: string }[] = [
@@ -31,7 +31,9 @@ export const EmptyStateTableHeaders: { text: string; classNames?: string }[] = [
 	},
 ];
 
-export const EmptyStateList = ( props: EmptyStateListProps ): JSX.Element => {
+export const EmptyStateList = ( {
+	listBanner: ListBanner,
+}: EmptyStateListProps ): JSX.Element => {
 	const [ isSubmitted, setSubmitted ] = useState( false );
 
 	const handleSetup = (): void => {
@@ -45,7 +47,7 @@ export const EmptyStateList = ( props: EmptyStateListProps ): JSX.Element => {
 	return (
 		<div className="empty-state-list">
 			<div>
-				<img src={ props.listBanner } alt="" />
+				<ListBanner />
 			</div>
 			<p className="intro-copy">
 				{ __(

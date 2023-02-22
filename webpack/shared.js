@@ -89,11 +89,11 @@ module.exports = {
 			{
 				test: /\.(svg|png)$/,
 				exclude: [ /node_modules/ ],
-				type: 'asset/resource',
 				generator: {
 					emit: false,
 					filename: '../[file]?ver=[hash]',
 				},
+				use: [ 'babel-loader', 'img-component-loader' ],
 			},
 		],
 	},
@@ -139,4 +139,10 @@ module.exports = {
 			},
 		} ),
 	],
+	resolveLoader: {
+		modules: [
+			path.resolve( process.cwd(), 'node_modules' ),
+			path.resolve( process.cwd(), 'webpack/loaders' ),
+		],
+	},
 };

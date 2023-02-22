@@ -15,7 +15,7 @@ import {
 	EmptyStateTableHeaders,
 } from '../empty-state-table/list';
 import EmptyStateTable from 'empty-state-table';
-import ListBanner from '../empty-state-table/deposits-banner.svg';
+import ListBanner from 'assets/images/deposits-banner.svg';
 import { Experiment } from '@woocommerce/explat';
 
 const DepositsPage = () => {

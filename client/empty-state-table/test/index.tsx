@@ -14,8 +14,8 @@ import {
 	EmptyStateList,
 	EmptyStateTableHeaders,
 } from 'wcpay/empty-state-table/list';
-import { ListBanner as TransactionsBanner } from 'wcpay/empty-state-table/transactions-banner.svg';
-import { ListBanner as DepositsBanner } from 'wcpay/empty-state-table/deposits-banner.svg';
+import TransactionsBanner from 'assets/images/transactions-banner.svg';
+import DepositsBanner from 'assets/images/deposits-banner.svg';
 
 declare const global: {
 	wcpaySettings: {

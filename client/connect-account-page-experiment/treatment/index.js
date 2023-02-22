@@ -31,7 +31,7 @@ import MasterCard from 'assets/images/cards/mastercard.svg';
 import Sofort from 'assets/images/payment-methods/sofort.svg';
 import UnionPay from 'assets/images/cards/unionpay.svg';
 import Visa from 'assets/images/cards/visa.svg';
-import logoImg from '../../../assets/images/logo.svg';
+import LogoImg from '../../../assets/images/logo.svg';
 import ManageImg from './illustrations/manage.svg';
 import MulticurrencyImg from './illustrations/multicurrency.svg';
 import PaymentsImg from './illustrations/payments.svg';
@@ -39,17 +39,17 @@ import './style.scss';
 
 const PaymentMethods = () => (
 	<div>
-		<img src={ Visa } alt="Visa" />
-		<img src={ MasterCard } alt="MasterCard" />
-		<img src={ AmericanExpress } alt="AmericanExpress" />
-		<img src={ ApplePay } alt="ApplePay" />
-		<img src={ GooglePay } alt="GooglePay" />
-		<img src={ GiroPay } alt="GiroPay" />
-		<img src={ DinersClub } alt="DinersClub" />
-		<img src={ Discover } alt="Discover" />
-		<img src={ UnionPay } alt="UnionPay" />
-		<img src={ JCB } alt="JCB" />
-		<img src={ Sofort } alt="Sofort" />
+		<Visa />
+		<MasterCard />
+		<AmericanExpress />
+		<ApplePay />
+		<GooglePay />
+		<GiroPay />
+		<DinersClub />
+		<Discover />
+		<UnionPay />
+		<JCB />
+		<Sofort />
 		<span>& more.</span>
 	</div>
 );
@@ -129,7 +129,7 @@ const ConnectPageOnboarding = () => {
 	return (
 		<>
 			<CardHeader>
-				<img src={ logoImg } alt={ 'WooCommerce Payments logo' } />
+				<LogoImg />
 			</CardHeader>
 			<CardBody className="connect-account-page-treatment__content">
 				<h2>{ strings.heading }</h2>

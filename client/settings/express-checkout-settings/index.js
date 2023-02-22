@@ -30,7 +30,7 @@ const methods = {
 				description: () => (
 					<>
 						<div className="express-checkout-settings__icon">
-							<img src={ WooIcon } alt="WooPay" />
+							<WooIcon />
 						</div>
 						<p>
 							{ __(
@@ -77,10 +77,10 @@ const methods = {
 					<>
 						<div className="express-checkout-settings__icons">
 							<div className="express-checkout-settings__icon">
-								<img src={ ApplePay } alt="Apple Pay" />
+								<ApplePay />
 							</div>
 							<div className="express-checkout-settings__icon">
-								<img src={ GooglePay } alt="Google Pay" />
+								<GooglePay />
 							</div>
 						</div>
 						<p>

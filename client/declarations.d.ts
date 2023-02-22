@@ -7,3 +7,17 @@ declare module 'gridicons/dist/*' {
 
 	export = Gridicon;
 }
+
+type ReactImgComponent = React.FunctionComponent<
+	React.ImgHTMLAttributes< HTMLImageElement >
+>;
+
+declare module '*.svg' {
+	const img: ReactImgComponent;
+	export default img;
+}
+
+declare module '*.png' {
+	const img: ReactImgComponent;
+	export default img;
+}
