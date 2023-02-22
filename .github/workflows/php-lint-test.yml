@@ -37,6 +37,16 @@ jobs:
       max-parallel: 10
       matrix:
         php: [ '7.2', '7.3', '7.4' ]
+
+    services:
+      mysql:
+        image: mariadb:latest
+        ports:
+          - 3306
+        env:
+          MYSQL_DATABASE: woocommerce_test
+          MYSQL_ROOT_PASSWORD: root
+
     steps:
       # clone the repository
       - uses: actions/checkout@v2
