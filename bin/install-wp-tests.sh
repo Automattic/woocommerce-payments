@@ -129,6 +129,13 @@ configure_wp() {
 	wait_db
 
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
+		echo "-------------------------------------"
+		echo "DB Config:"
+		echo "Username: $DB_USER"
+		echo "Password: $DB_PASS"
+		echo "DB Name: $DB_NAME"
+		echo "DB Host: $DB_HOST"
+		echo "-------------------------------------"
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
 	fi
 
