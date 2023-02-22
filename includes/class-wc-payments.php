@@ -1097,6 +1097,31 @@ class WC_Payments {
 			WC_Payments_Notes_Set_Up_StripeLink::set_gateway( self::get_gateway() );
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_add_note();
 		}
+
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.4', '<=' ) && get_woocommerce_currency() === 'NOK' ) {
+			/**
+			 * Shows an alert notice for Norwegian merchants on WooCommerce 7.4 and below
+			 */
+			function wcpay_show_old_woocommerce_for_norway_notice() {
+				?>
+				<div class="notice wcpay-notice notice-error">
+					<p>
+					<?php
+					echo WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %s: documentation URL */
+						__( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Norwegian business. Please update WooCommerce to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
+						[
+							'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+						]
+					)
+					?>
+					</p>
+				</div>
+				<?php
+			}
+
+			add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_norway_notice' );
+		}
 	}
 
 	/**
