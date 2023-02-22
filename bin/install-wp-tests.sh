@@ -130,6 +130,9 @@ configure_wp() {
 
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
 		wp config create --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
+		# Enable WP Debug
+		wp config set WP_DEBUG true
+		wp config set WP_DEBUG_DISPLAY true
 	fi
 
 	# Add db-error.php for detailed logging
