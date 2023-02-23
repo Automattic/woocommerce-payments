@@ -843,31 +843,18 @@ jQuery( function ( $ ) {
  * Checks if the customer is using a saved payment method.
  *
  * @param {string} paymentMethodType Stripe payment method type ID.
- * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
+ * @return {boolean} Boolean indicating whether a saved payment method is being used.
  */
 export function isUsingSavedPaymentMethod( paymentMethodType ) {
-	const ccSavedPaymentMethodSelector =
-		'#wc-woocommerce_payments-payment-token-new';
-	const sepaPaymentMethodSelector =
-		'#wc-woocommerce_payments_sepa_debit-payment-token-new';
-	const tokenizedPaymentMethods = [ 'sepa_debit', 'card' ];
+	const prefix = '#wc-woocommerce_payments';
+	const suffix = '-payment-token-new';
+	const savedPaymentSelector =
+		'card' === paymentMethodType
+			? prefix + suffix
+			: prefix + '_' + paymentMethodType + suffix;
 
-	// The payment method used cannot be saved, which means that we are not using saved tokens for sure.
-	if ( ! tokenizedPaymentMethods.includes( paymentMethodType ) ) {
-		return false;
-	}
-
-	if ( 'sepa_debit' === paymentMethodType ) {
-		return (
-			null !== document.querySelector( sepaPaymentMethodSelector ) &&
-			! document.querySelector( sepaPaymentMethodSelector ).checked
-		);
-	}
-
-	if ( 'card' === paymentMethodType ) {
-		return (
-			null !== document.querySelector( ccSavedPaymentMethodSelector ) &&
-			! document.querySelector( ccSavedPaymentMethodSelector ).checked
-		);
-	}
+	return (
+		null !== document.querySelector( savedPaymentSelector ) &&
+		! document.querySelector( savedPaymentSelector ).checked
+	);
 }
