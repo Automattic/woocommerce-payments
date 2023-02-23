@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Re-enabled email triggered WooPay flow with Express Checkout flow. WooPay Express Checkout is currently behind a feature flag.

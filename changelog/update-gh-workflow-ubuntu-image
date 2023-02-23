@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update GH workflow runner images from Ubuntu 18.04 to 20.04
