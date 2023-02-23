@@ -1098,7 +1098,7 @@ class WC_Payments {
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_add_note();
 		}
 
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.4', '<=' ) && get_woocommerce_currency() === 'NOK' ) {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.5', '<' ) && get_woocommerce_currency() === 'NOK' ) {
 			/**
 			 * Shows an alert notice for Norwegian merchants on WooCommerce 7.4 and below
 			 */
