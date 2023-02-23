@@ -164,6 +164,7 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 					onFileChange={ handleFileChange }
 					onFileRemove={ handleFileRemove }
 					showPreview={ true }
+					type="image"
 					uploadButtonLabel={ __(
 						'Upload custom logo',
 						'woocommerce-payments'

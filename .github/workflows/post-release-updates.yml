@@ -97,7 +97,7 @@ jobs:
 
   trigger-translations:
     name: "Trigger translations update for the release"
-    needs: get-last-released-version
+    needs: [get-last-released-version, create-gh-release]
     runs-on: ubuntu-20.04
     steps:
       - name: "Checkout repository (trunk)"

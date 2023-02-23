@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.

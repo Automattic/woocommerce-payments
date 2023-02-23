@@ -116,11 +116,11 @@ class WC_Payments_Notes_Additional_Payment_Methods {
 		if ( ! WC_Payments_Features::is_upe_enabled() && class_exists( 'WC_Tracks' ) ) {
 			// We're not using Tracker::track_admin() here because
 			// WC_Pay\record_tracker_events() is never triggered due to the redirect below.
-			WC_Tracks::record_event( 'wcpay_upe_enabled' );
+			WC_Tracks::record_event( 'wcpay_split_upe_enabled' );
 		}
 
 		// Enable UPE, deletes the note and redirect to onboarding task.
-		update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
+		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
 		self::possibly_delete_note();
 
 		$wcpay_settings_url = admin_url( 'admin.php?page=wc-admin&path=/payments/additional-payment-methods' );
