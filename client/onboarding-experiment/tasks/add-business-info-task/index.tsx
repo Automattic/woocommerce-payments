@@ -11,15 +11,15 @@ import WizardTaskItem from 'additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'additional-methods-setup/wizard/task/context';
 import CustomSelectControl from 'components/custom-select-control';
 import { LoadableBlock } from 'components/loadable';
-import { useBusinessTypes } from 'onboarding/hooks';
+import { useBusinessTypes } from 'onboarding-experiment/hooks';
 import RequiredVerificationInfo from './required-verification-info';
-import strings from 'onboarding/strings';
+import strings from 'onboarding-experiment/strings';
 import {
 	Country,
 	BusinessType,
 	BusinessStructure,
 	OnboardingProps,
-} from 'onboarding/types';
+} from 'onboarding-experiment/types';
 
 interface TaskProps {
 	onChange: ( data: Partial< OnboardingProps > ) => void;

@@ -192,7 +192,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->order_service                   = $order_service;
 
 		$this->id                 = static::GATEWAY_ID;
-		$this->icon               = ''; // TODO: icon.
+		$this->icon               = plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
 		$this->has_fields         = true;
 		$this->method_title       = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->method_description = WC_Payments_Utils::esc_interpolated_html(
@@ -498,6 +498,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Overrides the parent method by adding an additional check to see if the tokens list is empty.
+	 * If it is, the method avoids displaying the HTML element with an empty line to maintain a clean user interface and remove unnecessary space.
+	 *
+	 * @return void
+	 */
+	public function saved_payment_methods() {
+		if ( empty( $this->get_tokens() ) ) {
+			return;
+		}
+
+		parent::saved_payment_methods();
+	}
+
+	/**
 	 * Checks if the setting to allow the user to save cards is enabled.
 	 *
 	 * @return bool Whether the setting to allow saved cards is enabled or not.
@@ -628,7 +642,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		?>
 		<div <?php echo $should_hide ? 'style="display:none;"' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>>
 			<p class="form-row woocommerce-SavedPaymentMethods-saveNew">
-				<input id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" type="checkbox" value="true" style="width:auto;" <?php echo $force_checked ? 'checked' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?> />
+				<input id="<?php echo esc_attr( $id ); ?>" name="<?php echo esc_attr( $id ); ?>" type="checkbox" value="true" style="width:auto; vertical-align: middle; position: relative; bottom: 1px;" <?php echo $force_checked ? 'checked' : ''; /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?> />
 				<label for="<?php echo esc_attr( $id ); ?>" style="display:inline;">
 					<?php echo esc_html( apply_filters( 'wc_payments_save_to_account_text', __( 'Save payment information to my account for future purchases.', 'woocommerce-payments' ) ) ); ?>
 				</label>
@@ -646,7 +660,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if (
 			WC_Payments_Features::is_platform_checkout_eligible() &&
 			'yes' === $this->get_option( 'platform_checkout', 'no' ) &&
-			! WC_Payments_Features::is_upe_enabled() &&
+			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
 			! WC()->cart->is_empty() &&
@@ -1023,7 +1037,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+			$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+
+			if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
+				$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
+			} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
+				$payment_methods = [ 'card' ];
+			} else {
+				$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+			}
 
 			$additional_api_parameters['is_platform_payment_method'] = $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() );
 
@@ -1047,7 +1069,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$intent                   = $this->payments_api_client->get_intent( $platform_checkout_intent_id );
 				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
-
 				if ( $intent_meta_order_id !== $order_id ) {
 					throw new Intent_Authentication_Exception(
 						__( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' ),
@@ -2225,6 +2246,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * The get_icon() method from the WC_Payment_Gateway class wraps the icon URL into a prepared HTML element, but there are situations when this
+	 * element needs to be rendered differently on the UI (e.g. additional styles or `display` property).
+	 *
+	 * This is why we need a usual getter like this to provide a raw icon URL to the UI, which will render it according to particular requirements.
+	 *
+	 * @return string Returns the payment method icon URL.
+	 */
+	public function get_icon_url() {
+		return $this->icon;
+	}
+
+	/**
 	 * Handles connected account update when plugin settings saved.
 	 *
 	 * Adds error message to display in admin notices in case of failure.
@@ -2802,12 +2835,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Create a payment intent without confirming the intent.
 	 *
-	 * @param WC_Order    $order           - Order based on which to create intent.
+	 * @param WC_Order    $order                        - Order based on which to create intent.
 	 * @param array       $payment_methods - A list of allowed payment methods. Eg. card, card_present.
-	 * @param string      $capture_method  - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
+	 * @param string      $capture_method               - Controls when the funds will be captured from the customer's account ("automatic" or "manual").
 	 *  It must be "manual" for in-person (terminal) payments.
-	 * @param array       $metadata        - A list of intent metadata.
-	 * @param string|null $customer_id     - Customer id for intent.
+	 *
+	 * @param array       $metadata                     - A list of intent metadata.
+	 * @param string|null $customer_id                  - Customer id for intent.
 	 *
 	 * @return array|WP_Error On success, an array containing info about the newly created intent. On failure, WP_Error object.
 	 *
@@ -3031,6 +3065,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function refresh_cached_account_data() {
 		$this->account->refresh_account_data();
+	}
+
+	/**
+	 * Returns the Stripe payment type of the selected payment method.
+	 *
+	 * @return string[]
+	 */
+	public function get_selected_stripe_payment_type_id() {
+		return [
+			'card',
+		];
 	}
 
 	/**

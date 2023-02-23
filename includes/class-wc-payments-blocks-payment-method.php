@@ -55,7 +55,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	public function get_payment_method_script_handles() {
 		wp_enqueue_style(
 			'wc-blocks-checkout-style',
-			plugins_url( 'dist/upe-blocks-checkout.css', WCPAY_PLUGIN_FILE ),
+			plugins_url( 'dist/blocks-checkout.css', WCPAY_PLUGIN_FILE ),
 			[],
 			'1.0'
 		);
