@@ -20,6 +20,8 @@ import {
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
+	usePaymentRequestEnabledSettings,
+	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
 
 const makeButtonSizeText = ( string ) =>
@@ -126,6 +128,8 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	const [ buttonType, setButtonType ] = usePaymentRequestButtonType();
 	const [ size, setSize ] = usePaymentRequestButtonSize();
 	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
+	const [ isPlatformCheckoutEnabled ] = usePlatformCheckoutEnabledSettings();
+	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 
 	const stripePromise = useMemo( () => {
 		const stripeSettings = getPaymentRequestData( 'stripe' );
@@ -136,34 +140,36 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	}, [] );
 
 	const otherButtons =
-		'woopay' === type ? 'Apple Pay / Google Pay' : 'WooPay';
+		'woopay' === type ? 'Apple Pay / Google Pay buttons' : 'WooPay button';
 
 	return (
 		<CardBody>
-			<Notice
-				status="warning"
-				isDismissible={ false }
-				className="express-checkout__notice"
-			>
-				<span>
-					<NoticeOutlineIcon
-						style={ {
-							color: '#BD8600',
-							fill: 'currentColor',
-							marginBottom: '-5px',
-							marginRight: '16px',
-						} }
-						size={ 20 }
-					/>
-					{ sprintf(
-						__(
-							'These settings will also apply to the %s buttons on your store.',
-							'woocommerce-payments'
-						),
-						otherButtons
-					) }
-				</span>
-			</Notice>
+			{ isPlatformCheckoutEnabled && isPaymentRequestEnabled && (
+				<Notice
+					status="warning"
+					isDismissible={ false }
+					className="express-checkout__notice"
+				>
+					<span>
+						<NoticeOutlineIcon
+							style={ {
+								color: '#BD8600',
+								fill: 'currentColor',
+								marginBottom: '-5px',
+								marginRight: '16px',
+							} }
+							size={ 20 }
+						/>
+						{ sprintf(
+							__(
+								'These settings will also apply to the %s on your store.',
+								'woocommerce-payments'
+							),
+							otherButtons
+						) }
+					</span>
+				</Notice>
+			) }
 			<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 			<RadioControl
 				className="payment-method-settings__cta-selection"
