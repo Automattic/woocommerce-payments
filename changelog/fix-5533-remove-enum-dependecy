@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Removed PHP ENUM dependency due to conflicts with multiple PHP versions.
