@@ -3,5 +3,20 @@
 	width: 350px;
 	background-color: #fff;
 	padding: 16px;
-	z-index: 9991;
+	z-index: 100001;
+	animation: components-modal__appear-animation 0.1s ease-out;
+	animation-fill-mode: forwards;
+}
+
+.tour-modal__overlay {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: rgba( 0, 0, 0, 0.35 );
+	z-index: 100000;
+	display: flex;
+	animation: edit-post__fade-in-animation 0.2s ease-out 0s;
+	animation-fill-mode: forwards;
 }

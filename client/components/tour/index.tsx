@@ -30,6 +30,14 @@ const Tour = ( { options }: any ) => {
 		window.scrollTo( { left: position.x, top: position.y - 100 } );
 	}, [ position ] );
 
+	useEffect( () => {
+		document.body.classList.add( 'modal-open' );
+
+		return () => {
+			document.body.classList.remove( 'modal-open' );
+		};
+	}, [] );
+
 	useLayoutEffect( () => {
 		if ( ! selector ) return;
 
@@ -58,45 +66,48 @@ const Tour = ( { options }: any ) => {
 	if ( ! content ) return null;
 
 	return createPortal(
-		<div
-			ref={ containerRef }
-			className="tour-modal"
-			style={ position ? { top: position.y, left: position.x } : {} }
-		>
-			{ image && (
-				<img
-					alt={ title }
-					src={ typeof image === 'string' ? image : image.src }
-					width={ 350 }
-					height={ 204 }
-				/>
-			) }
-
-			<h3>{ title }</h3>
-			<p>{ description }</p>
-
-			<footer>
-				{ counter && (
-					<div>
-						{ currentIndex + 1 } of { options.length }
-					</div>
+		<>
+			<div className="tour-modal__overlay"></div>
+			<div
+				ref={ containerRef }
+				className="tour-modal"
+				style={ position ? { top: position.y, left: position.x } : {} }
+			>
+				{ image && (
+					<img
+						alt={ title }
+						src={ typeof image === 'string' ? image : image.src }
+						width={ 350 }
+						height={ 204 }
+					/>
 				) }
 
-				<div>
-					{ previousButton && (
-						<button onClick={ handlePreviousButtonClick }>
-							{ previousButton.text || 'Previous' }
-						</button>
+				<h3>{ title }</h3>
+				<p>{ description }</p>
+
+				<footer>
+					{ counter && (
+						<div>
+							{ currentIndex + 1 } of { options.length }
+						</div>
 					) }
 
-					{ actionButton && (
-						<button onClick={ handleActionButtonClick }>
-							{ actionButton.text || 'Next' }
-						</button>
-					) }
-				</div>
-			</footer>
-		</div>,
+					<div>
+						{ previousButton && (
+							<button onClick={ handlePreviousButtonClick }>
+								{ previousButton.text || 'Previous' }
+							</button>
+						) }
+
+						{ actionButton && (
+							<button onClick={ handleActionButtonClick }>
+								{ actionButton.text || 'Next' }
+							</button>
+						) }
+					</div>
+				</footer>
+			</div>
+		</>,
 		document.getElementsByTagName( 'body' )[ 0 ]
 	);
 };
