@@ -7,6 +7,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { RadioControl, Notice } from '@wordpress/components';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { useContext } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -16,6 +17,7 @@ import PaymentRequestButtonPreview from './payment-request-button-preview';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import interpolateComponents from 'interpolate-components';
 import { getPaymentRequestData } from '../../payment-request/utils';
+import WCPaySettingsContext from '../wcpay-settings-context';
 import {
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,
@@ -130,6 +132,11 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
 	const [ isPlatformCheckoutEnabled ] = usePlatformCheckoutEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
+	const {
+		featureFlags: {
+			platformCheckout: isPlatformCheckoutFeatureFlagEnabled,
+		},
+	} = useContext( WCPaySettingsContext );
 
 	const stripePromise = useMemo( () => {
 		const stripeSettings = getPaymentRequestData( 'stripe' );
@@ -140,11 +147,18 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	}, [] );
 
 	const otherButtons =
-		'woopay' === type ? __( 'Apple Pay / Google Pay buttons', 'woocommerce-payments' ) : __( 'WooPay button', 'woocommerce-payments' );
+		'woopay' === type
+			? __( 'Apple Pay / Google Pay buttons', 'woocommerce-payments' )
+			: __( 'WooPay button', 'woocommerce-payments' );
+
+	const showWarning =
+		isPlatformCheckoutEnabled &&
+		isPaymentRequestEnabled &&
+		isPlatformCheckoutFeatureFlagEnabled;
 
 	return (
 		<CardBody>
-			{ isPlatformCheckoutEnabled && isPaymentRequestEnabled && (
+			{ showWarning && (
 				<Notice
 					status="warning"
 					isDismissible={ false }
@@ -161,6 +175,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 							size={ 20 }
 						/>
 						{ sprintf(
+							/* translators: %s type of button to which the settings will be applied */
 							__(
 								'These settings will also apply to the %s on your store.',
 								'woocommerce-payments'
