@@ -1,0 +1,27 @@
+.discoverability-card {
+	padding: 24px;
+	background: url( '../../../assets/images/upe_preview_illustration.svg' )
+			no-repeat right,
+		linear-gradient( 180deg, #f7edf7 0%, #fff 100% );
+	&__new-feature-pill {
+		color: #3c2861;
+		border: 1px solid #3c2861;
+		margin: 0;
+	}
+	&__header {
+		color: #271b3d;
+		font-style: normal;
+		font-weight: 400;
+		font-size: 20px;
+		line-height: 28px;
+	}
+	&__body {
+		width: 428px;
+	}
+	&__actions {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		width: 428px;
+	}
+}
