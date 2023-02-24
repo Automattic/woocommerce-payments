@@ -5,7 +5,6 @@ import React, {
 	ReactNode,
 	useCallback,
 	useEffect,
-	useLayoutEffect,
 	useRef,
 	useState,
 } from 'react';
@@ -18,7 +17,7 @@ import { Button } from '@wordpress/components';
  */
 import './style.scss';
 
-interface TourPosition {
+interface TourCoordinates {
 	x: number;
 	y: number;
 }
@@ -41,8 +40,16 @@ interface TourOptionContent {
 	previousButton?: TourOptionContentButton;
 }
 
+interface TourOptionPosition {
+	top?: number;
+	left?: number;
+	right?: number;
+	bottom?: number;
+}
+
 interface TourOption {
 	selector: string;
+	position: TourOptionPosition;
 	content: TourOptionContent;
 }
 
@@ -52,29 +59,63 @@ interface TourProps {
 
 const Tour = ( { options }: TourProps ): ReactNode => {
 	const containerRef = useRef< HTMLDivElement >( null );
-	const [ position, setPosition ] = useState< TourPosition | null >( null );
+	const [ coordinates, setCoordinates ] = useState< TourCoordinates | null >(
+		null
+	);
 	const [ currentIndex, setCurrentIndex ] = useState( 0 );
 
-	const { selector, content } = options[ currentIndex ] || {};
+	const { selector, position, content } = options[ currentIndex ] || {};
 	const { title, description, image, actionButton, previousButton, counter } =
 		content || {};
 
 	const updateModalPosition = useCallback( () => {
 		if ( ! selector ) return;
 
-		const container = containerRef.current;
 		const element = document.querySelector( selector );
+		const container = containerRef.current;
 
 		if ( ! element || ! container ) return;
 
-		const { top, left } = element.getBoundingClientRect();
-		const rect2 = container.getBoundingClientRect();
+		const elementRect = element.getBoundingClientRect();
+		const containerRect = container.getBoundingClientRect();
 
-		setPosition( {
-			x: Math.floor( window.scrollX + left ),
-			y: Math.floor( window.scrollY + top - rect2.height ),
+		setCoordinates( () => {
+			let x = window.scrollX + elementRect.left;
+			let y = window.scrollY + elementRect.top - containerRect.height;
+
+			if ( position ) {
+				if ( position.bottom ) {
+					y =
+						elementRect.height -
+						containerRect.height -
+						position.bottom +
+						32;
+				}
+
+				if ( position.left ) {
+					x = elementRect.left + position.left;
+				}
+			}
+
+			return {
+				x: Math.floor( x ),
+				y: Math.floor( y ),
+			};
 		} );
-	}, [ selector ] );
+	}, [ selector, position ] );
+
+	useEffect( () => {
+		document.body.classList.add( 'modal-open' );
+
+		// Disables automatic scroll restoration
+		if ( history.scrollRestoration ) {
+			history.scrollRestoration = 'manual';
+		}
+
+		return () => {
+			document.body.classList.remove( 'modal-open' );
+		};
+	}, [] );
 
 	useEffect( () => {
 		const accountSettingsContainer = document.getElementById(
@@ -87,28 +128,18 @@ const Tour = ( { options }: TourProps ): ReactNode => {
 
 		observer.observe( accountSettingsContainer );
 
+		updateModalPosition();
+
 		return () => {
 			observer.unobserve( accountSettingsContainer );
 		};
 	}, [ updateModalPosition ] );
 
 	useEffect( () => {
-		document.body.classList.add( 'modal-open' );
+		if ( ! coordinates ) return;
 
-		return () => {
-			document.body.classList.remove( 'modal-open' );
-		};
-	}, [] );
-
-	useLayoutEffect( () => {
-		updateModalPosition();
-	}, [ updateModalPosition ] );
-
-	useLayoutEffect( () => {
-		if ( ! position ) return;
-
-		window.scrollTo( { left: position.x, top: position.y - 100 } );
-	}, [ position ] );
+		window.scrollTo( { left: coordinates.x, top: coordinates.y - 100 } );
+	}, [ coordinates ] );
 
 	const handleActionButtonClick = () => {
 		setCurrentIndex( ( prev ) => prev + 1 );
@@ -126,7 +157,11 @@ const Tour = ( { options }: TourProps ): ReactNode => {
 			<div
 				ref={ containerRef }
 				className="tour-modal"
-				style={ position ? { top: position.y, left: position.x } : {} }
+				style={
+					coordinates
+						? { top: coordinates.y, left: coordinates.x }
+						: {}
+				}
 			>
 				{ image && (
 					<img

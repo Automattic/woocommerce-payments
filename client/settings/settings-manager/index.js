@@ -183,7 +183,8 @@ const SettingsManager = () => {
 				<Tour
 					options={ [
 						{
-							selector: '.settings-section:last-child',
+							selector: '#wpcontent',
+							position: { bottom: 20, left: 20 },
 							content: {
 								title: 'Enhanced fraud protection is here 🔒',
 								image: { src: 'https://picsum.photos/350/204' },
