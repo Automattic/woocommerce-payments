@@ -12,7 +12,7 @@ In this way, extensions will be able to use services in a reliable, and compatib
 
 ## Adding New Services
 
-- Add the new service within `includes\core\services`.
+- Add the new service within `includes\core\service`.
 - Service should be in `WCPay\Core` namespace.
 - Add functions in your service that act as proxies to the internal service methods, or consider how they might change in the future.
 - Add tests in `tests\unit\core\services`.
