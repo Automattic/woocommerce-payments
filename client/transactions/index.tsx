@@ -20,7 +20,7 @@ import {
 	EmptyStateTableHeaders,
 } from '../empty-state-table/list';
 import EmptyStateTable from 'empty-state-table';
-import ListBanner from 'assets/images/transactions-banner.svg';
+import ListBanner from 'assets/images/transactions-banner.svg?asset';
 import Authorizations from './uncaptured';
 import './style.scss';
 import {
@@ -69,7 +69,17 @@ export const TransactionsPage = (): JSX.Element => {
 		<EmptyStateTable
 			headers={ EmptyStateTableHeaders }
 			title="Transactions"
-			content={ <EmptyStateList listBanner={ ListBanner } /> }
+			content={
+				<EmptyStateList
+					listBanner={ ( props ) => (
+						<img
+							src={ ListBanner }
+							alt="transaction banner"
+							{ ...props }
+						/>
+					) }
+				/>
+			}
 		/>
 	);
 

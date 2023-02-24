@@ -1,10 +1,11 @@
 /**
  * Internal dependencies
  */
-import LogoImg from 'assets/images/logo.svg';
+import logoImg from 'assets/images/logo.svg?asset';
 
 export default ( props ) => (
-	<LogoImg
+	<img
+		src={ logoImg }
 		width="241"
 		height="64"
 		alt={ 'WooCommerce Payments logo' }

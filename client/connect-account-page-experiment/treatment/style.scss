@@ -38,8 +38,8 @@
 
 	@include breakpoint( '>660px' ) {
 		&__content.components-card__body.is-size-medium {
-			background: url( './illustrations/wcpay.svg' ) no-repeat bottom
-				right/293px 275px;
+			background: url( 'assets/images/illustrations/wcpay.svg?asset' )
+				no-repeat bottom right/293px 275px;
 			min-height: 305px;
 			padding-right: 340px;
 			display: flex;

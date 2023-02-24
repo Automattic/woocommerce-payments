@@ -87,15 +87,21 @@ module.exports = {
 				],
 			},
 			{
-				// Generate a React component with an <img/> with assets/* absolute URL as src.
-				// Files will not be generated, so they should be placed in assets folder.
 				test: /\.(svg|png)$/,
 				exclude: [ /node_modules/ ],
-				generator: {
-					emit: false,
-					filename: '../[file]?ver=[hash]',
-				},
-				use: [ 'babel-loader', 'img-component-loader' ],
+				oneOf: [
+					{
+						resourceQuery: /asset/,
+						type: 'asset/resource',
+						generator: {
+							emit: false,
+							filename: '../[file]?ver=[hash]',
+						},
+					},
+					{
+						type: 'asset/inline',
+					},
+				],
 			},
 		],
 	},

@@ -10,7 +10,7 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import PaymentConfirmIllustration from '..';
-import WooCardIcon from 'assets/images/payment-methods/woo.svg';
+import WooCardIcon from 'assets/images/payment-methods/woo.svg?asset';
 
 describe( 'PaymentConfirmIllustration', () => {
 	test( 'renders without props', () => {
@@ -27,7 +27,11 @@ describe( 'PaymentConfirmIllustration', () => {
 
 	test( 'renders with icon', () => {
 		const { container } = render(
-			<PaymentConfirmIllustration icon={ WooCardIcon } />
+			<PaymentConfirmIllustration
+				icon={ ( props ) => (
+					<img src={ WooCardIcon } alt="" { ...props } />
+				) }
+			/>
 		);
 		expect( container ).toMatchSnapshot();
 	} );

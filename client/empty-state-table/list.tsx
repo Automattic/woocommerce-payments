@@ -12,7 +12,7 @@ import { useState, createInterpolateElement } from '@wordpress/element';
 import wcpayTracks from 'tracks';
 
 interface EmptyStateListProps {
-	listBanner: typeof import('*.svg').default;
+	listBanner: ReactImgFuncComponent;
 }
 
 export const EmptyStateTableHeaders: { text: string; classNames?: string }[] = [

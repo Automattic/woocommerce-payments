@@ -20,36 +20,36 @@ import OnboardingLocationCheckModal from 'connect-account-page/modal';
 import Page from 'components/page';
 import wcpayTracks from 'tracks';
 import strings from './strings';
-import AmericanExpress from 'assets/images/cards/amex.svg';
-import ApplePay from 'assets/images/cards/apple-pay.svg';
-import DinersClub from 'assets/images/cards/diners.svg';
-import Discover from 'assets/images/cards/discover.svg';
-import GiroPay from 'assets/images/payment-methods/giropay.svg';
-import GooglePay from 'assets/images/cards/google-pay.svg';
-import JCB from 'assets/images/cards/jcb.svg';
-import MasterCard from 'assets/images/cards/mastercard.svg';
-import Sofort from 'assets/images/payment-methods/sofort.svg';
-import UnionPay from 'assets/images/cards/unionpay.svg';
-import Visa from 'assets/images/cards/visa.svg';
-import LogoImg from '../../../assets/images/logo.svg';
-import ManageImg from './illustrations/manage.svg';
-import MulticurrencyImg from './illustrations/multicurrency.svg';
-import PaymentsImg from './illustrations/payments.svg';
+import AmericanExpress from 'assets/images/cards/amex.svg?asset';
+import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
+import DinersClub from 'assets/images/cards/diners.svg?asset';
+import Discover from 'assets/images/cards/discover.svg?asset';
+import GiroPay from 'assets/images/payment-methods/giropay.svg?asset';
+import GooglePay from 'assets/images/cards/google-pay.svg?asset';
+import JCB from 'assets/images/cards/jcb.svg?asset';
+import MasterCard from 'assets/images/cards/mastercard.svg?asset';
+import Sofort from 'assets/images/payment-methods/sofort.svg?asset';
+import UnionPay from 'assets/images/cards/unionpay.svg?asset';
+import Visa from 'assets/images/cards/visa.svg?asset';
+import LogoImg from 'assets/images/logo.svg?asset';
+import ManageImg from 'assets/images/illustrations/manage.svg?asset';
+import MulticurrencyImg from 'assets/images/illustrations/multicurrency.svg?asset';
+import PaymentsImg from 'assets/images/illustrations/payments.svg?asset';
 import './style.scss';
 
 const PaymentMethods = () => (
 	<div>
-		<Visa />
-		<MasterCard />
-		<AmericanExpress />
-		<ApplePay />
-		<GooglePay />
-		<GiroPay />
-		<DinersClub />
-		<Discover />
-		<UnionPay />
-		<JCB />
-		<Sofort />
+		<img src={ Visa } alt="Visa" />
+		<img src={ MasterCard } alt="MasterCard" />
+		<img src={ AmericanExpress } alt="American Express" />
+		<img src={ ApplePay } alt="Apple Pay" />
+		<img src={ GooglePay } alt="Google Pay" />
+		<img src={ GiroPay } alt="GiroPay" />
+		<img src={ DinersClub } alt="DinersClub" />
+		<img src={ Discover } alt="Discover" />
+		<img src={ UnionPay } alt="UnionPay" />
+		<img src={ JCB } alt="JCB" />
+		<img src={ Sofort } alt="Sofort" />
 		<span>& more.</span>
 	</div>
 );

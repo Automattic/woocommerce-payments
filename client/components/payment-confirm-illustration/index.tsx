@@ -13,7 +13,7 @@ import './styles.scss';
 
 const PaymentConfirmIllustration: React.FunctionComponent< {
 	hasBorder?: boolean;
-	icon?: typeof import('*.svg').default;
+	icon?: ReactImgFuncComponent;
 } > = ( { hasBorder, icon: Icon = () => null } ): JSX.Element => {
 	return (
 		<div className="payment-confirm-illustration__wrapper">

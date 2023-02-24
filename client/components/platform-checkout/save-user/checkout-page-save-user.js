@@ -22,7 +22,7 @@ import Container from './container';
 import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { WC_STORE_CART } from '../../../checkout/constants';
-import WooPayIcon from 'assets/images/woopay.svg';
+import WooPayIcon from 'assets/images/woopay.svg?asset';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -229,7 +229,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 							</span>
 						</label>
 					</div>
-					<WooPayIcon className="woopay-logo" />
+					<img
+						src={ WooPayIcon }
+						className="woopay-logo"
+						alt="WooPay"
+					/>
 					<Icon
 						icon={ info }
 						size={ 20 }
