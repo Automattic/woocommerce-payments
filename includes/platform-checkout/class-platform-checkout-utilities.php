@@ -69,6 +69,21 @@ class Platform_Checkout_Utilities {
 	}
 
 	/**
+	 * Get the persisted available countries.
+	 *
+	 * @return array
+	 */
+	public function get_persisted_available_countries() {
+		$available_countries = json_decode( get_option( self::AVAILABLE_COUNTRIES_KEY, '["US"]' ), true );
+
+		if ( ! is_array( $available_countries ) ) {
+			return [];
+		}
+
+		return $available_countries;
+	}
+
+	/**
 	 * Get the list of WooPay available countries and cache it for 24 hours.
 	 *
 	 * @return array
@@ -77,9 +92,7 @@ class Platform_Checkout_Utilities {
 		$last_check = get_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY );
 
 		if ( $last_check && gmdate( 'Y-m-d' ) === $last_check ) {
-			$available_countries = get_option( self::AVAILABLE_COUNTRIES_KEY, '["US"]' );
-
-			return json_decode( $available_countries ?? [], true );
+			return $this->get_persisted_available_countries();
 		}
 
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
@@ -99,22 +112,18 @@ class Platform_Checkout_Utilities {
 		 *
 		 * @psalm-suppress UndefinedDocblockClass
 		 */
-		$response = \Automattic\Jetpack\Connection\Client::remote_request( $args );
+		$response      = \Automattic\Jetpack\Connection\Client::remote_request( $args );
+		$response_body = wp_remote_retrieve_body( $response );
 
-		if ( is_wp_error( $response ) || ! is_array( $response ) || ! empty( $response['code'] ) ) {
+		if ( is_wp_error( $response ) || ! is_array( $response_body ) || ! empty( $response['code'] ) || $response['code'] >= 300 || $response['code'] < 200 ) {
 			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-
-			// If there's an error, return current data and check again on the next day.
-			$available_countries = get_option( self::AVAILABLE_COUNTRIES_KEY, '["US"]' );
 		} else {
-			$available_countries = wp_remote_retrieve_body( $response );
-
-			update_option( self::AVAILABLE_COUNTRIES_KEY, $available_countries );
+			update_option( self::AVAILABLE_COUNTRIES_KEY, $response_body );
 		}
 
 		update_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY, gmdate( 'Y-m-d' ) );
 
-		return json_decode( $available_countries ?? [], true );
+		return $this->get_persisted_available_countries();
 	}
 
 	/**
