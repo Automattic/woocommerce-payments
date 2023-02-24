@@ -2,7 +2,7 @@
 
 This directory contains core WooCommerce Payments functionality, officially available for both internal use, and use by consumers and extensions.
 
-> 🔗 If you are developing WooCommerce Payments, please refer to [the core contributing guidelines](CONTRIBUTING.md).
+> 🔗 If you are contributing to WooCommerce Payments, please refer to [the core contributing guidelines](CONTRIBUTING.md).
 
 ## Definition
 
@@ -46,8 +46,6 @@ To ensure stability and resilience, please avoid using non-core classes and meth
 ## Available functionality
 
 WooCommerce Payments Core is under active development, and currently includes the APIs, listed below.
-
----
 
 ### Gateway Mode
 
@@ -94,15 +92,11 @@ WC_Payments::mode()->is_test();
 WC_Payments::mode()->is_dev();
 ```
 
----
-
 ### Services
 
 WooCommerce Payments contains a comprehensive set of internal services, but as explained in the beginnig of this document, they are subject to change without notice. Instead, please use the services, available in core:
 
 - [🔗 `WC_Payments_Customer_Service_API`](services/customer-service.md)
-
----
 
 ### Server requests & responses
 
