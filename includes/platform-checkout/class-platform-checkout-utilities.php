@@ -79,7 +79,7 @@ class Platform_Checkout_Utilities {
 		if ( $last_check && gmdate( 'Y-m-d' ) === $last_check ) {
 			$available_countries = get_option( self::AVAILABLE_COUNTRIES_KEY, '["US"]' );
 
-			return json_decode( $available_countries, true );
+			return json_decode( $available_countries ?? [], true );
 		}
 
 		$platform_checkout_host = defined( 'PLATFORM_CHECKOUT_HOST' ) ? PLATFORM_CHECKOUT_HOST : 'https://pay.woo.com';
@@ -114,7 +114,7 @@ class Platform_Checkout_Utilities {
 
 		update_option( self::AVAILABLE_COUNTRIES_LAST_CHECK_KEY, gmdate( 'Y-m-d' ) );
 
-		return json_decode( $available_countries, true );
+		return json_decode( $available_countries ?? [], true );
 	}
 
 	/**
