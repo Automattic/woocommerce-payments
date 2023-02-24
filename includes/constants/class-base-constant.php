@@ -30,11 +30,17 @@ abstract class Base_Constant {
 	 * Class constructor.
 	 *
 	 * @param mixed $value Constant from class.
+	 * @throws \InvalidArgumentException
 	 */
 	public function __construct( $value ) {
 		if ( $value instanceof static ) {
 			$value = $value->get_value();
+		} else {
+			if ( ! defined( static::class . "::$value" ) ) {
+				throw new \InvalidArgumentException( "Constant with name '$value' does not exist." );
+			}
 		}
+
 		$this->value = $value;
 	}
 
@@ -55,7 +61,7 @@ abstract class Base_Constant {
 	 * @return bool
 	 */
 	final public function equals( $variable = null ): bool {
-		return $variable instanceof self && $this->get_value() === $variable->get_value() && static::class === \get_class( $variable );
+		return $this->get_value() === $variable->get_value() && static::class === \get_class( $variable );
 	}
 
 	/**
@@ -72,6 +78,7 @@ abstract class Base_Constant {
 		if ( false === $key ) {
 			throw new \InvalidArgumentException( "Constant with value '$value' does not exist." );
 		}
+
 		return $key;
 	}
 
@@ -85,12 +92,6 @@ abstract class Base_Constant {
 	 * @throws \InvalidArgumentException
 	 */
 	public static function __callStatic( $name, $arguments ) {
-		$class         = static::class;
-		$constant_name = $class . '::' . $name;
-		if ( ! defined( $constant_name ) ) {
-			throw new \InvalidArgumentException( "Constant with name '$name' does not exist." );
-		}
-
 		return new static( $name );
 	}
 
@@ -100,6 +101,6 @@ abstract class Base_Constant {
 	 * @return mixed|string
 	 */
 	public function __toString() {
-		return constant( \get_class( $this ) . '::' . $this->value );
+		return constant( \get_class( $this ) . '::' . $this->get_value() );
 	}
 }
