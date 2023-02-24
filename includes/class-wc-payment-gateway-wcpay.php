@@ -3312,7 +3312,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @returns \WP_User  The user associated with the order or the current user.
 	 */
-	protected function get_user_for_order( \WC_Order $order ): \WP_User {
+	protected function get_user_for_order( WC_Order $order ): WP_User {
 		$user = $order->get_user();
 		if ( false === $user ) {
 			$user = wp_get_current_user();
