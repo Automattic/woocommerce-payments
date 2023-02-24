@@ -4,7 +4,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import classnames from 'classnames';
-import { Button } from '@wordpress/components';
+import { Button, Icon } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -161,6 +161,13 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 						: {}
 				}
 			>
+				<Button
+					onClick={ onTourEnd }
+					className="tour-modal__close-button"
+				>
+					<Icon icon="no-alt" />
+				</Button>
+
 				{ image && (
 					<img
 						alt={ title }
