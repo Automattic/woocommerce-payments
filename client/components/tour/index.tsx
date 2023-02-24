@@ -11,6 +11,7 @@ import React, {
 } from 'react';
 import { createPortal } from 'react-dom';
 import classnames from 'classnames';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -139,30 +140,38 @@ const Tour = ( { options }: TourProps ): ReactNode => {
 					/>
 				) }
 
-				<h3>{ title }</h3>
-				<p>{ description }</p>
+				<div className="tour-modal__content">
+					<h3>{ title }</h3>
+					<p>{ description }</p>
 
-				<footer>
-					{ counter && (
-						<div>
-							{ currentIndex + 1 } of { options.length }
+					<footer>
+						{ counter && (
+							<div className="tour-modal__counter">
+								{ currentIndex + 1 } of { options.length }
+							</div>
+						) }
+
+						<div className="tour-modal__buttons">
+							{ previousButton && (
+								<Button
+									isSecondary
+									onClick={ handlePreviousButtonClick }
+								>
+									{ previousButton.text || 'Previous' }
+								</Button>
+							) }
+
+							{ actionButton && (
+								<Button
+									isPrimary
+									onClick={ handleActionButtonClick }
+								>
+									{ actionButton.text || 'Next' }
+								</Button>
+							) }
 						</div>
-					) }
-
-					<div>
-						{ previousButton && (
-							<button onClick={ handlePreviousButtonClick }>
-								{ previousButton.text || 'Previous' }
-							</button>
-						) }
-
-						{ actionButton && (
-							<button onClick={ handleActionButtonClick }>
-								{ actionButton.text || 'Next' }
-							</button>
-						) }
-					</div>
-				</footer>
+					</footer>
+				</div>
 			</div>
 		</>,
 		document.body

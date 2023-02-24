@@ -63,4 +63,46 @@
 			}
 		}
 	}
+
+	&__content {
+		padding: 16px;
+
+		h3 {
+			font-size: 16px;
+			font-weight: 600;
+			line-height: 24px;
+			margin: 0;
+		}
+
+		p {
+			font-size: 13px;
+			line-height: 16px;
+			margin: 8px 0 0;
+		}
+
+		p,
+		h3 {
+			color: #1e1e1e;
+		}
+
+		footer {
+			align-items: center;
+			display: flex;
+			margin-top: 28px;
+		}
+	}
+
+	&__counter {
+		font-size: 12px;
+		line-height: 16px;
+		color: #757575;
+	}
+
+	&__buttons {
+		margin-left: auto;
+
+		button + button {
+			margin-left: 8px;
+		}
+	}
 }
