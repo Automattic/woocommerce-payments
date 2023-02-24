@@ -250,10 +250,11 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			->setMethods(
 				[
 					'get_return_url',
-					'manage_customer_details_for_order',
 					'parent_process_payment',
 					'get_upe_enabled_payment_method_statuses',
 					'is_payment_recurring',
+					'get_user_for_order',
+					'create_or_update_customer_using_order_data',
 				]
 			)
 			->getMock();
@@ -305,16 +306,18 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_number        = $order->get_order_number();
 		$product_item        = current( $order->get_items( 'line_item' ) );
 		$intent_id           = 'pi_mock';
-		$user                = '';
 		$customer_id         = 'cus_mock';
 		$save_payment_method = true;
 
 		$this->set_cart_contains_subscription_items( false );
 
 		$this->mock_upe_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
+			->method( 'get_user_for_order' );
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'create_or_update_customer_using_order_data' )
 			->will(
-				$this->returnValue( [ $user, $customer_id ] )
+				$this->returnValue( $customer_id )
 			);
 
 		$this->mock_customer_service
@@ -376,7 +379,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$order_number              = $order->get_order_number();
 		$product_item              = current( $order->get_items( 'line_item' ) );
 		$intent_id                 = 'pi_mock';
-		$user                      = '';
 		$customer_id               = 'cus_mock';
 		$save_payment_method       = true;
 		$selected_upe_payment_type = 'giropay';
@@ -384,9 +386,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->set_cart_contains_subscription_items( false );
 
 		$this->mock_upe_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
+			->method( 'get_user_for_order' );
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'create_or_update_customer_using_order_data' )
 			->will(
-				$this->returnValue( [ $user, $customer_id ] )
+				$this->returnValue( $customer_id )
 			);
 
 		$this->mock_customer_service
@@ -452,9 +457,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->set_cart_contains_subscription_items( false );
 
 		$this->mock_upe_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
+			->method( 'get_user_for_order' );
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'create_or_update_customer_using_order_data' )
 			->will(
-				$this->returnValue( [ '', 'cus_mock' ] )
+				$this->returnValue( 'cus_mock' )
 			);
 
 		$this->mock_customer_service
@@ -790,9 +798,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
 
-		$this->mock_upe_gateway
-			->expects( $this->never() )
-			->method( 'manage_customer_details_for_order' );
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'get_user_for_order' );
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'create_or_update_customer_using_order_data' );
+
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertMatchesRegularExpression( '/key=mock_order_key/', $result['redirect'] );
 	}
@@ -805,9 +816,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$result = $this->mock_upe_gateway->process_payment( $order->get_id() );
 
-		$this->mock_upe_gateway
-			->expects( $this->never() )
-			->method( 'manage_customer_details_for_order' );
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'get_user_for_order' );
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'create_or_update_customer_using_order_data' );
+
 		$this->assertEquals( 'success', $result['result'] );
 		$this->assertMatchesRegularExpression( '/key=mock_order_key/', $result['redirect'] );
 	}
@@ -1102,9 +1116,15 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
 
 		$this->mock_upe_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
+			->method( 'get_user_for_order' )
 			->will(
-				$this->returnValue( [ $user, $customer_id ] )
+				$this->returnValue( $user )
+			);
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'create_or_update_customer_using_order_data' )
+			->will(
+				$this->returnValue( $customer_id )
 			);
 
 		$this->mock_api_client->expects( $this->once() )
@@ -1149,9 +1169,15 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
 
 		$this->mock_upe_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
+			->method( 'get_user_for_order' )
 			->will(
-				$this->returnValue( [ $user, $customer_id ] )
+				$this->returnValue( $user )
+			);
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'create_or_update_customer_using_order_data' )
+			->will(
+				$this->returnValue( $customer_id )
 			);
 
 		$this->mock_api_client->expects( $this->once() )
@@ -1206,9 +1232,15 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		];
 
 		$this->mock_upe_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
+			->method( 'get_user_for_order' )
 			->will(
-				$this->returnValue( [ $user, $customer_id ] )
+				$this->returnValue( $user )
+			);
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'create_or_update_customer_using_order_data' )
+			->will(
+				$this->returnValue( $customer_id )
 			);
 
 		$this->mock_api_client->expects( $this->once() )
@@ -1253,9 +1285,15 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_intent = WC_Helper_Intention::create_intention( [ 'status' => $intent_status ] );
 
 		$this->mock_upe_gateway->expects( $this->once() )
-			->method( 'manage_customer_details_for_order' )
+			->method( 'get_user_for_order' )
 			->will(
-				$this->returnValue( [ $user, $customer_id ] )
+				$this->returnValue( $user )
+			);
+
+		$this->mock_upe_gateway->expects( $this->once() )
+			->method( 'create_or_update_customer_using_order_data' )
+			->will(
+				$this->returnValue( $customer_id )
 			);
 
 		$this->mock_api_client->expects( $this->once() )

@@ -147,6 +147,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					'mark_payment_complete_for_order',
 					'get_level3_data_from_order', // To avoid needing to mock the order items.
 					'should_use_stripe_platform_on_checkout_page',
+					'update_customer_with_order_data_on_shutdown',
 				]
 			)
 			->getMock();
@@ -1083,9 +1084,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( $customer_id );
 
 		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'update_customer_for_user' );
+
+		// Arrange: WC_Payment_Gateway_WCPay updates the customer object.
+		$this->mock_wcpay_gateway
 			->expects( $this->once() )
-			->method( 'update_customer_for_user' )
-			->willReturn( self::CUSTOMER_ID );
+			->method( 'update_customer_with_order_data_on_shutdown' )
+			->with( $customer_id, $mock_order, [ 'is_woopay' => false ] );
 
 		// Arrange: Create a mock cart.
 		$mock_cart = $this->createMock( 'WC_Cart' );
