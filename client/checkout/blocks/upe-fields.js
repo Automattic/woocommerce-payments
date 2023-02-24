@@ -385,7 +385,7 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
 			const upeAppearance = getAppearance( true );
-			await api.saveUPEAppearance( upeAppearance, true );
+			await api.saveUPEAppearance( upeAppearance, 'true' );
 
 			// Update appearance state
 			setAppearance( upeAppearance );
