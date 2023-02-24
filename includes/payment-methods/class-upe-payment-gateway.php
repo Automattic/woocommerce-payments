@@ -547,43 +547,18 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				$additional_api_parameters = $this->get_mandate_params_for_order( $order );
 
 				try {
-					try {
-						$updated_payment_intent = $this->payments_api_client->update_intention(
-							$payment_intent_id,
-							$converted_amount,
-							strtolower( $currency ),
-							$save_payment_method,
-							$customer_id,
-							$this->get_metadata_from_order( $order, $payment_type ),
-							$this->get_level3_data_from_order( $order ),
-							$selected_upe_payment_type,
-							$payment_country,
-							$additional_api_parameters
-						);
-					} catch ( API_Exception $e ) {
-						// If the issue is that a customer resource is missing we can retry the payment after creating a new customer object.
-						if (
-							$e->get_error_code() === 'resource_missing'
-							&& 0 === strpos( strtolower( $e->getMessage() ), 'error: no such customer' )
-						) {
-							// Create new customer and retry.
-							$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new \WC_Customer( $user->ID ) );
-							$customer_id   = $this->customer_service->recreate_customer( $user, $customer_data );
-
-							$updated_payment_intent = $this->payments_api_client->update_intention(
-								$payment_intent_id,
-								$converted_amount,
-								strtolower( $currency ),
-								$save_payment_method,
-								$customer_id,
-								$this->get_metadata_from_order( $order, $payment_type ),
-								$this->get_level3_data_from_order( $order ),
-								$selected_upe_payment_type,
-								$payment_country,
-								$additional_api_parameters
-							);
-						}
-					}
+					$updated_payment_intent = $this->payments_api_client->update_intention(
+						$payment_intent_id,
+						$converted_amount,
+						strtolower( $currency ),
+						$save_payment_method,
+						$customer_id,
+						$this->get_metadata_from_order( $order, $payment_type ),
+						$this->get_level3_data_from_order( $order ),
+						$selected_upe_payment_type,
+						$payment_country,
+						$additional_api_parameters
+					);
 				} catch ( Amount_Too_Small_Exception $e ) {
 					// This code would only be reached if the cache has already expired.
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );

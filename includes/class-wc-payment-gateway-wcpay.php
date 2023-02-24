@@ -1072,51 +1072,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( empty( $intent ) ) {
 				// Create intention, try to confirm it & capture the charge (if 3DS is not required).
-				try {
-					$intent = $this->payments_api_client->create_and_confirm_intention(
-						$converted_amount,
-						$currency,
-						$payment_information->get_payment_method(),
-						$customer_id,
-						$payment_information->is_using_manual_capture(),
-						$save_payment_method_to_store,
-						$payment_information->should_save_payment_method_to_platform(),
-						$metadata,
-						$this->get_level3_data_from_order( $order ),
-						$payment_information->is_merchant_initiated(),
-						$additional_api_parameters,
-						$payment_methods,
-						$payment_information->get_cvc_confirmation(),
-						$payment_information->get_fingerprint()
-					);
-				} catch ( API_Exception $e ) {
-					// If the issue is that a customer resource is missing we can retry the payment after creating a new customer object.
-					if (
-						$e->get_error_code() === 'resource_missing'
-						&& 0 === strpos( strtolower( $e->getMessage() ), 'no such customer' )
-					) {
-						// Create new customer and retry.
-						$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
-						$customer_id   = $this->customer_service->recreate_customer( $user, $customer_data );
-
-						$intent = $this->payments_api_client->create_and_confirm_intention(
-							$converted_amount,
-							$currency,
-							$payment_information->get_payment_method(),
-							$customer_id,
-							$payment_information->is_using_manual_capture(),
-							$save_payment_method_to_store,
-							$payment_information->should_save_payment_method_to_platform(),
-							$metadata,
-							$this->get_level3_data_from_order( $order ),
-							$payment_information->is_merchant_initiated(),
-							$additional_api_parameters,
-							$payment_methods,
-							$payment_information->get_cvc_confirmation(),
-							$payment_information->get_fingerprint()
-						);
-					}
-				}
+				$intent = $this->payments_api_client->create_and_confirm_intention(
+					$converted_amount,
+					$currency,
+					$payment_information->get_payment_method(),
+					$customer_id,
+					$payment_information->is_using_manual_capture(),
+					$save_payment_method_to_store,
+					$payment_information->should_save_payment_method_to_platform(),
+					$metadata,
+					$this->get_level3_data_from_order( $order ),
+					$payment_information->is_merchant_initiated(),
+					$additional_api_parameters,
+					$payment_methods,
+					$payment_information->get_cvc_confirmation(),
+					$payment_information->get_fingerprint()
+				);
 			}
 
 			$intent_id     = $intent->get_id();
