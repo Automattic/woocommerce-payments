@@ -181,4 +181,4 @@ Unless specified otherwise, most requests will return a `WCPay\Core\Server\Repon
 
 ## Creating new requests and extending existing ones
 
-Please refer to [the documentation within the `request` directory](request/README.md).
+Please refer to [contributor docs](CONTRIBUTING.md).

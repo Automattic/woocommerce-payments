@@ -1,4 +1,4 @@
-# WooCommerce Payments: Creating and extending server requests
+# Creating new request classes for WooCommerce Payments
 
 1. [Creating new requests](#creating-new-requests)
     1. [Basic methods](#basic-methods)
@@ -141,7 +141,7 @@ public function set_deposit( string $deposit_id ) {
 }
 ```
 
-## Extending requests
+## Extending requests during runtime
 
 Every request class can be extended, and replaced using filters. The important addition with requests is the static `extend()` method, which can be used on child classes to extend the parent request __object__ once it already exists.
 
