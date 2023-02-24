@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -111,7 +111,6 @@ const DepositsDescription = () => {
 
 const SettingsManager = () => {
 	const { isLoading } = useSettings();
-
 	const {
 		featureFlags: {
 			upeSettingsPreview: isUPESettingsPreviewEnabled,
@@ -119,9 +118,21 @@ const SettingsManager = () => {
 			upeType,
 		},
 	} = useContext( WCPaySettingsContext );
+
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
+	const [ showTour, setShowTour ] = useState( false );
+
+	useEffect( () => {
+		if ( ! isLoading ) {
+			setShowTour( true );
+		}
+	}, [ isLoading ] );
+
+	const handleTourEnd = () => {
+		setShowTour( false );
+	};
 
 	return (
 		<SettingsLayout>
@@ -179,7 +190,7 @@ const SettingsManager = () => {
 			</SettingsSection>
 			<AdvancedSettings />
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
-			{ ! isLoading && (
+			{ showTour && (
 				<Tour
 					options={ [
 						{
@@ -248,6 +259,7 @@ const SettingsManager = () => {
 							},
 						},
 					] }
+					onTourEnd={ handleTourEnd }
 				/>
 			) }
 		</SettingsLayout>

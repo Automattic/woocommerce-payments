@@ -1,13 +1,7 @@
 /**
  * External dependencies
  */
-import React, {
-	ReactNode,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import classnames from 'classnames';
 import { Button } from '@wordpress/components';
@@ -55,9 +49,10 @@ interface TourOption {
 
 interface TourProps {
 	options: TourOption[];
+	onTourEnd: () => void;
 }
 
-const Tour = ( { options }: TourProps ): ReactNode => {
+const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 	const containerRef = useRef< HTMLDivElement >( null );
 	const [ coordinates, setCoordinates ] = useState< TourCoordinates | null >(
 		null
@@ -142,14 +137,17 @@ const Tour = ( { options }: TourProps ): ReactNode => {
 	}, [ coordinates ] );
 
 	const handleActionButtonClick = () => {
+		if ( currentIndex >= options.length - 1 ) {
+			onTourEnd();
+			return;
+		}
+
 		setCurrentIndex( ( prev ) => prev + 1 );
 	};
 
 	const handlePreviousButtonClick = () => {
 		setCurrentIndex( ( prev ) => prev - 1 );
 	};
-
-	if ( ! content ) return null;
 
 	return createPortal(
 		<>
