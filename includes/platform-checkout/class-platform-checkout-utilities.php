@@ -115,6 +115,10 @@ class Platform_Checkout_Utilities {
 		$response      = \Automattic\Jetpack\Connection\Client::remote_request( $args );
 		$response_body = wp_remote_retrieve_body( $response );
 
+		// phpcs:ignore
+		/**
+		 * @psalm-suppress UndefinedDocblockClass
+		 */
 		if ( is_wp_error( $response ) || ! is_array( $response_body ) || ! empty( $response['code'] ) || $response['code'] >= 300 || $response['code'] < 200 ) {
 			Logger::error( 'HTTP_REQUEST_ERROR ' . var_export( $response, true ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 		} else {
