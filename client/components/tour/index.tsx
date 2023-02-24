@@ -1,8 +1,16 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, {
+	ReactNode,
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from 'react';
 import { createPortal } from 'react-dom';
+import classnames from 'classnames';
 
 /**
  * Internal dependencies
@@ -14,8 +22,34 @@ interface TourPosition {
 	y: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-const Tour = ( { options }: any ) => {
+interface TourOptionContentImage {
+	src: string;
+	mobileOnly?: boolean;
+}
+
+interface TourOptionContentButton {
+	text: string;
+}
+
+interface TourOptionContent {
+	title: string;
+	description: string;
+	image?: TourOptionContentImage;
+	counter?: boolean;
+	actionButton?: TourOptionContentButton;
+	previousButton?: TourOptionContentButton;
+}
+
+interface TourOption {
+	selector: string;
+	content: TourOptionContent;
+}
+
+interface TourProps {
+	options: TourOption[];
+}
+
+const Tour = ( { options }: TourProps ): ReactNode => {
 	const containerRef = useRef< HTMLDivElement >( null );
 	const [ position, setPosition ] = useState< TourPosition | null >( null );
 	const [ currentIndex, setCurrentIndex ] = useState( 0 );
@@ -24,21 +58,7 @@ const Tour = ( { options }: any ) => {
 	const { title, description, image, actionButton, previousButton, counter } =
 		content || {};
 
-	useEffect( () => {
-		if ( ! position ) return;
-
-		window.scrollTo( { left: position.x, top: position.y - 100 } );
-	}, [ position ] );
-
-	useEffect( () => {
-		document.body.classList.add( 'modal-open' );
-
-		return () => {
-			document.body.classList.remove( 'modal-open' );
-		};
-	}, [] );
-
-	useLayoutEffect( () => {
+	const updateModalPosition = useCallback( () => {
 		if ( ! selector ) return;
 
 		const container = containerRef.current;
@@ -54,6 +74,40 @@ const Tour = ( { options }: any ) => {
 			y: Math.floor( window.scrollY + top - rect2.height ),
 		} );
 	}, [ selector ] );
+
+	useEffect( () => {
+		const accountSettingsContainer = document.getElementById(
+			'wcpay-account-settings-container'
+		);
+
+		if ( ! accountSettingsContainer ) return;
+
+		const observer = new ResizeObserver( updateModalPosition );
+
+		observer.observe( accountSettingsContainer );
+
+		return () => {
+			observer.unobserve( accountSettingsContainer );
+		};
+	}, [ updateModalPosition ] );
+
+	useEffect( () => {
+		document.body.classList.add( 'modal-open' );
+
+		return () => {
+			document.body.classList.remove( 'modal-open' );
+		};
+	}, [] );
+
+	useLayoutEffect( () => {
+		updateModalPosition();
+	}, [ updateModalPosition ] );
+
+	useLayoutEffect( () => {
+		if ( ! position ) return;
+
+		window.scrollTo( { left: position.x, top: position.y - 100 } );
+	}, [ position ] );
 
 	const handleActionButtonClick = () => {
 		setCurrentIndex( ( prev ) => prev + 1 );
@@ -76,9 +130,12 @@ const Tour = ( { options }: any ) => {
 				{ image && (
 					<img
 						alt={ title }
-						src={ typeof image === 'string' ? image : image.src }
+						src={ image.src }
 						width={ 350 }
 						height={ 204 }
+						className={ classnames( 'tour-modal__image', {
+							'tour-modal__image--mobile': image.mobileOnly,
+						} ) }
 					/>
 				) }
 
@@ -108,7 +165,7 @@ const Tour = ( { options }: any ) => {
 				</footer>
 			</div>
 		</>,
-		document.getElementsByTagName( 'body' )[ 0 ]
+		document.body
 	);
 };
 

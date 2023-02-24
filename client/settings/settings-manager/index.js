@@ -186,7 +186,7 @@ const SettingsManager = () => {
 							selector: '.settings-section:last-child',
 							content: {
 								title: 'Enhanced fraud protection is here 🔒',
-								image: 'https://picsum.photos/200',
+								image: { src: 'https://picsum.photos/350/204' },
 								description:
 									// eslint-disable-next-line max-len
 									'Incoming transactions will now be screened for common risk factors, at the level of your choosing. Review any transactions caught by these filters and select whether you’d like to approve or decline them',
@@ -202,7 +202,7 @@ const SettingsManager = () => {
 							content: {
 								title: 'Choose your filter level 🚦',
 								image: {
-									src: 'https://picsum.photos/200',
+									src: 'https://picsum.photos/350/204',
 									mobileOnly: true,
 								},
 								description:
@@ -217,7 +217,7 @@ const SettingsManager = () => {
 							content: {
 								title: 'Take more control 🎚️',
 								image: {
-									src: 'https://picsum.photos/200',
+									src: 'https://picsum.photos/350/204',
 									mobileOnly: true,
 								},
 								description:
@@ -233,7 +233,7 @@ const SettingsManager = () => {
 							content: {
 								title: 'Ready for review 📥️',
 								image: {
-									src: 'https://picsum.photos/200',
+									src: 'https://picsum.photos/350/204',
 									mobileOnly: true,
 								},
 								description:
