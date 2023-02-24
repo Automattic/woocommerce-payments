@@ -1,10 +1,5 @@
 .connect-account-page-treatment {
 	&__onboarding {
-		img {
-			width: 140px;
-			margin: $gap-smaller 0;
-		}
-
 		h2 {
 			font-size: 24px;
 			line-height: 32px;
@@ -60,7 +55,7 @@
 			}
 		}
 
-		svg {
+		img {
 			height: 24px;
 		}
 
@@ -82,6 +77,11 @@
 
 	&__details {
 		text-align: center;
+
+		img {
+			width: 140px;
+			margin: $gap-smaller 0;
+		}
 
 		p {
 			font-size: 16px;

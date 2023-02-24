@@ -24,7 +24,7 @@ import Discover from 'assets/images/cards/discover.svg?asset';
 import GPay from 'assets/images/cards/google-pay.svg?asset';
 import JCB from 'assets/images/cards/jcb.svg?asset';
 import UnionPay from 'assets/images/cards/unionpay.svg?asset';
-import LightbulbIcon from '../../assets/images/icons/lightbulb.svg?asset';
+import LightbulbIcon from 'assets/images/icons/lightbulb.svg?asset';
 import './style.scss';
 
 const LearnMore = () => {

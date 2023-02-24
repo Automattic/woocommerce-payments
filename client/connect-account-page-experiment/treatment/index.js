@@ -129,7 +129,7 @@ const ConnectPageOnboarding = () => {
 	return (
 		<>
 			<CardHeader>
-				<LogoImg />
+				<img src={ LogoImg } alt="logo" />
 			</CardHeader>
 			<CardBody className="connect-account-page-treatment__content">
 				<h2>{ strings.heading }</h2>
