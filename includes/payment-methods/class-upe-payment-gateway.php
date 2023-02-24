@@ -240,16 +240,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$user = $this->get_user_for_order( $order );
 
 			// Determine the customer making the payment, create one if we don't have one already.
-			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-			if ( null === $customer_id ) {
-				$customer_id = $this->create_customer_using_order( $order, $user );
-			} else {
-				// No need to update the customer object if we just created it.
-				$customer_details_options = [
-					'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
-				];
-				$this->update_customer_with_order_data_on_shutdown( $customer_id, $order, $customer_details_options );
-			}
+			$customer_id = $this->create_or_update_customer_using_order_data( $user, $order );
 
 			$payment_type = $this->is_payment_recurring( $order_id ) ? Payment_Type::RECURRING() : Payment_Type::SINGLE();
 
