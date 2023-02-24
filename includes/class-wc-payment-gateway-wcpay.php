@@ -944,16 +944,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$user = $this->get_user_for_order( $order );
 
 		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-		if ( null === $customer_id ) {
-			$customer_id = $this->create_customer_using_order( $order, $user );
-		} else {
-			// No need to update the customer object if we just created it.
-			$customer_details_options = [
-				'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
-			];
-			$this->update_customer_with_order_data_on_shutdown( $customer_id, $order, $customer_details_options );
-		}
+		$customer_id = $this->create_or_update_customer_using_order_data( $user, $order, filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ) );
 
 		// Update saved payment method async to include billing details, if missing.
 		if ( $payment_information->is_using_saved_payment_method() ) {
@@ -3327,6 +3318,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->update_customer_with_order_data( $order->get_id(), $customer_id, $test_mode, $options['is_woopay'] ?? false );
 			}
 		);
+	}
+
+	/**
+	 * Creates a customer object using data from the order provided. If a customer already exists
+	 * for the current user we instead use the data in the order to update the customer object in
+	 * the shutdown hook.
+	 *
+	 * @param WP_User  $user           The user associated with the order.
+	 * @param WC_Order $order          The order used to update the customer.
+	 * @param bool     $paid_on_woopay Indicates whether the payment being processed came from WooPay. Defaults to false.
+	 *
+	 * @return string  The customer ID for the newly created or updated customer.
+	 */
+	protected function create_or_update_customer_using_order_data( WP_User $user, WC_Order $order, bool $paid_on_woopay = false ): string {
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+		if ( null === $customer_id ) {
+			$customer_id = $this->create_customer_using_order( $order, $user );
+		} else {
+			// No need to update the customer object if we just created it.
+			$customer_details_options = [
+				'is_woopay' => $paid_on_woopay,
+			];
+			$this->update_customer_with_order_data_on_shutdown( $customer_id, $order, $customer_details_options );
+		}
+
+		return $customer_id;
 	}
 
 	/**
