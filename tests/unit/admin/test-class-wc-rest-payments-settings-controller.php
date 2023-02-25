@@ -623,6 +623,19 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
 	}
 
+	public function test_enable_platform_checkout_converts_upe_flag() {
+		$this->gateway->update_option( '_wcpay_feature_upe', '1' );
+		$this->gateway->update_option( '_wcpay_feature_upe_split', '0' );
+		$this->gateway->update_option( 'platform_checkout', 'no' );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_platform_checkout_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( '0', $this->gateway->get_option( '_wcpay_feature_upe' ) );
+		$this->assertEquals( '1', $this->gateway->get_option( '_wcpay_feature_upe_split' ) );
+	}
 
 	public function deposit_schedules_data_provider() {
 		return [
