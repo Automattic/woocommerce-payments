@@ -1,6 +1,8 @@
 export interface TourCoordinates {
 	x: number;
 	y: number;
+	arrow?: TourOptionAbsolutePosition;
+	scrollPadding?: [ number, number ];
 }
 
 interface TourOptionContentImage {
@@ -28,11 +30,10 @@ export interface TourOptionRelativePosition {
 	bottom?: number;
 }
 
+export type TourOptionAbsolutePosition = 'top' | 'left' | 'bottom' | 'right';
+
 export type TourOptionPosition =
-	| 'top'
-	| 'left'
-	| 'bottom'
-	| 'right'
+	| TourOptionAbsolutePosition
 	| TourOptionRelativePosition;
 
 interface TourOption {

@@ -227,7 +227,7 @@ const SettingsManager = () => {
 						},
 						{
 							selector: '.express-checkout__label',
-							position: 'left',
+							position: 'top',
 							content: {
 								title: 'Take more control 🎚️',
 								image: {

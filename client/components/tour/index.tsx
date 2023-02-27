@@ -62,27 +62,31 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 	}, [] );
 
 	useEffect( () => {
-		const accountSettingsContainer = document.getElementById(
-			'wcpay-account-settings-container'
-		);
+		const wpbodyContainer = document.getElementById( 'wpbody' );
 
-		if ( ! accountSettingsContainer ) return;
+		if ( ! wpbodyContainer ) return;
 
 		const observer = new ResizeObserver( updateModalPosition );
 
-		observer.observe( accountSettingsContainer );
+		observer.observe( wpbodyContainer );
 
 		updateModalPosition();
 
 		return () => {
-			observer.unobserve( accountSettingsContainer );
+			observer.unobserve( wpbodyContainer );
 		};
 	}, [ updateModalPosition ] );
 
 	useEffect( () => {
 		if ( ! coordinates ) return;
 
-		window.scrollTo( { left: coordinates.x, top: coordinates.y - 100 } );
+		const { x, y, scrollPadding } = coordinates;
+		const [ paddingX, paddingY ] = scrollPadding || [ 0, 0 ];
+
+		window.scrollTo( {
+			left: x - paddingX,
+			top: y - paddingY - 50,
+		} );
 	}, [ coordinates ] );
 
 	const handleActionButtonClick = () => {
@@ -104,9 +108,8 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 			<div
 				ref={ containerRef }
 				className={ classnames( 'tour-modal', {
-					'tour-modal--arrow': typeof position === 'string',
-					[ `tour-modal--arrow-${ position }` ]:
-						typeof position === 'string',
+					'tour-modal--arrow': coordinates?.arrow,
+					[ `tour-modal--arrow-${ coordinates?.arrow }` ]: coordinates?.arrow,
 				} ) }
 				style={
 					coordinates

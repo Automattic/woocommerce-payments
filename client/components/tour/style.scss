@@ -54,17 +54,6 @@
 
 			&-bottom {
 				&::before {
-					border-bottom: 8px solid #fff;
-					border-left: 8px solid transparent;
-					border-right: 8px solid transparent;
-					top: -8px;
-					left: 50%;
-					transform: translateX( -50% );
-				}
-			}
-
-			&-top {
-				&::before {
 					border-top: 8px solid #fff;
 					border-left: 8px solid transparent;
 					border-right: 8px solid transparent;
@@ -74,24 +63,35 @@
 				}
 			}
 
-			&-right {
+			&-top {
 				&::before {
-					border-right: 8px solid #fff;
-					border-top: 8px solid transparent;
-					border-bottom: 8px solid transparent;
-					top: 50%;
-					left: -8px;
-					transform: translateY( -50% );
+					border-bottom: 8px solid #fff;
+					border-left: 8px solid transparent;
+					border-right: 8px solid transparent;
+					top: -8px;
+					left: 50%;
+					transform: translateX( -50% );
 				}
 			}
 
-			&-left {
+			&-right {
 				&::before {
 					border-left: 8px solid #fff;
 					border-top: 8px solid transparent;
 					border-bottom: 8px solid transparent;
 					top: 50%;
 					left: 100%;
+					transform: translateY( -50% );
+				}
+			}
+
+			&-left {
+				&::before {
+					border-right: 8px solid #fff;
+					border-top: 8px solid transparent;
+					border-bottom: 8px solid transparent;
+					top: 50%;
+					left: -8px;
 					transform: translateY( -50% );
 				}
 			}
