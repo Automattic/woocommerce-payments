@@ -81,10 +81,7 @@ class Platform_Checkout_Utilities_Test extends WCPAY_UnitTestCase {
 	public function test_is_country_available( $ip_address, $expected ) {
 		$_SERVER['REMOTE_ADDR'] = $ip_address;
 
-		$this->gateway_mock
-			->expects( $this->once() )
-			->method( 'is_in_test_mode' )
-			->willReturn( false );
+		WC_Payments::mode()->live();
 
 		$platform_checkout_utilities = new Platform_Checkout_Utilities();
 		$actual                      = $platform_checkout_utilities->is_country_available( $this->gateway_mock );
@@ -92,10 +89,7 @@ class Platform_Checkout_Utilities_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_country_available_in_test_mode_return_true() {
-		$this->gateway_mock
-			->expects( $this->once() )
-			->method( 'is_in_test_mode' )
-			->willReturn( true );
+		WC_Payments::mode()->test();
 
 		$platform_checkout_utilities = new Platform_Checkout_Utilities();
 		$actual                      = $platform_checkout_utilities->is_country_available( $this->gateway_mock );
