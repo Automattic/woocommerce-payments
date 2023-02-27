@@ -67,13 +67,6 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 		);
 	} );
 
-	test( 'renders temporarily suspended notice for manual interval', () => {
-		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
-		expect( depositSchedule ).toEqual(
-			'Deposits temporarily suspended (learn more).'
-		);
-	} );
-
 	test( 'renders deposit schedule for manual interval', () => {
 		const depositSchedule = getDepositSchedule( { interval: 'manual' } );
 		expect( depositSchedule ).toEqual( 'Deposits set to manual.' );
