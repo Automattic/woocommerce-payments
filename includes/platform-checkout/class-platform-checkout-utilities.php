@@ -133,11 +133,10 @@ class Platform_Checkout_Utilities {
 	/**
 	 * Get if WooPay is available on the user country.
 	 *
-	 * @param \WC_Payment_Gateway_WCPay $gateway Gateway instance.
 	 * @return boolean
 	 */
-	public function is_country_available( $gateway ) {
-		if ( $gateway->is_in_test_mode() ) {
+	public function is_country_available() {
+		if ( WC_Payments::mode()->is_test() ) {
 			return true;
 		}
 
