@@ -73,9 +73,9 @@ exports[`HighFraudProtectionModal renders the high protection level content with
       <span
         class="component-modal__text--blocked"
       >
-        blocked 
+        blocked
       </span>
-      if: 
+       if:
     </p>
     <ul>
       <li>
@@ -85,21 +85,18 @@ exports[`HighFraudProtectionModal renders the high protection level content with
         An order originates from an IP address outside your country
       </li>
       <li>
-        An order exceeds
-         
+        An order exceeds 
         <strong>
-          $1,000.00.
+          $1,000.00
         </strong>
+        .
       </li>
       <li>
         The same card or IP address submits 
-         
         <strong>
-          5 orders 
+          5 orders
         </strong>
-         
-        within 
-         
+         within 
         <strong>
           72 hours.
         </strong>
@@ -110,9 +107,9 @@ exports[`HighFraudProtectionModal renders the high protection level content with
       <span
         class="component-modal__text--review"
       >
-        authorized and held for review 
+        authorized and held for review
       </span>
-      if:
+       if:
     </p>
     <ul>
       <li>
@@ -120,13 +117,10 @@ exports[`HighFraudProtectionModal renders the high protection level content with
       </li>
       <li>
         An order has less than 
-         
         <strong>
-          2 items 
+          2 items
         </strong>
-         
-        or more than 
-         
+         or more than 
         <strong>
           10 items.
         </strong>
@@ -221,9 +215,9 @@ exports[`HighFraudProtectionModal renders the high protection level content with
       <span
         class="component-modal__text--blocked"
       >
-        blocked 
+        blocked
       </span>
-      if: 
+       if:
     </p>
     <ul>
       <li>
@@ -233,23 +227,18 @@ exports[`HighFraudProtectionModal renders the high protection level content with
         An order originates from an IP address outside your country
       </li>
       <li>
-        An order exceeds the equivalent of
-         
+        An order exceeds the equivalent of 
         <strong>
           $1,000.00 USD
         </strong>
-         
-        in Euro.
+         in Euro.
       </li>
       <li>
         The same card or IP address submits 
-         
         <strong>
-          5 orders 
+          5 orders
         </strong>
-         
-        within 
-         
+         within 
         <strong>
           72 hours.
         </strong>
@@ -260,9 +249,9 @@ exports[`HighFraudProtectionModal renders the high protection level content with
       <span
         class="component-modal__text--review"
       >
-        authorized and held for review 
+        authorized and held for review
       </span>
-      if:
+       if:
     </p>
     <ul>
       <li>
@@ -270,13 +259,10 @@ exports[`HighFraudProtectionModal renders the high protection level content with
       </li>
       <li>
         An order has less than 
-         
         <strong>
-          2 items 
+          2 items
         </strong>
-         
-        or more than 
-         
+         or more than 
         <strong>
           10 items.
         </strong>
@@ -371,9 +357,9 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
       <span
         class="component-modal__text--blocked"
       >
-        blocked 
+        blocked
       </span>
-      if: 
+       if:
     </p>
     <ul>
       <li>
@@ -385,9 +371,9 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
       <span
         class="component-modal__text--review"
       >
-        authorized and held for review 
+        authorized and held for review
       </span>
-      if:
+       if:
     </p>
     <ul>
       <li>
@@ -397,27 +383,21 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
         An order originates from an IP address outside your country.
       </li>
       <li>
-        An order exceeds
-         
+        An order exceeds 
         <strong>
           $1,000.00
-           
         </strong>
-        or
-         
+         or 
         <strong>
           10 items.
         </strong>
       </li>
       <li>
-        The same card or IP address submits
-         
+        The same card or IP address submits 
         <strong>
           5 orders
         </strong>
-         
-        within
-         
+         within 
         <strong>
           72 hours.
         </strong>
@@ -506,9 +486,9 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
       <span
         class="component-modal__text--blocked"
       >
-        blocked 
+        blocked
       </span>
-      if: 
+       if:
     </p>
     <ul>
       <li>
@@ -520,9 +500,9 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
       <span
         class="component-modal__text--review"
       >
-        authorized and held for review 
+        authorized and held for review
       </span>
-      if:
+       if:
     </p>
     <ul>
       <li>
@@ -532,30 +512,21 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
         An order originates from an IP address outside your country.
       </li>
       <li>
-        An order exceeds the equivalent of
-         
+        An order exceeds the equivalent of 
         <strong>
           $1,000.00 USD
-           
         </strong>
-         
-        in Euro
-         
-        or
-         
+         in Euro or 
         <strong>
           10 items.
         </strong>
       </li>
       <li>
-        The same card or IP address submits
-         
+        The same card or IP address submits 
         <strong>
           5 orders
         </strong>
-         
-        within
-         
+         within 
         <strong>
           72 hours.
         </strong>

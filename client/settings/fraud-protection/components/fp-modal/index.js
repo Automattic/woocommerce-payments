@@ -10,6 +10,7 @@ import { Button, Modal } from '@wordpress/components';
  */
 import ExceedsDollarAmountRule from '../exceeds-dollar-amount-rule';
 import ProtectionLevelModalNotice from '../protection-level-modal-notice';
+import interpolateComponents from 'interpolate-components';
 
 export const HighFraudProtectionModal = ( {
 	level,
@@ -31,14 +32,17 @@ export const HighFraudProtectionModal = ( {
 					<div className="components-modal__body--fraud-protection">
 						<ProtectionLevelModalNotice level={ level } />
 						<p>
-							{ __(
-								'Payments will be ',
-								'woocommerce-payments'
-							) }
-							<span className="component-modal__text--blocked">
-								{ __( 'blocked ', 'woocommerce-payments' ) }
-							</span>
-							{ __( 'if: ', 'woocommerce-payments' ) }
+							{ interpolateComponents( {
+								mixedString: __(
+									'Payments will be {{blocked}}blocked{{/blocked}} if:',
+									'woocommerce-payments'
+								),
+								components: {
+									blocked: (
+										<span className="component-modal__text--blocked" />
+									),
+								},
+							} ) }
 						</p>
 						<ul>
 							<li>
@@ -58,37 +62,28 @@ export const HighFraudProtectionModal = ( {
 								storeCurrency={ storeCurrency }
 							/>
 							<li>
-								{ __(
-									'The same card or IP address submits ',
-									'woocommerce-payments'
-								) }{ ' ' }
-								<strong>
-									{ __(
-										'5 orders ',
+								{ interpolateComponents( {
+									mixedString: __(
+										'The same card or IP address submits {{strong}}5 orders{{/strong}} within ' +
+											'{{strong}}72 hours.{{/strong}}',
 										'woocommerce-payments'
-									) }
-								</strong>{ ' ' }
-								{ __( 'within ', 'woocommerce-payments' ) }{ ' ' }
-								<strong>
-									{ __(
-										'72 hours.',
-										'woocommerce-payments'
-									) }
-								</strong>
+									),
+									components: { strong: <strong /> },
+								} ) }
 							</li>
 						</ul>
 						<p>
-							{ __(
-								'Payments will be ',
-								'woocommerce-payments'
-							) }
-							<span className="component-modal__text--review">
-								{ __(
-									'authorized and held for review ',
+							{ interpolateComponents( {
+								mixedString: __(
+									'Payments will be {{review}}authorized and held for review{{/review}} if:',
 									'woocommerce-payments'
-								) }
-							</span>
-							{ __( 'if:', 'woocommerce-payments' ) }
+								),
+								components: {
+									review: (
+										<span className="component-modal__text--review" />
+									),
+								},
+							} ) }
 						</p>
 						<ul>
 							<li>
@@ -98,23 +93,13 @@ export const HighFraudProtectionModal = ( {
 								) }
 							</li>
 							<li>
-								{ __(
-									'An order has less than ',
-									'woocommerce-payments'
-								) }{ ' ' }
-								<strong>
-									{ __( '2 items ', 'woocommerce-payments' ) }
-								</strong>{ ' ' }
-								{ __(
-									'or more than ',
-									'woocommerce-payments'
-								) }{ ' ' }
-								<strong>
-									{ __(
-										'10 items.',
+								{ interpolateComponents( {
+									mixedString: __(
+										'An order has less than {{strong}}2 items{{/strong}} or more than {{strong}}10 items.{{/strong}}',
 										'woocommerce-payments'
-									) }
-								</strong>
+									),
+									components: { strong: <strong /> },
+								} ) }
 							</li>
 							<li>
 								{ __(
@@ -166,14 +151,17 @@ export const StandardFraudProtectionModal = ( {
 					<div className="components-modal__body--fraud-protection">
 						<ProtectionLevelModalNotice level={ level } />
 						<p>
-							{ __(
-								'Payments will be ',
-								'woocommerce-payments'
-							) }
-							<span className="component-modal__text--blocked">
-								{ __( 'blocked ', 'woocommerce-payments' ) }
-							</span>
-							{ __( 'if: ', 'woocommerce-payments' ) }
+							{ interpolateComponents( {
+								mixedString: __(
+									'Payments will be {{blocked}}blocked{{/blocked}} if:',
+									'woocommerce-payments'
+								),
+								components: {
+									blocked: (
+										<span className="component-modal__text--blocked" />
+									),
+								},
+							} ) }
 						</p>
 						<ul>
 							<li>
@@ -184,17 +172,17 @@ export const StandardFraudProtectionModal = ( {
 							</li>
 						</ul>
 						<p>
-							{ __(
-								'Payments will be ',
-								'woocommerce-payments'
-							) }
-							<span className="component-modal__text--review">
-								{ __(
-									'authorized and held for review ',
+							{ interpolateComponents( {
+								mixedString: __(
+									'Payments will be {{review}}authorized and held for review{{/review}} if:',
 									'woocommerce-payments'
-								) }
-							</span>
-							{ __( 'if:', 'woocommerce-payments' ) }
+								),
+								components: {
+									review: (
+										<span className="component-modal__text--review" />
+									),
+								},
+							} ) }
 						</p>
 						<ul>
 							<li>
@@ -214,13 +202,14 @@ export const StandardFraudProtectionModal = ( {
 								storeCurrency={ storeCurrency }
 							/>
 							<li>
-								{ __(
-									'The same card or IP address submits',
-									'woocommerce-payments'
-								) }{ ' ' }
-								<strong>{ __( '5 orders' ) }</strong>{ ' ' }
-								{ __( 'within' ) }{ ' ' }
-								<strong>{ __( '72 hours.' ) }</strong>
+								{ interpolateComponents( {
+									mixedString: __(
+										'The same card or IP address submits {{strong}}5 orders{{/strong}} within ' +
+											'{{strong}}72 hours.{{/strong}}',
+										'woocommerce-payments'
+									),
+									components: { strong: <strong /> },
+								} ) }
 							</li>
 						</ul>
 						<Button
