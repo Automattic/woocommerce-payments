@@ -211,6 +211,7 @@ const SettingsManager = () => {
 						},
 						{
 							selector: '.deposits__bank-information > h4',
+							position: 'bottom',
 							content: {
 								title: 'Choose your filter level 🚦',
 								image: {
@@ -226,6 +227,7 @@ const SettingsManager = () => {
 						},
 						{
 							selector: '.express-checkout__label',
+							position: 'left',
 							content: {
 								title: 'Take more control 🎚️',
 								image: {
@@ -241,7 +243,9 @@ const SettingsManager = () => {
 							},
 						},
 						{
-							selector: '.payment-methods__available-methods',
+							selector:
+								'.payment-methods__available-methods .payment-method:first-child .payment-method__label',
+							position: 'right',
 							content: {
 								title: 'Ready for review 📥️',
 								image: {

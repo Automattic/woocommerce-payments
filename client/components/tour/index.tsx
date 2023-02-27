@@ -10,49 +10,11 @@ import { Button, Icon } from '@wordpress/components';
  * Internal dependencies
  */
 import './style.scss';
-
-interface TourCoordinates {
-	x: number;
-	y: number;
-}
-
-interface TourOptionContentImage {
-	src: string;
-	mobileOnly?: boolean;
-}
-
-interface TourOptionContentButton {
-	text: string;
-}
-
-interface TourOptionContent {
-	title: string;
-	description: string;
-	image?: TourOptionContentImage;
-	counter?: boolean;
-	actionButton?: TourOptionContentButton;
-	previousButton?: TourOptionContentButton;
-}
-
-interface TourOptionPosition {
-	top?: number;
-	left?: number;
-	right?: number;
-	bottom?: number;
-}
-
-interface TourOption {
-	selector: string;
-	position: TourOptionPosition;
-	content: TourOptionContent;
-}
-
-interface TourProps {
-	options: TourOption[];
-	onTourEnd: () => void;
-}
+import { TourCoordinates, TourProps } from './interfaces';
+import { calculateCoordinates } from './utils';
 
 const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
+	const scrollRestoration = useRef< ScrollRestoration | null >( null );
 	const containerRef = useRef< HTMLDivElement >( null );
 	const [ coordinates, setCoordinates ] = useState< TourCoordinates | null >(
 		null
@@ -74,41 +36,28 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 		const elementRect = element.getBoundingClientRect();
 		const containerRect = container.getBoundingClientRect();
 
-		setCoordinates( () => {
-			let x = window.scrollX + elementRect.left;
-			let y = window.scrollY + elementRect.top - containerRect.height;
-
-			if ( position ) {
-				if ( position.bottom ) {
-					y =
-						elementRect.height -
-						containerRect.height -
-						position.bottom +
-						32;
-				}
-
-				if ( position.left ) {
-					x = elementRect.left + position.left;
-				}
-			}
-
-			return {
-				x: Math.floor( x ),
-				y: Math.floor( y ),
-			};
-		} );
+		setCoordinates(
+			calculateCoordinates( elementRect, containerRect, position )
+		);
 	}, [ selector, position ] );
 
 	useEffect( () => {
 		document.body.classList.add( 'modal-open' );
+		document.documentElement.classList.add( 'smooth-scroll' );
 
 		// Disables automatic scroll restoration
 		if ( history.scrollRestoration ) {
+			scrollRestoration.current = history.scrollRestoration;
 			history.scrollRestoration = 'manual';
 		}
 
 		return () => {
 			document.body.classList.remove( 'modal-open' );
+			document.documentElement.classList.add( 'smooth-scroll' );
+
+			if ( scrollRestoration.current ) {
+				history.scrollRestoration = scrollRestoration.current;
+			}
 		};
 	}, [] );
 
@@ -154,7 +103,11 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 			<div className="tour-modal__overlay"></div>
 			<div
 				ref={ containerRef }
-				className="tour-modal"
+				className={ classnames( 'tour-modal', {
+					'tour-modal--arrow': typeof position === 'string',
+					[ `tour-modal--arrow-${ position }` ]:
+						typeof position === 'string',
+				} ) }
 				style={
 					coordinates
 						? { top: coordinates.y, left: coordinates.x }
