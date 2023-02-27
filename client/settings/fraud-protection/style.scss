@@ -65,7 +65,8 @@
 
 .component-modal__button {
 	&--confirm {
-		float: right;
+		display: block;
+		margin-left: auto;
 	}
 }
 
