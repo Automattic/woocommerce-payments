@@ -7,7 +7,7 @@
     1. [Parameter definitions](#parameter-definitions)
         1. [Immutable parameters](#immutable-parameters)
     1. [Validators](#validators)
-1. [Extending requests](#extending-requests)
+1. [Extending requests during runtime](#extending-requests-during-runtime)
     1. [Finding the definition](#1-look-for-the-definition)
     2. [Creating a new extended class](#2-extend-the-class)
     3. [Using the extended class](#3-replacing-the-class)
