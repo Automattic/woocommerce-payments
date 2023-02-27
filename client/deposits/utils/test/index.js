@@ -114,6 +114,16 @@ describe( 'Deposits Overview Utils / getDepositScheduleDescriptor', () => {
 		);
 	} );
 
+	test( 'renders deposit schedule for monthly interval', () => {
+		const depositSchedule = getDepositSchedule( {
+			interval: 'monthly',
+			monthly_anchor: 31,
+		} );
+		expect( depositSchedule ).toEqual(
+			'Deposits set to monthly on the last day of the month.'
+		);
+	} );
+
 	test( 'renders weekly anchor for non en locales', () => {
 		momentLib.locale( 'de' );
 		const depositSchedule = getDepositSchedule( {
