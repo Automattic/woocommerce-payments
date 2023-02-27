@@ -246,9 +246,9 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return string A string representation of the current mode.
 	 */
 	private function get_gateway_mode_string() {
-		if ( $this->gateway->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return 'dev';
-		} elseif ( $this->gateway->is_in_test_mode() ) {
+		} elseif ( WC_Payments::mode()->is_test() ) {
 			return 'test';
 		}
 		return 'live';

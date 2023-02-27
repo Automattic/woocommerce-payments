@@ -46,7 +46,7 @@ class WC_REST_Payments_Connection_Tokens_Controller extends WC_Payments_REST_Con
 		if ( is_a( $response, 'WP_REST_Response' ) ) {
 			if ( property_exists( $response, 'data' ) ) {
 				if ( is_array( $response->data ) ) {
-					$response->data['test_mode'] = WC_Payments::get_gateway()->is_in_test_mode();
+					$response->data['test_mode'] = WC_Payments::mode()->is_test();
 				}
 			}
 		}
