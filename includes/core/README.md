@@ -30,7 +30,7 @@ flowchart TD
     HOOKS <---> EXTENSIONS
 ```
 
-1. __WooCommerce Payments Core__ is a set of classes (and APIs), which (should) contain core WooCommerce Payments functionality like the connection to the server, main services (like the customer service), and etc.
+1. __WooCommerce Payments Core__ is a set of classes (and APIs), which (should) contain core WooCommerce Payments functionality like the connection to the server, main services (like [the customer service](service/customer-service.md)), and etc.
 2. The rest of the __gateway__, meaning separate pieces of functionality like the REST API, admin views, etc.
 3. __Consumers__ are pieces of code, which are tightly connected to WooCommerce Payments, but are not crutial to its core functionality. Examples include Multi-Currency, WooPay, and other extensions, some of which are built into WooCommerce Payments.
 4. __Extensions__ are those use-cases, which are linked to WooCommerce Payments, but not build on top of/within the plugin. Those should use *WordPress actions and filters* to integrate with the gateway, and connect with the plugin through the classes, contained within the plugin core.
