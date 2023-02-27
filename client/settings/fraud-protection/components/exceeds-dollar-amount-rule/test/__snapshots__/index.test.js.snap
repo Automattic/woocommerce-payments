@@ -3,13 +3,11 @@
 exports[`ExceedsDollarAmountRule renders the high level dollar amount rule equivalent when USD is not store currency 1`] = `
 <div>
   <li>
-    An order exceeds the equivalent of
-     
+    An order exceeds the equivalent of 
     <strong>
       $1,000.00 USD
     </strong>
-     
-    in Euro.
+     in Euro.
   </li>
 </div>
 `;
@@ -17,11 +15,11 @@ exports[`ExceedsDollarAmountRule renders the high level dollar amount rule equiv
 exports[`ExceedsDollarAmountRule renders the high level dollar amount rule when USD is store currency 1`] = `
 <div>
   <li>
-    An order exceeds
-     
+    An order exceeds 
     <strong>
-      $1,000.00.
+      $1,000.00
     </strong>
+    .
   </li>
 </div>
 `;
@@ -29,17 +27,11 @@ exports[`ExceedsDollarAmountRule renders the high level dollar amount rule when 
 exports[`ExceedsDollarAmountRule renders the standard level dollar amount rule equivalent when USD is not store currency 1`] = `
 <div>
   <li>
-    An order exceeds the equivalent of
-     
+    An order exceeds the equivalent of 
     <strong>
       $1,000.00 USD
-       
     </strong>
-     
-    in Euro
-     
-    or
-     
+     in Euro or 
     <strong>
       10 items.
     </strong>
@@ -50,14 +42,11 @@ exports[`ExceedsDollarAmountRule renders the standard level dollar amount rule e
 exports[`ExceedsDollarAmountRule renders the standard level dollar amount rule when USD is store currency 1`] = `
 <div>
   <li>
-    An order exceeds
-     
+    An order exceeds 
     <strong>
       $1,000.00
-       
     </strong>
-    or
-     
+     or 
     <strong>
       10 items.
     </strong>

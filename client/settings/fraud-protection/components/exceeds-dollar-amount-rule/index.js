@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { sprintf, __ } from '@wordpress/i18n';
+import interpolateComponents from 'interpolate-components';
 
 const USDollarComponent = ( { level } ) => {
 	const isHighProtectionLevel = 'high' === level;
@@ -10,18 +11,26 @@ const USDollarComponent = ( { level } ) => {
 	if ( isHighProtectionLevel ) {
 		return (
 			<li>
-				{ __( 'An order exceeds', 'woocommerce-payments' ) }{ ' ' }
-				<strong>{ __( '$1,000.00.', 'woocommerce-payments' ) }</strong>
+				{ interpolateComponents( {
+					mixedString: __(
+						'An order exceeds {{strong}}$1,000.00{{/strong}}.',
+						'woocommerce-payments'
+					),
+					components: { strong: <strong /> },
+				} ) }
 			</li>
 		);
 	}
 
 	return (
 		<li>
-			{ __( 'An order exceeds', 'woocommerce-payments' ) }{ ' ' }
-			<strong>{ __( '$1,000.00', 'woocommerce-payments' ) } </strong>
-			{ __( 'or', 'woocommerce-payments' ) }{ ' ' }
-			<strong>{ __( '10 items.', 'woocommerce-payments' ) }</strong>
+			{ interpolateComponents( {
+				mixedString: __(
+					'An order exceeds {{strong}}$1,000.00{{/strong}} or {{strong}}10 items.{{/strong}}',
+					'woocommerce-payments'
+				),
+				components: { strong: <strong /> },
+			} ) }
 		</li>
 	);
 };
@@ -32,34 +41,32 @@ const NotUSDollarComponent = ( { level, storeCurrency } ) => {
 	if ( isHighProtectionLevel ) {
 		return (
 			<li>
-				{ __(
-					'An order exceeds the equivalent of',
-					'woocommerce-payments'
-				) }{ ' ' }
-				<strong>
-					{ __( '$1,000.00 USD', 'woocommerce-payments' ) }
-				</strong>{ ' ' }
-				{ sprintf(
-					__( 'in %s.', 'woocommerce-payments' ),
-					storeCurrency.name
-				) }
+				{ interpolateComponents( {
+					mixedString: sprintf(
+						__(
+							'An order exceeds the equivalent of {{strong}}$1,000.00 USD{{/strong}} in %s.',
+							'woocommerce-payments'
+						),
+						storeCurrency.name
+					),
+					components: { strong: <strong /> },
+				} ) }
 			</li>
 		);
 	}
 
 	return (
 		<li>
-			{ __(
-				'An order exceeds the equivalent of',
-				'woocommerce-payments'
-			) }{ ' ' }
-			<strong>{ __( '$1,000.00 USD', 'woocommerce-payments' ) } </strong>{ ' ' }
-			{ sprintf(
-				__( 'in %s', 'woocommerce-payments' ),
-				storeCurrency.name
-			) }{ ' ' }
-			{ __( 'or', 'woocommerce-payments' ) }{ ' ' }
-			<strong>{ __( '10 items.', 'woocommerce-payments' ) }</strong>
+			{ interpolateComponents( {
+				mixedString: sprintf(
+					__(
+						'An order exceeds the equivalent of {{strong}}$1,000.00 USD{{/strong}} in %s or {{strong}}10 items.{{/strong}}',
+						'woocommerce-payments'
+					),
+					storeCurrency.name
+				),
+				components: { strong: <strong /> },
+			} ) }
 		</li>
 	);
 };
