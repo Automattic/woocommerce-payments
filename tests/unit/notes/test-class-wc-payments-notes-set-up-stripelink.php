@@ -26,7 +26,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 			->setMethods(
 				[
 					'get_upe_available_payment_methods',
-					'get_payment_method_ids_enabled_at_checkout',
+					'get_payment_method_ids_enabled_at_checkout_filtered_by_fees',
 				]
 			)
 			->getMock();
@@ -44,7 +44,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 		$note = \WC_Payments_Notes_Set_Up_StripeLink::get_note();
 
 		$this->assertSame( 'Increase conversion at checkout', $note->get_title() );
-		$this->assertSame( 'Reduce cart abandonment and create a frictionless checkout experience with Link by Stripe. Link autofills your customer’s payment and shipping details so they can check out in just six seconds with the Link optimized experience. That’s 9x faster than shoppers who don’t use Link. Link increases conversion rates by over 7% for logged-in Link customers.', $note->get_content() );
+		$this->assertSame( 'Reduce cart abandonment and create a frictionless checkout experience with Link by Stripe. Link autofills your customer’s payment and shipping details, so they can check out in just six seconds with the Link optimized experience.', $note->get_content() );
 		$this->assertSame( 'info', $note->get_type() );
 		$this->assertSame( 'wc-payments-notes-set-up-stripe-link', $note->get_name() );
 		$this->assertSame( 'woocommerce-payments', $note->get_source() );
@@ -89,7 +89,7 @@ class WC_Payments_Notes_Set_Up_StripeLink_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->method( 'get_payment_method_ids_enabled_at_checkout_filtered_by_fees' )
 			->willReturn( $enabled_methods );
 
 		\WC_Payments_Notes_Set_Up_StripeLink::set_gateway( $this->mock_wcpay_gateway );

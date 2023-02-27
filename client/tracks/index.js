@@ -47,7 +47,7 @@ function recordUserEvent( eventName, eventProperties ) {
 	body.append( 'tracksNonce', nonce );
 	body.append( 'action', 'platform_tracks' );
 	body.append( 'tracksEventName', eventName );
-	body.append( 'tracksEventProp', eventProperties );
+	body.append( 'tracksEventProp', JSON.stringify( eventProperties ) );
 	fetch( ajaxUrl, {
 		method: 'post',
 		body,
@@ -59,8 +59,7 @@ const events = {
 	CONNECT_ACCOUNT_VIEW: 'page_view',
 	CONNECT_ACCOUNT_LEARN_MORE: 'wcpay_welcome_learn_more',
 	CONNECT_ACCOUNT_STRIPE_CONNECTED: 'wcpay_stripe_connected',
-	UPE_ENABLED: 'wcpay_upe_enabled',
-	UPE_DISABLED: 'wcpay_upe_disabled',
+	CONNECT_ACCOUNT_KYC_MODAL_OPENED: 'wcpay_connect_account_kyc_modal_opened',
 	MULTI_CURRENCY_ENABLED_CURRENCIES_UPDATED:
 		'wcpay_multi_currency_enabled_currencies_updated',
 	PAYMENT_REQUEST_SETTINGS_CHANGE: 'wcpay_payment_request_settings_change',
@@ -83,6 +82,10 @@ const events = {
 	PLATFORM_CHECKOUT_OTP_FAILED: 'platform_checkout_otp_prompt_failed',
 	PLATFORM_CHECKOUT_AUTO_REDIRECT: 'platform_checkout_auto_redirect',
 	PLATFORM_CHECKOUT_SKIPPED: 'platform_checkout_skipped',
+	PLATFORM_CHECKOUT_EXPRESS_BUTTON_OFFERED:
+		'platform_checkout_express_button_offered',
+	PLATFORM_CHECKOUT_EXPRESS_BUTTON_CLICKED:
+		'platform_checkout_express_button_clicked',
 };
 
 export default {

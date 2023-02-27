@@ -7,11 +7,16 @@ import wcpayTracks from 'tracks';
 import request from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
 import { buildAjaxURL } from '../../payment-request/utils';
+import { getTargetElement, validateEmail } from './utils';
 
-export const handlePlatformCheckoutEmailInput = ( field, api ) => {
+export const handlePlatformCheckoutEmailInput = async (
+	field,
+	api,
+	isBlocksCheckout = false
+) => {
 	let timer;
 	const waitTime = 500;
-	const platformCheckoutEmailInput = document.querySelector( field );
+	const platformCheckoutEmailInput = await getTargetElement( field );
 	let hasCheckedLoginSession = false;
 
 	// If we can't find the input, return.
@@ -64,6 +69,14 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	// Maybe we could make this a configurable option defined in PHP so it could be filtered by merchants.
 	const fullScreenModalBreakpoint = 768;
+
+	//Checks if customer has clicked the back button to prevent auto redirect
+	const searchParams = new URLSearchParams( window.location.search );
+	const customerClickedBackButton =
+		( 'undefined' !== typeof performance &&
+			'back_forward' ===
+				performance.getEntriesByType( 'navigation' )[ 0 ].type ) ||
+		'true' === searchParams.get( 'skip_platform_checkout' );
 
 	// Track the current state of the header. This default
 	// value should match the default state on the platform.
@@ -190,6 +203,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 
 	// Error message to display when there's an error contacting WooPay.
 	const errorMessage = document.createElement( 'div' );
+	errorMessage.style[ 'white-space' ] = 'normal';
 	errorMessage.textContent = __(
 		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
 		'woocommerce-payments'
@@ -212,13 +226,28 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email ) => {
+		// check and return if another otp iframe is already open.
+		if ( document.querySelector( '.platform-checkout-otp-iframe' ) ) {
+			return;
+		}
+
+		const viewportWidth = window.document.documentElement.clientWidth;
+		const viewportHeight = window.document.documentElement.clientHeight;
+
 		const urlParams = new URLSearchParams();
 		urlParams.append( 'email', email );
+		urlParams.append( 'testMode', getConfig( 'testMode' ) );
 		urlParams.append(
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
 		);
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
+		urlParams.append( 'is_blocks', isBlocksCheckout ? 'true' : 'false' );
+		urlParams.append( 'source_url', window.location.href );
+		urlParams.append(
+			'viewport',
+			`${ viewportWidth }x${ viewportHeight }`
+		);
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
@@ -260,11 +289,32 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		closeIframe( false );
 	} );
 
-	document
-		.querySelector( 'form[name="checkout"]' )
-		.addEventListener( 'submit', () => {
+	if ( isBlocksCheckout ) {
+		const formSubmitButton = await getTargetElement(
+			'button.wc-block-components-checkout-place-order-button'
+		);
+		formSubmitButton.addEventListener( 'click', () => {
 			abortController.abort();
 		} );
+	} else {
+		document
+			.querySelector( 'form[name="checkout"]' )
+			.addEventListener( 'submit', () => {
+				abortController.abort();
+			} );
+	}
+
+	const dispatchUserExistEvent = ( userExist ) => {
+		const PlatformCheckoutUserCheckEvent = new CustomEvent(
+			'PlatformCheckoutUserCheck',
+			{
+				detail: {
+					isRegisteredUser: userExist,
+				},
+			}
+		);
+		window.dispatchEvent( PlatformCheckoutUserCheckEvent );
+	};
 
 	const platformCheckoutLocateUser = async ( email ) => {
 		parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
@@ -367,15 +417,7 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			} )
 			.then( ( data ) => {
 				// Dispatch an event after we get the response.
-				const PlatformCheckoutUserCheckEvent = new CustomEvent(
-					'PlatformCheckoutUserCheck',
-					{
-						detail: {
-							isRegisteredUser: data[ 'user-exists' ],
-						},
-					}
-				);
-				window.dispatchEvent( PlatformCheckoutUserCheckEvent );
+				dispatchUserExistEvent( data[ 'user-exists' ] );
 
 				if ( data[ 'user-exists' ] ) {
 					openIframe( email );
@@ -398,16 +440,6 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			} );
 	};
 
-	const validateEmail = ( value ) => {
-		/* Borrowed from WooCommerce checkout.js with a slight tweak to add `{2,}` to the end and make the TLD at least 2 characters. */
-		/* eslint-disable */
-		const pattern = new RegExp(
-			/^([a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+(\.[a-z\d!#$%&'*+\-\/=?^_`{|}~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+)*|"((([ \t]*\r\n)?[ \t]+)?([\x01-\x08\x0b\x0c\x0e-\x1f\x7f\x21\x23-\x5b\x5d-\x7e\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|\\[\x01-\x09\x0b\x0c\x0d-\x7f\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))*(([ \t]*\r\n)?[ \t]+)?")@(([a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[a-z\d\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])\.)+([a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]|[a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF][a-z\d\-._~\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]*[0-9a-z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]){2,}\.?$/i
-		);
-		/* eslint-enable */
-		return pattern.test( value );
-	};
-
 	const closeLoginSessionIframe = () => {
 		loginSessionIframeWrapper.remove();
 		loginSessionIframe.classList.remove( 'open' );
@@ -419,10 +451,18 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}
 	};
 
-	const openLoginSessionIframe = () => {
+	const openLoginSessionIframe = ( email ) => {
+		const emailParam = new URLSearchParams();
+
+		if ( validateEmail( email ) ) {
+			parentDiv.insertBefore( spinner, platformCheckoutEmailInput );
+			emailParam.append( 'email', email );
+			emailParam.append( 'test_mode', !! getConfig( 'testMode' ) );
+		}
+
 		loginSessionIframe.src = `${ getConfig(
 			'platformCheckoutHost'
-		) }/login-session`;
+		) }/login-session?${ emailParam.toString() }`;
 
 		// Insert the wrapper into the DOM.
 		parentDiv.insertBefore( loginSessionIframeWrapper, null );
@@ -439,48 +479,12 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 		}, 15000 );
 	};
 
-	// Prevent show platform checkout iframe if the page comes from
-	// the back button on platform checkout itself.
-	window.addEventListener( 'pageshow', function ( event ) {
-		// Detect browser back button.
-		const historyTraversal =
-			event.persisted ||
-			( 'undefined' !== typeof performance &&
-				'back_forward' ===
-					performance.getEntriesByType( 'navigation' )[ 0 ].type );
-
-		const searchParams = new URLSearchParams( window.location.search );
-
-		if (
-			! historyTraversal &&
-			'true' !== searchParams.get( 'skip_platform_checkout' )
-		) {
-			// Check if user already has a WooPay login session.
-			if ( ! hasCheckedLoginSession ) {
-				openLoginSessionIframe();
-			}
-		} else {
-			wcpayTracks.recordUserEvent(
-				wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
-			);
-
-			searchParams.delete( 'skip_platform_checkout' );
-
-			let { pathname } = window.location;
-
-			if ( '' !== searchParams.toString() ) {
-				pathname += '?' + searchParams.toString();
-			}
-
-			history.replaceState( null, null, pathname );
-
-			// Safari needs to close iframe with this.
-			closeIframe( false );
-		}
-	} );
-
 	platformCheckoutEmailInput.addEventListener( 'input', ( e ) => {
-		if ( ! hasCheckedLoginSession ) {
+		if ( ! hasCheckedLoginSession && ! customerClickedBackButton ) {
+			if ( customerClickedBackButton ) {
+				openLoginSessionIframe( platformCheckoutEmailInput.value );
+			}
+
 			return;
 		}
 
@@ -507,20 +511,34 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				api.initPlatformCheckout(
 					'',
 					e.data.platformCheckoutUserSession
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						loginSessionIframeWrapper.classList.add(
-							'platform-checkout-login-session-iframe-wrapper'
-						);
-						loginSessionIframe.classList.add( 'open' );
-						wcpayTracks.recordUserEvent(
-							wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
-						);
-						window.location = response.url;
-					} else {
-						closeLoginSessionIframe();
-					}
-				} );
+				)
+					.then( ( response ) => {
+						if ( 'success' === response.result ) {
+							loginSessionIframeWrapper.classList.add(
+								'platform-checkout-login-session-iframe-wrapper'
+							);
+							loginSessionIframe.classList.add( 'open' );
+							wcpayTracks.recordUserEvent(
+								wcpayTracks.events
+									.PLATFORM_CHECKOUT_AUTO_REDIRECT
+							);
+							spinner.remove();
+							window.location = response.url;
+						} else {
+							closeLoginSessionIframe();
+						}
+					} )
+					.catch( ( err ) => {
+						// Only show the error if it's not an AbortError,
+						// it occurs when the fetch request is aborted because user
+						// clicked the Place Order button while loading.
+						if ( 'AbortError' !== err.name ) {
+							showErrorMessage();
+						}
+					} )
+					.finally( () => {
+						spinner.remove();
+					} );
 				break;
 			case 'close_auto_redirection_modal':
 				hasCheckedLoginSession = true;
@@ -533,14 +551,19 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 				api.initPlatformCheckout(
 					platformCheckoutEmailInput.value,
 					e.data.platformCheckoutUserSession
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						window.location = response.url;
-					} else {
+				)
+					.then( ( response ) => {
+						if ( 'success' === response.result ) {
+							window.location = response.url;
+						} else {
+							showErrorMessage();
+							closeIframe( false );
+						}
+					} )
+					.catch( () => {
 						showErrorMessage();
 						closeIframe( false );
-					}
-				} );
+					} );
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(
@@ -584,4 +607,40 @@ export const handlePlatformCheckoutEmailInput = ( field, api ) => {
 			// do nothing, only respond to expected actions.
 		}
 	} );
+
+	window.addEventListener( 'pageshow', function ( event ) {
+		if ( event.persisted ) {
+			// Safari needs to close iframe with this.
+			closeIframe( false );
+		}
+	} );
+
+	if ( ! customerClickedBackButton ) {
+		// Check if user already has a WooPay login session.
+		if ( ! hasCheckedLoginSession ) {
+			openLoginSessionIframe( platformCheckoutEmailInput.value );
+		}
+	} else {
+		// Dispatch an event declaring this user exists as returned via back button. Wait for the window to load.
+		setTimeout( () => {
+			dispatchUserExistEvent( true );
+		}, 2000 );
+
+		wcpayTracks.recordUserEvent(
+			wcpayTracks.events.PLATFORM_CHECKOUT_SKIPPED
+		);
+
+		searchParams.delete( 'skip_platform_checkout' );
+
+		let { pathname } = window.location;
+
+		if ( '' !== searchParams.toString() ) {
+			pathname += '?' + searchParams.toString();
+		}
+
+		history.replaceState( null, null, pathname );
+
+		// Safari needs to close iframe with this.
+		closeIframe( false );
+	}
 };

@@ -35,6 +35,11 @@
 		font-style: italic;
 	}
 
+	&__icons {
+		display: flex;
+		align-items: flex-start;
+	}
+
 	&__icon {
 		border-radius: 2px;
 		display: flex;
@@ -128,4 +133,67 @@
 	&__location {
 		margin-bottom: 26px;
 	}
+}
+
+.express-checkout__notice {
+	margin-left: 0;
+	margin-right: 0;
+	border: 0;
+}
+
+.payment-method-settings {
+	&__option-help-text {
+		color: #757575;
+	}
+
+	&__preview-help-text {
+		color: #757575;
+	}
+
+	&__preview {
+		padding: 24px;
+		border: 1px solid rgba( 25, 23, 17, 0.3 );
+		border-radius: 4px;
+		display: flex;
+		justify-content: center;
+
+		.woopay-express-button,
+		.StripeElement {
+			width: 100%;
+			&:not( :last-child ) {
+				margin-right: 8px;
+			}
+		}
+		@media screen and ( max-width: 782px ) {
+			flex-wrap: wrap;
+
+			& > * {
+				display: block;
+				margin-top: 14px;
+			}
+
+			& > *:first-child {
+				margin-top: 0;
+			}
+		}
+
+		&[data-theme='light'],
+		&[data-theme='light-outline'] {
+			background: #2b2b2b;
+		}
+	}
+}
+
+.components-radio-control {
+	.payment-method-settings {
+		&__option-help-text {
+			margin-left: 26px;
+		}
+	}
+}
+
+.express-checkout__notice {
+	margin-left: 0;
+	margin-right: 0;
+	border: 0;
 }

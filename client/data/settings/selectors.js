@@ -23,6 +23,10 @@ export const getIsWCPayEnabled = ( state ) => {
 	return getSettings( state ).is_wcpay_enabled || false;
 };
 
+export const getIsClientSecretEncryptionEnabled = ( state ) => {
+	return getSettings( state ).is_client_secret_encryption_enabled || false;
+};
+
 export const getEnabledPaymentMethodIds = ( state ) => {
 	return getSettings( state ).enabled_payment_method_ids || EMPTY_ARR;
 };
@@ -189,4 +193,10 @@ export const getPlatformCheckoutCustomMessage = ( state ) => {
 
 export const getPlatformCheckoutStoreLogo = ( state ) => {
 	return getSettings( state ).platform_checkout_store_logo || '';
+};
+
+export const getPlatformCheckoutLocations = ( state ) => {
+	return (
+		getSettings( state ).platform_checkout_enabled_locations || EMPTY_ARR
+	);
 };

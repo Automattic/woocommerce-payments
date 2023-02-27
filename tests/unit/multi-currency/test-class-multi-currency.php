@@ -201,7 +201,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			function () {
 				return 'DEFAULT';
 			},
-			100
+			901
 		);
 
 		$this->init_multi_currency();
@@ -638,7 +638,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$this->init_multi_currency( null, true, null, $mock_database_cache );
 
-		$currency_from = get_woocommerce_currency();
+		$currency_from = strtolower( get_woocommerce_currency() );
 		$currencies_to = get_woocommerce_currencies();
 		unset( $currencies_to[ $currency_from ] );
 

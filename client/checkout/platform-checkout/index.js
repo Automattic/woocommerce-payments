@@ -18,24 +18,56 @@ const renderSaveUserSection = () => {
 		return;
 	}
 
-	const placeOrderButton = document.getElementsByClassName(
-		'form-row place-order'
-	)?.[ 0 ];
-	const buttonParent = placeOrderButton?.parentNode;
-	const checkoutPageSaveUserContainer = document.createElement( 'div' );
-	checkoutPageSaveUserContainer.className =
-		'platform-checkout-save-new-user-container';
+	const blocksCheckout = document.getElementsByClassName(
+		'wc-block-checkout'
+	);
 
-	if ( placeOrderButton && buttonParent ) {
-		buttonParent.insertBefore(
-			checkoutPageSaveUserContainer,
-			placeOrderButton
+	if ( blocksCheckout.length ) {
+		const checkoutPageSaveUserContainer = document.createElement(
+			'fieldset'
 		);
+		checkoutPageSaveUserContainer.className =
+			'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block ' +
+			'wc-block-components-checkout-step wc-block-components-checkout-step--with-step-number';
+		checkoutPageSaveUserContainer.id = 'remember-me';
 
-		ReactDOM.render(
-			<CheckoutPageSaveUser />,
-			checkoutPageSaveUserContainer
-		);
+		const paymentOptions = document.getElementsByClassName(
+			'wp-block-woocommerce-checkout-payment-block'
+		)?.[ 0 ];
+
+		if ( paymentOptions ) {
+			// Render right after the payment options block, as a sibling element.
+			paymentOptions.parentNode.insertBefore(
+				checkoutPageSaveUserContainer,
+				paymentOptions.nextSibling
+			);
+
+			ReactDOM.render(
+				<CheckoutPageSaveUser isBlocksCheckout={ true } />,
+				checkoutPageSaveUserContainer
+			);
+		}
+	} else {
+		const checkoutPageSaveUserContainer = document.createElement( 'div' );
+		checkoutPageSaveUserContainer.className =
+			'platform-checkout-save-new-user-container';
+
+		const placeOrderButton = document.getElementsByClassName(
+			'form-row place-order'
+		)?.[ 0 ];
+		const buttonParent = placeOrderButton?.parentNode;
+
+		if ( placeOrderButton && buttonParent ) {
+			buttonParent.insertBefore(
+				checkoutPageSaveUserContainer,
+				placeOrderButton
+			);
+
+			ReactDOM.render(
+				<CheckoutPageSaveUser isBlocksCheckout={ false } />,
+				checkoutPageSaveUserContainer
+			);
+		}
 	}
 };
 

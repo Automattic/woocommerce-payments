@@ -68,4 +68,14 @@
       <code>new WC_Payments_Task_Disputes()</code>
     </InvalidArgument>
   </file>
+  <file src="includes/class-wc-payments-utils.php">
+    <UndefinedClass occurrences="1">
+      <code>\Automattic\WooCommerce\Utilities\OrderUtil</code>
+    </UndefinedClass>
+  </file>
+  <file src="includes/compat/blocks/class-blocks-data-extractor.php">
+    <UndefinedClass occurrences="1">
+      <code>CheckoutSchema</code>
+    </UndefinedClass>
+  </file>
 </files>

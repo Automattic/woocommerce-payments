@@ -17,15 +17,16 @@ import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import PaymentRequestIcon from 'wcpay/gateway-icons/payment-request';
 import WooIcon from 'wcpay/gateway-icons/woo';
+import ApplePay from 'wcpay/gateway-icons/apple-pay';
+import GooglePay from 'wcpay/gateway-icons/google-pay';
 
 const methods = {
 	platform_checkout: {
 		title: 'WooPay',
 		sections: [
 			{
-				section: 'general',
+				section: 'enable',
 				description: () => (
 					<>
 						<div className="express-checkout-settings__icon">
@@ -50,6 +51,20 @@ const methods = {
 					</>
 				),
 			},
+			{
+				section: 'general',
+				description: () => (
+					<>
+						<h2>{ __( 'Settings', 'woocommerce-payments' ) }</h2>
+						<p>
+							{ __(
+								'Configure the display of WooPay buttons on your store.',
+								'woocommerce-payments'
+							) }
+						</p>
+					</>
+				),
+			},
 		],
 		controls: ( props ) => <PlatformCheckoutSettings { ...props } />,
 	},
@@ -60,8 +75,13 @@ const methods = {
 				section: 'enable',
 				description: () => (
 					<>
-						<div className="express-checkout-settings__icon">
-							<PaymentRequestIcon />
+						<div className="express-checkout-settings__icons">
+							<div className="express-checkout-settings__icon">
+								<ApplePay />
+							</div>
+							<div className="express-checkout-settings__icon">
+								<GooglePay />
+							</div>
 						</div>
 						<p>
 							{ __(
@@ -103,6 +123,16 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 				) }
 			</p>
 		);
+	}
+
+	// Only show the 'general' section of the WooPay method if the WooPay express checkout feature is enabled.
+	if (
+		'WooPay' === method.title &&
+		! wcpaySettings.featureFlags.woopayExpressCheckout
+	) {
+		method.sections = method.sections.filter( ( section ) => {
+			return 'general' !== section.section;
+		} );
 	}
 
 	const { title, sections, controls: Controls } = method;
