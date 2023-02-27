@@ -624,8 +624,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_enable_platform_checkout_converts_upe_flag() {
-		$this->gateway->update_option( '_wcpay_feature_upe', '1' );
-		$this->gateway->update_option( '_wcpay_feature_upe_split', '0' );
+		update_option( '_wcpay_feature_upe', '1' );
+		update_option( '_wcpay_feature_upe_split', '0' );
 		$this->gateway->update_option( 'platform_checkout', 'no' );
 
 		$request = new WP_REST_Request();
@@ -633,8 +633,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( '0', $this->gateway->get_option( '_wcpay_feature_upe' ) );
-		$this->assertEquals( '1', $this->gateway->get_option( '_wcpay_feature_upe_split' ) );
+		$this->assertEquals( '0', get_option( '_wcpay_feature_upe' ) );
+		$this->assertEquals( '1', get_option( '_wcpay_feature_upe_split' ) );
 	}
 
 	public function deposit_schedules_data_provider() {
