@@ -229,9 +229,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->willReturn( self::CUSTOMER_ID );
 
 		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'update_customer_for_user' )
-			->willReturn( self::CUSTOMER_ID );
+			->expects( $this->never() )
+			->method( 'update_customer_for_user' );
 
 		$this->mock_api_client
 			->expects( $this->once() )

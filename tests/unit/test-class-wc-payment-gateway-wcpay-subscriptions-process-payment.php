@@ -161,9 +161,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 			->willReturn( self::CUSTOMER_ID );
 
 		$this->mock_customer_service
-			->expects( $this->once() )
-			->method( 'update_customer_for_user' )
-			->willReturn( self::CUSTOMER_ID );
+			->expects( $this->never() )
+			->method( 'update_customer_for_user' );
 
 		$this->token = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
 
