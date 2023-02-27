@@ -2,7 +2,7 @@
 
 This document outlines the concepts and implementation of WooCommerce Payments server request classes.
 
-The purpose of request classes is to provide an easy way to send API requests towards WooCommerce Payments Server, where type safety, validation and builder pattern is used to built requests towards WooCommerce Payments Server.
+The purpose of request classes is to provide an easy and structured way to send API requests towards WooCommerce Payments Server, where type safety, validation and builder pattern is used to built requests towards the server.
 
 To make it easier for other parties to use it and extend it, every request class has its own filter that can be hooked on, and you could change the behavior or even set your own parameters while maintain all functionality from the original request class.
 
@@ -25,7 +25,7 @@ In general, to use any specific request class to make a request, you need to:
 2. Prepare the request by calling all necessary setters (mainly for `POST` requests).
 3. Send the request.
 
-### Using `GET` and `DELETE` requests
+#### Using `GET` and `DELETE` requests
 
 Requests to retrieve or delete items should be performed similarly to this:
 
@@ -50,7 +50,7 @@ Highlights from this example:
 2. Additional parameters should be providable only through setters (see examples with `POST` requests below).
 3. Whenever sending the request, it is required to provide a filter.
 
-### Using `POST` requests
+#### Using `POST` requests
 
 Requests to create/update items should look similarly to this:
 
@@ -181,4 +181,4 @@ Unless specified otherwise, most requests will return a `WCPay\Core\Server\Repon
 
 ## Creating new requests and extending existing ones
 
-Please refer to [the documentation within the `request` directory](request/README.md).
+Please refer to [contributor docs](CONTRIBUTING.md).
