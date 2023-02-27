@@ -91,6 +91,9 @@ __Parameters__
 - `$payment_method_id` (`string`) The payment method ID.
 - `$order` (`WC_Order`)  Order to be used on the update.
 
+__Return value__
+`void` This method does not return any value.
+
 ---
 #### `clear_cached_payment_methods_for_user()`
 
@@ -98,6 +101,9 @@ Clear payment methods cache for a user.
 
 __Parameters__
 - `$user_id` (`int`) WC user ID.
+
+__Return value__
+`void` This method does not return any value.
 
 ---
 #### `map_customer_data()`
@@ -120,6 +126,9 @@ public static function map_customer_data( WC_Order $wc_order, WC_Customer $wc_cu
 
 Delete all saved payment methods that are stored inside database cache driver.
 
+__Return value__
+`void` This method does not return any value.
+
 ---
 #### `get_customer_id_for_order()`
 
@@ -140,6 +149,9 @@ __Parameters__
 - `$user_id` (`int`) The WordPress user ID.
 - `$customer_id` (`string`) The WooCommerce Payments customer ID.
 
+__Return value__
+`void` This method does not return any value.
+
 ---
 #### `add_customer_id_to_user()`
 
@@ -147,6 +159,9 @@ Adds the WooComerce Payments customer ID found in the user session to the WordPr
 
 __Parameters__
 - `$user_id` (`int`) The WordPress user ID.
+
+__Return value__
+`void` This method does not return any value.
 
 ---
 #### `get_prepared_customer_data()`
