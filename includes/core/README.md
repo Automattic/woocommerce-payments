@@ -94,7 +94,9 @@ WC_Payments::mode()->is_dev();
 
 ### Services
 
-WooCommerce Payments contains a comprehensive set of internal services, but as explained in the beginnig of this document, they are subject to change without notice. Instead, please use the services, available in core:
+WooCommerce Payments contains a comprehensive set of internal services, but as explained at the beginning of this document, they are subject to change without notice.
+
+Instead, please use the following services available in core:
 
 - [🔗 `WC_Payments_Customer_Service_API`](services/customer-service.md)
 
