@@ -135,6 +135,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			WC_Payments::get_file_version( 'dist/upe_checkout.js' ),
 			true
 		);
+
+		if ( ! WC()->cart->needs_payment() && is_checkout() && ! has_block( 'woocommerce/checkout' ) ) {
+			WC_Payments::get_gateway()->tokenization_script();
+			WC_Payments::get_wc_payments_checkout()->enqueue_payment_scripts();
+		}
 	}
 
 	/**
@@ -142,7 +147,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 */
 	public function display_gateway_html() {
 		?>
-			<div id="wcpay-upe-element"></div>
+			<div id="wcpay-upe-element" class="wcpay-upe-element"></div>
 			<div id="wcpay-upe-errors" role="alert"></div>
 			<input id="wcpay-payment-method-upe" type="hidden" name="wcpay-payment-method-upe" />
 			<input id="wcpay_selected_upe_payment_type" type="hidden" name="wcpay_selected_upe_payment_type" />

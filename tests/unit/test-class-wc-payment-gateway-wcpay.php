@@ -1713,6 +1713,41 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_gateway->is_available_for_current_currency() );
 	}
 
+	public function test_process_payment_for_order_not_from_request() {
+		// There is no payment method data within the request. This is the case e.g. for the automatic subscription renewals.
+		$_POST['payment_method'] = '';
+
+		$expected_upe_payment_method = 'card';
+		$order                       = WC_Helper_Order::create_order();
+		$order->set_currency( 'USD' );
+		$order->set_total( 100 );
+		$order->save();
+
+		$pi = new Payment_Information( 'pm_test', $order );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_and_confirm_intention' )
+			->with(
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				[ $expected_upe_payment_method ],
+				$this->anything()
+			)
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$this->wcpay_gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
 	public function test_process_payment_for_order_rejects_with_cached_minimum_amount() {
 		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
 

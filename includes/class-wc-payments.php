@@ -35,6 +35,7 @@ use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WC_Payments_UPE_Checkout;
 use WCPay\Blocks_Data_Extractor;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Main class for the WooCommerce Payments extension. Its responsibility is to initialize the extension.
@@ -559,12 +560,15 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		if ( WC_Payments_Features::is_upe_split_enabled() ) {
-			$gateways[]       = self::$legacy_card_gateway;
+			if ( self::$platform_checkout_button_handler->is_woopay_enabled() ) {
+				$gateways[] = self::$legacy_card_gateway;
+			} else {
+				$gateways[] = self::$card_gateway;
+			}
 			$all_upe_gateways = [];
 			$reusable_methods = [];
-
 			foreach ( self::$card_gateway->get_payment_method_ids_enabled_at_checkout() as $payment_method_id ) {
-				if ( 'card' === $payment_method_id ) {
+				if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
 					continue;
 				}
 				$upe_gateway        = self::get_payment_gateway_by_id( $payment_method_id );
@@ -1092,6 +1096,31 @@ class WC_Payments {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
 			WC_Payments_Notes_Set_Up_StripeLink::set_gateway( self::get_gateway() );
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_add_note();
+		}
+
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.5', '<' ) && get_woocommerce_currency() === 'NOK' ) {
+			/**
+			 * Shows an alert notice for Norwegian merchants on WooCommerce 7.4 and below
+			 */
+			function wcpay_show_old_woocommerce_for_norway_notice() {
+				?>
+				<div class="notice wcpay-notice notice-error">
+					<p>
+					<?php
+					echo WC_Payments_Utils::esc_interpolated_html(
+						/* translators: %s: documentation URL */
+						__( 'The WooCommerce version you have installed is not compatible with WooCommerce Payments for a Norwegian business. Please update WooCommerce to version 7.5 or above. You can do that via the <a1>the plugins page.</a1>', 'woocommerce-payments' ),
+						[
+							'a1' => '<a href="' . admin_url( 'plugins.php' ) . '">',
+						]
+					)
+					?>
+					</p>
+				</div>
+				<?php
+			}
+
+			add_filter( 'admin_notices', 'wcpay_show_old_woocommerce_for_norway_notice' );
 		}
 	}
 
