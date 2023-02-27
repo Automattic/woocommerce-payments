@@ -10,7 +10,7 @@ The initial (and so far current) contents of this directory, as described in REA
 
 There are a few possible paths when it comes to services:
 
-1. __Create a facade for an existing service:__ Create a new service class within `core/services`, which simply facades the existing service. Doing so will allow us to modify the facade in the future, keeping existing methods with the same parameters as existing ones.
+1. __Create a facade for an existing service:__ Create a new service class within `core/service`, which simply facades the existing service. Doing so will allow us to modify the facade in the future, keeping existing methods with the same parameters as existing ones.
 This is what was done with the [customer service](service/customer-service.md), and is the recommended way if a certain feature requires access to an existing service quickly.
 2. __Move an existing service to the core directory:__ This should be done with consideration how the service could change in the future, and whether it is core to the gateway. If it more suitable to an extension (ex. Multi-Currency), or a consumer (ex. WooPay), it likely needs to be somewhere else.
 3. When __creating a new service__, similarly to moving existing ones here, please consider whether the service belongs to core. If it does, do it with care, as services should be reliable and resilient.
