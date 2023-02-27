@@ -115,6 +115,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 			$this->mock_session_rate_limiter,
 			$this->mock_order_service
 		);
+		$this->wcpay_gateway->maybe_init_subscriptions();
 
 		$this->renewal_order = WC_Helper_Order::create_order( self::USER_ID );
 
