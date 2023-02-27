@@ -116,7 +116,6 @@ const SettingsManager = () => {
 			upeType,
 		},
 	} = useContext( WCPaySettingsContext );
-
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
