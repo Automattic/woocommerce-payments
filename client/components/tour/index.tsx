@@ -11,7 +11,7 @@ import { Button, Icon } from '@wordpress/components';
  */
 import './style.scss';
 import { TourCoordinates, TourProps } from './interfaces';
-import { calculateCoordinates } from './utils';
+import { calculateCoordinates, getTourButtonData } from './utils';
 
 const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 	const scrollRestoration = useRef< ScrollRestoration | null >( null );
@@ -22,23 +22,49 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 	const [ currentIndex, setCurrentIndex ] = useState( 0 );
 
 	const { selector, position, content } = options[ currentIndex ] || {};
-	const { title, description, image, actionButton, previousButton, counter } =
-		content || {};
+	const {
+		title,
+		image,
+		counter,
+		description,
+		actionButton: customActionButton,
+		previousButton: customPreviousButton,
+	} = content || {};
+
+	const actionButton = getTourButtonData(
+		{ text: 'Next' },
+		customActionButton
+	);
+
+	const previousButton = getTourButtonData(
+		{ text: 'Previous' },
+		customPreviousButton
+	);
 
 	const updateModalPosition = useCallback( () => {
-		if ( ! selector ) return;
+		try {
+			if ( ! selector )
+				throw new Error(
+					'No selector given for the current tour step.'
+				);
 
-		const element = document.querySelector( selector );
-		const container = containerRef.current;
+			const element = document.querySelector( selector );
+			const container = containerRef.current;
 
-		if ( ! element || ! container ) return;
+			if ( ! element || ! container )
+				throw new Error(
+					'No reference element or tour modal element found.'
+				);
 
-		const elementRect = element.getBoundingClientRect();
-		const containerRect = container.getBoundingClientRect();
+			const elementRect = element.getBoundingClientRect();
+			const containerRect = container.getBoundingClientRect();
 
-		setCoordinates(
-			calculateCoordinates( elementRect, containerRect, position )
-		);
+			setCoordinates(
+				calculateCoordinates( elementRect, containerRect, position )
+			);
+		} catch ( e ) {
+			setCoordinates( { x: 0, y: 0, sticky: true } );
+		}
 	}, [ selector, position ] );
 
 	useEffect( () => {
@@ -62,18 +88,19 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 	}, [] );
 
 	useEffect( () => {
-		const wpbodyContainer = document.getElementById( 'wpbody' );
+		let observer: ResizeObserver;
 
-		if ( ! wpbodyContainer ) return;
-
-		const observer = new ResizeObserver( updateModalPosition );
-
-		observer.observe( wpbodyContainer );
+		if ( 'ResizeObserver' in window ) {
+			observer = new ResizeObserver( updateModalPosition );
+			observer.observe( document.body );
+		}
 
 		updateModalPosition();
 
 		return () => {
-			observer.unobserve( wpbodyContainer );
+			if ( observer ) {
+				observer.unobserve( document.body );
+			}
 		};
 	}, [ updateModalPosition ] );
 
@@ -83,10 +110,10 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 		const { x, y, scrollPadding } = coordinates;
 		const [ paddingX, paddingY ] = scrollPadding || [ 0, 0 ];
 
-		window.scrollTo( {
-			left: x - paddingX,
-			top: y - paddingY - 50,
-		} );
+		const left = x - paddingX;
+		const top = y - paddingY - 50;
+
+		window.scrollTo( { left, top } );
 	}, [ coordinates ] );
 
 	const handleActionButtonClick = () => {
@@ -99,6 +126,10 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 	};
 
 	const handlePreviousButtonClick = () => {
+		if ( currentIndex <= 0 ) {
+			return;
+		}
+
 		setCurrentIndex( ( prev ) => prev - 1 );
 	};
 
@@ -110,6 +141,7 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 				className={ classnames( 'tour-modal', {
 					'tour-modal--arrow': coordinates?.arrow,
 					[ `tour-modal--arrow-${ coordinates?.arrow }` ]: coordinates?.arrow,
+					'tour-modal--sticky': coordinates?.sticky,
 				} ) }
 				style={
 					coordinates
@@ -120,6 +152,7 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 				<Button
 					onClick={ onTourEnd }
 					className="tour-modal__close-button"
+					aria-label="Close tour modal"
 				>
 					<Icon icon="no-alt" />
 				</Button>
@@ -153,7 +186,7 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 									isSecondary
 									onClick={ handlePreviousButtonClick }
 								>
-									{ previousButton.text || 'Previous' }
+									{ previousButton.text }
 								</Button>
 							) }
 
@@ -162,7 +195,7 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 									isPrimary
 									onClick={ handleActionButtonClick }
 								>
-									{ actionButton.text || 'Next' }
+									{ actionButton.text }
 								</Button>
 							) }
 						</div>

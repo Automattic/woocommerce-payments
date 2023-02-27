@@ -18,6 +18,18 @@
 	}
 }
 
+@mixin stickyBehavior {
+	position: fixed;
+	bottom: 0;
+	left: 50% !important;
+	margin: 0 auto 20px;
+	top: auto !important;
+	max-width: 350px;
+	width: calc( 100% - 40px );
+	animation: tour-modal__appear-animation-mobile 0.1s ease-out;
+	animation-fill-mode: forwards;
+}
+
 .smooth-scroll {
 	scroll-behavior: smooth;
 }
@@ -33,16 +45,12 @@
 	border-radius: 2px;
 	border: 1px solid #ddd;
 
+	&--sticky {
+		@include stickyBehavior;
+	}
+
 	@media ( max-width: 600px ) {
-		position: fixed;
-		bottom: 0;
-		left: 50% !important;
-		margin: 0 auto 20px;
-		top: auto !important;
-		max-width: 350px;
-		width: calc( 100% - 40px );
-		animation: tour-modal__appear-animation-mobile 0.1s ease-out;
-		animation-fill-mode: forwards;
+		@include stickyBehavior;
 	}
 
 	@media ( min-width: 600px ) {

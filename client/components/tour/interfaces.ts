@@ -2,6 +2,7 @@ export interface TourCoordinates {
 	x: number;
 	y: number;
 	arrow?: TourOptionAbsolutePosition;
+	sticky?: boolean; // Emulates the mobile behavior
 	scrollPadding?: [ number, number ];
 }
 
@@ -10,7 +11,7 @@ interface TourOptionContentImage {
 	mobileOnly?: boolean;
 }
 
-interface TourOptionContentButton {
+export interface TourOptionContentButton {
 	text: string;
 }
 
@@ -19,8 +20,8 @@ interface TourOptionContent {
 	description: string;
 	image?: TourOptionContentImage;
 	counter?: boolean;
-	actionButton?: TourOptionContentButton;
-	previousButton?: TourOptionContentButton;
+	actionButton?: TourOptionContentButton | false;
+	previousButton?: TourOptionContentButton | false;
 }
 
 export interface TourOptionRelativePosition {

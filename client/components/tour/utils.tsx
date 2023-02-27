@@ -4,6 +4,7 @@
 import {
 	TourCoordinates,
 	TourOptionAbsolutePosition,
+	TourOptionContentButton,
 	TourOptionPosition,
 	TourOptionRelativePosition,
 } from './interfaces';
@@ -112,4 +113,15 @@ export const calculateCoordinates = (
 	}
 
 	return calculateAbsoluteCoordinates( element, container, position );
+};
+
+export const getTourButtonData = (
+	defaultData: TourOptionContentButton,
+	customData?: TourOptionContentButton | false
+): TourOptionContentButton | false => {
+	if ( customData === undefined ) return defaultData;
+
+	if ( customData === false ) return false;
+
+	return { ...defaultData, ...customData };
 };
