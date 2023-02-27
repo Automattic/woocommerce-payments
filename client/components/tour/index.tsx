@@ -1,7 +1,13 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+	Fragment,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import classnames from 'classnames';
 import { Button, Icon } from '@wordpress/components';
@@ -132,6 +138,10 @@ const Tour = ( { options, onTourEnd }: TourProps ): JSX.Element => {
 
 		setCurrentIndex( ( prev ) => prev - 1 );
 	};
+
+	if ( ! content ) {
+		return <></>;
+	}
 
 	return createPortal(
 		<>

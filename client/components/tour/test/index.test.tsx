@@ -172,7 +172,7 @@ describe( 'Tour component', () => {
 					options={ [
 						{
 							selector: '#wrong-selector',
-							position: { bottom: 20, left: 20 },
+							position: 'bottom',
 							content: {
 								title: 'Example title',
 								image: { src: 'image.png' },
@@ -183,6 +183,56 @@ describe( 'Tour component', () => {
 					] }
 					onTourEnd={ jest.fn() }
 				/>
+			</>
+		);
+
+		expect( baseElement ).toMatchSnapshot();
+	} );
+
+	it( 'should render in sticky mode if the given selector is empty', () => {
+		const { baseElement } = render(
+			<>
+				<div id="first-selector">First target element</div>
+				<Tour
+					options={ [
+						{
+							selector: '',
+							position: 'bottom',
+							content: {
+								title: 'Example title',
+								image: { src: 'image.png' },
+								description: 'Example description',
+								previousButton: false,
+							},
+						},
+					] }
+					onTourEnd={ jest.fn() }
+				/>
+			</>
+		);
+
+		expect( baseElement ).toMatchSnapshot();
+	} );
+
+	it( 'should reset the scrollRestoration', () => {
+		history.scrollRestoration = 'auto';
+
+		expect( history.scrollRestoration ).toBe( 'auto' );
+
+		const { unmount } = render( <MockTour onTourEnd={ jest.fn() } /> );
+
+		expect( history.scrollRestoration ).toBe( 'manual' );
+
+		unmount();
+
+		expect( history.scrollRestoration ).toBe( 'auto' );
+	} );
+
+	it( 'should not render the tour modal if no content is passed as props', () => {
+		const { baseElement } = render(
+			<>
+				<div id="first-selector">First target element</div>
+				<Tour options={ [] } onTourEnd={ jest.fn() } />
 			</>
 		);
 
