@@ -25,8 +25,8 @@ The foundation for request and response classes has already been laid down. Howe
 
 Whenever creating new requests, please consider using request classes for them.
 
-[🔗 Read more about server requests](server/request/README.md)
-[🔗 Guide for creating server requests classes](server/request/README.md)
+[🔗 Read more about server requests](server/README.md)
+[🔗 Guide for creating server requests classes](server/CONTRIBUTING.md)
 
 ## Using core functionality
 
