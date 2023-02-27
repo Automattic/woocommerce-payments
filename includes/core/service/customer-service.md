@@ -52,11 +52,11 @@ __Return value__
 
 Update the customer details held on the WCPay server associated with the given WordPress user.
 
+__Parameters__
+
 - `$customer_id` (`string`) WCPay customer ID.
 - `$user` (`WP_User`) WordPress user.
-
-__Parameters__
-- `$customer_data` (`array`) Customer data.
+- `$customer_data` (`array`) Customer data. This should be the return value of [`WC_Payments_Customer_Service_API::get_prepared_customer_data`](#get_prepared_customer_data) below.
 
 __Return value__
 `string` The updated customer's ID. Can be different to the ID parameter if the customer was re-created.
