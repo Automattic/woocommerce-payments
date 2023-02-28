@@ -147,5 +147,5 @@ jobs:
     with:
       skip-build-zip: ${{ inputs.skip-build-zip }}
       skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
-      repo-branch: ${{ needs.create-release-pr.outputs.releaseBranch }}
+      repo-branch: ${{ needs.create-release-pr.outputs.release-branch }}
     secrets: inherit

@@ -14,7 +14,7 @@ on:
         default: "next wednesday"
         type: string
     outputs:
-      releaseBranch:
+      release-branch:
         description: 'Release branch name'
         value: ${{ jobs.prepare-release.outputs.branch }}
 
