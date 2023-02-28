@@ -1,5 +1,8 @@
 *** WooCommerce Payments Changelog ***
 
+= 5.5.1 - 2023-02-28 =
+* Fix - Fix subscription renewal creating multiple charges with UPE.
+
 = 5.5.0 - 2023-02-22 =
 * Add - Added learn more link to deposits page
 * Add - Added tracking for the split UPE feature flag.
