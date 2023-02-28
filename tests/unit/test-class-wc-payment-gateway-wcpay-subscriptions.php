@@ -113,6 +113,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_session_rate_limiter,
 			$this->order_service
 		);
+		$this->wcpay_gateway->maybe_init_subscriptions();
 	}
 
 	public static function tear_down_after_class() {
@@ -680,7 +681,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		remove_all_actions( 'woocommerce_admin_order_data_after_billing_address' );
 
 		WC_Subscriptions::$version = '3.0.7';
-		new \WC_Payment_Gateway_WCPay(
+		$gateway                   = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
@@ -689,6 +690,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_session_rate_limiter,
 			$this->order_service
 		);
+		$gateway->maybe_init_subscriptions();
 
 		$this->assertTrue( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
 	}
@@ -697,7 +699,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		remove_all_actions( 'woocommerce_admin_order_data_after_billing_address' );
 
 		WC_Subscriptions::$version = '3.0.8';
-		new \WC_Payment_Gateway_WCPay(
+		$gateway                   = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
@@ -706,6 +708,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_session_rate_limiter,
 			$this->order_service
 		);
+		$gateway->maybe_init_subscriptions();
 
 		$this->assertFalse( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
 	}

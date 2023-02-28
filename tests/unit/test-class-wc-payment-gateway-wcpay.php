@@ -166,6 +166,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$this->mock_rate_limiter,
 			$this->order_service
 		);
+		$this->wcpay_gateway->maybe_init_subscriptions();
 
 		$this->platform_checkout_utilities = new Platform_Checkout_Utilities();
 

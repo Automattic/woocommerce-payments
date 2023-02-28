@@ -118,7 +118,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_rate_limiter        = $this->createMock( Session_Rate_Limiter::class );
 		$order_service            = new WC_Payments_Order_Service( $this->mock_api_client );
 
-		$this->gateway    = new WC_Payment_Gateway_WCPay(
+		$this->gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$customer_service,
@@ -127,6 +127,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_rate_limiter,
 			$order_service
 		);
+		$this->gateway->maybe_init_subscriptions();
+
 		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway );
 
 		$mock_payment_methods   = [];
@@ -165,6 +167,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_rate_limiter,
 			$order_service
 		);
+		$this->mock_upe_payment_gateway->maybe_init_subscriptions();
 
 		$this->upe_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_payment_gateway );
 
@@ -179,6 +182,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$mock_rate_limiter,
 			$order_service
 		);
+		$this->mock_upe_split_payment_gateway->maybe_init_subscriptions();
 
 		$this->upe_split_controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->mock_upe_split_payment_gateway );
 
