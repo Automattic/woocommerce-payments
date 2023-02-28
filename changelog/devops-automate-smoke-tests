@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Release automation - Run smoke tests automatically after release zip is built.
