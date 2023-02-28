@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Moved methods used for order metadata update to the Order Service class.
