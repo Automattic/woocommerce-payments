@@ -27,9 +27,13 @@ Loading composer repositories with package information
 GitHub API limit (0 calls/hr) is exhausted, could not fetch https://api.github.com/repos/automattic/woocommerce-subscriptions-core. Create a GitHub OAuth token to go over the API rate limit. You can also wait until ? for the rate limit to reset.
 
 Head to https://github.com/settings/tokens/new?scopes=repo&description=Composer+XXXXXX to retrieve a token. It will be stored in "/Users/yourname/.composer/auth.json" for future use by Composer.
-````
+```
 
 To fix this up, follow the link provided in the prompt and paste the token into the terminal window to continue.
+
+### Extending WooCommerce Payments
+
+If you are extending WooCommerce Payments, or building on top of it, please refer to the [core docs](includes/core/README.md) and directory (`includes/core`) for guides and recommended ways of doing it.
 
 ## Setup
 

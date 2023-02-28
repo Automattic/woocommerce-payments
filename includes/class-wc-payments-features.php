@@ -227,6 +227,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Fraud and Risk Tools feature flag is enabled.
+	 *
+	 * @return  bool
+	 */
+	public static function is_fraud_protection_settings_enabled(): bool {
+		return '1' === get_option( 'wcpay_fraud_protection_settings_active', '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
