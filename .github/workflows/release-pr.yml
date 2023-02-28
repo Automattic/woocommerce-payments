@@ -16,7 +16,7 @@ on:
     outputs:
       release-branch:
         description: 'Release branch name'
-        value: jobs.prepare-release.outputs.branch
+        value: ${{ jobs.prepare-release.outputs.branch }}
 
   workflow_dispatch:
     inputs:
