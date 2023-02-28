@@ -94,9 +94,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
-		$this->order_service = new WC_Payments_Order_Service(
-			$this->createMock( WC_Payments_API_Client::class )
-		);
+		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
+			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
+			->setMethods( [ 'get_wcpay_refund_id_for_order' ] )
+			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 			->disableOriginalConstructor()
@@ -129,6 +130,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->any() )
 			->method( 'get_id' )
 			->willReturn( 1234 );
+
+		WC_Payments::mode()->live();
 	}
 
 	/**
@@ -170,11 +173,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'content' => 'hello',
 		];
 
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'is_in_test_mode' )
-			->willReturn( false );
-
 		$this->mock_remote_note_service
 			->expects( $this->never() )
 			->method( 'put_note' )
@@ -199,10 +197,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'title'   => 'test',
 			'content' => 'hello',
 		];
-		$this->mock_wcpay_gateway
-			->expects( $this->once() )
-			->method( 'is_in_test_mode' )
-			->willReturn( true );
+
+		WC_Payments::mode()->test();
 
 		$this->mock_remote_note_service
 			->expects( $this->never() )
@@ -308,10 +304,17 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		];
 
 		$mock_refund_1 = $this->createMock( WC_Order_Refund::class );
-		$mock_refund_1->method( 'get_meta' )->willReturn( 'another_test_refund_id' );
-
 		$mock_refund_2 = $this->createMock( WC_Order_Refund::class );
-		$mock_refund_2->method( 'get_meta' )->willReturn( 'test_refund_id' );
+		$this->order_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_wcpay_refund_id_for_order' )
+			->withConsecutive(
+				[ $mock_refund_1 ],
+				[ $mock_refund_2 ]
+			)->willReturnOnConsecutiveCalls(
+				'another_test_refund_id',
+				'test_refund_id'
+			);
 
 		$this->mock_order->method( 'get_refunds' )->willReturn(
 			[

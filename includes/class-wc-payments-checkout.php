@@ -105,8 +105,8 @@ class WC_Payments_Checkout {
 		$wc_checkout = WC_Checkout::instance();
 
 		$js_config = [
-			'publishableKey'                 => $this->account->get_publishable_key( $this->gateway->is_in_test_mode() ),
-			'testMode'                       => $this->gateway->is_in_test_mode(),
+			'publishableKey'                 => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+			'testMode'                       => WC_Payments::mode()->is_test(),
 			'accountId'                      => $this->account->get_stripe_account_id(),
 			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
 			'wcAjaxUrl'                      => WC_AJAX::get_endpoint( '%%endpoint%%' ),
@@ -176,7 +176,7 @@ class WC_Payments_Checkout {
 				<p><?php echo wp_kses_post( $this->gateway->get_description() ); ?></p>
 			<?php endif; ?>
 
-			<?php if ( $this->gateway->is_in_test_mode() ) : ?>
+			<?php if ( WC_Payments::mode()->is_test() ) : ?>
 				<p class="testmode-info">
 					<?php
 					echo WC_Payments_Utils::esc_interpolated_html(

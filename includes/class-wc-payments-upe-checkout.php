@@ -106,7 +106,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['gatewayId']                = UPE_Payment_Gateway::GATEWAY_ID;
 		$payment_fields['isCheckout']               = is_checkout();
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
-		$payment_fields['testMode']                 = $this->gateway->is_in_test_mode();
+		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
 		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
@@ -270,7 +270,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				<p><?php echo wp_kses_post( $this->gateway->get_description() ); ?></p>
 			<?php endif; ?>
 
-			<?php if ( $this->gateway->is_in_test_mode() ) : ?>
+			<?php if ( WC_Payments::mode()->is_test() ) : ?>
 				<p class="testmode-info">
 					<?php
 						$testing_instructions = $this->gateway->get_payment_method()->get_testing_instructions();
