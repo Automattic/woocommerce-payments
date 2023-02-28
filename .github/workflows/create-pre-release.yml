@@ -8,7 +8,17 @@ on:
         description: 'The release version for testing (e.g. 4.5.0-test-2 for prerelease during week 2)'
         required: true
         type: string
-  
+      skip-build-zip:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running build zip"
+      skip-smoke-tests:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running smoke tests"
+
 defaults:
   run:
     shell: bash
@@ -19,16 +29,18 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
-      
+    outputs:
+      branch-name: ${{ steps.create_branch.outputs.branch-name }}
+
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
         with:
           ref: 'develop'
-          
+
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
-        
+
       - name: "Create a test branch"
         id: create_branch
         uses: ./.github/actions/create-branch
@@ -46,17 +58,17 @@ jobs:
         uses: ./.github/actions/process-changelog
         with:
           release-version: ${{ steps.create_tag.outputs.trimmed-version }}
-          
+
       - name: "Bump version header"
         env:
           VERSION: ${{ steps.create_tag.outputs.trimmed-version }}
         run: |
           sed -i "s/^ \* Version: .*$/ * Version: $VERSION/" woocommerce-payments.php
-      
+
       - name: "Build the plugin"
         id: build_plugin
         uses: ./.github/actions/build
-          
+
       - name: "Create GH pre-release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,9 +79,19 @@ jobs:
         run: |
           RELEASE_NOTES=$(echo -e "${CHANGELOG}")
           gh release create $VERSION --notes "$RELEASE_NOTES" --title "$TAG_MESSAGE" --target "develop" "--prerelease" $FILENAME
-          
+
       - name: "Trigger translations update on GlotPress"
         uses: ./.github/actions/trigger-translations
         with:
           release-version: ${{ steps.create_tag.outputs.trimmed-version }}
           glotpress-url: ${{ secrets.GLOTPRESS_IMPORT_URL }}
+
+  build-zip-smoke-tests:
+    name: "Build zip & Smoke tests"
+    needs: create-release-pr
+    uses: ./.github/workflows/build-zip-file.yml
+    with:
+      skip-build-zip: ${{ inputs.skip-build-zip }}
+      skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
+      repo-branch: ${{ needs.create-release.outputs.branch-name }}
+    secrets: inherit
