@@ -45,7 +45,7 @@ jobs:
         run: |
           VERSION=$(jq '.version' package.json -r)
           echo "Current version found: $VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "VERSION=9.8.9" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
@@ -67,18 +67,16 @@ jobs:
         env:
           NEXT_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
         run: |
-          # git fetch --tags origin
-          # NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
-          # NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-2" | tail -1)
-          # if [[ -z "$NEXT_VERSION_TAG_FROM_WEEK_2" ]]; then
-          #   echo "Code freeze is not needed :x:" >> $GITHUB_STEP_SUMMARY
-          #   echo "FREEZE=0" >> $GITHUB_OUTPUT
-          # elif [[ -z "$NEXT_VERSION_TAG_STABLE" ]]; then
-          #   echo "Code freeze is needed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
-          #   echo "FREEZE=1" >> $GITHUB_OUTPUT
-          # fi
-          echo "Code freeze is needed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
-          echo "FREEZE=1" >> $GITHUB_OUTPUT
+          git fetch --tags origin
+          NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
+          NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-2" | tail -1)
+          if [[ -z "$NEXT_VERSION_TAG_FROM_WEEK_2" ]]; then
+            echo "Code freeze is not needed :x:" >> $GITHUB_STEP_SUMMARY
+            echo "FREEZE=0" >> $GITHUB_OUTPUT
+          elif [[ -z "$NEXT_VERSION_TAG_STABLE" ]]; then
+            echo "Code freeze is needed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+            echo "FREEZE=1" >> $GITHUB_OUTPUT
+          fi
 
   create-release-pr:
     name: "Raise a PR to trunk"
