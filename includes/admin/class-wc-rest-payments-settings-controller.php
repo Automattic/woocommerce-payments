@@ -374,8 +374,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
-				'is_test_mode_enabled'                => $this->wcpay_gateway->is_in_test_mode(),
-				'is_dev_mode_enabled'                 => $this->wcpay_gateway->is_in_dev_mode(),
+				'is_test_mode_enabled'                => WC_Payments::mode()->is_test(),
+				'is_dev_mode_enabled'                 => WC_Payments::mode()->is_dev(),
 				'is_multi_currency_enabled'           => WC_Payments_Features::is_customer_multi_currency_enabled(),
 				'is_client_secret_encryption_enabled' => WC_Payments_Features::is_client_secret_encryption_enabled(),
 				'is_wcpay_subscriptions_enabled'      => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
@@ -535,7 +535,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function update_is_test_mode_enabled( WP_REST_Request $request ) {
 		// avoiding updating test mode when dev mode is enabled.
-		if ( $this->wcpay_gateway->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return;
 		}
 
@@ -555,7 +555,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function update_is_debug_log_enabled( WP_REST_Request $request ) {
 		// avoiding updating test mode when dev mode is enabled.
-		if ( $this->wcpay_gateway->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return;
 		}
 

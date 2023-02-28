@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Server\Request\List_Transactions;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -76,13 +78,10 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transactions( $request ) {
-		$page       = (int) $request->get_param( 'page' );
-		$page_size  = (int) $request->get_param( 'pagesize' );
-		$sort       = $request->get_param( 'sort' );
-		$direction  = $request->get_param( 'direction' );
-		$deposit_id = $request->get_param( 'deposit_id' );
-		$filters    = $this->get_transactions_filters( $request );
-		return $this->forward_request( 'list_transactions', [ $page, $page_size, $sort, $direction, $filters, $deposit_id ] );
+
+		$wcpay_request = List_Transactions::from_rest_request( $request );
+
+		return $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
 	}
 
 	/**
