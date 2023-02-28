@@ -1732,6 +1732,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->update_option( 'platform_checkout', $is_platform_checkout_enabled ? 'yes' : 'no' );
 			if ( ! $is_platform_checkout_enabled ) {
 				Platform_Checkout_Order_Status_Sync::remove_webhook();
+			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
+				update_option( WC_Payments_Features::UPE_FLAG_NAME, '0' );
+				update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+
+				if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
+					wc_admin_record_tracks_event( 'wcpay_split_upe_enabled' );
+				}
 			}
 		}
 	}
