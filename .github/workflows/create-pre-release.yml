@@ -88,7 +88,7 @@ jobs:
 
   build-zip-smoke-tests:
     name: "Build zip & Smoke tests"
-    needs: create-release-pr
+    needs: create-release
     uses: ./.github/workflows/build-zip-file.yml
     with:
       skip-build-zip: ${{ inputs.skip-build-zip }}
