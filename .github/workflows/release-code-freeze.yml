@@ -145,7 +145,7 @@ jobs:
     needs: create-release-pr
     runs-on: ubuntu-20.04
     env:
-      RELEASE_BRANCH: ${{ needs.create-release-pr.outputs.release-branch }}
+      RELEASE_BRANCH: ${{ jobs.create-release-pr.outputs.branch-name }}
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
