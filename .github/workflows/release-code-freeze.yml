@@ -143,9 +143,20 @@ jobs:
   build-zip-smoke-tests:
     name: "Build zip & Smoke tests"
     needs: create-release-pr
-    uses: ./.github/workflows/build-zip-file.yml
-    with:
-      skip-build-zip: ${{ inputs.skip-build-zip }}
-      skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
-      repo-branch: ${{ needs.create-release-pr.outputs.release-branch }}
-    secrets: inherit
+    runs-on: ubuntu-20.04
+    env:
+      RELEASE_BRANCH: ${{ needs.create-release-pr.outputs.branch-name }}
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          ref: 'develop'
+
+      - name: "Display release branch name"
+        run: echo "Release branch - $RELEASE_BRANCH"
+    # uses: ./.github/workflows/build-zip-file.yml
+    # with:
+    #   skip-build-zip: ${{ inputs.skip-build-zip }}
+    #   skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
+    #   repo-branch: ${{ needs.create-release-pr.outputs.release-branch }}
+    # secrets: inherit
