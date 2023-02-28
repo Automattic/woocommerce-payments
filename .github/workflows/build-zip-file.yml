@@ -37,6 +37,14 @@ jobs:
         with:
           ref: ${{ inputs.repo-branch && inputs.repo-branch || github.ref }}
 
+      - name: "Output repo ref"
+        env:
+          REPO_BRANCH: ${{ inputs.repo-branch }}
+          CURRENT_BRANCH: ${{ inputs.repo-branch && inputs.repo-branch || github.ref }}
+        run: |
+          echo "Repo branch: $REPO_BRANCH"
+          echo "Current branch: $CURRENT_BRANCH"
+
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
 
