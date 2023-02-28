@@ -230,6 +230,34 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( WC_Payments_Features::is_upe_split_enabled() );
 	}
 
+	public function test_is_fraud_protection_settings_enabled_returns_true() {
+		add_filter(
+			'pre_option_wcpay_fraud_protection_settings_active',
+			function ( $pre_option, $option, $default ) {
+				return '1';
+			},
+			10,
+			3
+		);
+		$this->assertTrue( WC_Payments_Features::is_fraud_protection_settings_enabled() );
+	}
+
+	public function test_is_fraud_protection_settings_enabled_returns_false_when_flag_is_false() {
+		add_filter(
+			'pre_option_wcpay_fraud_protection_settings_active',
+			function ( $pre_option, $option, $default ) {
+				return '0';
+			},
+			10,
+			3
+		);
+		$this->assertFalse( WC_Payments_Features::is_fraud_protection_settings_enabled() );
+	}
+
+	public function test_is_fraud_protection_settings_enabled_returns_false_when_flag_is_not_set() {
+		$this->assertFalse( WC_Payments_Features::is_fraud_protection_settings_enabled() );
+	}
+
 	private function setup_enabled_flags( array $enabled_flags ) {
 		foreach ( array_keys( self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING ) as $flag ) {
 			add_filter(
