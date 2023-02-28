@@ -14,7 +14,7 @@ on:
         default: "next wednesday"
         type: string
     outputs:
-      release-branch:
+      branch-name:
         description: 'Release branch name'
         value: ${{ jobs.prepare-release.outputs.branch }}
 
@@ -39,7 +39,7 @@ jobs:
     name: "Prepare a stable release"
     runs-on: ubuntu-20.04
     outputs:
-      branch: ${{ steps.create_branch.outputs.BRANCH_NAME }}
+      branch: ${{ steps.create_branch.outputs.branch-name }}
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
       RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}
