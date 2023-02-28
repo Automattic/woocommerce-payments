@@ -39,7 +39,7 @@ jobs:
     name: "Prepare a stable release"
     runs-on: ubuntu-20.04
     outputs:
-      branch: ${{ steps.create_branch.outputs.branch-name }}
+      branch: ${{ steps.create_branch.outputs.BRANCH_NAME }}
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
       RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}
@@ -57,11 +57,6 @@ jobs:
         with:
           version: ${{ env.RELEASE_VERSION }}
           is-pre-release: 'false'
-
-      - name: "Output release branch name"
-        env:
-          RELEASE_BRANCH: ${{ steps.create_branch.outputs.branch-name }}
-        run: echo "Release branch created with name $RELEASE_BRANCH"
 
       - name: "Define the release date"
         id: define_var
