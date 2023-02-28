@@ -11,6 +11,7 @@ import {
 	Button,
 } from '@wordpress/components';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
+import ImageIcon from 'gridicons/dist/image';
 import AddOutlineIcon from 'gridicons/dist/add-outline';
 import TrashIcon from 'gridicons/dist/trash';
 
@@ -34,10 +35,12 @@ export const FileUploadControl = ( {
 	help,
 	showPreview,
 	uploadButtonLabel,
+	type = 'file',
 }: FileUploadControlProps ): JSX.Element => {
 	const hasError = ( error && 0 < error.length ) || false;
 
-	const Icon = isDone && ! hasError ? CheckmarkIcon : AddOutlineIcon;
+	const IconType = type === 'image' ? ImageIcon : AddOutlineIcon;
+	const Icon = isDone && ! hasError ? CheckmarkIcon : IconType;
 
 	const handleButtonClick = (
 		event: React.MouseEvent< HTMLButtonElement >,

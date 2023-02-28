@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Server\Request\List_Disputes;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -85,13 +87,9 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_disputes( WP_REST_Request $request ) {
-		$page      = (int) $request->get_param( 'page' );
-		$page_size = (int) $request->get_param( 'pagesize' );
-		$sort      = $request->get_param( 'sort' ) ?? 'created';
-		$direction = $request->get_param( 'direction' ) ?? 'desc';
-		$filters   = $this->get_disputes_filters( $request );
+		$wcpay_request = List_Disputes::from_rest_request( $request );
 
-		return $this->forward_request( 'list_disputes', [ $page, $page_size, $sort, $direction, $filters ] );
+		return $wcpay_request->handle_rest_request( 'wcpay_list_disputes_request', $request );
 	}
 
 	/**

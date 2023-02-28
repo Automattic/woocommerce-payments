@@ -18,7 +18,7 @@ import Pill from '../../components/pill';
 import './enable-upe-preview-task.scss';
 
 const EnableUpePreviewTask = () => {
-	const { setIsUpeEnabled, status } = useContext( WcPayUpeContext );
+	const { setIsUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 
 	const { setCompleted } = useContext( WizardTaskContext );
 
@@ -30,39 +30,69 @@ const EnableUpePreviewTask = () => {
 
 	return (
 		<WizardTaskItem
-			title={ interpolateComponents( {
-				mixedString: __(
-					'{{wrapper}}Enable the new WooCommerce Payments checkout experience{{/wrapper}} ' +
-						'{{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
-					'woocommerce-payments'
-				),
-				components: {
-					wrapper: <span />,
-					earlyAccessWrapper: <Pill />,
-				},
-			} ) }
+			title={
+				'split' === upeType
+					? interpolateComponents( {
+							mixedString: __(
+								'{{wrapper}}Enable the improved WooCommerce Payments checkout experience{{/wrapper}}',
+								'woocommerce-payments'
+							),
+							components: {
+								wrapper: <span />,
+							},
+					  } )
+					: interpolateComponents( {
+							mixedString: __(
+								'{{wrapper}}Enable the new WooCommerce Payments checkout experience{{/wrapper}} ' +
+									'{{earlyAccessWrapper}}Early access{{/earlyAccessWrapper}}',
+								'woocommerce-payments'
+							),
+							components: {
+								wrapper: <span />,
+								earlyAccessWrapper: <Pill />,
+							},
+					  } )
+			}
 			index={ 1 }
 		>
 			<CollapsibleBody className="enable-upe-preview__body">
 				<p className="wcpay-wizard-task__description-element is-muted-color">
-					{ interpolateComponents( {
-						mixedString: __(
-							'Get early access to additional payment methods and an improved checkout experience, ' +
-								'coming soon to WooCommerce payments. {{learnMoreLink /}}',
-							'woocommerce-payments'
-						),
-						components: {
-							learnMoreLink: (
-								// eslint-disable-next-line max-len
-								<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#introduction">
-									{ __(
-										'Learn more',
-										'woocommerce-payments'
-									) }
-								</ExternalLink>
-							),
-						},
-					} ) }
+					{ 'split' === upeType
+						? interpolateComponents( {
+								mixedString: __(
+									'Get access to additional payment methods and an improved checkout experience. {{learnMoreLink /}}',
+									'woocommerce-payments'
+								),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line max-len
+										<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#introduction">
+											{ __(
+												'Learn more',
+												'woocommerce-payments'
+											) }
+										</ExternalLink>
+									),
+								},
+						  } )
+						: interpolateComponents( {
+								mixedString: __(
+									'Get early access to additional payment methods and an improved checkout experience, ' +
+										'coming soon to WooCommerce payments. {{learnMoreLink /}}',
+									'woocommerce-payments'
+								),
+								components: {
+									learnMoreLink: (
+										// eslint-disable-next-line max-len
+										<ExternalLink href="https://woocommerce.com/document/payments/additional-payment-methods/#introduction">
+											{ __(
+												'Learn more',
+												'woocommerce-payments'
+											) }
+										</ExternalLink>
+									),
+								},
+						  } ) }
 				</p>
 				<div className="enable-upe-preview__advantages-wrapper">
 					<Card className="enable-upe-preview__advantage">

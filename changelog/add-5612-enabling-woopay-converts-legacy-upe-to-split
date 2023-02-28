@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+When enabling WooPay, if legacy UPE is enabled, upgrades feature flag to split UPE instead.

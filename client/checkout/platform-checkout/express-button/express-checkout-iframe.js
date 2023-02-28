@@ -160,7 +160,16 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	iframeWrapper.addEventListener( 'click', closeIframe );
 
 	const openIframe = ( email = '' ) => {
+		// check and return if another otp iframe is already open.
+		if ( document.querySelector( '.platform-checkout-otp-iframe' ) ) {
+			return;
+		}
+
+		const viewportWidth = window.document.documentElement.clientWidth;
+		const viewportHeight = window.document.documentElement.clientHeight;
+
 		const urlParams = new URLSearchParams();
+		urlParams.append( 'testMode', getConfig( 'testMode' ) );
 		urlParams.append(
 			'needsHeader',
 			fullScreenModalBreakpoint > window.innerWidth
@@ -168,8 +177,17 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		urlParams.append( 'wcpayVersion', getConfig( 'wcpayVersionNumber' ) );
 
 		if ( email && validateEmail( email ) ) {
+			userEmail = email;
 			urlParams.append( 'email', email );
 		}
+		urlParams.append( 'is_blocks', !! wcSettings.wcBlocksConfig );
+		urlParams.append( 'is_express', 'true' );
+		urlParams.append( 'express_context', context );
+		urlParams.append( 'source_url', window.location.href );
+		urlParams.append(
+			'viewport',
+			`${ viewportWidth }x${ viewportHeight }`
+		);
 
 		iframe.src = `${ getConfig(
 			'platformCheckoutHost'
