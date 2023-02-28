@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix subscription renewal creating multiple charges with UPE.
