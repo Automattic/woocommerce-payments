@@ -227,7 +227,7 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Fraud Protection settings section display flag is enabled.
+	 * Checks whether the Fraud and Risk Tools feature flag is enabled.
 	 *
 	 * @return  bool
 	 */
