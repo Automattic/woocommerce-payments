@@ -103,7 +103,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		/*
 		 * Base set of subscription features to add.
-		 * The WCPay payment gateway supports these feautres
+		 * The WCPay payment gateway supports these features
 		 * for both WCPay Subscriptions and WooCommerce Subscriptions.
 		 */
 		$payment_gateway_features = [
