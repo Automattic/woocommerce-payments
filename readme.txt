@@ -132,9 +132,6 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Add logging and order notes when WCPay Subscriptions are suspended or put on-hold.
 * Add - Highlight subscriptions with overdue payment in list view with red icon == Changelog ==
 
-= 5.5.1 - 2023-02-28 =
-* Fix - Fix subscription renewal creating multiple charges with UPE.
-
 = 5.5.0 - 2023-02-22 =
 * Add - Added learn more link to deposits page
 * Add - Added tracking for the split UPE feature flag.
@@ -203,9 +200,6 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
 * Dev - Moved the trash, untrash == Changelog ==
-
-= 5.5.1 - 2023-02-28 =
-* Fix - Fix subscription renewal creating multiple charges with UPE.
 
 = 5.5.0 - 2023-02-22 =
 * Add - Added learn more link to deposits page
