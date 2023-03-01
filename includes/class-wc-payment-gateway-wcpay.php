@@ -2832,7 +2832,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_intent_being_processed( string $intent_id ) {
-		$intent_status = $this->payments_api_client->get_intent( $intent_id )['status'];
+		$intent_status = $this->payments_api_client->get_intent( $intent_id )->get_status();
 		return Payment_Intent_Status::REQUIRES_PAYMENT_METHOD !== $intent_status;
 	}
 
