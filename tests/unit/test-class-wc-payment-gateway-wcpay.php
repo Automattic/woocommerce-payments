@@ -324,6 +324,42 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_gateway->payment_fields();
 	}
 
+	public function test_save_card_checkbox_not_displayed_for_non_logged_in_users() {
+		$this->wcpay_gateway->update_option( 'saved_cards', 'yes' );
+		wp_set_current_user( 0 );
+
+		$this->refresh_payments_checkout();
+
+		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
+		$this->setOutputCallback(
+			function ( $output ) {
+				$result = preg_match_all( '/.*<input.*id="wc-woocommerce_payments-new-payment-method".*\/>.*/', $output );
+
+				$this->assertSame( 0, $result );
+			}
+		);
+
+		$this->wcpay_gateway->payment_fields();
+	}
+
+	public function test_save_card_checkbox_displayed_for_logged_in_users() {
+		$this->wcpay_gateway->update_option( 'saved_cards', 'yes' );
+		wp_set_current_user( 1 );
+
+		$this->refresh_payments_checkout();
+
+		// Use a callback to get and test the output (also suppresses the output buffering being printed to the CLI).
+		$this->setOutputCallback(
+			function ( $output ) {
+				$result = preg_match_all( '/.*<input.*id="wc-woocommerce_payments-new-payment-method".*\/>.*/', $output );
+
+				$this->assertSame( 1, $result );
+			}
+		);
+
+		$this->wcpay_gateway->payment_fields();
+	}
+
 	public function test_fraud_prevention_token_added_when_enabled() {
 		$token_value                   = 'test-token';
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
