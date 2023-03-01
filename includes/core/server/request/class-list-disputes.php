@@ -10,6 +10,7 @@ namespace WCPay\Core\Server\Request;
 use Exception;
 use WC_Payments_API_Client;
 use WC_Payments_DB;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Response;
 use WCPay\Logger;
 use WP_REST_Request;
@@ -119,11 +120,18 @@ class List_Disputes extends Paginated {
 	/**
 	 * Set search.
 	 *
-	 * @param string $search Search term.
-	 *
+	 * @param string|array $search Search term or terms.
 	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception Whenever the parameter is not a string or array.
 	 */
-	public function set_search( string $search ) {
+	public function set_search( $search ) {
+		if ( ! is_string( $search ) && ! is_array( $search ) ) {
+			throw new Invalid_Request_Parameter_Exception(
+				__( 'The search parameter must be a string, or an array of strings.', 'woocommerce-payments' ),
+				'wcpay_core_invalid_request_parameter_invalid_search'
+			);
+		}
+
 		$this->set_param( 'search', $search );
 	}
 
