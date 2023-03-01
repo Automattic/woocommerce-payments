@@ -202,7 +202,9 @@ class WC_Payments_Checkout {
 				<?php
 				if ( $this->gateway->is_saved_cards_enabled() ) {
 					$force_save_payment = ( $display_tokenization && ! apply_filters( 'wc_payments_display_save_payment_method_checkbox', $display_tokenization ) ) || is_add_payment_method_page();
-					$this->gateway->save_payment_method_checkbox( $force_save_payment );
+					if ( is_user_logged_in() || $force_save_payment ) {
+						$this->gateway->save_payment_method_checkbox( $force_save_payment );
+					}
 				}
 				?>
 
