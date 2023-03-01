@@ -13,7 +13,7 @@ exports[`ProtectionLevels renders 1`] = `
           >
             <input
               checked=""
-              id="fraud-protection-level-select_standard-level"
+              id="fraud-protection__standard-level"
               name="fraud-protection-level-select"
               type="radio"
               value="standard"
@@ -58,7 +58,7 @@ exports[`ProtectionLevels renders 1`] = `
             class="fraud-protection-single-radio-wrapper"
           >
             <input
-              id="fraud-protection-level-select_high-level"
+              id="fraud-protection__high-level"
               name="fraud-protection-level-select"
               type="radio"
               value="high"

@@ -39,9 +39,7 @@ const ProtectionLevels = () => {
 						<div className="fraud-protection-single-radio-wrapper">
 							<input
 								name={ 'fraud-protection-level-select' }
-								id={
-									'fraud-protection-level-select_standard-level'
-								}
+								id={ 'fraud-protection__standard-level' }
 								value={ 'standard' }
 								type={ 'radio' }
 								checked={
@@ -84,9 +82,7 @@ const ProtectionLevels = () => {
 						<div className="fraud-protection-single-radio-wrapper">
 							<input
 								name={ 'fraud-protection-level-select' }
-								id={
-									'fraud-protection-level-select_high-level'
-								}
+								id={ 'fraud-protection__high-level' }
 								value={ 'high' }
 								type={ 'radio' }
 								checked={ 'high' === currentProtectionLevel }
