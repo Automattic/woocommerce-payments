@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Logger;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
@@ -140,7 +142,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Do not process intents that can't be captured.
-			$intent                   = $this->api_client->get_intent( $intent_id );
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
@@ -159,7 +163,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$intent_status = $intent->get_status();
 			$charge        = $intent->get_charge();
 			$charge_id     = $charge ? $charge->get_id() : null;
-			$this->gateway->attach_intent_info_to_order(
+			$this->order_service->attach_intent_info_to_order(
 				$order,
 				$intent_id,
 				$intent_status,
@@ -243,7 +247,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Do not process intents that can't be captured.
-			$intent                   = $this->api_client->get_intent( $intent_id );
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
@@ -319,7 +325,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			$order_user        = $order->get_user();
-			$customer_id       = $order->get_meta( '_stripe_customer_id' );
+			$customer_id       = $this->order_service->get_customer_id_for_order( $order );
 			$customer_data     = WC_Payments_Customer_Service::map_customer_data( $order );
 			$is_guest_customer = false === $order_user;
 
@@ -333,7 +339,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
 				: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
 
-			$order->update_meta_data( '_stripe_customer_id', $customer_id );
+			$this->order_service->set_customer_id_for_order( $order, $customer_id );
 			$order->save();
 
 			return rest_ensure_response(
@@ -360,16 +366,28 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		if ( false === $order ) {
 			return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 		}
-
 		try {
-			$result = $this->gateway->create_intent(
-				$order,
-				$this->get_terminal_intent_payment_method( $request ),
-				$this->get_terminal_intent_capture_method( $request ),
-				$request->get_param( 'metadata' ) ?? [],
-				$request->get_param( 'customer_id' )
+			$currency                 = strtolower( $order->get_currency() );
+			$customer_id              = $request->get_param( 'customer_id' );
+			$metadata                 = $request->get_param( 'metadata' ) ?? [];
+			$metadata['order_number'] = $order->get_order_number();
+
+			$wcpay_server_request = Create_Intention::create();
+			$wcpay_server_request->set_currency_code( $currency );
+			$wcpay_server_request->set_amount( WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ) );
+			if ( $customer_id ) {
+				$wcpay_server_request->set_customer( $customer_id );
+			}
+			$wcpay_server_request->set_metadata( $metadata );
+			$wcpay_server_request->set_payment_method_types( $this->get_terminal_intent_payment_method( $request ) );
+			$wcpay_server_request->set_capture_method( 'manual' === $this->get_terminal_intent_capture_method( $request ) );
+			$intent = $wcpay_server_request->send( 'wcpay_create_intent_request', $order );
+
+			return rest_ensure_response(
+				[
+					'id' => ! empty( $intent ) ? $intent->get_id() : null,
+				]
 			);
-			return rest_ensure_response( $result );
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create an intention via REST API: ' . $e );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );

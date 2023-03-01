@@ -443,7 +443,9 @@ export const handlePlatformCheckoutEmailInput = async (
 	const closeLoginSessionIframe = () => {
 		loginSessionIframeWrapper.remove();
 		loginSessionIframe.classList.remove( 'open' );
-		platformCheckoutEmailInput.focus();
+		platformCheckoutEmailInput.focus( {
+			preventScroll: true,
+		} );
 
 		// Check the initial value of the email input and trigger input validation.
 		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
