@@ -378,26 +378,32 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 *
 	 * @param string $intent_id     The payment intent id.
 	 * @param string $client_secret The payment intent client secret.
+	 *
+	 * @return void
 	 */
 	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
-		$cart_hash = 'undefined';
+		$woocommerce = WC();
+		if ( isset( $woocommerce->session ) ) {
+			$cart_hash = 'undefined';
+			if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
+				$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
+			}
 
-		if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
-			$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
+			$value = sprintf( '%s-%s-%s', $cart_hash, $intent_id, $client_secret );
+			$woocommerce->session->set( $this->get_payment_intent_session_key(), $value );
 		}
-
-		$value = $cart_hash . '-' . $intent_id . '-' . $client_secret;
-
-		WC()->session->set( $this->get_payment_intent_session_key(), $value );
 	}
 
 	/**
 	 * Removes all UPE payment intents from WC session.
+	 *
+	 * @return void
 	 */
 	public static function remove_upe_payment_intent_from_session() {
-		if ( isset( WC()->session ) ) {
+		$woocommerce = WC();
+		if ( isset( $woocommerce->session ) ) {
 			foreach ( WC_Payments::get_payment_method_map() as $id => $payment_method ) {
-				WC()->session->__unset( self::KEY_UPE_PAYMENT_INTENT . '_' . $payment_method->get_id() );
+				$woocommerce->session->__unset( self::KEY_UPE_PAYMENT_INTENT . '_' . $payment_method->get_id() );
 			}
 		}
 	}
