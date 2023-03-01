@@ -98,7 +98,7 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 5.5.1 - 2023-02-28 =
+= 5.5.1 - 2023-03-01 =
 * Add - When enabling WooPay, if legacy UPE is enabled, upgrades feature flag to split UPE instead.
 * Fix - Fix get woopay available countries return type
 * Fix - Fix handling saved tokens for payment gateways while using shortcode checkout
