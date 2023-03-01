@@ -461,7 +461,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 * Returns payment intent session data.
 	 *
 	 * @param false|string $payment_method Stripe payment method.
-	 * @return array|string value of session variable
+	 * @return string value of session variable
 	 */
 	public function get_payment_intent_data_from_session( $payment_method = false ) {
 		return WC()->session->get( $this->get_payment_intent_session_key( $payment_method ) );

@@ -2826,6 +2826,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Fetches intent details and using the status checks if intent is being processed already.
+	 *
+	 * @param string $intent_id Payment Intent ID.
+	 * @return bool
+	 */
+	public function is_intent_being_processed( string $intent_id ) {
+		$intent_status = $this->payments_api_client->get_intent( $intent_id )['status'];
+		return Payment_Intent_Status::REQUIRES_PAYMENT_METHOD !== $intent_status;
+	}
+
+	/**
 	 * Create a payment intent without confirming the intent.
 	 *
 	 * @param WC_Order    $order                        - Order based on which to create intent.
