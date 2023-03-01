@@ -168,7 +168,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	 * bound to an order or intent is processed but order state is not updated yet. Hence, we'll do some checks to
 	 * ensure buyers session stores a usable intent.
 	 *
-	 * Note: I know we should not enter a failed stated, but real-live environments are very unpredictable.
+	 * Note: I know we should not enter a failed state, but real-live environments behaviour is unpredictable.
 	 *
 	 * @return string|null
 	 */
