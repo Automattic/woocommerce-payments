@@ -207,7 +207,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				);
 			} catch ( Exception $e ) {
 				// If something goes on with API, forget the cached intent as we have no clues what exactly is wrong.
-				// It might both connectivity issues or intent state not allowing the update.
+				// It might be connectivity issues, intent state not allowing the update or post update period.
 				self::remove_upe_payment_intent_from_session();
 				throw $e;
 			}
@@ -572,7 +572,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 				} catch ( Exception $e ) {
 					// If something goes on with API, forget the cached intent as we have no clues what exactly is wrong.
-					// It might both connectivity issues or intent state not allowing the update.
+					// It might be connectivity issues, intent state not allowing the update or post update period.
 					self::remove_upe_payment_intent_from_session();
 					throw $e;
 				}
