@@ -15,6 +15,8 @@ import {
 	HighFraudProtectionModal,
 	StandardFraudProtectionModal,
 } from '../index';
+import { Button } from '@wordpress/components';
+import { getAdminUrl } from 'wcpay/utils';
 
 const ProtectionLevels = () => {
 	const [ isStandardModalOpen, setStandardModalOpen ] = useState( false );
@@ -35,7 +37,7 @@ const ProtectionLevels = () => {
 		<fieldset>
 			<ul>
 				<li>
-					<label htmlFor="fraud-protection__standard-level">
+					<label htmlFor="fraud-protection-level-select_standard-level">
 						<div className="fraud-protection-single-radio-wrapper">
 							<input
 								name={ 'fraud-protection-level-select' }
@@ -80,7 +82,7 @@ const ProtectionLevels = () => {
 					</label>
 				</li>
 				<li>
-					<label htmlFor="fraud-protection__high-level">
+					<label htmlFor="fraud-protection-level-select_high-level">
 						<div className="fraud-protection-single-radio-wrapper">
 							<input
 								name={ 'fraud-protection-level-select' }
@@ -109,6 +111,40 @@ const ProtectionLevels = () => {
 						</div>
 						<FraudProtectionHelpText level="high" />
 					</label>
+				</li>
+				<hr className="fraud-protection__list-divider" />
+				<li className="fraud-protection__advanced-level-container">
+					<label htmlFor="fraud-protection-level-select_advanced-level">
+						<div className="fraud-protection-single-radio-wrapper">
+							<input
+								name={ 'fraud-protection-level-select' }
+								id={
+									'fraud-protection-level-select_advanced-level'
+								}
+								value={ 'advanced' }
+								type={ 'radio' }
+								checked={
+									'advanced' === currentProtectionLevel
+								}
+								onChange={ () =>
+									handleLevelChange( 'advanced' )
+								}
+							/>
+							<p className="fraud-protection-single-radio-wrapper__item">
+								{ __( 'Advanced', 'woocommerce-payments' ) }
+							</p>
+						</div>
+						<FraudProtectionHelpText level="advanced" />
+					</label>
+					<Button
+						href={ getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/fraud-protection',
+						} ) }
+						isSecondary
+					>
+						{ __( 'Configure', 'woocommerce-payments' ) }
+					</Button>
 				</li>
 			</ul>
 		</fieldset>

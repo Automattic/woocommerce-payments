@@ -4,21 +4,30 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 
-const FraudProtectionHelpText = ( { level } ) => {
-	const isHighProtectionLevel = 'high' === level;
+const getFraudProtectionLevelText = function ( level ) {
+	switch ( level ) {
+		case 'high':
+			return __(
+				'High protection: Offers the highest level of filtering for stores, but may catch some legitimate transactions.',
+				'woocommerce-payments'
+			);
+		case 'advanced':
+			return __(
+				'Allows you to fine-tune the level of filtering according to your business needs.',
+				'woocommerce-payments'
+			);
+		default:
+			return __(
+				"Standard protection: Provides a standard level of filtering that's suitable for most businesses.",
+				'woocommerce-payments'
+			);
+	}
+};
 
+const FraudProtectionHelpText = ( { level } ) => {
 	return (
 		<p className={ 'fraud-protection__text--help-text' }>
-			{ isHighProtectionLevel
-				? __(
-						'High protection: Offers the highest level of filtering for stores, ' +
-							'but may catch some legitimate transactions.',
-						'woocommerce-payments'
-				  )
-				: __(
-						"Standard protection: Provides a standard level of filtering that's suitable for most businesses.",
-						'woocommerce-payments'
-				  ) }
+			{ getFraudProtectionLevelText( level ) }
 		</p>
 	);
 };

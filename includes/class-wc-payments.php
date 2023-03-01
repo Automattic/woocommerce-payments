@@ -407,6 +407,12 @@ class WC_Payments {
 			include_once __DIR__ . '/multi-currency/wc-payments-multi-currency.php';
 		}
 
+		// Load fraud & risk tools if feature is enabled.
+		if ( WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			include_once __DIR__ . '/fraud-prevention/class-fraud-risk-tools.php';
+			include_once __DIR__ . '/fraud-prevention/wc-payments-fraud-risk-tools.php';
+		}
+
 		self::$woopay_checkout_service = new Checkout_Service();
 		self::$woopay_checkout_service->init();
 
