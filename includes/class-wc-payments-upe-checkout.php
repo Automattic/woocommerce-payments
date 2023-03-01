@@ -112,7 +112,10 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
 
 		if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-			$payment_fields['checkoutTitle']        = $this->gateway->get_checkout_title();
+			$payment_fields['checkoutTitle'] = $this->gateway->get_checkout_title();
+			// TODO: Can we trust it yet?
+			// TODO: Could it's state be changed by activities from outside of buyer session? => Yes, e.g. programming mistakes.
+			// TODO: Could it be any outdated states of session page? => Yes, e.g. programming mistakes.
 			$payment_fields['upePaymentIntentData'] = $this->gateway->get_payment_intent_data_from_session();
 			$payment_fields['upeSetupIntentData']   = $this->gateway->get_setup_intent_data_from_session();
 		}
