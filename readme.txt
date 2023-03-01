@@ -137,14 +137,6 @@ Please note that our support for the checkout block is still experimental and th
 * Add - Add logging and order notes when WCPay Subscriptions are suspended or put on-hold.
 * Add - Highlight subscriptions with overdue payment in list view with red icon == Changelog ==
 
-= 5.5.1 - 2023-03-01 =
-* Add - When enabling WooPay, if legacy UPE is enabled, upgrades feature flag to split UPE instead.
-* Fix - Avoid rendering save cards checkbox for logged out users
-* Fix - Fix get woopay available countries return type
-* Fix - Fix handling saved tokens for payment gateways while using shortcode checkout
-* Fix - Fix subscription renewal creating multiple charges with UPE.
-* Fix - Fix WooPay settings notice visibility
-
 = 5.5.0 - 2023-02-22 =
 * Add - Added learn more link to deposits page
 * Add - Added tracking for the split UPE feature flag.
@@ -213,14 +205,6 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
 * Dev - Moved the trash, untrash == Changelog ==
-
-= 5.5.1 - 2023-03-01 =
-* Add - When enabling WooPay, if legacy UPE is enabled, upgrades feature flag to split UPE instead.
-* Fix - Avoid rendering save cards checkbox for logged out users
-* Fix - Fix get woopay available countries return type
-* Fix - Fix handling saved tokens for payment gateways while using shortcode checkout
-* Fix - Fix subscription renewal creating multiple charges with UPE.
-* Fix - Fix WooPay settings notice visibility
 
 = 5.5.0 - 2023-02-22 =
 * Add - Added learn more link to deposits page
