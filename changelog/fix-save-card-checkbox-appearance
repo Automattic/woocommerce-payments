@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Avoid rendering save cards checkbox for logged out users
