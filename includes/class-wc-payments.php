@@ -643,8 +643,9 @@ class WC_Payments {
 
 			$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
 
-			if ( in_array( 'link', $payment_methods, true ) && self::$platform_checkout_button_handler->is_woopay_enabled() ) {
-				$key = array_search( 'link', $payment_methods, true );
+			$key = array_search( 'link', $payment_methods, true );
+
+			if ( $key !== false && self::$platform_checkout_button_handler->is_woopay_enabled() ) {
 				unset( $payment_methods[ $key ] );
 
 				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
