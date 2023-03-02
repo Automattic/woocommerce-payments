@@ -23,6 +23,7 @@ import enqueueFraudScripts from 'fraud-scripts';
 import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-input-iframe';
 import wooPayExpressCheckoutPaymentMethod from '../platform-checkout/express-button/woopay-express-checkout-payment-method';
+import { isPreviewing } from '../preview';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -65,26 +66,11 @@ registerPaymentMethod( {
 	},
 } );
 
-/**
- * Checks whether we're in a preview context.
- *
- * @return {boolean} Whether we're in a preview context.
- */
-const isPreviewing = () => {
-	const searchParams = new URLSearchParams( window.location.search );
-
-	// Check for the URL parameter used in the iframe of the customize.php page
-	// and for the is_preview() value for posts.
-	return (
-		null !== searchParams.get( 'customize_messenger_channel' ) ||
-		getConfig( 'isPreview' )
-	);
-};
-
 // Call handlePlatformCheckoutEmailInput if platform checkout is enabled and this is the checkout page.
-if ( getConfig( 'isPlatformCheckoutEnabled' ) && ! isPreviewing() ) {
+if ( getConfig( 'isPlatformCheckoutEnabled' ) ) {
 	if (
-		document.querySelector( '[data-block-name="woocommerce/checkout"]' )
+		document.querySelector( '[data-block-name="woocommerce/checkout"]' ) &&
+		! isPreviewing()
 	) {
 		handlePlatformCheckoutEmailInput( '#email', api, true );
 	}
