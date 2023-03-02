@@ -3,16 +3,15 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import { Link } from '@woocommerce/components';
+import interpolateComponents from 'interpolate-components';
+
 /**
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
-
-import './../../style.scss';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
-import interpolateComponents from 'interpolate-components';
-import { Link } from '@woocommerce/components';
 
 const AVSMismatchRuleCard = () => (
 	<FraudProtectionRuleCard

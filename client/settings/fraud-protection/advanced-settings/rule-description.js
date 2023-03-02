@@ -1,18 +1,23 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
 import React from 'react';
 
 /**
  * Internal dependencies
  */
-
 import './../style.scss';
 
 const FraudProtectionRuleDescription = ( { children } ) => {
 	return (
 		<div className="fraud-protection-rule-description">
-			<strong>How does this filter protect me?</strong>
+			<strong>
+				{ __(
+					'How does this filter protect me?',
+					'woocommerce-payments'
+				) }
+			</strong>
 			<p>{ children }</p>
 		</div>
 	);

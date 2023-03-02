@@ -8,6 +8,30 @@ import './../style.scss';
 
 const getSVGIconOfNoticeType = ( type ) => {
 	switch ( type ) {
+		case 'error':
+			return (
+				<svg
+					width="18"
+					height="18"
+					viewBox="0 0 18 18"
+					fill="none"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						fillRule="evenodd"
+						clipRule="evenodd"
+						d={
+							'M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 ' +
+							'16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 ' +
+							'4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 ' +
+							'9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z'
+						}
+						fill="#CC1818"
+					/>
+					<path d="M10 4H8V10H10V4Z" fill="#CC1818" />
+					<path d="M10 12H8V14H10V12Z" fill="#CC1818" />
+				</svg>
+			);
 		case 'warning':
 			return (
 				<svg

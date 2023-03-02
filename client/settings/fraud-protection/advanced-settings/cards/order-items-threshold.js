@@ -3,12 +3,11 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+
 /**
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
-
-import './../../style.scss';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
 

@@ -7,9 +7,8 @@ import { Card } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import CardBody from '../../card-body';
-
 import './../style.scss';
+import CardBody from '../../card-body';
 
 const FraudProtectionRuleCard = ( { title, description, children } ) => {
 	return (

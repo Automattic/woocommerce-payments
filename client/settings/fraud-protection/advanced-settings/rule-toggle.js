@@ -1,21 +1,23 @@
 /**
  * External dependencies
  */
-import { CheckboxControl, Icon, ToggleControl } from '@wordpress/components';
 import React, { useState } from 'react';
+import { __ } from '@wordpress/i18n';
+import { CheckboxControl, Icon, ToggleControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-
 import './../style.scss';
 
-const FraudProtectionRuleToggle = ( { key, label, helpText } ) => {
+const FraudProtectionRuleToggle = ( { key, label, helpText, children } ) => {
 	const [ toggleState, setToggleState ] = useState( false );
 	const [ checkboxState, setCheckboxState ] = useState( false );
 	return (
 		<div className="fraud-protection-rule-toggle">
-			<strong>Enable filtering</strong>
+			<strong>
+				{ __( 'Enable filtering', 'woocommerce-payments' ) }
+			</strong>
 			<ToggleControl
 				label={ label }
 				key={ key }
@@ -28,7 +30,10 @@ const FraudProtectionRuleToggle = ( { key, label, helpText } ) => {
 			></ToggleControl>
 			{ toggleState && (
 				<div>
-					<strong>Advanced</strong>
+					{ children }
+					<strong>
+						{ __( 'Advanced', 'woocommerce-payments' ) }
+					</strong>
 					<div className="fraud-protection-rule-toggle-checkbox-container">
 						<CheckboxControl
 							label="Block Payment"

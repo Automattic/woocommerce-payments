@@ -3,17 +3,16 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import interpolateComponents from 'interpolate-components';
+import { Link } from '@woocommerce/components';
+
 /**
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
-
-import './../../style.scss';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
-import interpolateComponents from 'interpolate-components';
-import { Link } from '@woocommerce/components';
 
 const AddressMismatchRuleCard = () => (
 	<FraudProtectionRuleCard

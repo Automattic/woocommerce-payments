@@ -128,6 +128,23 @@
 				color: #1e1e1e;
 			}
 		}
+		&-children {
+			&-container {
+				margin-bottom: 16px;
+			}
+			&-horizontal-form {
+				display: flex;
+				flex-direction: row;
+				gap: $gap-small;
+				max-width: 492px;
+			}
+			&-vertical-form {
+				display: flex;
+				flex: 1;
+				flex-direction: column;
+				gap: $gap-smaller;
+			}
+		}
 	}
 
 	&-rule-card {
@@ -162,6 +179,9 @@
 			}
 			&-info {
 				background-color: #f0f6fc;
+			}
+			&-error {
+				background-color: #fcf0f1;
 			}
 			&-icon svg {
 				margin: 2px 16px 2px 2px;

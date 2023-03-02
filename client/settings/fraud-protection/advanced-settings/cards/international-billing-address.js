@@ -3,15 +3,14 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import { Link } from '@woocommerce/components';
+import interpolateComponents from 'interpolate-components';
+
 /**
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
-
-import './../../style.scss';
 import FraudProtectionRuleDescription from '../rule-description';
-import interpolateComponents from 'interpolate-components';
-import { Link } from '@woocommerce/components';
 import FraudProtectionRuleToggle from '../rule-toggle';
 
 const InternationalBillingAddressRuleCard = () => (
