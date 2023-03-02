@@ -568,6 +568,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						$request->set_payment_method_options( $payment_method_options );
 					}
 					$updated_payment_intent = $request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
+				} catch ( Amount_Too_Small_Exception $e ) {
+					// This code would only be reached if the cache has already expired.
+					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 				} catch ( Exception $e ) {
 					try {
 						$intent = Get_Intention::create( $payment_intent_id )->send( 'wcpay_get_intention_request' );
