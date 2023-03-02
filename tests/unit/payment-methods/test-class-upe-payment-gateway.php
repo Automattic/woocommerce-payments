@@ -1980,6 +1980,65 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function provide_upe_cached_intent_datasets(): array {
+		return [
+			'Processed intent'   => [
+				'pi_02032023',
+				true,
+				null,
+			],
+			'Unprocessed intent' => [
+				'pi_02032023',
+				false,
+				'hash-pi_02032023-secret',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider provide_upe_cached_intent_datasets
+	 */
+	public function test_upe_cached_intent_invalidation( string $intent_id, bool $is_processed, $expected_intent_data ) {
+		$upe_gateway_mock = $this->getMockBuilder( UPE_Payment_Gateway::class )
+			->setConstructorArgs(
+				[
+					$this->mock_api_client,
+					$this->mock_wcpay_account,
+					$this->mock_customer_service,
+					$this->mock_token_service,
+					$this->mock_action_scheduler_service,
+					$this->mock_payment_methods,
+					$this->mock_rate_limiter,
+					$this->order_service,
+				]
+			)
+			->setMethodsExcept( [ 'remove_upe_payment_intent_from_session' ] )
+			->getMock();
+		$upe_gateway_mock
+			->expects( $this->once() )
+			->method( 'get_payment_intent_data_from_session' )
+			->willReturn( sprintf( 'hash-%s-secret', $intent_id ) );
+		$upe_gateway_mock
+			->expects( $this->once() )
+			->method( 'is_intent_being_processed' )
+			->with( $intent_id )
+			->willReturn( $is_processed );
+		// A bit more mocking not related to the test case, but required to perform it.
+		$upe_gateway_mock
+			->expects( $this->once() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$upe_checkout = new WC_Payments_UPE_Checkout(
+			$upe_gateway_mock,
+			$this->mock_platform_checkout_utilities,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service
+		);
+
+		$this->assertSame( $expected_intent_data, $upe_checkout->get_payment_fields_js_config()['upePaymentIntentData'] );
+	}
+
 	public function maybe_filter_gateway_title_data_provider() {
 		$method_title   = 'WooCommerce Payments';
 		$checkout_title = 'Popular payment methods';
