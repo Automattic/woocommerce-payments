@@ -22,6 +22,13 @@ class WC_Payments_Subscriptions {
 	private static $product_service;
 
 	/**
+	 * Instance of WC_Payments_Order_Service, created in init function.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private static $order_service;
+
+	/**
 	 * Instance of WC_Payments_Invoice_Service, created in init function.
 	 *
 	 * @var WC_Payments_Invoice_Service
@@ -60,7 +67,8 @@ class WC_Payments_Subscriptions {
 		include_once __DIR__ . '/class-wc-payments-subscriptions-empty-state-manager.php';
 
 		self::$product_service      = new WC_Payments_Product_Service( $api_client );
-		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service, $gateway );
+		self::$order_service        = new WC_Payments_Order_Service( $api_client );
+		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service, self::$order_service );
 		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$product_service, self::$invoice_service );
 
 		// Load the subscription and invoice incoming event handler.
