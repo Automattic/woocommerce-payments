@@ -54,32 +54,33 @@ const ProtectionLevels = () => {
 								}
 							/>
 							<p className="fraud-protection-single-radio-wrapper__item">
-								{ __( 'Standard', 'woocommerce-payments' ) }
+								{ interpolateComponents( {
+									mixedString: __(
+										'Standard {{recommended}}(Recommended){{/recommended}}',
+										'woocommerce-payments'
+									),
+									components: {
+										recommended: (
+											<span className="fraud-protection-single-radio-wrapper__item--recommended" />
+										),
+									},
+								} ) }
 							</p>
-							<p
-								className={
-									'fraud-protection-single-radio-wrapper__item--recommended'
-								}
-							>
-								{ __(
-									'(Recommended)',
-									'woocommerce-payments'
-								) }
-							</p>
-							<HelpOutlineIcon
-								size={ 18 }
-								title="Standard level help icon"
-								onClick={ () => setStandardModalOpen( true ) }
-							/>
-							<StandardFraudProtectionModal
-								level="standard"
-								isStandardModalOpen={ isStandardModalOpen }
-								setStandardModalOpen={ setStandardModalOpen }
-								storeCurrency={ storeCurrency }
-							/>
-						</div>
-						<FraudProtectionHelpText level="standard" />
-					</label>
+						</label>
+						<HelpOutlineIcon
+							size={ 18 }
+							title="Standard level help icon"
+							className="fraud-protection__help-icon"
+							onClick={ () => setStandardModalOpen( true ) }
+						/>
+						<StandardFraudProtectionModal
+							level="standard"
+							isStandardModalOpen={ isStandardModalOpen }
+							setStandardModalOpen={ setStandardModalOpen }
+							storeCurrency={ storeCurrency }
+						/>
+					</div>
+					<FraudProtectionHelpText level="standard" />
 				</li>
 				<li>
 					<label htmlFor="fraud-protection-level-select_high-level">
@@ -97,20 +98,21 @@ const ProtectionLevels = () => {
 							<p className="fraud-protection-single-radio-wrapper__item">
 								{ __( 'High', 'woocommerce-payments' ) }
 							</p>
-							<HelpOutlineIcon
-								size={ 18 }
-								title="High level help icon"
-								onClick={ () => setHighModalOpen( true ) }
-							/>
-							<HighFraudProtectionModal
-								level="high"
-								isHighModalOpen={ isHighModalOpen }
-								setHighModalOpen={ setHighModalOpen }
-								storeCurrency={ storeCurrency }
-							/>
-						</div>
-						<FraudProtectionHelpText level="high" />
-					</label>
+						</label>
+						<HelpOutlineIcon
+							size={ 18 }
+							title="High level help icon"
+							className="fraud-protection__help-icon"
+							onClick={ () => setHighModalOpen( true ) }
+						/>
+						<HighFraudProtectionModal
+							level="high"
+							isHighModalOpen={ isHighModalOpen }
+							setHighModalOpen={ setHighModalOpen }
+							storeCurrency={ storeCurrency }
+						/>
+					</div>
+					<FraudProtectionHelpText level="high" />
 				</li>
 				<hr className="fraud-protection__list-divider" />
 				<li className="fraud-protection__advanced-level-container">
