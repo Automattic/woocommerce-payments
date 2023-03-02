@@ -1176,9 +1176,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * Returns payment intent session data.
 	 *
 	 * @param false|string $payment_method Stripe payment method.
-	 * @return string value of session variable
+	 * @return string|null
 	 */
 	public function get_payment_intent_data_from_session( $payment_method = false ) {
+		/**
+		 * The method return type specification is the one to trust.
+		 *
+		 * @psalm-suppress InvalidReturnStatement
+		 */
 		return WC()->session->get( self::KEY_UPE_PAYMENT_INTENT );
 	}
 
