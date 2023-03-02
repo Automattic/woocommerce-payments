@@ -14,6 +14,10 @@ $space-header-item: 12px;
 		.conversion-indicator {
 			margin-right: 6px;
 			fill: $studio-gray-30;
+
+			.components-popover__content {
+				z-index: 9999;
+			}
 		}
 	}
 
