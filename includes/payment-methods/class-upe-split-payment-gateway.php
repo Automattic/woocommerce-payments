@@ -403,7 +403,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		$woocommerce = WC();
 		if ( isset( $woocommerce->session ) ) {
 			foreach ( WC_Payments::get_payment_method_map() as $id => $payment_method ) {
-				$woocommerce->session->__unset( self::KEY_UPE_PAYMENT_INTENT . '_' . $payment_method->get_id() );
+				$woocommerce->session->set( self::KEY_UPE_PAYMENT_INTENT . '_' . $payment_method->get_id(), null );
 			}
 		}
 	}

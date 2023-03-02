@@ -1211,7 +1211,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	public static function remove_upe_payment_intent_from_session() {
 		$woocommerce = WC();
 		if ( isset( $woocommerce->session ) && $woocommerce->session->__isset( self::KEY_UPE_PAYMENT_INTENT ) ) {
-			$woocommerce->session->__unset( self::KEY_UPE_PAYMENT_INTENT );
+			$woocommerce->session->set( self::KEY_UPE_PAYMENT_INTENT, null );
 		}
 	}
 
