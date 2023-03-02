@@ -461,11 +461,12 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	 */
 	public function get_payment_intent_data_from_session( $payment_method = false ) {
 		/**
-		 * The method return type specification is the one to trust.
+		 * The referenced methods' type inference is not allowing to extrapolate expected type, hence we specify them here.
 		 *
-		 * @psalm-suppress InvalidReturnStatement
+		 * @var string|null $intent_data
 		 */
-		return WC()->session->get( $this->get_payment_intent_session_key( $payment_method ) );
+		$intent_data = WC()->session->get( $this->get_payment_intent_session_key( $payment_method ) );
+		return $intent_data;
 	}
 
 	/**
