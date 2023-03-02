@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { WPElement } from '@wordpress/element/build-types/create-interpolate-element';
 import { createInterpolateElement } from '@wordpress/element';
 import React from 'react';
 
@@ -283,5 +284,95 @@ export default {
 			'Underage. Age must be at least 18.',
 			'woocommerce-payments'
 		),
+	},
+	// Strings needed for the progressive onboarding related tasks.
+	po_tasks: {
+		after_payment: {
+			title: __(
+				'Verify your bank account to start receiving deposits',
+				'woocommerce-payments'
+			),
+			description: ( dueDate: string ): WPElement => {
+				return createInterpolateElement(
+					sprintf(
+						__(
+							'Add the required details by <strong>%s</strong> or <strong>before reaching $5,000</strong> in sales to avoid a disruption in payments.',
+							'woocommerce-payments'
+						),
+						dueDate
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __(
+				'Start receiving deposits',
+				'woocommerce-payments'
+			),
+		},
+		balance_rising: {
+			title: __(
+				'Verify your bank account to start receiving deposits',
+				'woocommerce-payments'
+			),
+			description: ( dueDate: string ): WPElement => {
+				return createInterpolateElement(
+					sprintf(
+						__(
+							'To ensure a smooth payments process, please make sure to confirm your bank details by <strong>%s</strong> or before you reach <strong>$5,000</strong> in sales.',
+							'woocommerce-payments'
+						),
+						dueDate
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __(
+				'Start receiving deposits',
+				'woocommerce-payments'
+			),
+		},
+		near_threshold: {
+			title: __( 'Verify your bank details', 'woocommerce-payments' ),
+			description: ( dueDate: string ): WPElement => {
+				return createInterpolateElement(
+					sprintf(
+						__(
+							'Verify your bank details by <strong>%s</strong> or before reaching <strong>$5,000</strong> in sales to avoid a disruption in payments.',
+							'woocommerce-payments'
+						),
+						dueDate
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __( 'Set up deposits', 'woocommerce-payments' ),
+		},
+		threshold_reached: {
+			title: __(
+				'Payments paused! Verify your bank details to reactivate.',
+				'woocommerce-payments'
+			),
+			description: ( dueDate: string ): WPElement => {
+				return createInterpolateElement(
+					sprintf(
+						__(
+							'<strong>You have reached the deposit threshold of $5,000.00. Please verify your bank account now to reactivate payments.</strong> Your customers can no longer make purchases on your store until your account is verified.',
+							'woocommerce-payments'
+						),
+						dueDate
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __( 'Verify bank details', 'woocommerce-payments' ),
+		},
 	},
 };
