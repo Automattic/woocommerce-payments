@@ -208,6 +208,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			} catch ( Exception $e ) {
 				// If something goes on with API, forget the cached intent as we have no clues what exactly is wrong.
 				// It might be connectivity issues, intent state not allowing the update or post update period.
+				// This update is not necessary related to an order, hence we'll not attempt to mark any orders as failed.
 				self::remove_upe_payment_intent_from_session();
 				throw $e;
 			}
@@ -605,11 +606,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 		} else {
 			try {
-				// The intent caching is UPE-specific, so clearing it is happening only inside UPE-gateways.
 				return $this->parent_process_payment( $order_id );
 			} catch ( Exception $e ) {
 				// The invoked method already handles order status changes on success and partially on failure.
 				// But, not all exceptions are triggering order status changes, so we have to clear intent cache.
+				// The intent caching is UPE-specific, so we have to keep it in the UPE-gateways only.
 				self::remove_upe_payment_intent_from_session();
 			}
 		}
