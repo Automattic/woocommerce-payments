@@ -106,7 +106,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$payment_fields['gatewayId']                = UPE_Payment_Gateway::GATEWAY_ID;
 		$payment_fields['isCheckout']               = is_checkout();
 		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
-		$payment_fields['testMode']                 = $this->gateway->is_in_test_mode();
+		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
 		$payment_fields['upeAppearance']            = get_transient( UPE_Payment_Gateway::UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['wcBlocksUPEAppearance']    = get_transient( UPE_Payment_Gateway::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
@@ -162,6 +162,15 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 	}
 
 	/**
+	 * Checks if WooPay is enabled.
+	 *
+	 * @return bool - True if WooPay enabled, false otherwise.
+	 */
+	private function is_woopay_enabled() {
+		return WC_Payments_Features::is_platform_checkout_eligible() && 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' ) && WC_Payments_Features::is_woopay_express_checkout_enabled();
+	}
+
+	/**
 	 * Gets payment method settings to pass to client scripts
 	 *
 	 * @return array
@@ -171,7 +180,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
-			if ( WC_Payments_Features::is_upe_split_enabled() && 'card' === $payment_method_id ) {
+			if ( 'card' === $payment_method_id && WC_Payments_Features::is_upe_split_enabled() && $this->is_woopay_enabled() ) {
 				continue;
 			}
 			// Link by Stripe should be validated with available fees.
@@ -261,7 +270,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 				<p><?php echo wp_kses_post( $this->gateway->get_description() ); ?></p>
 			<?php endif; ?>
 
-			<?php if ( $this->gateway->is_in_test_mode() ) : ?>
+			<?php if ( WC_Payments::mode()->is_test() ) : ?>
 				<p class="testmode-info">
 					<?php
 						$testing_instructions = $this->gateway->get_payment_method()->get_testing_instructions();
