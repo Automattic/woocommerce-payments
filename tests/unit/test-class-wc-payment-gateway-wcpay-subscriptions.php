@@ -782,7 +782,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		remove_all_actions( 'woocommerce_admin_order_data_after_billing_address' );
 
 		WC_Subscriptions::$version = '3.0.7';
-		new \WC_Payment_Gateway_WCPay(
+
+		$payment_gateway = new \WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
 			$this->mock_wcpay_account,
 			$this->mock_customer_service,
@@ -791,6 +792,13 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			$this->mock_session_rate_limiter,
 			$this->order_service
 		);
+
+		// Ensure the has_attached_integration_hooks property is set to false so callbacks can be attached in maybe_init_subscriptions().
+		$ref = new ReflectionProperty( $payment_gateway, 'has_attached_integration_hooks' );
+		$ref->setAccessible( true );
+		$ref->setValue( null, false );
+
+		$payment_gateway->maybe_init_subscriptions();
 
 		$this->assertTrue( has_action( 'woocommerce_admin_order_data_after_billing_address' ) );
 	}
