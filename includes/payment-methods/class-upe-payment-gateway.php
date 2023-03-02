@@ -138,17 +138,6 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			true
 		);
 
-		// load the scripts even if cart does not need payment.
-		if (
-			isset( WC()->cart ) &&
-			! WC()->cart->is_empty() &&
-			! WC()->cart->needs_payment() &&
-			is_checkout() &&
-			! has_block( 'woocommerce/checkout' )
-		) {
-			WC_Payments::get_gateway()->tokenization_script();
-			WC_Payments::get_wc_payments_checkout()->enqueue_payment_scripts();
-		}
 	}
 
 	/**
