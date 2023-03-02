@@ -6,17 +6,14 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-
-import RegularOnboardingNotice from './regular-onboarding-notice';
-import OnboardingForm from './onboarding-form';
+import { OnboardingContextProvider } from './context';
+import Steps from './steps';
 
 const OnboardingPrototype: React.FunctionComponent = () => {
 	return (
-		<>
-			<RegularOnboardingNotice />
-			<br />
-			<OnboardingForm />
-		</>
+		<OnboardingContextProvider>
+			<Steps />
+		</OnboardingContextProvider>
 	);
 };
 
