@@ -17,6 +17,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Logger;
@@ -36,6 +37,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
 use WC_Payments_Features;
+use WCPay\Utils\Currency;
 use WP_User;
 
 
@@ -567,13 +569,15 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 						$request->set_payment_method_options( $payment_method_options );
 					}
 					$updated_payment_intent = $request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );
-				} catch ( Amount_Too_Small_Exception $e ) {
-					// This code would only be reached if the cache has already expired.
-					throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 				} catch ( Exception $e ) {
-					// If something goes on with API, forget the cached intent as we have no clues what exactly is wrong.
-					// It might be connectivity issues, intent state not allowing the update or post update period.
-					self::remove_upe_payment_intent_from_session();
+					try {
+						$intent = Get_Intention::create( $payment_intent_id )->send( 'wcpay_get_intention_request' );
+						$charge = $intent->get_charge();
+						$this->order_service->mark_payment_failed( $order, $payment_intent_id, $intent->get_status(), $charge ? $charge->get_id() : '', $e->getMessage() );
+					} catch ( Exception $get_intent_exception ) {
+						// Do nothing - something happens on API side as both update and get requests failed.
+						unset( $get_intent_exception );
+					}
 					throw $e;
 				}
 
