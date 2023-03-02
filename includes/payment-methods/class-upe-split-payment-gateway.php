@@ -384,12 +384,8 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 	private function add_upe_payment_intent_to_session( string $intent_id = '', string $client_secret = '' ) {
 		$woocommerce = WC();
 		if ( isset( $woocommerce->session ) ) {
-			$cart_hash = 'undefined';
-			if ( isset( $_COOKIE['woocommerce_cart_hash'] ) ) {
-				$cart_hash = sanitize_text_field( wp_unslash( $_COOKIE['woocommerce_cart_hash'] ) );
-			}
-
-			$value = sprintf( '%s-%s-%s', $cart_hash, $intent_id, $client_secret );
+			$cart_hash = isset( $woocommerce->cart ) ? $woocommerce->cart->get_cart_hash() : 'undefined';
+			$value     = sprintf( '%s-%s-%s', $cart_hash, $intent_id, $client_secret );
 			$woocommerce->session->set( $this->get_payment_intent_session_key(), $value );
 		}
 	}
