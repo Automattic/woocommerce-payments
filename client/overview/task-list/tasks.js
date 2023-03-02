@@ -16,6 +16,7 @@ import strings from './strings';
 import wcpayTracks from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import UpdateBusinessDetailsModal from '../modal/update-business-details';
+import { getVerifyBankAccountTask } from './po-tasks';
 
 const renderModal = ( errorMessages, status, accountLink, currentDeadline ) => {
 	let container = document.querySelector(
@@ -81,6 +82,10 @@ export const getTasks = ( {
 	const isDisputeTaskVisible = 0 < numDisputesNeedingResponse;
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
+	// TODO GH-4748 get the data from server
+	const isPoEnabled = true;
+	const tpv = 100;
+	const firstPaymentDate = '2023-03-02 19:19:00';
 
 	if ( accountRestrictedSoon && currentDeadline ) {
 		accountDetailsUpdateByDescription = sprintf(
@@ -119,7 +124,8 @@ export const getTasks = ( {
 
 	return [
 		isAccountOverviewTasksEnabled &&
-			showUpdateDetailsTask && {
+			showUpdateDetailsTask &&
+			! isPoEnabled && {
 				key: 'update-business-details',
 				level: 1,
 				title: __(
@@ -202,6 +208,11 @@ export const getTasks = ( {
 				} );
 			},
 		},
+		getVerifyBankAccountTask( {
+			poEnabled: isPoEnabled,
+			tpv: tpv,
+			firstPaymentDate: firstPaymentDate,
+		} ),
 	].filter( Boolean );
 };
 
