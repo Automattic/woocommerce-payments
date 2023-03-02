@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 5.5.0
+Stable tag: 5.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -97,6 +97,14 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 5.5.1 - 2023-03-01 =
+* Add - When enabling WooPay, if legacy UPE is enabled, upgrades feature flag to split UPE instead.
+* Fix - Avoid rendering save cards checkbox for logged out users
+* Fix - Fix get woopay available countries return type
+* Fix - Fix handling saved tokens for payment gateways while using shortcode checkout
+* Fix - Fix subscription renewal creating multiple charges with UPE.
+* Fix - Fix WooPay settings notice visibility
 
 = 5.5.0 - 2023-02-22 =
 * Add - Added learn more link to deposits page
