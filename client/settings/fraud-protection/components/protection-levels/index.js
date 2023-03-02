@@ -15,6 +15,7 @@ import {
 	HighFraudProtectionModal,
 	StandardFraudProtectionModal,
 } from '../index';
+import interpolateComponents from 'interpolate-components';
 import { Button } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 
@@ -37,22 +38,19 @@ const ProtectionLevels = () => {
 		<fieldset>
 			<ul>
 				<li>
-					<label htmlFor="fraud-protection-level-select_standard-level">
-						<div className="fraud-protection-single-radio-wrapper">
-							<input
-								name={ 'fraud-protection-level-select' }
-								id={
-									'fraud-protection-level-select_standard-level'
-								}
-								value={ 'standard' }
-								type={ 'radio' }
-								checked={
-									'standard' === currentProtectionLevel
-								}
-								onChange={ () =>
-									handleLevelChange( 'standard' )
-								}
-							/>
+					<div className="fraud-protection-single-radio-wrapper">
+						<input
+							name={ 'fraud-protection-level-select' }
+							id={ 'fraud-protection__standard-level' }
+							value={ 'standard' }
+							type={ 'radio' }
+							className={
+								'fraud-protection-single-radio-wrapper__item'
+							}
+							checked={ 'standard' === currentProtectionLevel }
+							onChange={ () => handleLevelChange( 'standard' ) }
+						/>
+						<label htmlFor="fraud-protection__standard-level">
 							<p className="fraud-protection-single-radio-wrapper__item">
 								{ interpolateComponents( {
 									mixedString: __(
@@ -83,18 +81,19 @@ const ProtectionLevels = () => {
 					<FraudProtectionHelpText level="standard" />
 				</li>
 				<li>
-					<label htmlFor="fraud-protection-level-select_high-level">
-						<div className="fraud-protection-single-radio-wrapper">
-							<input
-								name={ 'fraud-protection-level-select' }
-								id={
-									'fraud-protection-level-select_high-level'
-								}
-								value={ 'high' }
-								type={ 'radio' }
-								checked={ 'high' === currentProtectionLevel }
-								onChange={ () => handleLevelChange( 'high' ) }
-							/>
+					<div className="fraud-protection-single-radio-wrapper">
+						<input
+							name={ 'fraud-protection-level-select' }
+							id={ 'fraud-protection__high-level' }
+							value={ 'high' }
+							type={ 'radio' }
+							className={
+								'fraud-protection-single-radio-wrapper__item'
+							}
+							checked={ 'high' === currentProtectionLevel }
+							onChange={ () => handleLevelChange( 'high' ) }
+						/>
+						<label htmlFor="fraud-protection__high-level">
 							<p className="fraud-protection-single-radio-wrapper__item">
 								{ __( 'High', 'woocommerce-payments' ) }
 							</p>
