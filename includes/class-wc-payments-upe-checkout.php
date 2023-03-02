@@ -177,15 +177,14 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 		if ( $intent_data ) {
 			// Extract the intent and ensure it's not bound to an order yet nor being processed.
 			list( $cart_hash, $intent_id, $client_secret ) = explode( '-', $intent_data, 3 );
-			// TODO: should we inject this via constructor?
 			$order = ( new WC_Payments_DB() )->order_from_intent_id( $intent_id );
-			if ( ! $order && ! $this->gateway->is_intent_being_processed( $intent_id ) ) {
-				return $intent_data;
+			if ( $order || $this->gateway->is_intent_being_processed( $intent_id ) ) {
+				// Clean the cache, to recover it from failed state of our flows.
+				$this->gateway->remove_upe_setup_intent_from_session();
+				$intent_data = null;
 			}
-			// Clean the cache, to recover it from failed state of our flows.
-			$this->gateway->remove_upe_setup_intent_from_session();
 		}
-		return null;
+		return $intent_data;
 	}
 
 	/**
