@@ -720,8 +720,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
-			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
-
 			$check_session_order = $this->check_against_session_processing_order( $order );
 			if ( is_array( $check_session_order ) ) {
 				return $check_session_order;
@@ -802,8 +800,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 				$order->add_order_note( $note );
 			}
-
-			UPE_Payment_Gateway::remove_upe_payment_intent_from_session();
 
 			// Re-throw the exception after setting everything up.
 			// This makes the error notice show up both in the regular and block checkout.

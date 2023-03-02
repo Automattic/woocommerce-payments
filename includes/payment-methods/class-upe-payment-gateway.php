@@ -7,37 +7,35 @@
 
 namespace WCPay\Payment_Methods;
 
-use WCPay\Constants\Payment_Method;
-use WCPay\Core\Server\Request\Create_Intention;
-use WCPay\Core\Server\Request\Create_Setup_Intention;
-use WCPay\Core\Server\Request\Get_Charge;
-use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Core\Server\Request\Update_Intention;
-use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Intent_Status;
-use WCPay\Exceptions\Amount_Too_Small_Exception;
-use WCPay\Exceptions\Add_Payment_Method_Exception;
-use WCPay\Exceptions\API_Exception;
-use WCPay\Exceptions\Process_Payment_Exception;
-use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Logger;
-use WCPay\Constants\Payment_Type;
-use WCPay\Session_Rate_Limiter;
 use Exception;
 use WC_Order;
+use WC_Payment_Gateway_WCPay;
+use WC_Payment_Token_CC;
+use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
-use WC_Payment_Gateway_WCPay;
-use WC_Payments_Order_Service;
-use WC_Payment_Token_CC;
-use WC_Payments_Token_Service;
-use WC_Payment_Token_WCPay_SEPA;
-use WC_Payments_Utils;
 use WC_Payments_Features;
-use WCPay\Utils\Currency;
+use WC_Payments_Order_Service;
+use WC_Payments_Token_Service;
+use WC_Payments_Utils;
+use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Payment_Type;
+use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Create_Setup_Intention;
+use WCPay\Core\Server\Request\Get_Charge;
+use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Core\Server\Request\Update_Intention;
+use WCPay\Exceptions\Add_Payment_Method_Exception;
+use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\Process_Payment_Exception;
+use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Logger;
+use WCPay\Session_Rate_Limiter;
 use WP_User;
 
 
@@ -606,7 +604,14 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 				}
 			}
 		} else {
-			return $this->parent_process_payment( $order_id );
+			try {
+				// The intent caching is UPE-specific, so clearing it is happening only inside UPE-gateways.
+				return $this->parent_process_payment( $order_id );
+			} catch ( Exception $e ) {
+				// The invoked method already handles order status changes on success and partially on failure.
+				// But, not all exceptions are triggering order status changes, so we have to clear intent cache.
+				self::remove_upe_payment_intent_from_session();
+			}
 		}
 
 		return [

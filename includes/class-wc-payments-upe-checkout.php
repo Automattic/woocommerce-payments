@@ -180,7 +180,7 @@ class WC_Payments_UPE_Checkout extends WC_Payments_Checkout {
 			$order = ( new WC_Payments_DB() )->order_from_intent_id( $intent_id );
 			if ( $order || $this->gateway->is_intent_being_processed( $intent_id ) ) {
 				// Clean the cache, to recover it from failed state of our flows.
-				$this->gateway->remove_upe_setup_intent_from_session();
+				$this->gateway->remove_upe_payment_intent_from_session();
 				$intent_data = null;
 			}
 		}
