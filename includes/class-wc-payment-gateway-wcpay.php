@@ -622,7 +622,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Registers scripts necessary for the gateway, even when cart order total is 0.
-	 * This is done so that if the cart is modified via AJAX on checkout, 
+	 * This is done so that if the cart is modified via AJAX on checkout,
 	 * the scripts are still loaded.
 	 */
 	public function register_scripts_for_zero_order_total() {
@@ -644,7 +644,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayConfig', WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
 				wp_enqueue_script( 'WCPAY_CHECKOUT' );
 			}
-		} 
+		}
 	}
 
 	/**
