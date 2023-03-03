@@ -238,10 +238,7 @@ const Deposits = () => {
 
 				<div className="deposits__bank-information">
 					<h4>
-						{ __(
-							'Bank account information',
-							'woocommerce-payments'
-						) }
+						{ __( 'Deposit bank account', 'woocommerce-payments' ) }
 					</h4>
 					<p className="deposits__bank-information-help">
 						{ __(

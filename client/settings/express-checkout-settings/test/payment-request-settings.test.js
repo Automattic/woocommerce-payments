@@ -17,6 +17,7 @@ import {
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
+	usePlatformCheckoutEnabledSettings,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
@@ -25,6 +26,7 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonType: jest.fn().mockReturnValue( [ 'buy' ] ),
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'default' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
+	usePlatformCheckoutEnabledSettings: jest.fn(),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );
@@ -42,6 +44,8 @@ const getMockPaymentRequestEnabledSettings = (
 	isEnabled,
 	updateIsPaymentRequestEnabledHandler
 ) => [ isEnabled, updateIsPaymentRequestEnabledHandler ];
+
+const getMockPlatformCheckoutEnabledSettings = ( isEnabled ) => [ isEnabled ];
 
 const getMockPaymentRequestLocations = (
 	isCheckoutEnabled,
@@ -65,6 +69,10 @@ describe( 'PaymentRequestSettings', () => {
 
 		usePaymentRequestLocations.mockReturnValue(
 			getMockPaymentRequestLocations( true, true, true, jest.fn() )
+		);
+
+		usePlatformCheckoutEnabledSettings.mockReturnValue(
+			getMockPlatformCheckoutEnabledSettings( true )
 		);
 	} );
 
@@ -98,9 +106,9 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect( updateIsPaymentRequestEnabledHandler ).not.toHaveBeenCalled();
 
-		expect( screen.getByLabelText( 'Checkout' ) ).toBeChecked();
-		expect( screen.getByLabelText( 'Product page' ) ).toBeChecked();
-		expect( screen.getByLabelText( 'Cart' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Checkout Page' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Product Page' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Cart Page' ) ).toBeChecked();
 
 		userEvent.click( screen.getByLabelText( /Enable Apple Pay/ ) );
 		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
@@ -116,7 +124,15 @@ describe( 'PaymentRequestSettings', () => {
 			screen.queryByRole( 'heading', { name: 'Call to action' } )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByRole( 'heading', { name: 'Appearance' } )
+			screen.queryByRole( 'heading', { name: 'Button size' } )
+		).toBeInTheDocument();
+
+		expect(
+			screen.queryByRole( 'heading', { name: 'Theme' } )
+		).toBeInTheDocument();
+
+		expect(
+			screen.queryByRole( 'heading', { name: 'Preview' } )
 		).toBeInTheDocument();
 
 		// confirm radio button groups displayed
@@ -129,7 +145,7 @@ describe( 'PaymentRequestSettings', () => {
 		expect( themeRadio ).toBeInTheDocument();
 
 		// confirm default values
-		expect( screen.getByLabelText( 'Buy' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Buy with' ) ).toBeChecked();
 		expect( screen.getByLabelText( 'Default (40 px)' ) ).toBeChecked();
 		expect( screen.getByLabelText( /Dark/ ) ).toBeChecked();
 	} );
@@ -153,7 +169,7 @@ describe( 'PaymentRequestSettings', () => {
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout' ] );
 
-		userEvent.click( screen.getByLabelText( /Product page/ ) );
+		userEvent.click( screen.getByLabelText( /Product Page/ ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product' ] );
@@ -191,7 +207,7 @@ describe( 'PaymentRequestSettings', () => {
 		userEvent.click( screen.getByLabelText( /Light/ ) );
 		expect( setButtonThemeMock ).toHaveBeenCalledWith( 'light' );
 
-		userEvent.click( screen.getByLabelText( 'Book' ) );
+		userEvent.click( screen.getByLabelText( 'Book with' ) );
 		expect( setButtonTypeMock ).toHaveBeenCalledWith( 'book' );
 
 		userEvent.click( screen.getByLabelText( 'Large (56 px)' ) );
@@ -213,17 +229,17 @@ describe( 'PaymentRequestSettings', () => {
 		render( <PaymentRequestSettings section="enable" /> );
 
 		// Uncheck each checkbox, and verify them what kind of action should have been called
-		userEvent.click( screen.getByText( 'Product page' ) );
+		userEvent.click( screen.getByText( 'Product Page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'cart' ] );
 
-		userEvent.click( screen.getByText( 'Checkout' ) );
+		userEvent.click( screen.getByText( 'Checkout Page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product', 'cart' ] );
 
-		userEvent.click( screen.getByText( 'Cart' ) );
+		userEvent.click( screen.getByText( 'Cart Page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );

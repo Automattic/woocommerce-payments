@@ -78,4 +78,9 @@
       <code>\Automattic\WooCommerce\Utilities\OrderUtil</code>
     </UndefinedClass>
   </file>
+  <file src="includes/compat/blocks/class-blocks-data-extractor.php">
+    <UndefinedClass occurrences="1">
+      <code>CheckoutSchema</code>
+    </UndefinedClass>
+  </file>
 </files>

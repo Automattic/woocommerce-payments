@@ -18,6 +18,11 @@ use WCPay\Constants\Payment_Method;
  * Seen in checkout page and my account->add payment method page.
  */
 class WC_Payments_Token_Service {
+	const REUSABLE_GATEWAYS_BY_PAYMENT_METHOD = [
+		Payment_Method::CARD => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		Payment_Method::SEPA => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
+		Payment_Method::LINK => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK,
+	];
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -47,6 +52,7 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
+		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_sepa_label' ] );
 	}
 
 	/**
@@ -62,13 +68,19 @@ class WC_Payments_Token_Service {
 
 		switch ( $payment_method['type'] ) {
 			case Payment_Method::SEPA:
-				$token = new WC_Payment_Token_WCPay_SEPA();
-				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+				$token      = new WC_Payment_Token_WCPay_SEPA();
+				$gateway_id = WC_Payments_Features::is_upe_split_enabled() ?
+					WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA :
+					CC_Payment_Gateway::GATEWAY_ID;
+				$token->set_gateway_id( $gateway_id );
 				$token->set_last4( $payment_method[ Payment_Method::SEPA ]['last4'] );
 				break;
 			case Payment_Method::LINK:
-				$token = new WC_Payment_Token_WCPay_Link();
-				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+				$token      = new WC_Payment_Token_WCPay_Link();
+				$gateway_id = WC_Payments_Features::is_upe_split_enabled() ?
+					WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::LINK :
+					CC_Payment_Gateway::GATEWAY_ID;
+				$token->set_gateway_id( $gateway_id );
 				$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
 				break;
 			default:
@@ -100,6 +112,21 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
+	 * Returns boolean value if payment method type matches relevant payment gateway.
+	 *
+	 * @param string $payment_method_type Stripe payment method type ID.
+	 * @param string $gateway_id          WC payment gateway ID.
+	 * @return bool                       True, if payment method type matches gateway, false if otherwise.
+	 */
+	public function is_valid_payment_method_type_for_gateway( $payment_method_type, $gateway_id ) {
+		if ( WC_Payments_Features::is_upe_split_enabled() ) {
+			return self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD[ $payment_method_type ] === $gateway_id;
+		} else {
+			return WC_Payments::get_gateway()->id === $gateway_id;
+		}
+	}
+
+	/**
 	 * Gets saved tokens from API if they don't already exist in WooCommerce.
 	 *
 	 * @param array  $tokens     Array of tokens.
@@ -108,7 +135,8 @@ class WC_Payments_Token_Service {
 	 * @return array
 	 */
 	public function woocommerce_get_customer_payment_tokens( $tokens, $user_id, $gateway_id ) {
-		if ( ( ! empty( $gateway_id ) && WC_Payment_Gateway_WCPay::GATEWAY_ID !== $gateway_id ) || ! is_user_logged_in() ) {
+
+		if ( ( ! empty( $gateway_id ) && ! in_array( $gateway_id, self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) || ! is_user_logged_in() ) {
 			return $tokens;
 		}
 
@@ -128,16 +156,29 @@ class WC_Payments_Token_Service {
 			$stored_tokens = [];
 
 			foreach ( $tokens as $token ) {
-				if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+				if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
 					$stored_tokens[ $token->get_token() ] = $token;
 				}
 			}
 
-			$payment_methods = [ [] ];
-			foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
+			$retrievable_payment_method_types = [ Payment_Method::CARD ];
+
+			if ( in_array( Payment_Method::SEPA, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
+				$retrievable_payment_method_types[] = Payment_Method::SEPA;
+			}
+
+			if ( in_array( Payment_Method::LINK, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
+				$retrievable_payment_method_types[] = Payment_Method::LINK;
+			}
+
+			$payment_methods = [];
+
+			foreach ( $retrievable_payment_method_types as $type ) {
 				$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
 			}
+
 			$payment_methods = array_merge( ...$payment_methods );
+
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch payment methods for customer.' . $e );
 			return $tokens;
@@ -145,12 +186,12 @@ class WC_Payments_Token_Service {
 
 		// Prevent unnecessary recursion, WC_Payment_Token::save() ends up calling 'woocommerce_get_customer_payment_tokens' in some cases.
 		remove_action( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
+
 		foreach ( $payment_methods as $payment_method ) {
 			if ( ! isset( $payment_method['type'] ) ) {
 				continue;
 			}
-
-			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) ) {
+			if ( ! isset( $stored_tokens[ $payment_method['id'] ] ) && ( $this->is_valid_payment_method_type_for_gateway( $payment_method['type'], $gateway_id ) || empty( $gateway_id ) ) ) {
 				$token                      = $this->add_token_to_user( $payment_method, get_user_by( 'id', $user_id ) );
 				$tokens[ $token->get_id() ] = $token;
 			} else {
@@ -177,7 +218,8 @@ class WC_Payments_Token_Service {
 	 * @param WC_Payment_Token $token    Token object.
 	 */
 	public function woocommerce_payment_token_deleted( $token_id, $token ) {
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+
+		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
 			try {
 				$this->payments_api_client->detach_payment_method( $token->get_token() );
 				// Clear cached payment methods.
@@ -195,7 +237,8 @@ class WC_Payments_Token_Service {
 	 * @param WC_Payment_Token $token    Token object.
 	 */
 	public function woocommerce_payment_token_set_default( $token_id, $token ) {
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $token->get_gateway_id() ) {
+
+		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( $token->get_user_id() );
 			if ( $customer_id ) {
 				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
@@ -219,5 +262,19 @@ class WC_Payments_Token_Service {
 		}
 
 		return $item;
+	}
+
+	/**
+	 * Normalizes the SEPA IBAN label on My Account page.
+	 *
+	 * @param string $label Token label.
+	 * @return string $label Capitalized SEPA IBAN label.
+	 */
+	public function normalize_sepa_label( $label ) {
+		if ( 'sepa iban' === strtolower( $label ) ) {
+			return 'SEPA IBAN';
+		}
+
+		return $label;
 	}
 }

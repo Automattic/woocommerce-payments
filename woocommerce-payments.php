@@ -12,7 +12,7 @@
  * WC tested up to: 7.3.0
  * Requires at least: 5.9
  * Requires PHP: 7.0
- * Version: 5.3.0
+ * Version: 5.5.1
  *
  * @package WooCommerce\Payments
  */
@@ -343,7 +343,7 @@ add_action(
 	'before_woocommerce_init',
 	function() {
 		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woocommerce-payments/woocommerce-payments.php', false );
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woocommerce-payments/woocommerce-payments.php', true );
 		}
 	}
 );
