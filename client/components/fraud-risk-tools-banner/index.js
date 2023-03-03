@@ -64,6 +64,10 @@ const FRTDiscoverabilityBanner = () => {
 		setDontShowAgain();
 	};
 
+	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled && ! showBanner ) {
+		return null;
+	}
+
 	return (
 		<>
 			{ showBanner && (

@@ -21,6 +21,7 @@ import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
+import FRTDiscoverabilityBanner from 'wcpay/components/fraud-risk-tools-banner';
 
 import './style.scss';
 import { useSettings } from 'wcpay/data';
@@ -128,6 +129,8 @@ const OverviewPage = () => {
 			) }
 
 			<TestModeNotice topic={ topics.overview } />
+
+			<FRTDiscoverabilityBanner />
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
