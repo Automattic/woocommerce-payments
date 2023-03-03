@@ -409,6 +409,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'deposit_delay_days'                  => $this->wcpay_gateway->get_option( 'deposit_delay_days' ),
 				'deposit_status'                      => $this->wcpay_gateway->get_option( 'deposit_status' ),
 				'deposit_completed_waiting_period'    => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
+				'advanced_fraud_protection_settings'  => $this->wcpay_gateway->get_option( 'advanced_fraud_protection_settings' ),
 			]
 		);
 	}
@@ -436,6 +437,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_platform_checkout_store_logo( $request );
 		$this->update_platform_checkout_custom_message( $request );
 		$this->update_platform_checkout_enabled_locations( $request );
+		$this->update_advanced_fraud_protection_settings( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -758,5 +760,20 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$platform_checkout_enabled_locations = $request->get_param( 'platform_checkout_enabled_locations' );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $platform_checkout_enabled_locations );
+	}
+
+	/**
+	 * Updates the settings of advanced fraud protection rules.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_advanced_fraud_protection_settings( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'advanced_fraud_protection_settings' ) ) {
+			return;
+		}
+
+		$advanced_fraud_protection_settings = $request->get_param( 'advanced_fraud_protection_settings' );
+
+		update_option( 'advanced_fraud_protection_settings', wp_json_encode( $advanced_fraud_protection_settings ) );
 	}
 }

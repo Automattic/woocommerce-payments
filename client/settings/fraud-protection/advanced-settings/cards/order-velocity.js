@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { SelectControl, TextControl } from '@wordpress/components';
 /**
@@ -10,8 +10,32 @@ import { SelectControl, TextControl } from '@wordpress/components';
 import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
+import FraudPreventionSettingsContext from '../context';
 
-const OrderVelocityCustomForm = () => {
+const OrderVelocityCustomForm = ( { setting } ) => {
+	const {
+		advancedFraudProtectionSettings,
+		setAdvancedFraudProtectionSettings,
+	} = useContext( FraudPreventionSettingsContext );
+
+	const [ maxOrders, setMaxOrders ] = useState(
+		advancedFraudProtectionSettings[ setting ].max_orders
+	);
+	const [ orderInterval, setOrderInterval ] = useState(
+		advancedFraudProtectionSettings[ setting ].interval
+	);
+
+	useEffect( () => {
+		advancedFraudProtectionSettings[ setting ].max_orders = maxOrders;
+		advancedFraudProtectionSettings[ setting ].interval = orderInterval;
+		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
+	}, [
+		setting,
+		maxOrders,
+		orderInterval,
+		advancedFraudProtectionSettings,
+		setAdvancedFraudProtectionSettings,
+	] );
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
 			<strong>{ __( 'Limits', 'woocommerce-payments' ) }</strong>
@@ -22,7 +46,8 @@ const OrderVelocityCustomForm = () => {
 					</label>
 					<TextControl
 						id={ 'fraud-protection-order-velocity-threshold' }
-						value={ '1' }
+						value={ maxOrders }
+						onChange={ setMaxOrders }
 						type={ 'number' }
 					/>
 				</div>
@@ -32,6 +57,8 @@ const OrderVelocityCustomForm = () => {
 					</label>
 					<SelectControl
 						id="fraud-protection-order-velocity-interval"
+						value={ orderInterval }
+						onChange={ setOrderInterval }
 						options={ [
 							{
 								label: __( '12 hours', 'woocommerce-payments' ),
@@ -66,7 +93,7 @@ const OrderVelocityRuleCard = () => (
 		) }
 	>
 		<FraudProtectionRuleToggle
-			key={ 'order_velocity' }
+			setting={ 'order_velocity' }
 			label={ __(
 				'Screen transactions for excessive repeat orders',
 				'woocommerce-payments'
@@ -75,7 +102,7 @@ const OrderVelocityRuleCard = () => (
 				'When enabled, the payment method will not be charged until you review and approve the transaction'
 			) }
 		>
-			<OrderVelocityCustomForm />
+			<OrderVelocityCustomForm setting={ 'order_velocity' } />
 		</FraudProtectionRuleToggle>
 		<FraudProtectionRuleDescription>
 			{ __(

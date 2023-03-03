@@ -25,6 +25,7 @@ use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -1686,6 +1687,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_deposit_status();
 			case 'deposit_completed_waiting_period':
 				return $this->get_deposit_completed_waiting_period();
+			case 'advanced_fraud_protection_settings':
+				return $this->get_advanced_fraud_protection_settings();
 
 			default:
 				return parent::get_option( $key, $empty_value );
@@ -2227,6 +2230,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
 		}
 		return $empty_value;
+	}
+
+	/**
+	 * Gets the advanced fraud protection level settings value.
+	 *
+	 * @return  array The advanced level fraud settings for the store, if not saved, the default ones.
+	 */
+	protected function get_advanced_fraud_protection_settings() {
+		$settings = get_option( 'advanced_fraud_protection_settings', false );
+		if ( ! $settings ) {
+			return Fraud_Risk_Tools::get_default_protection_settings();
+		}
+		return json_decode( $settings, true );
 	}
 
 	/**

@@ -1,21 +1,44 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
+import AmountInput from 'wcpay/components/amount-input';
 
 /**
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
-import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
-import AmountInput from 'wcpay/components/amount-input';
+import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
+import FraudPreventionSettingsContext from '../context';
 
-const PurchasePriceThresholdCustomForm = () => {
-	const [ minAmount, setMinAmount ] = useState( '' );
-	const [ maxAmount, setMaxAmount ] = useState( '' );
+const PurchasePriceThresholdCustomForm = ( { setting } ) => {
+	const {
+		advancedFraudProtectionSettings,
+		setAdvancedFraudProtectionSettings,
+	} = useContext( FraudPreventionSettingsContext );
+
+	const [ minAmount, setMinAmount ] = useState(
+		advancedFraudProtectionSettings[ setting ].min_amount
+	);
+	const [ maxAmount, setMaxAmount ] = useState(
+		advancedFraudProtectionSettings[ setting ].max_amount
+	);
+
+	useEffect( () => {
+		advancedFraudProtectionSettings[ setting ].min_amount = minAmount;
+		advancedFraudProtectionSettings[ setting ].max_amount = maxAmount;
+		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
+	}, [
+		setting,
+		minAmount,
+		maxAmount,
+		advancedFraudProtectionSettings,
+		setAdvancedFraudProtectionSettings,
+	] );
+
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
 			<strong>Limits</strong>
@@ -23,7 +46,7 @@ const PurchasePriceThresholdCustomForm = () => {
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
 					<label htmlFor="fraud-protection-purchase-price-minimum">
 						{ __(
-							'Minimum Purchase Price',
+							'Minimum purchase price',
 							'woocommerce-payments'
 						) }
 					</label>
@@ -44,7 +67,7 @@ const PurchasePriceThresholdCustomForm = () => {
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
 					<label htmlFor="fraud-protection-purchase-price-maximum">
 						{ __(
-							'Maximum Purchase Price',
+							'Maximum purchase price',
 							'woocommerce-payments'
 						) }
 					</label>
@@ -99,7 +122,7 @@ const PurchasePriceThresholdRuleCard = () => (
 	>
 		<div>
 			<FraudProtectionRuleToggle
-				key={ 'purchase_price_threshold' }
+				setting={ 'purchase_price_threshold' }
 				label={ __(
 					'Screen transactions for abnormal purchase prices',
 					'woocommerce-payments'
@@ -108,7 +131,9 @@ const PurchasePriceThresholdRuleCard = () => (
 					'When enabled, the payment method will not be charged until you review and approve the transaction'
 				) }
 			>
-				<PurchasePriceThresholdCustomForm />
+				<PurchasePriceThresholdCustomForm
+					setting={ 'purchase_price_threshold' }
+				/>
 			</FraudProtectionRuleToggle>
 			<FraudProtectionRuleDescription>
 				{ __(

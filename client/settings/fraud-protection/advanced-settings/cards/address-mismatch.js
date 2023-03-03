@@ -25,7 +25,7 @@ const AddressMismatchRuleCard = () => (
 	>
 		<div>
 			<FraudProtectionRuleToggle
-				key={ 'address_mismatch' }
+				setting={ 'address_mismatch' }
 				label={ __(
 					'Screen transactions for mismatched addresses',
 					'woocommerce-payments'
@@ -33,7 +33,7 @@ const AddressMismatchRuleCard = () => (
 				helpText={ __(
 					'When enabled, the payment method will not be charged until you review and approve the transaction'
 				) }
-			></FraudProtectionRuleToggle>
+			/>
 			<FraudProtectionRuleDescription>
 				{ __(
 					'There are legitimate reasons for a billing/shipping mismatch with a customer purchase, ' +

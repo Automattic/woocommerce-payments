@@ -71,4 +71,52 @@ class Fraud_Risk_Tools {
 		);
 		remove_submenu_page( 'wc-admin&path=/payments/overview', 'wc-admin&path=/payments/fraud-protection' );
 	}
+
+	/**
+	 * Returns the default protection settings.
+	 *
+	 * @return  array
+	 */
+	public static function get_default_protection_settings() {
+		return [
+			'avs_mismatch'                  => [
+				'enabled' => false,
+				'block'   => false,
+			],
+			'cvc_verification'              => [
+				'enabled' => false,
+				'block'   => false,
+			],
+			'address_mismatch'              => [
+				'enabled' => false,
+				'block'   => false,
+			],
+			'international_ip_address'      => [
+				'enabled' => false,
+				'block'   => false,
+			],
+			'international_billing_address' => [
+				'enabled' => false,
+				'block'   => false,
+			],
+			'order_velocity'                => [
+				'enabled'    => false,
+				'block'      => false,
+				'max_orders' => null,
+				'interval'   => null,
+			],
+			'order_items_threshold'         => [
+				'enabled'   => false,
+				'block'     => false,
+				'min_items' => null,
+				'max_items' => null,
+			],
+			'purchase_price_threshold'      => [
+				'enabled'    => false,
+				'block'      => false,
+				'min_amount' => null,
+				'max_amount' => null,
+			],
+		];
+	}
 }

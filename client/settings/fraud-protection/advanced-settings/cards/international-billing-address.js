@@ -29,7 +29,7 @@ const InternationalBillingAddressRuleCard = () => (
 	>
 		<div>
 			<FraudProtectionRuleToggle
-				key={ 'international_billing_address' }
+				setting={ 'international_billing_address' }
 				label={ __(
 					'Screen transactions for international billing addresses',
 					'woocommerce-payments'
