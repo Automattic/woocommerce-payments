@@ -508,18 +508,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( ! wcs_is_subscription( $order ) ) {
 			return;
 		}
-
-		$script_src_url    = plugins_url( 'dist/subscription-edit-page.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/subscription-edit-page.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script(
-			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
-			$script_src_url,
-			$script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/subscription-edit-page.js' ),
-			true
-		);
+		WC_Payments::load_script_with_dependencies( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'dist/subscription-edit-page' );
 
 		wp_localize_script(
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',

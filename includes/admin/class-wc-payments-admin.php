@@ -444,6 +444,7 @@ class WC_Payments_Admin {
 	 * Register the CSS and JS scripts
 	 */
 	public function register_payments_scripts() {
+		WC_Payments::load_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index' );
 		$script_src_url    = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
 		$script_asset_path = WCPAY_ABSPATH . 'dist/index.asset.php';
 		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
