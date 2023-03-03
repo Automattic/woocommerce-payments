@@ -634,16 +634,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! has_block( 'woocommerce/checkout' )
 		) {
 			WC_Payments::get_gateway()->tokenization_script();
-			if ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				wp_localize_script( 'wcpay-upe-checkout', 'wcpayConfig', WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
-				wp_enqueue_script( 'wcpay-upe-checkout' );
-			} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
-				wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
-				wp_enqueue_script( 'wcpay-upe-checkout' );
-			} else {
-				wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayConfig', WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
-				wp_enqueue_script( 'WCPAY_CHECKOUT' );
+			$script_handle = 'WCPAY_CHECKOUT';
+			$js_object = 'wcpayConfig';
+			if ( WC_Payments_Features::is_upe_split_enabled() ) {
+				$script_handle = 'wcpay-upe-checkout';
+				$js_object = 'wcpay_upe_config';
+			}  elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {;
+				$script_handle = 'wcpay-upe-checkout';
 			}
+			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
+			wp_enqueue_script( $script_handle );
 		}
 	}
 
