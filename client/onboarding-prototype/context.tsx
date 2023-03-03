@@ -6,14 +6,11 @@ import React, { createContext, useContext, useState } from 'react';
 /**
  * Internal dependencies
  */
-import { OnboardingSteps, OnboardingFields } from './types';
+import { OnboardingFields } from './types';
 
 const useContextValue = () => {
-	const [ step, setStep ] = useState< OnboardingSteps >( 'personal' );
 	const [ data, setData ] = useState( {} as OnboardingFields );
 	return {
-		step,
-		setStep,
 		data,
 		setData: ( value: Record< string, string | undefined > ) =>
 			setData( { ...data, ...value } ),

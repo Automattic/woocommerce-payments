@@ -37,7 +37,7 @@ const PersonalDetails: React.FC = () => {
 			<TextControl { ...getFieldProps( 'email' ) } />
 			<div>
 				{
-					// TODO: Create a notice component
+					// @ismaeldcom TODO: Create a notice component
 					strings.steps.personal.notice
 				}
 			</div>
