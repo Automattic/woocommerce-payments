@@ -61,7 +61,7 @@ abstract class Base_Constant {
 	 * @return bool
 	 */
 	final public function equals( $variable = null ): bool {
-		return $this->get_value() === $variable->get_value() && static::class === \get_class( $variable );
+		return $variable instanceof Base_Constant && $this->get_value() === $variable->get_value() && static::class === \get_class( $variable );
 	}
 
 	/**
