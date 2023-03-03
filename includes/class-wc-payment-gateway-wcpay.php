@@ -637,10 +637,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$script_handle = 'WCPAY_CHECKOUT';
 			$js_object     = 'wcpayConfig';
 			if ( WC_Payments_Features::is_upe_split_enabled() ) {
-				  $script_handle = 'wcpay-upe-checkout';
-				  $js_object     = 'wcpay_upe_config';
+				$script_handle = 'wcpay-upe-checkout';
+				$js_object     = 'wcpay_upe_config';
 			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
-				 $script_handle = 'wcpay-upe-checkout';
+				$script_handle = 'wcpay-upe-checkout';
 			}
 			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
 			wp_enqueue_script( $script_handle );
