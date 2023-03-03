@@ -408,6 +408,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'wp_ajax_nopriv_update_order_status', [ $this, 'update_order_status' ] );
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
 		add_action( 'wp_ajax_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 		add_action( 'wp_ajax_nopriv_create_setup_intent', [ $this, 'create_setup_intent_ajax' ] );
 
@@ -609,11 +610,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		WC_Payments::load_script_with_dependencies( 'WCPAY_CHECKOUT', 'dist/checkout', $script_dependencies );
 		wp_set_script_translations( 'WCPAY_CHECKOUT', 'woocommerce-payments' );
 
-		if ( ! WC()->cart->needs_payment() && is_checkout() && ! has_block( 'woocommerce/checkout' ) ) {
-			WC_Payments::get_gateway()->tokenization_script();
-			WC_Payments::get_wc_payments_checkout()->enqueue_payment_scripts();
-		}
+	}
 
+	/**
+	 * Registers scripts necessary for the gateway, even when cart order total is 0.
+	 * This is done so that if the cart is modified via AJAX on checkout,
+	 * the scripts are still loaded.
+	 */
+	public function register_scripts_for_zero_order_total() {
+		if (
+			isset( WC()->cart ) &&
+			! WC()->cart->is_empty() &&
+			! WC()->cart->needs_payment() &&
+			is_checkout() &&
+			! has_block( 'woocommerce/checkout' )
+		) {
+			WC_Payments::get_gateway()->tokenization_script();
+			$script_handle = 'WCPAY_CHECKOUT';
+			$js_object     = 'wcpayConfig';
+			if ( WC_Payments_Features::is_upe_split_enabled() ) {
+				$script_handle = 'wcpay-upe-checkout';
+				$js_object     = 'wcpay_upe_config';
+			} elseif ( WC_Payments_Features::is_upe_legacy_enabled() ) {
+				$script_handle = 'wcpay-upe-checkout';
+			}
+			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
+			wp_enqueue_script( $script_handle );
+		}
 	}
 
 	/**
