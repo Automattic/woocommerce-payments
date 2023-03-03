@@ -31,6 +31,7 @@ use WC_Payment_Token_CC;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
+use WC_Payments_Features;
 use WP_User;
 
 
@@ -126,6 +127,7 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			WC_Payments::get_file_version( 'dist/upe_split_checkout.js' ),
 			true
 		);
+
 	}
 
 	/**
