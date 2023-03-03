@@ -1,0 +1,40 @@
+name: "E2E Tests on Atomic - All"
+
+on:
+  workflow_dispatch:
+
+env:
+  WC_E2E_SCREENSHOTS: 1
+  E2E_SLACK_CHANNEL: ${{ secrets.E2E_SLACK_CHANNEL }}
+  E2E_SLACK_TOKEN: ${{ secrets.E2E_SLACK_TOKEN }}
+  E2E_RESULT_FILEPATH: 'tests/e2e/results.json'
+  NODE_ENV: 'atomic'
+
+jobs:
+  # Run tests against WP Nightly & WC latest
+  wp-nightly-tests:
+    runs-on: ubuntu-22.04
+    
+    name: "WP - nightly | WC - latest | wcpay - shopper"
+
+    env:
+      E2E_WP_VERSION: 'nightly'
+      E2E_WC_VERSION: 'latest'
+      E2E_GROUP: 'atomic'
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      - name: "Install dependencies"
+        run: npm ci
+
+      - name: "Set up E2E environment"
+        run: |
+          mkdir -p tests/e2e/screenshots
+
+      - name: "Run tests, upload screenshots & logs"
+        uses: ./.github/actions/e2e/run-log-tests

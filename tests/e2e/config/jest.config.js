@@ -4,7 +4,6 @@ const { useE2EJestConfig } = require( '@woocommerce/e2e-environment' );
 const fs = require( 'fs' );
 
 config( { path: path.resolve( __dirname, '.env' ) } );
-config( { path: path.resolve( __dirname, 'e2e-default.env' ) } );
 config( { path: path.resolve( __dirname, 'local.env' ) } );
 
 // Define paths to look for E2E tests.
@@ -14,6 +13,7 @@ const e2ePaths = {
 	blocks: path.resolve( __dirname, '../specs/blocks' ),
 	upe: path.resolve( __dirname, '../specs/upe' ),
 	upeSplit: path.resolve( __dirname, '../specs/upe-split' ),
+	atomic: path.resolve( __dirname, '../specs/atomic' ),
 };
 
 // Allow E2E tests to run specific tests - wcpay, subscriptions, blocks, all (default).
@@ -52,8 +52,8 @@ if ( process.env.E2E_GROUP ) {
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 const testConfig = useE2EJestConfig( {
-	setupFiles: [],
 	rootDir: path.resolve( __dirname, '../../../' ),
+	setupFiles: [ '<rootDir>/tests/e2e/config/env.setup.js' ],
 	roots: allowedPaths,
 	testSequencer: path.resolve(
 		__dirname,

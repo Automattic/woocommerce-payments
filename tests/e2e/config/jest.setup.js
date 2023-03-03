@@ -14,6 +14,10 @@ const ERROR_MESSAGES_TO_IGNORE = [
 	'is deprecated',
 	'Unrecognized feature:',
 	'This Element will be mounted to a DOM element that contains child nodes',
+	'Each dictionary in the list',
+	'Missing data from PHP (wpNotesArgs).',
+	'We were rate-limited from checking if your requested Payment Request options are allowed. Please test again before going live.',
+	"Unrecognized Content-Security-Policy directive 'require-trusted-types-for'.",
 ];
 
 ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {
