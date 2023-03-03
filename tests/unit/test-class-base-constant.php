@@ -29,6 +29,13 @@ class Base_Constant_Test extends WCPAY_UnitTestCase {
 		$class_b = Payment_Method::SEPA();
 		$this->assertFalse( $class_a->equals( $class_b ) );
 	}
+	public function test_base_constant_equals_function_will_return_false_if_passed_argument_is_not_instance_of_base_class() {
+		$class_a = Payment_Method::BASC();
+		$class_b = new class() {
+
+		};
+		$this->assertFalse( $class_a->equals( $class_b ) );
+	}
 
 	public function test_exception_will_be_thrown_if_constant_not_exist_in_class() {
 		$this->expectException( \InvalidArgumentException::class );
