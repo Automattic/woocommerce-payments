@@ -143,6 +143,7 @@ const ProtectionLevels = () => {
 							path: '/payments/fraud-protection',
 						} ) }
 						isSecondary
+						disabled={ 'advanced' !== currentProtectionLevel }
 					>
 						{ __( 'Configure', 'woocommerce-payments' ) }
 					</Button>

@@ -130,12 +130,13 @@ exports[`FraudProtection renders 1`] = `
                 Allows you to fine-tune the level of filtering according to your business needs.
               </p>
             </label>
-            <a
+            <button
               class="components-button is-secondary"
-              href="admin.php?page=wc-admin&path=%2Fpayments%2Ffraud-protection"
+              disabled=""
+              type="button"
             >
               Configure
-            </a>
+            </button>
           </li>
         </ul>
       </fieldset>
