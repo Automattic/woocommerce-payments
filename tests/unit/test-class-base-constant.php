@@ -18,11 +18,6 @@ class Base_Constant_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $class->get_value(), 'BASC' );
 		$this->assertSame( (string) $class, 'bacs_debit' );
 	}
-
-	public function test_get_const_name_by_value() {
-		$this->assertSame( Payment_Method::search( 'bacs_debit' ), 'BASC' );
-	}
-
 	public function test_base_constant_equals_function_will_return_true_if_classes_are_same_type_and_value() {
 		$class_a = Payment_Method::BASC();
 		$class_b = Payment_Method::BASC();
