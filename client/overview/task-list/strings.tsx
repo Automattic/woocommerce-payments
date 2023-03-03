@@ -287,6 +287,43 @@ export default {
 	},
 	// Strings needed for the progressive onboarding related tasks.
 	po_tasks: {
+		no_payment_14_days: {
+			title: __(
+				'Please add your bank details to keep selling',
+				'woocommerce-payments'
+			),
+			description: ( dueDate: string ): WPElement => {
+				return createInterpolateElement(
+					sprintf(
+						__(
+							'You have time until <strong>%s</strong> to make your first sale without undergoing full business verification. Take advantage of this time window and start selling now.',
+							'woocommerce-payments'
+						),
+						dueDate
+					),
+					{
+						strong: <strong />,
+					}
+				);
+			},
+			action_label: __( 'Set up deposits', 'woocommerce-payments' ),
+		},
+		no_payment_30_days: {
+			title: __(
+				'Payments paused! Verify your bank details to reactivate.',
+				'woocommerce-payments'
+			),
+			description: createInterpolateElement(
+				__(
+					'You have reached the <strong>30-day limit</strong> for early selling access. In order to reactivate payments, please verify your bank details.',
+					'woocommerce-payments'
+				),
+				{
+					strong: <strong />,
+				}
+			),
+			action_label: __( 'Verify bank details', 'woocommerce-payments' ),
+		},
 		after_payment: {
 			title: __(
 				'Verify your bank account to start receiving deposits',

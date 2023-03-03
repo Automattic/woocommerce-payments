@@ -17,6 +17,7 @@ declare const wcpaySettings: {
 	isJetpackIdcActive: boolean;
 	accountStatus: {
 		email?: string;
+		created: string;
 		error?: boolean;
 		status?: string;
 		country?: string;

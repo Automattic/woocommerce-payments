@@ -20,6 +20,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 			poComplete: false,
 			tpv: 0,
 			firstPaymentDate: null,
+			createdDate: '2023-01-31',
 		} );
 
 		expect( actual ).toBeNull();
@@ -30,19 +31,59 @@ describe( 'getVerifyBankAccountTask()', () => {
 			poComplete: true,
 			tpv: 0,
 			firstPaymentDate: null,
+			createdDate: '2023-01-31',
 		} );
 
 		expect( actual ).toBeNull();
 	} );
-	it( 'should return null when first payment date is null', () => {
+	it( 'should return the correct task when po is enabled and incomplete and 14 days after no payment', () => {
 		const actual = getVerifyBankAccountTask( {
 			poEnabled: true,
 			poComplete: false,
-			tpv: 0,
+			tpv: 1100,
 			firstPaymentDate: null,
+			createdDate: '2023-01-14',
 		} );
 
-		expect( actual ).toBeNull();
+		expect( actual ).toEqual(
+			expect.objectContaining( {
+				key: 'verify-bank-details-po',
+				level: 2,
+				title: 'Please add your bank details to keep selling',
+				completed: false,
+				actionLabel: 'Set up deposits',
+				visible: true,
+				expandable: true,
+				expanded: true,
+				showActionButton: true,
+				time: '2 minutes',
+			} )
+		);
+	} );
+	it( 'should return the correct task when po is enabled and incomplete and 30 days after no payment', () => {
+		const actual = getVerifyBankAccountTask( {
+			poEnabled: true,
+			poComplete: false,
+			tpv: 1100,
+			firstPaymentDate: null,
+			createdDate: '2023-01-01',
+		} );
+
+		expect( actual ).toEqual(
+			expect.objectContaining( {
+				key: 'verify-bank-details-po',
+				level: 1,
+				title:
+					'Payments paused! Verify your bank details to reactivate.',
+				completed: false,
+				actionLabel: 'Verify bank details',
+				visible: true,
+				expandable: true,
+				expanded: true,
+				showActionButton: true,
+				time: '2 minutes',
+			} )
+		);
 	} );
 	it( 'should return the correct task when first payment is done', () => {
 		const actual = getVerifyBankAccountTask( {
@@ -50,6 +91,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 			poComplete: false,
 			tpv: 100,
 			firstPaymentDate: '2023-02-02',
+			createdDate: '2023-01-31',
 		} );
 
 		expect( actual ).toEqual(
@@ -73,6 +115,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 			poComplete: false,
 			tpv: 1100,
 			firstPaymentDate: '2023-02-02',
+			createdDate: '2023-01-31',
 		} );
 
 		expect( actual ).toEqual(
@@ -96,6 +139,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 			poComplete: false,
 			tpv: 100,
 			firstPaymentDate: '2023-01-23',
+			createdDate: '2023-01-22',
 		} );
 
 		expect( actual ).toEqual(
@@ -142,6 +186,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 			poComplete: false,
 			tpv: 100,
 			firstPaymentDate: '2023-01-10',
+			createdDate: '2023-01-09',
 		} );
 
 		expect( actual ).toEqual(
@@ -165,6 +210,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 			poComplete: false,
 			tpv: 5100,
 			firstPaymentDate: '2023-02-02',
+			createdDate: '2023-01-31',
 		} );
 
 		expect( actual ).toEqual(
@@ -189,6 +235,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 			poComplete: false,
 			tpv: 100,
 			firstPaymentDate: '2023-01-01',
+			createdDate: '2022-12-31',
 		} );
 
 		expect( actual ).toEqual(

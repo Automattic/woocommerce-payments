@@ -214,6 +214,7 @@ class WC_Payments_Account {
 			'email'                 => $account['email'] ?? '',
 			'country'               => $account['country'] ?? 'US',
 			'status'                => $account['status'],
+			'created'               => $account['created'] ?? '',
 			'paymentsEnabled'       => $account['payments_enabled'],
 			'deposits'              => $account['deposits'] ?? [],
 			'depositsStatus'        => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
