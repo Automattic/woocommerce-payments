@@ -8,36 +8,36 @@ import moment from 'moment';
 /**
  * Internal dependencies.
  */
-import { isInTestMode } from 'utils';
 import strings from './strings';
 
 const PROGRESSIVE_ONBOARDING_KYC_TPV_LIMIT = 5000;
 
 export const getVerifyBankAccountTask = ( {
 	poEnabled,
+	poComplete,
 	tpv,
 	firstPaymentDate,
 } ) => {
 	if ( ! poEnabled ) {
 		return null;
 	}
+	if ( poComplete ) {
+		return null;
+	}
+
 	if ( ! firstPaymentDate ) {
 		return null;
 	}
-	let timefromFirstPayment;
 	const dueDate = moment( firstPaymentDate )
 		.add( 30, 'days' )
 		.format( 'MMMM D, YYYY' );
-	if ( isInTestMode() ) {
-		// TODO GH-4748 maybe add check if it's proxied automattician or even delete it after testing
-		timefromFirstPayment = moment().diff( firstPaymentDate, 'minutes' );
-	} else {
-		timefromFirstPayment = moment().diff( firstPaymentDate, 'days' );
-	}
+	const timefromFirstPayment = moment().diff( firstPaymentDate, 'days' );
 	let title = strings.po_tasks.after_payment.title;
 	let level = 3;
 	let description = strings.po_tasks.after_payment.description( dueDate );
 	let actionLabelText = strings.po_tasks.after_payment.action_label;
+
+	// TODO GH-4748 - Add notices about 14 and 30 days from completing the KYC and no payment made.
 
 	// balance is rising
 	if (
@@ -77,7 +77,7 @@ export const getVerifyBankAccountTask = ( {
 		content: description,
 		completed: false,
 		onClick: () => {
-			// TODO GH-4748 change the link to the one that leads to Stripe KYC with bank details.
+			// TODO GH-4748 - Create new issue if it's tricky. change the link to the one that leads to Stripe KYC with bank details.
 			window.open( '#', '_blank' );
 		},
 		actionLabel: actionLabelText,

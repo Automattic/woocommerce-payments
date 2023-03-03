@@ -6,6 +6,14 @@
 import { getTasks, taskSort } from '../tasks';
 
 describe( 'getTasks()', () => {
+	beforeEach( () => {
+		// mock Date.now that moment library uses to get current date for testing purposes
+		Date.now = jest.fn( () => new Date( '2023-02-01T12:33:37.000Z' ) );
+	} );
+	afterEach( () => {
+		// roll it back
+		Date.now = () => new Date();
+	} );
 	it( 'should include business details when flag is set', () => {
 		const actual = getTasks( {
 			accountStatus: {
@@ -13,6 +21,12 @@ describe( 'getTasks()', () => {
 				currentDeadline: 1620857083,
 				pastDue: false,
 				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
 			},
 			showUpdateDetailsTask: true,
 			isAccountOverviewTasksEnabled: true,
@@ -35,6 +49,12 @@ describe( 'getTasks()', () => {
 				currentDeadline: 1620857083,
 				pastDue: true,
 				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
 			},
 			showUpdateDetailsTask: false,
 			isAccountOverviewTasksEnabled: true,
@@ -56,6 +76,12 @@ describe( 'getTasks()', () => {
 				currentDeadline: 0,
 				pastDue: false,
 				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
 			},
 			showUpdateDetailsTask: true,
 			isAccountOverviewTasksEnabled: true,
@@ -75,6 +101,12 @@ describe( 'getTasks()', () => {
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'complete',
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
 			},
 			wpcomReconnectUrl: 'http://example.com',
 			isAccountOverviewTasksEnabled: true,
@@ -94,6 +126,12 @@ describe( 'getTasks()', () => {
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'complete',
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
 			},
 			wpcomReconnectUrl: null,
 			isAccountOverviewTasksEnabled: true,
@@ -113,7 +151,14 @@ describe( 'getTasks()', () => {
 			isAccountOverviewTasksEnabled: true,
 			showUpdateDetailsTask: true,
 			wpcomReconnectUrl: 'http://example.com',
-			accountStatus: {},
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
+			},
 		} );
 
 		expect( tasks ).toEqual(
@@ -128,7 +173,14 @@ describe( 'getTasks()', () => {
 		const tasks = getTasks( {
 			showUpdateDetailsTask: true,
 			wpcomReconnectUrl: 'http://example.com',
-			accountStatus: {},
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
+			},
 		} );
 
 		expect( tasks ).toEqual(
@@ -147,6 +199,12 @@ describe( 'getTasks()', () => {
 				currentDeadline: 1620857083,
 				pastDue: false,
 				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
 			},
 			numDisputesNeedingResponse,
 		} );
@@ -162,6 +220,12 @@ describe( 'getTasks()', () => {
 				currentDeadline: 1620857083,
 				pastDue: false,
 				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
 			},
 			numDisputesNeedingResponse,
 		} );
@@ -187,6 +251,12 @@ describe( 'getTasks()', () => {
 				currentDeadline: 1620857083,
 				pastDue: false,
 				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
 			},
 			numDisputesNeedingResponse,
 		} );
@@ -203,10 +273,46 @@ describe( 'getTasks()', () => {
 			] )
 		);
 	} );
+	it( 'should include the po task', () => {
+		const actual = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 100,
+					firstTransactionDate: '2023-02-02',
+				},
+			},
+		} );
+
+		expect( actual ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( {
+					key: 'verify-bank-details-po',
+					completed: false,
+					level: 3,
+					title:
+						'Verify your bank account to start receiving deposits',
+				} ),
+			] )
+		);
+	} );
 } );
 
 describe( 'taskSort()', () => {
-	it( 'should sort the tasks', () => {
+	beforeEach( () => {
+		// mock Date.now that moment library uses to get current date for testing purposes
+		Date.now = jest.fn( () => new Date( '2023-02-01T12:33:37.000Z' ) );
+	} );
+	afterEach( () => {
+		// roll it back
+		Date.now = () => new Date();
+	} );
+	it( 'should sort the tasks without po', () => {
 		const numDisputesNeedingResponse = 1;
 		const unsortedTasks = getTasks( {
 			accountStatus: {
@@ -214,6 +320,12 @@ describe( 'taskSort()', () => {
 				currentDeadline: 1620857083,
 				pastDue: false,
 				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
 			},
 			isAccountOverviewTasksEnabled: true,
 			numDisputesNeedingResponse,
@@ -236,6 +348,44 @@ describe( 'taskSort()', () => {
 				key: 'dispute-resolution-task',
 				completed: false,
 				level: 3,
+			} )
+		);
+	} );
+	it( 'should sort the tasks with po', () => {
+		const unsortedTasks = getTasks( {
+			accountStatus: {
+				status: 'restricted_soon',
+				currentDeadline: 1620857083,
+				pastDue: false,
+				accountLink: 'http://example.com',
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 10000,
+					firstTransactionDate: '2023-02-02',
+				},
+			},
+			isAccountOverviewTasksEnabled: true,
+		} );
+		unsortedTasks.unshift( {
+			key: 'test-element',
+			completed: true,
+			level: 3,
+		} );
+		expect( unsortedTasks[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				key: 'test-element',
+				completed: true,
+				level: 3,
+			} )
+		);
+		const sortedTasks = unsortedTasks.sort( taskSort );
+		expect( sortedTasks[ 0 ] ).toEqual(
+			expect.objectContaining( {
+				key: 'verify-bank-details-po',
+				completed: false,
+				level: 3,
+				title: 'Verify your bank account to start receiving deposits',
 			} )
 		);
 	} );

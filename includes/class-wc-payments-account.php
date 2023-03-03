@@ -211,18 +211,24 @@ class WC_Payments_Account {
 		}
 
 		return [
-			'email'               => $account['email'] ?? '',
-			'country'             => $account['country'] ?? 'US',
-			'status'              => $account['status'],
-			'paymentsEnabled'     => $account['payments_enabled'],
-			'deposits'            => $account['deposits'] ?? [],
-			'depositsStatus'      => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
-			'currentDeadline'     => $account['current_deadline'] ?? false,
-			'pastDue'             => $account['has_overdue_requirements'] ?? false,
-			'accountLink'         => $this->get_login_url(),
-			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
-			'requirements'        => [
+			'email'                 => $account['email'] ?? '',
+			'country'               => $account['country'] ?? 'US',
+			'status'                => $account['status'],
+			'paymentsEnabled'       => $account['payments_enabled'],
+			'deposits'              => $account['deposits'] ?? [],
+			'depositsStatus'        => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
+			'currentDeadline'       => $account['current_deadline'] ?? false,
+			'pastDue'               => $account['has_overdue_requirements'] ?? false,
+			'accountLink'           => $this->get_login_url(),
+			'hasSubmittedVatData'   => $account['has_submitted_vat_data'] ?? false,
+			'requirements'          => [
 				'errors' => $account['requirements']['errors'] ?? [],
+			],
+			'progressiveOnboarding' => [
+				'isEnabled'            => $account['progressive_onboarding']['is_enabled'] ?? false,
+				'isComplete'           => $account['progressive_onboarding']['is_complete'] ?? false,
+				'tpv'                  => (int) $account['progressive_onboarding']['tpv'] ?? 0,
+				'firstTransactionDate' => $account['progressive_onboarding']['first_transaction_date'] ?? null,
 			],
 		];
 	}

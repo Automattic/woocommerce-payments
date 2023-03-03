@@ -30,6 +30,12 @@ declare const wcpaySettings: {
 		requirements?: {
 			errors?: Array< RequirementError >;
 		};
+		progressiveOnboarding: {
+			isEnabled: boolean;
+			isComplete: boolean;
+			tpv: number;
+			firstTransactionDate?: string;
+		};
 	};
 	accountLoans: {
 		has_active_loan: boolean;

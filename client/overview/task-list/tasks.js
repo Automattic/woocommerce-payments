@@ -71,6 +71,12 @@ export const getTasks = ( {
 		pastDue,
 		accountLink,
 		requirements,
+		progressiveOnboarding: {
+			isEnabled: isPoEnabled,
+			isComplete: isPoComplete,
+			tpv,
+			firstTransactionDate,
+		},
 	} = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
@@ -82,10 +88,6 @@ export const getTasks = ( {
 	const isDisputeTaskVisible = 0 < numDisputesNeedingResponse;
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
-	// TODO GH-4748 get the data from server
-	const isPoEnabled = true;
-	const tpv = 100;
-	const firstPaymentDate = '2023-03-02 19:19:00';
 
 	if ( accountRestrictedSoon && currentDeadline ) {
 		accountDetailsUpdateByDescription = sprintf(
@@ -210,8 +212,9 @@ export const getTasks = ( {
 		},
 		getVerifyBankAccountTask( {
 			poEnabled: isPoEnabled,
-			tpv: tpv,
-			firstPaymentDate: firstPaymentDate,
+			poComplete: isPoComplete,
+			tpv: tpv / 100,
+			firstPaymentDate: firstTransactionDate,
 		} ),
 	].filter( Boolean );
 };
