@@ -1,5 +1,4 @@
 Significance: patch
 Type: fix
-Comment: It is a fix on top of #5423 which has a changelog
 
-
+WCPay Checkout JS is loaded for zero carts
