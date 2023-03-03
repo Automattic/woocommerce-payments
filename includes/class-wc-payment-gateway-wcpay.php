@@ -606,18 +606,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $this->supports( 'tokenization' ) ) {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
-		$script_src_url               = plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path            = WCPAY_ABSPATH . 'dist/checkout.asset.php';
-		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
-		$script_asset['dependencies'] = array_merge( $script_asset['dependencies'], $script_dependencies );
-		wp_register_script(
-			'WCPAY_CHECKOUT',
-			$script_src_url,
-			$script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/checkout.js' ),
-			true
-		);
-
+		WC_Payments::load_script_with_dependencies( 'WCPAY_CHECKOUT', 'dist/checkout', $script_dependencies );
 		wp_set_script_translations( 'WCPAY_CHECKOUT', 'woocommerce-payments' );
 
 		if ( ! WC()->cart->needs_payment() && is_checkout() && ! has_block( 'woocommerce/checkout' ) ) {

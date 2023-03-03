@@ -17,26 +17,8 @@ class WC_Payments_UPE_Split_Blocks_Payment_Method extends WC_Payments_Blocks_Pay
 	public function get_payment_method_script_handles() {
 		$classic_blocks_scripts = parent::get_payment_method_script_handles();
 
-		$script_src_url               = plugins_url( 'dist/upe-split-blocks-checkout.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path            = WCPAY_ABSPATH . 'dist/upe-split-blocks-checkout.asset.php';
-		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
-		$script_asset['dependencies'] = array_merge( $script_asset['dependencies'], [ 'stripe' ] );
+		WC_Payments::load_script_with_dependencies( 'WCPAY_BLOCKS_UPE_SPLIT_CHECKOUT', 'dist/upe-split-blocks-checkout', [ 'stripe' ], true, '1.0.1' );
 
-		wp_register_script(
-			'WCPAY_BLOCKS_UPE_CHECKOUT',
-			$script_src_url,
-			$script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/upe-split-blocks-checkout.js' ),
-			true
-		);
-
-		wp_register_script(
-			'WCPAY_BLOCKS_UPE_SPLIT_CHECKOUT',
-			plugins_url( 'dist/upe-split-blocks-checkout.js', WCPAY_PLUGIN_FILE ),
-			[ 'stripe' ],
-			'1.0.1',
-			true
-		);
 		wp_set_script_translations( 'WCPAY_BLOCKS_UPE_SPLIT_CHECKOUT', 'woocommerce-payments' );
 
 		return array_merge( $classic_blocks_scripts, [ 'WCPAY_BLOCKS_UPE_SPLIT_CHECKOUT' ] );

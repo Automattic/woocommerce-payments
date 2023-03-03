@@ -960,6 +960,32 @@ class WC_Payments {
 	}
 
 	/**
+	 * Load script with all required dependencies.
+	 *
+	 * @param string $handler Script handler.
+	 * @param string $script Script name.
+	 * @param array  $dependencies Additional dependencies.
+	 * @param bool   $in_footer  Load script in footer.
+	 * @param string $version Load with specific version.
+	 *
+	 * @return void
+	 */
+	public static function load_script_with_dependencies( string $handler, string $script, array $dependencies = [], bool $in_footer = true, string $version = null ) {
+		$script_file                  = $script . '.js';
+		$script_src_url               = plugins_url( $script_file, WCPAY_PLUGIN_FILE );
+		$script_asset_path            = WCPAY_ABSPATH . $script . '.asset.php';
+		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset['dependencies'] = array_merge( $script_asset['dependencies'], $dependencies );
+		wp_register_script(
+			$handler,
+			$script_src_url,
+			$script_asset['dependencies'],
+			$version ?? self::get_file_version( $script_file ),
+			$in_footer
+		);
+	}
+
+	/**
 	 * Returns payment method instance by Stripe ID.
 	 *
 	 * @param string $payment_method_id Stripe payment method type ID.
