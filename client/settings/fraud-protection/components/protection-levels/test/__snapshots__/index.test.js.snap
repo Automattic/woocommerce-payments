@@ -92,6 +92,43 @@ exports[`ProtectionLevels renders 1`] = `
           High protection: Offers the highest level of filtering for stores, but may catch some legitimate transactions.
         </p>
       </li>
+      <hr
+        class="fraud-protection__list-divider"
+      />
+      <li
+        class="fraud-protection__advanced-level-container"
+      >
+        <label
+          for="fraud-protection-level-select_advanced-level"
+        >
+          <div
+            class="fraud-protection-single-radio-wrapper"
+          >
+            <input
+              id="fraud-protection-level-select_advanced-level"
+              name="fraud-protection-level-select"
+              type="radio"
+              value="advanced"
+            />
+            <p
+              class="fraud-protection-single-radio-wrapper__item"
+            >
+              Advanced
+            </p>
+          </div>
+          <p
+            class="fraud-protection__text--help-text"
+          >
+            Allows you to fine-tune the level of filtering according to your business needs.
+          </p>
+        </label>
+        <a
+          class="components-button is-secondary"
+          href="admin.php?page=wc-admin&path=%2Fpayments%2Ffraud-protection"
+        >
+          Configure
+        </a>
+      </li>
     </ul>
   </fieldset>
 </div>

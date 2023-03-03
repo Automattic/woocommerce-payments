@@ -7,7 +7,7 @@ import './style.scss';
 const AmountInput = ( { id, prefix, value, placeholder, help, onChange } ) => {
 	const handleChange = ( e ) => {
 		// Only allow decimals, a single dot, and more decimals (or an empty value).
-		if ( e.target.value.match( /^\d*\.?\d*$/ ) ) {
+		if ( e.target.value.match( /^(\d+\.?\d*)?$/m ) ) {
 			onChange( e.target.value );
 		}
 	};
@@ -25,6 +25,7 @@ const AmountInput = ( { id, prefix, value, placeholder, help, onChange } ) => {
 					placeholder={ placeholder }
 					value={ value }
 					type="text"
+					data-testid="amount-input"
 					onChange={ ( e ) => handleChange( e ) }
 					className="components-text-control__input components-amount-input__input"
 				/>
