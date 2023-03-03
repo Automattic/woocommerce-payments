@@ -3,13 +3,21 @@
 		display: flex;
 		align-items: center;
 		height: 20px;
-		margin-bottom: 8px;
+		margin-bottom: 4px;
 		&__item {
-			margin-right: 5px;
+			margin: 0 5px 0 0;
 			&--recommended {
 				margin-right: 5px;
 				color: #757575;
 			}
+		}
+	}
+
+	ul {
+		margin-top: 0;
+
+		> li {
+			margin-bottom: 16px;
 		}
 	}
 

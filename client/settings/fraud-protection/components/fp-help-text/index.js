@@ -11,12 +11,12 @@ const FraudProtectionHelpText = ( { level } ) => {
 		<p className={ 'fraud-protection__text--help-text' }>
 			{ isHighProtectionLevel
 				? __(
-						'High protection: Offers the highest level of filtering for stores, ' +
+						'Offers the highest level of filtering for stores, ' +
 							'but may catch some legitimate transactions.',
 						'woocommerce-payments'
 				  )
 				: __(
-						"Standard protection: Provides a standard level of filtering that's suitable for most businesses.",
+						"Provides a standard level of filtering that's suitable for most businesses.",
 						'woocommerce-payments'
 				  ) }
 		</p>
