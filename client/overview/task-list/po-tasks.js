@@ -4,6 +4,7 @@
  * External dependencies
  */
 import moment from 'moment';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies.
@@ -26,14 +27,14 @@ export const getVerifyBankAccountTask = ( {
 		return null;
 	}
 
-	const timeFromCreated = moment().diff( createdDate, 'days' );
-
 	let title, level, description, actionLabelText, dueDate;
 
 	if ( ! firstPaymentDate ) {
 		dueDate = moment( createdDate )
 			.add( 30, 'days' )
 			.format( 'MMMM D, YYYY' );
+		const timeFromCreated = moment().diff( createdDate, 'days' );
+
 		if ( 14 <= timeFromCreated ) {
 			title = strings.po_tasks.no_payment_14_days.title;
 			level = 2;
@@ -53,6 +54,7 @@ export const getVerifyBankAccountTask = ( {
 			.add( 30, 'days' )
 			.format( 'MMMM D, YYYY' );
 		const timefromFirstPayment = moment().diff( firstPaymentDate, 'days' );
+
 		title = strings.po_tasks.after_payment.title;
 		level = 3;
 		description = strings.po_tasks.after_payment.description( dueDate );
@@ -103,8 +105,9 @@ export const getVerifyBankAccountTask = ( {
 		content: description,
 		completed: false,
 		onClick: () => {
-			// TODO GH-4748 - Create new issue if it's tricky. change the link to the one that leads to Stripe KYC with bank details.
-			window.open( '#', '_blank' );
+			window.location = addQueryArgs( wcpaySettings.connectUrl, {
+				collect_payout_requirements: true,
+			} );
 		},
 		actionLabel: actionLabelText,
 		visible: true,
