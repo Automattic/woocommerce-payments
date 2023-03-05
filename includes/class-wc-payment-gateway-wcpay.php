@@ -2263,7 +2263,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function get_advanced_fraud_protection_settings() {
 		// If fraud and risk tools feature is not enabled, do not expose the settings.
 		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			return null;
+			return [];
 		}
 
 		$settings = get_option( 'advanced_fraud_protection_settings', false );

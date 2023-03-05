@@ -18,7 +18,7 @@ class Fraud_Risk_Tools {
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var ?FraudRiskTools
+	 * @var ?Fraud_Risk_Tools
 	 */
 	protected static $instance = null;
 
@@ -28,7 +28,7 @@ class Fraud_Risk_Tools {
 	 * Ensures only one instance of FraudRiskTools is loaded or can be loaded.
 	 *
 	 * @static
-	 * @return FraudRiskTools - Main instance.
+	 * @return Fraud_Risk_Tools - Main instance.
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
@@ -48,6 +48,8 @@ class Fraud_Risk_Tools {
 
 	/**
 	 * Initialize the Fraud & Risk Tools Advanced Settings Page.
+	 *
+	 * @return void
 	 */
 	public function init_advanced_settings_page() {
 		// Settings page generation on the incoming CLI and async job calls.
