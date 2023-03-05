@@ -77,6 +77,7 @@ export const getTasks = ( {
 			tpv,
 			firstTransactionDate,
 		},
+		created,
 	} = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
@@ -215,6 +216,7 @@ export const getTasks = ( {
 			poComplete: isPoComplete,
 			tpv: tpv / 100,
 			firstPaymentDate: firstTransactionDate,
+			createdDate: created,
 		} ),
 	].filter( Boolean );
 };

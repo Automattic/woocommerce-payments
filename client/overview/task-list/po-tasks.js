@@ -27,72 +27,79 @@ export const getVerifyBankAccountTask = ( {
 		return null;
 	}
 
-	let title, level, description, actionLabelText, dueDate;
+	let title, level, description, actionLabelText, verifyDetailsDueDate;
 
 	if ( ! firstPaymentDate ) {
-		dueDate = moment( createdDate )
+		verifyDetailsDueDate = moment( createdDate )
 			.add( 30, 'days' )
 			.format( 'MMMM D, YYYY' );
-		const timeFromCreated = moment().diff( createdDate, 'days' );
+		const daysFromAccountCreation = moment().diff( createdDate, 'days' );
 
-		if ( 14 <= timeFromCreated ) {
+		// when account is created less than 14 days ago, no need to show any notice
+		if ( 14 > daysFromAccountCreation ) {
+			return null;
+		}
+
+		if ( 14 <= daysFromAccountCreation ) {
 			title = strings.po_tasks.no_payment_14_days.title;
 			level = 2;
 			description = strings.po_tasks.no_payment_14_days.description(
-				dueDate
+				verifyDetailsDueDate
 			);
 			actionLabelText = strings.po_tasks.no_payment_14_days.action_label;
 		}
-		if ( 30 <= timeFromCreated ) {
+		if ( 30 <= daysFromAccountCreation ) {
 			title = strings.po_tasks.no_payment_30_days.title;
 			level = 1;
 			description = strings.po_tasks.no_payment_30_days.description;
 			actionLabelText = strings.po_tasks.no_payment_30_days.action_label;
 		}
 	} else {
-		dueDate = moment( firstPaymentDate )
+		verifyDetailsDueDate = moment( firstPaymentDate )
 			.add( 30, 'days' )
 			.format( 'MMMM D, YYYY' );
-		const timefromFirstPayment = moment().diff( firstPaymentDate, 'days' );
+		const daysFromFirstPayment = moment().diff( firstPaymentDate, 'days' );
 
 		title = strings.po_tasks.after_payment.title;
 		level = 3;
-		description = strings.po_tasks.after_payment.description( dueDate );
+		description = strings.po_tasks.after_payment.description(
+			verifyDetailsDueDate
+		);
 		actionLabelText = strings.po_tasks.after_payment.action_label;
 
 		// balance is rising
 		if (
 			PROGRESSIVE_ONBOARDING_KYC_TPV_LIMIT * 0.2 <= tpv ||
-			7 <= timefromFirstPayment
+			7 <= daysFromFirstPayment
 		) {
 			title = strings.po_tasks.balance_rising.title;
 			level = 2;
 			description = strings.po_tasks.balance_rising.description(
-				dueDate
+				verifyDetailsDueDate
 			);
 			actionLabelText = strings.po_tasks.balance_rising.action_label;
 		}
 		// near threshold
 		if (
 			PROGRESSIVE_ONBOARDING_KYC_TPV_LIMIT * 0.6 <= tpv ||
-			21 <= timefromFirstPayment
+			21 <= daysFromFirstPayment
 		) {
 			title = strings.po_tasks.near_threshold.title;
 			level = 1;
 			description = strings.po_tasks.near_threshold.description(
-				dueDate
+				verifyDetailsDueDate
 			);
 			actionLabelText = strings.po_tasks.near_threshold.action_label;
 		}
 		// threshold reached
 		if (
 			PROGRESSIVE_ONBOARDING_KYC_TPV_LIMIT <= tpv ||
-			30 <= timefromFirstPayment
+			30 <= daysFromFirstPayment
 		) {
 			title = strings.po_tasks.threshold_reached.title;
 			level = 1;
 			description = strings.po_tasks.threshold_reached.description(
-				dueDate
+				verifyDetailsDueDate
 			);
 			actionLabelText = strings.po_tasks.threshold_reached.action_label;
 		}
