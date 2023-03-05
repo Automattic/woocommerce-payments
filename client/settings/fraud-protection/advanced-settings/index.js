@@ -114,19 +114,16 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		>
 			<SettingsLayout displayBanner={ false }>
 				<ErrorBoundary>
-					{ validationError && (
-						<div>
+					<div className="fraud-protection-advanced-settings-layout">
+						<Breadcrumb />
+						{ validationError && (
 							<InlineNotice
 								status="error"
 								isDismissible={ false }
 							>
 								{ validationError }
 							</InlineNotice>
-							<br />
-						</div>
-					) }
-					<div className="fraud-protection-advanced-settings-layout">
-						<Breadcrumb />
+						) }
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<AVSMismatchRuleCard />
 						</LoadableBlock>

@@ -2261,6 +2261,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return  array The advanced level fraud settings for the store, if not saved, the default ones.
 	 */
 	protected function get_advanced_fraud_protection_settings() {
+		// If fraud and risk tools feature is not enabled, do not expose the settings.
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			return null;
+		}
+
 		$settings = get_option( 'advanced_fraud_protection_settings', false );
 		if ( ! $settings ) {
 			return Fraud_Risk_Tools::get_default_protection_settings();

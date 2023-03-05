@@ -7,6 +7,8 @@
 
 namespace WCPay\Fraud_Prevention;
 
+use WC_Payments_Features;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -50,6 +52,11 @@ class Fraud_Risk_Tools {
 	public function init_advanced_settings_page() {
 		// Settings page generation on the incoming CLI and async job calls.
 		if ( ( defined( 'WP_CLI' ) && WP_CLI ) || ( defined( 'WPCOM_JOBS' ) && WPCOM_JOBS ) ) {
+			return;
+		}
+
+		// Skip registering the page if the fraud and risk tools feature is not enabled.
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
 			return;
 		}
 

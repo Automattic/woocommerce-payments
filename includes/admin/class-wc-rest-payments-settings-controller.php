@@ -768,6 +768,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	private function update_advanced_fraud_protection_settings( WP_REST_Request $request ) {
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			return;
+		}
+
 		if ( ! $request->has_param( 'advanced_fraud_protection_settings' ) ) {
 			return;
 		}
