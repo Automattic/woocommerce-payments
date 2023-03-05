@@ -80,18 +80,19 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 					/>
 				</div>
 			</div>
-			{ '' === minItemsCount && '' === maxItemsCount && (
-				<div>
-					<br />
-					<FraudProtectionRuleCardNotice type={ 'warning' }>
-						{ __(
-							'An item range must be set for this filter to take effect.',
-							'woocommerce-payments'
-						) }
-					</FraudProtectionRuleCardNotice>
-				</div>
-			) }
-			{ parseFloat( minItemsCount ) > parseFloat( maxItemsCount ) ? (
+			{ ! parseInt( minItemsCount, 10 ) &&
+				! parseInt( maxItemsCount, 10 ) && (
+					<div>
+						<br />
+						<FraudProtectionRuleCardNotice type={ 'warning' }>
+							{ __(
+								'An item range must be set for this filter to take effect.',
+								'woocommerce-payments'
+							) }
+						</FraudProtectionRuleCardNotice>
+					</div>
+				) }
+			{ parseInt( minItemsCount, 10 ) > parseInt( maxItemsCount, 10 ) ? (
 				<div>
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'error' }>
@@ -137,5 +138,39 @@ const OrderItemsThresholdRuleCard = () => (
 		</div>
 	</FraudProtectionRuleCard>
 );
+
+export const OrderItemsThresholdValidation = (
+	settings,
+	setValidationError
+) => {
+	const key = 'order_items_threshold';
+	if ( settings[ key ].enabled ) {
+		if (
+			! parseInt( settings[ key ].min_items, 10 ) &&
+			! parseInt( settings[ key ].max_items, 10 )
+		) {
+			setValidationError(
+				__(
+					'An item range must be set for the "Order Item Threshold" filter.',
+					'woocommerce-payments'
+				)
+			);
+			return false;
+		}
+		if (
+			parseInt( settings[ key ].min_items, 10 ) >
+			parseInt( settings[ key ].max_items, 10 )
+		) {
+			setValidationError(
+				__(
+					'Maximum item count must be greater than the minimum item count on the "Order Item Threshold" rule.',
+					'woocommerce-payments'
+				)
+			);
+			return false;
+		}
+	}
+	return true;
+};
 
 export default OrderItemsThresholdRuleCard;

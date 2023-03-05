@@ -146,4 +146,39 @@ const PurchasePriceThresholdRuleCard = () => (
 	</FraudProtectionRuleCard>
 );
 
+export const PurchasePriceThresholdValidation = (
+	settings,
+	setValidationError
+) => {
+	const key = 'purchase_price_threshold';
+	if ( settings[ key ].enabled ) {
+		if (
+			! parseFloat( settings[ key ].min_amount ) &&
+			! parseFloat( settings[ key ].max_amount )
+		) {
+			setValidationError(
+				__(
+					'A price range must be set for the "Purchase Price threshold" filter.',
+					'woocommerce-payments'
+				)
+			);
+			return false;
+		}
+
+		if (
+			parseFloat( settings[ key ].min_amount ) >
+			parseFloat( settings[ key ].max_amount )
+		) {
+			setValidationError(
+				__(
+					'Maximum purchase price must be greater than the minimum purchase price.',
+					'woocommerce-payments'
+				)
+			);
+			return false;
+		}
+	}
+	return true;
+};
+
 export default PurchasePriceThresholdRuleCard;

@@ -11,6 +11,7 @@ import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudPreventionSettingsContext from '../context';
+import FraudProtectionRuleCardNotice from '../rule-card-notice';
 
 const OrderVelocityCustomForm = ( { setting } ) => {
 	const {
@@ -80,6 +81,17 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 					/>
 				</div>
 			</div>
+			{ ! parseInt( maxOrders, 10 ) && (
+				<div>
+					<br />
+					<FraudProtectionRuleCardNotice type={ 'warning' }>
+						{ __(
+							'A maximum order count must be set for this filter to take effect.',
+							'woocommerce-payments'
+						) }
+					</FraudProtectionRuleCardNotice>
+				</div>
+			) }
 		</div>
 	);
 };
@@ -114,5 +126,21 @@ const OrderVelocityRuleCard = () => (
 		</FraudProtectionRuleDescription>
 	</FraudProtectionRuleCard>
 );
+
+export const OrderVelocityValidation = ( settings, setValidationError ) => {
+	const key = 'order_velocity';
+	if ( settings[ key ].enabled ) {
+		if ( ! settings[ key ].max_orders ) {
+			setValidationError(
+				__(
+					'A maximum order count must be set for the "Order Velocity" filter.',
+					'woocommerce-payments'
+				)
+			);
+			return false;
+		}
+	}
+	return true;
+};
 
 export default OrderVelocityRuleCard;

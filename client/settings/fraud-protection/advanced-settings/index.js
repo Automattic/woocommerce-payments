@@ -17,12 +17,20 @@ import CVCVerificationRuleCard from './cards/cvc-verification';
 import InternationalIPAddressRuleCard from './cards/international-ip-address';
 import InternationalBillingAddressRuleCard from './cards/international-billing-address';
 import AddressMismatchRuleCard from './cards/address-mismatch';
-import OrderVelocityRuleCard from './cards/order-velocity';
-import PurchasePriceThresholdRuleCard from './cards/purchase-price-threshold';
-import OrderItemsThresholdRuleCard from './cards/order-items-threshold';
+import OrderVelocityRuleCard, {
+	OrderVelocityValidation,
+} from './cards/order-velocity';
+import PurchasePriceThresholdRuleCard, {
+	PurchasePriceThresholdValidation,
+} from './cards/purchase-price-threshold';
+import OrderItemsThresholdRuleCard, {
+	OrderItemsThresholdValidation,
+} from './cards/order-items-threshold';
 import FraudPreventionSettingsContext from './context';
 import { useSettings } from '../../../data';
 import { Button } from '@wordpress/components';
+import ErrorBoundary from 'wcpay/components/error-boundary';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const Breadcrumb = () => (
 	<h2 className="fraud-protection-header-breadcrumb">
@@ -44,6 +52,7 @@ const SaveFraudProtectionSettingsButton = ( { children } ) => {
 const FraudProtectionAdvancedSettingsPage = () => {
 	const { settings, saveSettings, isLoading } = useSettings();
 	const [ isSavingSettings, setIsSavingSettings ] = useState( false );
+	const [ validationError, setValidationError ] = useState( null );
 	const [
 		advancedFraudProtectionSettings,
 		setAdvancedFraudProtectionSettings,
@@ -66,60 +75,99 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		}
 	} );
 
-	const handleSaveSettings = async () => {
+	const validateSettings = ( fraudProtectionSettings ) => {
+		setValidationError( null );
+		let validationResult = true;
+		validationResult &&= OrderItemsThresholdValidation(
+			fraudProtectionSettings,
+			setValidationError
+		);
+		validationResult &&= OrderVelocityValidation(
+			fraudProtectionSettings,
+			setValidationError
+		);
+		validationResult &&= PurchasePriceThresholdValidation(
+			fraudProtectionSettings,
+			setValidationError
+		);
+		return validationResult;
+	};
+
+	const handleSaveSettings = () => {
 		setIsSavingSettings( true );
-		await saveSettings( settings );
+		if ( validateSettings( settings.advanced_fraud_protection_settings ) ) {
+			saveSettings( settings );
+		} else {
+			window.scrollTo( {
+				top: 0,
+			} );
+		}
 		setIsSavingSettings( false );
 	};
 
-	const contextValue = {
-		advancedFraudProtectionSettings,
-		setAdvancedFraudProtectionSettings,
-	};
-
 	return (
-		<FraudPreventionSettingsContext.Provider value={ contextValue }>
+		<FraudPreventionSettingsContext.Provider
+			value={ {
+				advancedFraudProtectionSettings,
+				setAdvancedFraudProtectionSettings,
+			} }
+		>
 			<SettingsLayout displayBanner={ false }>
-				<div className="fraud-protection-advanced-settings-layout">
-					<Breadcrumb />
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<AVSMismatchRuleCard />
-					</LoadableBlock>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<CVCVerificationRuleCard />
-					</LoadableBlock>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<InternationalIPAddressRuleCard />
-					</LoadableBlock>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<InternationalBillingAddressRuleCard />
-					</LoadableBlock>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<AddressMismatchRuleCard />
-					</LoadableBlock>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<OrderVelocityRuleCard />
-					</LoadableBlock>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<PurchasePriceThresholdRuleCard />
-					</LoadableBlock>
-					<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-						<OrderItemsThresholdRuleCard />
-					</LoadableBlock>
-				</div>
+				<ErrorBoundary>
+					{ validationError && (
+						<div>
+							<InlineNotice
+								status="error"
+								isDismissible={ false }
+							>
+								{ validationError }
+							</InlineNotice>
+							<br />
+						</div>
+					) }
+					<div className="fraud-protection-advanced-settings-layout">
+						<Breadcrumb />
+						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+							<AVSMismatchRuleCard />
+						</LoadableBlock>
+						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+							<CVCVerificationRuleCard />
+						</LoadableBlock>
+						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+							<InternationalIPAddressRuleCard />
+						</LoadableBlock>
+						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+							<InternationalBillingAddressRuleCard />
+						</LoadableBlock>
+						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+							<AddressMismatchRuleCard />
+						</LoadableBlock>
+						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+							<OrderVelocityRuleCard />
+						</LoadableBlock>
+						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+							<PurchasePriceThresholdRuleCard />
+						</LoadableBlock>
+						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
+							<OrderItemsThresholdRuleCard />
+						</LoadableBlock>
+					</div>
+				</ErrorBoundary>
 			</SettingsLayout>
-			<SaveFraudProtectionSettingsButton>
-				<div className="fraud-protection-header-save-button">
-					<Button
-						isPrimary
-						isBusy={ isSavingSettings }
-						onClick={ handleSaveSettings }
-						disabled={ isSavingSettings }
-					>
-						{ __( 'Save Changes', 'woocommerce-payments' ) }
-					</Button>
-				</div>
-			</SaveFraudProtectionSettingsButton>
+			<LoadableBlock isLoading={ isLoading } numLines={ 1 }>
+				<SaveFraudProtectionSettingsButton>
+					<div className="fraud-protection-header-save-button">
+						<Button
+							isPrimary
+							isBusy={ isSavingSettings }
+							onClick={ handleSaveSettings }
+							disabled={ isSavingSettings }
+						>
+							{ __( 'Save Changes', 'woocommerce-payments' ) }
+						</Button>
+					</div>
+				</SaveFraudProtectionSettingsButton>
+			</LoadableBlock>
 		</FraudPreventionSettingsContext.Provider>
 	);
 };
