@@ -41,13 +41,12 @@
 		}
 		p.fraud-protection__text--help-text {
 			margin-bottom: 0;
-      }
-}
-	
-  ul {
-		margin-top: 0;
+		}
+	}
 
-		> li {
+	ul {
+		margin-top: 0;
+		& > li {
 			margin-bottom: 16px;
 		}
 	}
