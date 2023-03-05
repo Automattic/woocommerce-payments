@@ -25,18 +25,15 @@ exports[`FraudProtection renders 1`] = `
                 value="standard"
               />
               <label
+                class="fraud-protection-single-radio-wrapper__item"
                 for="fraud-protection__standard-level"
               >
-                <p
-                  class="fraud-protection-single-radio-wrapper__item"
+                Standard 
+                <span
+                  class="fraud-protection-single-radio-wrapper__item--recommended"
                 >
-                  Standard 
-                  <span
-                    class="fraud-protection-single-radio-wrapper__item--recommended"
-                  >
-                    (Recommended)
-                  </span>
-                </p>
+                  (Recommended)
+                </span>
               </label>
               <svg
                 class="gridicon gridicons-help-outline fraud-protection__help-icon needs-offset"
@@ -56,7 +53,7 @@ exports[`FraudProtection renders 1`] = `
             <p
               class="fraud-protection__text--help-text"
             >
-              Standard protection: Provides a standard level of filtering that's suitable for most businesses.
+              Provides a standard level of filtering that's suitable for most businesses.
             </p>
           </li>
           <li>
@@ -71,13 +68,10 @@ exports[`FraudProtection renders 1`] = `
                 value="high"
               />
               <label
+                class="fraud-protection-single-radio-wrapper__item"
                 for="fraud-protection__high-level"
               >
-                <p
-                  class="fraud-protection-single-radio-wrapper__item"
-                >
-                  High
-                </p>
+                High
               </label>
               <svg
                 class="gridicon gridicons-help-outline fraud-protection__help-icon needs-offset"
@@ -97,7 +91,7 @@ exports[`FraudProtection renders 1`] = `
             <p
               class="fraud-protection__text--help-text"
             >
-              High protection: Offers the highest level of filtering for stores, but may catch some legitimate transactions.
+              Offers the highest level of filtering for stores, but may catch some legitimate transactions.
             </p>
           </li>
           <hr

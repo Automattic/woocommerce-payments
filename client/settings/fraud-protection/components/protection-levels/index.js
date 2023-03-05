@@ -50,20 +50,21 @@ const ProtectionLevels = () => {
 							checked={ 'standard' === currentProtectionLevel }
 							onChange={ () => handleLevelChange( 'standard' ) }
 						/>
-						<label htmlFor="fraud-protection__standard-level">
-							<p className="fraud-protection-single-radio-wrapper__item">
-								{ interpolateComponents( {
-									mixedString: __(
-										'Standard {{recommended}}(Recommended){{/recommended}}',
-										'woocommerce-payments'
+						<label
+							className="fraud-protection-single-radio-wrapper__item"
+							htmlFor="fraud-protection__standard-level"
+						>
+							{ interpolateComponents( {
+								mixedString: __(
+									'Standard {{recommended}}(Recommended){{/recommended}}',
+									'woocommerce-payments'
+								),
+								components: {
+									recommended: (
+										<span className="fraud-protection-single-radio-wrapper__item--recommended" />
 									),
-									components: {
-										recommended: (
-											<span className="fraud-protection-single-radio-wrapper__item--recommended" />
-										),
-									},
-								} ) }
-							</p>
+								},
+							} ) }
 						</label>
 						<HelpOutlineIcon
 							size={ 18 }
@@ -93,10 +94,11 @@ const ProtectionLevels = () => {
 							checked={ 'high' === currentProtectionLevel }
 							onChange={ () => handleLevelChange( 'high' ) }
 						/>
-						<label htmlFor="fraud-protection__high-level">
-							<p className="fraud-protection-single-radio-wrapper__item">
-								{ __( 'High', 'woocommerce-payments' ) }
-							</p>
+						<label
+							className="fraud-protection-single-radio-wrapper__item"
+							htmlFor="fraud-protection__high-level"
+						>
+							{ __( 'High', 'woocommerce-payments' ) }
 						</label>
 						<HelpOutlineIcon
 							size={ 18 }

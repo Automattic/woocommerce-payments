@@ -8,7 +8,7 @@ const getFraudProtectionLevelText = function ( level ) {
 	switch ( level ) {
 		case 'high':
 			return __(
-				'High protection: Offers the highest level of filtering for stores, but may catch some legitimate transactions.',
+				'Offers the highest level of filtering for stores, but may catch some legitimate transactions.',
 				'woocommerce-payments'
 			);
 		case 'advanced':
@@ -18,7 +18,7 @@ const getFraudProtectionLevelText = function ( level ) {
 			);
 		default:
 			return __(
-				"Standard protection: Provides a standard level of filtering that's suitable for most businesses.",
+				"Provides a standard level of filtering that's suitable for most businesses.",
 				'woocommerce-payments'
 			);
 	}
