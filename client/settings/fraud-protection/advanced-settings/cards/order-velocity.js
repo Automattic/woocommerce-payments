@@ -20,15 +20,21 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 	} = useContext( FraudPreventionSettingsContext );
 
 	const [ maxOrders, setMaxOrders ] = useState(
-		advancedFraudProtectionSettings[ setting ].max_orders
+		advancedFraudProtectionSettings[ setting ].max_orders ?? 0
 	);
 	const [ orderInterval, setOrderInterval ] = useState(
 		advancedFraudProtectionSettings[ setting ].interval
 	);
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].max_orders = maxOrders;
-		advancedFraudProtectionSettings[ setting ].interval = orderInterval;
+		advancedFraudProtectionSettings[ setting ].max_orders = parseInt(
+			maxOrders,
+			10
+		);
+		advancedFraudProtectionSettings[ setting ].interval = parseInt(
+			orderInterval,
+			10
+		);
 		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
 	}, [
 		setting,
@@ -130,7 +136,7 @@ const OrderVelocityRuleCard = () => (
 export const OrderVelocityValidation = ( settings, setValidationError ) => {
 	const key = 'order_velocity';
 	if ( settings[ key ].enabled ) {
-		if ( ! settings[ key ].max_orders ) {
+		if ( ! parseInt( settings[ key ].max_orders, 10 ) ) {
 			setValidationError(
 				__(
 					'A maximum order count must be set for the "Order Velocity" filter.',

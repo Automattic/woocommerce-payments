@@ -21,15 +21,21 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 	} = useContext( FraudPreventionSettingsContext );
 
 	const [ minItemsCount, setMinItemsCount ] = useState(
-		advancedFraudProtectionSettings[ setting ].min_items
+		advancedFraudProtectionSettings[ setting ].min_items ?? 0
 	);
 	const [ maxItemsCount, setMaxItemsCount ] = useState(
-		advancedFraudProtectionSettings[ setting ].max_items
+		advancedFraudProtectionSettings[ setting ].max_items ?? 0
 	);
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].min_items = minItemsCount;
-		advancedFraudProtectionSettings[ setting ].max_items = maxItemsCount;
+		advancedFraudProtectionSettings[ setting ].min_items = parseInt(
+			minItemsCount,
+			10
+		);
+		advancedFraudProtectionSettings[ setting ].max_items = parseInt(
+			maxItemsCount,
+			10
+		);
 		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
 	}, [
 		setting,

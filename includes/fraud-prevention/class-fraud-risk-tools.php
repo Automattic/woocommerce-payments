@@ -102,20 +102,20 @@ class Fraud_Risk_Tools {
 			'order_velocity'                => [
 				'enabled'    => false,
 				'block'      => false,
-				'max_orders' => null,
-				'interval'   => null,
+				'max_orders' => 0,
+				'interval'   => 12,
 			],
 			'order_items_threshold'         => [
 				'enabled'   => false,
 				'block'     => false,
-				'min_items' => null,
-				'max_items' => null,
+				'min_items' => 0,
+				'max_items' => 0,
 			],
 			'purchase_price_threshold'      => [
 				'enabled'    => false,
 				'block'      => false,
-				'min_amount' => null,
-				'max_amount' => null,
+				'min_amount' => 0,
+				'max_amount' => 0,
 			],
 		];
 	}

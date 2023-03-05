@@ -21,15 +21,19 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 	} = useContext( FraudPreventionSettingsContext );
 
 	const [ minAmount, setMinAmount ] = useState(
-		advancedFraudProtectionSettings[ setting ].min_amount
+		advancedFraudProtectionSettings[ setting ].min_amount ?? ''
 	);
 	const [ maxAmount, setMaxAmount ] = useState(
-		advancedFraudProtectionSettings[ setting ].max_amount
+		advancedFraudProtectionSettings[ setting ].max_amount ?? ''
 	);
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].min_amount = minAmount;
-		advancedFraudProtectionSettings[ setting ].max_amount = maxAmount;
+		advancedFraudProtectionSettings[ setting ].min_amount = parseFloat(
+			minAmount
+		);
+		advancedFraudProtectionSettings[ setting ].max_amount = parseFloat(
+			maxAmount
+		);
 		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
 	}, [
 		setting,
@@ -86,7 +90,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 					/>
 				</div>
 			</div>
-			{ '' === minAmount && '' === maxAmount && (
+			{ ! parseFloat( minAmount ) && ! parseFloat( maxAmount ) && (
 				<div>
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'warning' }>
