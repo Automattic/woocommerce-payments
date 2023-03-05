@@ -31,10 +31,18 @@ import { useSettings } from '../../../data';
 import { Button } from '@wordpress/components';
 import ErrorBoundary from 'wcpay/components/error-boundary';
 import InlineNotice from 'wcpay/components/inline-notice';
+import { getAdminUrl } from 'wcpay/utils';
 
 const Breadcrumb = () => (
 	<h2 className="fraud-protection-header-breadcrumb">
-		<Link href="">
+		<Link
+			type="wc-settings"
+			href={ getAdminUrl( {
+				page: 'wc-settings',
+				tab: 'checkout',
+				section: 'woocommerce_payments',
+			} ) }
+		>
 			{ __( 'WooCommerce Payments', 'woocommerce-payments' ) }
 		</Link>
 		&nbsp;&gt;&nbsp;
@@ -104,6 +112,14 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		}
 		setIsSavingSettings( false );
 	};
+
+	// Hack to make WooCommerce > Settings the active selected menu item
+	const wcSettingsMenuItem = document.querySelector(
+		'#toplevel_page_woocommerce a[href="admin.php?page=wc-settings"]'
+	);
+	wcSettingsMenuItem.setAttribute( 'aria-current', 'page' );
+	wcSettingsMenuItem.classList.add( 'current' );
+	wcSettingsMenuItem.parentElement.classList.add( 'current' );
 
 	return (
 		<FraudPreventionSettingsContext.Provider
