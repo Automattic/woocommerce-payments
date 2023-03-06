@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { WPElement } from '@wordpress/element/build-types/create-interpolate-element';
 import { createInterpolateElement } from '@wordpress/element';
 import React from 'react';
 
@@ -292,7 +291,7 @@ export default {
 				'Please add your bank details to keep selling',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): WPElement => {
+			description: ( dueDate: string ): React.ReactElement => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -329,7 +328,7 @@ export default {
 				'Verify your bank account to start receiving deposits',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): WPElement => {
+			description: ( dueDate: string ): React.ReactElement => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -353,7 +352,7 @@ export default {
 				'Verify your bank account to start receiving deposits',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): WPElement => {
+			description: ( dueDate: string ): React.ReactElement => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -374,7 +373,7 @@ export default {
 		},
 		near_threshold: {
 			title: __( 'Verify your bank details', 'woocommerce-payments' ),
-			description: ( dueDate: string ): WPElement => {
+			description: ( dueDate: string ): React.ReactElement => {
 				return createInterpolateElement(
 					sprintf(
 						__(
@@ -395,7 +394,7 @@ export default {
 				'Payments paused! Verify your bank details to reactivate.',
 				'woocommerce-payments'
 			),
-			description: ( dueDate: string ): WPElement => {
+			description: ( dueDate: string ): React.ReactElement => {
 				return createInterpolateElement(
 					sprintf(
 						__(
