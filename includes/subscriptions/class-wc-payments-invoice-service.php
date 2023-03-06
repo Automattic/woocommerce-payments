@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
@@ -44,21 +45,29 @@ class WC_Payments_Invoice_Service {
 	 */
 	private $product_service;
 
+
+	/**
+	 * Order Service
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
 	/**
 	 * Constructor.
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client  WooCommerce Payments API client.
 	 * @param WC_Payments_Product_Service $product_service      Product Service.
-	 * @param WC_Payment_Gateway_WCPay    $gateway              WC payments Payment Gateway.
+	 * @param WC_Payments_Order_Service   $order_service              WC payments Order Service.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Product_Service $product_service,
-		WC_Payment_Gateway_WCPay $gateway
+		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->product_service     = $product_service;
-		$this->gateway             = $gateway;
+		$this->order_service       = $order_service;
 
 		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
 		add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
@@ -263,7 +272,9 @@ class WC_Payments_Invoice_Service {
 	 */
 	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
 		try {
-			$intent_object = $this->payments_api_client->get_intent( $intent_id );
+			$request       = Get_Intention::create( $intent_id );
+			$intent_object = $request->send( 'wcpay_get_intent_request', $order );
+
 		} catch ( API_Exception $e ) {
 			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
 			return;
@@ -271,7 +282,7 @@ class WC_Payments_Invoice_Service {
 
 		$charge = $intent_object->get_charge();
 
-		$this->gateway->attach_intent_info_to_order(
+		$this->order_service->attach_intent_info_to_order(
 			$order,
 			$intent_id,
 			$intent_object->get_status(),

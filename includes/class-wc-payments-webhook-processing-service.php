@@ -7,6 +7,7 @@
 
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
@@ -212,7 +213,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Event mode does not match the gateway mode.
 	 */
 	private function is_webhook_mode_mismatch( array $event_body ): bool {
-		$is_gateway_live_mode = ! $this->wcpay_gateway->is_in_test_mode();
+		$is_gateway_live_mode = WC_Payments::mode()->is_live();
 		$is_event_live_mode   = $this->read_webhook_property( $event_body, 'livemode' );
 
 		if ( $is_gateway_live_mode !== $is_event_live_mode ) {
@@ -296,7 +297,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$wc_refunds = $order->get_refunds();
 		if ( ! empty( $wc_refunds ) ) {
 			foreach ( $wc_refunds as $wc_refund ) {
-				$wcpay_refund_id = $wc_refund->get_meta( '_wcpay_refund_id', true );
+				$wcpay_refund_id = $this->order_service->get_wcpay_refund_id_for_order( $wc_refund );
 				if ( $refund_id === $wcpay_refund_id ) {
 					// Delete WC Refund.
 					$wc_refund->delete();
@@ -312,7 +313,7 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$order->add_order_note( $note );
-		$order->update_meta_data( '_wcpay_refund_status', 'failed' );
+		$this->order_service->set_wcpay_refund_status_for_order( $order, 'failed' );
 		$order->save();
 	}
 
@@ -345,8 +346,11 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		// Get the intent_id and then its status.
-		$intent_id     = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
-		$intent        = $this->api_client->get_intent( $intent_id );
+		$intent_id = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
+
+		$request = Get_Intention::create( $intent_id );
+		$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 		$intent_status = $intent->get_status();
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
