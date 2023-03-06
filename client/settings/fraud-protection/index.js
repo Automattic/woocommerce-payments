@@ -16,7 +16,12 @@ const FraudProtection = () => {
 	return (
 		<Card className="fraud-protection">
 			<CardBody>
-				<h4>{ __( 'Payment risk level', 'woocommerce-payments' ) }</h4>
+				<h4>
+					{ __(
+						'Set your payment risk level',
+						'woocommerce-payments'
+					) }
+				</h4>
 				<ProtectionLevels />
 			</CardBody>
 		</Card>
