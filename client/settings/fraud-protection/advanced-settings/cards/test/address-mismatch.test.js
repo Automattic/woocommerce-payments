@@ -10,18 +10,20 @@ import AddressMismatchRuleCard from '../address-mismatch';
 import FraudPreventionSettingsContext from '../../context';
 
 describe( 'Address mismatch card', () => {
+	const settings = {
+		address_mismatch: {
+			enabled: false,
+			block: false,
+		},
+	};
+	const setSettings = jest.fn();
+	const contextValue = {
+		advancedFraudProtectionSettings: settings,
+		setAdvancedFraudProtectionSettings: setSettings,
+	};
 	test( 'renders correctly', () => {
-		const settings = {
-			address_mismatch: {
-				enabled: false,
-				block: false,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
+		settings.address_mismatch.enabled = false;
+		settings.address_mismatch.block = false;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
 				<AddressMismatchRuleCard />
@@ -30,17 +32,8 @@ describe( 'Address mismatch card', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders correctly when enabled', () => {
-		const settings = {
-			address_mismatch: {
-				enabled: true,
-				block: false,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
+		settings.address_mismatch.enabled = true;
+		settings.address_mismatch.block = false;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
 				<AddressMismatchRuleCard />
@@ -49,17 +42,8 @@ describe( 'Address mismatch card', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders correctly when enabled and checked', () => {
-		const settings = {
-			address_mismatch: {
-				enabled: true,
-				block: true,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
+		settings.address_mismatch.enabled = true;
+		settings.address_mismatch.block = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
 				<AddressMismatchRuleCard />
@@ -68,17 +52,8 @@ describe( 'Address mismatch card', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders like disabled when checked, but not enabled', () => {
-		const settings = {
-			address_mismatch: {
-				enabled: false,
-				block: true,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
+		settings.address_mismatch.enabled = false;
+		settings.address_mismatch.block = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
 				<AddressMismatchRuleCard />

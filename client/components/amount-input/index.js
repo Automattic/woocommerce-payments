@@ -23,7 +23,7 @@ const AmountInput = ( { id, prefix, value, placeholder, help, onChange } ) => {
 				<input
 					id={ id }
 					placeholder={ placeholder }
-					value={ value }
+					value={ isNaN( value ) ? '' : value }
 					type="text"
 					data-testid="amount-input"
 					onChange={ ( e ) => handleChange( e ) }

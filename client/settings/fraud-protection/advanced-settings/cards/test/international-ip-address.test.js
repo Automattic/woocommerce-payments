@@ -10,18 +10,18 @@ import FraudPreventionSettingsContext from '../../context';
 import InternationalIPAddressRuleCard from '../international-ip-address';
 
 describe( 'International IP address card', () => {
+	const settings = {
+		international_ip_address: {
+			enabled: false,
+			block: false,
+		},
+	};
+	const setSettings = jest.fn();
+	const contextValue = {
+		advancedFraudProtectionSettings: settings,
+		setAdvancedFraudProtectionSettings: setSettings,
+	};
 	test( 'renders correctly', () => {
-		const settings = {
-			international_ip_address: {
-				enabled: false,
-				block: false,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
 				<InternationalIPAddressRuleCard />
@@ -30,17 +30,7 @@ describe( 'International IP address card', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders correctly when enabled', () => {
-		const settings = {
-			international_ip_address: {
-				enabled: true,
-				block: false,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
+		settings.international_ip_address.enabled = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
 				<InternationalIPAddressRuleCard />
@@ -49,17 +39,8 @@ describe( 'International IP address card', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders correctly when enabled and checked', () => {
-		const settings = {
-			international_ip_address: {
-				enabled: true,
-				block: true,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
+		settings.international_ip_address.enabled = true;
+		settings.international_ip_address.block = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
 				<InternationalIPAddressRuleCard />
@@ -68,17 +49,8 @@ describe( 'International IP address card', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders like disabled when checked, but not enabled', () => {
-		const settings = {
-			international_ip_address: {
-				enabled: false,
-				block: true,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
+		settings.international_ip_address.enabled = false;
+		settings.international_ip_address.block = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
 				<InternationalIPAddressRuleCard />

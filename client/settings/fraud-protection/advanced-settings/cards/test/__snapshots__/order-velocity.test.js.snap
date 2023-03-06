@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Address mismatch card renders correctly 1`] = `
+exports[`Order items threshold card renders correctly 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -12,12 +12,12 @@ exports[`Address mismatch card renders correctly 1`] = `
         <p
           class="fraud-protection-rule-card-header"
         >
-          Address Mismatch
+          Order Velocity
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for excessive repeat orders from the same IP address or payment card.
         </p>
       </div>
     </div>
@@ -25,117 +25,65 @@ exports[`Address mismatch card renders correctly 1`] = `
     <div
       class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
     >
-      <div>
+      <div
+        class="fraud-protection-rule-toggle"
+      >
+        <strong>
+          Enable filtering
+        </strong>
         <div
-          class="fraud-protection-rule-toggle"
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
           >
-            <div
-              class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            <span
+              class="components-form-toggle"
             >
+              <input
+                aria-describedby="inspector-toggle-control-0__help"
+                class="components-form-toggle__input"
+                id="inspector-toggle-control-0"
+                type="checkbox"
+              />
               <span
-                class="components-form-toggle"
-              >
-                <input
-                  aria-describedby="inspector-toggle-control-0__help"
-                  class="components-form-toggle__input"
-                  id="inspector-toggle-control-0"
-                  type="checkbox"
-                />
-                <span
-                  class="components-form-toggle__track"
-                />
-                <span
-                  class="components-form-toggle__thumb"
-                />
-              </span>
-              <label
-                class="components-toggle-control__label"
-                for="inspector-toggle-control-0"
-              >
-                Screen transactions for mismatched addresses
-              </label>
-            </div>
-            <p
-              class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-              id="inspector-toggle-control-0__help"
+                class="components-form-toggle__track"
+              />
+              <span
+                class="components-form-toggle__thumb"
+              />
+            </span>
+            <label
+              class="components-toggle-control__label"
+              for="inspector-toggle-control-0"
             >
-              When enabled, the payment method will not be charged until you review and approve the transaction
-            </p>
+              Screen transactions for excessive repeat orders
+            </label>
           </div>
-        </div>
-        <div
-          class="fraud-protection-rule-description"
-        >
-          <strong>
-            How does this filter protect me?
-          </strong>
-          <p>
-            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-toggle-control-0__help"
+          >
+            When enabled, the payment method will not be charged until you review and approve the transaction
           </p>
         </div>
-        <div
-          class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-        >
-          <div
-            class="fraud-protection-rule-card-notice-icon"
-          >
-            <svg
-              fill="none"
-              height="18"
-              viewBox="0 0 24 24"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="9"
-                r="5"
-                stroke="#007CBA"
-                stroke-width="1.42857"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="9"
-                x2="15"
-                y1="16.8818"
-                y2="16.8818"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="10"
-                x2="14"
-                y1="19.25"
-                y2="19.25"
-              />
-            </svg>
-          </div>
-          <div
-            class="fraud-protection-rule-card-notice-text"
-          >
-            This filter may modify the address input on your checkout. 
-            <a
-              data-link-type="wc-admin"
-              href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-            >
-              Learn more
-            </a>
-          </div>
-        </div>
+      </div>
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          Fraudsters often submit multiple purchases using an automated script that tests unknown card numbers. Alternatively, the fraudster may attempt to bypass other filters by making multiple small purchases with multiple stolen account numbers.
+        </p>
       </div>
     </div>
   </div>
 </div>
 `;
 
-exports[`Address mismatch card renders correctly when enabled 1`] = `
+exports[`Order items threshold card renders correctly when enabled 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -147,12 +95,12 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
         <p
           class="fraud-protection-rule-card-header"
         >
-          Address Mismatch
+          Order Velocity
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for excessive repeat orders from the same IP address or payment card.
         </p>
       </div>
     </div>
@@ -160,180 +108,278 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
     <div
       class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
     >
-      <div>
+      <div
+        class="fraud-protection-rule-toggle"
+      >
+        <strong>
+          Enable filtering
+        </strong>
         <div
-          class="fraud-protection-rule-toggle"
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
           >
-            <div
-              class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            <span
+              class="components-form-toggle is-checked"
             >
+              <input
+                aria-describedby="inspector-toggle-control-1__help"
+                checked=""
+                class="components-form-toggle__input"
+                id="inspector-toggle-control-1"
+                type="checkbox"
+              />
               <span
-                class="components-form-toggle is-checked"
-              >
-                <input
-                  aria-describedby="inspector-toggle-control-1__help"
-                  checked=""
-                  class="components-form-toggle__input"
-                  id="inspector-toggle-control-1"
-                  type="checkbox"
-                />
-                <span
-                  class="components-form-toggle__track"
-                />
-                <span
-                  class="components-form-toggle__thumb"
-                />
-              </span>
-              <label
-                class="components-toggle-control__label"
-                for="inspector-toggle-control-1"
-              >
-                Screen transactions for mismatched addresses
-              </label>
-            </div>
-            <p
-              class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-              id="inspector-toggle-control-1__help"
+                class="components-form-toggle__track"
+              />
+              <span
+                class="components-form-toggle__thumb"
+              />
+            </span>
+            <label
+              class="components-toggle-control__label"
+              for="inspector-toggle-control-1"
             >
-              When enabled, the payment method will not be charged until you review and approve the transaction
-            </p>
+              Screen transactions for excessive repeat orders
+            </label>
           </div>
-          <div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-toggle-control-1__help"
+          >
+            When enabled, the payment method will not be charged until you review and approve the transaction
+          </p>
+        </div>
+        <div>
+          <div
+            class="fraud-protection-rule-toggle-children-container"
+          >
             <strong>
-              Advanced
+              Limits
             </strong>
             <div
-              class="fraud-protection-rule-toggle-checkbox-container"
+              class="fraud-protection-rule-toggle-children-horizontal-form"
             >
               <div
-                class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
+                class="fraud-protection-rule-toggle-children-vertical-form"
               >
-                <div
-                  class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                <label
+                  for="fraud-protection-order-velocity-threshold"
                 >
-                  <span
-                    class="components-checkbox-control__input-container"
-                  >
-                    <input
-                      class="components-checkbox-control__input"
-                      id="inspector-checkbox-control-0"
-                      type="checkbox"
-                      value="1"
-                    />
-                  </span>
-                  <label
-                    class="components-checkbox-control__label"
-                    for="inspector-checkbox-control-0"
-                  >
-                    Block Payment
-                  </label>
-                </div>
-              </div>
-              <button
-                class="wcpay-tooltip__content-wrapper"
-                type="button"
-              >
+                  Maximum Orders
+                </label>
                 <div
-                  class="wcpay-tooltip__content-wrapper"
+                  class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
                 >
                   <div
-                    class="fraud-protection-rule-toggle-checkbox-container-help"
+                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
                   >
-                    <svg
-                      aria-hidden="true"
-                      fill="none"
-                      focusable="false"
-                      height="16"
-                      role="img"
-                      viewBox="3 3 18 18"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                        stroke="#1E1E1E"
-                        stroke-width="1.5"
-                      />
-                    </svg>
+                    <input
+                      class="components-text-control__input"
+                      id="fraud-protection-order-velocity-threshold"
+                      type="number"
+                      value="0"
+                    />
                   </div>
                 </div>
-              </button>
+              </div>
+              <div
+                class="fraud-protection-rule-toggle-children-vertical-form"
+              >
+                <label
+                  for="fraud-protection-order-velocity-interval"
+                >
+                  Every
+                </label>
+                <div
+                  class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                >
+                  <div
+                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                  >
+                    <div
+                      class="components-flex components-select-control e1cr7zh10 css-38uqbv-Flex-Root eboqfv50"
+                    >
+                      <div
+                        class="components-flex__item e1cr7zh14 css-d373l0-Item-LabelWrapper eboqfv51"
+                      />
+                      <div
+                        class="components-input-control__container css-1ih9r4d-Container e1cr7zh11"
+                      >
+                        <select
+                          class="components-select-control__input css-1hft3f5-Select e12x0a390"
+                          id="fraud-protection-order-velocity-interval"
+                        >
+                          <option
+                            value="12"
+                          >
+                            12 hours
+                          </option>
+                          <option
+                            value="24"
+                          >
+                            24 hours
+                          </option>
+                          <option
+                            value="48"
+                          >
+                            48 hours
+                          </option>
+                          <option
+                            value="72"
+                          >
+                            72 hours
+                          </option>
+                        </select>
+                        <span
+                          class="components-input-control__suffix css-1lym30p-Suffix e1cr7zh17"
+                        >
+                          <div
+                            class="css-163e8ky-DownArrowWrapper e12x0a391"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              focusable="false"
+                              height="18"
+                              role="img"
+                              viewBox="0 0 24 24"
+                              width="18"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                              />
+                            </svg>
+                          </div>
+                        </span>
+                        <div
+                          aria-hidden="true"
+                          class="components-input-control__backdrop css-96sjau-BackdropUI e1cr7zh15"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <br />
+              <div
+                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              >
+                <div
+                  class="fraud-protection-rule-card-notice-icon"
+                >
+                  <svg
+                    fill="none"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                      fill="#bd8600"
+                      fill-rule="evenodd"
+                    />
+                    <path
+                      d="M10 4H8V10H10V4Z"
+                      fill="#bd8600"
+                    />
+                    <path
+                      d="M10 12H8V14H10V12Z"
+                      fill="#bd8600"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice-text"
+                >
+                  A maximum order count must be set for this filter to take effect.
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        <div
-          class="fraud-protection-rule-description"
-        >
           <strong>
-            How does this filter protect me?
+            Advanced
           </strong>
-          <p>
-            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
-          </p>
-        </div>
-        <div
-          class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-        >
           <div
-            class="fraud-protection-rule-card-notice-icon"
+            class="fraud-protection-rule-toggle-checkbox-container"
           >
-            <svg
-              fill="none"
-              height="18"
-              viewBox="0 0 24 24"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
+            <div
+              class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
             >
-              <circle
-                cx="12"
-                cy="9"
-                r="5"
-                stroke="#007CBA"
-                stroke-width="1.42857"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="9"
-                x2="15"
-                y1="16.8818"
-                y2="16.8818"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="10"
-                x2="14"
-                y1="19.25"
-                y2="19.25"
-              />
-            </svg>
-          </div>
-          <div
-            class="fraud-protection-rule-card-notice-text"
-          >
-            This filter may modify the address input on your checkout. 
-            <a
-              data-link-type="wc-admin"
-              href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+              <div
+                class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+              >
+                <span
+                  class="components-checkbox-control__input-container"
+                >
+                  <input
+                    class="components-checkbox-control__input"
+                    id="inspector-checkbox-control-0"
+                    type="checkbox"
+                    value="1"
+                  />
+                </span>
+                <label
+                  class="components-checkbox-control__label"
+                  for="inspector-checkbox-control-0"
+                >
+                  Block Payment
+                </label>
+              </div>
+            </div>
+            <button
+              class="wcpay-tooltip__content-wrapper"
+              type="button"
             >
-              Learn more
-            </a>
+              <div
+                class="wcpay-tooltip__content-wrapper"
+              >
+                <div
+                  class="fraud-protection-rule-toggle-checkbox-container-help"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    focusable="false"
+                    height="16"
+                    role="img"
+                    viewBox="3 3 18 18"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                      stroke="#1E1E1E"
+                      stroke-width="1.5"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </button>
           </div>
         </div>
+      </div>
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          Fraudsters often submit multiple purchases using an automated script that tests unknown card numbers. Alternatively, the fraudster may attempt to bypass other filters by making multiple small purchases with multiple stolen account numbers.
+        </p>
       </div>
     </div>
   </div>
 </div>
 `;
 
-exports[`Address mismatch card renders correctly when enabled and checked 1`] = `
+exports[`Order items threshold card renders correctly when enabled and checked 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -345,12 +391,12 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
         <p
           class="fraud-protection-rule-card-header"
         >
-          Address Mismatch
+          Order Velocity
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for excessive repeat orders from the same IP address or payment card.
         </p>
       </div>
     </div>
@@ -358,195 +404,293 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
     <div
       class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
     >
-      <div>
+      <div
+        class="fraud-protection-rule-toggle"
+      >
+        <strong>
+          Enable filtering
+        </strong>
         <div
-          class="fraud-protection-rule-toggle"
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
           >
-            <div
-              class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            <span
+              class="components-form-toggle is-checked"
             >
+              <input
+                aria-describedby="inspector-toggle-control-2__help"
+                checked=""
+                class="components-form-toggle__input"
+                id="inspector-toggle-control-2"
+                type="checkbox"
+              />
               <span
-                class="components-form-toggle is-checked"
-              >
-                <input
-                  aria-describedby="inspector-toggle-control-2__help"
-                  checked=""
-                  class="components-form-toggle__input"
-                  id="inspector-toggle-control-2"
-                  type="checkbox"
-                />
-                <span
-                  class="components-form-toggle__track"
-                />
-                <span
-                  class="components-form-toggle__thumb"
-                />
-              </span>
-              <label
-                class="components-toggle-control__label"
-                for="inspector-toggle-control-2"
-              >
-                Screen transactions for mismatched addresses
-              </label>
-            </div>
-            <p
-              class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-              id="inspector-toggle-control-2__help"
+                class="components-form-toggle__track"
+              />
+              <span
+                class="components-form-toggle__thumb"
+              />
+            </span>
+            <label
+              class="components-toggle-control__label"
+              for="inspector-toggle-control-2"
             >
-              When enabled, the payment method will not be charged until you review and approve the transaction
-            </p>
+              Screen transactions for excessive repeat orders
+            </label>
           </div>
-          <div>
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-toggle-control-2__help"
+          >
+            When enabled, the payment method will not be charged until you review and approve the transaction
+          </p>
+        </div>
+        <div>
+          <div
+            class="fraud-protection-rule-toggle-children-container"
+          >
             <strong>
-              Advanced
+              Limits
             </strong>
             <div
-              class="fraud-protection-rule-toggle-checkbox-container"
+              class="fraud-protection-rule-toggle-children-horizontal-form"
             >
               <div
-                class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
+                class="fraud-protection-rule-toggle-children-vertical-form"
               >
-                <div
-                  class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                <label
+                  for="fraud-protection-order-velocity-threshold"
                 >
-                  <span
-                    class="components-checkbox-control__input-container"
-                  >
-                    <input
-                      checked=""
-                      class="components-checkbox-control__input"
-                      id="inspector-checkbox-control-1"
-                      type="checkbox"
-                      value="1"
-                    />
-                    <svg
-                      aria-hidden="true"
-                      class="components-checkbox-control__checked"
-                      focusable="false"
-                      height="24"
-                      role="img"
-                      viewBox="0 0 24 24"
-                      width="24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
-                      />
-                    </svg>
-                  </span>
-                  <label
-                    class="components-checkbox-control__label"
-                    for="inspector-checkbox-control-1"
-                  >
-                    Block Payment
-                  </label>
-                </div>
-              </div>
-              <button
-                class="wcpay-tooltip__content-wrapper"
-                type="button"
-              >
+                  Maximum Orders
+                </label>
                 <div
-                  class="wcpay-tooltip__content-wrapper"
+                  class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
                 >
                   <div
-                    class="fraud-protection-rule-toggle-checkbox-container-help"
+                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
                   >
-                    <svg
-                      aria-hidden="true"
-                      fill="none"
-                      focusable="false"
-                      height="16"
-                      role="img"
-                      viewBox="3 3 18 18"
-                      width="16"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
-                        stroke="#1E1E1E"
-                        stroke-width="1.5"
-                      />
-                    </svg>
+                    <input
+                      class="components-text-control__input"
+                      id="fraud-protection-order-velocity-threshold"
+                      type="number"
+                      value="0"
+                    />
                   </div>
                 </div>
-              </button>
+              </div>
+              <div
+                class="fraud-protection-rule-toggle-children-vertical-form"
+              >
+                <label
+                  for="fraud-protection-order-velocity-interval"
+                >
+                  Every
+                </label>
+                <div
+                  class="components-base-control css-wdf2ti-Wrapper e1puf3u0"
+                >
+                  <div
+                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+                  >
+                    <div
+                      class="components-flex components-select-control e1cr7zh10 css-38uqbv-Flex-Root eboqfv50"
+                    >
+                      <div
+                        class="components-flex__item e1cr7zh14 css-d373l0-Item-LabelWrapper eboqfv51"
+                      />
+                      <div
+                        class="components-input-control__container css-1ih9r4d-Container e1cr7zh11"
+                      >
+                        <select
+                          class="components-select-control__input css-1hft3f5-Select e12x0a390"
+                          id="fraud-protection-order-velocity-interval"
+                        >
+                          <option
+                            value="12"
+                          >
+                            12 hours
+                          </option>
+                          <option
+                            value="24"
+                          >
+                            24 hours
+                          </option>
+                          <option
+                            value="48"
+                          >
+                            48 hours
+                          </option>
+                          <option
+                            value="72"
+                          >
+                            72 hours
+                          </option>
+                        </select>
+                        <span
+                          class="components-input-control__suffix css-1lym30p-Suffix e1cr7zh17"
+                        >
+                          <div
+                            class="css-163e8ky-DownArrowWrapper e12x0a391"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              focusable="false"
+                              height="18"
+                              role="img"
+                              viewBox="0 0 24 24"
+                              width="18"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                              />
+                            </svg>
+                          </div>
+                        </span>
+                        <div
+                          aria-hidden="true"
+                          class="components-input-control__backdrop css-96sjau-BackdropUI e1cr7zh15"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <br />
+              <div
+                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+              >
+                <div
+                  class="fraud-protection-rule-card-notice-icon"
+                >
+                  <svg
+                    fill="none"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    width="18"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                      fill="#bd8600"
+                      fill-rule="evenodd"
+                    />
+                    <path
+                      d="M10 4H8V10H10V4Z"
+                      fill="#bd8600"
+                    />
+                    <path
+                      d="M10 12H8V14H10V12Z"
+                      fill="#bd8600"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="fraud-protection-rule-card-notice-text"
+                >
+                  A maximum order count must be set for this filter to take effect.
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        <div
-          class="fraud-protection-rule-description"
-        >
           <strong>
-            How does this filter protect me?
+            Advanced
           </strong>
-          <p>
-            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
-          </p>
-        </div>
-        <div
-          class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-        >
           <div
-            class="fraud-protection-rule-card-notice-icon"
+            class="fraud-protection-rule-toggle-checkbox-container"
           >
-            <svg
-              fill="none"
-              height="18"
-              viewBox="0 0 24 24"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
+            <div
+              class="components-base-control fraud-protection-rule-toggle-checkbox css-wdf2ti-Wrapper e1puf3u0"
             >
-              <circle
-                cx="12"
-                cy="9"
-                r="5"
-                stroke="#007CBA"
-                stroke-width="1.42857"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="9"
-                x2="15"
-                y1="16.8818"
-                y2="16.8818"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="10"
-                x2="14"
-                y1="19.25"
-                y2="19.25"
-              />
-            </svg>
-          </div>
-          <div
-            class="fraud-protection-rule-card-notice-text"
-          >
-            This filter may modify the address input on your checkout. 
-            <a
-              data-link-type="wc-admin"
-              href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+              <div
+                class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+              >
+                <span
+                  class="components-checkbox-control__input-container"
+                >
+                  <input
+                    checked=""
+                    class="components-checkbox-control__input"
+                    id="inspector-checkbox-control-1"
+                    type="checkbox"
+                    value="1"
+                  />
+                  <svg
+                    aria-hidden="true"
+                    class="components-checkbox-control__checked"
+                    focusable="false"
+                    height="24"
+                    role="img"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M18.3 5.6L9.9 16.9l-4.6-3.4-.9 1.2 5.8 4.3 9.3-12.6z"
+                    />
+                  </svg>
+                </span>
+                <label
+                  class="components-checkbox-control__label"
+                  for="inspector-checkbox-control-1"
+                >
+                  Block Payment
+                </label>
+              </div>
+            </div>
+            <button
+              class="wcpay-tooltip__content-wrapper"
+              type="button"
             >
-              Learn more
-            </a>
+              <div
+                class="wcpay-tooltip__content-wrapper"
+              >
+                <div
+                  class="fraud-protection-rule-toggle-checkbox-container-help"
+                >
+                  <svg
+                    aria-hidden="true"
+                    fill="none"
+                    focusable="false"
+                    height="16"
+                    role="img"
+                    viewBox="3 3 18 18"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M9.75 10.25C9.75 9.00736 10.7574 8 12 8C13.2426 8 14.25 9.00736 14.25 10.25C14.25 														11.4083 13.3748 12.3621 12.2496 12.4863C12.1124 12.5015 12 12.6119 12 12.75V14M12 														15V16.5M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 														7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z"
+                      stroke="#1E1E1E"
+                      stroke-width="1.5"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </button>
           </div>
         </div>
+      </div>
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          Fraudsters often submit multiple purchases using an automated script that tests unknown card numbers. Alternatively, the fraudster may attempt to bypass other filters by making multiple small purchases with multiple stolen account numbers.
+        </p>
       </div>
     </div>
   </div>
 </div>
 `;
 
-exports[`Address mismatch card renders like disabled when checked, but not enabled 1`] = `
+exports[`Order items threshold card renders like disabled when checked, but not enabled 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -558,12 +702,12 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
         <p
           class="fraud-protection-rule-card-header"
         >
-          Address Mismatch
+          Order Velocity
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter screens for excessive repeat orders from the same IP address or payment card.
         </p>
       </div>
     </div>
@@ -571,110 +715,58 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
     <div
       class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
     >
-      <div>
+      <div
+        class="fraud-protection-rule-toggle"
+      >
+        <strong>
+          Enable filtering
+        </strong>
         <div
-          class="fraud-protection-rule-toggle"
+          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
+            class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
           >
-            <div
-              class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
+            <span
+              class="components-form-toggle"
             >
+              <input
+                aria-describedby="inspector-toggle-control-3__help"
+                class="components-form-toggle__input"
+                id="inspector-toggle-control-3"
+                type="checkbox"
+              />
               <span
-                class="components-form-toggle"
-              >
-                <input
-                  aria-describedby="inspector-toggle-control-3__help"
-                  class="components-form-toggle__input"
-                  id="inspector-toggle-control-3"
-                  type="checkbox"
-                />
-                <span
-                  class="components-form-toggle__track"
-                />
-                <span
-                  class="components-form-toggle__thumb"
-                />
-              </span>
-              <label
-                class="components-toggle-control__label"
-                for="inspector-toggle-control-3"
-              >
-                Screen transactions for mismatched addresses
-              </label>
-            </div>
-            <p
-              class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-              id="inspector-toggle-control-3__help"
+                class="components-form-toggle__track"
+              />
+              <span
+                class="components-form-toggle__thumb"
+              />
+            </span>
+            <label
+              class="components-toggle-control__label"
+              for="inspector-toggle-control-3"
             >
-              When enabled, the payment method will not be charged until you review and approve the transaction
-            </p>
+              Screen transactions for excessive repeat orders
+            </label>
           </div>
-        </div>
-        <div
-          class="fraud-protection-rule-description"
-        >
-          <strong>
-            How does this filter protect me?
-          </strong>
-          <p>
-            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
+          <p
+            class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
+            id="inspector-toggle-control-3__help"
+          >
+            When enabled, the payment method will not be charged until you review and approve the transaction
           </p>
         </div>
-        <div
-          class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-        >
-          <div
-            class="fraud-protection-rule-card-notice-icon"
-          >
-            <svg
-              fill="none"
-              height="18"
-              viewBox="0 0 24 24"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="9"
-                r="5"
-                stroke="#007CBA"
-                stroke-width="1.42857"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="9"
-                x2="15"
-                y1="16.8818"
-                y2="16.8818"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="10"
-                x2="14"
-                y1="19.25"
-                y2="19.25"
-              />
-            </svg>
-          </div>
-          <div
-            class="fraud-protection-rule-card-notice-text"
-          >
-            This filter may modify the address input on your checkout. 
-            <a
-              data-link-type="wc-admin"
-              href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-            >
-              Learn more
-            </a>
-          </div>
-        </div>
+      </div>
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          Fraudsters often submit multiple purchases using an automated script that tests unknown card numbers. Alternatively, the fraudster may attempt to bypass other filters by making multiple small purchases with multiple stolen account numbers.
+        </p>
       </div>
     </div>
   </div>

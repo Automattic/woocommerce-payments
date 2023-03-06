@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Address mismatch card renders correctly 1`] = `
+exports[`Purchase price threshold card renders correctly 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -12,12 +12,12 @@ exports[`Address mismatch card renders correctly 1`] = `
         <p
           class="fraud-protection-rule-card-header"
         >
-          Address Mismatch
+          Purchase Price Threshold
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
         </p>
       </div>
     </div>
@@ -58,7 +58,7 @@ exports[`Address mismatch card renders correctly 1`] = `
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-0"
               >
-                Screen transactions for mismatched addresses
+                Screen transactions for abnormal purchase prices
               </label>
             </div>
             <p
@@ -76,58 +76,8 @@ exports[`Address mismatch card renders correctly 1`] = `
             How does this filter protect me?
           </strong>
           <p>
-            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
+            An unusually high purchase amount, compared to the average for your business, can indicate potential fraudulent activity.
           </p>
-        </div>
-        <div
-          class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-        >
-          <div
-            class="fraud-protection-rule-card-notice-icon"
-          >
-            <svg
-              fill="none"
-              height="18"
-              viewBox="0 0 24 24"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="9"
-                r="5"
-                stroke="#007CBA"
-                stroke-width="1.42857"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="9"
-                x2="15"
-                y1="16.8818"
-                y2="16.8818"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="10"
-                x2="14"
-                y1="19.25"
-                y2="19.25"
-              />
-            </svg>
-          </div>
-          <div
-            class="fraud-protection-rule-card-notice-text"
-          >
-            This filter may modify the address input on your checkout. 
-            <a
-              data-link-type="wc-admin"
-              href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-            >
-              Learn more
-            </a>
-          </div>
         </div>
       </div>
     </div>
@@ -135,7 +85,7 @@ exports[`Address mismatch card renders correctly 1`] = `
 </div>
 `;
 
-exports[`Address mismatch card renders correctly when enabled 1`] = `
+exports[`Purchase price threshold card renders correctly when enabled 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -147,12 +97,12 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
         <p
           class="fraud-protection-rule-card-header"
         >
-          Address Mismatch
+          Purchase Price Threshold
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
         </p>
       </div>
     </div>
@@ -194,7 +144,7 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-1"
               >
-                Screen transactions for mismatched addresses
+                Screen transactions for abnormal purchase prices
               </label>
             </div>
             <p
@@ -205,6 +155,125 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
             </p>
           </div>
           <div>
+            <div
+              class="fraud-protection-rule-toggle-children-container"
+            >
+              <strong>
+                Limits
+              </strong>
+              <div
+                class="fraud-protection-rule-toggle-children-horizontal-form"
+              >
+                <div
+                  class="fraud-protection-rule-toggle-children-vertical-form"
+                >
+                  <label
+                    for="fraud-protection-purchase-price-minimum"
+                  >
+                    Minimum purchase price
+                  </label>
+                  <div
+                    class="components-base-control components-amount-input__container"
+                  >
+                    <div
+                      class="components-base-control__field components-amount-input__input_container"
+                    >
+                      <span
+                        class="components-amount-input__prefix"
+                      >
+                        $
+                      </span>
+                      <input
+                        class="components-text-control__input components-amount-input__input"
+                        data-testid="amount-input"
+                        id="fraud-protection-purchase-price-minimum"
+                        placeholder="0.00"
+                        type="text"
+                        value=""
+                      />
+                    </div>
+                    <span
+                      class="components-amount-input__help_text"
+                    >
+                      Leave blank for no limit
+                    </span>
+                  </div>
+                </div>
+                <div
+                  class="fraud-protection-rule-toggle-children-vertical-form"
+                >
+                  <label
+                    for="fraud-protection-purchase-price-maximum"
+                  >
+                    Maximum purchase price
+                  </label>
+                  <div
+                    class="components-base-control components-amount-input__container"
+                  >
+                    <div
+                      class="components-base-control__field components-amount-input__input_container"
+                    >
+                      <span
+                        class="components-amount-input__prefix"
+                      >
+                        $
+                      </span>
+                      <input
+                        class="components-text-control__input components-amount-input__input"
+                        data-testid="amount-input"
+                        id="fraud-protection-purchase-price-maximum"
+                        placeholder="0.00"
+                        type="text"
+                        value=""
+                      />
+                    </div>
+                    <span
+                      class="components-amount-input__help_text"
+                    >
+                      Leave blank for no limit
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <br />
+                <div
+                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                >
+                  <div
+                    class="fraud-protection-rule-card-notice-icon"
+                  >
+                    <svg
+                      fill="none"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        clip-rule="evenodd"
+                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                        fill="#bd8600"
+                        fill-rule="evenodd"
+                      />
+                      <path
+                        d="M10 4H8V10H10V4Z"
+                        fill="#bd8600"
+                      />
+                      <path
+                        d="M10 12H8V14H10V12Z"
+                        fill="#bd8600"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    class="fraud-protection-rule-card-notice-text"
+                  >
+                    A price range must be set for this filter to take effect.
+                  </div>
+                </div>
+              </div>
+            </div>
             <strong>
               Advanced
             </strong>
@@ -274,58 +343,8 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
             How does this filter protect me?
           </strong>
           <p>
-            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
+            An unusually high purchase amount, compared to the average for your business, can indicate potential fraudulent activity.
           </p>
-        </div>
-        <div
-          class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-        >
-          <div
-            class="fraud-protection-rule-card-notice-icon"
-          >
-            <svg
-              fill="none"
-              height="18"
-              viewBox="0 0 24 24"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="9"
-                r="5"
-                stroke="#007CBA"
-                stroke-width="1.42857"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="9"
-                x2="15"
-                y1="16.8818"
-                y2="16.8818"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="10"
-                x2="14"
-                y1="19.25"
-                y2="19.25"
-              />
-            </svg>
-          </div>
-          <div
-            class="fraud-protection-rule-card-notice-text"
-          >
-            This filter may modify the address input on your checkout. 
-            <a
-              data-link-type="wc-admin"
-              href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-            >
-              Learn more
-            </a>
-          </div>
         </div>
       </div>
     </div>
@@ -333,7 +352,7 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
 </div>
 `;
 
-exports[`Address mismatch card renders correctly when enabled and checked 1`] = `
+exports[`Purchase price threshold card renders correctly when enabled and checked 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -345,12 +364,12 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
         <p
           class="fraud-protection-rule-card-header"
         >
-          Address Mismatch
+          Purchase Price Threshold
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
         </p>
       </div>
     </div>
@@ -392,7 +411,7 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-2"
               >
-                Screen transactions for mismatched addresses
+                Screen transactions for abnormal purchase prices
               </label>
             </div>
             <p
@@ -403,6 +422,125 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
             </p>
           </div>
           <div>
+            <div
+              class="fraud-protection-rule-toggle-children-container"
+            >
+              <strong>
+                Limits
+              </strong>
+              <div
+                class="fraud-protection-rule-toggle-children-horizontal-form"
+              >
+                <div
+                  class="fraud-protection-rule-toggle-children-vertical-form"
+                >
+                  <label
+                    for="fraud-protection-purchase-price-minimum"
+                  >
+                    Minimum purchase price
+                  </label>
+                  <div
+                    class="components-base-control components-amount-input__container"
+                  >
+                    <div
+                      class="components-base-control__field components-amount-input__input_container"
+                    >
+                      <span
+                        class="components-amount-input__prefix"
+                      >
+                        $
+                      </span>
+                      <input
+                        class="components-text-control__input components-amount-input__input"
+                        data-testid="amount-input"
+                        id="fraud-protection-purchase-price-minimum"
+                        placeholder="0.00"
+                        type="text"
+                        value=""
+                      />
+                    </div>
+                    <span
+                      class="components-amount-input__help_text"
+                    >
+                      Leave blank for no limit
+                    </span>
+                  </div>
+                </div>
+                <div
+                  class="fraud-protection-rule-toggle-children-vertical-form"
+                >
+                  <label
+                    for="fraud-protection-purchase-price-maximum"
+                  >
+                    Maximum purchase price
+                  </label>
+                  <div
+                    class="components-base-control components-amount-input__container"
+                  >
+                    <div
+                      class="components-base-control__field components-amount-input__input_container"
+                    >
+                      <span
+                        class="components-amount-input__prefix"
+                      >
+                        $
+                      </span>
+                      <input
+                        class="components-text-control__input components-amount-input__input"
+                        data-testid="amount-input"
+                        id="fraud-protection-purchase-price-maximum"
+                        placeholder="0.00"
+                        type="text"
+                        value=""
+                      />
+                    </div>
+                    <span
+                      class="components-amount-input__help_text"
+                    >
+                      Leave blank for no limit
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <br />
+                <div
+                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+                >
+                  <div
+                    class="fraud-protection-rule-card-notice-icon"
+                  >
+                    <svg
+                      fill="none"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      width="18"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        clip-rule="evenodd"
+                        d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+                        fill="#bd8600"
+                        fill-rule="evenodd"
+                      />
+                      <path
+                        d="M10 4H8V10H10V4Z"
+                        fill="#bd8600"
+                      />
+                      <path
+                        d="M10 12H8V14H10V12Z"
+                        fill="#bd8600"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    class="fraud-protection-rule-card-notice-text"
+                  >
+                    A price range must be set for this filter to take effect.
+                  </div>
+                </div>
+              </div>
+            </div>
             <strong>
               Advanced
             </strong>
@@ -487,58 +625,8 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
             How does this filter protect me?
           </strong>
           <p>
-            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
+            An unusually high purchase amount, compared to the average for your business, can indicate potential fraudulent activity.
           </p>
-        </div>
-        <div
-          class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-        >
-          <div
-            class="fraud-protection-rule-card-notice-icon"
-          >
-            <svg
-              fill="none"
-              height="18"
-              viewBox="0 0 24 24"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="9"
-                r="5"
-                stroke="#007CBA"
-                stroke-width="1.42857"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="9"
-                x2="15"
-                y1="16.8818"
-                y2="16.8818"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="10"
-                x2="14"
-                y1="19.25"
-                y2="19.25"
-              />
-            </svg>
-          </div>
-          <div
-            class="fraud-protection-rule-card-notice-text"
-          >
-            This filter may modify the address input on your checkout. 
-            <a
-              data-link-type="wc-admin"
-              href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-            >
-              Learn more
-            </a>
-          </div>
         </div>
       </div>
     </div>
@@ -546,7 +634,7 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
 </div>
 `;
 
-exports[`Address mismatch card renders like disabled when checked, but not enabled 1`] = `
+exports[`Purchase price threshold card renders like disabled when checked, but not enabled 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -558,12 +646,12 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
         <p
           class="fraud-protection-rule-card-header"
         >
-          Address Mismatch
+          Purchase Price Threshold
         </p>
         <p
           class="fraud-protection-rule-card-description"
         >
-          This filter screens for differences between the shipping information and the billing information (street, state, post code, and country).
+          This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
         </p>
       </div>
     </div>
@@ -604,7 +692,7 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-3"
               >
-                Screen transactions for mismatched addresses
+                Screen transactions for abnormal purchase prices
               </label>
             </div>
             <p
@@ -622,58 +710,8 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
             How does this filter protect me?
           </strong>
           <p>
-            There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
+            An unusually high purchase amount, compared to the average for your business, can indicate potential fraudulent activity.
           </p>
-        </div>
-        <div
-          class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-        >
-          <div
-            class="fraud-protection-rule-card-notice-icon"
-          >
-            <svg
-              fill="none"
-              height="18"
-              viewBox="0 0 24 24"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="9"
-                r="5"
-                stroke="#007CBA"
-                stroke-width="1.42857"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="9"
-                x2="15"
-                y1="16.8818"
-                y2="16.8818"
-              />
-              <line
-                stroke="#007CBA"
-                stroke-width="1.5"
-                x1="10"
-                x2="14"
-                y1="19.25"
-                y2="19.25"
-              />
-            </svg>
-          </div>
-          <div
-            class="fraud-protection-rule-card-notice-text"
-          >
-            This filter may modify the address input on your checkout. 
-            <a
-              data-link-type="wc-admin"
-              href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-            >
-              Learn more
-            </a>
-          </div>
         </div>
       </div>
     </div>

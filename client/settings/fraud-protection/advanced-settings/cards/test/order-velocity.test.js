@@ -2,88 +2,78 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import AddressMismatchRuleCard from '../address-mismatch';
 import FraudPreventionSettingsContext from '../../context';
+import OrderVelocityRuleCard from '../order-velocity';
 
-describe( 'Address mismatch card', () => {
+describe( 'Order items threshold card', () => {
+	const settings = {
+		order_velocity: {
+			enabled: false,
+			block: false,
+			max_orders: null,
+			interval: null,
+		},
+	};
+	const setSettings = jest.fn();
+	const contextValue = {
+		advancedFraudProtectionSettings: settings,
+		setAdvancedFraudProtectionSettings: setSettings,
+	};
 	test( 'renders correctly', () => {
-		const settings = {
-			address_mismatch: {
-				enabled: false,
-				block: false,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<AddressMismatchRuleCard />
+				<OrderVelocityRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders correctly when enabled', () => {
-		const settings = {
-			address_mismatch: {
-				enabled: true,
-				block: false,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
+		settings.order_velocity.enabled = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<AddressMismatchRuleCard />
+				<OrderVelocityRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders correctly when enabled and checked', () => {
-		const settings = {
-			address_mismatch: {
-				enabled: true,
-				block: true,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
+		settings.order_velocity.enabled = true;
+		settings.order_velocity.block = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<AddressMismatchRuleCard />
+				<OrderVelocityRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
 	test( 'renders like disabled when checked, but not enabled', () => {
-		const settings = {
-			address_mismatch: {
-				enabled: false,
-				block: true,
-			},
-		};
-		const setSettings = jest.fn();
-		const contextValue = {
-			advancedFraudProtectionSettings: settings,
-			setAdvancedFraudProtectionSettings: setSettings,
-		};
+		settings.order_velocity.enabled = false;
+		settings.order_velocity.block = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<AddressMismatchRuleCard />
+				<OrderVelocityRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
+	} );
+	test( 'render warning when max orders field is not filled', () => {
+		settings.order_velocity.enabled = true;
+		settings.order_velocity.block = true;
+		settings.order_velocity.max_orders = null;
+		settings.order_velocity.interval = 12;
+		render(
+			<FraudPreventionSettingsContext.Provider value={ contextValue }>
+				<OrderVelocityRuleCard />
+			</FraudPreventionSettingsContext.Provider>
+		);
+		expect(
+			screen.queryByText(
+				'A maximum order count must be set for this filter to take effect.'
+			)
+		).toBeInTheDocument();
 	} );
 } );

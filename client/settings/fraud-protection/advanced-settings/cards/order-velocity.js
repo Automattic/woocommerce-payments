@@ -23,7 +23,7 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 		advancedFraudProtectionSettings[ setting ].max_orders ?? 0
 	);
 	const [ orderInterval, setOrderInterval ] = useState(
-		advancedFraudProtectionSettings[ setting ].interval
+		advancedFraudProtectionSettings[ setting ].interval ?? 24
 	);
 
 	useEffect( () => {
