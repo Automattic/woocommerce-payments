@@ -20,10 +20,7 @@ export const getVerifyBankAccountTask = ( {
 	firstPaymentDate,
 	createdDate,
 } ) => {
-	if ( ! poEnabled ) {
-		return null;
-	}
-	if ( poComplete ) {
+	if ( ! poEnabled || poComplete || ! createdDate ) {
 		return null;
 	}
 
