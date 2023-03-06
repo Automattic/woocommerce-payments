@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext, useEffect, useState } from 'react';
-import { sprintf, __ } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { CheckboxControl, Icon, ToggleControl } from '@wordpress/components';
 
 /**
@@ -77,13 +77,9 @@ const FraudProtectionRuleToggle = ( {
 								} }
 							></CheckboxControl>
 							<Tooltip
-								content={ sprintf(
-									/* translators: %s: a payment method name. */
-									__(
-										'%s is not available to your customers when the "manual capture" setting is enabled.',
-										'woocommerce-payments'
-									),
-									label
+								content={ __(
+									'WooCommerce Payments will automatically cancel orders that match this filter.',
+									'woocommerce-payments'
 								) }
 							>
 								<div className="fraud-protection-rule-toggle-checkbox-container-help">
