@@ -665,6 +665,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       <span
                         class="conversion-indicator"
                         data-testid="conversion-indicator"
+                        style="height: 18px; width: 18px;"
                       >
                         <svg
                           class="gridicon gridicons-sync"
@@ -1546,6 +1547,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       <span
                         class="conversion-indicator"
                         data-testid="conversion-indicator"
+                        style="height: 18px; width: 18px;"
                       >
                         <svg
                           class="gridicon gridicons-sync"
@@ -2290,6 +2292,7 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                       <span
                         class="conversion-indicator"
                         data-testid="conversion-indicator"
+                        style="height: 18px; width: 18px;"
                       >
                         <svg
                           class="gridicon gridicons-sync"
@@ -3108,6 +3111,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       <span
                         class="conversion-indicator"
                         data-testid="conversion-indicator"
+                        style="height: 18px; width: 18px;"
                       >
                         <svg
                           class="gridicon gridicons-sync"
@@ -4037,6 +4041,7 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                       <span
                         class="conversion-indicator"
                         data-testid="conversion-indicator"
+                        style="height: 18px; width: 18px;"
                       >
                         <svg
                           class="gridicon gridicons-sync"
@@ -4960,6 +4965,7 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                       <span
                         class="conversion-indicator"
                         data-testid="conversion-indicator"
+                        style="height: 18px; width: 18px;"
                       >
                         <svg
                           class="gridicon gridicons-sync"
