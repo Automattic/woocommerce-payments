@@ -228,7 +228,7 @@ class WC_Payments_Account {
 			'progressiveOnboarding' => [
 				'isEnabled'            => $account['progressive_onboarding']['is_enabled'] ?? false,
 				'isComplete'           => $account['progressive_onboarding']['is_complete'] ?? false,
-				'tpv'                  => (int) $account['progressive_onboarding']['tpv'] ?? 0,
+				'tpv'                  => (int) ( $account['progressive_onboarding']['tpv'] ?? 0 ),
 				'firstTransactionDate' => $account['progressive_onboarding']['first_transaction_date'] ?? null,
 			],
 		];
