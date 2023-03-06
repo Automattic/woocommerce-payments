@@ -44,7 +44,7 @@ Our global support team is available to answer questions you may have about WooC
 
 = Try it now =
 
-To try WooCommerce Payments on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts.
+To try WooCommerce Payments on your store, simply [install it](https://wordpress.org/plugins/woocommerce-payments/#installation) and follow the prompts. Please see our [Startup Guide](https://woocommerce.com/document/woocommerce-payments/startup-guide/) for a full walkthrough of the process.
 
 WooCommerce Payments has experimental support for the Checkout block from [WooCommerce Blocks](https://wordpress.org/plugins/woo-gutenberg-products-block/). Please check the [FAQ section](#faq) for more information.
 
@@ -66,19 +66,15 @@ WooCommerce Payments uses the WordPress.com connection to authenticate each requ
 
 = How do I set up a store for a client? =
 
-If you are setting up a store that will process real payments, have the site owner complete the WooCommerce Payments setup. This ensures that the correct business details are set on the account during [onboarding](https://woocommerce.com/document/payments/#section-3).
-
-After the store setup has been completed, you can use [Test Mode](https://woocommerce.com/document/payments/testing/) to simulate payments, refunds, and disputes.
-
-If you are setting up WooCommerce Payments on a development or test site that will **never need to process real payments**, try [Dev Mode](https://woocommerce.com/document/payments/testing/dev-mode/#section-1).
+If you are a developer or agency setting up a site for a client, please see [this page](https://woocommerce.com/document/woocommerce-payments/account-management/developer-or-agency-setup/) of our documentation for some tips on how to install WooCommerce Payments on client sites.
 
 = How is WooCommerce Payments related to Stripe? =
 
-WooCommerce Payments is proudly powered by [Stripe](https://stripe.com/). When you sign up for WooCommerce Payments, your personal and business information is verified with Stripe and stored in an account connected to the WooCommerce Payments service. This account is then used in the background for managing your business account information and activity via WooCommerce Payments. [Learn more](https://woocommerce.com/document/payments/powered-by-stripe/).
+WooCommerce Payments is built in partnership with Stripe [Stripe](https://stripe.com/). When you sign up for WooCommerce Payments, your personal and business information is verified with Stripe and stored in an account connected to the WooCommerce Payments service. This account is then used in the background for managing your business account information and activity via WooCommerce Payments. [Learn more](https://woocommerce.com/document/woocommerce-payments/account-management/partnership-with-stripe/).
 
 = Are there Terms of Service and data usage policies? =
 
-You can read our Terms of Service [here](https://en.wordpress.com/tos).
+You can read our Terms of Service and other policies [here](https://woocommerce.com/document/woocommerce-payments/our-policies/).
 
 = How does the Checkout block work? =
 
