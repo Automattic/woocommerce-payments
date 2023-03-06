@@ -94,6 +94,7 @@ const BusinessDetails: React.FC = () => {
 				) }
 			<CustomSelectControl
 				{ ...getSelectFieldProps( 'mcc' ) }
+				// @ismaeldcom TODO: The select control must provide search functionality.
 				// @ismaeldcom TODO: Populate MCC options
 				options={ [] }
 			/>
