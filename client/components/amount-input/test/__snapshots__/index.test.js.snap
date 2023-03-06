@@ -18,7 +18,6 @@ exports[`Amount input renders correctly 1`] = `
         data-testid="amount-input"
         id="test_id"
         placeholder="test_placeholder"
-        type="text"
         value=""
       />
     </div>

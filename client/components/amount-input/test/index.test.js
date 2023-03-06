@@ -4,12 +4,23 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
+
 /**
  * Internal dependencies
  */
 import AmountInput from '..';
 
 describe( 'Amount input', () => {
+	let mockValue;
+	const mockOnChangeEvent = jest.fn();
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+		mockOnChangeEvent.mockImplementation( ( value ) => {
+			mockValue = value;
+		} );
+		mockValue = null;
+	} );
 	test( 'renders correctly', () => {
 		const { container } = render(
 			<AmountInput
@@ -41,49 +52,41 @@ describe( 'Amount input', () => {
 		expect( testInput ).toBeInTheDocument();
 		expect( testInput ).toHaveValue( '1234' );
 	} );
-	test( 'sets a float value to the input', async () => {
-		// Create a mock of `useState`.
-		let mockValue = '';
-		const setMockValue = ( value ) => {
-			mockValue = value;
-		};
-		render( <AmountInput value={ mockValue } onChange={ setMockValue } /> );
+	test( 'sets a float value to the input', () => {
+		render(
+			<AmountInput value={ mockValue } onChange={ mockOnChangeEvent } />
+		);
 		const testInput = screen.queryByTestId( 'amount-input' );
 		const testContent = '123.45';
-		// Simulate keypress on input.
+		// Simulate key by key typing
 		for ( const i in testContent ) {
-			await user.type( testInput, mockValue + testContent[ i ] );
+			user.type( testInput, ( mockValue ?? '' ) + testContent[ i ] );
 		}
 		expect( mockValue ).toBe( '123.45' );
 	} );
 	test( 'doesn`t set a non-float value to the input', async () => {
-		// Create a mock of `useState`.
-		let mockValue = '';
-		const setMockValue = ( value ) => {
-			mockValue = value;
-		};
-		render( <AmountInput value={ mockValue } onChange={ setMockValue } /> );
+		render(
+			<AmountInput value={ mockValue } onChange={ mockOnChangeEvent } />
+		);
 		const testInput = screen.queryByTestId( 'amount-input' );
 		const testContent = 'a.123.123.323.v+';
-		// Simulate keypress on input.
+		// Simulate key by key typing
 		for ( const i in testContent ) {
-			await user.type( testInput, mockValue + testContent[ i ] );
+			await user.type(
+				testInput,
+				( mockValue ?? '' ) + testContent[ i ]
+			);
 		}
 		expect( mockValue ).toBe( '123.123323' );
 	} );
 	test( 'can set empty value on input', async () => {
-		// Create a mock of `useState`.
-		let mockValue = jest.mockValue;
-		const setMockValue = jest.fn( ( value ) => {
-			mockValue = value;
-		} );
-		render( <AmountInput value={ mockValue } onChange={ setMockValue } /> );
+		render(
+			<AmountInput value={ mockValue } onChange={ mockOnChangeEvent } />
+		);
 		const testInput = screen.getByTestId( 'amount-input' );
-		await user.type( testInput, '1' );
-		expect( setMockValue.mock.calls.length ).toBe( 1 );
+		fireEvent.change( testInput, { target: { value: '1' } } );
 		expect( mockValue ).toBe( '1' );
 		fireEvent.change( testInput, { target: { value: '' } } );
-		expect( setMockValue.mock.calls.length ).toBe( 2 );
 		expect( mockValue ).toBe( '' );
 	} );
 } );

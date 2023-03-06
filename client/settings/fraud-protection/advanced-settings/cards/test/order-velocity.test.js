@@ -7,7 +7,9 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import FraudPreventionSettingsContext from '../../context';
-import OrderVelocityRuleCard from '../order-velocity';
+import OrderVelocityRuleCard, {
+	OrderVelocityValidation,
+} from '../order-velocity';
 
 describe( 'Order items threshold card', () => {
 	const settings = {
@@ -75,5 +77,43 @@ describe( 'Order items threshold card', () => {
 				'A maximum order count must be set for this filter to take effect.'
 			)
 		).toBeInTheDocument();
+	} );
+	test( 'validation returns true when `max_orders` is set', () => {
+		settings.order_velocity.block = false;
+		settings.order_velocity.max_orders = 100;
+		const setValidationError = jest.fn();
+		const validationResult = OrderVelocityValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( true );
+		expect( setValidationError.mock.calls.length ).toBe( 0 );
+	} );
+	test( 'validation returns true when setting is not enabled', () => {
+		settings.order_velocity.enabled = false;
+		settings.order_velocity.block = false;
+		settings.order_velocity.max_orders = null;
+		const setValidationError = jest.fn();
+		const validationResult = OrderVelocityValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( true );
+		expect( setValidationError.mock.calls.length ).toBe( 0 );
+	} );
+	test( 'validation returns false when max_orders is not set', () => {
+		settings.order_velocity.enabled = true;
+		settings.order_velocity.block = false;
+		settings.order_velocity.max_orders = null;
+		const setValidationError = jest.fn();
+		const validationResult = OrderVelocityValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( false );
+		expect( setValidationError.mock.calls.length ).toBe( 1 );
+		expect( setValidationError.mock.calls[ 0 ] ).toContain(
+			'A maximum order count must be set for the "Order Velocity" filter.'
+		);
 	} );
 } );

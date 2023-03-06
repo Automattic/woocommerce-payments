@@ -7,7 +7,9 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import FraudPreventionSettingsContext from '../../context';
-import PurchasePriceThresholdRuleCard from '../purchase-price-threshold';
+import PurchasePriceThresholdRuleCard, {
+	PurchasePriceThresholdValidation,
+} from '../purchase-price-threshold';
 
 describe( 'Purchase price threshold card', () => {
 	const settings = {
@@ -142,5 +144,89 @@ describe( 'Purchase price threshold card', () => {
 				'Maximum purchase price must be greater than the minimum purchase price.'
 			)
 		).toBeInTheDocument();
+	} );
+	test( 'validation returns true when `min_amount` is set', () => {
+		settings.purchase_price_threshold.enabled = true;
+		settings.purchase_price_threshold.block = false;
+		settings.purchase_price_threshold.max_amount = null;
+		settings.purchase_price_threshold.min_amount = 100;
+		const setValidationError = jest.fn();
+		const validationResult = PurchasePriceThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( true );
+		expect( setValidationError.mock.calls.length ).toBe( 0 );
+	} );
+	test( 'validation returns true when `max_amount` is set', () => {
+		settings.purchase_price_threshold.enabled = true;
+		settings.purchase_price_threshold.block = false;
+		settings.purchase_price_threshold.max_amount = 100;
+		settings.purchase_price_threshold.min_amount = null;
+		const setValidationError = jest.fn();
+		const validationResult = PurchasePriceThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( true );
+		expect( setValidationError.mock.calls.length ).toBe( 0 );
+	} );
+	test( 'validation returns true when both are set', () => {
+		settings.purchase_price_threshold.enabled = true;
+		settings.purchase_price_threshold.block = false;
+		settings.purchase_price_threshold.max_amount = 100;
+		settings.purchase_price_threshold.min_amount = 10;
+		const setValidationError = jest.fn();
+		const validationResult = PurchasePriceThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( true );
+		expect( setValidationError.mock.calls.length ).toBe( 0 );
+	} );
+	test( 'validation returns true when setting is not enabled', () => {
+		settings.purchase_price_threshold.enabled = false;
+		settings.purchase_price_threshold.block = false;
+		settings.purchase_price_threshold.max_amount = null;
+		settings.purchase_price_threshold.min_amount = null;
+		const setValidationError = jest.fn();
+		const validationResult = PurchasePriceThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( true );
+		expect( setValidationError.mock.calls.length ).toBe( 0 );
+	} );
+	test( 'validation returns false when amounts are not set', () => {
+		settings.purchase_price_threshold.enabled = true;
+		settings.purchase_price_threshold.block = false;
+		settings.purchase_price_threshold.max_amount = null;
+		settings.purchase_price_threshold.min_amount = null;
+		const setValidationError = jest.fn();
+		const validationResult = PurchasePriceThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( false );
+		expect( setValidationError.mock.calls.length ).toBe( 1 );
+		expect( setValidationError.mock.calls[ 0 ] ).toContain(
+			'A price range must be set for the "Purchase Price threshold" filter.'
+		);
+	} );
+	test( 'validation returns false when min amount is greater than max amount', () => {
+		settings.purchase_price_threshold.enabled = true;
+		settings.purchase_price_threshold.block = false;
+		settings.purchase_price_threshold.max_amount = 10;
+		settings.purchase_price_threshold.min_amount = 100;
+		const setValidationError = jest.fn();
+		const validationResult = PurchasePriceThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( false );
+		expect( setValidationError.mock.calls.length ).toBe( 1 );
+		expect( setValidationError.mock.calls[ 0 ] ).toContain(
+			'Maximum purchase price must be greater than the minimum purchase price.'
+		);
 	} );
 } );

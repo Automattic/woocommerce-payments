@@ -7,7 +7,9 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import FraudPreventionSettingsContext from '../../context';
-import OrderItemsThresholdRuleCard from '../order-items-threshold';
+import OrderItemsThresholdRuleCard, {
+	OrderItemsThresholdValidation,
+} from '../order-items-threshold';
 
 describe( 'Order items threshold card', () => {
 	const settings = {
@@ -142,5 +144,90 @@ describe( 'Order items threshold card', () => {
 				'Maximum item count must be greater than the minimum item count.'
 			)
 		).toBeInTheDocument();
+	} );
+
+	test( 'validation returns true when `min_items` is set', () => {
+		settings.order_items_threshold.enabled = true;
+		settings.order_items_threshold.block = false;
+		settings.order_items_threshold.max_items = null;
+		settings.order_items_threshold.min_items = 100;
+		const setValidationError = jest.fn();
+		const validationResult = OrderItemsThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( true );
+		expect( setValidationError.mock.calls.length ).toBe( 0 );
+	} );
+	test( 'validation returns true when `max_amount` is set', () => {
+		settings.order_items_threshold.enabled = true;
+		settings.order_items_threshold.block = false;
+		settings.order_items_threshold.max_items = 100;
+		settings.order_items_threshold.min_items = null;
+		const setValidationError = jest.fn();
+		const validationResult = OrderItemsThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( true );
+		expect( setValidationError.mock.calls.length ).toBe( 0 );
+	} );
+	test( 'validation returns true when both are set', () => {
+		settings.order_items_threshold.enabled = true;
+		settings.order_items_threshold.block = false;
+		settings.order_items_threshold.max_items = 100;
+		settings.order_items_threshold.min_items = 10;
+		const setValidationError = jest.fn();
+		const validationResult = OrderItemsThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( true );
+		expect( setValidationError.mock.calls.length ).toBe( 0 );
+	} );
+	test( 'validation returns true when setting is not enabled', () => {
+		settings.order_items_threshold.enabled = false;
+		settings.order_items_threshold.block = false;
+		settings.order_items_threshold.max_items = null;
+		settings.order_items_threshold.min_items = null;
+		const setValidationError = jest.fn();
+		const validationResult = OrderItemsThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( true );
+		expect( setValidationError.mock.calls.length ).toBe( 0 );
+	} );
+	test( 'validation returns false when amounts are not set', () => {
+		settings.order_items_threshold.enabled = true;
+		settings.order_items_threshold.block = false;
+		settings.order_items_threshold.max_items = null;
+		settings.order_items_threshold.min_items = null;
+		const setValidationError = jest.fn();
+		const validationResult = OrderItemsThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( false );
+		expect( setValidationError.mock.calls.length ).toBe( 1 );
+		expect( setValidationError.mock.calls[ 0 ] ).toContain(
+			'An item range must be set for the "Order Item Threshold" filter.'
+		);
+	} );
+	test( 'validation returns false when min amount is greater than max amount', () => {
+		settings.order_items_threshold.enabled = true;
+		settings.order_items_threshold.block = false;
+		settings.order_items_threshold.max_items = 10;
+		settings.order_items_threshold.min_items = 100;
+		const setValidationError = jest.fn();
+		const validationResult = OrderItemsThresholdValidation(
+			settings,
+			setValidationError
+		);
+		expect( validationResult ).toBe( false );
+		expect( setValidationError.mock.calls.length ).toBe( 1 );
+		expect( setValidationError.mock.calls[ 0 ] ).toContain(
+			'Maximum item count must be greater than the minimum item count on the "Order Item Threshold" rule.'
+		);
 	} );
 } );

@@ -5,10 +5,19 @@ import React from 'react';
 import './style.scss';
 
 const AmountInput = ( { id, prefix, value, placeholder, help, onChange } ) => {
-	const handleChange = ( e ) => {
+	const validateInput = ( subject ) => {
 		// Only allow decimals, a single dot, and more decimals (or an empty value).
-		if ( e.target.value.match( /^(\d+\.?\d*)?$/m ) ) {
-			onChange( e.target.value );
+		return (
+			'string' === typeof subject &&
+			( '' === subject || subject.match( /^(\d+\.?\d*)?$/m ) )
+		);
+	};
+
+	value = validateInput( value ) ? value : '';
+
+	const handleChange = ( inputvalue ) => {
+		if ( validateInput( inputvalue ) ) {
+			onChange( inputvalue );
 		}
 	};
 
@@ -23,10 +32,9 @@ const AmountInput = ( { id, prefix, value, placeholder, help, onChange } ) => {
 				<input
 					id={ id }
 					placeholder={ placeholder }
-					value={ isNaN( value ) ? '' : value }
-					type="text"
+					value={ value }
 					data-testid="amount-input"
-					onChange={ ( e ) => handleChange( e ) }
+					onChange={ ( e ) => handleChange( e.target.value ) }
 					className="components-text-control__input components-amount-input__input"
 				/>
 			</div>
