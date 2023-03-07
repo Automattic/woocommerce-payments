@@ -29,7 +29,7 @@ export interface Item {
 	style?: React.CSSProperties;
 }
 
-interface ControlProps< ItemType > {
+export interface ControlProps< ItemType > {
 	className?: string;
 	label: string;
 	describedBy?: string;
