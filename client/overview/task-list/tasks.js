@@ -205,7 +205,7 @@ export const getTasks = ( {
 				} );
 			},
 		},
-		getVerifyBankAccountTask(),
+		isPoEnabled && getVerifyBankAccountTask(),
 	].filter( Boolean );
 };
 

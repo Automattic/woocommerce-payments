@@ -15,38 +15,47 @@ describe( 'getVerifyBankAccountTask()', () => {
 		Date.now = () => new Date();
 	} );
 	it( 'should return null when po is not enabled', () => {
-		wcpaySettings.accountStatus = {
-			progressiveOnboarding: {
-				isEnabled: false,
-				isComplete: false,
-				tpv: 0,
-				firstTransactionDate: null,
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: false,
+					isComplete: false,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
 			},
 		};
 
 		expect( getVerifyBankAccountTask() ).toBeNull();
 	} );
 	it( 'should return null when po is complete', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: true,
-			poComplete: true,
-			tpv: 0,
-			firstPaymentDate: null,
-			createdDate: '2023-01-31',
-		} );
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: true,
+					tpv: 0,
+					firstTransactionDate: null,
+				},
+			},
+		};
 
-		expect( actual ).toBeNull();
+		expect( getVerifyBankAccountTask() ).toBeNull();
 	} );
 	it( 'should return the correct task when po is enabled and incomplete and 14 days after no payment', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: true,
-			poComplete: false,
-			tpv: 1100,
-			firstPaymentDate: null,
-			createdDate: '2023-01-14',
-		} );
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 110000,
+					firstTransactionDate: null,
+				},
+				created: '2023-01-14',
+			},
+		};
 
-		expect( actual ).toEqual(
+		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
 				level: 2,
@@ -62,15 +71,19 @@ describe( 'getVerifyBankAccountTask()', () => {
 		);
 	} );
 	it( 'should return the correct task when po is enabled and incomplete and 30 days after no payment', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: true,
-			poComplete: false,
-			tpv: 1100,
-			firstPaymentDate: null,
-			createdDate: '2023-01-01',
-		} );
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 110000,
+					firstTransactionDate: null,
+				},
+				created: '2023-01-01',
+			},
+		};
 
-		expect( actual ).toEqual(
+		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
 				level: 1,
@@ -87,15 +100,19 @@ describe( 'getVerifyBankAccountTask()', () => {
 		);
 	} );
 	it( 'should return the correct task when first payment is done', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: true,
-			poComplete: false,
-			tpv: 100,
-			firstPaymentDate: '2023-02-02',
-			createdDate: '2023-01-31',
-		} );
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 10000,
+					firstTransactionDate: '2023-02-02',
+				},
+				created: '2023-01-31',
+			},
+		};
 
-		expect( actual ).toEqual(
+		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
 				level: 3,
@@ -111,15 +128,19 @@ describe( 'getVerifyBankAccountTask()', () => {
 		);
 	} );
 	it( 'should return the correct task when po is enabled and incomplete and tpv is rising', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: true,
-			poComplete: false,
-			tpv: 1100,
-			firstPaymentDate: '2023-02-02',
-			createdDate: '2023-01-31',
-		} );
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 110000,
+					firstTransactionDate: '2023-02-02',
+				},
+				created: '2023-01-31',
+			},
+		};
 
-		expect( actual ).toEqual(
+		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
 				level: 2,
@@ -135,15 +156,19 @@ describe( 'getVerifyBankAccountTask()', () => {
 		);
 	} );
 	it( 'should return the correct task when po is enabled and incomplete and T+7 after payment', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: true,
-			poComplete: false,
-			tpv: 100,
-			firstPaymentDate: '2023-01-23',
-			createdDate: '2023-01-22',
-		} );
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 10000,
+					firstTransactionDate: '2023-01-23',
+				},
+				created: '2023-01-22',
+			},
+		};
 
-		expect( actual ).toEqual(
+		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
 				level: 2,
@@ -159,14 +184,19 @@ describe( 'getVerifyBankAccountTask()', () => {
 		);
 	} );
 	it( 'should return the correct task when po is enabled and incomplete and tpv is near thresholds', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: true,
-			poComplete: false,
-			tpv: 3100,
-			firstPaymentDate: '2023-02-02',
-		} );
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 310000,
+					firstTransactionDate: '2023-02-02',
+				},
+				created: '2023-01-31',
+			},
+		};
 
-		expect( actual ).toEqual(
+		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
 				level: 1,
@@ -182,15 +212,19 @@ describe( 'getVerifyBankAccountTask()', () => {
 		);
 	} );
 	it( 'should return the correct task when po is enabled and incomplete and T+21 after payment', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: true,
-			poComplete: false,
-			tpv: 100,
-			firstPaymentDate: '2023-01-10',
-			createdDate: '2023-01-09',
-		} );
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 10000,
+					firstTransactionDate: '2023-01-10',
+				},
+				created: '2023-01-09',
+			},
+		};
 
-		expect( actual ).toEqual(
+		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
 				level: 1,
@@ -206,15 +240,19 @@ describe( 'getVerifyBankAccountTask()', () => {
 		);
 	} );
 	it( 'should return the correct task when po is enabled and incomplete and tpv reached thresholds', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: true,
-			poComplete: false,
-			tpv: 5100,
-			firstPaymentDate: '2023-02-02',
-			createdDate: '2023-01-31',
-		} );
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 510000,
+					firstTransactionDate: '2023-02-02',
+				},
+				created: '2023-01-31',
+			},
+		};
 
-		expect( actual ).toEqual(
+		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
 				level: 1,
@@ -231,15 +269,19 @@ describe( 'getVerifyBankAccountTask()', () => {
 		);
 	} );
 	it( 'should return the correct task when po is enabled and incomplete and T+30 after payment', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: true,
-			poComplete: false,
-			tpv: 100,
-			firstPaymentDate: '2023-01-01',
-			createdDate: '2022-12-31',
-		} );
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 10000,
+					firstTransactionDate: '2023-01-01',
+				},
+				created: '2022-12-31',
+			},
+		};
 
-		expect( actual ).toEqual(
+		expect( getVerifyBankAccountTask() ).toEqual(
 			expect.objectContaining( {
 				key: 'verify-bank-details-po',
 				level: 1,

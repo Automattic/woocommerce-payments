@@ -23,10 +23,6 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 			showUpdateDetailsTask: true,
@@ -52,10 +48,6 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 			showUpdateDetailsTask: false,
@@ -80,10 +72,6 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 			showUpdateDetailsTask: true,
@@ -106,10 +94,6 @@ describe( 'getTasks()', () => {
 				status: 'complete',
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 			wpcomReconnectUrl: 'http://example.com',
@@ -132,10 +116,6 @@ describe( 'getTasks()', () => {
 				status: 'complete',
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 			wpcomReconnectUrl: null,
@@ -159,10 +139,6 @@ describe( 'getTasks()', () => {
 			accountStatus: {
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 		} );
@@ -182,10 +158,6 @@ describe( 'getTasks()', () => {
 			accountStatus: {
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 		} );
@@ -208,10 +180,6 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 			numDisputesNeedingResponse,
@@ -230,10 +198,6 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 			numDisputesNeedingResponse,
@@ -262,10 +226,6 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 			numDisputesNeedingResponse,
@@ -284,6 +244,17 @@ describe( 'getTasks()', () => {
 		);
 	} );
 	it( 'should include the po task', () => {
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 10000,
+					firstTransactionDate: '2023-02-02',
+				},
+				created: '2022-01-31',
+			},
+		};
 		const actual = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',
@@ -292,10 +263,6 @@ describe( 'getTasks()', () => {
 				accountLink: 'http://example.com',
 				progressiveOnboarding: {
 					isEnabled: true,
-					isComplete: false,
-					tpv: 100,
-					firstTransactionDate: '2023-02-02',
-					createdDate: '2023-01-31',
 				},
 			},
 		} );
@@ -324,6 +291,17 @@ describe( 'taskSort()', () => {
 		Date.now = () => new Date();
 	} );
 	it( 'should sort the tasks without po', () => {
+		global.wcpaySettings = {
+			accountStatus: {
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 10000,
+					firstTransactionDate: '2023-02-02',
+				},
+				created: '2022-01-31',
+			},
+		};
 		const numDisputesNeedingResponse = 1;
 		const unsortedTasks = getTasks( {
 			accountStatus: {
@@ -333,10 +311,6 @@ describe( 'taskSort()', () => {
 				accountLink: 'http://example.com',
 				progressiveOnboarding: {
 					isEnabled: false,
-					isComplete: false,
-					tpv: 0,
-					firstTransactionDate: null,
-					createdDate: '2023-01-31',
 				},
 			},
 			isAccountOverviewTasksEnabled: true,
@@ -372,10 +346,6 @@ describe( 'taskSort()', () => {
 				accountLink: 'http://example.com',
 				progressiveOnboarding: {
 					isEnabled: true,
-					isComplete: false,
-					tpv: 10000,
-					firstTransactionDate: '2023-02-02',
-					createdDate: '2023-01-31',
 				},
 			},
 			isAccountOverviewTasksEnabled: true,
