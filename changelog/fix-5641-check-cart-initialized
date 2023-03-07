@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+WCPay Checkout JS is loaded for zero carts

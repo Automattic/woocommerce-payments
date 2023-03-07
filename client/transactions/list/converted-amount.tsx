@@ -35,6 +35,7 @@ const ConversionIndicator = ( {
 		<span
 			className="conversion-indicator"
 			data-testid="conversion-indicator"
+			style={ { height: '18px', width: '18px' } }
 		>
 			<SyncIcon size={ 18 } />
 		</span>
