@@ -120,7 +120,7 @@ class List_Disputes extends Paginated {
 	/**
 	 * Set search.
 	 *
-	 * @param string|array $search Search term or terms.
+	 * @param string|string[] $search Search term or terms.
 	 * @return void
 	 * @throws Invalid_Request_Parameter_Exception Whenever the parameter is not a string or array.
 	 */
