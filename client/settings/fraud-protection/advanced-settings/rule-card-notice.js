@@ -16,6 +16,7 @@ const getSVGIconOfNoticeType = ( type ) => {
 					viewBox="0 0 18 18"
 					fill="none"
 					xmlns="http://www.w3.org/2000/svg"
+					data-testid="rule-card-notice-error-icon-svg"
 				>
 					<path
 						fillRule="evenodd"
@@ -40,6 +41,7 @@ const getSVGIconOfNoticeType = ( type ) => {
 					viewBox="0 0 18 18"
 					fill="none"
 					xmlns="http://www.w3.org/2000/svg"
+					data-testid="rule-card-notice-warning-icon-svg"
 				>
 					<path
 						fillRule="evenodd"
@@ -64,6 +66,7 @@ const getSVGIconOfNoticeType = ( type ) => {
 					viewBox="0 0 24 24"
 					fill="none"
 					xmlns="http://www.w3.org/2000/svg"
+					data-testid="rule-card-notice-info-icon-svg"
 				>
 					<circle
 						cx="12"
@@ -95,23 +98,25 @@ const getSVGIconOfNoticeType = ( type ) => {
 
 const FraudProtectionRuleCardNotice = ( { type, children } ) => {
 	return (
-		<div
-			className={
-				'fraud-protection-rule-card-notice fraud-protection-rule-card-notice-' +
-				type
-			}
-		>
-			<div className="fraud-protection-rule-card-notice-icon">
-				<Icon
-					icon={ getSVGIconOfNoticeType( type ) }
-					width={ 18 }
-					height={ 18 }
-				></Icon>
+		0 <= [ 'error', 'warning', 'info' ].indexOf( type ) && (
+			<div
+				className={
+					'fraud-protection-rule-card-notice fraud-protection-rule-card-notice-' +
+					type
+				}
+			>
+				<div className="fraud-protection-rule-card-notice-icon">
+					<Icon
+						icon={ getSVGIconOfNoticeType( type ) }
+						width={ 18 }
+						height={ 18 }
+					></Icon>
+				</div>
+				<div className="fraud-protection-rule-card-notice-text">
+					{ children }
+				</div>
 			</div>
-			<div className="fraud-protection-rule-card-notice-text">
-				{ children }
-			</div>
-		</div>
+		)
 	);
 };
 

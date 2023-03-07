@@ -241,6 +241,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
                     class="fraud-protection-rule-card-notice-icon"
                   >
                     <svg
+                      data-testid="rule-card-notice-warning-icon-svg"
                       fill="none"
                       height="18"
                       viewBox="0 0 18 18"
@@ -505,6 +506,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
                     class="fraud-protection-rule-card-notice-icon"
                   >
                     <svg
+                      data-testid="rule-card-notice-warning-icon-svg"
                       fill="none"
                       height="18"
                       viewBox="0 0 18 18"

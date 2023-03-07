@@ -271,6 +271,7 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
                   class="fraud-protection-rule-card-notice-icon"
                 >
                   <svg
+                    data-testid="rule-card-notice-warning-icon-svg"
                     fill="none"
                     height="18"
                     viewBox="0 0 18 18"
@@ -566,6 +567,7 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
                   class="fraud-protection-rule-card-notice-icon"
                 >
                   <svg
+                    data-testid="rule-card-notice-warning-icon-svg"
                     fill="none"
                     height="18"
                     viewBox="0 0 18 18"

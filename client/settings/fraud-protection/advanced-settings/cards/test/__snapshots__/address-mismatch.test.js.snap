@@ -86,6 +86,7 @@ exports[`Address mismatch card renders correctly 1`] = `
             class="fraud-protection-rule-card-notice-icon"
           >
             <svg
+              data-testid="rule-card-notice-info-icon-svg"
               fill="none"
               height="18"
               viewBox="0 0 24 24"
@@ -283,6 +284,7 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
             class="fraud-protection-rule-card-notice-icon"
           >
             <svg
+              data-testid="rule-card-notice-info-icon-svg"
               fill="none"
               height="18"
               viewBox="0 0 24 24"
@@ -495,6 +497,7 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
             class="fraud-protection-rule-card-notice-icon"
           >
             <svg
+              data-testid="rule-card-notice-info-icon-svg"
               fill="none"
               height="18"
               viewBox="0 0 24 24"
@@ -630,6 +633,7 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
             class="fraud-protection-rule-card-notice-icon"
           >
             <svg
+              data-testid="rule-card-notice-info-icon-svg"
               fill="none"
               height="18"
               viewBox="0 0 24 24"
