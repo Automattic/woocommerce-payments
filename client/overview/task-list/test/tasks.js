@@ -246,6 +246,7 @@ describe( 'getTasks()', () => {
 	it( 'should include the po task', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted_soon',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -291,17 +292,6 @@ describe( 'taskSort()', () => {
 		Date.now = () => new Date();
 	} );
 	it( 'should sort the tasks without po', () => {
-		global.wcpaySettings = {
-			accountStatus: {
-				progressiveOnboarding: {
-					isEnabled: true,
-					isComplete: false,
-					tpv: 10000,
-					firstTransactionDate: '2023-02-02',
-				},
-				created: '2022-01-31',
-			},
-		};
 		const numDisputesNeedingResponse = 1;
 		const unsortedTasks = getTasks( {
 			accountStatus: {
@@ -338,6 +328,18 @@ describe( 'taskSort()', () => {
 		);
 	} );
 	it( 'should sort the tasks with po', () => {
+		global.wcpaySettings = {
+			accountStatus: {
+				status: 'restricted_soon',
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 10000,
+					firstTransactionDate: '2023-02-02',
+				},
+				created: '2022-01-31',
+			},
+		};
 		const unsortedTasks = getTasks( {
 			accountStatus: {
 				status: 'restricted_soon',

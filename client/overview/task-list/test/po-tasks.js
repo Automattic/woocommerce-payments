@@ -17,6 +17,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 	it( 'should return null when po is not enabled', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted_soon',
 				progressiveOnboarding: {
 					isEnabled: false,
 					isComplete: false,
@@ -31,6 +32,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 	it( 'should return null when po is complete', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'complete',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: true,
@@ -42,9 +44,26 @@ describe( 'getVerifyBankAccountTask()', () => {
 
 		expect( getVerifyBankAccountTask() ).toBeNull();
 	} );
+	it( 'should return null when status is pending', () => {
+		global.wcpaySettings = {
+			accountStatus: {
+				status: 'pending',
+				progressiveOnboarding: {
+					isEnabled: true,
+					isComplete: false,
+					tpv: 10000,
+					firstTransactionDate: '2023-02-02',
+				},
+				created: '2023-01-31',
+			},
+		};
+
+		expect( getVerifyBankAccountTask() ).toBeNull();
+	} );
 	it( 'should return the correct task when po is enabled and incomplete and 14 days after no payment', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted_soon',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -73,6 +92,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 	it( 'should return the correct task when po is enabled and incomplete and 30 days after no payment', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -102,6 +122,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 	it( 'should return the correct task when first payment is done', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted_soon',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -130,6 +151,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 	it( 'should return the correct task when po is enabled and incomplete and tpv is rising', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted_soon',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -158,6 +180,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 	it( 'should return the correct task when po is enabled and incomplete and T+7 after payment', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted_soon',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -186,6 +209,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 	it( 'should return the correct task when po is enabled and incomplete and tpv is near thresholds', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted_soon',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -214,6 +238,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 	it( 'should return the correct task when po is enabled and incomplete and T+21 after payment', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted_soon',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -242,6 +267,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 	it( 'should return the correct task when po is enabled and incomplete and tpv reached thresholds', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,
@@ -271,6 +297,7 @@ describe( 'getVerifyBankAccountTask()', () => {
 	it( 'should return the correct task when po is enabled and incomplete and T+30 after payment', () => {
 		global.wcpaySettings = {
 			accountStatus: {
+				status: 'restricted',
 				progressiveOnboarding: {
 					isEnabled: true,
 					isComplete: false,

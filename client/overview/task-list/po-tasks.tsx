@@ -15,6 +15,7 @@ const ProgressiveOnboardingKYCTPVLimit = 5000;
 
 export const getVerifyBankAccountTask = (): any => {
 	const {
+		status,
 		progressiveOnboarding: {
 			isEnabled: poEnabled,
 			isComplete: poComplete,
@@ -24,6 +25,9 @@ export const getVerifyBankAccountTask = (): any => {
 		created: createdDate,
 	} = wcpaySettings.accountStatus;
 	if ( ! poEnabled || poComplete || ! createdDate ) {
+		return null;
+	}
+	if ( status === 'pending' || status === 'complete' ) {
 		return null;
 	}
 
