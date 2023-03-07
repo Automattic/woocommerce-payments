@@ -23,6 +23,7 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
 import { useDepositDelayDays } from '../../data';
+import FraudProtection from '../fraud-protection';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -108,6 +109,27 @@ const DepositsDescription = () => {
 	);
 };
 
+const FraudProtectionDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Fraud Protection', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ __(
+					'Manage security and fraud prevention options to avoid chargebacks, unauthorized access to the store,' +
+						'and better store management experience.',
+					'woocommerce-payments'
+				) }
+			</p>
+			<ExternalLink href="#">
+				{ __(
+					'Learn more about risk filtering',
+					'woocommerce-payments'
+				) }
+			</ExternalLink>
+		</>
+	);
+};
+
 const SettingsManager = () => {
 	const {
 		featureFlags: {
@@ -174,6 +196,15 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</div>
 			</SettingsSection>
+			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
+				<SettingsSection description={ FraudProtectionDescription }>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<FraudProtection />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+			) }
 			<AdvancedSettings />
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>
