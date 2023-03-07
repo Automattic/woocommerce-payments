@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import user from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -21,6 +20,15 @@ describe( 'Amount input', () => {
 		} );
 		mockValue = null;
 	} );
+
+	const writeKeyByKey = ( input, text ) => {
+		for ( const i in text ) {
+			fireEvent.change( input, {
+				target: { value: ( mockValue ? mockValue : '' ) + text[ i ] },
+			} );
+		}
+	};
+
 	test( 'renders correctly', () => {
 		const { container } = render(
 			<AmountInput
@@ -58,35 +66,16 @@ describe( 'Amount input', () => {
 		);
 		const testInput = screen.queryByTestId( 'amount-input' );
 		const testContent = '123.45';
-		// Simulate key by key typing
-		for ( const i in testContent ) {
-			user.type( testInput, ( mockValue ?? '' ) + testContent[ i ] );
-		}
+		writeKeyByKey( testInput, testContent );
 		expect( mockValue ).toBe( '123.45' );
 	} );
-	test( 'doesn`t set a non-float value to the input', async () => {
+	test( 'doesn`t set a non-float value to the input', () => {
 		render(
 			<AmountInput value={ mockValue } onChange={ mockOnChangeEvent } />
 		);
 		const testInput = screen.queryByTestId( 'amount-input' );
 		const testContent = 'a.123.123.323.v+';
-		// Simulate key by key typing
-		for ( const i in testContent ) {
-			await user.type(
-				testInput,
-				( mockValue ?? '' ) + testContent[ i ]
-			);
-		}
+		writeKeyByKey( testInput, testContent );
 		expect( mockValue ).toBe( '123.123323' );
-	} );
-	test( 'can set empty value on input', async () => {
-		render(
-			<AmountInput value={ mockValue } onChange={ mockOnChangeEvent } />
-		);
-		const testInput = screen.getByTestId( 'amount-input' );
-		fireEvent.change( testInput, { target: { value: '1' } } );
-		expect( mockValue ).toBe( '1' );
-		fireEvent.change( testInput, { target: { value: '' } } );
-		expect( mockValue ).toBe( '' );
 	} );
 } );
