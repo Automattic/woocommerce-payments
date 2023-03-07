@@ -965,12 +965,10 @@ class WC_Payments {
 	 * @param string $handler Script handler.
 	 * @param string $script Script name.
 	 * @param array  $dependencies Additional dependencies.
-	 * @param bool   $in_footer  Load script in footer.
-	 * @param string $version Load with specific version.
 	 *
 	 * @return void
 	 */
-	public static function register_script_with_dependencies( string $handler, string $script, array $dependencies = [], bool $in_footer = true, string $version = null ) {
+	public static function register_script_with_dependencies( string $handler, string $script, array $dependencies = [] ) {
 		$script_file                  = $script . '.js';
 		$script_src_url               = plugins_url( $script_file, WCPAY_PLUGIN_FILE );
 		$script_asset_path            = WCPAY_ABSPATH . $script . '.asset.php';
@@ -980,8 +978,8 @@ class WC_Payments {
 			$handler,
 			$script_src_url,
 			$script_asset['dependencies'],
-			$version ?? self::get_file_version( $script_file ),
-			$in_footer
+			self::get_file_version( $script_file ),
+			true
 		);
 	}
 
