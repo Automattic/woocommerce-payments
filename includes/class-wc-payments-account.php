@@ -726,6 +726,8 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
+				Logger::error( 'Failed redirect_to_login: ' . $e );
+
 				wp_safe_redirect(
 					add_query_arg(
 						[ 'wcpay-login-error' => '1' ],
@@ -1191,7 +1193,7 @@ class WC_Payments_Account {
 		}
 
 		// test accounts are valid only when in dev mode.
-		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return true;
 		}
 

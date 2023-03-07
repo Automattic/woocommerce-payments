@@ -12,7 +12,7 @@
  * WC tested up to: 7.3.0
  * Requires at least: 5.9
  * Requires PHP: 7.0
- * Version: 5.5.0
+ * Version: 5.5.1
  *
  * @package WooCommerce\Payments
  */
@@ -68,7 +68,7 @@ register_activation_hook( __FILE__, 'wcpay_activated' );
 register_deactivation_hook( __FILE__, 'wcpay_deactivated' );
 
 // The JetPack autoloader might not catch up yet when activating the plugin. If so, we'll stop here to avoid JetPack connection failures.
-$is_autoloading_ready = class_exists( Automattic\Jetpack\Connection\Rest_Authentication::class ) && class_exists( MyCLabs\Enum\Enum::class );
+$is_autoloading_ready = class_exists( Automattic\Jetpack\Connection\Rest_Authentication::class );
 if ( ! $is_autoloading_ready ) {
 	return;
 }

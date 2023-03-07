@@ -374,7 +374,7 @@ class WC_Payments_Customer_Service {
 	 * @return string The customer ID option name.
 	 */
 	private function get_customer_id_option(): string {
-		return WC_Payments::get_gateway()->is_in_test_mode()
+		return WC_Payments::mode()->is_test()
 			? self::WCPAY_TEST_CUSTOMER_ID_OPTION
 			: self::WCPAY_LIVE_CUSTOMER_ID_OPTION;
 	}
