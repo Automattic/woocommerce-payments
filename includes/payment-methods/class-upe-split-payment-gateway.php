@@ -31,6 +31,7 @@ use WC_Payment_Token_CC;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Utils;
+use WC_Payments_Features;
 use WP_User;
 
 
@@ -127,10 +128,6 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			true
 		);
 
-		if ( ! WC()->cart->needs_payment() && is_checkout() && ! has_block( 'woocommerce/checkout' ) ) {
-			WC_Payments::get_gateway()->tokenization_script();
-			WC_Payments::get_wc_payments_checkout()->enqueue_payment_scripts();
-		}
 	}
 
 	/**
