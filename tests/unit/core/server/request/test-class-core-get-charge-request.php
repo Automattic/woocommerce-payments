@@ -57,7 +57,7 @@ class Get_Charge_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_charge_request_class_is_created() {
-		new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'ch_mock' );
+		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'ch_mock' );
 		$this->assertSame( WC_Payments_API_Client::CHARGES_API . '/ch_mock', $request->get_api() );
 	}
 }
