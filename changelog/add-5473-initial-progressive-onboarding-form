@@ -1,4 +1,5 @@
 Significance: patch
 Type: add
+Comment: It's part of progressive onboarding which is behind a feature flag.
 
-Initial progressive onboarding prototype form implementation.
+
