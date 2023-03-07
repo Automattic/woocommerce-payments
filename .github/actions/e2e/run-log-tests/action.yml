@@ -11,7 +11,7 @@ runs:
       run: |
         npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH"
         E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
-        echo "::set-output name=FIRST_RUN_FAILED_TEST_SUITES::$(echo $E2E_NUM_FAILED_TEST_SUITES)"
+        echo "FIRST_RUN_FAILED_TEST_SUITES=$(echo $E2E_NUM_FAILED_TEST_SUITES)" >> $GITHUB_OUTPUT
         if [[ ${E2E_NUM_FAILED_TEST_SUITES} -gt 0 ]]; then
           echo "::notice::${E2E_NUM_FAILED_TEST_SUITES} E2E test(s) failed in the first run but we will try (it) them again in the second run."
           exit 0
