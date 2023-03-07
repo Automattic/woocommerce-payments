@@ -90,8 +90,6 @@ describe( 'BusinessDetails', () => {
 		const urlField = screen.getByLabelText( strings.fields.url );
 		const countryField = screen.getByText( strings.placeholders.country );
 
-		const mccField = screen.getByText( strings.placeholders.mcc );
-
 		user.type( businessNameField, 'John Doe LLC' );
 		user.type( urlField, 'https://johndoe.com' );
 
@@ -118,7 +116,7 @@ describe( 'BusinessDetails', () => {
 		user.click( companyStructureField );
 		user.click( screen.getByText( 'Single member LLC' ) );
 
-		// @ismaeldcom TODO: Add mcc field test
+		// TODO  [GH-4853]: Add mcc field test
 
 		expect( businessNameField ).toHaveValue( 'John Doe LLC' );
 		expect( urlField ).toHaveValue( 'https://johndoe.com' );
