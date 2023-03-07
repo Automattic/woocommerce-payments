@@ -11,15 +11,18 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import strings from './strings';
 
-const PROGRESSIVE_ONBOARDING_KYC_TPV_LIMIT = 5000;
+const ProgressiveOnboardingKYCTPVLimit = 5000;
 
-export const getVerifyBankAccountTask = ( {
-	poEnabled,
-	poComplete,
-	tpv,
-	firstPaymentDate,
-	createdDate,
-} ) => {
+export const getVerifyBankAccountTask = (): any => {
+	const {
+		progressiveOnboarding: {
+			isEnabled: poEnabled,
+			isComplete: poComplete,
+			tpv,
+			firstTransactionDate: firstPaymentDate,
+		},
+		created: createdDate,
+	} = wcpaySettings.accountStatus;
 	if ( ! poEnabled || poComplete || ! createdDate ) {
 		return null;
 	}
@@ -66,7 +69,7 @@ export const getVerifyBankAccountTask = ( {
 
 		// balance is rising
 		if (
-			PROGRESSIVE_ONBOARDING_KYC_TPV_LIMIT * 0.2 <= tpv ||
+			ProgressiveOnboardingKYCTPVLimit * 0.2 <= tpv ||
 			7 <= daysFromFirstPayment
 		) {
 			title = strings.po_tasks.balance_rising.title;
@@ -78,7 +81,7 @@ export const getVerifyBankAccountTask = ( {
 		}
 		// near threshold
 		if (
-			PROGRESSIVE_ONBOARDING_KYC_TPV_LIMIT * 0.6 <= tpv ||
+			ProgressiveOnboardingKYCTPVLimit * 0.6 <= tpv ||
 			21 <= daysFromFirstPayment
 		) {
 			title = strings.po_tasks.near_threshold.title;
@@ -90,7 +93,7 @@ export const getVerifyBankAccountTask = ( {
 		}
 		// threshold reached
 		if (
-			PROGRESSIVE_ONBOARDING_KYC_TPV_LIMIT <= tpv ||
+			ProgressiveOnboardingKYCTPVLimit <= tpv ||
 			30 <= daysFromFirstPayment
 		) {
 			title = strings.po_tasks.threshold_reached.title;
@@ -109,7 +112,7 @@ export const getVerifyBankAccountTask = ( {
 		content: description,
 		completed: false,
 		onClick: () => {
-			window.location = addQueryArgs( wcpaySettings.connectUrl, {
+			window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 				collect_payout_requirements: true,
 			} );
 		},

@@ -71,13 +71,7 @@ export const getTasks = ( {
 		pastDue,
 		accountLink,
 		requirements,
-		progressiveOnboarding: {
-			isEnabled: isPoEnabled,
-			isComplete: isPoComplete,
-			tpv,
-			firstTransactionDate,
-		},
-		created,
+		progressiveOnboarding: { isEnabled: isPoEnabled },
 	} = accountStatus;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
@@ -211,13 +205,7 @@ export const getTasks = ( {
 				} );
 			},
 		},
-		getVerifyBankAccountTask( {
-			poEnabled: isPoEnabled,
-			poComplete: isPoComplete,
-			tpv: tpv / 100,
-			firstPaymentDate: firstTransactionDate,
-			createdDate: created,
-		} ),
+		getVerifyBankAccountTask(),
 	].filter( Boolean );
 };
 

@@ -15,15 +15,16 @@ describe( 'getVerifyBankAccountTask()', () => {
 		Date.now = () => new Date();
 	} );
 	it( 'should return null when po is not enabled', () => {
-		const actual = getVerifyBankAccountTask( {
-			poEnabled: false,
-			poComplete: false,
-			tpv: 0,
-			firstPaymentDate: null,
-			createdDate: '2023-01-31',
-		} );
+		wcpaySettings.accountStatus = {
+			progressiveOnboarding: {
+				isEnabled: false,
+				isComplete: false,
+				tpv: 0,
+				firstTransactionDate: null,
+			},
+		};
 
-		expect( actual ).toBeNull();
+		expect( getVerifyBankAccountTask() ).toBeNull();
 	} );
 	it( 'should return null when po is complete', () => {
 		const actual = getVerifyBankAccountTask( {
