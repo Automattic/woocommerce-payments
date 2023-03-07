@@ -23,17 +23,39 @@ const FraudProtectionRuleToggle = ( {
 		setAdvancedFraudProtectionSettings,
 	} = useContext( FraudPreventionSettingsContext );
 
-	const [ toggleState, setToggleState ] = useState(
-		advancedFraudProtectionSettings[ setting ].enabled
-	);
-	const [ checkState, setCheckState ] = useState(
-		advancedFraudProtectionSettings[ setting ].block
-	);
+	const [ toggleState, setToggleState ] = useState( false );
+	const [ checkState, setCheckState ] = useState( false );
 
+	// Set initial states from saved settings.
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].enabled = toggleState;
-		advancedFraudProtectionSettings[ setting ].block = checkState;
-		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
+		if (
+			advancedFraudProtectionSettings &&
+			advancedFraudProtectionSettings[ setting ]
+		) {
+			setToggleState(
+				advancedFraudProtectionSettings[ setting ].enabled
+			);
+			setCheckState( advancedFraudProtectionSettings[ setting ].block );
+		}
+	}, [
+		advancedFraudProtectionSettings,
+		setToggleState,
+		setCheckState,
+		setting,
+	] );
+
+	// Set global object values from input changes.
+	useEffect( () => {
+		if (
+			advancedFraudProtectionSettings &&
+			advancedFraudProtectionSettings[ setting ]
+		) {
+			advancedFraudProtectionSettings[ setting ].enabled = toggleState;
+			advancedFraudProtectionSettings[ setting ].block = checkState;
+			setAdvancedFraudProtectionSettings(
+				advancedFraudProtectionSettings
+			);
+		}
 	}, [
 		setting,
 		toggleState,
@@ -42,6 +64,7 @@ const FraudProtectionRuleToggle = ( {
 		setAdvancedFraudProtectionSettings,
 	] );
 
+	// Render view.
 	return (
 		advancedFraudProtectionSettings && (
 			<div className="fraud-protection-rule-toggle">

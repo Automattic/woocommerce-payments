@@ -128,7 +128,6 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
               >
                 <input
                   aria-describedby="inspector-toggle-control-1__help"
-                  checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-1"
                   type="checkbox"
@@ -188,7 +187,6 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
                         data-testid="amount-input"
                         id="fraud-protection-purchase-price-minimum"
                         placeholder="0.00"
-                        type="text"
                         value=""
                       />
                     </div>
@@ -223,7 +221,6 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
                         data-testid="amount-input"
                         id="fraud-protection-purchase-price-maximum"
                         placeholder="0.00"
-                        type="text"
                         value=""
                       />
                     </div>
@@ -395,7 +392,6 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
               >
                 <input
                   aria-describedby="inspector-toggle-control-2__help"
-                  checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-2"
                   type="checkbox"
@@ -455,7 +451,6 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
                         data-testid="amount-input"
                         id="fraud-protection-purchase-price-minimum"
                         placeholder="0.00"
-                        type="text"
                         value=""
                       />
                     </div>
@@ -490,7 +485,6 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
                         data-testid="amount-input"
                         id="fraud-protection-purchase-price-maximum"
                         placeholder="0.00"
-                        type="text"
                         value=""
                       />
                     </div>

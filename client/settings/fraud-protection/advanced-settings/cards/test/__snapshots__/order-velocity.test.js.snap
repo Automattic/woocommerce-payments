@@ -125,7 +125,6 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
             >
               <input
                 aria-describedby="inspector-toggle-control-1__help"
-                checked=""
                 class="components-form-toggle__input"
                 id="inspector-toggle-control-1"
                 type="checkbox"
@@ -421,7 +420,6 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
             >
               <input
                 aria-describedby="inspector-toggle-control-2__help"
-                checked=""
                 class="components-form-toggle__input"
                 id="inspector-toggle-control-2"
                 type="checkbox"

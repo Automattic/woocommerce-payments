@@ -36,7 +36,7 @@ import { getAdminUrl } from 'wcpay/utils';
 const Breadcrumb = () => (
 	<h2 className="fraud-protection-header-breadcrumb">
 		<Link
-			type="wc-settings"
+			type="wp-admin"
 			href={ getAdminUrl( {
 				page: 'wc-settings',
 				tab: 'checkout',
@@ -113,13 +113,15 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		setIsSavingSettings( false );
 	};
 
-	// Hack to make WooCommerce > Settings the active selected menu item
+	// Hack to make "WooCommerce > Settings" the active selected menu item.
 	const wcSettingsMenuItem = document.querySelector(
 		'#toplevel_page_woocommerce a[href="admin.php?page=wc-settings"]'
 	);
-	wcSettingsMenuItem.setAttribute( 'aria-current', 'page' );
-	wcSettingsMenuItem.classList.add( 'current' );
-	wcSettingsMenuItem.parentElement.classList.add( 'current' );
+	if ( wcSettingsMenuItem ) {
+		wcSettingsMenuItem.setAttribute( 'aria-current', 'page' );
+		wcSettingsMenuItem.classList.add( 'current' );
+		wcSettingsMenuItem.parentElement.classList.add( 'current' );
+	}
 
 	return (
 		<FraudPreventionSettingsContext.Provider
