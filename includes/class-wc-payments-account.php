@@ -733,6 +733,8 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
+				Logger::error( 'Failed redirect_to_login: ' . $e );
+
 				wp_safe_redirect(
 					add_query_arg(
 						[ 'wcpay-login-error' => '1' ],
