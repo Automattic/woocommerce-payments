@@ -2,11 +2,13 @@
 
 import { __ } from '@wordpress/i18n';
 import ReactDOM from 'react-dom';
+
 /**
  * Internal dependencies
  */
 import { getConfig } from 'utils/order';
 import RefundConfirmationModal from './refund-confirm-modal';
+import CancelConfirmationModal from './cancel-confirm-modal';
 
 jQuery( function ( $ ) {
 	const disableManualRefunds = getConfig( 'disableManualRefunds' ) ?? false;
@@ -36,36 +38,48 @@ jQuery( function ( $ ) {
 
 	$( 'select#order_status' ).on( 'change', function () {
 		const originalStatus = $( 'input#original_post_status' ).val();
-		const canRefund = getConfig( 'canRefund' );
-		const refundAmount = getConfig( 'refundAmount' );
 		if (
 			'wc-refunded' === this.value &&
 			'wc-refunded' !== originalStatus
 		) {
-			if ( ! canRefund ) {
-				alert(
-					__( 'Order cannot be refunded', 'woocommerce-payments' )
-				);
-				return;
-			}
-			if ( 0 >= refundAmount ) {
-				alert( __( 'Invalid Refund Amount', 'woocommerce-payments' ) );
-				return;
-			}
-			const container = document.createElement( 'div' );
-			container.id = 'wcpay-refund-confirm-container';
-			document.body.appendChild( container );
-			ReactDOM.render(
-				<RefundConfirmationModal
-					orderStatus={ originalStatus }
-					refundAmount={ refundAmount }
-					formattedRefundAmount={ getConfig(
-						'formattedRefundAmount'
-					) }
-					refundedAmount={ getConfig( 'refundedAmount' ) }
-				/>,
-				container
+			renderRefundConfirmationModal( originalStatus );
+		} else if (
+			'wc-cancelled' === this.value &&
+			'wc-cancelled' !== originalStatus
+		) {
+			renderModal(
+				<CancelConfirmationModal
+					originalOrderStatus={ originalStatus }
+				/>
 			);
 		}
 	} );
+
+	function renderRefundConfirmationModal( originalStatus ) {
+		const canRefund = getConfig( 'canRefund' );
+		const refundAmount = getConfig( 'refundAmount' );
+		if ( ! canRefund ) {
+			alert( __( 'Order cannot be refunded', 'woocommerce-payments' ) );
+			return;
+		}
+		if ( 0 >= refundAmount ) {
+			alert( __( 'Invalid Refund Amount', 'woocommerce-payments' ) );
+			return;
+		}
+		renderModal(
+			<RefundConfirmationModal
+				orderStatus={ originalStatus }
+				refundAmount={ refundAmount }
+				formattedRefundAmount={ getConfig( 'formattedRefundAmount' ) }
+				refundedAmount={ getConfig( 'refundedAmount' ) }
+			/>
+		);
+	}
+
+	function renderModal( modalToRender ) {
+		const container = document.createElement( 'div' );
+		container.id = 'wcpay-orderstatus-confirm-container';
+		document.body.appendChild( container );
+		ReactDOM.render( modalToRender, container );
+	}
 } );
