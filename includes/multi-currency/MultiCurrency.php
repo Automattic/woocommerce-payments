@@ -1133,7 +1133,7 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function register_admin_scripts() {
-		WC_Payments::load_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency' );
 
 		wp_register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',

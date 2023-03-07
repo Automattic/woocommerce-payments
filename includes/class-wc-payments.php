@@ -970,7 +970,7 @@ class WC_Payments {
 	 *
 	 * @return void
 	 */
-	public static function load_script_with_dependencies( string $handler, string $script, array $dependencies = [], bool $in_footer = true, string $version = null ) {
+	public static function register_script_with_dependencies( string $handler, string $script, array $dependencies = [], bool $in_footer = true, string $version = null ) {
 		$script_file                  = $script . '.js';
 		$script_src_url               = plugins_url( $script_file, WCPAY_PLUGIN_FILE );
 		$script_asset_path            = WCPAY_ABSPATH . $script . '.asset.php';

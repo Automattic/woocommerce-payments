@@ -54,7 +54,7 @@ class Platform_Checkout_Save_User {
 			[],
 			\WC_Payments::get_file_version( 'dist/platform-checkout.css' )
 		);
-		WC_Payments::load_script_with_dependencies( 'WCPAY_PLATFORM_CHECKOUT', 'dist/platform-checkout' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PLATFORM_CHECKOUT', 'dist/platform-checkout' );
 
 		wp_enqueue_style( 'WCPAY_PLATFORM_CHECKOUT' );
 		wp_enqueue_script( 'WCPAY_PLATFORM_CHECKOUT' );

@@ -607,7 +607,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $this->supports( 'tokenization' ) ) {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
-		WC_Payments::load_script_with_dependencies( 'WCPAY_CHECKOUT', 'dist/checkout', $script_dependencies );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_CHECKOUT', 'dist/checkout', $script_dependencies );
 		wp_set_script_translations( 'WCPAY_CHECKOUT', 'woocommerce-payments' );
 
 	}

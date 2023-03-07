@@ -508,7 +508,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( ! wcs_is_subscription( $order ) ) {
 			return;
 		}
-		WC_Payments::load_script_with_dependencies( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'dist/subscription-edit-page' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'dist/subscription-edit-page' );
 
 		wp_localize_script(
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',

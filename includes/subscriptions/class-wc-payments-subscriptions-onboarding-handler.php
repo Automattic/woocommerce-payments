@@ -180,7 +180,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			return;
 		}
 
-		WC_Payments::load_script_with_dependencies( 'wcpay-subscription-product-onboarding-modal', 'dist/subscription-product-onboarding-modal' );
+		WC_Payments::register_script_with_dependencies( 'wcpay-subscription-product-onboarding-modal', 'dist/subscription-product-onboarding-modal' );
 
 		wp_localize_script(
 			'wcpay-subscription-product-onboarding-modal',
@@ -228,7 +228,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			return;
 		}
 
-		WC_Payments::load_script_with_dependencies( 'wcpay-subscription-product-onboarding-toast', 'dist/subscription-product-onboarding-toast' );
+		WC_Payments::register_script_with_dependencies( 'wcpay-subscription-product-onboarding-toast', 'dist/subscription-product-onboarding-toast' );
 
 		wp_localize_script(
 			'wcpay-subscription-product-onboarding-toast',

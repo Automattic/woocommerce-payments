@@ -48,7 +48,7 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 			return;
 		}
 
-		WC_Payments::load_script_with_dependencies( 'WCPAY_SUBSCRIPTIONS_EMPTY_STATE', 'dist/subscriptions-empty-state' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_SUBSCRIPTIONS_EMPTY_STATE', 'dist/subscriptions-empty-state' );
 		$wcpay_settings = [
 			'connectUrl'    => WC_Payments_Account::get_connect_url( 'WC_SUBSCRIPTIONS_TABLE' ),
 			'isConnected'   => $this->account->is_stripe_connected(),

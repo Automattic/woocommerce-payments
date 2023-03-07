@@ -144,7 +144,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 
-		WC_Payments::load_script_with_dependencies( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'dist/platform-checkout-express-button' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'dist/platform-checkout-express-button' );
 
 		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
 

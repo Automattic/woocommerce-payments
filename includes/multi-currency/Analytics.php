@@ -106,7 +106,7 @@ class Analytics {
 	 * @return void
 	 */
 	public function register_admin_scripts() {
-		WC_Payments::load_script_with_dependencies( self::SCRIPT_NAME, 'dist/multi-currency-analytics' );
+		WC_Payments::register_script_with_dependencies( self::SCRIPT_NAME, 'dist/multi-currency-analytics' );
 	}
 
 	/**
