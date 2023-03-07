@@ -52,7 +52,9 @@ describe( 'Shopper > Pay for Order', () => {
 		const card = config.get( 'cards.basic' );
 		await fillCardDetailsPayForOrder( page, card );
 		await expect( page ).toClick( 'button', { text: 'Pay for order' } );
-		await uiUnblocked();
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
 		await expect( page ).toMatch( 'Order received' );
 	} );
 } );
