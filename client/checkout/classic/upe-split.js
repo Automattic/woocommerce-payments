@@ -142,45 +142,6 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Finds selected payment gateway and returns matching Stripe payment method for gateway.
-	 *
-	 * @return {string} Stripe payment method type
-	 */
-	const getSelectedUPEGatewayPaymentMethod = () => {
-		const gatewayCardId = getUPEConfig( 'gatewayId' );
-		let selectedGatewayId = null;
-
-		// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
-
-		if ( $( 'li.wc_payment_method' ).length ) {
-			selectedGatewayId = $(
-				'li.wc_payment_method input.input-radio:checked'
-			).attr( 'id' );
-		} else if ( $( 'li.woocommerce-PaymentMethod' ).length ) {
-			selectedGatewayId = $(
-				'li.woocommerce-PaymentMethod input.input-radio:checked'
-			).attr( 'id' );
-		}
-
-		if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
-			selectedGatewayId = 'payment_method_woocommerce_payments_card';
-		}
-
-		let selectedPaymentMethod = null;
-
-		for ( const paymentMethodType in paymentMethodsConfig ) {
-			if (
-				`payment_method_${ gatewayCardId }_${ paymentMethodType }` ===
-				selectedGatewayId
-			) {
-				selectedPaymentMethod = paymentMethodType;
-				break;
-			}
-		}
-		return selectedPaymentMethod;
-	};
-
-	/**
 	 * Converts form fields object into Stripe `billing_details` object.
 	 *
 	 * @param {Object} fields Object mapping checkout billing fields to values.
@@ -857,4 +818,49 @@ export function isUsingSavedPaymentMethod( paymentMethodType ) {
 		null !== document.querySelector( savedPaymentSelector ) &&
 		! document.querySelector( savedPaymentSelector ).checked
 	);
+}
+
+/**
+ * Finds selected payment gateway and returns matching Stripe payment method for gateway.
+ *
+ * @return {string} Stripe payment method type
+ */
+export function getSelectedUPEGatewayPaymentMethod() {
+	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+	const gatewayCardId = getUPEConfig( 'gatewayId' );
+	let selectedGatewayId = null;
+
+	// Handle payment method selection on the Checkout page or Add Payment Method page where class names differ.
+
+	if ( null !== document.querySelector( 'li.wc_payment_method' ) ) {
+		selectedGatewayId = document
+			.querySelector( 'li.wc_payment_method input.input-radio:checked' )
+			.getAttribute( 'id' );
+	} else if (
+		null !== document.querySelector( 'li.woocommerce-PaymentMethod' )
+	) {
+		selectedGatewayId = document
+			.querySelector(
+				'li.woocommerce-PaymentMethod input.input-radio:checked'
+			)
+			.getAttribute( 'id' );
+	}
+
+	if ( 'payment_method_woocommerce_payments' === selectedGatewayId ) {
+		selectedGatewayId = 'payment_method_woocommerce_payments_card';
+	}
+
+	let selectedPaymentMethod = null;
+
+	for ( const paymentMethodType in paymentMethodsConfig ) {
+		if (
+			`payment_method_${ gatewayCardId }_${ paymentMethodType }` ===
+			selectedGatewayId
+		) {
+			selectedPaymentMethod = paymentMethodType;
+			break;
+		}
+	}
+
+	return selectedPaymentMethod;
 }

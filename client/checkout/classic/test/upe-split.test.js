@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { isUsingSavedPaymentMethod } from '../upe-split';
+import * as CheckoutUtils from 'utils/checkout';
+import {
+	isUsingSavedPaymentMethod,
+	getSelectedUPEGatewayPaymentMethod,
+} from '../upe-split';
 
 describe( 'isUsingSavedPaymentMethod', () => {
 	let container;
@@ -70,5 +74,61 @@ describe( 'isUsingSavedPaymentMethod', () => {
 		const paymentMethodType = 'sofort';
 
 		expect( isUsingSavedPaymentMethod( paymentMethodType ) ).toBe( false );
+	} );
+} );
+
+describe( 'getSelectedUPEGatewayPaymentMethod', () => {
+	let container;
+	let input;
+	const spy = jest.spyOn( CheckoutUtils, 'getUPEConfig' );
+	spy.mockImplementation( ( param ) => {
+		if ( 'paymentMethodsConfig' === param ) {
+			return { card: {}, bancontact: {} };
+		}
+		if ( 'gatewayId' === param ) {
+			return 'woocommerce_payments';
+		}
+	} );
+
+	beforeAll( () => {
+		container = document.createElement( 'div' );
+		container.innerHTML = `
+		<ul class="wc_payment_methods payment_methods methods">
+			<li class="wc_payment_method payment_method_woocommerce_payments">
+				<input id="payment_method_woocommerce_payments" type="radio" class="input-radio">
+			</li>
+			<li class="wc_payment_method payment_method_woocommerce_payments_bancontact">
+				<input id="payment_method_woocommerce_payments_bancontact" type="radio" class="input-radio">
+			</li>
+		</ul>
+		`;
+		document.body.appendChild( container );
+	} );
+
+	afterEach( () => {
+		input.checked = false;
+	} );
+
+	afterAll( () => {
+		document.body.removeChild( container );
+		container = null;
+	} );
+
+	test( 'Selected UPE Payment Method is card', () => {
+		input = document.querySelector(
+			'#payment_method_woocommerce_payments'
+		);
+		input.checked = true;
+
+		expect( getSelectedUPEGatewayPaymentMethod() ).toBe( 'card' );
+	} );
+
+	test( 'Selected UPE Payment Method is bancontact', () => {
+		input = document.querySelector(
+			'#payment_method_woocommerce_payments_bancontact'
+		);
+		input.checked = true;
+
+		expect( getSelectedUPEGatewayPaymentMethod() ).toBe( 'bancontact' );
 	} );
 } );
