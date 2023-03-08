@@ -56,6 +56,13 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 						value={ maxOrders }
 						onChange={ setMaxOrders }
 						type={ 'number' }
+						min={ 1 }
+						step={ 1 }
+						onBlur={ () => {
+							if ( ! ( '' + maxOrders ).match( /^\d+$/ ) ) {
+								setMaxOrders( '' );
+							}
+						} }
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
