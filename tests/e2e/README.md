@@ -35,7 +35,7 @@ By default, the local E2E environment is configured to use WCPay local server in
 
 ```
 # WooCommerce Payments Server Repo
-WCP_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+WCP_SERVER_REPO='<https://github.com/server-repo.git or git@github.com:org/server-repo.git>(Copy Server Repo URL)'
 
 # Stripe account data. Need to support level 3 data to run tests successfully.
 # These values can be obtained from the Stripe Dashboard: https://dashboard.stripe.com/test/apikeys
@@ -178,9 +178,9 @@ Handy utility scripts for managing environment:
 Package `@woocommerce/e2e-environment` overrides `it` method to attach custom reporter for failed tests.
 It is important to write test cases within `it()` rather than `test()` function to make sure failed tests are reported to Slack channel.
 
-## Debugging tests
+## Debugging tests & handling failures
 
-Create file `local.env` inside `tests/e2e/config` folder and set `E2E_DEBUG=true` env variable to pause test runner when test fails.
+Create file `local.env` inside `tests/e2e/config` folder and set `E2E_DEBUG=true` env variable to pause test runner when test fails. For more info on investigating & handling E2E failures, refer to paJDYF-7pT-p2.
 
 ## Slack integration
 
