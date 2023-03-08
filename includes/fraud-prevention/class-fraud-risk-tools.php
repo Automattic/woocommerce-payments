@@ -200,7 +200,7 @@ class Fraud_Risk_Tools {
 						'key'     => $key,
 						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
 						'check'   => [
-							'key'      => 'billing_shipping_address_match',
+							'key'      => 'billing_shipping_addresses_match',
 							'operator' => self::OPERATOR_EQUALS,
 							'value'    => false,
 						],
@@ -211,9 +211,9 @@ class Fraud_Risk_Tools {
 						'key'     => $key,
 						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
 						'check'   => [
-							'key'      => 'ip_country',
-							'operator' => self::OPERATOR_NOT_EQUALS,
-							'value'    => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
+							'key'      => 'ip_country_same_with_account_country',
+							'operator' => self::OPERATOR_EQUALS,
+							'value'    => false,
 						],
 					];
 					break;
@@ -222,9 +222,9 @@ class Fraud_Risk_Tools {
 						'key'     => $key,
 						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
 						'check'   => [
-							'key'      => 'billing_country',
-							'operator' => self::OPERATOR_NOT_EQUALS,
-							'value'    => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
+							'key'      => 'billing_country_same_with_account_country',
+							'operator' => self::OPERATOR_EQUALS,
+							'value'    => false,
 						],
 					];
 					break;
