@@ -12,7 +12,7 @@ For running E2E tests locally, create a new file named `local.env` under `tests/
 
 ```
 # WooCommerce Payments Dev Tools Repo
-WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
+WCP_DEV_TOOLS_REPO='<https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git>(Add dev tools repo url)'
 
 # Optional to see additional verbose output. Default false.
 DEBUG=false
@@ -35,7 +35,7 @@ By default, the local E2E environment is configured to use WCPay local server in
 
 ```
 # WooCommerce Payments Server Repo
-WCP_SERVER_REPO='<https://github.com/server-repo.git or git@github.com:org/server-repo.git>(Copy Server Repo URL)'
+WCP_SERVER_REPO='<https://github.com/server-repo.git or git@github.com:org/server-repo.git>(Add server repo url)'
 
 # Stripe account data. Need to support level 3 data to run tests successfully.
 # These values can be obtained from the Stripe Dashboard: https://dashboard.stripe.com/test/apikeys
