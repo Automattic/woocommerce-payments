@@ -6,24 +6,6 @@ export interface TourCoordinates {
 	scrollPadding?: [ number, number ];
 }
 
-interface TourOptionContentImage {
-	src: string;
-	mobileOnly?: boolean;
-}
-
-export interface TourOptionContentButton {
-	text: string;
-}
-
-interface TourOptionContent {
-	title: string;
-	description: string;
-	image?: TourOptionContentImage;
-	counter?: boolean;
-	actionButton?: TourOptionContentButton | false;
-	previousButton?: TourOptionContentButton | false;
-}
-
 export interface TourOptionRelativePosition {
 	top?: number;
 	left?: number;
@@ -37,13 +19,24 @@ export type TourOptionPosition =
 	| TourOptionAbsolutePosition
 	| TourOptionRelativePosition;
 
-interface TourOption {
+export interface TourOption {
 	selector: string;
 	position: TourOptionPosition;
-	content: TourOptionContent;
+	content: React.ReactNode;
 }
 
 export interface TourProps {
-	options: TourOption[];
 	onTourEnd: () => void;
+	onTourStart?: () => void;
+	onCloseButtonClick?: () => void;
+}
+
+export interface WcPayTourContextProps extends TourProps {
+	steps: string[];
+	currentStep: string;
+	currentIndex: number;
+	registerStep: ( selector: string ) => string;
+	onNextStepButtonClick: () => void;
+	onPreviousStepButtonClick: () => void;
+	scrollRestoration?: React.MutableRefObject< ScrollRestoration | null >;
 }

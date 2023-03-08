@@ -30,7 +30,7 @@
 	animation-fill-mode: forwards;
 }
 
-.smooth-scroll {
+.modal-smooth-scroll {
 	scroll-behavior: smooth;
 }
 
@@ -49,11 +49,11 @@
 		@include stickyBehavior;
 	}
 
-	@media ( max-width: 600px ) {
+	@media ( max-width: 782px ) {
 		@include stickyBehavior;
 	}
 
-	@media ( min-width: 600px ) {
+	@media ( min-width: 783px ) {
 		&--arrow {
 			&::before {
 				content: '';
@@ -135,7 +135,7 @@
 		&--mobile {
 			display: block;
 
-			@media ( min-width: 600px ) {
+			@media ( min-width: 782px ) {
 				display: none;
 			}
 		}
@@ -161,12 +161,12 @@
 		h3 {
 			color: #1e1e1e;
 		}
+	}
 
-		footer {
-			align-items: center;
-			display: flex;
-			margin-top: 28px;
-		}
+	&__footer {
+		align-items: center;
+		display: flex;
+		padding: 12px 16px 16px;
 	}
 
 	&__counter {

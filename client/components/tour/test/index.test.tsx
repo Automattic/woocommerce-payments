@@ -11,36 +11,46 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import Tour from '..';
+import {
+	TourContent,
+	TourFooter,
+	TourImage,
+	TourNextButton,
+	TourPreviousButton,
+	TourStep,
+} from '../components';
 
 const MockTour = ( { onTourEnd }: { onTourEnd: jest.Mock } ) => (
 	<>
 		<div id="first-selector">First target element</div>
 		<div id="second-selector">Second target element</div>
-		<Tour
-			options={ [
-				{
-					selector: '#first-selector',
-					position: { bottom: 20, left: 20 },
-					content: {
-						title: 'Example title',
-						image: { src: 'image.png' },
-						description: 'Example description',
-						previousButton: false,
-					},
-				},
-				{
-					selector: '#second-selector',
-					position: 'bottom',
-					content: {
-						title: 'Example title (second)',
-						description: 'Example description (second)',
-						actionButton: { text: 'Close' },
-						counter: true,
-					},
-				},
-			] }
-			onTourEnd={ onTourEnd }
-		/>
+		<Tour onTourEnd={ onTourEnd }>
+			<TourStep
+				selector="#first-selector"
+				position={ { bottom: 20, left: 20 } }
+			>
+				<TourImage src="image.png" alt="Example title" />
+				<TourContent
+					title="Example title"
+					description="Example description"
+				/>
+				<TourFooter showCounter={ false }>
+					<TourNextButton />
+				</TourFooter>
+			</TourStep>
+
+			<TourStep selector="#second-selector" position="bottom">
+				<TourImage src="image.png" alt="Example title (second)" />
+				<TourContent
+					title="Example title (second)"
+					description="Example description (second)"
+				/>
+				<TourFooter>
+					<TourPreviousButton />
+					<TourNextButton>Close</TourNextButton>
+				</TourFooter>
+			</TourStep>
+		</Tour>
 	</>
 );
 
@@ -138,20 +148,16 @@ describe( 'Tour component', () => {
 		const { getByText } = render(
 			<>
 				<div id="first-selector">First target element</div>
-				<Tour
-					options={ [
-						{
-							selector: '#first-selector',
-							position: 'bottom',
-							content: {
-								title: 'Example title',
-								image: { src: 'image.png' },
-								description: 'Example description',
-							},
-						},
-					] }
-					onTourEnd={ jest.fn() }
-				/>
+				<Tour onTourEnd={ jest.fn() }>
+					<TourStep selector="#first-selector" position="bottom">
+						<TourImage src="image.png" alt="Example title" />
+						<TourContent
+							title="Example title"
+							description="Example description"
+						/>
+						<TourFooter showCounter={ false } />
+					</TourStep>
+				</Tour>
 			</>
 		);
 
@@ -168,21 +174,18 @@ describe( 'Tour component', () => {
 		const { baseElement } = render(
 			<>
 				<div id="first-selector">First target element</div>
-				<Tour
-					options={ [
-						{
-							selector: '#wrong-selector',
-							position: 'bottom',
-							content: {
-								title: 'Example title',
-								image: { src: 'image.png' },
-								description: 'Example description',
-								previousButton: false,
-							},
-						},
-					] }
-					onTourEnd={ jest.fn() }
-				/>
+				<Tour onTourEnd={ jest.fn() }>
+					<TourStep selector="#wrong-selector" position="bottom">
+						<TourImage src="image.png" alt="Example title" />
+						<TourContent
+							title="Example title"
+							description="Example description"
+						/>
+						<TourFooter showCounter={ false }>
+							<TourNextButton />
+						</TourFooter>
+					</TourStep>
+				</Tour>
 			</>
 		);
 
@@ -193,21 +196,18 @@ describe( 'Tour component', () => {
 		const { baseElement } = render(
 			<>
 				<div id="first-selector">First target element</div>
-				<Tour
-					options={ [
-						{
-							selector: '',
-							position: 'bottom',
-							content: {
-								title: 'Example title',
-								image: { src: 'image.png' },
-								description: 'Example description',
-								previousButton: false,
-							},
-						},
-					] }
-					onTourEnd={ jest.fn() }
-				/>
+				<Tour onTourEnd={ jest.fn() }>
+					<TourStep selector="" position="bottom">
+						<TourImage src="image.png" alt="Example title" />
+						<TourContent
+							title="Example title"
+							description="Example description"
+						/>
+						<TourFooter showCounter={ false }>
+							<TourNextButton />
+						</TourFooter>
+					</TourStep>
+				</Tour>
 			</>
 		);
 
@@ -232,7 +232,7 @@ describe( 'Tour component', () => {
 		const { baseElement } = render(
 			<>
 				<div id="first-selector">First target element</div>
-				<Tour options={ [] } onTourEnd={ jest.fn() } />
+				<Tour onTourEnd={ jest.fn() } />
 			</>
 		);
 

@@ -2,7 +2,7 @@
 
 exports[`Tour component should not render the tour modal if no content is passed as props 1`] = `
 <body
-  class="modal-open"
+  class=""
 >
   <p
     class="a11y-speak-intro-text"
@@ -110,19 +110,21 @@ exports[`Tour component should render correctly 1`] = `
       <p>
         Example description
       </p>
-      <footer>
-        <div
-          class="tour-modal__buttons"
-        >
-          <button
-            class="components-button is-primary"
-            type="button"
-          >
-            Next
-          </button>
-        </div>
-      </footer>
     </div>
+    <footer
+      class="tour-modal__footer"
+    >
+      <div
+        class="tour-modal__buttons"
+      >
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Next
+        </button>
+      </div>
+    </footer>
   </div>
 </body>
 `;
@@ -194,19 +196,21 @@ exports[`Tour component should render in sticky mode if the given selector is em
       <p>
         Example description
       </p>
-      <footer>
-        <div
-          class="tour-modal__buttons"
-        >
-          <button
-            class="components-button is-primary"
-            type="button"
-          >
-            Next
-          </button>
-        </div>
-      </footer>
     </div>
+    <footer
+      class="tour-modal__footer"
+    >
+      <div
+        class="tour-modal__buttons"
+      >
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Next
+        </button>
+      </div>
+    </footer>
   </div>
 </body>
 `;
@@ -278,19 +282,21 @@ exports[`Tour component should render in sticky mode if the given selector is no
       <p>
         Example description
       </p>
-      <footer>
-        <div
-          class="tour-modal__buttons"
-        >
-          <button
-            class="components-button is-primary"
-            type="button"
-          >
-            Next
-          </button>
-        </div>
-      </footer>
     </div>
+    <footer
+      class="tour-modal__footer"
+    >
+      <div
+        class="tour-modal__buttons"
+      >
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Next
+        </button>
+      </div>
+    </footer>
   </div>
 </body>
 `;
