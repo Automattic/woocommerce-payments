@@ -19,7 +19,21 @@ import {
 	TourStep,
 } from './components';
 
-const Tour: React.FC< TourProps > = ( { children, ...props } ) => {
+/* eslint-disable @typescript-eslint/naming-convention */
+interface TourComponents {
+	Step: typeof TourStep;
+	Image: typeof TourImage;
+	Footer: typeof TourFooter;
+	Content: typeof TourContent;
+	NextButton: typeof TourNextButton;
+	PreviousButton: typeof TourPreviousButton;
+}
+/* eslint-enable @typescript-eslint/naming-convention */
+
+const Tour: React.FC< TourProps > & TourComponents = ( {
+	children,
+	...props
+} ) => {
 	if ( ! React.Children.count( children ) ) return null;
 
 	return (
@@ -35,11 +49,11 @@ const Tour: React.FC< TourProps > = ( { children, ...props } ) => {
 	);
 };
 
-export default Object.assign( Tour, {
-	Step: TourStep,
-	Image: TourImage,
-	Footer: TourFooter,
-	Content: TourContent,
-	NextButton: TourNextButton,
-	PreviousButton: TourPreviousButton,
-} );
+Tour.Step = TourStep;
+Tour.Image = TourImage;
+Tour.Footer = TourFooter;
+Tour.Content = TourContent;
+Tour.NextButton = TourNextButton;
+Tour.PreviousButton = TourPreviousButton;
+
+export default Tour;
