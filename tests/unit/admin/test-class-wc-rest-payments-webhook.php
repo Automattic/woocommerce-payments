@@ -47,9 +47,10 @@ class WC_REST_Payments_Webhook_Controller_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->mock_webhook_processing_service = $this->createMock( WC_Payments_Webhook_Processing_Service::class );
+		$this->mock_webhook_processing_service  = $this->createMock( WC_Payments_Webhook_Processing_Service::class );
+		$this->mock_webhook_reliability_service = $this->createMock( WC_Payments_Webhook_Reliability_Service::class );
 
-		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_webhook_processing_service );
+		$this->controller = new WC_REST_Payments_Webhook_Controller( $mock_api_client, $this->mock_webhook_processing_service, $this->mock_webhook_reliability_service );
 
 		// Setup a test request.
 		$this->request = new WP_REST_Request(
