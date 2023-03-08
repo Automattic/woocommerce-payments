@@ -38,15 +38,24 @@ jQuery( function ( $ ) {
 
 	$( 'select#order_status' ).on( 'change', function () {
 		const originalStatus = $( 'input#original_post_status' ).val();
+		const canRefund = getConfig( 'canRefund' );
+		const refundAmount = getConfig( 'refundAmount' );
 		if (
 			'wc-refunded' === this.value &&
 			'wc-refunded' !== originalStatus
 		) {
-			renderRefundConfirmationModal( originalStatus );
+			renderRefundConfirmationModal(
+				originalStatus,
+				canRefund,
+				refundAmount
+			);
 		} else if (
 			'wc-cancelled' === this.value &&
 			'wc-cancelled' !== originalStatus
 		) {
+			if ( ! canRefund || 0 >= refundAmount ) {
+				return;
+			}
 			renderModal(
 				<CancelConfirmationModal
 					originalOrderStatus={ originalStatus }
@@ -55,9 +64,11 @@ jQuery( function ( $ ) {
 		}
 	} );
 
-	function renderRefundConfirmationModal( originalStatus ) {
-		const canRefund = getConfig( 'canRefund' );
-		const refundAmount = getConfig( 'refundAmount' );
+	function renderRefundConfirmationModal(
+		originalStatus,
+		canRefund,
+		refundAmount
+	) {
 		if ( ! canRefund ) {
 			alert( __( 'Order cannot be refunded', 'woocommerce-payments' ) );
 			return;
