@@ -52,7 +52,7 @@ describe( 'SettingsManager', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		expect( screen.queryByText( 'Fraud Protection' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Fraud protection' ) ).toBeInTheDocument();
 	} );
 
 	it( 'does not render the Fraud Protection settings section if the option flag is disabled', () => {
@@ -68,7 +68,7 @@ describe( 'SettingsManager', () => {
 		);
 
 		expect(
-			screen.queryByText( 'Fraud Protection' )
+			screen.queryByText( 'Fraud protection' )
 		).not.toBeInTheDocument();
 	} );
 } );
