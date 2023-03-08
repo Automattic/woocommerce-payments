@@ -661,24 +661,6 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Returns the cached setup intent.
-	 *
-	 * @param {string} paymentMethodType Stripe payment method type ID.
-	 * @return {Object} The intent id and client secret required for mounting the UPE element.
-	 */
-	function getSetupIntentFromSession( paymentMethodType ) {
-		const upeSetupIntentData =
-			paymentMethodsConfig[ paymentMethodType ].upeSetupIntentData;
-		if ( upeSetupIntentData ) {
-			const intentId = upeSetupIntentData.split( '-' )[ 0 ];
-			const clientSecret = upeSetupIntentData.split( '-' )[ 1 ];
-			return { intentId, clientSecret };
-		}
-
-		return {};
-	}
-
-	/**
 	 * Returns stripe intent secret that will be used to confirm payment
 	 *
 	 * @param {string} paymentMethodType Stripe payment method type ID.
@@ -863,4 +845,23 @@ export function getSelectedUPEGatewayPaymentMethod() {
 	}
 
 	return selectedPaymentMethod;
+}
+
+/**
+ * Returns the cached setup intent.
+ *
+ * @param {string} paymentMethodType Stripe payment method type ID.
+ * @return {Object} The intent id and client secret required for mounting the UPE element.
+ */
+export function getSetupIntentFromSession( paymentMethodType ) {
+	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+	const upeSetupIntentData =
+		paymentMethodsConfig[ paymentMethodType ].upeSetupIntentData;
+	if ( upeSetupIntentData ) {
+		const intentId = upeSetupIntentData.split( '-' )[ 0 ];
+		const clientSecret = upeSetupIntentData.split( '-' )[ 1 ];
+		return { intentId, clientSecret };
+	}
+
+	return {};
 }
