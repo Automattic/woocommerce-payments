@@ -72,6 +72,7 @@ class WC_Payments_API_Client {
 	const VAT_API                      = 'vat';
 	const LINKS_API                    = 'links';
 	const AUTHORIZATIONS_API           = 'authorizations';
+	const FRAUD_RULESET_API            = 'fraud_ruleset';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -1996,6 +1997,27 @@ class WC_Payments_API_Client {
 		);
 
 		WC_Payments::get_account_service()->refresh_account_data();
+
+		return $response;
+	}
+
+	/**
+	 * Saves the ruleset config as the latest one for the account.
+	 *
+	 * @param   array $ruleset_config  The ruleset array.
+	 *
+	 * @return  array                  HTTP resposne on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function save_fraud_ruleset( $ruleset_config ) {
+		$response = $this->request(
+			[
+				'ruleset_config' => $ruleset_config,
+			],
+			self::FRAUD_RULESET_API,
+			self::POST
+		);
 
 		return $response;
 	}

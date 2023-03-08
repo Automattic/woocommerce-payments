@@ -786,6 +786,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		update_option( 'current_protection_level', $current_protection_level );
+
+		$this->wcpay_gateway->sync_account_protection_ruleset();
 	}
 
 	/**
@@ -805,5 +807,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$advanced_fraud_protection_settings = $request->get_param( 'advanced_fraud_protection_settings' );
 
 		update_option( 'advanced_fraud_protection_settings', wp_json_encode( $advanced_fraud_protection_settings ) );
+
+		$this->wcpay_gateway->sync_account_protection_ruleset();
 	}
 }

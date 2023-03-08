@@ -3292,6 +3292,40 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return WC_Payments_Admin_Settings::get_settings_url();
 	}
 
+	/**
+	 * Sends the account fraud protection settings with the server.
+	 *
+	 * @return  void
+	 */
+	public function sync_account_protection_ruleset() {
+		$protection_level = $this->get_current_protection_level();
+		$settings         = null;
+		switch ( $protection_level ) {
+			case 'standard':
+				$settings = Fraud_Risk_Tools::get_standard_protection_settings();
+				break;
+			case 'high':
+				$settings = Fraud_Risk_Tools::get_high_protection_settings();
+				break;
+			case 'advanced':
+				$settings = $this->get_advanced_fraud_protection_settings();
+				break;
+		}
+
+		$ruleset_config = Fraud_Risk_Tools::build_rules( $settings );
+
+		if ( ! $ruleset_config ) {
+			Logger::error( 'Failed to build fraud ruleset: ' . wp_json_encode( $settings ) );
+			return;
+		}
+
+		try {
+			$this->payments_api_client->save_fraud_ruleset( $ruleset_config );
+		} catch ( API_Exception $e ) {
+			Logger::error( 'Failed to send fraud ruleset: ' . $e );
+		}
+	}
+
 	// Start: Deprecated functions.
 
 	/**

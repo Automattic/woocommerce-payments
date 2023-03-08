@@ -222,7 +222,7 @@ class Fraud_Risk_Tools {
 	 *
 	 * @param   array $protection_settings  The settings array to generate rules from.
 	 *
-	 * @return  string|bool                 The generated JSON structure for the rule engine, or false when encoding fails.
+	 * @return  array|bool                  The generated structure for the rule engine, or false when encoding fails.
 	 */
 	public static function build_rules( $protection_settings ) {
 		$enabled_settings = array_filter(
@@ -374,6 +374,6 @@ class Fraud_Risk_Tools {
 			}
 		}
 
-		return wp_json_encode( $rule_configuration );
+		return $rule_configuration;
 	}
 }
