@@ -10,7 +10,7 @@ jobs:
 
     steps:
       # clone the repository
-      - uses: actions/checkout3
+      - uses: actions/checkout@v3
 
       # Use project specific node version
       - uses: actions/setup-node@v3
