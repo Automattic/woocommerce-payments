@@ -61,6 +61,42 @@ class Platform_Checkout_Utilities_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Data provider for test_should_enable_platform_checkout.
+	 *
+	 * @return boolean
+	 */
+	public function is_country_available_data_provider() {
+		return [
+			[ '206.71.50.230', true ], // US.
+			[ '187.34.8.193', false ], // BR.
+		];
+	}
+
+	/**
+	 * Platform checkout is available if feature flags are enabled.
+	 *
+	 * @dataProvider is_country_available_data_provider
+	 * @return void
+	 */
+	public function test_is_country_available( $ip_address, $expected ) {
+		$_SERVER['REMOTE_ADDR'] = $ip_address;
+
+		WC_Payments::mode()->live();
+
+		$platform_checkout_utilities = new Platform_Checkout_Utilities();
+		$actual                      = $platform_checkout_utilities->is_country_available( $this->gateway_mock );
+		$this->assertSame( $expected, $actual );
+	}
+
+	public function test_is_country_available_in_test_mode_return_true() {
+		WC_Payments::mode()->test();
+
+		$platform_checkout_utilities = new Platform_Checkout_Utilities();
+		$actual                      = $platform_checkout_utilities->is_country_available( $this->gateway_mock );
+		$this->assertSame( true, $actual );
+	}
+
+	/**
 	 * Cache account details.
 	 *
 	 * @param $account

@@ -81,7 +81,6 @@ const UpeSetupBanner = () => {
 		<>
 			<CardDivider />
 			<CardBody className="payment-methods__express-checkouts">
-				<Pill>{ __( 'Early access', 'woocommerce-payments' ) }</Pill>
 				<h3>
 					{ __(
 						'Enable the new WooCommerce Payments checkout experience',
@@ -91,7 +90,7 @@ const UpeSetupBanner = () => {
 				<p>
 					{ __(
 						/* eslint-disable-next-line max-len */
-						'Get early access to additional payment methods and an improved checkout experience, coming soon to WooCommerce Payments.',
+						'Get access to additional payment methods and an improved checkout experience.',
 						'woocommerce-payments'
 					) }
 				</p>
@@ -193,7 +192,7 @@ const PaymentMethods = () => {
 		featureFlags: { upeSettingsPreview: isUpeSettingsPreviewEnabled },
 	} = useContext( WCPaySettingsContext );
 
-	const { isUpeEnabled, status } = useContext( WcPayUpeContext );
+	const { isUpeEnabled, status, upeType } = useContext( WcPayUpeContext );
 	const [ openModalIdentifier, setOpenModalIdentifier ] = useState( '' );
 
 	return (
@@ -229,10 +228,18 @@ const PaymentMethods = () => {
 									'Payment methods',
 									'woocommerce-payments'
 								) }
-							</span>{ ' ' }
-							<Pill>
-								{ __( 'Early access', 'woocommerce-payments' ) }
-							</Pill>
+							</span>
+							{ 'split' !== upeType && (
+								<>
+									{ ' ' }
+									<Pill>
+										{ __(
+											'Early access',
+											'woocommerce-payments'
+										) }
+									</Pill>
+								</>
+							) }
 						</h4>
 						<PaymentMethodsDropdownMenu
 							setOpenModal={ setOpenModalIdentifier }
@@ -261,6 +268,9 @@ const PaymentMethods = () => {
 											getStatusAndRequirements( id )
 												.status
 									}
+									// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
+									required={ 'card' === id && isUpeEnabled }
+									locked={ 'card' === id && isUpeEnabled }
 									Icon={ Icon }
 									status={
 										getStatusAndRequirements( id ).status

@@ -20,10 +20,13 @@ import {
 } from '../../data';
 import './style.scss';
 import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';
+import SupportPhoneInput from 'wcpay/settings/support-phone-input';
+import SupportEmailInput from 'wcpay/settings/support-email-input';
+import React, { useEffect, useState } from 'react';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
 
-const Transactions = () => {
+const Transactions = ( { setTransactionInputsValid } ) => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
 	const [
 		accountStatementDescriptor,
@@ -31,6 +34,15 @@ const Transactions = () => {
 	] = useAccountStatementDescriptor();
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
+
+	const [ isEmailInputValid, setEmailInputValid ] = useState( true );
+	const [ isPhoneInputValid, setPhoneInputValid ] = useState( true );
+
+	useEffect( () => {
+		if ( setTransactionInputsValid ) {
+			setTransactionInputsValid( isEmailInputValid && isPhoneInputValid );
+		}
+	}, [ isEmailInputValid, isPhoneInputValid, setTransactionInputsValid ] );
 
 	return (
 		<Card className="transactions">
@@ -52,16 +64,18 @@ const Transactions = () => {
 					) }
 				/>
 				<ManualCaptureControl></ManualCaptureControl>
-				{ customerBankStatementErrorMessage && (
-					<Notice status="error" isDismissible={ false }>
-						<span
-							dangerouslySetInnerHTML={ {
-								__html: customerBankStatementErrorMessage,
-							} }
-						/>
-					</Notice>
-				) }
-				<div className="transactions__account-statement-wrapper">
+				<h4>{ __( 'Customer support', 'woocommerce-payments' ) }</h4>
+
+				<div className="transactions__customer-support">
+					{ customerBankStatementErrorMessage && (
+						<Notice status="error" isDismissible={ false }>
+							<span
+								dangerouslySetInnerHTML={ {
+									__html: customerBankStatementErrorMessage,
+								} }
+							/>
+						</Notice>
+					) }
 					<TextControl
 						className="transactions__account-statement-input"
 						help={ __(
@@ -80,6 +94,9 @@ const Transactions = () => {
 					<span className="input-help-text" aria-hidden="true">
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
 					</span>
+
+					<SupportEmailInput setInputVallid={ setEmailInputValid } />
+					<SupportPhoneInput setInputVallid={ setPhoneInputValid } />
 				</div>
 			</CardBody>
 		</Card>

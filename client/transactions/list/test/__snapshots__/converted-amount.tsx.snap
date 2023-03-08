@@ -8,6 +8,7 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 1`] 
     <span
       class="conversion-indicator"
       data-testid="conversion-indicator"
+      style="height: 18px; width: 18px;"
     >
       <svg
         class="gridicon gridicons-sync"
@@ -36,6 +37,7 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 2`] 
     <span
       class="conversion-indicator"
       data-testid="conversion-indicator"
+      style="height: 18px; width: 18px;"
     >
       <svg
         class="gridicon gridicons-sync"

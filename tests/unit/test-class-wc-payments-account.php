@@ -409,6 +409,99 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
 	}
 
+	public function test_is_stripe_account_valid_when_not_connected() {
+		$this->mock_empty_cache();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_account_data' )
+			->willThrowException( new API_Exception( 'test', 'wcpay_mock', 500 ) );
+
+		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_empty_account_data() {
+		$this->mock_empty_cache();
+
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->returnValue( [] )
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_unrequested() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'unrequested',
+				],
+			]
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_requested() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'requested',
+				],
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_active() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'active',
+				],
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_pending_verification() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'pending_verification',
+				],
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
 	public function test_get_publishable_key_returns_for_live() {
 		$this->mock_empty_cache();
 
@@ -488,7 +581,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_dev_account_in_dev_mode() {
 		// enable dev mode.
-		add_filter( 'wcpay_dev_mode', '__return_true' );
+		WC_Payments::mode()->dev();
 
 		// cache a dev account.
 		$this->cache_account_details(
@@ -507,12 +600,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 
-		remove_filter( 'wcpay_dev_mode', '__return_true' );
+		WC_Payments::mode()->live();
 	}
 
 	public function test_try_is_stripe_connected_returns_false_when_connected_with_dev_account_in_live_mode() {
 		// disable dev mode.
-		add_filter( 'wcpay_dev_mode', '__return_false' );
+		WC_Payments::mode()->live();
 
 		// cache a dev account.
 		$this->cache_account_details(
@@ -533,12 +626,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
 
-		remove_filter( 'wcpay_dev_mode', '__return_false' );
+		WC_Payments::mode()->live();
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_live_account_in_dev_mode() {
 		// enable dev mode.
-		add_filter( 'wcpay_dev_mode', '__return_true' );
+		WC_Payments::mode()->dev();
 
 		// cache a live account.
 		$this->cache_account_details(
@@ -557,7 +650,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 
-		remove_filter( 'wcpay_dev_mode', '__return_true' );
+		WC_Payments::mode()->live();
 	}
 
 	public function test_is_account_rejected_returns_true() {

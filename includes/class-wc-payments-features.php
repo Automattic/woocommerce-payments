@@ -14,17 +14,70 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WC_Payments_Features {
 	const UPE_FLAG_NAME                     = '_wcpay_feature_upe';
+	const UPE_SPLIT_FLAG_NAME               = '_wcpay_feature_upe_split';
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
+	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
 
 	/**
-	 * Checks whether the UPE gateway is enabled
+	 * Checks whether any UPE gateway is enabled.
 	 *
 	 * @return bool
 	 */
 	public static function is_upe_enabled() {
-		return '1' === get_option( self::UPE_FLAG_NAME, '0' );
+		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled();
+	}
+
+	/**
+	 * Returns the "type" of UPE that will be displayed at checkout.
+	 *
+	 * @return string
+	 */
+	public static function get_enabled_upe_type() {
+		if ( self::is_upe_split_enabled() ) {
+			return 'split';
+		}
+
+		if ( self::is_upe_legacy_enabled() ) {
+			return 'legacy';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Checks whether the legacy UPE gateway is enabled
+	 *
+	 * @return bool
+	 */
+	public static function is_upe_legacy_enabled() {
+		$upe_flag_value = '1' === get_option( self::UPE_FLAG_NAME, '0' );
+		if ( $upe_flag_value ) {
+			return true;
+		}
+
+		// if the merchant is not eligible for the Split UPE, but they have the flag enabled, fallback to the "legacy" UPE (for now).
+		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && ! self::is_upe_split_eligible();
+	}
+
+	/**
+	 * Checks whether the Split-UPE gateway is enabled
+	 */
+	public static function is_upe_split_enabled() {
+		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
+	}
+
+	/**
+	 * Checks for the requirements to have the split-UPE enabled.
+	 */
+	private static function is_upe_split_eligible() {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		if ( empty( $account['capabilities']['sepa_debit_payments'] ) ) {
+			return true;
+		}
+
+		return 'active' !== $account['capabilities']['sepa_debit_payments'];
 	}
 
 	/**
@@ -33,7 +86,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function did_merchant_disable_upe() {
-		return 'disabled' === get_option( self::UPE_FLAG_NAME, '0' );
+		return 'disabled' === get_option( self::UPE_FLAG_NAME, '0' ) || 'disabled' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
 	}
 
 	/**
@@ -84,7 +137,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_account_overview_task_list_enabled() {
-		return get_option( '_wcpay_feature_account_overview_task_list', '1' );
+		return '1' === get_option( '_wcpay_feature_account_overview_task_list', '1' );
 	}
 
 	/**
@@ -152,7 +205,7 @@ class WC_Payments_Features {
 	 */
 	public static function is_woopay_express_checkout_enabled() {
 		// Confirm platform checkout eligibility as well.
-		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '0' ) && self::is_platform_checkout_eligible();
+		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_platform_checkout_eligible();
 	}
 
 	/**
@@ -162,6 +215,24 @@ class WC_Payments_Features {
 	 */
 	public static function is_auth_and_capture_enabled() {
 		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
+	}
+
+	/**
+	 * Checks whether Progressive Onboarding is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_progressive_onboarding_enabled(): bool {
+		return '1' === get_option( self::PROGRESSIVE_ONBOARDING_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks whether the Fraud and Risk Tools feature flag is enabled.
+	 *
+	 * @return  bool
+	 */
+	public static function is_fraud_protection_settings_enabled(): bool {
+		return '1' === get_option( 'wcpay_fraud_protection_settings_active', '0' );
 	}
 
 	/**
@@ -182,6 +253,7 @@ class WC_Payments_Features {
 				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
+				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
 			]
 		);
 	}

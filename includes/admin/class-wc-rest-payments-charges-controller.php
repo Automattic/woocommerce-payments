@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -45,7 +46,8 @@ class WC_REST_Payments_Charges_Controller extends WC_Payments_REST_Controller {
 		$charge_id = $request->get_param( 'charge_id' );
 
 		try {
-			$charge = $this->api_client->get_charge( $charge_id );
+			$wcpay_request = Get_Charge::create( $charge_id );
+			$charge        = $wcpay_request->send( 'wcpay_get_charge_request' );
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( 'wcpay_get_charge', $e->getMessage() ) );
 		}
