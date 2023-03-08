@@ -22,6 +22,32 @@ class Fraud_Risk_Tools {
 	 */
 	protected static $instance = null;
 
+	// Rule names.
+	const RULE_AVS_MISMATCH                  = 'avs_mismatch';
+	const RULE_CVC_VERIFICATION              = 'cvc_verification';
+	const RULE_ADDRESS_MISMATCH              = 'address_mismatch';
+	const RULE_INTERNATIONAL_IP_ADDRESS      = 'international_ip_address';
+	const RULE_INTERNATIONAL_BILLING_ADDRESS = 'international_billing_address';
+	const RULE_ORDER_VELOCITY                = 'order_velocity';
+	const RULE_ORDER_ITEMS_THRESHOLD         = 'order_items_threshold';
+	const RULE_PURCHASE_PRICE_THRESHOLD      = 'purchase_price_threshold';
+
+	// Check operators.
+	const OPERATOR_EQUALS     = 'equals';
+	const OPERATOR_NOT_EQUALS = 'not_equals';
+	const OPERATOR_GTE        = 'greater_or_equal';
+	const OPERATOR_GT         = 'greater_than';
+	const OPERATOR_LTE        = 'less_or_equal';
+	const OPERATOR_LT         = 'less_than';
+
+	// Rule outcomes.
+	const FRAUD_OUTCOME_REVIEW = 'review';
+	const FRAUD_OUTCOME_BLOCK  = 'block';
+
+	// Checklist operators.
+	const LIST_OPERATOR_AND = 'and';
+	const LIST_OPERATOR_OR  = 'or';
+
 	/**
 	 * Main FraudRiskTools Instance.
 	 *
@@ -88,44 +114,203 @@ class Fraud_Risk_Tools {
 	 */
 	public static function get_default_protection_settings() {
 		return [
-			'avs_mismatch'                  => [
+			self::RULE_AVS_MISMATCH                  => [
 				'enabled' => false,
 				'block'   => false,
 			],
-			'cvc_verification'              => [
+			self::RULE_CVC_VERIFICATION              => [
 				'enabled' => false,
 				'block'   => false,
 			],
-			'address_mismatch'              => [
+			self::RULE_ADDRESS_MISMATCH              => [
 				'enabled' => false,
 				'block'   => false,
 			],
-			'international_ip_address'      => [
+			self::RULE_INTERNATIONAL_IP_ADDRESS      => [
 				'enabled' => false,
 				'block'   => false,
 			],
-			'international_billing_address' => [
+			self::RULE_INTERNATIONAL_BILLING_ADDRESS => [
 				'enabled' => false,
 				'block'   => false,
 			],
-			'order_velocity'                => [
+			self::RULE_ORDER_VELOCITY                => [
 				'enabled'    => false,
 				'block'      => false,
 				'max_orders' => 0,
 				'interval'   => 12,
 			],
-			'order_items_threshold'         => [
+			self::RULE_ORDER_ITEMS_THRESHOLD         => [
 				'enabled'   => false,
 				'block'     => false,
 				'min_items' => 0,
 				'max_items' => 0,
 			],
-			'purchase_price_threshold'      => [
+			self::RULE_PURCHASE_PRICE_THRESHOLD      => [
 				'enabled'    => false,
 				'block'      => false,
 				'min_amount' => 0,
 				'max_amount' => 0,
 			],
 		];
+	}
+
+	/**
+	 * Builds JSON configuration from fraud level settings.
+	 *
+	 * @param   array $protection_settings  The settings array to generate rules from.
+	 *
+	 * @return  string                       The generated JSON structure for the rule engine.
+	 */
+	public function build_rules( $protection_settings ) {
+		$enabled_settings = array_filter(
+			$protection_settings,
+			function( $setting ) {
+				return true === $setting['enabled'];
+			}
+		);
+
+		$rule_configuration = [];
+		foreach ( $enabled_settings as $key => $enabled_setting ) {
+			switch ( $key ) {
+				case self::RULE_AVS_MISMATCH:
+					$rule_configuration[] = [
+						'key'     => $key,
+						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
+						'check'   => [
+							'key'      => 'avs_check',
+							'operator' => 'equals',
+							'value'    => false,
+						],
+					];
+					break;
+				case self::RULE_CVC_VERIFICATION:
+					$rule_configuration[] = [
+						'key'     => $key,
+						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
+						'check'   => [
+							'key'      => 'cvc_check',
+							'operator' => self::OPERATOR_EQUALS,
+							'value'    => false,
+						],
+					];
+					break;
+				case self::RULE_ADDRESS_MISMATCH:
+					$rule_configuration[] = [
+						'key'     => $key,
+						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
+						'check'   => [
+							'key'      => 'billing_shipping_address_match',
+							'operator' => self::OPERATOR_EQUALS,
+							'value'    => false,
+						],
+					];
+					break;
+				case self::RULE_INTERNATIONAL_IP_ADDRESS:
+					$rule_configuration[] = [
+						'key'     => $key,
+						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
+						'check'   => [
+							'key'      => 'ip_country',
+							'operator' => self::OPERATOR_NOT_EQUALS,
+							'value'    => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
+						],
+					];
+					break;
+				case self::RULE_INTERNATIONAL_BILLING_ADDRESS:
+					$rule_configuration[] = [
+						'key'     => $key,
+						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
+						'check'   => [
+							'key'      => 'billing_country',
+							'operator' => self::OPERATOR_NOT_EQUALS,
+							'value'    => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
+						],
+					];
+					break;
+				case self::RULE_ORDER_VELOCITY:
+					$rule_configuration[] = [
+						'key'     => $key,
+						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
+						'check'   => [
+							'key'      => 'orders_since_' . $enabled_setting['interval'] . 'h',
+							'operator' => self::OPERATOR_GT,
+							'value'    => $enabled_setting['max_orders'],
+						],
+					];
+					break;
+				case self::RULE_ORDER_ITEMS_THRESHOLD:
+					$checks = [];
+					if ( $enabled_setting['min_items'] ) {
+						// Will trigger the rule outcome when item count is lesser than the specified count.
+						$checks[] = [
+							'key'      => 'item_count',
+							'operator' => self::OPERATOR_LT,
+							'value'    => $enabled_setting['min_items'],
+						];
+					}
+					if ( $enabled_setting['max_items'] ) {
+						// Will trigger the rule outcome when item count is greater than the specified count.
+						$checks[] = [
+							'key'      => 'item_count',
+							'operator' => self::OPERATOR_GT,
+							'value'    => $enabled_setting['max_items'],
+						];
+					}
+					if ( 2 === count( $checks ) ) {
+						$rule_configuration[] = [
+							'key'     => $key,
+							'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
+							'check'   => [
+								'operator' => self::LIST_OPERATOR_OR,
+								'checks'   => $checks,
+							],
+						];
+					} else {
+						$rule_configuration[] = [
+							'key'     => $key,
+							'outcome' => $enabled_setting['block'] ? 'block' : 'review',
+							'check'   => $checks[0],
+						];
+					}
+					break;
+				case self::RULE_PURCHASE_PRICE_THRESHOLD:
+					$checks = [];
+					if ( $enabled_setting['min_amount'] ) {
+						// Will trigger the rule outcome when order total is lesser than the specified count.
+						$checks[] = [
+							'key'      => 'order_total',
+							'operator' => self::OPERATOR_LT,
+							'value'    => $enabled_setting['min_amount'],
+						];
+					}
+					if ( $enabled_setting['max_items'] ) {
+						// Will trigger the rule outcome when order total is greater than the specified count.
+						$checks[] = [
+							'key'      => 'order_total',
+							'operator' => self::OPERATOR_GT,
+							'value'    => $enabled_setting['max_amount'],
+						];
+					}
+					if ( 2 === count( $checks ) ) {
+						$rule_configuration[] = [
+							'key'     => $key,
+							'outcome' => $enabled_setting['block'] ? 'block' : 'review',
+							'check'   => [
+								'operator' => self::LIST_OPERATOR_OR,
+								'checks'   => $checks,
+							],
+						];
+					} else {
+						$rule_configuration[] = [
+							'key'     => $key,
+							'outcome' => $enabled_setting['block'] ? 'block' : 'review',
+							'check'   => $checks[0],
+						];
+					}
+					break;
+			}
+		}
+		return wp_json_encode( $rule_configuration );
 	}
 }
