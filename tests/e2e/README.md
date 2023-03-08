@@ -180,7 +180,7 @@ It is important to write test cases within `it()` rather than `test()` function 
 
 ## Debugging tests & handling failures
 
-Create file `local.env` inside `tests/e2e/config` folder and set `E2E_DEBUG=true` env variable to pause test runner when test fails. For more info on investigating & handling E2E failures, refer to paJDYF-7pT-p2.
+Create file `local.env` inside `tests/e2e/config` folder and set `E2E_DEBUG=true` env variable to pause test runner when test fails. For more info on investigating & handling E2E failures, refer to PaJDYF-7pO-p2.
 
 ## Slack integration
 
