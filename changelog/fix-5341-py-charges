@@ -1,5 +1,5 @@
 Significance: patch
 Type: dev
-Comment: Will be released with another PR.
+Comment: This PR fixes a bug from the unreleased https://github.com/Automattic/woocommerce-payments/pull/5321. There is no external changelog needed, as the bug was never released.
 
 
