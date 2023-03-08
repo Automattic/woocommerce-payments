@@ -409,6 +409,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'deposit_delay_days'                  => $this->wcpay_gateway->get_option( 'deposit_delay_days' ),
 				'deposit_status'                      => $this->wcpay_gateway->get_option( 'deposit_status' ),
 				'deposit_completed_waiting_period'    => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
+				'current_protection_level'            => $this->wcpay_gateway->get_option( 'current_protection_level' ),
 				'advanced_fraud_protection_settings'  => $this->wcpay_gateway->get_option( 'advanced_fraud_protection_settings' ),
 			]
 		);
@@ -437,6 +438,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_platform_checkout_store_logo( $request );
 		$this->update_platform_checkout_custom_message( $request );
 		$this->update_platform_checkout_enabled_locations( $request );
+		$this->update_current_protection_level( $request );
 		$this->update_advanced_fraud_protection_settings( $request );
 
 		return new WP_REST_Response( [], 200 );
@@ -760,6 +762,30 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$platform_checkout_enabled_locations = $request->get_param( 'platform_checkout_enabled_locations' );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $platform_checkout_enabled_locations );
+	}
+
+	/**
+	 * Updates the current fraud protection level.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_current_protection_level( WP_REST_Request $request ) {
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			return;
+		}
+
+		if ( ! $request->has_param( 'current_protection_level' ) ) {
+			return;
+		}
+
+		$current_protection_level = $request->get_param( 'current_protection_level' );
+
+		// Check validity.
+		if ( ! in_array( $current_protection_level, [ 'standard', 'high', 'advanced' ], true ) ) {
+			return;
+		}
+
+		update_option( 'current_protection_level', $current_protection_level );
 	}
 
 	/**

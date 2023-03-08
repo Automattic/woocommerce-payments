@@ -27,11 +27,12 @@ import OrderItemsThresholdRuleCard, {
 	OrderItemsThresholdValidation,
 } from './cards/order-items-threshold';
 import FraudPreventionSettingsContext from './context';
-import { useSettings } from '../../../data';
+import { useCurrentProtectionLevel, useSettings } from '../../../data';
 import { Button } from '@wordpress/components';
 import ErrorBoundary from 'wcpay/components/error-boundary';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { getAdminUrl } from 'wcpay/utils';
+import { dispatch } from '@wordpress/data';
 
 const Breadcrumb = () => (
 	<h2 className="fraud-protection-header-breadcrumb">
@@ -59,6 +60,10 @@ const SaveFraudProtectionSettingsButton = ( { children } ) => {
 
 const FraudProtectionAdvancedSettingsPage = () => {
 	const { settings, saveSettings, isLoading } = useSettings();
+	const [
+		currentProtectionLevel,
+		updateProtectionLevel,
+	] = useCurrentProtectionLevel();
 	const [ isSavingSettings, setIsSavingSettings ] = useState( false );
 	const [ validationError, setValidationError ] = useState( null );
 	const [
@@ -104,7 +109,20 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	const handleSaveSettings = () => {
 		setIsSavingSettings( true );
 		if ( validateSettings( settings.advanced_fraud_protection_settings ) ) {
+			const previousProtectionLevelWasAdvanced =
+				'advanced' === currentProtectionLevel;
+			if ( ! previousProtectionLevelWasAdvanced ) {
+				updateProtectionLevel( 'advanced' );
+			}
 			saveSettings( settings );
+			if ( ! previousProtectionLevelWasAdvanced ) {
+				dispatch( 'core/notices' ).createSuccessNotice(
+					__(
+						'Current protection level is set to "advanced".',
+						'woocommerce-payments'
+					)
+				);
+			}
 		} else {
 			window.scrollTo( {
 				top: 0,

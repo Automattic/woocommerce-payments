@@ -1710,6 +1710,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_deposit_status();
 			case 'deposit_completed_waiting_period':
 				return $this->get_deposit_completed_waiting_period();
+			case 'current_protection_level':
+				return $this->get_current_protection_level();
 			case 'advanced_fraud_protection_settings':
 				return $this->get_advanced_fraud_protection_settings();
 
@@ -2253,6 +2255,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
 		}
 		return $empty_value;
+	}
+
+	/**
+	 * Gets the current fraud protection level value.
+	 *
+	 * @return  string The current fraud protection level.
+	 */
+	protected function get_current_protection_level() {
+		// If fraud and risk tools feature is not enabled, do not expose the settings.
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			return '';
+		}
+
+		return get_option( 'current_protection_level', 'standard' );
 	}
 
 	/**
