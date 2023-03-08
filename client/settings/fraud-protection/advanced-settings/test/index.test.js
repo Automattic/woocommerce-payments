@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 /**
  * Internal dependencies
  */
@@ -84,7 +84,9 @@ describe( 'Advanced fraud protection settings', () => {
 		saveButton.click();
 		expect( settingsMock.saveSettings.mock.calls.length ).toBe( 0 );
 		expect(
-			document.querySelectorAll( '.wcpay-inline-notice.is-error' ).length
+			document.querySelectorAll(
+				'.fraud-protection-advanced-settings-error-notice'
+			).length
 		).toBe( 1 );
 	} );
 	test( 'saves settings when there are no validation errors', async () => {
@@ -102,9 +104,13 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 		const saveButton = await container.findByText( 'Save Changes' );
 		saveButton.click();
-		expect( settingsMock.saveSettings.mock.calls.length ).toBe( 1 );
+		await waitFor( () => {
+			expect( settingsMock.saveSettings.mock.calls.length ).toBe( 1 );
+		} );
 		expect(
-			document.querySelectorAll( '.wcpay-inline-notice.is-error' ).length
+			document.querySelectorAll(
+				'fraud-protection-advanced-settings-error-notice'
+			).length
 		).toBe( 0 );
 	} );
 } );

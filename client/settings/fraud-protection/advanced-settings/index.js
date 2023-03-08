@@ -3,9 +3,10 @@
  */
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { __ } from '@wordpress/i18n';
+import { sprintf, __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { LoadableBlock } from 'wcpay/components/loadable';
+import { Button, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -30,7 +31,6 @@ import FraudPreventionSettingsContext from './context';
 import { useCurrentProtectionLevel, useSettings } from '../../../data';
 import { Button } from '@wordpress/components';
 import ErrorBoundary from 'wcpay/components/error-boundary';
-import InlineNotice from 'wcpay/components/inline-notice';
 import { getAdminUrl } from 'wcpay/utils';
 import { dispatch } from '@wordpress/data';
 
@@ -106,15 +106,15 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		return validationResult;
 	};
 
-	const handleSaveSettings = () => {
-		setIsSavingSettings( true );
+	const handleSaveSettings = async () => {
 		if ( validateSettings( settings.advanced_fraud_protection_settings ) ) {
-			const previousProtectionLevelWasAdvanced =
+			setIsSavingSettings( true );
+      const previousProtectionLevelWasAdvanced =
 				'advanced' === currentProtectionLevel;
 			if ( ! previousProtectionLevelWasAdvanced ) {
 				updateProtectionLevel( 'advanced' );
 			}
-			saveSettings( settings );
+			await saveSettings( settings );
 			if ( ! previousProtectionLevelWasAdvanced ) {
 				dispatch( 'core/notices' ).createSuccessNotice(
 					__(
@@ -128,7 +128,6 @@ const FraudProtectionAdvancedSettingsPage = () => {
 				top: 0,
 			} );
 		}
-		setIsSavingSettings( false );
 	};
 
 	// Hack to make "WooCommerce > Settings" the active selected menu item.
@@ -153,12 +152,24 @@ const FraudProtectionAdvancedSettingsPage = () => {
 					<div className="fraud-protection-advanced-settings-layout">
 						<Breadcrumb />
 						{ validationError && (
-							<InlineNotice
-								status="error"
-								isDismissible={ false }
-							>
-								{ validationError }
-							</InlineNotice>
+							<div className="fraud-protection-advanced-settings-error-notice">
+								<Notice
+									status="error"
+									isDismissible={ true }
+									onRemove={ () => {
+										setValidationError( null );
+									} }
+								>
+									{ sprintf(
+										'%s %s',
+										__(
+											'Settings were not saved.',
+											'woocommerce-payments'
+										),
+										validationError
+									) }
+								</Notice>
+							</div>
 						) }
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<AVSMismatchRuleCard />
@@ -187,20 +198,18 @@ const FraudProtectionAdvancedSettingsPage = () => {
 					</div>
 				</ErrorBoundary>
 			</SettingsLayout>
-			<LoadableBlock isLoading={ isLoading } numLines={ 1 }>
-				<SaveFraudProtectionSettingsButton>
-					<div className="fraud-protection-header-save-button">
-						<Button
-							isPrimary
-							isBusy={ isSavingSettings }
-							onClick={ handleSaveSettings }
-							disabled={ isSavingSettings }
-						>
-							{ __( 'Save Changes', 'woocommerce-payments' ) }
-						</Button>
-					</div>
-				</SaveFraudProtectionSettingsButton>
-			</LoadableBlock>
+			<SaveFraudProtectionSettingsButton>
+				<div className="fraud-protection-header-save-button">
+					<Button
+						isPrimary
+						isBusy={ isSavingSettings }
+						onClick={ handleSaveSettings }
+						disabled={ isSavingSettings || isLoading }
+					>
+						{ __( 'Save Changes', 'woocommerce-payments' ) }
+					</Button>
+				</div>
+			</SaveFraudProtectionSettingsButton>
 		</FraudPreventionSettingsContext.Provider>
 	);
 };

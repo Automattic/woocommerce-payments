@@ -177,6 +177,8 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
                     <input
                       class="components-text-control__input"
                       id="fraud-protection-order-velocity-threshold"
+                      min="1"
+                      step="1"
                       type="number"
                       value="0"
                     />
@@ -473,6 +475,8 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
                     <input
                       class="components-text-control__input"
                       id="fraud-protection-order-velocity-threshold"
+                      min="1"
+                      step="1"
                       type="number"
                       value="0"
                     />

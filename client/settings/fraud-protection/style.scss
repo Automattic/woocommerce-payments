@@ -1,12 +1,42 @@
 .fraud-protection {
-	&-advanced-settings-layout {
-		.is-loadable-placeholder.is-block {
-			margin-top: 2em;
+	&-advanced-settings {
+		&-layout {
+			.is-loadable-placeholder.is-block {
+				margin-top: 2em;
+			}
+		}
+		&-error-notice .components-notice {
+			filter: drop-shadow( 0 2px 6px rgba( 0, 0, 0, 0.05 ) );
+			margin: 0 0 24px;
+			background: #fff;
+			padding: 12px 16px 16px 16px;
+			.components-notice__content {
+				margin: 0;
+				font-size: 13px;
+				line-height: 19.5px;
+			}
+			svg {
+				width: 16px;
+				height: 16px;
+				stroke: #000;
+			}
+			button.components-notice__dismiss {
+				min-width: auto;
+				height: 24px;
+				width: 24px;
+				padding: 0;
+			}
 		}
 	}
 	&-header-breadcrumb {
-		margin-top: -16px;
+		margin-top: 0;
 		margin-bottom: 24px;
+		@media screen and ( min-width: 961px ) {
+			margin-top: -16px;
+		}
+		@media screen and ( max-width: 782px ) {
+			margin-top: -36px;
+		}
 	}
 	&-header-save-button {
 		margin-right: 8px;
