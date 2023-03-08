@@ -43,12 +43,19 @@ class Get_Charge_Test extends WCPAY_UnitTestCase {
 	public function test_exception_will_throw_if_charge_id_is_not_set() {
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 
-		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, null );
+		new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, null );
 	}
+
 	public function test_exception_will_throw_if_charge_id_is_invalid() {
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
-		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
+		new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, '1' );
 	}
+
+	public function test_py_prefix_will_not_throw_exception() {
+		new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'py_xyz' );
+		$this->addToAssertionCount( 1 ); // We're not asserting anything, just not expecting an exception.
+	}
+
 	public function test_charge_request_class_is_created() {
 		$request = new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'ch_mock' );
 		$this->assertSame( WC_Payments_API_Client::CHARGES_API . '/ch_mock', $request->get_api() );
