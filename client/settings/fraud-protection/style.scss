@@ -28,14 +28,13 @@
 	}
 
 	&__list-divider {
-		margin: 3px 0 3px;
+		margin: 0 0 16px 0;
 	}
 
 	&__advanced-level-container {
 		align-items: center;
 		display: flex;
 		flex-direction: row;
-		margin-top: 1em;
 		label {
 			flex: 1;
 		}
@@ -75,7 +74,6 @@
 		font-size: 12px;
 		color: #757575;
 		margin: 0 0 0 30px;
-		margin-bottom: 1em;
 		display: inline-block;
 	}
 
@@ -113,9 +111,7 @@
 		&-toggle {
 			margin-bottom: 24px;
 			label {
-				padding-left: 16px;
-				display: inline-block;
-				margin-top: -4px;
+				padding-left: 8px;
 				line-height: 21px;
 				font-size: 13px;
 				color: #1d2327;
