@@ -53,7 +53,7 @@ class Get_Charge_Test extends WCPAY_UnitTestCase {
 
 	public function test_py_prefix_will_not_throw_exception() {
 		new Get_Charge( $this->mock_api_client, $this->mock_wc_payments_http_client, 'py_xyz' );
-		$this->expectNotToPerformAssertions(); // We're not asserting anything, just not expecting an exception.
+		$this->addToAssertionCount( 1 ); // We're not asserting anything, just not expecting an exception.
 	}
 
 	public function test_charge_request_class_is_created() {
