@@ -38,10 +38,9 @@ jobs:
         id: build_plugin
         uses: ./.github/actions/build
 
-      - name: "Add file size notice & delete build zip"
+      - name: "Add file size notice"
         run: |
           echo ":information_source: Ignore the artifact size mentioned since GitHub calculates the size of the source folder instead of the zip file created." >> $GITHUB_STEP_SUMMARY
-          rm -rf release/${{ steps.build_plugin.outputs.release-filename }}
 
       - name: "Upload the zip file as an artifact"
         uses: actions/upload-artifact@v3
