@@ -29,7 +29,6 @@ import OrderItemsThresholdRuleCard, {
 } from './cards/order-items-threshold';
 import FraudPreventionSettingsContext from './context';
 import { useCurrentProtectionLevel, useSettings } from '../../../data';
-import { Button } from '@wordpress/components';
 import ErrorBoundary from 'wcpay/components/error-boundary';
 import { getAdminUrl } from 'wcpay/utils';
 import { dispatch } from '@wordpress/data';
@@ -109,7 +108,7 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	const handleSaveSettings = async () => {
 		if ( validateSettings( settings.advanced_fraud_protection_settings ) ) {
 			setIsSavingSettings( true );
-      const previousProtectionLevelWasAdvanced =
+			const previousProtectionLevelWasAdvanced =
 				'advanced' === currentProtectionLevel;
 			if ( ! previousProtectionLevelWasAdvanced ) {
 				updateProtectionLevel( 'advanced' );
