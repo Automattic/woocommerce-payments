@@ -1,4 +1,4 @@
-name: "Build zip file"
+name: "Build zip file & Run smoke tests"
 
 # This action will run inside the package creation workflows or when it is triggered manually
 on:
