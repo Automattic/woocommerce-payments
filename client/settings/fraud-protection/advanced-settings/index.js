@@ -108,13 +108,8 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	const handleSaveSettings = async () => {
 		if ( validateSettings( settings.advanced_fraud_protection_settings ) ) {
 			setIsSavingSettings( true );
-			const previousProtectionLevelWasAdvanced =
-				'advanced' === currentProtectionLevel;
-			if ( ! previousProtectionLevelWasAdvanced ) {
-				updateProtectionLevel( 'advanced' );
-			}
-			await saveSettings( settings );
-			if ( ! previousProtectionLevelWasAdvanced ) {
+			if ( 'advanced' !== currentProtectionLevel ) {
+				await updateProtectionLevel( 'advanced' );
 				dispatch( 'core/notices' ).createSuccessNotice(
 					__(
 						'Current protection level is set to "advanced".',
@@ -122,6 +117,8 @@ const FraudProtectionAdvancedSettingsPage = () => {
 					)
 				);
 			}
+			await saveSettings( settings );
+			setIsSavingSettings( false );
 		} else {
 			window.scrollTo( {
 				top: 0,

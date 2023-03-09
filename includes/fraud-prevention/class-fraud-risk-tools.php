@@ -7,7 +7,30 @@
 
 namespace WCPay\Fraud_Prevention;
 
+require_once dirname( __FILE__ ) . '/models/class-check.php';
+require_once dirname( __FILE__ ) . '/models/class-checklist.php';
+require_once dirname( __FILE__ ) . '/models/class-rule.php';
+
+require_once dirname( __FILE__ ) . '/rules/class-base-rule.php';
+require_once dirname( __FILE__ ) . '/rules/class-rule-address-mismatch.php';
+require_once dirname( __FILE__ ) . '/rules/class-rule-avs-mismatch.php';
+require_once dirname( __FILE__ ) . '/rules/class-rule-cvc-verification.php';
+require_once dirname( __FILE__ ) . '/rules/class-rule-international-billing-address.php';
+require_once dirname( __FILE__ ) . '/rules/class-rule-international-ip-address.php';
+require_once dirname( __FILE__ ) . '/rules/class-rule-order-items-threshold.php';
+require_once dirname( __FILE__ ) . '/rules/class-rule-order-velocity.php';
+require_once dirname( __FILE__ ) . '/rules/class-rule-purchase-price-threshold.php';
+
 use WC_Payments_Features;
+use WCPay\Fraud_Prevention\Models\Rule;
+use WCPay\Fraud_Prevention\Rules\Rule_Address_Mismatch;
+use WCPay\Fraud_Prevention\Rules\Rule_Avs_Mismatch;
+use WCPay\Fraud_Prevention\Rules\Rule_Cvc_Verification;
+use WCPay\Fraud_Prevention\Rules\Rule_International_Billing_Address;
+use WCPay\Fraud_Prevention\Rules\Rule_International_Ip_Address;
+use WCPay\Fraud_Prevention\Rules\Rule_Order_Items_Threshold;
+use WCPay\Fraud_Prevention\Rules\Rule_Order_Velocity;
+use WCPay\Fraud_Prevention\Rules\Rule_Purchase_Price_Threshold;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -31,22 +54,6 @@ class Fraud_Risk_Tools {
 	const RULE_ORDER_VELOCITY                = 'order_velocity';
 	const RULE_ORDER_ITEMS_THRESHOLD         = 'order_items_threshold';
 	const RULE_PURCHASE_PRICE_THRESHOLD      = 'purchase_price_threshold';
-
-	// Check operators.
-	const OPERATOR_EQUALS     = 'equals';
-	const OPERATOR_NOT_EQUALS = 'not_equals';
-	const OPERATOR_GTE        = 'greater_or_equal';
-	const OPERATOR_GT         = 'greater_than';
-	const OPERATOR_LTE        = 'less_or_equal';
-	const OPERATOR_LT         = 'less_than';
-
-	// Rule outcomes.
-	const FRAUD_OUTCOME_REVIEW = 'review';
-	const FRAUD_OUTCOME_BLOCK  = 'block';
-
-	// Checklist operators.
-	const LIST_OPERATOR_AND = 'and';
-	const LIST_OPERATOR_OR  = 'or';
 
 	/**
 	 * Main FraudRiskTools Instance.
@@ -225,155 +232,50 @@ class Fraud_Risk_Tools {
 	 * @return  array|bool                  The generated structure for the rule engine, or false when encoding fails.
 	 */
 	public static function build_rules( $protection_settings ) {
-		$enabled_settings = array_filter(
-			$protection_settings,
-			function( $setting ) {
-				return true === $setting['enabled'];
-			}
-		);
-
 		$rule_configuration = [];
-		foreach ( $enabled_settings as $key => $enabled_setting ) {
+		foreach ( $protection_settings as $key => $setting ) {
+			$enabled = $setting['enabled'];
+			$block   = $setting['block'];
 			switch ( $key ) {
 				case self::RULE_AVS_MISMATCH:
-					$rule_configuration[] = [
-						'key'     => $key,
-						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
-						'check'   => [
-							'key'      => 'avs_check',
-							'operator' => 'equals',
-							'value'    => false,
-						],
-					];
+					$rule_configuration[] = new Rule_Avs_Mismatch( $enabled, $block );
 					break;
 				case self::RULE_CVC_VERIFICATION:
-					$rule_configuration[] = [
-						'key'     => $key,
-						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
-						'check'   => [
-							'key'      => 'cvc_check',
-							'operator' => self::OPERATOR_EQUALS,
-							'value'    => false,
-						],
-					];
+					$rule_configuration[] = new Rule_Cvc_Verification( $enabled, $block );
 					break;
 				case self::RULE_ADDRESS_MISMATCH:
-					$rule_configuration[] = [
-						'key'     => $key,
-						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
-						'check'   => [
-							'key'      => 'billing_shipping_addresses_match',
-							'operator' => self::OPERATOR_EQUALS,
-							'value'    => false,
-						],
-					];
+					$rule_configuration[] = new Rule_Address_Mismatch( $enabled, $block );
 					break;
 				case self::RULE_INTERNATIONAL_IP_ADDRESS:
-					$rule_configuration[] = [
-						'key'     => $key,
-						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
-						'check'   => [
-							'key'      => 'ip_country_same_with_account_country',
-							'operator' => self::OPERATOR_EQUALS,
-							'value'    => false,
-						],
-					];
+					$rule_configuration[] = new Rule_International_Ip_Address( $enabled, $block );
 					break;
 				case self::RULE_INTERNATIONAL_BILLING_ADDRESS:
-					$rule_configuration[] = [
-						'key'     => $key,
-						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
-						'check'   => [
-							'key'      => 'billing_country_same_with_account_country',
-							'operator' => self::OPERATOR_EQUALS,
-							'value'    => false,
-						],
-					];
+					$rule_configuration[] = new Rule_International_Billing_Address( $enabled, $block );
 					break;
 				case self::RULE_ORDER_VELOCITY:
-					$rule_configuration[] = [
-						'key'     => $key,
-						'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
-						'check'   => [
-							'key'      => 'orders_since_' . $enabled_setting['interval'] . 'h',
-							'operator' => self::OPERATOR_GT,
-							'value'    => $enabled_setting['max_orders'],
-						],
-					];
+					$rule_configuration[] = new Rule_Order_Velocity(
+						$enabled,
+						$block,
+						intval( $setting['max_orders'] ),
+						intval( $setting['interval'] )
+					);
 					break;
 				case self::RULE_ORDER_ITEMS_THRESHOLD:
-					$checks = [];
-					if ( $enabled_setting['min_items'] ) {
-						// Will trigger the rule outcome when item count is lesser than the specified count.
-						$checks[] = [
-							'key'      => 'item_count',
-							'operator' => self::OPERATOR_LT,
-							'value'    => $enabled_setting['min_items'],
-						];
-					}
-					if ( $enabled_setting['max_items'] ) {
-						// Will trigger the rule outcome when item count is greater than the specified count.
-						$checks[] = [
-							'key'      => 'item_count',
-							'operator' => self::OPERATOR_GT,
-							'value'    => $enabled_setting['max_items'],
-						];
-					}
-					if ( 2 === count( $checks ) ) {
-						$rule_configuration[] = [
-							'key'     => $key,
-							'outcome' => $enabled_setting['block'] ? self::FRAUD_OUTCOME_BLOCK : self::FRAUD_OUTCOME_REVIEW,
-							'check'   => [
-								'operator' => self::LIST_OPERATOR_OR,
-								'checks'   => $checks,
-							],
-						];
-					} else {
-						$rule_configuration[] = [
-							'key'     => $key,
-							'outcome' => $enabled_setting['block'] ? 'block' : 'review',
-							'check'   => $checks[0],
-						];
-					}
+					$rule_configuration[] = new Rule_Order_Items_Threshold( $enabled, $block, $setting['min_items'], $setting['max_items'] );
 					break;
 				case self::RULE_PURCHASE_PRICE_THRESHOLD:
-					$checks = [];
-					if ( $enabled_setting['min_amount'] ) {
-						// Will trigger the rule outcome when order total is lesser than the specified count.
-						$checks[] = [
-							'key'      => 'order_total',
-							'operator' => self::OPERATOR_LT,
-							'value'    => $enabled_setting['min_amount'],
-						];
-					}
-					if ( $enabled_setting['max_items'] ) {
-						// Will trigger the rule outcome when order total is greater than the specified count.
-						$checks[] = [
-							'key'      => 'order_total',
-							'operator' => self::OPERATOR_GT,
-							'value'    => $enabled_setting['max_amount'],
-						];
-					}
-					if ( 2 === count( $checks ) ) {
-						$rule_configuration[] = [
-							'key'     => $key,
-							'outcome' => $enabled_setting['block'] ? 'block' : 'review',
-							'check'   => [
-								'operator' => self::LIST_OPERATOR_OR,
-								'checks'   => $checks,
-							],
-						];
-					} else {
-						$rule_configuration[] = [
-							'key'     => $key,
-							'outcome' => $enabled_setting['block'] ? 'block' : 'review',
-							'check'   => $checks[0],
-						];
-					}
+					$rule_configuration[] = new Rule_Purchase_Price_Threshold( $enabled, $block, $setting['min_amount'], $setting['max_amount'] );
 					break;
 			}
 		}
+		return array_filter(
+			array_map(
+				function( $rule ) {
+					return $rule->to_array();
+				},
+				$rule_configuration
+			)
+		);
 
-		return $rule_configuration;
 	}
 }

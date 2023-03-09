@@ -785,9 +785,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
-		update_option( 'current_protection_level', $current_protection_level );
+		$saved_protection_level = get_option( 'current_protection_level' );
 
-		$this->wcpay_gateway->sync_account_protection_ruleset();
+		// Prevent syncing the settings with the server on protection level change, when the
+		// previous level is same with the requested one.
+		if ( $current_protection_level !== $saved_protection_level ) {
+				update_option( 'current_protection_level', $current_protection_level );
+				$this->wcpay_gateway->sync_account_protection_ruleset();
+		}
 	}
 
 	/**
