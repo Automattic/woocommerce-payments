@@ -1,6 +1,6 @@
 name: "Build zip file"
 
-# This action will run when it is triggered manually.
+# This action will run inside the package creation workflows or when it is triggered manually
 on:
   workflow_call:
     inputs:
