@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Log error message when calling redirect_to_login fails.
