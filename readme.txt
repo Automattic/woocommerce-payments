@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 5.5.1
+Stable tag: 9.8.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,6 +98,33 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 9.8.8 - 2023-03-15 =
+* Add - Add a notice for Norwegian merchants using WCPay to update WooCommerce to at least 7.5
+* Add - Added WC_Payments_Customer_Service_API in WCPayCore
+* Add - Add WCPay support for CY, LU, DK, EE, FI, GR, LT, LV, MT, NO, SI, SK
+* Add - Display tap to pay fees in transaction timeline view
+* Add - Moved methods used for order metadata update to the Order Service class.
+* Fix - Add merge queue trigger to the relevant workflows.
+* Fix - Appending the countries dropdown to body to prevent it being clipped
+* Fix - Fix deposit schedule monthly anchor label when set to 'last day of the month'.
+* Fix - Fixes a problem where the Transactions table would have its layout modified when hovering over the currency conversion icon
+* Fix - Fixes focus change on gateway select with split UPE enabled.
+* Fix - Fixing the broken search on the Disputes page.
+* Fix - Prevent auto-scroll on page load when WooPay is enabled.
+* Fix - Re-enable split UPE E2E tests and ensure they pass.
+* Fix - Replace PHP dependency myclabs/php-enum with a built-in solution due to conflicts with multiple PHP versions.
+* Fix - Right align cutomize button on the settings page
+* Fix - WCPay Checkout JS is loaded for zero carts
+* Update - Log error message when calling redirect_to_login fails.
+* Update - Updated express payment method UI in settings page
+* Update - Update the deprecating set-output command
+* Dev - Add a feature flag for fraud and risk tools features.
+* Dev - Adding a centralized class to manage the gateway's mode (live/dev/test).
+* Dev - Fixes a flaky e2e test.
+* Dev - Release automation - Run smoke tests automatically after release zip is built.
+* Dev - Remove unused code for updating WCPay subscription dates.
+* Dev - Update GH workflow runner images from Ubuntu 18.04 to 20.04
+
 = 5.5.1 - 2023-03-01 =
 * Add - When enabling WooPay, if legacy UPE is enabled, upgrades feature flag to split UPE instead.
 * Fix - Avoid rendering save cards checkbox for logged out users
@@ -136,6 +163,33 @@ Please note that our support for the checkout block is still experimental and th
 = 5.4.0 - 2023-02-01 =
 * Add - Add logging and order notes when WCPay Subscriptions are suspended or put on-hold.
 * Add - Highlight subscriptions with overdue payment in list view with red icon == Changelog ==
+
+= 9.8.8 - 2023-03-15 =
+* Add - Add a notice for Norwegian merchants using WCPay to update WooCommerce to at least 7.5
+* Add - Added WC_Payments_Customer_Service_API in WCPayCore
+* Add - Add WCPay support for CY, LU, DK, EE, FI, GR, LT, LV, MT, NO, SI, SK
+* Add - Display tap to pay fees in transaction timeline view
+* Add - Moved methods used for order metadata update to the Order Service class.
+* Fix - Add merge queue trigger to the relevant workflows.
+* Fix - Appending the countries dropdown to body to prevent it being clipped
+* Fix - Fix deposit schedule monthly anchor label when set to 'last day of the month'.
+* Fix - Fixes a problem where the Transactions table would have its layout modified when hovering over the currency conversion icon
+* Fix - Fixes focus change on gateway select with split UPE enabled.
+* Fix - Fixing the broken search on the Disputes page.
+* Fix - Prevent auto-scroll on page load when WooPay is enabled.
+* Fix - Re-enable split UPE E2E tests and ensure they pass.
+* Fix - Replace PHP dependency myclabs/php-enum with a built-in solution due to conflicts with multiple PHP versions.
+* Fix - Right align cutomize button on the settings page
+* Fix - WCPay Checkout JS is loaded for zero carts
+* Update - Log error message when calling redirect_to_login fails.
+* Update - Updated express payment method UI in settings page
+* Update - Update the deprecating set-output command
+* Dev - Add a feature flag for fraud and risk tools features.
+* Dev - Adding a centralized class to manage the gateway's mode (live/dev/test).
+* Dev - Fixes a flaky e2e test.
+* Dev - Release automation - Run smoke tests automatically after release zip is built.
+* Dev - Remove unused code for updating WCPay subscription dates.
+* Dev - Update GH workflow runner images from Ubuntu 18.04 to 20.04
 
 = 5.5.0 - 2023-02-22 =
 * Add - Added learn more link to deposits page
@@ -205,6 +259,33 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
 * Dev - Moved the trash, untrash == Changelog ==
+
+= 9.8.8 - 2023-03-15 =
+* Add - Add a notice for Norwegian merchants using WCPay to update WooCommerce to at least 7.5
+* Add - Added WC_Payments_Customer_Service_API in WCPayCore
+* Add - Add WCPay support for CY, LU, DK, EE, FI, GR, LT, LV, MT, NO, SI, SK
+* Add - Display tap to pay fees in transaction timeline view
+* Add - Moved methods used for order metadata update to the Order Service class.
+* Fix - Add merge queue trigger to the relevant workflows.
+* Fix - Appending the countries dropdown to body to prevent it being clipped
+* Fix - Fix deposit schedule monthly anchor label when set to 'last day of the month'.
+* Fix - Fixes a problem where the Transactions table would have its layout modified when hovering over the currency conversion icon
+* Fix - Fixes focus change on gateway select with split UPE enabled.
+* Fix - Fixing the broken search on the Disputes page.
+* Fix - Prevent auto-scroll on page load when WooPay is enabled.
+* Fix - Re-enable split UPE E2E tests and ensure they pass.
+* Fix - Replace PHP dependency myclabs/php-enum with a built-in solution due to conflicts with multiple PHP versions.
+* Fix - Right align cutomize button on the settings page
+* Fix - WCPay Checkout JS is loaded for zero carts
+* Update - Log error message when calling redirect_to_login fails.
+* Update - Updated express payment method UI in settings page
+* Update - Update the deprecating set-output command
+* Dev - Add a feature flag for fraud and risk tools features.
+* Dev - Adding a centralized class to manage the gateway's mode (live/dev/test).
+* Dev - Fixes a flaky e2e test.
+* Dev - Release automation - Run smoke tests automatically after release zip is built.
+* Dev - Remove unused code for updating WCPay subscription dates.
+* Dev - Update GH workflow runner images from Ubuntu 18.04 to 20.04
 
 = 5.5.0 - 2023-02-22 =
 * Add - Added learn more link to deposits page
