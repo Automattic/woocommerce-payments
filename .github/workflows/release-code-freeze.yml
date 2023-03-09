@@ -11,11 +11,6 @@ on:
         type: boolean
         required: false
         default: false
-      skip-build-zip:
-        type: boolean
-        required: false
-        default: false
-        description: "Skip running build zip"
       skip-smoke-tests:
         type: boolean
         required: false
@@ -143,7 +138,6 @@ jobs:
     needs: create-release-pr
     uses: ./.github/workflows/build-zip-file.yml
     with:
-      skip-build-zip: ${{ inputs.skip-build-zip }}
       skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
       repo-branch: ${{ needs.create-release-pr.outputs.branch-name }}
     secrets: inherit
