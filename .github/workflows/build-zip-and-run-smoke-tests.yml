@@ -54,7 +54,7 @@ jobs:
   smoke-tests:
     name: "Smoke tests"
     needs: build-zip
-    if: ${{ inputs.skip-smoke-tests != true }}
+    if: ${{ ! inputs.skip-smoke-tests }}
     uses: ./.github/workflows/e2e-pull-request.yml
     with:
       wcpay-use-build-artifact: true
