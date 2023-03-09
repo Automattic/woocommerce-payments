@@ -67,9 +67,10 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 		$this->request->set_payment_method( 'pm_1' );
 		$this->request->set_customer( 'cus_1' );
 		$this->request->set_metadata( [ 'order_number' => 1 ] );
-		$request = $this->request->apply_filters( 'wcpay_create_intention_request', $this->payment_information );
+		$request = $this->request->apply_filters( 'wcpay_create_and_confirm_intent_request', $this->payment_information );
 		$this->assertInstanceOf( WooPay_Create_And_Confirm_Intention::class, $request );
 	}
+
 	public function test_create_intention_request_will_use_stripe_platform_on_checkout_page() {
 		// Simulate behavior that current request is platform payment.
 		$class = new class() extends Checkout_Service
