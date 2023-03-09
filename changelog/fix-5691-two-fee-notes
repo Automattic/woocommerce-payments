@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Avoid adding two fee details in the order page (regression issue from PR 5321).
