@@ -100,7 +100,7 @@ jobs:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
         run: |
-          npm version $RELEASE_VERSION
+          npm version $RELEASE_VERSION --no-git-tag-version
           git config user.name "github-actions[bot]"
           # We could consider fetching the bot's ID through an API call to be future-proof. Hardcoded for now.
           # See https://github.com/Automattic/woocommerce-payments/pull/5200#discussion_r1034560144
