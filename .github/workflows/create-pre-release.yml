@@ -8,11 +8,6 @@ on:
         description: 'The release version for testing (e.g. 4.5.0-test-2 for prerelease during week 2)'
         required: true
         type: string
-      skip-smoke-tests:
-        type: boolean
-        required: false
-        default: false
-        description: "Skip running smoke tests"
 
 defaults:
   run:
@@ -24,8 +19,6 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
-    outputs:
-      branch-name: ${{ steps.create_branch.outputs.branch-name }}
 
     steps:
       - name: "Checkout repository"
@@ -80,12 +73,3 @@ jobs:
         with:
           release-version: ${{ steps.create_tag.outputs.trimmed-version }}
           glotpress-url: ${{ secrets.GLOTPRESS_IMPORT_URL }}
-
-  build-zip-smoke-tests:
-    name: "Build zip & Smoke tests"
-    needs: create-release
-    uses: ./.github/workflows/build-zip-file.yml
-    with:
-      skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
-      repo-branch: ${{ needs.create-release.outputs.branch-name }}
-    secrets: inherit
