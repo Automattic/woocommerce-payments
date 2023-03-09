@@ -11,11 +11,6 @@ on:
         type: boolean
         required: false
         default: false
-      skip-smoke-tests:
-        type: boolean
-        required: false
-        default: false
-        description: "Skip running smoke tests"
 
 defaults:
   run:
@@ -85,7 +80,7 @@ jobs:
   slack-notification:
     name: "Send notification to Slack"
     needs: [check-code-freeze, create-release-pr]
-    if: ${{ inputs.skipSlackPing != true }}
+    if: ${{ ! ( inputs.skipSlackPing && needs.create-release-pr.outputs.release-pr-created ) }}
     runs-on: ubuntu-20.04
     env:
       RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
@@ -132,12 +127,3 @@ jobs:
                     }
                 ]
             }
-
-  build-zip-smoke-tests:
-    name: "Build zip & Smoke tests"
-    needs: create-release-pr
-    uses: ./.github/workflows/build-zip-file.yml
-    with:
-      skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
-      repo-branch: ${{ needs.create-release-pr.outputs.branch-name }}
-    secrets: inherit

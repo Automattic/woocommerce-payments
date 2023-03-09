@@ -13,10 +13,11 @@ on:
         required: false
         default: "next wednesday"
         type: string
-    outputs:
-      branch-name:
-        description: 'Release branch name'
-        value: ${{ jobs.prepare-release.outputs.branch }}
+      skip-smoke-tests:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running smoke tests"
 
   workflow_dispatch:
     inputs:
@@ -29,6 +30,11 @@ on:
         required: false
         default: "next wednesday"
         type: string
+      skip-smoke-tests:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running smoke tests"
 
 defaults:
   run:
@@ -40,6 +46,7 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       branch: ${{ steps.create_branch.outputs.branch-name }}
+      release-pr-created: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_CREATED }}
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
       RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}
@@ -105,6 +112,7 @@ jobs:
           git push --set-upstream origin $BRANCH_NAME
 
       - name: "Create a PR to trunk"
+        id: create-pr-to-trunk
         env:
           GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
@@ -112,4 +120,13 @@ jobs:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
         run: |
           PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command:\n\`\`\`\n git checkout trunk && git pull \n git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \n git push origin trunk \n\`\`\` \n Changelog: \n\`\`\`\n${CHANGELOG}\n\`\`\`")
-          gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk"
+          gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk" &&  echo "RELEASE_PR_CREATED=true" >> $GITHUB_OUTPUT
+
+  build-zip-and-run-smoke-tests:
+    name: "Build zip & Run smoke tests"
+    needs: prepare-release
+    uses: ./.github/workflows/build-zip-and-run-smoke-tests.yml
+    with:
+      skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
+      repo-branch: ${{ needs.prepare-release.outputs.branch }}
+    secrets: inherit
