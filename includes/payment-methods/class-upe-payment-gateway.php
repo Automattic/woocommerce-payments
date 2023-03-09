@@ -129,14 +129,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 		if ( $this->supports( 'tokenization' ) ) {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
-
-		wp_register_script(
-			'wcpay-upe-checkout',
-			plugins_url( 'dist/upe_checkout.js', WCPAY_PLUGIN_FILE ),
-			$script_dependencies,
-			WC_Payments::get_file_version( 'dist/upe_checkout.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', 'dist/upe_checkout', $script_dependencies );
 
 	}
 
