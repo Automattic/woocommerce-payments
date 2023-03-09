@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       freeze: 1
-      nextReleaseVersion: "12.0.0"
+      nextReleaseVersion: "9.0.0"
       nextReleaseDate: "2026-01-01"
     steps:
       - name: "Checkout repository"
