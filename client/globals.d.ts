@@ -17,6 +17,7 @@ declare const wcpaySettings: {
 	isJetpackIdcActive: boolean;
 	accountStatus: {
 		email?: string;
+		created: string;
 		error?: boolean;
 		status?: string;
 		country?: string;
@@ -29,6 +30,12 @@ declare const wcpaySettings: {
 		hasSubmittedVatData?: boolean;
 		requirements?: {
 			errors?: Array< RequirementError >;
+		};
+		progressiveOnboarding: {
+			isEnabled: boolean;
+			isComplete: boolean;
+			tpv: number;
+			firstTransactionDate?: string;
 		};
 	};
 	accountLoans: {
