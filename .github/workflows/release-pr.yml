@@ -46,7 +46,6 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       branch: ${{ steps.create_branch.outputs.branch-name }}
-      release-pr-created: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_CREATED }}
       release-pr-id: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
@@ -124,6 +123,7 @@ jobs:
           PR_URL=$(gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk")
           PR_ID=${PR_URL##*/}
           if [[ $PR_ID =~ ^[0-9]+$ ]]; then
+            echo "Release PR ID: $PR_ID"
             echo "RELEASE_PR_ID=$PR_ID" >> $GITHUB_OUTPUT
           fi
 
