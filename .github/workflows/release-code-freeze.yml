@@ -87,6 +87,11 @@ jobs:
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.nextReleaseDate }}
       GITHUB_TAG_URL: ${{ format( '{0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.nextReleaseVersion ) }}
     steps:
+      - name: Get artifact data
+        id: get-artifact-data
+        run: |
+          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/Automattic/woocommerce-payments/actions/runs/$GITHUB_RUN_ID/artifacts
+
       - name: "Slack ping"
         uses: slackapi/slack-github-action@v1.23.0
         env:
@@ -96,34 +101,48 @@ jobs:
           # For posting a rich message using Block Kit (https://api.slack.com/messaging/interactivity)
           payload: |
             {
-                "blocks": [
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Code freeze notification",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The automated workflow just did the following actions:"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "• Create a release branch `release/x.y.z` \n • Raise a Pull Request using `trunk` as the base \n • Build a zip file and run the E2E tests against it"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "If you absolutely need to include a PR that was not merged in `develop` yet, please consult the release lead."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
                     {
-                        "type": "header",
-                        "text": {
-                            "type": "plain_text",
-                            "text": "Code freeze notification",
-                            "emoji": true
-                        }
+                      "type": "mrkdwn",
+                      "text": "*Version:*\n${{ env.RELEASE_VERSION }}"
                     },
                     {
-                        "type": "section",
-                        "text": {
-                          "type": "mrkdwn",
-                          "text": "The automated workflow just created a release branch and raised a Pull Request to merge changes on trunk. Any PRs that were not already merged will be a part of the release after that by default.\n If you have something that needs to be released in ${{ env.RELEASE_VERSION }}, please consult the release lead."
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "fields": [
-                            {
-                                "type": "mrkdwn",
-                                "text": "*Version:*\n<${{ env.GITHUB_TAG_URL }}|${{ env.RELEASE_VERSION }}>"
-                            },
-                            {
-                                "type": "mrkdwn",
-                                "text": "*Planned date:*\n<https://wcpay.wordpress.com/dev-resources/wc-payments-release-calendar/|${{ env.RELEASE_DATE }}>"
-                            }
-                        ]
+                      "type": "mrkdwn",
+                      "text": "*Planned date:*\n<https://wcpay.wordpress.com/dev-resources/wc-payments-release-calendar/|${{ env.RELEASE_DATE }}>"
                     }
-                ]
+                  ]
+                }
+              ]
             }
