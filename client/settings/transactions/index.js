@@ -20,6 +20,7 @@ import {
 	useGetSavingError,
 	useSavedCards,
 } from '../../data';
+import TextLengthHelpInputWrapper from './text-lenght-help-input-wrapper';
 import './style.scss';
 import ManualCaptureControl from 'wcpay/settings/transactions/manual-capture-control';
 import SupportPhoneInput from 'wcpay/settings/support-phone-input';
@@ -89,25 +90,28 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 							/>
 						</Notice>
 					) }
-					<TextControl
-						className="transactions__account-statement-input"
-						help={ __(
-							'Enter the name your customers will see on their transactions. Use a recognizable name – e.g. ' +
-								'the legal entity name or website address – to avoid potential disputes and chargebacks.',
-							'woocommerce-payments'
-						) }
-						label={ __(
-							'Full bank statement',
-							'woocommerce-payments'
-						) }
-						value={ accountStatementDescriptor }
-						onChange={ setAccountStatementDescriptor }
+					<TextLengthHelpInputWrapper
+						textLength={ accountStatementDescriptor.length }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
-						data-testid="store-name-bank-statement"
-					/>
-					<span className="input-help-text" aria-hidden="true">
-						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
-					</span>
+						data-testid={ 'store-name-bank-statement' }
+					>
+						<TextControl
+							className="transactions__account-statement-input"
+							help={ __(
+								'Enter the name your customers will see on their transactions. Use a recognizable name – e.g. ' +
+									'the legal entity name or website address – to avoid potential disputes and chargebacks.',
+								'woocommerce-payments'
+							) }
+							label={ __(
+								'Full bank statement',
+								'woocommerce-payments'
+							) }
+							value={ accountStatementDescriptor }
+							onChange={ setAccountStatementDescriptor }
+							maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
+							data-testid="store-name-bank-statement"
+						/>
+					</TextLengthHelpInputWrapper>
 
 					<CheckboxControl
 						checked={ isShortStatementEnabled }
@@ -133,25 +137,28 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 									/>
 								</Notice>
 							) }
-							<TextControl
-								help={ __(
-									"We'll use the short version in combination with the customer order number.",
-									'woocommerce-payments'
-								) }
-								label={ __(
-									'Shortened customer bank statement',
-									'woocommerce-payments'
-								) }
-								value={ shortAccountStatementDescriptor }
-								onChange={ setShortAccountStatementDescriptor }
+							<TextLengthHelpInputWrapper
+								textLength={
+									shortAccountStatementDescriptor.length
+								}
 								maxLength={ SHORT_STATEMENT_MAX_LENGTH }
-							/>
-							<span
-								className="input-help-text"
-								aria-hidden="true"
 							>
-								{ `${ shortAccountStatementDescriptor.length } / ${ SHORT_STATEMENT_MAX_LENGTH }` }
-							</span>
+								<TextControl
+									help={ __(
+										"We'll use the short version in combination with the customer order number.",
+										'woocommerce-payments'
+									) }
+									label={ __(
+										'Shortened customer bank statement',
+										'woocommerce-payments'
+									) }
+									value={ shortAccountStatementDescriptor }
+									onChange={
+										setShortAccountStatementDescriptor
+									}
+									maxLength={ SHORT_STATEMENT_MAX_LENGTH }
+								/>
+							</TextLengthHelpInputWrapper>
 						</>
 					) }
 
