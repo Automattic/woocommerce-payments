@@ -132,6 +132,14 @@ jobs:
             echo "RELEASE_PR_ID=$PR_ID" >> $GITHUB_OUTPUT
           fi
 
+      - name: Add comment to PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment https://github.com/Automattic/woocommerce-payments/pull/$RELEASE_PR_ID --body="### Release zip build & Smoke tests
+
+          Check status of zip file build & smoke tests at https://github.com/Automattic/woocommerce-payments/actions/runs/${GITHUB_RUN_ID}"
+
   build-zip-and-run-smoke-tests:
     name: "Build zip & Run smoke tests"
     needs: prepare-release
