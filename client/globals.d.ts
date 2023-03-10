@@ -53,6 +53,9 @@ declare const wcpaySettings: {
 	restUrl: string;
 	shouldUseExplicitPrice: boolean;
 	numDisputesNeedingResponse: string;
+	fraudProtection: {
+		isWelcomeTourDismissed?: boolean;
+	};
 };
 
 declare const wcTracks: any;
