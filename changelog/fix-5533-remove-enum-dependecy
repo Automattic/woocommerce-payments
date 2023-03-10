@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Replace PHP dependency myclabs/php-enum with a built-in solution due to conflicts with multiple PHP versions.
