@@ -47,6 +47,7 @@ jobs:
     outputs:
       branch: ${{ steps.create_branch.outputs.branch-name }}
       release-pr-created: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_CREATED }}
+      release-pr-id: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
       RELEASE_DATE_STRING: ${{ inputs.releaseDateString }}
@@ -120,7 +121,11 @@ jobs:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
         run: |
           PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command:\n\`\`\`\n git checkout trunk && git pull \n git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \n git push origin trunk \n\`\`\` \n Changelog: \n\`\`\`\n${CHANGELOG}\n\`\`\`")
-          gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk" && echo "RELEASE_PR_CREATED=true" >> $GITHUB_OUTPUT
+          PR_URL=$(gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk")
+          PR_ID=${PR_URL##*/}
+          if [[ $PR_ID =~ ^[0-9]+$ ]]; then
+            echo "RELEASE_PR_ID=$PR_ID" >> $GITHUB_OUTPUT
+          fi
 
   build-zip-and-run-smoke-tests:
     name: "Build zip & Run smoke tests"

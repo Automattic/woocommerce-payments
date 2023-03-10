@@ -77,14 +77,15 @@ jobs:
       releaseVersion: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
     secrets: inherit
 
-  slack-notification:
-    name: "Send notification to Slack"
+  slack-notification-pr-comment:
+    name: "Send notification to Slack & comment on PR"
     needs: [check-code-freeze, create-release-pr]
-    if: ${{ ! ( inputs.skipSlackPing && needs.create-release-pr.outputs.release-pr-created ) }}
+    if: ${{ ! ( inputs.skipSlackPing && needs.create-release-pr.outputs.release-pr-id ) }}
     runs-on: ubuntu-20.04
     env:
       RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.nextReleaseDate }}
+      RELEASE_PR_ID: ${{ needs.create-release-pr.outputs.release-pr-id }}
     steps:
       - name: "Slack ping"
         uses: slackapi/slack-github-action@v1.23.0
@@ -115,7 +116,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n • Raised a Pull Request to `trunk`\n • Built a <https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}|zip file and ran smoke tests> against it"
+                    "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n • Raised a <https://github.com/Automattic/woocommerce-payments/pull/${{ env.RELEASE_PR_ID }}|Pull Request> to `trunk`\n • Built a <https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}|zip file and ran smoke tests> against it"
                   }
                 },
                 {
@@ -140,3 +141,16 @@ jobs:
                 }
               ]
             }
+
+      - name: Add comment to PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: ${{ needs.create-release-pr.outputs.release-pr-id }}
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '### Release zip build & Smoke tests
+
+              Check status of zip file build & smoke tests at https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}'
+            })
