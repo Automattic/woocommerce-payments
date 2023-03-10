@@ -8,7 +8,6 @@
 namespace WCPay\Fraud_Prevention;
 
 require_once dirname( __FILE__ ) . '/models/class-check.php';
-require_once dirname( __FILE__ ) . '/models/class-checklist.php';
 require_once dirname( __FILE__ ) . '/models/class-rule.php';
 
 require_once dirname( __FILE__ ) . '/rules/class-base-rule.php';
@@ -20,17 +19,13 @@ require_once dirname( __FILE__ ) . '/rules/class-rule-international-ip-address.p
 require_once dirname( __FILE__ ) . '/rules/class-rule-order-items-threshold.php';
 require_once dirname( __FILE__ ) . '/rules/class-rule-order-velocity.php';
 require_once dirname( __FILE__ ) . '/rules/class-rule-purchase-price-threshold.php';
+require_once dirname( __FILE__ ) . '/class-fraud-rule-adapter.php';
 
+use WC_Payments;
+use WC_Payments_API_Client;
 use WC_Payments_Features;
-use WCPay\Fraud_Prevention\Models\Rule;
-use WCPay\Fraud_Prevention\Rules\Rule_Address_Mismatch;
-use WCPay\Fraud_Prevention\Rules\Rule_Avs_Mismatch;
-use WCPay\Fraud_Prevention\Rules\Rule_Cvc_Verification;
-use WCPay\Fraud_Prevention\Rules\Rule_International_Billing_Address;
-use WCPay\Fraud_Prevention\Rules\Rule_International_Ip_Address;
-use WCPay\Fraud_Prevention\Rules\Rule_Order_Items_Threshold;
-use WCPay\Fraud_Prevention\Rules\Rule_Order_Velocity;
-use WCPay\Fraud_Prevention\Rules\Rule_Purchase_Price_Threshold;
+use WCPay\Exceptions\API_Exception;
+use WCPay\Fraud_Prevention\Models\Fraud_Rule_Adapter;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -45,15 +40,12 @@ class Fraud_Risk_Tools {
 	 */
 	protected static $instance = null;
 
-	// Rule names.
-	const RULE_AVS_MISMATCH                  = 'avs_mismatch';
-	const RULE_CVC_VERIFICATION              = 'cvc_verification';
-	const RULE_ADDRESS_MISMATCH              = 'address_mismatch';
-	const RULE_INTERNATIONAL_IP_ADDRESS      = 'international_ip_address';
-	const RULE_INTERNATIONAL_BILLING_ADDRESS = 'international_billing_address';
-	const RULE_ORDER_VELOCITY                = 'order_velocity';
-	const RULE_ORDER_ITEMS_THRESHOLD         = 'order_items_threshold';
-	const RULE_PURCHASE_PRICE_THRESHOLD      = 'purchase_price_threshold';
+	/**
+	 * Payments API client.
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	protected $api_client;
 
 	/**
 	 * Main FraudRiskTools Instance.
@@ -65,17 +57,32 @@ class Fraud_Risk_Tools {
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
-			self::$instance = new self();
+			self::$instance = new self( WC_Payments::get_payments_api_client() );
 		}
 		return self::$instance;
 	}
 
+	// Rule names.
+	const RULE_AVS_MISMATCH                  = 'avs_mismatch';
+	const RULE_CVC_VERIFICATION              = 'cvc_verification';
+	const RULE_ADDRESS_MISMATCH              = 'address_mismatch';
+	const RULE_INTERNATIONAL_IP_ADDRESS      = 'international_ip_address';
+	const RULE_INTERNATIONAL_BILLING_ADDRESS = 'international_billing_address';
+	const RULE_ORDER_VELOCITY                = 'order_velocity';
+	const RULE_ORDER_ITEMS_THRESHOLD         = 'order_items_threshold';
+	const RULE_PURCHASE_PRICE_THRESHOLD      = 'purchase_price_threshold';
+
 	/**
 	 * Class constructor.
+	 *
+	 * @param WC_Payments_API_Client $api_client Payments API client.
 	 */
-	public function __construct() {
+	public function __construct( WC_Payments_API_Client $api_client ) {
+		$this->api_client = $api_client;
+
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_action( 'admin_menu', [ $this, 'init_advanced_settings_page' ] );
+			add_action( 'admin_head', [ $this, 'maybe_pull_server_settings' ] );
 		}
 	}
 
@@ -112,6 +119,28 @@ class Fraud_Risk_Tools {
 			]
 		);
 		remove_submenu_page( 'wc-admin&path=/payments/overview', 'wc-admin&path=/payments/fraud-protection' );
+	}
+
+	/**
+	 * Fetches the server side settings and overwrites the current one if needed. Caches the settings for 1 day.
+	 *
+	 * @return  void
+	 */
+	public function maybe_pull_server_settings() {
+		if ( isset( $_GET['path'] ) && '/payments/fraud-protection' === $_GET['path'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$cached_server_settings = get_transient( 'wcpay_fraud_protection_settings' );
+			if ( ! $cached_server_settings ) {
+				try {
+					$latest_server_ruleset = $this->api_client->get_latest_fraud_ruleset();
+					if ( isset( $latest_server_ruleset['ruleset_config'] ) ) {
+						$ui_config = Fraud_Rule_Adapter::to_ui_settings( $latest_server_ruleset['ruleset_config'] );
+						set_transient( 'wcpay_fraud_protection_settings', $ui_config, 1 * DAY_IN_SECONDS );
+					}
+				} catch ( API_Exception $ex ) {
+					return;
+				}
+			}
+		}
 	}
 
 	/**
@@ -222,60 +251,5 @@ class Fraud_Risk_Tools {
 		$base_settings[ self::RULE_INTERNATIONAL_BILLING_ADDRESS ]['enabled'] = true;
 
 		return $base_settings;
-	}
-
-	/**
-	 * Builds JSON configuration from fraud level settings.
-	 *
-	 * @param   array $protection_settings  The settings array to generate rules from.
-	 *
-	 * @return  array|bool                  The generated structure for the rule engine, or false when encoding fails.
-	 */
-	public static function build_rules( $protection_settings ) {
-		$rule_configuration = [];
-		foreach ( $protection_settings as $key => $setting ) {
-			$enabled = $setting['enabled'];
-			$block   = $setting['block'];
-			switch ( $key ) {
-				case self::RULE_AVS_MISMATCH:
-					$rule_configuration[] = new Rule_Avs_Mismatch( $enabled, $block );
-					break;
-				case self::RULE_CVC_VERIFICATION:
-					$rule_configuration[] = new Rule_Cvc_Verification( $enabled, $block );
-					break;
-				case self::RULE_ADDRESS_MISMATCH:
-					$rule_configuration[] = new Rule_Address_Mismatch( $enabled, $block );
-					break;
-				case self::RULE_INTERNATIONAL_IP_ADDRESS:
-					$rule_configuration[] = new Rule_International_Ip_Address( $enabled, $block );
-					break;
-				case self::RULE_INTERNATIONAL_BILLING_ADDRESS:
-					$rule_configuration[] = new Rule_International_Billing_Address( $enabled, $block );
-					break;
-				case self::RULE_ORDER_VELOCITY:
-					$rule_configuration[] = new Rule_Order_Velocity(
-						$enabled,
-						$block,
-						intval( $setting['max_orders'] ),
-						intval( $setting['interval'] )
-					);
-					break;
-				case self::RULE_ORDER_ITEMS_THRESHOLD:
-					$rule_configuration[] = new Rule_Order_Items_Threshold( $enabled, $block, $setting['min_items'], $setting['max_items'] );
-					break;
-				case self::RULE_PURCHASE_PRICE_THRESHOLD:
-					$rule_configuration[] = new Rule_Purchase_Price_Threshold( $enabled, $block, $setting['min_amount'], $setting['max_amount'] );
-					break;
-			}
-		}
-		return array_filter(
-			array_map(
-				function( $rule ) {
-					return $rule->to_array();
-				},
-				$rule_configuration
-			)
-		);
-
 	}
 }

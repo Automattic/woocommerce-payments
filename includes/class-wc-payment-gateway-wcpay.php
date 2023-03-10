@@ -26,6 +26,7 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+use WCPay\Fraud_Prevention\Models\Fraud_Rule_Adapter;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -3296,7 +3297,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				break;
 		}
 
-		$ruleset_config = Fraud_Risk_Tools::build_rules( $settings );
+		$ruleset_config = Fraud_Rule_Adapter::to_server_ruleset( $settings );
 
 		if ( ! $ruleset_config ) {
 			Logger::error( 'Failed to build fraud ruleset: ' . wp_json_encode( $settings ) );

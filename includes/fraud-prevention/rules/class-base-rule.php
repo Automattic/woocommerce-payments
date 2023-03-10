@@ -1,6 +1,6 @@
 <?php
 /**
- * The base rule class.
+ * The base rule for the UI class.
  *
  * @package WCPay\Fraud_Prevention\Rules
  */
@@ -50,5 +50,16 @@ abstract class Base_Rule {
 	public function to_array() {
 		$rule = $this->get_rule();
 		return $rule ? $rule->to_array() : null;
+	}
+
+	/**
+	 * Returns the server settings as a Rule extension object.
+	 *
+	 * @param   Rule $rule  The rule taken from the server.
+	 *
+	 * @return  Base_Rule    One of the `Base_Rule` child classes.
+	 */
+	public static function from_server_rule( Rule $rule ) {
+		return new static( true, $rule->outcome );
 	}
 }

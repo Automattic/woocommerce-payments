@@ -10,8 +10,8 @@ namespace WCPay\Fraud_Prevention\Rules;
 use WCPay\Exceptions\Fraud_Ruleset_Exception;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Fraud_Prevention\Models\Check;
-use WCPay\Fraud_Prevention\Models\Checklist;
 use WCPay\Fraud_Prevention\Models\Rule;
+use WCPay\Logger;
 
 /**
  * Class Rule_Order_Velocity
@@ -83,10 +83,24 @@ class Rule_Order_Velocity extends Base_Rule {
 		return $this->enabled ? new Rule(
 			$this->key,
 			$this->block ? Rule::FRAUD_OUTCOME_BLOCK : Rule::FRAUD_OUTCOME_REVIEW,
-			new Checklist(
-				Checklist::LIST_OPERATOR_AND,
-				[ new Check( 'orders_since_' . $this->interval . 'h', Check::OPERATOR_GT, $this->max_orders ) ]
+			Check::list(
+				Check::LIST_OPERATOR_AND,
+				[ Check::check( 'orders_since_' . $this->interval . 'h', Check::OPERATOR_GT, $this->max_orders ) ]
 			)
 		) : null;
+	}
+
+	/**
+	 * Returns the server settings as a Rule extension object.
+	 *
+	 * @param   Rule $rule  The rule taken from the server.
+	 *
+	 * @return  Base_Rule    One of the `Base_Rule` child classes.
+	 */
+	public static function from_server_rule( Rule $rule ) {
+		$rule_check = $rule->check->checks[0];
+		$matches    = [];
+		preg_match( '/^orders_since_(\d+)h$/', $rule_check->key, $matches );
+		return new static( true, $rule->outcome, intval( $rule_check->value ), intval( $matches[1] ) );
 	}
 }

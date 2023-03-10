@@ -9,7 +9,6 @@ namespace WCPay\Fraud_Prevention\Rules;
 
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Fraud_Prevention\Models\Check;
-use WCPay\Fraud_Prevention\Models\Checklist;
 use WCPay\Fraud_Prevention\Models\Rule;
 
 /**
@@ -46,9 +45,11 @@ class Rule_Address_Mismatch extends Base_Rule {
 		return $this->enabled ? new Rule(
 			$this->key,
 			$this->block ? Rule::FRAUD_OUTCOME_BLOCK : Rule::FRAUD_OUTCOME_REVIEW,
-			new Checklist(
-				Checklist::LIST_OPERATOR_AND,
-				[ new Check( 'billing_shipping_addresses_match', Check::OPERATOR_EQUALS, false ) ]
+			Check::list(
+				Check::LIST_OPERATOR_AND,
+				[
+					Check::check( 'billing_shipping_addresses_match', Check::OPERATOR_EQUALS, false ),
+				]
 			)
 		) : null;
 	}

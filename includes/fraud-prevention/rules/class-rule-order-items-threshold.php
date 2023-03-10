@@ -10,7 +10,6 @@ namespace WCPay\Fraud_Prevention\Rules;
 use WCPay\Exceptions\Fraud_Ruleset_Exception;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Fraud_Prevention\Models\Check;
-use WCPay\Fraud_Prevention\Models\Checklist;
 use WCPay\Fraud_Prevention\Models\Rule;
 
 /**
@@ -84,12 +83,12 @@ class Rule_Order_Items_Threshold extends Base_Rule {
 		return $this->enabled ? new Rule(
 			$this->key,
 			$this->block ? Rule::FRAUD_OUTCOME_BLOCK : Rule::FRAUD_OUTCOME_REVIEW,
-			new Checklist(
-				Checklist::LIST_OPERATOR_OR,
+			Check::list(
+				Check::LIST_OPERATOR_OR,
 				array_filter(
 					[
-						$this->min_items ? new Check( 'item_count', Check::OPERATOR_LT, $this->min_items ) : null,
-						$this->max_items ? new Check( 'item_count', Check::OPERATOR_GT, $this->max_items ) : null,
+						$this->min_items ? Check::check( 'item_count', Check::OPERATOR_LT, $this->min_items ) : null,
+						$this->max_items ? Check::check( 'item_count', Check::OPERATOR_GT, $this->max_items ) : null,
 					]
 				)
 			)

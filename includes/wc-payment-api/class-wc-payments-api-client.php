@@ -20,6 +20,7 @@ use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Response;
+use WCPay\Fraud_Prevention\Models\Fraud_Rule_Adapter;
 
 /**
  * Communicates with WooCommerce Payments API.
@@ -2017,6 +2018,30 @@ class WC_Payments_API_Client {
 			],
 			self::FRAUD_RULESET_API,
 			self::POST
+		);
+
+		// Save the retrieved ruleset to the client side cache.
+		if ( isset( $response['wcpay_fraud_ruleset_id'] ) ) {
+			$ruleset_config = $response['ruleset_config'];
+			$ui_settings    = Fraud_Rule_Adapter::to_ui_settings( $ruleset_config );
+			set_transient( 'wcpay_fraud_protection_settings', $ui_settings, 1 * DAY_IN_SECONDS );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Get the latest fraud ruleset for the account.
+	 *
+	 * @return  array          HTTP resposne on success.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function get_latest_fraud_ruleset() {
+		$response = $this->request(
+			[],
+			self::FRAUD_RULESET_API,
+			self::GET
 		);
 
 		return $response;
