@@ -41,6 +41,7 @@ export interface Transaction {
 	// A field to identify the payment's source.
 	// Usually last 4 digits for card payments, bank name for bank transfers...
 	source_identifier: string;
+	source_device?: null | string;
 	source:
 		| 'ach_credit_transfer'
 		| 'ach_debit'
