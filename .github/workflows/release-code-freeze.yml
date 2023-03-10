@@ -89,6 +89,8 @@ jobs:
     steps:
       - name: Get artifact data
         id: get-artifact-data
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/Automattic/woocommerce-payments/actions/runs/$GITHUB_RUN_ID/artifacts
 
