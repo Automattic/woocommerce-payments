@@ -10,7 +10,7 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import PaymentConfirmIllustration from '..';
-import WooCardIcon from 'assets/images/payment-methods/woo.svg?asset';
+import WooCardIcon from 'assets/images/cards/woo-card.svg?asset';
 
 describe( 'PaymentConfirmIllustration', () => {
 	test( 'renders without props', () => {
