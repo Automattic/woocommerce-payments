@@ -19,8 +19,6 @@ use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
-use WCPay\Core\Server\Response;
-use WCPay\Fraud_Prevention\Models\Fraud_Rule_Adapter;
 
 /**
  * Communicates with WooCommerce Payments API.
