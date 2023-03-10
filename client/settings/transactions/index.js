@@ -15,6 +15,8 @@ import {
 import CardBody from '../card-body';
 import {
 	useAccountStatementDescriptor,
+	useIsShortStatementDescriptorEnabled,
+	useShortStatementDescriptor,
 	useGetSavingError,
 	useSavedCards,
 } from '../../data';
@@ -25,6 +27,7 @@ import SupportEmailInput from 'wcpay/settings/support-email-input';
 import React, { useEffect, useState } from 'react';
 
 const ACCOUNT_STATEMENT_MAX_LENGTH = 22;
+const SHORT_STATEMENT_MAX_LENGTH = 10;
 
 const Transactions = ( { setTransactionInputsValid } ) => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
@@ -32,8 +35,18 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 		accountStatementDescriptor,
 		setAccountStatementDescriptor,
 	] = useAccountStatementDescriptor();
+	const [
+		isShortStatementEnabled,
+		setIsShortStatementEnabled,
+	] = useIsShortStatementDescriptorEnabled();
+	const [
+		shortAccountStatementDescriptor,
+		setShortAccountStatementDescriptor,
+	] = useShortStatementDescriptor();
 	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
 		?.account_statement_descriptor?.message;
+	const shortStatementDescriptorErrorMessage = useGetSavingError()?.data
+		?.details?.short_statement_descriptor?.message;
 
 	const [ isEmailInputValid, setEmailInputValid ] = useState( true );
 	const [ isPhoneInputValid, setPhoneInputValid ] = useState( true );
@@ -90,11 +103,57 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 						value={ accountStatementDescriptor }
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
-						data-testid={ 'store-name-bank-statement' }
+						data-testid="store-name-bank-statement"
 					/>
 					<span className="input-help-text" aria-hidden="true">
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
 					</span>
+
+					<CheckboxControl
+						checked={ isShortStatementEnabled }
+						onChange={ setIsShortStatementEnabled }
+						label={ __(
+							'Add customer order number to the bank statement',
+							'woocommerce-payments'
+						) }
+						help={ __(
+							"When enabled, we'll include the order number for card and express checkout transactions.",
+							'woocommerce-payments'
+						) }
+					/>
+
+					{ isShortStatementEnabled && (
+						<>
+							{ shortStatementDescriptorErrorMessage && (
+								<Notice status="error" isDismissible={ false }>
+									<span
+										dangerouslySetInnerHTML={ {
+											__html: shortStatementDescriptorErrorMessage,
+										} }
+									/>
+								</Notice>
+							) }
+							<TextControl
+								help={ __(
+									"We'll use the short version in combination with the customer order number.",
+									'woocommerce-payments'
+								) }
+								label={ __(
+									'Shortened customer bank statement',
+									'woocommerce-payments'
+								) }
+								value={ shortAccountStatementDescriptor }
+								onChange={ setShortAccountStatementDescriptor }
+								maxLength={ SHORT_STATEMENT_MAX_LENGTH }
+							/>
+							<span
+								className="input-help-text"
+								aria-hidden="true"
+							>
+								{ `${ shortAccountStatementDescriptor.length } / ${ SHORT_STATEMENT_MAX_LENGTH }` }
+							</span>
+						</>
+					) }
 
 					<SupportEmailInput setInputVallid={ setEmailInputValid } />
 					<SupportPhoneInput setInputVallid={ setPhoneInputValid } />
