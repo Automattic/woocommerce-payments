@@ -303,6 +303,9 @@ mkdir -p $WCP_ROOT/screenshots
 echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option add wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
 
+echo "Setting up a coupon for E2E tests"
+cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
+
 # Log test configuration for visibility
 echo
 echo "*******************************************************"
