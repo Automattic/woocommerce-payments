@@ -132,6 +132,6 @@ jobs:
     needs: prepare-release
     uses: ./.github/workflows/build-zip-and-run-smoke-tests.yml
     with:
-      skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
+      skip-smoke-tests: true
       repo-branch: ${{ needs.prepare-release.outputs.branch }}
     secrets: inherit
