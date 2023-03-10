@@ -18,6 +18,11 @@ on:
         required: false
         default: false
         description: "Skip running smoke tests"
+    outputs:
+      release-pr-id:
+        description: "ID of the release PR created"
+        value: ${{ jobs.prepare-release.outputs.release-pr-id }}
+
 
   workflow_dispatch:
     inputs:
