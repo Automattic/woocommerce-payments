@@ -120,7 +120,7 @@ jobs:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
         run: |
           PR_BODY=$(echo -e ":warning: Please do not merge the PR from the GitHub interface. :warning:\n\n Instead, you can use the following command:\n\`\`\`\n git checkout trunk && git pull \n git merge --no-ff $BRANCH_NAME -m 'Merge $BRANCH_NAME into trunk' \n git push origin trunk \n\`\`\` \n Changelog: \n\`\`\`\n${CHANGELOG}\n\`\`\`")
-          gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk" &&  echo "RELEASE_PR_CREATED=true" >> $GITHUB_OUTPUT
+          gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk" && echo "RELEASE_PR_CREATED=true" >> $GITHUB_OUTPUT
 
   build-zip-and-run-smoke-tests:
     name: "Build zip & Run smoke tests"
