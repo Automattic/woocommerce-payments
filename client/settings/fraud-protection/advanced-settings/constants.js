@@ -176,14 +176,17 @@ export const buildRuleset = (
 	return ruleBase;
 };
 
-const findCheck = ( rootCheck, checkKey, operator ) => {
-	if ( checkKey === rootCheck.key && operator === rootCheck.operator )
-		return rootCheck;
-	if ( rootCheck.checks ) {
-		for ( const i in rootCheck.checks ) {
-			const check = rootCheck.checks[ i ];
-			const foundCheck = findCheck( check, checkKey, operator );
-			if ( foundCheck ) return foundCheck;
+const findCheck = ( current, checkKey, operator ) => {
+	if ( checkKey === current.key && operator === current.operator ) {
+		return current;
+	}
+	if ( current.checks ) {
+		for ( const i in current.checks ) {
+			const check = current.checks[ i ];
+			const result = findCheck( check, checkKey, operator );
+			if ( false !== result ) {
+				return result;
+			}
 		}
 	}
 	return false;
@@ -297,12 +300,12 @@ export const readRuleset = ( rulesetConfig ) => {
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
-					min_items: findCheck(
+					min_amount: findCheck(
 						rule.check,
 						Checks.CHECK_ORDER_TOTAL,
 						CheckOperators.OPERATOR_LT
 					).value,
-					max_items: findCheck(
+					max_amount: findCheck(
 						rule.check,
 						Checks.CHECK_ORDER_TOTAL,
 						CheckOperators.OPERATOR_GT
