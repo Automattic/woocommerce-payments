@@ -87,60 +87,60 @@ jobs:
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.nextReleaseDate }}
       RELEASE_PR_ID: ${{ needs.create-release-pr.outputs.release-pr-id }}
     steps:
-      # - name: "Slack ping"
-      #   uses: slackapi/slack-github-action@v1.23.0
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
-      #     SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
-      #   with:
-      #     # For posting a rich message using Block Kit (https://api.slack.com/messaging/interactivity)
-      #     payload: |
-      #       {
-      #         "blocks": [
-      #           {
-      #             "type": "header",
-      #             "text": {
-      #               "type": "plain_text",
-      #               "text": "Code freeze notification",
-      #               "emoji": true
-      #             }
-      #           },
-      #           {
-      #             "type": "section",
-      #             "text": {
-      #               "type": "mrkdwn",
-      #               "text": "The automated workflow just did the following actions:"
-      #             }
-      #           },
-      #           {
-      #             "type": "section",
-      #             "text": {
-      #               "type": "mrkdwn",
-      #               "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n • Raised a <https://github.com/Automattic/woocommerce-payments/pull/${{ env.RELEASE_PR_ID }}|Pull Request> to `trunk`\n • Built a <https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}|zip file and ran smoke tests> against it"
-      #             }
-      #           },
-      #           {
-      #             "type": "section",
-      #             "text": {
-      #               "type": "mrkdwn",
-      #               "text": "If you absolutely need to include a PR that was not merged in `develop` yet, please consult the release lead."
-      #             }
-      #           },
-      #           {
-      #             "type": "section",
-      #             "fields": [
-      #               {
-      #                 "type": "mrkdwn",
-      #                 "text": "*Version:*\n${{ env.RELEASE_VERSION }}"
-      #               },
-      #               {
-      #                 "type": "mrkdwn",
-      #                 "text": "*Planned date:*\n<https://wcpay.wordpress.com/dev-resources/wc-payments-release-calendar/|${{ env.RELEASE_DATE }}>"
-      #               }
-      #             ]
-      #           }
-      #         ]
-      #       }
+      - name: "Slack ping"
+        uses: slackapi/slack-github-action@v1.23.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        with:
+          # For posting a rich message using Block Kit (https://api.slack.com/messaging/interactivity)
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Code freeze notification",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The automated workflow just did the following actions:"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n • Raised a <https://github.com/Automattic/woocommerce-payments/pull/${{ env.RELEASE_PR_ID }}|Pull Request> to `trunk`\n • Built a <https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}|zip file and ran smoke tests> against it"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "If you absolutely need to include a PR that was not merged in `develop` yet, please consult the release lead."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Version:*\n${{ env.RELEASE_VERSION }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Planned date:*\n<https://wcpay.wordpress.com/dev-resources/wc-payments-release-calendar/|${{ env.RELEASE_DATE }}>"
+                    }
+                  ]
+                }
+              ]
+            }
 
       - name: Add comment to PR
         env:
