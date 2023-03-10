@@ -72,7 +72,6 @@ class Fraud_Risk_Tools {
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_action( 'admin_menu', [ $this, 'init_advanced_settings_page' ] );
-			add_action( 'admin_head', [ $this, 'maybe_pull_server_settings' ] );
 		}
 	}
 
@@ -109,27 +108,6 @@ class Fraud_Risk_Tools {
 			]
 		);
 		remove_submenu_page( 'wc-admin&path=/payments/overview', 'wc-admin&path=/payments/fraud-protection' );
-	}
-
-	/**
-	 * Fetches the server side settings and overwrites the current one if needed. Caches the settings for 1 day.
-	 *
-	 * @return  void
-	 */
-	public function maybe_pull_server_settings() {
-		if ( isset( $_GET['path'] ) && '/payments/fraud-protection' === $_GET['path'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				$cached_server_settings = get_transient( 'wcpay_fraud_protection_settings' );
-			if ( ! $cached_server_settings ) {
-				try {
-					$latest_server_ruleset = $this->api_client->get_latest_fraud_ruleset();
-					if ( isset( $latest_server_ruleset['ruleset_config'] ) ) {
-						set_transient( 'wcpay_fraud_protection_settings', $latest_server_ruleset['ruleset_config'], 1 * DAY_IN_SECONDS );
-					}
-				} catch ( API_Exception $ex ) {
-					return;
-				}
-			}
-		}
 	}
 
 	/**
