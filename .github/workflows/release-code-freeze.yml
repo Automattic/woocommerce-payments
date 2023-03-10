@@ -77,8 +77,8 @@ jobs:
       releaseVersion: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
     secrets: inherit
 
-  slack-notification-pr-comment:
-    name: "Send notification to Slack & comment on PR"
+  slack-notification:
+    name: "Send notification to Slack"
     needs: [check-code-freeze, create-release-pr]
     if: ${{ ! ( inputs.skipSlackPing && needs.create-release-pr.outputs.release-pr-id ) }}
     runs-on: ubuntu-20.04
