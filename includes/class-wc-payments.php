@@ -1606,7 +1606,7 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function display_express_checkout_separator_if_necessary() {
-		$woopay          = self::$platform_checkout_button_handler->should_show_platform_checkout_button() && self::$platform_checkout_button_handler->is_woopay_enabled();
+		$woopay          = self::$platform_checkout_button_handler->is_woopay_enabled() && self::$platform_checkout_button_handler->should_show_platform_checkout_button();
 		$payment_request = self::$payment_request_button_handler->should_show_payment_request_button();
 		$should_hide     = $payment_request && ! $woopay;
 		if ( $woopay || $payment_request ) {
