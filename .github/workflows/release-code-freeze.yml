@@ -21,52 +21,52 @@ jobs:
     name: "Check that today is the day of the code freeze"
     runs-on: ubuntu-20.04
     outputs:
-      freeze: ${{ steps.check-freeze.outputs.FREEZE }}
-      nextReleaseVersion: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
-      nextReleaseDate: ${{ steps.define_var.outputs.RELEASE_PLANNED_DATE }}
+      freeze: 1
+      nextReleaseVersion: "9.1.0"
+      nextReleaseDate: "2026-01-01"
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
         with:
           ref: 'develop'
 
-      - name: "Get current version"
-        id: current-version
-        run: |
-          VERSION=$(jq '.version' package.json -r)
-          echo "Current version found: $VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+      # - name: "Get current version"
+      #   id: current-version
+      #   run: |
+      #     VERSION=$(jq '.version' package.json -r)
+      #     echo "Current version found: $VERSION" >> $GITHUB_STEP_SUMMARY
+      #     echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: "Set up repository"
-        uses: ./.github/actions/setup-repo
+      # - name: "Set up repository"
+      #   uses: ./.github/actions/setup-repo
 
-      - name: "Calculate the next version"
-        id: next-version
-        env:
-          RELEASE_VERSION: ${{ steps.current-version.outputs.VERSION }}
-        run: php .github/workflows/scripts/get-next-version.php
+      # - name: "Calculate the next version"
+      #   id: next-version
+      #   env:
+      #     RELEASE_VERSION: ${{ steps.current-version.outputs.VERSION }}
+      #   run: php .github/workflows/scripts/get-next-version.php
 
-      - name: "Define the release planned date"
-        id: define_var
-        run: |
-          RELEASE_PLANNED_DATE=$( date "+%Y-%m-%d" -d "next Wednesday" ) # Date formatted as YYYY-MM-DD
-          echo "RELEASE_PLANNED_DATE=$RELEASE_PLANNED_DATE" >> $GITHUB_OUTPUT
+      # - name: "Define the release planned date"
+      #   id: define_var
+      #   run: |
+      #     RELEASE_PLANNED_DATE=$( date "+%Y-%m-%d" -d "next Wednesday" ) # Date formatted as YYYY-MM-DD
+      #     echo "RELEASE_PLANNED_DATE=$RELEASE_PLANNED_DATE" >> $GITHUB_OUTPUT
 
-      - name: "Check if the next version needs a code freeze"
-        id: check-freeze
-        env:
-          NEXT_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
-        run: |
-          git fetch --tags origin
-          NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
-          NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-2" | tail -1)
-          if [[ -z "$NEXT_VERSION_TAG_FROM_WEEK_2" ]]; then
-            echo "Code freeze is not needed :x:" >> $GITHUB_STEP_SUMMARY
-            echo "FREEZE=0" >> $GITHUB_OUTPUT
-          elif [[ -z "$NEXT_VERSION_TAG_STABLE" ]]; then
-            echo "Code freeze is needed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
-            echo "FREEZE=1" >> $GITHUB_OUTPUT
-          fi
+      # - name: "Check if the next version needs a code freeze"
+      #   id: check-freeze
+      #   env:
+      #     NEXT_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
+      #   run: |
+      #     git fetch --tags origin
+      #     NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
+      #     NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-2" | tail -1)
+      #     if [[ -z "$NEXT_VERSION_TAG_FROM_WEEK_2" ]]; then
+      #       echo "Code freeze is not needed :x:" >> $GITHUB_STEP_SUMMARY
+      #       echo "FREEZE=0" >> $GITHUB_OUTPUT
+      #     elif [[ -z "$NEXT_VERSION_TAG_STABLE" ]]; then
+      #       echo "Code freeze is needed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+      #       echo "FREEZE=1" >> $GITHUB_OUTPUT
+      #     fi
 
   create-release-pr:
     name: "Raise a PR to trunk"
