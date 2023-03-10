@@ -87,11 +87,6 @@ jobs:
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.nextReleaseDate }}
       GITHUB_TAG_URL: ${{ format( '{0}/{1}/releases/tag/{2}', github.server_url, github.repository, needs.check-code-freeze.outputs.nextReleaseVersion ) }}
     steps:
-      - name: Get artifact data
-        id: get-artifact-data
-        run: |
-          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/Automattic/woocommerce-payments/actions/runs/$GITHUB_RUN_ID/artifacts
-
       - name: "Slack ping"
         uses: slackapi/slack-github-action@v1.23.0
         env:
