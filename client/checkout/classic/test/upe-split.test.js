@@ -164,11 +164,13 @@ describe( 'getSetupIntentFromSession', () => {
 	test( 'Get setup intent data from for Card method', () => {
 		expect( getSetupIntentFromSession( 'card' ) ).toMatchObject( cardData );
 	} );
+
 	test( 'Get setup intent data from for UPE method', () => {
 		expect( getSetupIntentFromSession( 'bancontact' ) ).toMatchObject(
 			bancontactData
 		);
 	} );
+
 	test( 'Get null setup intent data returns empty object', () => {
 		expect( getSetupIntentFromSession( 'eps' ) ).toMatchObject( {} );
 	} );
