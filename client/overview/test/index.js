@@ -100,9 +100,7 @@ describe( 'Overview page', () => {
 		const { container } = render( <OverviewPage /> );
 
 		expect(
-			container.querySelector(
-				'.wcpay-connection-success.components-notice.is-success'
-			)
+			container.querySelector( '.wcpay-connection-success' )
 		).toBeVisible();
 	} );
 

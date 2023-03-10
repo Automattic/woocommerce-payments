@@ -31,4 +31,26 @@
 	.components-notice {
 		margin: 24px 0;
 	}
+
+	.wcpay-connection-success {
+		text-align: center;
+		padding: $gap-large;
+		padding-bottom: $gap;
+
+		img {
+			max-height: 73px;
+			max-width: 100%;
+		}
+
+		h2 {
+			font-size: 20px;
+			line-height: 28px;
+			font-weight: 400;
+			letter-spacing: 0.7px;
+
+			@media ( min-width: 783px ) {
+				padding: 0 10%;
+			}
+		}
+	}
 }
