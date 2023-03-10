@@ -10,6 +10,8 @@ import Transactions from '..';
 import {
 	useGetSavingError,
 	useAccountStatementDescriptor,
+	useIsShortStatementDescriptorEnabled,
+	useShortStatementDescriptor,
 	useAccountBusinessSupportEmail,
 	useAccountBusinessSupportPhone,
 	useManualCapture,
@@ -19,6 +21,8 @@ import {
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountStatementDescriptor: jest.fn(),
+	useIsShortStatementDescriptorEnabled: jest.fn(),
+	useShortStatementDescriptor: jest.fn(),
 	useAccountBusinessSupportEmail: jest.fn(),
 	useAccountBusinessSupportPhone: jest.fn(),
 	useManualCapture: jest.fn(),
@@ -30,6 +34,11 @@ jest.mock( 'wcpay/data', () => ( {
 describe( 'Settings - Transactions', () => {
 	beforeEach( () => {
 		useAccountStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
+		useIsShortStatementDescriptorEnabled.mockReturnValue( [
+			false,
+			jest.fn(),
+		] );
+		useShortStatementDescriptor.mockReturnValue( [ '', jest.fn() ] );
 		useAccountBusinessSupportEmail.mockReturnValue( [
 			'test@test.com',
 			jest.fn(),
@@ -55,7 +64,7 @@ describe( 'Settings - Transactions', () => {
 
 		expect( screen.getByText( '14 / 22' ) ).toBeInTheDocument();
 
-		fireEvent.change( screen.getByLabelText( 'Customer bank statement' ), {
+		fireEvent.change( screen.getByLabelText( 'Full bank statement' ), {
 			target: { value: 'New Statement Name' },
 		} );
 
@@ -92,6 +101,99 @@ describe( 'Settings - Transactions', () => {
 		expect(
 			screen.getByText(
 				`Customer bank statement is invalid. It should not contain special characters: ' " * < >`
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'toggles the shortened bank statement checkbox', () => {
+		const updateIsShortStatementDescriptorEnabled = jest.fn();
+		useIsShortStatementDescriptorEnabled.mockReturnValue( [
+			false,
+			updateIsShortStatementDescriptorEnabled,
+		] );
+
+		render( <Transactions /> );
+
+		fireEvent.click(
+			screen.getByLabelText(
+				'Add customer order number to the bank statement'
+			)
+		);
+
+		expect( updateIsShortStatementDescriptorEnabled ).toHaveBeenCalledWith(
+			true
+		);
+	} );
+
+	it( 'does not display shortened bank statement input if it is disabled', () => {
+		useIsShortStatementDescriptorEnabled.mockReturnValue( [
+			false,
+			jest.fn(),
+		] );
+		expect(
+			screen.queryByLabelText( 'Shortened customer bank statement' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'displays the length of the shortened bank statement input', () => {
+		const updateShortStatementDescriptor = jest.fn();
+		useIsShortStatementDescriptorEnabled.mockReturnValue( [
+			true,
+			jest.fn(),
+		] );
+		useShortStatementDescriptor.mockReturnValue( [
+			'Statement',
+			updateShortStatementDescriptor,
+		] );
+
+		render( <Transactions /> );
+
+		expect( screen.getByText( '9 / 10' ) ).toBeInTheDocument();
+
+		fireEvent.change(
+			screen.getByLabelText( 'Shortened customer bank statement' ),
+			{
+				target: { value: 'New Stmnt' },
+			}
+		);
+
+		expect( updateShortStatementDescriptor ).toHaveBeenCalledWith(
+			'New Stmnt'
+		);
+	} );
+
+	it( 'displays the error message for the statement input', () => {
+		useIsShortStatementDescriptorEnabled.mockReturnValue( [
+			true,
+			jest.fn(),
+		] );
+		useShortStatementDescriptor.mockReturnValue( [ '111', jest.fn() ] );
+		useGetSavingError.mockReturnValue( {
+			code: 'rest_invalid_param',
+			message: 'Invalid parameter(s): short_statement_descriptor',
+			data: {
+				status: 400,
+				params: {
+					short_statement_descriptor:
+						'Shortened customer bank statement is invalid. It should not contain special characters: \' " * &lt; &gt;',
+				},
+				details: {
+					short_statement_descriptor: {
+						code: 'rest_invalid_pattern',
+						message:
+							'Shortened customer bank statement is invalid. It should not contain special characters: \' " * &lt; &gt;',
+						data: null,
+					},
+				},
+			},
+		} );
+
+		render( <Transactions /> );
+
+		expect( screen.getByText( '3 / 10' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				`Shortened customer bank statement is invalid. It should not contain special characters: ' " * < >`
 			)
 		).toBeInTheDocument();
 	} );
