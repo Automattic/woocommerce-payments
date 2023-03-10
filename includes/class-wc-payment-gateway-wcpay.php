@@ -26,7 +26,6 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
-use WCPay\Fraud_Prevention\Models\Fraud_Rule_Adapter;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -2267,11 +2266,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return [];
 		}
 
-		$settings = get_option( 'advanced_fraud_protection_settings', false );
-		if ( ! $settings ) {
-			return Fraud_Risk_Tools::get_default_protection_settings();
+		// Check if we have local cache available before pulling it from the server.
+		$cached_server_settings = get_transient( 'wcpay_fraud_protection_settings' );
+		if ( ! $cached_server_settings ) {
+			try {
+				$latest_server_ruleset = $this->payments_api_client->get_latest_fraud_ruleset();
+				if ( isset( $latest_server_ruleset['ruleset_config'] ) ) {
+					set_transient( 'wcpay_fraud_protection_settings', $latest_server_ruleset['ruleset_config'], 1 * DAY_IN_SECONDS );
+					return $latest_server_ruleset['ruleset_config'];
+				}
+				return [];
+			} catch ( API_Exception $ex ) {
+				set_transient( 'wcpay_fraud_protection_settings', [], 1 * DAY_IN_SECONDS );
+				return [];
+			}
 		}
-		return json_decode( $settings, true );
+
+		return $cached_server_settings;
 	}
 
 	/**
@@ -3275,40 +3286,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public static function get_settings_url() {
 		return WC_Payments_Admin_Settings::get_settings_url();
-	}
-
-	/**
-	 * Sends the account fraud protection settings with the server.
-	 *
-	 * @return  void
-	 */
-	public function sync_account_protection_ruleset() {
-		$protection_level = $this->get_current_protection_level();
-		$settings         = null;
-		switch ( $protection_level ) {
-			case 'standard':
-				$settings = Fraud_Risk_Tools::get_standard_protection_settings();
-				break;
-			case 'high':
-				$settings = Fraud_Risk_Tools::get_high_protection_settings();
-				break;
-			case 'advanced':
-				$settings = $this->get_advanced_fraud_protection_settings();
-				break;
-		}
-
-		$ruleset_config = Fraud_Rule_Adapter::to_server_ruleset( $settings );
-
-		if ( ! $ruleset_config ) {
-			Logger::error( 'Failed to build fraud ruleset: ' . wp_json_encode( $settings ) );
-			return;
-		}
-
-		try {
-			$this->payments_api_client->save_fraud_ruleset( $ruleset_config );
-		} catch ( API_Exception $e ) {
-			Logger::error( 'Failed to send fraud ruleset: ' . $e );
-		}
 	}
 
 	// Start: Deprecated functions.

@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -790,8 +792,22 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		// Prevent syncing the settings with the server on protection level change, when the
 		// previous level is same with the requested one.
 		if ( $current_protection_level !== $saved_protection_level ) {
-				update_option( 'current_protection_level', $current_protection_level );
-				$this->wcpay_gateway->sync_account_protection_ruleset();
+			update_option( 'current_protection_level', $current_protection_level );
+			$ruleset_config = null;
+			switch ( $current_protection_level ) {
+				case 'standard':
+					$ruleset_config = Fraud_Risk_Tools::get_standard_protection_settings();
+					break;
+				case 'high':
+					$ruleset_config = Fraud_Risk_Tools::get_high_protection_settings();
+					break;
+			}
+
+				// Only save the configuration when switching to standard or high levels. Don't save it when it's advanced.
+			if ( $ruleset_config ) {
+				$this->api_client->save_fraud_ruleset( $ruleset_config );
+				set_transient( 'wcpay_fraud_protection_settings', $ruleset_config, 1 * DAY_IN_SECONDS );
+			}
 		}
 	}
 
@@ -809,10 +825,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
-		$advanced_fraud_protection_settings = $request->get_param( 'advanced_fraud_protection_settings' );
+		$ruleset_config = $request->get_param( 'advanced_fraud_protection_settings' );
 
-		update_option( 'advanced_fraud_protection_settings', wp_json_encode( $advanced_fraud_protection_settings ) );
-
-		$this->wcpay_gateway->sync_account_protection_ruleset();
+		$this->api_client->save_fraud_ruleset( $ruleset_config );
+		set_transient( 'wcpay_fraud_protection_settings', $ruleset_config, 1 * DAY_IN_SECONDS );
 	}
 }

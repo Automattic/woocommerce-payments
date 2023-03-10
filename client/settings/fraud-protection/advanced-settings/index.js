@@ -32,6 +32,7 @@ import { useCurrentProtectionLevel, useSettings } from '../../../data';
 import ErrorBoundary from 'wcpay/components/error-boundary';
 import { getAdminUrl } from 'wcpay/utils';
 import { dispatch } from '@wordpress/data';
+import { readRuleset, writeRuleset } from './constants';
 
 const Breadcrumb = () => (
 	<h2 className="fraud-protection-header-breadcrumb">
@@ -72,7 +73,7 @@ const FraudProtectionAdvancedSettingsPage = () => {
 
 	useEffect( () => {
 		setAdvancedFraudProtectionSettings(
-			settings.advanced_fraud_protection_settings
+			readRuleset( settings.advanced_fraud_protection_settings )
 		);
 	}, [ settings ] );
 
@@ -106,7 +107,7 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	};
 
 	const handleSaveSettings = async () => {
-		if ( validateSettings( settings.advanced_fraud_protection_settings ) ) {
+		if ( validateSettings( advancedFraudProtectionSettings ) ) {
 			setIsSavingSettings( true );
 			if ( 'advanced' !== currentProtectionLevel ) {
 				await updateProtectionLevel( 'advanced' );
@@ -117,6 +118,9 @@ const FraudProtectionAdvancedSettingsPage = () => {
 					)
 				);
 			}
+			settings.advanced_fraud_protection_settings = writeRuleset(
+				advancedFraudProtectionSettings
+			);
 			await saveSettings( settings );
 			setIsSavingSettings( false );
 		} else {

@@ -10,22 +10,12 @@ namespace WCPay\Fraud_Prevention;
 require_once dirname( __FILE__ ) . '/models/class-check.php';
 require_once dirname( __FILE__ ) . '/models/class-rule.php';
 
-require_once dirname( __FILE__ ) . '/rules/class-base-rule.php';
-require_once dirname( __FILE__ ) . '/rules/class-rule-address-mismatch.php';
-require_once dirname( __FILE__ ) . '/rules/class-rule-avs-mismatch.php';
-require_once dirname( __FILE__ ) . '/rules/class-rule-cvc-verification.php';
-require_once dirname( __FILE__ ) . '/rules/class-rule-international-billing-address.php';
-require_once dirname( __FILE__ ) . '/rules/class-rule-international-ip-address.php';
-require_once dirname( __FILE__ ) . '/rules/class-rule-order-items-threshold.php';
-require_once dirname( __FILE__ ) . '/rules/class-rule-order-velocity.php';
-require_once dirname( __FILE__ ) . '/rules/class-rule-purchase-price-threshold.php';
-require_once dirname( __FILE__ ) . '/class-fraud-rule-adapter.php';
-
 use WC_Payments;
 use WC_Payments_API_Client;
 use WC_Payments_Features;
 use WCPay\Exceptions\API_Exception;
-use WCPay\Fraud_Prevention\Models\Fraud_Rule_Adapter;
+use WCPay\Fraud_Prevention\Models\Check;
+use WCPay\Fraud_Prevention\Models\Rule;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -133,8 +123,7 @@ class Fraud_Risk_Tools {
 				try {
 					$latest_server_ruleset = $this->api_client->get_latest_fraud_ruleset();
 					if ( isset( $latest_server_ruleset['ruleset_config'] ) ) {
-						$ui_config = Fraud_Rule_Adapter::to_ui_settings( $latest_server_ruleset['ruleset_config'] );
-						set_transient( 'wcpay_fraud_protection_settings', $ui_config, 1 * DAY_IN_SECONDS );
+						set_transient( 'wcpay_fraud_protection_settings', $latest_server_ruleset['ruleset_config'], 1 * DAY_IN_SECONDS );
 					}
 				} catch ( API_Exception $ex ) {
 					return;
@@ -149,72 +138,29 @@ class Fraud_Risk_Tools {
 	 * @return  array
 	 */
 	public static function get_default_protection_settings() {
-		return [
-			self::RULE_AVS_MISMATCH                  => [
-				'enabled' => false,
-				'block'   => false,
-			],
-			self::RULE_CVC_VERIFICATION              => [
-				'enabled' => false,
-				'block'   => false,
-			],
-			self::RULE_ADDRESS_MISMATCH              => [
-				'enabled' => false,
-				'block'   => false,
-			],
-			self::RULE_INTERNATIONAL_IP_ADDRESS      => [
-				'enabled' => false,
-				'block'   => false,
-			],
-			self::RULE_INTERNATIONAL_BILLING_ADDRESS => [
-				'enabled' => false,
-				'block'   => false,
-			],
-			self::RULE_ORDER_VELOCITY                => [
-				'enabled'    => false,
-				'block'      => false,
-				'max_orders' => 0,
-				'interval'   => 12,
-			],
-			self::RULE_ORDER_ITEMS_THRESHOLD         => [
-				'enabled'   => false,
-				'block'     => false,
-				'min_items' => 0,
-				'max_items' => 0,
-			],
-			self::RULE_PURCHASE_PRICE_THRESHOLD      => [
-				'enabled'    => false,
-				'block'      => false,
-				'min_amount' => 0,
-				'max_amount' => 0,
-			],
-		];
+		return [];
 	}
 
 	/**
-	 * Returns the default protection settings.
+	 * Returns the standard protection rules.
 	 *
 	 * @return  array
 	 */
 	public static function get_standard_protection_settings() {
-		$base_settings = self::get_default_protection_settings();
-		// BLOCK The billing address does not match what is on file with the card issuer.
-		$base_settings[ self::RULE_AVS_MISMATCH ]['enabled'] = true;
-		$base_settings[ self::RULE_AVS_MISMATCH ]['block']   = true;
-		// REVIEW The card's issuing bank cannot verify the CVV.
-		$base_settings[ self::RULE_CVC_VERIFICATION ]['enabled'] = true;
-		// REVIEW An order originates from an IP address outside your country.
-		$base_settings[ self::RULE_INTERNATIONAL_IP_ADDRESS ]['enabled'] = true;
-		// REVIEW An order exceeds $1,000.00 or 10 items.
-		$base_settings[ self::RULE_ORDER_ITEMS_THRESHOLD ]['enabled']       = true;
-		$base_settings[ self::RULE_ORDER_ITEMS_THRESHOLD ]['max_items']     = 10;
-		$base_settings[ self::RULE_PURCHASE_PRICE_THRESHOLD ]['enabled']    = true;
-		$base_settings[ self::RULE_PURCHASE_PRICE_THRESHOLD ]['max_amount'] = 1000;
-		// REVIEW The same card or IP address submits 5 orders within 72 hours.
-		$base_settings[ self::RULE_ORDER_VELOCITY ]['enabled']    = true;
-		$base_settings[ self::RULE_ORDER_VELOCITY ]['max_orders'] = 5;
-		$base_settings[ self::RULE_ORDER_VELOCITY ]['interval']   = 72;
-		return $base_settings;
+		$rules = [
+			// BLOCK The billing address does not match what is on file with the card issuer.
+			new Rule( self::RULE_AVS_MISMATCH, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'avs_check', Check::OPERATOR_EQUALS, false ) ),
+			// REVIEW The card's issuing bank cannot verify the CVV.
+			new Rule( self::RULE_CVC_VERIFICATION, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'cvc_check', Check::OPERATOR_EQUALS, false ) ),
+			// REVIEW An order originates from an IP address outside your country.
+			new Rule( self::RULE_INTERNATIONAL_IP_ADDRESS, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'ip_country_same_with_account_country', Check::OPERATOR_EQUALS, false ) ),
+			// REVIEW An order exceeds $1,000.00 or 10 items.
+			new Rule( self::RULE_ORDER_ITEMS_THRESHOLD, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'item_count', Check::OPERATOR_LT, 10 ) ),
+			new Rule( self::RULE_PURCHASE_PRICE_THRESHOLD, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'order_total', Check::OPERATOR_GT, 1000 ) ),
+			// REVIEW The same card or IP address submits 5 orders within 72 hours.
+			new Rule( self::RULE_ORDER_VELOCITY, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'orders_since_72h', Check::OPERATOR_EQUALS, 5 ) ),
+		];
+		return self::get_ruleset_array( $rules );
 	}
 
 	/**
@@ -223,33 +169,41 @@ class Fraud_Risk_Tools {
 	 * @return  array
 	 */
 	public static function get_high_protection_settings() {
-		$base_settings = self::get_default_protection_settings();
-		// BLOCK The billing address does not match what is on file with the card issuer.
-		$base_settings[ self::RULE_AVS_MISMATCH ]['enabled'] = true;
-		$base_settings[ self::RULE_AVS_MISMATCH ]['block']   = true;
-		// BLOCK An order originates from an IP address outside your country.
-		$base_settings[ self::RULE_INTERNATIONAL_IP_ADDRESS ]['enabled'] = true;
-		$base_settings[ self::RULE_INTERNATIONAL_IP_ADDRESS ]['block']   = true;
-		// BLOCK An order exceeds $1,000.00.
-		$base_settings[ self::RULE_PURCHASE_PRICE_THRESHOLD ]['enabled']    = true;
-		$base_settings[ self::RULE_PURCHASE_PRICE_THRESHOLD ]['block']      = true;
-		$base_settings[ self::RULE_PURCHASE_PRICE_THRESHOLD ]['max_amount'] = 1000;
-		// BLOCK The same card or IP Address submits 5 orders within 72 hours.
-		$base_settings[ self::RULE_ORDER_VELOCITY ]['enabled']    = true;
-		$base_settings[ self::RULE_ORDER_VELOCITY ]['block']      = true;
-		$base_settings[ self::RULE_ORDER_VELOCITY ]['max_orders'] = 5;
-		$base_settings[ self::RULE_ORDER_VELOCITY ]['interval']   = 72;
-		// REVIEW The card's issuing bank cannot verify the CVV.
-		$base_settings[ self::RULE_CVC_VERIFICATION ]['enabled'] = true;
-		// REVIEW An order has less than 2 items or more than 10 items.
-		$base_settings[ self::RULE_ORDER_ITEMS_THRESHOLD ]['enabled']   = true;
-		$base_settings[ self::RULE_ORDER_ITEMS_THRESHOLD ]['min_items'] = 2;
-		$base_settings[ self::RULE_ORDER_ITEMS_THRESHOLD ]['max_items'] = 10;
-		// REVIEW The shipping and billing address don't match.
-		$base_settings[ self::RULE_ADDRESS_MISMATCH ]['enabled'] = true;
-		// REVIEW An order is shipping or billing to a non-domestic address.
-		$base_settings[ self::RULE_INTERNATIONAL_BILLING_ADDRESS ]['enabled'] = true;
+		$rules = [
+			// BLOCK The billing address does not match what is on file with the card issuer.
+			new Rule( self::RULE_AVS_MISMATCH, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'avs_check', Check::OPERATOR_EQUALS, false ) ),
+			// BLOCK An order originates from an IP address outside your country.
+			new Rule( self::RULE_INTERNATIONAL_IP_ADDRESS, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'ip_country_same_with_account_country', Check::OPERATOR_EQUALS, false ) ),
+			// BLOCK An order exceeds $1,000.00.
+			new Rule( self::RULE_PURCHASE_PRICE_THRESHOLD, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'order_total', Check::OPERATOR_GT, 1000 ) ),
+			// BLOCK The same card or IP Address submits 5 orders within 72 hours.
+			new Rule( self::RULE_ORDER_VELOCITY, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'orders_since_72h', Check::OPERATOR_EQUALS, 5 ) ),
+			// REVIEW The card's issuing bank cannot verify the CVV.
+			new Rule( self::RULE_CVC_VERIFICATION, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'cvc_check', Check::OPERATOR_EQUALS, false ) ),
+			// REVIEW An order has less than 2 items or more than 10 items.
+			new Rule( self::RULE_ORDER_ITEMS_THRESHOLD, Rule::FRAUD_OUTCOME_REVIEW, Check::list( Check::LIST_OPERATOR_OR, [ Check::check( 'item_count', Check::OPERATOR_LT, 2 ), Check::check( 'item_count', Check::OPERATOR_GT, 10 ) ] ) ),
+			// REVIEW The shipping and billing address don't match.
+			new Rule( self::RULE_ADDRESS_MISMATCH, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'billing_shipping_address_same', Check::OPERATOR_EQUALS, false ) ),
+			// REVIEW An order is shipping or billing to a non-domestic address.
+			new Rule( self::RULE_INTERNATIONAL_BILLING_ADDRESS, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'billing_country_same_with_account_country', Check::OPERATOR_EQUALS, false ) ),
+		];
 
-		return $base_settings;
+		return self::get_ruleset_array( $rules );
+	}
+
+	/**
+	 * Returns the array representation of ruleset.
+	 *
+	 * @param array $array The array of Rule objects.
+	 *
+	 * @return  array
+	 */
+	private static function get_ruleset_array( $array ) {
+		return array_map(
+			function ( Rule $rule ) {
+				return $rule->to_array();
+			},
+			$array
+		);
 	}
 }

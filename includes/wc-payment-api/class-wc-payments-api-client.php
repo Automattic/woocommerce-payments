@@ -2020,13 +2020,6 @@ class WC_Payments_API_Client {
 			self::POST
 		);
 
-		// Save the retrieved ruleset to the client side cache.
-		if ( isset( $response['wcpay_fraud_ruleset_id'] ) ) {
-			$ruleset_config = $response['ruleset_config'];
-			$ui_settings    = Fraud_Rule_Adapter::to_ui_settings( $ruleset_config );
-			set_transient( 'wcpay_fraud_protection_settings', $ui_settings, 1 * DAY_IN_SECONDS );
-		}
-
 		return $response;
 	}
 
