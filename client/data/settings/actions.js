@@ -243,3 +243,8 @@ export function updatePlatformCheckoutLocations( locations ) {
 		platform_checkout_enabled_locations: [ ...locations ],
 	} );
 }
+
+// TODO: Finish implementation once server API endpoints are deployed.
+export function updateProtectionLevel( level ) {
+	return updateSettingsValues( { current_protection_level: level } );
+}
