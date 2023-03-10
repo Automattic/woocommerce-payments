@@ -98,33 +98,47 @@ export const buildRuleset = (
 			};
 			break;
 		case Rules.RULE_ORDER_ITEMS_THRESHOLD:
-			if ( ruleConfiguration.min_items && ruleConfiguration.max_items ) {
+			if (
+				parseInt( ruleConfiguration.min_items, 10 ) &&
+				parseInt( ruleConfiguration.max_items, 10 )
+			) {
 				ruleBase.check = {
 					operator: CheckOperators.LIST_OPERATOR_OR,
 					checks: [
 						{
 							key: Checks.CHECK_ITEM_COUNT,
 							operator: CheckOperators.OPERATOR_LT,
-							value: ruleConfiguration.min_items,
+							value:
+								parseInt( ruleConfiguration.min_items, 10 ) ??
+								null,
 						},
 						{
 							key: Checks.CHECK_ITEM_COUNT,
 							operator: CheckOperators.OPERATOR_GT,
-							value: ruleConfiguration.max_items,
+							value:
+								parseInt( ruleConfiguration.max_items, 10 ) ??
+								null,
 						},
 					],
 				};
 			} else {
-				ruleBase.check = ruleConfiguration.min_items
+				ruleBase.check = parseInt(
+					parseInt( ruleConfiguration.min_items, 10 ),
+					10
+				)
 					? {
 							key: Checks.CHECK_ITEM_COUNT,
 							operator: CheckOperators.OPERATOR_LT,
-							value: ruleConfiguration.min_items,
+							value:
+								parseInt( ruleConfiguration.min_items, 10 ) ??
+								null,
 					  }
 					: {
 							key: Checks.CHECK_ITEM_COUNT,
 							operator: CheckOperators.OPERATOR_GT,
-							value: ruleConfiguration.max_items,
+							value:
+								parseInt( ruleConfiguration.max_items, 10 ) ??
+								null,
 					  };
 			}
 			break;
@@ -135,13 +149,13 @@ export const buildRuleset = (
 					ruleConfiguration.interval
 				),
 				operator: CheckOperators.OPERATOR_GT,
-				value: ruleConfiguration.max_orders,
+				value: parseInt( ruleConfiguration.max_orders, 10 ),
 			};
 			break;
 		case Rules.RULE_PURCHASE_PRICE_THRESHOLD:
 			if (
-				ruleConfiguration.min_amount &&
-				ruleConfiguration.max_amount
+				parseFloat( ruleConfiguration.min_amount ) &&
+				parseFloat( ruleConfiguration.max_amount )
 			) {
 				ruleBase.check = {
 					operator: CheckOperators.LIST_OPERATOR_OR,
@@ -149,30 +163,31 @@ export const buildRuleset = (
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value: ruleConfiguration.min_amount,
+							value: parseFloat( ruleConfiguration.min_amount ),
 						},
 						{
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_GT,
-							value: ruleConfiguration.max_amount,
+							value: parseFloat( ruleConfiguration.max_amount ),
 						},
 					],
 				};
 			} else {
-				ruleBase.check = ruleConfiguration.min_amount
+				ruleBase.check = parseFloat( ruleConfiguration.min_amount )
 					? {
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_LT,
-							value: ruleConfiguration.min_amount,
+							value: parseFloat( ruleConfiguration.min_amount ),
 					  }
 					: {
 							key: Checks.CHECK_ORDER_TOTAL,
 							operator: CheckOperators.OPERATOR_GT,
-							value: ruleConfiguration.max_amount,
+							value: parseFloat( ruleConfiguration.max_amount ),
 					  };
 			}
 			break;
 	}
+
 	return ruleBase;
 };
 
@@ -201,7 +216,8 @@ export const writeRuleset = ( config ) => {
 			);
 		}
 	}
-	return rulesetConfig;
+
+	return rulesetConfig.filter( ( rule ) => rule );
 };
 
 export const readRuleset = ( rulesetConfig ) => {
@@ -221,7 +237,7 @@ export const readRuleset = ( rulesetConfig ) => {
 			enabled: false,
 			block: false,
 			max_orders: 0,
-			interval: 72,
+			interval: 24,
 		},
 		[ Rules.RULE_ORDER_ITEMS_THRESHOLD ]: {
 			enabled: false,
@@ -271,19 +287,21 @@ export const readRuleset = ( rulesetConfig ) => {
 				};
 				break;
 			case Rules.RULE_ORDER_ITEMS_THRESHOLD:
+				const minItems = findCheck(
+					rule.check,
+					Checks.CHECK_ITEM_COUNT,
+					CheckOperators.OPERATOR_LT
+				);
+				const maxItems = findCheck(
+					rule.check,
+					Checks.CHECK_ITEM_COUNT,
+					CheckOperators.OPERATOR_GT
+				);
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
-					min_items: findCheck(
-						rule.check,
-						Checks.CHECK_ITEM_COUNT,
-						CheckOperators.OPERATOR_LT
-					).value,
-					max_items: findCheck(
-						rule.check,
-						Checks.CHECK_ITEM_COUNT,
-						CheckOperators.OPERATOR_GT
-					).value,
+					min_items: minItems ? minItems.value : '',
+					max_items: maxItems ? maxItems.value : '',
 				};
 				break;
 			case Rules.RULE_ORDER_VELOCITY:
@@ -297,22 +315,25 @@ export const readRuleset = ( rulesetConfig ) => {
 				};
 				break;
 			case Rules.RULE_PURCHASE_PRICE_THRESHOLD:
+				const minAmount = findCheck(
+					rule.check,
+					Checks.CHECK_ORDER_TOTAL,
+					CheckOperators.OPERATOR_LT
+				);
+				const maxAmount = findCheck(
+					rule.check,
+					Checks.CHECK_ORDER_TOTAL,
+					CheckOperators.OPERATOR_GT
+				);
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
-					min_amount: findCheck(
-						rule.check,
-						Checks.CHECK_ORDER_TOTAL,
-						CheckOperators.OPERATOR_LT
-					).value,
-					max_amount: findCheck(
-						rule.check,
-						Checks.CHECK_ORDER_TOTAL,
-						CheckOperators.OPERATOR_GT
-					).value,
+					min_amount: minAmount ? minAmount.value : '',
+					max_amount: maxAmount ? maxAmount.value : '',
 				};
 				break;
 		}
 	}
+
 	return Object.assign( {}, defaultUIConfig, parsedUIConfig );
 };

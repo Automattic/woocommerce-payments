@@ -13,7 +13,6 @@ require_once dirname( __FILE__ ) . '/models/class-rule.php';
 use WC_Payments;
 use WC_Payments_API_Client;
 use WC_Payments_Features;
-use WCPay\Exceptions\API_Exception;
 use WCPay\Fraud_Prevention\Models\Check;
 use WCPay\Fraud_Prevention\Models\Rule;
 
@@ -138,6 +137,7 @@ class Fraud_Risk_Tools {
 			// REVIEW The same card or IP address submits 5 orders within 72 hours.
 			new Rule( self::RULE_ORDER_VELOCITY, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'orders_since_72h', Check::OPERATOR_EQUALS, 5 ) ),
 		];
+
 		return self::get_ruleset_array( $rules );
 	}
 
@@ -153,7 +153,7 @@ class Fraud_Risk_Tools {
 			// BLOCK An order originates from an IP address outside your country.
 			new Rule( self::RULE_INTERNATIONAL_IP_ADDRESS, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'ip_country_same_with_account_country', Check::OPERATOR_EQUALS, false ) ),
 			// BLOCK An order exceeds $1,000.00.
-			new Rule( self::RULE_PURCHASE_PRICE_THRESHOLD, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'order_total', Check::OPERATOR_GT, 1000 ) ),
+			new Rule( self::RULE_PURCHASE_PRICE_THRESHOLD, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'order_total', Check::OPERATOR_GT, 1000 ) ),
 			// BLOCK The same card or IP Address submits 5 orders within 72 hours.
 			new Rule( self::RULE_ORDER_VELOCITY, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'orders_since_72h', Check::OPERATOR_EQUALS, 5 ) ),
 			// REVIEW The card's issuing bank cannot verify the CVV.

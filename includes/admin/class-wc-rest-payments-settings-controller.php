@@ -440,8 +440,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_platform_checkout_store_logo( $request );
 		$this->update_platform_checkout_custom_message( $request );
 		$this->update_platform_checkout_enabled_locations( $request );
-		$this->update_current_protection_level( $request );
-		$this->update_advanced_fraud_protection_settings( $request );
+		// Note: Both "current_protection_level" and "advanced_fraud_protection_settings"
+		// are handled in the below method.
+		$this->update_fraud_protection_settings( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -767,67 +768,47 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Updates the current fraud protection level.
+	 * Updates the settings of fraud protection rules (both settings and level in one function, because they are connected).
 	 *
 	 * @param WP_REST_Request $request Request object.
 	 */
-	private function update_current_protection_level( WP_REST_Request $request ) {
+	private function update_fraud_protection_settings( WP_REST_Request $request ) {
 		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
 			return;
 		}
 
-		if ( ! $request->has_param( 'current_protection_level' ) ) {
+		if ( ! $request->has_param( 'current_protection_level' ) || ! $request->has_param( 'advanced_fraud_protection_settings' ) ) {
 			return;
 		}
 
-		$current_protection_level = $request->get_param( 'current_protection_level' );
+		$protection_level = $request->get_param( 'current_protection_level' );
 
-		// Check validity.
-		if ( ! in_array( $current_protection_level, [ 'standard', 'high', 'advanced' ], true ) ) {
+		// Check validity of the protection level.
+		if ( ! in_array( $protection_level, [ 'standard', 'high', 'advanced' ], true ) ) {
 			return;
 		}
 
-		$saved_protection_level = get_option( 'current_protection_level' );
-
-		// Prevent syncing the settings with the server on protection level change, when the
-		// previous level is same with the requested one.
-		if ( $current_protection_level !== $saved_protection_level ) {
-			update_option( 'current_protection_level', $current_protection_level );
-			$ruleset_config = null;
-			switch ( $current_protection_level ) {
-				case 'standard':
-					$ruleset_config = Fraud_Risk_Tools::get_standard_protection_settings();
-					break;
-				case 'high':
-					$ruleset_config = Fraud_Risk_Tools::get_high_protection_settings();
-					break;
-			}
-
-				// Only save the configuration when switching to standard or high levels. Don't save it when it's advanced.
-			if ( $ruleset_config ) {
-				$this->api_client->save_fraud_ruleset( $ruleset_config );
-				set_transient( 'wcpay_fraud_protection_settings', $ruleset_config, 1 * DAY_IN_SECONDS );
-			}
-		}
-	}
-
-	/**
-	 * Updates the settings of advanced fraud protection rules.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 */
-	private function update_advanced_fraud_protection_settings( WP_REST_Request $request ) {
-		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
-			return;
+		// Get rulesets per protection level.
+		switch ( $protection_level ) {
+			case 'standard':
+				$ruleset_config = Fraud_Risk_Tools::get_standard_protection_settings();
+				break;
+			case 'high':
+				$ruleset_config = Fraud_Risk_Tools::get_high_protection_settings();
+				break;
+			case 'advanced':
+				$ruleset_config = $request->get_param( 'advanced_fraud_protection_settings' );
+				break;
 		}
 
-		if ( ! $request->has_param( 'advanced_fraud_protection_settings' ) ) {
-			return;
-		}
-
-		$ruleset_config = $request->get_param( 'advanced_fraud_protection_settings' );
-
+		// Save ruleset to the server.
 		$this->api_client->save_fraud_ruleset( $ruleset_config );
+
+		// Update local cache.
+		delete_transient( 'wcpay_fraud_protection_settings' );
 		set_transient( 'wcpay_fraud_protection_settings', $ruleset_config, 1 * DAY_IN_SECONDS );
+
+		// Update the option only when server update succeeds.
+		update_option( 'current_protection_level', $protection_level );
 	}
 }
