@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix deposit schedule monthly anchor label when set to 'last day of the month'.
