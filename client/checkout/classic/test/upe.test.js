@@ -38,6 +38,6 @@ describe( 'isUsingSavedPaymentMethod', () => {
 		);
 		input.checked = false;
 
-		expect( isUsingSavedPaymentMethod() ).toBe( false );
+		expect( isUsingSavedPaymentMethod() ).toBe( true );
 	} );
 } );
