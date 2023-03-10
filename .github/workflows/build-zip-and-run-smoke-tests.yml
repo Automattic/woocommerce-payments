@@ -1,0 +1,62 @@
+name: "Build zip file & Run smoke tests"
+
+# This action will run inside the package creation workflows or when it is triggered manually
+on:
+  workflow_call:
+    inputs:
+      skip-smoke-tests:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running smoke tests"
+      repo-branch:
+        type: string
+        required: false
+        description: "Branch to be used for building zip file"
+  workflow_dispatch:
+    inputs:
+      skip-smoke-tests:
+        type: boolean
+        required: false
+        default: false
+        description: "Skip running smoke tests"
+
+jobs:
+  build-zip:
+    name: "Build the zip file"
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.repo-branch || github.ref }}
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: "Add file size notice"
+        run: |
+          echo ":information_source: Ignore the artifact size mentioned since GitHub calculates the size of the source folder instead of the zip file created." >> $GITHUB_STEP_SUMMARY
+
+      - name: "Upload the zip file as an artifact"
+        uses: actions/upload-artifact@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: "woocommerce-payments"
+          path: release
+          retention-days: 14
+
+  smoke-tests:
+    name: "Smoke tests"
+    needs: build-zip
+    if: ${{ ! inputs.skip-smoke-tests }}
+    uses: ./.github/workflows/e2e-pull-request.yml
+    with:
+      wcpay-use-build-artifact: true
+      repo-branch: ${{ inputs.repo-branch }}
+    secrets: inherit
