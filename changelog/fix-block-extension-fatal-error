@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Added function exist check to avoid fatal error for undefined function.
