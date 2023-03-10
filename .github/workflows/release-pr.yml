@@ -128,7 +128,6 @@ jobs:
           PR_URL=$(gh pr create --title "Release branch for $RELEASE_VERSION" --body="$PR_BODY" --base="trunk")
           PR_ID=${PR_URL##*/}
           if [[ $PR_ID =~ ^[0-9]+$ ]]; then
-            echo "Release PR ID: $PR_ID"
             echo "RELEASE_PR_ID=$PR_ID" >> $GITHUB_OUTPUT
           fi
 
