@@ -132,8 +132,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'short_statement_descriptor'          => [
-						'description' => __( 'We\'ll use the short version in combination with the customer order number.', 'woocommerce-payments' ),
-						'type'        => 'string',
+						'description'       => __( 'We\'ll use the short version in combination with the customer order number.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => [ $this, 'validate_short_statement_descriptor' ],
 					],
 					'account_statement_descriptor'      => [
 						'description'       => sprintf(
@@ -279,16 +280,17 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param string          $value The value being validated.
 	 * @param WP_REST_Request $request The request made.
 	 * @param string          $param The parameter name, used in error messages.
+	 * @param int             $max_length The maximum length of the string.
 	 * @return true|WP_Error
 	 */
-	public function validate_statement_descriptor( $value, $request, $param ) {
+	public function validate_statement_descriptor( $value, $request, $param, $max_length = 22 ) {
 		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
 		if ( true !== $string_validation_result ) {
 			return $string_validation_result;
 		}
 
 		try {
-			$this->wcpay_gateway->validate_account_statement_descriptor_field( 'account_statement_descriptor', $value );
+			$this->wcpay_gateway->validate_account_statement_descriptor_field( 'account_statement_descriptor', $value, $max_length );
 		} catch ( Exception $exception ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
@@ -297,6 +299,25 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Validate the short statement descriptor.
+	 *
+	 * @param string          $value The value being validated.
+	 * @param WP_REST_Request $request The request made.
+	 * @param string          $param The parameter name, used in error messages.
+	 * @return true|WP_Error
+	 */
+	public function validate_short_statement_descriptor( $value, $request, $param ) {
+		$is_short_account_statement_enabled = $request->get_param( 'is_short_statement_descriptor_enabled' );
+
+		// bypassing validation to avoid errors in the client, it won't be updated under this condition.
+		if ( ! $is_short_account_statement_enabled ) {
+			return true;
+		}
+
+		return $this->validate_statement_descriptor( $value, $request, $param, 10 );
 	}
 
 	/**
@@ -465,6 +486,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
 		$this->update_is_short_statement_descriptor_enabled( $request );
+		$this->update_short_statement_descriptor( $request );
 		$this->update_account( $request );
 		$this->update_is_woopay_enabled( $request );
 		$this->update_woopay_store_logo( $request );
@@ -913,5 +935,26 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_short_statement_descriptor_enabled = $request->get_param( 'is_short_statement_descriptor_enabled' );
 
 		$this->wcpay_gateway->update_option( 'is_short_statement_descriptor_enabled', $is_short_statement_descriptor_enabled ? 'yes' : 'no' );
+	}
+
+	/**
+	 * Updates short account statement descriptor.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_short_statement_descriptor( WP_REST_Request $request ) {
+		$is_short_account_statement_enabled = $request->get_param( 'is_short_statement_descriptor_enabled' );
+		$short_statement_descriptor         = $request->get_param( 'short_statement_descriptor' );
+
+		// since we're bypassing the validation on the same condition, we shouldn't update it.
+		if ( ! $is_short_account_statement_enabled ) {
+			return;
+		}
+
+		if ( null === $short_statement_descriptor ) {
+			return;
+		}
+
+		$this->wcpay_gateway->update_option( 'short_statement_descriptor', $short_statement_descriptor );
 	}
 }
