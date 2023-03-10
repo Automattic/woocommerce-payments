@@ -131,6 +131,10 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'short_statement_descriptor'          => [
+						'description' => __( 'We\'ll use the short version in combination with the customer order number.', 'woocommerce-payments' ),
+						'type'        => 'string',
+					],
 					'account_statement_descriptor'      => [
 						'description'       => sprintf(
 							/* translators: %s: WooPayments */
@@ -405,6 +409,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_wcpay_subscriptions_eligible'       => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
 				'is_subscriptions_plugin_active'        => $this->wcpay_gateway->is_subscriptions_plugin_active(),
 				'is_short_statement_descriptor_enabled' => 'yes' === $this->wcpay_gateway->get_option( 'is_short_statement_descriptor_enabled' ),
+				'short_statement_descriptor'            => $this->wcpay_gateway->get_option( 'short_statement_descriptor' ),
 				'account_statement_descriptor'          => $this->wcpay_gateway->get_option( 'account_statement_descriptor' ),
 				'account_business_name'                 => $this->wcpay_gateway->get_option( 'account_business_name' ),
 				'account_business_url'                  => $this->wcpay_gateway->get_option( 'account_business_url' ),
