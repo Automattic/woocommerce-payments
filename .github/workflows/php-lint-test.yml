@@ -9,6 +9,10 @@ env:
   WC_L2_VERSION: '7.1.1'  # the min supported version as per L-2 policy
   GUTENBERG_VERSION: latest
 
+concurrency:
+  group: php-lint-test-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name:    PHP linting

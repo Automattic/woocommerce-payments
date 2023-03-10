@@ -3,6 +3,10 @@ name: PHP Compatibility
 on:
   pull_request
 
+concurrency:
+  group: php-compatibility-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Check for version-specific PHP compatibility
   php-compatibility:

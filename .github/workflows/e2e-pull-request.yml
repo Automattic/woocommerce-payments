@@ -22,6 +22,9 @@ env:
   E2E_USE_LOCAL_SERVER:  false
   E2E_RESULT_FILEPATH:   'tests/e2e/results.json'
 
+concurrency:
+  group: e2e-pull-request-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   wcpay-e2e-tests:
