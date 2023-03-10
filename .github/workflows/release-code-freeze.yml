@@ -115,7 +115,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n • Raised a <https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}| Pull Request> to `trunk`\n • Built a zip file and ran smoke tests against it"
+                    "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n • Raised a Pull Request to `trunk`\n • Built a <https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}|zip file and ran smoke tests> against it"
                   }
                 },
                 {
