@@ -21,10 +21,10 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 	} = useContext( FraudPreventionSettingsContext );
 
 	const [ minItemsCount, setMinItemsCount ] = useState(
-		advancedFraudProtectionSettings[ setting ].min_items ?? 0
+		advancedFraudProtectionSettings[ setting ].min_items ?? ''
 	);
 	const [ maxItemsCount, setMaxItemsCount ] = useState(
-		advancedFraudProtectionSettings[ setting ].max_items ?? 0
+		advancedFraudProtectionSettings[ setting ].max_items ?? ''
 	);
 
 	useEffect( () => {
@@ -49,40 +49,55 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 			<strong>Limits</strong>
 			<div className="fraud-protection-rule-toggle-children-horizontal-form">
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
-					<label htmlFor="fraud-protection-purchase-price-minimum">
+					<label htmlFor="fraud-protection-order-items-minimum">
 						{ __(
 							'Minimum items per order',
 							'woocommerce-payments'
 						) }
 					</label>
 					<TextControl
-						id={ 'fraud-protection-purchase-price-minimum' }
+						id={ 'fraud-protection-order-items-minimum' }
 						placeholder={ '0' }
 						value={ minItemsCount }
+						type="number"
 						onChange={ setMinItemsCount }
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
 						) }
+						min={ 1 }
+						step={ 1 }
+						onBlur={ () => {
+							if ( ! ( '' + minItemsCount ).match( /^\d+$/ ) ) {
+								setMinItemsCount( '' );
+							}
+						} }
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
-					<label htmlFor="fraud-protection-purchase-price-maximum">
+					<label htmlFor="fraud-protection-order-items-maximum">
 						{ __(
 							'Maximum items per order',
 							'woocommerce-payments'
 						) }
 					</label>
 					<TextControl
-						id={ 'fraud-protection-purchase-price-maximum' }
-						prefix={ '$' }
+						id={ 'fraud-protection-order-items-maximum' }
 						placeholder={ '0' }
+						type="number"
 						value={ maxItemsCount }
 						onChange={ setMaxItemsCount }
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
 						) }
+						min={ 1 }
+						step={ 1 }
+						onBlur={ () => {
+							if ( ! ( '' + maxItemsCount ).match( /^\d+$/ ) ) {
+								setMaxItemsCount( '' );
+							}
+						} }
 					/>
 				</div>
 			</div>
