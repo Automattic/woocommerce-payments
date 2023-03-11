@@ -24,7 +24,11 @@ class Get_Charge extends Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	protected function set_id( string $id ) {
-		$this->validate_stripe_id( $id, [ 'ch' ] );
+		/**
+		 * `py_XYZ` objects are identical to charges, and sometimes occur
+		 * whenever the payment was made in a non-deposit currency.
+		 */
+		$this->validate_stripe_id( $id, [ 'ch', 'py' ] );
 		$this->id = $id;
 	}
 

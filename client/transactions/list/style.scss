@@ -13,8 +13,12 @@ $space-header-item: 12px;
 
 		.conversion-indicator {
 			margin-right: 6px;
-			height: 18px;
 			fill: $studio-gray-30;
+		}
+
+		.components-popover__content {
+			position: relative;
+			top: -( $gap * 2 ); // Positioning the tooltip in a higher position to avoid having it cropped by the bottom of the table
 		}
 	}
 
