@@ -86,6 +86,15 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	private static $payment_method_meta_key = 'token';
 
 	/**
+	 * Stores a flag to indicate if the subscription integration hooks have been attached.
+	 *
+	 * The callbacks attached as part of maybe_init_subscriptions() only need to be attached once to avoid duplication.
+	 *
+	 * @var bool False by default, true once the callbacks have been attached.
+	 */
+	private static $has_attached_integration_hooks = false;
+
+	/**
 	 * Initialize subscription support and hooks.
 	 */
 	public function maybe_init_subscriptions() {
@@ -95,7 +104,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		/*
 		 * Base set of subscription features to add.
-		 * The WCPay payment gateway supports these feautres
+		 * The WCPay payment gateway supports these features
 		 * for both WCPay Subscriptions and WooCommerce Subscriptions.
 		 */
 		$payment_gateway_features = [
@@ -130,6 +139,19 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		$this->supports = array_merge( $this->supports, $payment_gateway_features );
+
+		/**
+		 * The following callbacks are only attached once to avoid duplication.
+		 * The callbacks are also only intended to be attached for the WCPay core payment gateway ($this->id = 'woocommerce_payments').
+		 *
+		 * If new payment method IDs (eg 'sepa_debit') are added to this condition in the future, care should be taken to ensure duplication,
+		 * including double renewal charging, isn't introduced.
+		 */
+		if ( self::$has_attached_integration_hooks || 'woocommerce_payments' !== $this->id ) {
+			return;
+		}
+
+		self::$has_attached_integration_hooks = true;
 
 		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
 		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
@@ -486,18 +508,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( ! wcs_is_subscription( $order ) ) {
 			return;
 		}
-
-		$script_src_url    = plugins_url( 'dist/subscription-edit-page.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/subscription-edit-page.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script(
-			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
-			$script_src_url,
-			$script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/subscription-edit-page.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'dist/subscription-edit-page' );
 
 		wp_localize_script(
 			'WCPAY_SUBSCRIPTION_EDIT_PAGE',

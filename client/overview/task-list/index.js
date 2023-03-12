@@ -198,6 +198,9 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 							showActionButton={ task.showActionButton }
 							expandable={ task.expandable }
 							expanded={ task.expanded }
+							enter={
+								task.enter !== undefined ? task.enter : false
+							}
 							action={
 								task.action !== undefined
 									? task.action
