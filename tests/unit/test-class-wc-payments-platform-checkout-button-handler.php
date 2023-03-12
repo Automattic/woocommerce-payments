@@ -305,6 +305,31 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 		$this->assertFalse( $this->mock_pr->should_show_platform_checkout_button() );
 	}
 
+	public function test_should_show_platform_checkout_button_country_not_supported() {
+		$this->mock_platform_checkout_utilities
+			->expects( $this->once() )
+			->method( 'is_country_available' )
+			->willReturn( false );
+
+		$this->mock_pr
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->mock_pr
+			->method( 'is_cart' )
+			->willReturn( true );
+
+		$this->mock_pr
+			->method( 'is_checkout' )
+			->willReturn( true );
+
+		$this->mock_pr
+			->expects( $this->never() )
+			->method( 'is_available_at' );
+
+		$this->assertFalse( $this->mock_pr->should_show_platform_checkout_button() );
+	}
+
 	public function test_should_show_platform_checkout_button_unavailable_wcpay() {
 		add_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
 
