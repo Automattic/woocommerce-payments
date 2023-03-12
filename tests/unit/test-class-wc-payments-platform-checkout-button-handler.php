@@ -140,7 +140,7 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 	public function test_should_show_platform_checkout_button_all_good_at_cart() {
 		$this->mock_platform_checkout_utilities
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'is_country_available' )
 			->willReturn( true );
 
@@ -159,7 +159,7 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 	public function test_should_show_platform_checkout_button_not_available_at_cart() {
 		$this->mock_platform_checkout_utilities
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'is_country_available' )
 			->willReturn( true );
 
@@ -180,7 +180,7 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_true' );
 
 		$this->mock_platform_checkout_utilities
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'is_country_available' )
 			->willReturn( true );
 
@@ -201,7 +201,7 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 		add_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_false' );
 
 		$this->mock_platform_checkout_utilities
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'is_country_available' )
 			->willReturn( true );
 
@@ -222,7 +222,7 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_true' );
 
 		$this->mock_platform_checkout_utilities
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'is_country_available' )
 			->willReturn( true );
 
@@ -243,7 +243,7 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_false' );
 
 		$this->mock_platform_checkout_utilities
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'is_country_available' )
 			->willReturn( true );
 
@@ -264,7 +264,7 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 		add_filter( 'wcpay_platform_checkout_button_is_product_supported', '__return_true' );
 
 		$this->mock_platform_checkout_utilities
-			->expects( $this->any() )
+			->expects( $this->once() )
 			->method( 'is_country_available' )
 			->willReturn( true );
 
@@ -283,9 +283,8 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 
 	public function test_should_show_platform_checkout_button_page_not_supported() {
 		$this->mock_platform_checkout_utilities
-			->expects( $this->any() )
-			->method( 'is_country_available' )
-			->willReturn( true );
+			->expects( $this->never() )
+			->method( 'is_country_available' );
 
 		$this->mock_pr
 			->method( 'is_product' )
@@ -310,9 +309,8 @@ class WC_Payments_Platform_Checkout_Button_Handler_Test extends WCPAY_UnitTestCa
 		add_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
 
 		$this->mock_platform_checkout_utilities
-			->expects( $this->any() )
-			->method( 'is_country_available' )
-			->willReturn( true );
+			->expects( $this->never() )
+			->method( 'is_country_available' );
 
 		$this->mock_pr
 			->expects( $this->never() )
