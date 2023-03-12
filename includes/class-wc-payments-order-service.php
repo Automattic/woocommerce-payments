@@ -87,8 +87,6 @@ class WC_Payments_Order_Service {
 	 */
 	public function __construct( WC_Payments_API_Client $api_client ) {
 		$this->api_client = $api_client;
-
-		add_action( self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this, 'add_fee_breakdown_to_order_notes' ], 10, 3 );
 	}
 
 	/**
