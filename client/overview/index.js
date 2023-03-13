@@ -16,6 +16,7 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import DepositsInformation from 'components/deposits-information';
+import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
@@ -131,7 +132,10 @@ const OverviewPage = () => {
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
-					<DepositsInformation />
+					{ window.wcpaySettings?.featureFlags?.isNewDepositsOverview
+						? <DepositsOverview />
+						: <DepositsInformation />
+					}
 				</ErrorBoundary>
 			) }
 
