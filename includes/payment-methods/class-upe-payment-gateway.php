@@ -541,7 +541,7 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 					if ( $customer_id ) {
 						$request->set_customer( $customer_id );
 					}
-					if ($statement_descriptor) {
+					if ( $statement_descriptor ) {
 						$request->set_statement_descriptor( $statement_descriptor );
 					}
 					$payment_method_options = $this->get_mandate_params_for_order( $order );
