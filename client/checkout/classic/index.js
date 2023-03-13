@@ -10,6 +10,7 @@ import { handlePlatformCheckoutEmailInput } from '../platform-checkout/email-inp
 import WCPayAPI from './../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { isWCPayChosen } from '../utils/upe';
+import { isPreviewing } from '../preview';
 import {
 	getFingerprint,
 	appendFingerprintInputToForm,
@@ -546,22 +547,6 @@ jQuery( function ( $ ) {
 			maybeShowAuthenticationModal();
 		}
 	} );
-
-	/**
-	 * Checks whether we're in a preview context.
-	 *
-	 * @return {boolean} Whether we're in a preview context.
-	 */
-	const isPreviewing = () => {
-		const searchParams = new URLSearchParams( window.location.search );
-
-		// Check for the URL parameter used in the iframe of the customize.php page
-		// and for the is_preview() value for posts.
-		return (
-			null !== searchParams.get( 'customize_messenger_channel' ) ||
-			getConfig( 'isPreview' )
-		);
-	};
 
 	if ( getConfig( 'isPlatformCheckoutEnabled' ) && ! isPreviewing() ) {
 		handlePlatformCheckoutEmailInput( '#billing_email', api );

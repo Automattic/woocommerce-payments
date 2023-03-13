@@ -61,16 +61,18 @@ class Checkout_Service {
 	 * @return boolean True if it is a platform payment method.
 	 */
 	public function is_platform_payment_method( bool $is_using_saved_payment_method ) {
+		// Return false for express checkout method.
+		if ( isset( $_POST['payment_request_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return false;
+		}
+
 		// Make sure the payment method being charged was created in the platform.
 		if (
 			! $is_using_saved_payment_method &&
-			// This flag is useful to differentiate between PRB, blocks and shortcode checkout, since this endpoint is being used for all of them.
-			! empty( $_POST['wcpay-is-platform-payment-method'] ) && // phpcs:ignore WordPress.Security.NonceVerification
-			filter_var( $_POST['wcpay-is-platform-payment-method'], FILTER_VALIDATE_BOOLEAN ) // phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			$this->should_use_stripe_platform_on_checkout_page()
 		) {
-
 			// This payment method was created under the platform account.
-			return $this->should_use_stripe_platform_on_checkout_page();
+			return true;
 		}
 
 		return false;
@@ -82,14 +84,15 @@ class Checkout_Service {
 	 * @return bool
 	 */
 	public function should_use_stripe_platform_on_checkout_page() {
-		// TODO: Add support for blocks checkout.
-		if ( WC_Payments_Features::is_platform_checkout_eligible()
-			&& 'yes' === get_option( 'platform_checkout', 'no' )
-			&& ! WC_Payments_Features::is_upe_enabled()
-			&& is_checkout() && ! has_block( 'woocommerce/checkout' )
+		if (
+			WC_Payments_Features::is_platform_checkout_eligible()
+			&& 'yes' === \WC_Payments::get_gateway()->get_option( 'platform_checkout', 'no' )
+			&& ! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() )
+			&& ( is_checkout() || has_block( 'woocommerce/checkout' ) )
 			&& ! is_wc_endpoint_url( 'order-pay' )
 			&& ! WC()->cart->is_empty()
-			&& WC()->cart->needs_payment() ) {
+			&& WC()->cart->needs_payment()
+		) {
 			return true;
 		}
 
@@ -102,7 +105,7 @@ class Checkout_Service {
 	 * @return void
 	 */
 	public function init() {
-		add_filter( 'wcpay_create_intention_request', [ $this, 'create_intention_request' ], 10, 3 );
+		add_filter( 'wcpay_create_and_confirm_intent_request', [ $this, 'create_intention_request' ], 10, 3 );
 		add_filter( 'wcpay_create_and_confirm_setup_intention_request', [ $this, 'create_and_confirm_setup_intention_request' ], 10, 4 );
 	}
 }

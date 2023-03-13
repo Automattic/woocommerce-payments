@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Updating the WooPay Checkout Utils class to reflect changes in gateways.
+
+
