@@ -1,7 +1,7 @@
-import React from 'react';
 /**
  * External dependencies
  */
+import React from 'react';
 import { Card, CardHeader, Flex, TabPanel } from '@wordpress/components';
 
 /**
