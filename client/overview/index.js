@@ -21,6 +21,7 @@ import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
+import AccountBalances from 'components/account-balances';
 
 import './style.scss';
 import { useSettings } from 'wcpay/data';
@@ -128,6 +129,13 @@ const OverviewPage = () => {
 			) }
 
 			<TestModeNotice topic={ topics.overview } />
+
+			{ ! accountRejected && (
+				<ErrorBoundary>
+					{ /* TODO: render this behind feature flag, in place of <DepositsInformation */ }
+					<AccountBalances />
+				</ErrorBoundary>
+			) }
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
