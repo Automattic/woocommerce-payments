@@ -43,6 +43,10 @@ describe( 'Overview page', () => {
 					status: 'enabled',
 					interval: 'weekly',
 				},
+				progressiveOnboarding: {
+					isComplete: false,
+					isEnabled: false,
+				},
 			},
 			accountFees: {
 				base: {
