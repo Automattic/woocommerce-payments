@@ -173,14 +173,22 @@ Handy utility scripts for managing environment:
 
 <br>
 
+For running E2E tests on an Atomic site:
+
+`E2E_GROUP=atomic npm run test:e2e-dev -- --NODE_ENV=atomic`
+
+Note that, at the moment, we are only able to run a subset of the regular E2E tests.
+
 ## Writing tests
 
 Package `@woocommerce/e2e-environment` overrides `it` method to attach custom reporter for failed tests.
-It is important to write test cases within `it()` rather than `test()` function to make sure failed tests are reported to Slack channel.
+It is important to write test cases within `it()` rather than `test()` function to make sure failed tests are reported
+to Slack channel.
 
 ## Debugging tests
 
-Create file `local.env` inside `tests/e2e/config` folder and set `E2E_DEBUG=true` env variable to pause test runner when test fails.
+Create file `local.env` inside `tests/e2e/config` folder and set `E2E_DEBUG=true` env variable to pause test runner when
+test fails.
 
 ## Slack integration
 

@@ -45,7 +45,10 @@ if ( process.env.E2E_GROUP ) {
 		allowedPaths.push( e2ePaths[ process.env.E2E_GROUP ] );
 	}
 } else {
-	Object.values( e2ePaths ).forEach( ( testPath ) => {
+	// The 'atomic' folder is a temporary measure until we are able to run all E2E tests for Atomic sites.
+	// The only way to run E2E tests locally for the Atomic site is to use E2E_GROUP=atomic, to avoid duplicate tests in other cases.
+	const { atomic, ...regularE2ePaths } = e2ePaths;
+	Object.values( regularE2ePaths ).forEach( ( testPath ) => {
 		allowedPaths.push( testPath );
 	} );
 }
