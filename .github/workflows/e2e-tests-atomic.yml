@@ -1,6 +1,10 @@
 name: "E2E Tests on Atomic - All"
 
+# This action will run when it is triggered manually or on Pull Request with base=trunk
 on:
+  pull_request:
+    branches:
+      - trunk
   workflow_dispatch:
 
 env:
