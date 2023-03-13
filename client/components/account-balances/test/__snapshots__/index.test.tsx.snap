@@ -3,7 +3,7 @@
 exports[`AccountBalances renders 1`] = `
 <div>
   <div
-    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+    class="components-card is-size-medium wcpay-account-balances css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
       class="components-flex components-card__header is-size-small e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
@@ -34,20 +34,20 @@ exports[`AccountBalances renders 1`] = `
         role="tabpanel"
       >
         <div
-          class="components-flex wcpay-account-balance__balances css-1xu3jp0-Flex eboqfv50"
+          class="components-flex wcpay-account-balances__balances css-1xu3jp0-Flex eboqfv50"
         >
           <div
-            class="wcpay-account-balance__balances__item"
+            class="wcpay-account-balances__balances__item"
           >
             Available funds
           </div>
           <div
-            class="wcpay-account-balance__balances__item"
+            class="wcpay-account-balances__balances__item"
           >
             Pending funds
           </div>
           <div
-            class="wcpay-account-balance__balances__item"
+            class="wcpay-account-balances__balances__item"
           >
             Reserved funds
           </div>
