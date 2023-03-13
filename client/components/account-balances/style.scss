@@ -1,6 +1,7 @@
 .wcpay-account-balances__balances {
 	border-top: 1px solid $gray-200;
 }
+
 .wcpay-account-balances__balances > * + * {
 	border-left: 1px solid $gray-200;
 }
