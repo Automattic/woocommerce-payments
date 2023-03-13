@@ -6,7 +6,7 @@ on:
       - develop
       - 'release/**'
 concurrency:
-  group: check-changelog-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   check-changelog:

@@ -5,7 +5,7 @@ on:
     workflow_dispatch:
 
 concurrency:
-    group: bundle-size-${{ github.ref }}
+    group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
 jobs:

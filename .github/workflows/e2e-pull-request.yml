@@ -35,7 +35,7 @@ env:
   WCPAY_ARTIFACT_DIRECTORY: 'zipfile'
 
 concurrency:
-  group: e2e-pull-request-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
