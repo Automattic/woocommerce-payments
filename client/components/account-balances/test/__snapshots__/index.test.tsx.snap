@@ -1,0 +1,59 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AccountBalances renders 1`] = `
+<div>
+  <div
+    class="components-card is-size-medium css-1xs3c37-CardUI e1q7k77g0"
+  >
+    <div
+      class="components-flex components-card__header is-size-small e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+    >
+      Good afternoon
+    </div>
+    <div>
+      <div
+        aria-orientation="horizontal"
+        class="components-tab-panel__tabs"
+        role="tablist"
+      >
+        <button
+          aria-controls="tab-panel-0-JPY-view"
+          aria-selected="true"
+          class="components-button components-tab-panel__tabs-item is-active"
+          id="tab-panel-0-JPY"
+          role="tab"
+          type="button"
+        >
+          JPY Balance
+        </button>
+      </div>
+      <div
+        aria-labelledby="tab-panel-0-JPY"
+        class="components-tab-panel__tab-content"
+        id="tab-panel-0-JPY-view"
+        role="tabpanel"
+      >
+        <div
+          class="components-flex wcpay-account-balance__balances css-1xu3jp0-Flex eboqfv50"
+        >
+          <div
+            class="wcpay-account-balance__balances__item"
+          >
+            Available funds
+          </div>
+          <div
+            class="wcpay-account-balance__balances__item"
+          >
+            Pending funds
+          </div>
+          <div
+            class="wcpay-account-balance__balances__item"
+          >
+            Reserved funds
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
