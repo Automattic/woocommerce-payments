@@ -44,13 +44,8 @@
 
 		h2 {
 			font-size: 20px;
-			line-height: 28px;
 			font-weight: 400;
 			letter-spacing: 0.7px;
-
-			@media ( min-width: 783px ) {
-				padding: 0 10%;
-			}
 		}
 	}
 }
