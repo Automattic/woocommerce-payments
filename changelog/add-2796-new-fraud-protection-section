@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add Fraud Protection section to WCPay Settings screen. Section is hidden behind a feature flag DB option.
