@@ -9,9 +9,6 @@ import { Icon, moreVertical } from '@wordpress/icons';
 /**
  * Internal dependencies.
  */
-import NextDepositDetails from './next-deposit';
-import DepositsHistory from './history';
-import DepositsOverviewActions from './actions';
 import { useAllDepositsOverviews } from 'wcpay/data';
 
 interface OverviewProps {
@@ -31,8 +28,8 @@ const DepositsDetailsDropdownMenu = (): JSX.Element => {
 			icon={ moreVertical }
 			className="wcpay-deposits-overview-header__icon"
 		/>
-	)
-}
+	);
+};
 
 /**
  * Renders a deposits overview
@@ -45,16 +42,16 @@ const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = (
 ) => {
 	return (
 		<Card>
-			<CardHeader className="wcpay-deposits-overview-header">
+			<CardHeader>
 				{ __( 'Deposits', 'woocommerce-payments' ) }
 				<DepositsDetailsDropdownMenu />
 			</CardHeader>
 
-			<NextDepositDetails {...props} />
+			<p>Next Deposits Section Goes here</p>
 
-			<DepositsHistory {...props} />
+			<p>Deposits History Section Goes here</p>
 
-			<DepositsOverviewActions {...props} />
+			<p>Deposits Card Footer/Action Goes here</p>
 		</Card>
 	);
 };
