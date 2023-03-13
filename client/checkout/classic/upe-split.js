@@ -462,13 +462,21 @@ jQuery( function ( $ ) {
 		const upeElement = upeComponents.upeElement;
 		const elements = upeComponents.elements;
 		const isUPEComplete = upeComponents.isUPEComplete;
-
 		if ( ! upeElement ) {
 			showErrorCheckout(
 				__(
 					'Your payment information is incomplete.',
 					'woocommerce-payments'
 				)
+			);
+			return false;
+		}
+		if (
+			20 <
+			( $form.find( 'input[name="billing_phone"]' ).val() || '' ).length
+		) {
+			showErrorCheckout(
+				__( 'Invalid phone number', 'woocommerce-payments' )
 			);
 			return false;
 		}
