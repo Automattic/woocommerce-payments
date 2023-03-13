@@ -7,6 +7,10 @@ env:
   WC_L2_VERSION: '7.1.1'
   WP_L2_VERSION: '5.9'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   generate-matrix:
     name: "Generate the matrix for woocommerce compatibility dynamically"
