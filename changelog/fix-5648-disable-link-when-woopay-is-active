@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent WooPay and Link to be enabled at the same time
