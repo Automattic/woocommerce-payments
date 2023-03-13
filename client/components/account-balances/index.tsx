@@ -25,19 +25,22 @@ const AccountBalances: React.FC = () => {
 	];
 
 	return (
-		<Card>
+		<Card className="wcpay-account-balances">
 			<CardHeader size="small">Good afternoon</CardHeader>
 
 			<TabPanel tabs={ tabs }>
 				{ ( tab ) => (
-					<Flex gap={ 0 } className="wcpay-account-balance__balances">
-						<div className="wcpay-account-balance__balances__item">
+					<Flex
+						gap={ 0 }
+						className="wcpay-account-balances__balances"
+					>
+						<div className="wcpay-account-balances__balances__item">
 							Available funds
 						</div>
-						<div className="wcpay-account-balance__balances__item">
+						<div className="wcpay-account-balances__balances__item">
 							Pending funds
 						</div>
-						<div className="wcpay-account-balance__balances__item">
+						<div className="wcpay-account-balances__balances__item">
 							Reserved funds
 						</div>
 					</Flex>
