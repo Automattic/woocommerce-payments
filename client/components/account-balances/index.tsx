@@ -7,7 +7,7 @@ import { Card, CardHeader, Flex, TabPanel } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { getTimeOfDayString } from './utils';
+import { getGreeting } from './utils';
 import './style.scss';
 
 /**
@@ -25,9 +25,11 @@ const AccountBalances: React.FC = () => {
 		},
 	];
 
+	const greeting = getGreeting();
+
 	return (
 		<Card className="wcpay-account-balances">
-			<CardHeader size="small">Good { getTimeOfDayString() }</CardHeader>
+			<CardHeader size="small">{ greeting }</CardHeader>
 
 			<TabPanel tabs={ tabs }>
 				{ ( tab ) => (
