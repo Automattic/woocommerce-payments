@@ -20,12 +20,14 @@ class Platform_Checkout_Extension {
 	 * @return void
 	 */
 	public function register_extend_rest_api_update_callback() {
-		woocommerce_store_api_register_update_callback(
-			[
-				'namespace' => self::EXTENSION_NAMESPACE,
-				'callback'  => [ $this, 'store_user_consent_for_platform_checkout' ],
-			]
-		);
+		if ( function_exists( 'woocommerce_store_api_register_update_callback' ) ) {
+			woocommerce_store_api_register_update_callback(
+				[
+					'namespace' => self::EXTENSION_NAMESPACE,
+					'callback'  => [ $this, 'store_user_consent_for_platform_checkout' ],
+				]
+			);
+		}
 	}
 
 	/**
