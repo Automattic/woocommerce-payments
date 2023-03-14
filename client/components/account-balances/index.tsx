@@ -7,7 +7,7 @@ import { Card, CardHeader } from '@wordpress/components';
  * Internal dependencies
  */
 import './style.scss';
-import AccountBalancesTabTable from './funds-tab-panel';
+import AccountBalancesTabPanel from './balances-tab-panel';
 
 /**
  * Renders an overview of the account's balances.
@@ -19,7 +19,7 @@ const AccountBalances: React.FC = () => {
 		<Card className="wcpay-account-balances">
 			<CardHeader size="small">Good afternoon</CardHeader>
 
-			<AccountBalancesTabTable />
+			<AccountBalancesTabPanel />
 		</Card>
 	);
 };
