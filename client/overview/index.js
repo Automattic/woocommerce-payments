@@ -132,8 +132,7 @@ const OverviewPage = () => {
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
-					{ window.wcpaySettings?.featureFlags
-						?.isNewDepositsOverview ? (
+					{ window.wcpaySettings?.featureFlags?.simplifyDepoitsUi ? (
 						<DepositsOverview />
 					) : (
 						<DepositsInformation />
