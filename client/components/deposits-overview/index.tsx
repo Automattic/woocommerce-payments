@@ -4,7 +4,6 @@
 import * as React from 'react';
 import { Card, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import { Icon, moreVertical } from '@wordpress/icons';
 
 /**
  * Internal dependencies.
@@ -16,20 +15,6 @@ interface OverviewProps {
 	account: AccountOverview.Account;
 	isLoading: boolean;
 }
-
-/**
- * Renders a deposits card header dropDown icon
- *
- * @return {JSX.Element} Rendered element with deposits overview
- */
-const DepositsDetailsDropdownMenu = (): JSX.Element => {
-	return (
-		<Icon
-			icon={ moreVertical }
-			className="wcpay-deposits-overview-header__icon"
-		/>
-	);
-};
 
 /**
  * Renders a deposits overview
@@ -44,7 +29,6 @@ const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = (
 		<Card>
 			<CardHeader>
 				{ __( 'Deposits', 'woocommerce-payments' ) }
-				<DepositsDetailsDropdownMenu />
 			</CardHeader>
 
 			<p>Next Deposits Section Goes here</p>
