@@ -264,7 +264,7 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
 				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
-				'simplifyDepoitsUi'       => self::is_simplify_deposits_ui_enabled(),
+				'simplifyDepositsUi'       => self::is_simplify_deposits_ui_enabled(),
 			]
 		);
 	}
