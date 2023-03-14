@@ -65,6 +65,7 @@ export const getTasks = ( {
 	isAccountOverviewTasksEnabled,
 	numDisputesNeedingResponse = 0,
 } ) => {
+	// Do not proceed further if we don't have account status.
 	if ( accountStatus.error ) {
 		return [];
 	}
