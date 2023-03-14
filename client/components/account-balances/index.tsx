@@ -12,7 +12,7 @@ import './style.scss';
 /**
  * Renders an overview of the account's balances.
  *
- * @return {React.FunctionComponent} Rendered element with the account balances card.
+ * @return {JSX.Element} Rendered element with the account balances card.
  */
 const AccountBalances: React.FC = () => {
 	// Currency is hardcoded for now, but will be populated via useAllDepositsOverviews().
