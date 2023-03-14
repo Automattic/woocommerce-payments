@@ -9,6 +9,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import { useAllDepositsOverviews } from 'wcpay/data';
+import strings from './strings';
 
 interface OverviewProps {
 	overview: AccountOverview.Overview | null | undefined;
@@ -27,9 +28,7 @@ const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = (
 ) => {
 	return (
 		<Card>
-			<CardHeader>
-				{ __( 'Deposits', 'woocommerce-payments' ) }
-			</CardHeader>
+			<CardHeader>{ strings.heading }</CardHeader>
 
 			<p>Next Deposits Section Goes here</p>
 
