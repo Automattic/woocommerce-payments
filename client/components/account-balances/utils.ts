@@ -1,32 +1,34 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { timeOfDayStrings } from './strings';
+import { greetingStrings } from './strings';
+
+export type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 
 /**
  * Calculates the time of day based on the browser's time.
  *
  * @param {Date} date A date object to calculate the time of day for. Defaults to the current time.
- * @return {string} The time of day (translatable string). One of 'morning', 'afternoon' or 'evening'.
+ * @return {TimeOfDay} The time of day. One of 'morning', 'afternoon' or 'evening'.
  *
  */
-export const getTimeOfDayString = ( date: Date = new Date() ): string => {
+export const getTimeOfDayString = ( date: Date = new Date() ): TimeOfDay => {
 	const hour = date.getHours();
 	// Morning 5am -11.59am
 	if ( hour >= 5 && hour < 12 ) {
-		return timeOfDayStrings.morning;
+		return 'morning';
 	}
 	// Afternoon 12pm – 4:59pm
 	if ( hour >= 12 && hour < 17 ) {
-		return timeOfDayStrings.afternoon;
+		return 'afternoon';
 	}
 	// Evening 5pm – 4:59am
-	return timeOfDayStrings.evening;
+	return 'evening';
 };
 
 /**
@@ -41,10 +43,9 @@ export const getGreeting = (
 	date: Date = new Date()
 ): string => {
 	const timeOfDay = getTimeOfDayString( date );
-	const adjective = __( `Good `, 'woocommerce-payments' );
-	let greeting = `${ adjective }${ timeOfDay }`;
+	let greeting = greetingStrings.withoutName[ timeOfDay ];
 	if ( name ) {
-		greeting += `, ${ name }`;
+		greeting = sprintf( greetingStrings.withName[ timeOfDay ], name );
 	}
 	greeting += ' 👋';
 	return greeting;
