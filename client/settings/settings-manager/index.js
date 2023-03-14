@@ -23,6 +23,7 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
 import { useDepositDelayDays } from '../../data';
+import FraudProtection from '../fraud-protection';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -50,7 +51,7 @@ const ExpressCheckoutDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/payments/settings-guide/#section-4">
+		<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/settings-guide/#express-checkouts">
 			{ __( 'Learn more', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
@@ -101,6 +102,26 @@ const DepositsDescription = () => {
 			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
 				{ __(
 					'Learn more about pending schedules',
+					'woocommerce-payments'
+				) }
+			</ExternalLink>
+		</>
+	);
+};
+
+const FraudProtectionDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Fraud protection', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ __(
+					'Help avoid chargebacks by setting your security and fraud protection risk level.',
+					'woocommerce-payments'
+				) }
+			</p>
+			<ExternalLink href="#">
+				{ __(
+					'Learn more about risk filtering',
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
@@ -174,6 +195,15 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</div>
 			</SettingsSection>
+			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
+				<SettingsSection description={ FraudProtectionDescription }>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<FraudProtection />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+			) }
 			<AdvancedSettings />
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 		</SettingsLayout>

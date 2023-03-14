@@ -16,6 +16,7 @@ import { TestModeNotice, topics } from 'components/test-mode-notice';
 import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import DepositsInformation from 'components/deposits-information';
+import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
@@ -32,7 +33,7 @@ const OverviewPage = () => {
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		featureFlags: { accountOverviewTaskList },
+		featureFlags: { accountOverviewTaskList, simplifyDepositsUi },
 	} = wcpaySettings;
 	const numDisputesNeedingResponse =
 		parseInt( wcpaySettings.numDisputesNeedingResponse, 10 ) || 0;
@@ -134,7 +135,11 @@ const OverviewPage = () => {
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
-					<DepositsInformation />
+					{ simplifyDepositsUi ? (
+						<DepositsOverview />
+					) : (
+						<DepositsInformation />
+					) }
 				</ErrorBoundary>
 			) }
 

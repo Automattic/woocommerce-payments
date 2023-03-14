@@ -1,12 +1,17 @@
 name: PHP linting and tests
 
 on:
-  pull_request
+  pull_request:
+  merge_group:
 
 env:
   WP_VERSION:        latest
   WC_L2_VERSION: '7.1.1'  # the min supported version as per L-2 policy
   GUTENBERG_VERSION: latest
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
