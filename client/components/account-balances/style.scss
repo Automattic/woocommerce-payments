@@ -1,3 +1,11 @@
+.wcpay-account-balances__header {
+	flex-flow: row wrap;
+}
+
+.wcpay-account-balances__header__greeting {
+	white-space: nowrap;
+}
+
 .wcpay-account-balances__balances {
 	border-top: 1px solid $gray-200;
 }

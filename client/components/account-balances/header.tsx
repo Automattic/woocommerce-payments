@@ -2,13 +2,15 @@
  * External dependencies
  */
 import React from 'react';
-import { CardHeader } from '@wordpress/components';
+import { CardHeader, Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { getGreeting } from './utils';
 import { useCurrentWpUser } from './hooks';
+import wooPaymentsLogo from '../../../assets/images/woopayments.svg';
+import './style.scss';
 
 /**
  * Renders the header of the account's balances card.
@@ -19,7 +21,22 @@ const AccountBalancesHeader: React.FC = () => {
 	const { displayName } = useCurrentWpUser();
 	const greeting = getGreeting( displayName );
 
-	return <CardHeader>{ greeting }</CardHeader>;
+	return (
+		<CardHeader>
+			<Flex
+				align="center"
+				justify="space-between"
+				className="wcpay-account-balances__header"
+			>
+				<FlexItem className="wcpay-account-balances__header__greeting">
+					{ greeting }
+				</FlexItem>
+				<FlexItem>
+					<img src={ wooPaymentsLogo } alt="Woo Payments logo" />
+				</FlexItem>
+			</Flex>
+		</CardHeader>
+	);
 };
 
 export default AccountBalancesHeader;
