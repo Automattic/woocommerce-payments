@@ -11,8 +11,8 @@ import { __ } from '@wordpress/i18n';
 import { useAllDepositsOverviews } from 'wcpay/data';
 
 interface OverviewProps {
-	overview: AccountOverview.Overview;
-	account: AccountOverview.Account;
+	overview: AccountOverview.Overview | null;
+	account: AccountOverview.Account | null;
 	isLoading: boolean;
 }
 
@@ -47,6 +47,17 @@ const DepositsOverview = (): JSX.Element => {
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 
 	const { currencies, account } = overviews;
+
+	if ( isLoading ) {
+		return (
+			<DepositsOverviewDetails
+				key={ null }
+				overview={ null }
+				account={ null }
+				isLoading={ isLoading }
+			/>
+		);
+	}
 
 	return (
 		<React.Fragment>
