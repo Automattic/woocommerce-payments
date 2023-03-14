@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Move AccountOverview TypeScript namespace to shared location
