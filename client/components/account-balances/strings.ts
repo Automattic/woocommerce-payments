@@ -14,3 +14,5 @@ export const fundLabelStrings = {
 	pending: __( 'Pending funds', 'woocommerce-payments' ),
 	reserve: __( 'Reserve funds', 'woocommerce-payments' ),
 };
+
+export const currencyBalanceString = __( '%s Balance', 'woocommerce-payments' );

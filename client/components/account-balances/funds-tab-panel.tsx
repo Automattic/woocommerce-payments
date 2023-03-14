@@ -5,12 +5,13 @@ import * as React from 'react';
 import { formatCurrency } from 'wcpay/utils/currency';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import { Flex, TabPanel } from '@wordpress/components';
+import { sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
 import LoadingFundsTabTable from './loading-funds-tab-panel';
-import { fundLabelStrings } from './strings';
+import { currencyBalanceString, fundLabelStrings } from './strings';
 
 const AccountBalancesTabTable: React.FC = () => {
 	const {
@@ -27,7 +28,10 @@ const AccountBalancesTabTable: React.FC = () => {
 	const funds: TabPanel.Tab[] = currencies.map(
 		( overview: AccountOverview.Overview ) => ( {
 			name: overview.currency,
-			title: `${ overview.currency.toUpperCase() } Balance`,
+			title: sprintf(
+				currencyBalanceString,
+				overview.currency.toUpperCase()
+			),
 			available_funds: overview.available.amount,
 			pending_funds: overview.pending.amount,
 			reserve_funds: overview.pending.amount,

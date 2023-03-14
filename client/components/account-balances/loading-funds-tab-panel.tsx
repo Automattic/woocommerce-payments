@@ -4,17 +4,21 @@
 import * as React from 'react';
 import Loadable from 'components/loadable';
 import { Flex, TabPanel } from '@wordpress/components';
+import { sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
-import { fundLabelStrings } from './strings';
+import { currencyBalanceString, fundLabelStrings } from './strings';
 
 const LoadingFundsTabTable: React.FC = () => {
 	const loadingTabs: TabPanel.Tab[] = [
 		{
 			name: 'loading',
-			title: 'Loading...',
+			title: sprintf(
+				currencyBalanceString,
+				wcpaySettings.accountDefaultCurrency.toUpperCase()
+			),
 			loading_funds: (
 				<Loadable
 					isLoading={ true }
