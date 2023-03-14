@@ -65,6 +65,9 @@ export const getTasks = ( {
 	isAccountOverviewTasksEnabled,
 	numDisputesNeedingResponse = 0,
 } ) => {
+	if ( accountStatus.error ) {
+		return [];
+	}
 	const {
 		status,
 		currentDeadline,
