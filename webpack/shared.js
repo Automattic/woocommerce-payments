@@ -53,6 +53,14 @@ module.exports = {
 				exclude: /node_modules/,
 			},
 			{
+				test: /\.mjs$/,
+				include: /node_modules/,
+				type: 'javascript/auto',
+				resolve: {
+					fullySpecified: false,
+				},
+			},
+			{
 				test: /\.jsx?$/,
 				use: [ 'babel-loader' ],
 				exclude: /node_modules/,
