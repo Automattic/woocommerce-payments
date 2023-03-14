@@ -6,9 +6,9 @@ exports[`AccountBalances renders 1`] = `
     class="components-card is-size-medium wcpay-account-balances css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-flex components-card__header is-size-small e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      class="components-flex components-card__header is-size-medium e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
     >
-      Good afternoon!
+      Good afternoon, Tester 👋
     </div>
     <div>
       <div
