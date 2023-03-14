@@ -7,19 +7,22 @@ import { TextControl } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import CustomSelectControl from 'components/custom-select-control';
+import CustomSelectControl, {
+	ControlProps,
+	Item,
+} from 'components/custom-select-control';
 
-type TextFieldProps = Omit<
-	React.ComponentProps< typeof TextControl >,
-	'type'
->;
-type SelectFieldProps = React.ComponentProps< typeof CustomSelectControl >;
+export type TextFieldProps = Omit< TextControl.Props, 'type' >;
+export type SelectFieldProps< ItemType > = ControlProps< ItemType >;
 
-type FieldProps = {
+type FieldProps< ItemType > = {
 	type: 'text' | 'select';
-} & ( TextFieldProps | SelectFieldProps );
+} & ( TextFieldProps | SelectFieldProps< ItemType > );
 
-const Field: React.FC< FieldProps > = ( { type, ...rest } ) => {
+const Field = < ItemType extends Item >( {
+	type,
+	...rest
+}: FieldProps< ItemType > ): JSX.Element => {
 	let props, field;
 	switch ( type ) {
 		case 'text':
@@ -27,7 +30,7 @@ const Field: React.FC< FieldProps > = ( { type, ...rest } ) => {
 			field = <TextControl { ...props } />;
 			break;
 		case 'select':
-			props = rest as SelectFieldProps;
+			props = rest as SelectFieldProps< ItemType >;
 			field = <CustomSelectControl { ...props } />;
 			break;
 	}
@@ -39,8 +42,8 @@ export const TextField: React.FC< TextFieldProps > = ( props ) => (
 	<Field type={ 'text' } { ...props } />
 );
 
-export const SelectField: React.FC< SelectFieldProps > = ( props ) => (
-	<Field type={ 'select' } { ...props } />
-);
+export const SelectField = < ItemType extends Item >(
+	props: SelectFieldProps< ItemType >
+): JSX.Element => <Field type={ 'select' } { ...props } />;
 
 export default Field;
