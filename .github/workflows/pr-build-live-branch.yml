@@ -44,7 +44,10 @@ jobs:
           DEV_SUFFIX_VERSION="dev_PR-${PR}_commit-$(git rev-parse --short HEAD)"
           DEV_VERSION="${NEXT_VERSION}-${DEV_SUFFIX_VERSION}"
 
-          echo "dev-version=$DEV_VERSION" >> $GITHUB_OUTPUT
+          # Plugin data is passed as a JSON object.
+          PLUGIN_DATA="{}"          
+          PLUGIN_DATA=$( jq -c --arg slug "woocommerce-payments" --arg ver "$DEV_VERSION" '.[ $slug ] = { version: $ver }' <<<"$PLUGIN_DATA" )
+          echo "plugin-data=$PLUGIN_DATA" >> $GITHUB_OUTPUT
 
           # 'Version' header in woocommerce-payments.php
           sed -i "s/^ \* Version: .*$/ * Version: DEV_VERSION/" woocommerce-payments.php
