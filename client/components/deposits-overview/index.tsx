@@ -57,7 +57,7 @@ const DepositsOverview = (): JSX.Element => {
 		);
 	}
 
-	const overview = currencies.shift(); // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
+	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
 
 	return (
 		<>
