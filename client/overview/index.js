@@ -32,7 +32,7 @@ const OverviewPage = () => {
 		overviewTasksVisibility,
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
-		featureFlags: { accountOverviewTaskList },
+		featureFlags: { accountOverviewTaskList, simplifyDepositsUi },
 	} = wcpaySettings;
 	const numDisputesNeedingResponse =
 		parseInt( wcpaySettings.numDisputesNeedingResponse, 10 ) || 0;
@@ -132,7 +132,7 @@ const OverviewPage = () => {
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
-					{ window.wcpaySettings?.featureFlags?.simplifyDepoitsUi ? (
+					{ simplifyDepositsUi ? (
 						<DepositsOverview />
 					) : (
 						<DepositsInformation />
