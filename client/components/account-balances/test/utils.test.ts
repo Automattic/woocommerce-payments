@@ -26,7 +26,7 @@ describe( 'Account Balances Utils', () => {
 		// set the time to 8am
 		date.setHours( 8 );
 		expect( getGreeting( 'Bingo', date ) ).toEqual(
-			'Good morning, Bingo!'
+			'Good morning, Bingo 👋'
 		);
 	} );
 
@@ -34,6 +34,6 @@ describe( 'Account Balances Utils', () => {
 		const date = new Date();
 		// set the time to 8am
 		date.setHours( 8 );
-		expect( getGreeting( undefined, date ) ).toEqual( 'Good morning!' );
+		expect( getGreeting( undefined, date ) ).toEqual( 'Good morning 👋' );
 	} );
 } );

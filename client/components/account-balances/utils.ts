@@ -44,9 +44,8 @@ export const getGreeting = (
 	const adjective = __( `Good `, 'woocommerce-payments' );
 	let greeting = `${ adjective }${ timeOfDay }`;
 	if ( name ) {
-		greeting += `, ${ name }!`;
-	} else {
-		greeting += '!';
+		greeting += `, ${ name }`;
 	}
+	greeting += ' 👋';
 	return greeting;
 };
