@@ -65,18 +65,15 @@ export const getTasks = ( {
 	isAccountOverviewTasksEnabled,
 	numDisputesNeedingResponse = 0,
 } ) => {
-	// Do not proceed further if we don't have account status.
-	if ( accountStatus.error ) {
-		return [];
-	}
 	const {
 		status,
 		currentDeadline,
 		pastDue,
 		accountLink,
 		requirements,
-		progressiveOnboarding: { isEnabled: isPoEnabled },
+		progressiveOnboarding,
 	} = accountStatus;
+	const isPoEnabled = progressiveOnboarding?.isEnabled;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	const errorMessages = getErrorMessagesFromRequirements( requirements );
