@@ -17,7 +17,7 @@ const BannerActions = ( {
 			<Button isTertiary onClick={ handleRemindOnClick }>
 				{ __( 'Remind me later', 'woocommerce-payments' ) }
 			</Button>
-			{ 3 === remindMeCount && (
+			{ 3 <= remindMeCount && (
 				<Button isTertiary onClick={ handleDontShowAgainOnClick }>
 					{ __( "Don't show me this again", 'woocommerce-payments' ) }
 				</Button>

@@ -131,7 +131,9 @@ const OverviewPage = () => {
 
 			<TestModeNotice topic={ topics.overview } />
 
-			<FRTDiscoverabilityBanner />
+			<ErrorBoundary>
+				<FRTDiscoverabilityBanner />
+			</ErrorBoundary>
 
 			{ ! accountRejected && (
 				<ErrorBoundary>

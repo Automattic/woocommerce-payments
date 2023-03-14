@@ -24,7 +24,8 @@ const FRTDiscoverabilityBanner = () => {
 	} );
 
 	const showBanner =
-		null === settings.remindMeAt || Date.now() > settings.remindMeAt
+		( null === settings.remindMeAt && ! settings.dontShowAgain ) ||
+		( Date.now() > settings.remindMeAt && ! settings.dontShowAgain )
 			? true
 			: false;
 
@@ -51,10 +52,14 @@ const FRTDiscoverabilityBanner = () => {
 	};
 
 	useEffect( () => {
+		const stringifiedSettings = JSON.stringify( settings );
+
 		updateOptions( {
-			wcpay_frt_discover_banner_settings: JSON.stringify( settings ),
+			wcpay_frt_discover_banner_settings: stringifiedSettings,
 		} );
-	}, [ settings, updateOptions ] );
+
+		window.wcpaySettings.frtDiscoverBannerSettings = stringifiedSettings;
+	}, [ frtDiscoverBannerSettings, settings, updateOptions ] );
 
 	const handleRemindOnClick = () => {
 		setReminder();
@@ -64,7 +69,7 @@ const FRTDiscoverabilityBanner = () => {
 		setDontShowAgain();
 	};
 
-	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled && ! showBanner ) {
+	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled || ! showBanner ) {
 		return null;
 	}
 
