@@ -35,26 +35,23 @@ jest.mock( '@woocommerce/navigation', () => ( { getQuery: jest.fn() } ) );
 jest.mock( '@wordpress/data', () => ( {
 	registerStore: jest.fn(),
 	combineReducers: jest.fn(),
-	useDispatch: jest.fn( () => ( { createNotice: jest.fn() } ) ),
+	useDispatch: jest.fn( () => ( { updateOptions: jest.fn() } ) ),
 	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
 	withDispatch: jest.fn( () => jest.fn() ),
 	createRegistryControl: jest.fn(),
-	select: jest.fn().mockImplementation( () => ( {
-		getSettings: () => ( {
-			enabled_payment_method_ids: [ 'foo', 'bar' ],
-		} ),
-	} ) ),
+	select: jest.fn(),
 	withSelect: jest.fn( () => jest.fn() ),
 	useSelect: jest.fn( () => ( { getNotices: jest.fn() } ) ),
 } ) );
 jest.mock( '@wordpress/data-controls' );
 jest.mock( 'wcpay/data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {
-		settings: {
-			enabled_payment_method_ids: [ 'foo', 'bar' ],
-		},
+		settings: { enabled_payment_method_ids: [ 'foo', 'bar' ] },
 	} ),
-	useAllDepositsOverviews: jest.fn(),
+	useAllDepositsOverviews: jest
+		.fn()
+		.mockReturnValue( { overviews: { currencies: [] } } ),
+	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
 } ) );
 
 select.mockReturnValue( {
@@ -91,12 +88,6 @@ describe( 'Overview page', () => {
 				accountOverviewTaskList: true,
 			},
 			accountLoans: {},
-			isFraudProtectionSettingsEnabled: false,
-			frtDiscoverBannerSettings: {
-				remindMeCount: 0,
-				remindMeAt: null,
-				dontShowAgain: false,
-			},
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
@@ -110,7 +101,7 @@ describe( 'Overview page', () => {
 		).toBeNull();
 	} );
 
-	it.skip( 'Skips rendering task list when accountOverviewTaskList feature flag is off', () => {
+	it( 'Skips rendering task list when accountOverviewTaskList feature flag is off', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			featureFlags: {},
@@ -123,7 +114,7 @@ describe( 'Overview page', () => {
 		).toBeNull();
 	} );
 
-	it.skip( 'Displays the login error for query param wcpay-login-error=1', () => {
+	it( 'Displays the login error for query param wcpay-login-error=1', () => {
 		getQuery.mockReturnValue( { 'wcpay-login-error': '1' } );
 
 		const { container } = render( <OverviewPage /> );
@@ -135,7 +126,7 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
-	it.skip( 'Displays the success message for query param wcpay-connection-success=1', () => {
+	it( 'Displays the success message for query param wcpay-connection-success=1', () => {
 		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
 
 		const { container } = render( <OverviewPage /> );
@@ -147,7 +138,7 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
-	it.skip( 'Displays the notice for Jetpack Identity Crisis', () => {
+	it( 'Displays the notice for Jetpack Identity Crisis', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			isJetpackIdcActive: 1,
@@ -160,7 +151,7 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
-	it.skip( 'Displays the server link redirection error message for query param wcpay-server-link-error=1', () => {
+	it( 'Displays the server link redirection error message for query param wcpay-server-link-error=1', () => {
 		getQuery.mockReturnValue( { 'wcpay-server-link-error': '1' } );
 		getTasks.mockReturnValue( [] );
 
@@ -176,7 +167,7 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
-	it.skip( 'Does not display the server link redirection error message when there the query parameter is not present', () => {
+	it( 'Does not display the server link redirection error message when there the query parameter is not present', () => {
 		getTasks.mockReturnValue( [] );
 
 		render( <OverviewPage /> );
@@ -191,7 +182,7 @@ describe( 'Overview page', () => {
 		).toBeNull();
 	} );
 
-	it.skip( 'Displays the view loan error message for query param wcpay-loan-offer-error=1', () => {
+	it( 'Displays the view loan error message for query param wcpay-loan-offer-error=1', () => {
 		getQuery.mockReturnValue( { 'wcpay-loan-offer-error': '1' } );
 		getTasks.mockReturnValue( [] );
 
@@ -207,7 +198,7 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
-	it.skip( 'Does not display the view loan error message when there the query parameter is not present', () => {
+	it( 'Does not display the view loan error message when there the query parameter is not present', () => {
 		getTasks.mockReturnValue( [] );
 
 		render( <OverviewPage /> );
@@ -222,7 +213,7 @@ describe( 'Overview page', () => {
 		).toBeNull();
 	} );
 
-	it.skip( 'Does not display loan summary when there is no loan', () => {
+	it( 'Does not display loan summary when there is no loan', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			accountLoans: {
@@ -237,7 +228,7 @@ describe( 'Overview page', () => {
 		).toBeNull();
 	} );
 
-	it.skip( 'Displays loan summary when there is a loan', () => {
+	it( 'Displays loan summary when there is a loan', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,
 			accountLoans: {
