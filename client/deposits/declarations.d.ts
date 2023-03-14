@@ -29,4 +29,11 @@ declare module '@woocommerce/components' {
 		orderStatusMap: Object;
 		labelPositionToLeft?: boolean;
 	} ) => JSX.Element;
+
+	type LinkParams = {
+		href: string;
+		children?: React.ReactNode;
+		type?: string;
+	};
+	const Link: ( props: LinkParams ) => JSX.Element;
 }
