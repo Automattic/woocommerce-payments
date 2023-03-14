@@ -11,8 +11,8 @@ import { __ } from '@wordpress/i18n';
 import { useAllDepositsOverviews } from 'wcpay/data';
 
 interface OverviewProps {
-	overview: AccountOverview.Overview | null;
-	account: AccountOverview.Account | null;
+	overview: AccountOverview.Overview | null | undefined;
+	account: AccountOverview.Account | null | undefined;
 	isLoading: boolean;
 }
 
@@ -51,7 +51,6 @@ const DepositsOverview = (): JSX.Element => {
 	if ( isLoading ) {
 		return (
 			<DepositsOverviewDetails
-				key={ null }
 				overview={ null }
 				account={ null }
 				isLoading={ isLoading }
@@ -59,17 +58,16 @@ const DepositsOverview = (): JSX.Element => {
 		);
 	}
 
+	const overview = currencies.shift(); // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
+
 	return (
-		<React.Fragment>
-			{ currencies.map( ( overview: AccountOverview.Overview ) => (
-				<DepositsOverviewDetails
-					key={ overview.currency }
-					account={ account }
-					overview={ overview }
-					isLoading={ isLoading }
-				/>
-			) ) }
-		</React.Fragment>
+		<>
+			<DepositsOverviewDetails
+				account={ account }
+				overview={ overview }
+				isLoading={ isLoading }
+			/>
+		</>
 	);
 };
 
