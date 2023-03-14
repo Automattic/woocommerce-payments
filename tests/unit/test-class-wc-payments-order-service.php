@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Fraud_Outcome_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
 
@@ -574,7 +575,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
 
 		// Assert: Check to make sure the _wcpay_fraud_outcome_status meta was set.
-		$this->assertEquals( 'passed', $this->order->get_meta( '_wcpay_fraud_outcome_status' ) );
+		$this->assertEquals( Fraud_Outcome_Status::APPROVE, $this->order->get_meta( '_wcpay_fraud_outcome_status' ) );
 
 		// Assert: Check that the order status was updated to a paid status.
 		$this->assertTrue( $this->order->has_status( wc_get_is_paid_statuses() ) );
@@ -604,7 +605,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
 
 		// Assert: Check to make sure the _wcpay_fraud_outcome_status meta was set.
-		$this->assertEquals( 'held', $this->order->get_meta( '_wcpay_fraud_outcome_status' ) );
+		$this->assertEquals( Fraud_Outcome_Status::REVIEW, $this->order->get_meta( '_wcpay_fraud_outcome_status' ) );
 
 		// Assert: Check that the order status was updated to on-hold status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -635,7 +636,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
 
 		// Assert: Check to make sure the _wcpay_fraud_outcome_status meta was set.
-		$this->assertEquals( 'blocked', $this->order->get_meta( '_wcpay_fraud_outcome_status' ) );
+		$this->assertEquals( Fraud_Outcome_Status::BLOCK, $this->order->get_meta( '_wcpay_fraud_outcome_status' ) );
 
 		// Assert: Check that the order status was updated to cancelled status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );

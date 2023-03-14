@@ -36,9 +36,9 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 		$this->order_fraud_and_risk_meta_box->display_order_fraud_and_risk_meta_box_message( $order );
 	}
 
-	public function test_display_order_fraud_and_risk_meta_box_message_display_held_message() {
+	public function test_display_order_fraud_and_risk_meta_box_message_display_review_message() {
 		// Arrange.
-		$order = $this->get_test_order( [ '_wcpay_fraud_outcome_status' => 'held' ] );
+		$order = $this->get_test_order( [ '_wcpay_fraud_outcome_status' => 'review' ] );
 
 		// Assert.
 		$this->expectOutputString( '<p class="wcpay-fraud-risk-meta-held">Held for review</p><p>The payment for this order was held for review by your risk filtering. You can review the details and determine whether to approve or block the payment.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_123" target="_blank" rel="noopener noreferrer">Review payment</a>' );
@@ -49,7 +49,7 @@ class Order_Fraud_And_Risk_Meta_Box_Test extends WCPAY_UnitTestCase {
 
 	public function test_display_order_fraud_and_risk_meta_box_message_display_blocked_message() {
 		// Arrange.
-		$order = $this->get_test_order( [ '_wcpay_fraud_outcome_status' => 'blocked' ] );
+		$order = $this->get_test_order( [ '_wcpay_fraud_outcome_status' => 'block' ] );
 
 		// Assert.
 		$this->expectOutputString( '<p class="wcpay-fraud-risk-meta-blocked">Blocked</p><p>The payment for this order was blocked by your risk filtering, and the order has been cancelled.</p><a href="http://example.org/wp-admin/admin.php?page=wc-admin&#038;path=/payments/transactions/details&#038;id=pi_123" target="_blank" rel="noopener noreferrer">View payment details</a>' );
