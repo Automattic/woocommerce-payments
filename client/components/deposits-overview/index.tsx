@@ -3,7 +3,6 @@
  */
 import * as React from 'react';
 import { Card, CardHeader } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
