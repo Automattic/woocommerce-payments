@@ -17,13 +17,16 @@ import { timeOfDayStrings } from './strings';
  */
 export const getTimeOfDayString = ( date: Date = new Date() ): string => {
 	const hour = date.getHours();
-	if ( hour >= 18 ) {
-		return timeOfDayStrings.evening;
+	// Morning 5am -11.59am
+	if ( hour >= 5 && hour < 12 ) {
+		return timeOfDayStrings.morning;
 	}
-	if ( hour >= 12 ) {
+	// Afternoon 12pm – 4:59pm
+	if ( hour >= 12 && hour < 17 ) {
 		return timeOfDayStrings.afternoon;
 	}
-	return timeOfDayStrings.morning;
+	// Evening 5pm – 4:59am
+	return timeOfDayStrings.evening;
 };
 
 /**
