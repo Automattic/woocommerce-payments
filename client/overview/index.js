@@ -132,10 +132,12 @@ const OverviewPage = () => {
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
-					{ window.wcpaySettings?.featureFlags?.isNewDepositsOverview
-						? <DepositsOverview />
-						: <DepositsInformation />
-					}
+					{ window.wcpaySettings?.featureFlags
+						?.isNewDepositsOverview ? (
+						<DepositsOverview />
+					) : (
+						<DepositsInformation />
+					) }
 				</ErrorBoundary>
 			) }
 
