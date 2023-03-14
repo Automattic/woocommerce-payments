@@ -76,7 +76,7 @@ jobs:
           retention-days: 7
 
       - name: Inform Beta Download webhook
-        if: steps.prepare.outputs.plugin-data != '{}'
+        if: steps.bump-dev-version.outputs.plugin-data != '{}'
         env:
           SECRET: ${{ secrets.WCPAYBETA_SECRET }}
           PLUGIN_DATA: ${{ steps.bump-dev-version.outputs.plugin-data }}
