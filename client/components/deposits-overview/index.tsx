@@ -20,7 +20,7 @@ interface OverviewProps {
 /**
  * Renders a deposits overview
  *
- * @param {AccountOverview.Overview} props Deposits overview
+ * @param {OverviewProps} props Deposits overview
  * @return {JSX.Element} Rendered element with deposits overview
  */
 const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = (
