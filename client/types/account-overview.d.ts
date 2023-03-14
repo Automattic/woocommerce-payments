@@ -1,4 +1,4 @@
-declare namespace AccountOverview {
+export declare namespace AccountOverview {
 	interface Account {
 		default_currency: string;
 		deposits_blocked: boolean;

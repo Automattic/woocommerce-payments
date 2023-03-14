@@ -7,6 +7,7 @@ import { Card, CardHeader } from '@wordpress/components';
 /**
  * Internal dependencies.
  */
+import { AccountOverview } from 'wcpay/types/account-overview';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 

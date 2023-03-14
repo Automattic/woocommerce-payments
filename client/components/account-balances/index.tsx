@@ -7,6 +7,7 @@ import { Card, CardHeader, Flex, TabPanel } from '@wordpress/components';
 /**
  * Internal dependencies
  */
+import { AccountOverview } from 'wcpay/types/account-overview';
 import './style.scss';
 
 /**
