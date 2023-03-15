@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Prevent admin error notices being shown for the "subscription trial end" event that was caused by no callbacks being attached to this scheduled action.

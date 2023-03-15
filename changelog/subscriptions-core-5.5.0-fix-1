@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Remove the recurring shipping method cache that caused bugs for third-party plugins like Conditional Shipping and Payments.
