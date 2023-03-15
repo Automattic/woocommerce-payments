@@ -21,7 +21,9 @@ exports[`AccountBalances renders 1`] = `
         >
           <img
             alt="Woo Payments logo"
+            class="wcpay-account-balances__header__greeting__logo"
             src="[object Object]"
+            width="107"
           />
         </div>
       </div>

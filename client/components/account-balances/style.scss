@@ -6,6 +6,11 @@
 	white-space: nowrap;
 }
 
+.wcpay-account-balances__header__greeting__logo {
+	display: block;
+	margin-top: 3px;
+}
+
 .wcpay-account-balances__balances {
 	border-top: 1px solid $gray-200;
 }

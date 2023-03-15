@@ -32,7 +32,12 @@ const AccountBalancesHeader: React.FC = () => {
 					{ greeting }
 				</FlexItem>
 				<FlexItem>
-					<img src={ wooPaymentsLogo } alt="Woo Payments logo" />
+					<img
+						className="wcpay-account-balances__header__greeting__logo"
+						src={ wooPaymentsLogo }
+						alt="Woo Payments logo"
+						width={ 107 }
+					/>
 				</FlexItem>
 			</Flex>
 		</CardHeader>
