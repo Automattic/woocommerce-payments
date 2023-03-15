@@ -4,7 +4,7 @@ Tags: payment gateway, payment, apple pay, credit card, google pay
 Requires at least: 5.9
 Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 5.5.1
+Stable tag: 5.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -98,6 +98,46 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.6.0 - 2023-03-15 =
+* Add - Add a component that provides a tour experience.
+* Add - Add a notice for Norwegian merchants using WCPay to update WooCommerce to at least 7.5
+* Add - Added WC_Payments_Customer_Service_API in WCPayCore
+* Add - Add Fraud Protection section to WCPay Settings screen. Section is hidden behind a feature flag DB option.
+* Add - Add WCPay support for CY, LU, DK, EE, FI, GR, LT, LV, MT, NO, SI, SK
+* Add - Display tap to pay fees in transaction timeline view
+* Add - Moved methods used for order metadata update to the Order Service class.
+* Add - Show PO todos in the Things To Do on WCPay overview page.
+* Fix - Added function exist check to avoid fatal error for undefined function.
+* Fix - Add merge queue trigger to the relevant workflows.
+* Fix - Appending the countries dropdown to body to prevent it being clipped
+* Fix - Fix bug with showing WC tasks when there is no WCPay account
+* Fix - Fix deposit schedule monthly anchor label when set to 'last day of the month'.
+* Fix - Fixes a problem where the Transactions table would have its layout modified when hovering over the currency conversion icon
+* Fix - Fixes focus change on gateway select with split UPE enabled.
+* Fix - Fixing the broken search on the Disputes page.
+* Fix - Fix WooPay request on stores with WooPay disabled
+* Fix - Prevent admin error notices being shown for the "subscription trial end" event that was caused by no callbacks being attached to this scheduled action.
+* Fix - Prevent auto-scroll on page load when WooPay is enabled.
+* Fix - Prevent WooPay and Link to be enabled at the same time
+* Fix - prevent WooPay modal from showing up when editing the theme via wp-admin
+* Fix - Re-enable split UPE E2E tests and ensure they pass.
+* Fix - Remove the recurring shipping method cache that caused bugs for third-party plugins like Conditional Shipping and Payments.
+* Fix - Replace PHP dependency myclabs/php-enum with a built-in solution due to conflicts with multiple PHP versions.
+* Fix - Right align cutomize button on the settings page
+* Fix - Use generated script dependencies to load script assets
+* Fix - WCPay Checkout JS is loaded for zero carts
+* Update - Log error message when calling redirect_to_login fails.
+* Update - Updated express payment method UI in settings page
+* Update - Update the deprecating set-output command
+* Dev - Add a feature flag for fraud and risk tools features.
+* Dev - Adding a centralized class to manage the gateway's mode (live/dev/test).
+* Dev - Fixes a flaky e2e test.
+* Dev - Made timezones consistent in tests by generating dynamically.
+* Dev - Release automation - Run smoke tests automatically after release zip is built.
+* Dev - Remove unused code for updating WCPay subscription dates.
+* Dev - Update GH workflow runner images from Ubuntu 18.04 to 20.04
+* Dev - Update subscriptions-core to 5.5.0
+
 = 5.5.1 - 2023-03-01 =
 * Add - When enabling WooPay, if legacy UPE is enabled, upgrades feature flag to split UPE instead.
 * Fix - Avoid rendering save cards checkbox for logged out users
@@ -135,33 +175,7 @@ Please note that our support for the checkout block is still experimental and th
 
 = 5.4.0 - 2023-02-01 =
 * Add - Add logging and order notes when WCPay Subscriptions are suspended or put on-hold.
-* Add - Highlight subscriptions with overdue payment in list view with red icon == Changelog ==
-
-= 5.5.0 - 2023-02-22 =
-* Add - Added learn more link to deposits page
-* Add - Added tracking for the split UPE feature flag.
-* Add - Declare WooCommerce Payments compatible with High-Performance Order Storage.
-* Add - New support phone and email fields the general settings page.
-* Add - Pass settings fields of the plugins that use newsletter block to woopay.
-* Add - Pass the namespaces from the Store API checkout schema data to WooPay
-* Add - Pass the store's test mode value to WooPay requests to the OTP endpoint.
-* Add - The UPE is now the default checkout experience for newly onboarded merchants. It can sbe disabled with these instructions: https://woocommerce.com/?p=3337362#disabling
-* Fix - Add wp-i18n as split UPE script dependency to load split UPE elements.
-* Fix - Disable WooPay for unavailable countries
-* Fix - Display an error when the request for initiating the platform checkout fails.
-* Fix - External link accessibilty text style
-* Fix - Fixes Stripe Link compatibility with split UPE payment gateway
-* Fix - For stores using HPOS, ensure the originating subscription's currency is used when initiating a subscription switch.
-* Fix - Make sure available payment methods are provided for the automatic subscription renewals.
-* Fix - Point the "Learn more" link to a more appropriate document in the Apple Pay domain registration failure notification.
-* Fix - Re-enabled email triggered WooPay flow with Express Checkout flow. WooPay Express Checkout is currently behind a feature flag.
-* Fix - Remove unnecessary style dependency from WooPay checkbox.
-* Fix - Track user viewport and url when using WooPay
-* Update - Removed saved methods listing in My Account Add Payment Method page
-* Update - Updated the Express checkout settings page
-* Update - WooPay CTA text in shortcode checkout
-* Dev - Adding a feature flag to allow further development of onboarding UX - currently this will have no effect on live stores.
-* Dev - Merge progressive onboarding prototype under a feature flag tooltip.
+* Add - Highlight subscriptions with overdue payment in list view with red icon & tooltip.
 * Add - More context to the business details to show the actual message from Stripe, shows a modal if there is more than one error from Stripe.
 * Add - New wcs_set_order_address() helper function to set an array of address fields on an order or subscription.
 * Add - Skipping the email input step for WooPay express checkout flow when the email input field has already a value. The WooPay express checkout feature is behind a feature flag currently.
@@ -204,33 +218,7 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Fix phpcs violations in the `WC_Subscriptions_Tracker` and `WCS_Admin_System_Status` classes to improve code quality.
 * Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
 * Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
-* Dev - Moved the trash, untrash == Changelog ==
-
-= 5.5.0 - 2023-02-22 =
-* Add - Added learn more link to deposits page
-* Add - Added tracking for the split UPE feature flag.
-* Add - Declare WooCommerce Payments compatible with High-Performance Order Storage.
-* Add - New support phone and email fields the general settings page.
-* Add - Pass settings fields of the plugins that use newsletter block to woopay.
-* Add - Pass the namespaces from the Store API checkout schema data to WooPay
-* Add - Pass the store's test mode value to WooPay requests to the OTP endpoint.
-* Add - The UPE is now the default checkout experience for newly onboarded merchants. It can sbe disabled with these instructions: https://woocommerce.com/?p=3337362#disabling
-* Fix - Add wp-i18n as split UPE script dependency to load split UPE elements.
-* Fix - Disable WooPay for unavailable countries
-* Fix - Display an error when the request for initiating the platform checkout fails.
-* Fix - External link accessibilty text style
-* Fix - Fixes Stripe Link compatibility with split UPE payment gateway
-* Fix - For stores using HPOS, ensure the originating subscription's currency is used when initiating a subscription switch.
-* Fix - Make sure available payment methods are provided for the automatic subscription renewals.
-* Fix - Point the "Learn more" link to a more appropriate document in the Apple Pay domain registration failure notification.
-* Fix - Re-enabled email triggered WooPay flow with Express Checkout flow. WooPay Express Checkout is currently behind a feature flag.
-* Fix - Remove unnecessary style dependency from WooPay checkbox.
-* Fix - Track user viewport and url when using WooPay
-* Update - Removed saved methods listing in My Account Add Payment Method page
-* Update - Updated the Express checkout settings page
-* Update - WooPay CTA text in shortcode checkout
-* Dev - Adding a feature flag to allow further development of onboarding UX - currently this will have no effect on live stores.
-* Dev - Merge progressive onboarding prototype under a feature flag delete related `add_actions()` in the `WC_Subscriptions_Manager` class to be added on the `woocommerce_loaded` action.
+* Dev - Moved the trash, untrash & delete related `add_actions()` in the `WC_Subscriptions_Manager` class to be added on the `woocommerce_loaded` action.
 * Dev - Remove deprecated `strptime` function in favour of `DateTime::createFromFormat`.
 * Dev - Skip running blocks E2E tests, add comment for the same.
 * Dev - unified express checkout settings

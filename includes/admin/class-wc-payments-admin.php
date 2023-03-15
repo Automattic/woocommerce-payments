@@ -444,16 +444,7 @@ class WC_Payments_Admin {
 	 * Register the CSS and JS scripts
 	 */
 	public function register_payments_scripts() {
-		$script_src_url    = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/index.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
-		wp_register_script(
-			'WCPAY_DASH_APP',
-			$script_src_url,
-			$script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/index.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index' );
 
 		// Has on-boarding been disabled? Set the flag for use in the front-end so messages and notices can be altered
 		// as appropriate.
@@ -495,48 +486,49 @@ class WC_Payments_Admin {
 		$account_status_data = $this->account->get_account_status_data();
 
 		$wcpay_settings = [
-			'connectUrl'                 => WC_Payments_Account::get_connect_url(),
-			'connect'                    => [
+			'connectUrl'                       => WC_Payments_Account::get_connect_url(),
+			'connect'                          => [
 				'country'            => WC()->countries->get_base_country(),
 				'availableCountries' => WC_Payments_Utils::supported_countries(),
 				'availableStates'    => WC()->countries->get_states(),
 			],
-			'testMode'                   => $this->wcpay_gateway->is_in_test_mode(),
+			'testMode'                         => WC_Payments::mode()->is_test(),
 			// set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
-			'onBoardingDisabled'         => WC_Payments_Account::is_on_boarding_disabled(),
-			'errorMessage'               => $error_message,
-			'featureFlags'               => $this->get_frontend_feature_flags(),
-			'isSubscriptionsActive'      => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
+			'onBoardingDisabled'               => WC_Payments_Account::is_on_boarding_disabled(),
+			'errorMessage'                     => $error_message,
+			'featureFlags'                     => $this->get_frontend_feature_flags(),
+			'isSubscriptionsActive'            => class_exists( 'WC_Subscriptions' ) && version_compare( WC_Subscriptions::$version, '2.2.0', '>=' ),
 			// used in the settings page by the AccountFees component.
-			'zeroDecimalCurrencies'      => WC_Payments_Utils::zero_decimal_currencies(),
-			'fraudServices'              => $this->account->get_fraud_services_config(),
-			'isJetpackConnected'         => $this->payments_api_client->is_server_connected(),
-			'isJetpackIdcActive'         => Jetpack_Identity_Crisis::has_identity_crisis(),
-			'accountStatus'              => $account_status_data,
-			'accountFees'                => $this->account->get_fees(),
-			'accountLoans'               => $this->account->get_capital(),
-			'accountEmail'               => $this->account->get_account_email(),
-			'showUpdateDetailsTask'      => $this->get_should_show_update_business_details_task( $account_status_data ),
-			'wpcomReconnectUrl'          => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
-			'additionalMethodsSetup'     => [
+			'zeroDecimalCurrencies'            => WC_Payments_Utils::zero_decimal_currencies(),
+			'fraudServices'                    => $this->account->get_fraud_services_config(),
+			'isJetpackConnected'               => $this->payments_api_client->is_server_connected(),
+			'isJetpackIdcActive'               => Jetpack_Identity_Crisis::has_identity_crisis(),
+			'accountStatus'                    => $account_status_data,
+			'accountFees'                      => $this->account->get_fees(),
+			'accountLoans'                     => $this->account->get_capital(),
+			'accountEmail'                     => $this->account->get_account_email(),
+			'showUpdateDetailsTask'            => $this->get_should_show_update_business_details_task( $account_status_data ),
+			'wpcomReconnectUrl'                => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
+			'additionalMethodsSetup'           => [
 				'isUpeEnabled' => WC_Payments_Features::is_upe_enabled(),
 				'upeType'      => WC_Payments_Features::get_enabled_upe_type(),
 			],
-			'multiCurrencySetup'         => [
+			'multiCurrencySetup'               => [
 				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
 			],
-			'isMultiCurrencyEnabled'     => WC_Payments_Features::is_customer_multi_currency_enabled(),
-			'isClientEncryptionEligible' => WC_Payments_Features::is_client_secret_encryption_eligible(),
-			'shouldUseExplicitPrice'     => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
-			'overviewTasksVisibility'    => [
+			'isMultiCurrencyEnabled'           => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'isClientEncryptionEligible'       => WC_Payments_Features::is_client_secret_encryption_eligible(),
+			'shouldUseExplicitPrice'           => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
+			'overviewTasksVisibility'          => [
 				'dismissedTodoTasks'     => get_option( 'woocommerce_dismissed_todo_tasks', [] ),
 				'deletedTodoTasks'       => get_option( 'woocommerce_deleted_todo_tasks', [] ),
 				'remindMeLaterTodoTasks' => get_option( 'woocommerce_remind_me_later_todo_tasks', [] ),
 			],
-			'currentUserEmail'           => $current_user_email,
-			'currencyData'               => $currency_data,
-			'restUrl'                    => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
-			'numDisputesNeedingResponse' => $this->get_disputes_awaiting_response_count(),
+			'currentUserEmail'                 => $current_user_email,
+			'currencyData'                     => $currency_data,
+			'restUrl'                          => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
+			'numDisputesNeedingResponse'       => $this->get_disputes_awaiting_response_count(),
+			'isFraudProtectionSettingsEnabled' => WC_Payments_Features::is_fraud_protection_settings_enabled(),
 		];
 
 		wp_localize_script(
@@ -554,17 +546,7 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/index.css' )
 		);
 
-		$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
-		$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
-		$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require $tos_script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script(
-			'WCPAY_TOS',
-			$tos_script_src_url,
-			$tos_script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/tos.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_TOS', 'dist/tos' );
 		wp_set_script_translations( 'WCPAY_TOS', 'woocommerce-payments' );
 
 		wp_register_style(
@@ -574,13 +556,8 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/tos.css' )
 		);
 
-		wp_register_script(
-			'WCPAY_ADMIN_ORDER_ACTIONS',
-			plugins_url( 'dist/order.js', WCPAY_PLUGIN_FILE ),
-			array_merge( $script_asset['dependencies'], [ 'jquery-tiptip' ] ),
-			WC_Payments::get_file_version( 'dist/order.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_ORDER_ACTIONS', 'dist/order', [ 'jquery-tiptip' ] );
+
 		wp_register_style(
 			'WCPAY_ADMIN_ORDER_ACTIONS',
 			plugins_url( 'dist/order.css', WCPAY_PLUGIN_FILE ),
@@ -588,23 +565,14 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/order.css' )
 		);
 
-		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
-		$settings_script_asset_path = WCPAY_ABSPATH . 'dist/settings.asset.php';
-		$settings_script_asset      = file_exists( $settings_script_asset_path ) ? require $settings_script_asset_path : [ 'dependencies' => [] ];
-		wp_register_script(
-			'WCPAY_ADMIN_SETTINGS',
-			$settings_script_src_url,
-			$settings_script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/settings.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_SETTINGS', 'dist/settings' );
 
 		wp_localize_script(
 			'WCPAY_ADMIN_SETTINGS',
 			'wcpayPaymentRequestParams',
 			[
 				'stripe' => [
-					'publishableKey' => $this->account->get_publishable_key( $this->wcpay_gateway->is_in_test_mode() ),
+					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 					'accountId'      => $this->account->get_stripe_account_id(),
 					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 				],
@@ -625,17 +593,8 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/settings.css' )
 		);
 
-		$payment_gateways_script_src_url    = plugins_url( 'dist/payment-gateways.js', WCPAY_PLUGIN_FILE );
-		$payment_gateways_script_asset_path = WCPAY_ABSPATH . 'dist/payment-gateways.asset.php';
-		$payment_gateways_script_asset      = file_exists( $payment_gateways_script_asset_path ) ? require $payment_gateways_script_asset_path : [ 'dependencies' => [] ];
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_GATEWAYS_PAGE', 'dist/payment-gateways' );
 
-		wp_register_script(
-			'WCPAY_PAYMENT_GATEWAYS_PAGE',
-			$payment_gateways_script_src_url,
-			$payment_gateways_script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/payment-gateways.js' ),
-			true
-		);
 		wp_register_style(
 			'WCPAY_PAYMENT_GATEWAYS_PAGE',
 			plugins_url( 'dist/payment-gateways.css', WCPAY_PLUGIN_FILE ),
@@ -1036,7 +995,7 @@ class WC_Payments_Admin {
 	 * @return int The number of uncaptured transactions.
 	 */
 	private function get_uncaptured_transactions_count() {
-		$test_mode = $this->wcpay_gateway->is_in_test_mode();
+		$test_mode = WC_Payments::mode()->is_test();
 		$cache_key = $test_mode ? DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE : DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY;
 
 		$authorization_summary = $this->database_cache->get_or_add(
