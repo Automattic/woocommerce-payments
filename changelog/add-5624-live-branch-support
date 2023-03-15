@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add GitHub workflow to build and inform the zip file.
