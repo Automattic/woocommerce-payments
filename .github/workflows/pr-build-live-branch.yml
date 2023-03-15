@@ -9,7 +9,9 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
+env:
+  # Only need to retain for a day since the Jetpack beta builder slurps it up to distribute.
+  WCPAY_LIVE_BRANCH_ARTIFACT_RETENTION_DAYS: 1
 jobs:
   build-and-upload-zip-file:
     name: "Build and inform the zip file"
@@ -81,7 +83,7 @@ jobs:
         with:
           name: plugins # Hard-coded value for Jetpack Beta Builder.
           path: release
-          retention-days: 1 # Only need to retain for a day since the Jetpack beta builder slurps it up to distribute.
+          retention-days: ${{ env.WCPAY_LIVE_BRANCH_ARTIFACT_RETENTION_DAYS }}
 
       - name: Inform Beta Download webhook
         if: steps.bump-dev-version.outputs.plugin-data != '{}'
@@ -96,3 +98,29 @@ jobs:
             --form-string "branch=${GITHUB_REF#refs/heads/}" \
             --form-string "plugins=$PLUGIN_DATA" \
             --form-string "secret=$SECRET"
+
+      - name: "Add/update the information as a comment in the PR"
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          ARTIFACT_RETENTION_DAY: ${{ env.WCPAY_LIVE_BRANCH_ARTIFACT_RETENTION_DAYS }}
+        run: |
+          EXPIRY_TIME=$(date -u "+%Y-%m-%d %H:%M:%S UTC" -d "+${ARTIFACT_RETENTION_DAY} day")
+          
+          BODY="### Grab the build file for this PR
+          
+          :x: This build file is NOT ready for production. It's available for testing only.
+
+          - Latest commit: ${GITHUB_SHA}
+          - Build file in the 'Artifacts' section: https://github.com/Automattic/woocommerce-payments/actions/runs/${GITHUB_RUN_ID}
+          - Expired at: ${EXPIRY_TIME}
+
+          _Note: this comment is updated when a new commit is pushed to this PR._"
+
+          PR_URL="https://github.com/Automattic/woocommerce-payments/pull/${PR_NUMBER}"
+
+          # Try to update the last comment first. If not work, just create a new comment.
+          if ! gh pr comment ${PR_URL} --body "${BODY}" --edit-last
+          then
+            gh pr comment ${PR_URL} --body "${BODY}"
+          fi
