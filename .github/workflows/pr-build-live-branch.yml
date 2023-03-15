@@ -2,9 +2,6 @@ name: Build live branch for PR
 
 on:
   pull_request:
-    branches:
-      - develop
-      - 'release/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
