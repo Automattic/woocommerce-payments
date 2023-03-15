@@ -22,6 +22,7 @@ import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
+import AccountBalances from 'components/account-balances';
 import FRTDiscoverabilityBanner from 'wcpay/components/fraud-risk-tools-banner';
 
 import './style.scss';
@@ -138,7 +139,10 @@ const OverviewPage = () => {
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					{ simplifyDepositsUi ? (
-						<DepositsOverview />
+						<>
+							<AccountBalances />
+							<DepositsOverview />
+						</>
 					) : (
 						<DepositsInformation />
 					) }

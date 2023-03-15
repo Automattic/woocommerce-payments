@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix handling saved tokens for payment gateways while using shortcode checkout
