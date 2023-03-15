@@ -11,8 +11,8 @@ import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 
 interface OverviewProps {
-	overview: AccountOverview.Overview | null | undefined;
-	account: AccountOverview.Account | null | undefined;
+	overview?: AccountOverview.Overview;
+	account?: AccountOverview.Account;
 	isLoading: boolean;
 }
 
@@ -47,13 +47,7 @@ const DepositsOverview = (): JSX.Element => {
 	const { currencies, account } = overviews;
 
 	if ( isLoading ) {
-		return (
-			<DepositsOverviewDetails
-				overview={ null }
-				account={ null }
-				isLoading={ isLoading }
-			/>
-		);
+		return <DepositsOverviewDetails isLoading={ isLoading } />;
 	}
 
 	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
