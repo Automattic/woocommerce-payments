@@ -1,16 +1,16 @@
 /**
  * External dependencies
  */
+import { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card } from '@wordpress/components';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import { BannerBody, NewPill, BannerActions } from './components';
 import './style.scss';
-import { useEffect, useState } from 'react';
-import { useDispatch } from '@wordpress/data';
 
 const FRTDiscoverabilityBanner = () => {
 	const { frtDiscoverBannerSettings } = wcpaySettings;
