@@ -2,7 +2,6 @@
  * External dependencies
  */
 import * as React from 'react';
-import { formatCurrency } from 'wcpay/utils/currency';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import { Flex, TabPanel } from '@wordpress/components';
 import { sprintf } from '@wordpress/i18n';
@@ -12,6 +11,7 @@ import { sprintf } from '@wordpress/i18n';
  */
 import LoadingBalancesTabPanel from './loading-balances-tab-panel';
 import { currencyBalanceString, fundLabelStrings } from './strings';
+import BalanceBlock from './balance-block';
 
 /**
  * Renders an account balances panel with tab navigation for each deposit currency.
@@ -26,6 +26,8 @@ const AccountBalancesTabPanel: React.FC = () => {
 
 	const { currencies } = overviews;
 
+	// For a short period after isLoading resolves, the currencies will be empty,
+	// so we need to render a loading state until the currencies are available.
 	if ( isLoading || currencies.length === 0 ) {
 		return <LoadingBalancesTabPanel />;
 	}
@@ -38,10 +40,10 @@ const AccountBalancesTabPanel: React.FC = () => {
 				currencyBalanceString,
 				overview.currency.toUpperCase()
 			),
-			currency_code: overview.currency,
-			available_funds: overview.available.amount,
-			pending_funds: overview.pending.amount,
-			reserve_funds: 0, // TODO: Add reserve funds to the overview object.
+			currencyCode: overview.currency,
+			availableFunds: overview.available.amount,
+			pendingFunds: overview.pending.amount,
+			reserveFunds: 0, // TODO: Add reserve funds to the overview object.
 		} )
 	);
 
@@ -49,39 +51,21 @@ const AccountBalancesTabPanel: React.FC = () => {
 		<TabPanel tabs={ depositCurrencyTabs }>
 			{ ( tab ) => (
 				<Flex gap={ 0 } className="wcpay-account-balances__balances">
-					<div className="wcpay-account-balances__balances__item">
-						<p className="wcpay-account-balances__balances__item__title">
-							{ fundLabelStrings.available }
-						</p>
-						<p className="wcpay-account-balances__balances__item__amount">
-							{ formatCurrency(
-								tab.available_funds,
-								tab.currency_code
-							) }
-						</p>
-					</div>
-					<div className="wcpay-account-balances__balances__item">
-						<p className="wcpay-account-balances__balances__item__title">
-							{ fundLabelStrings.pending }
-						</p>
-						<p className="wcpay-account-balances__balances__item__amount">
-							{ formatCurrency(
-								tab.pending_funds,
-								tab.currency_code
-							) }
-						</p>
-					</div>
-					<div className="wcpay-account-balances__balances__item">
-						<p className="wcpay-account-balances__balances__item__title">
-							{ fundLabelStrings.reserve }
-						</p>
-						<p className="wcpay-account-balances__balances__item__amount">
-							{ formatCurrency(
-								tab.reserve_funds,
-								tab.currency_code
-							) }
-						</p>
-					</div>
+					<BalanceBlock
+						title={ fundLabelStrings.available }
+						amount={ tab.availableFunds }
+						currencyCode={ tab.currency_code }
+					/>
+					<BalanceBlock
+						title={ fundLabelStrings.pending }
+						amount={ tab.pendingFunds }
+						currencyCode={ tab.currency_code }
+					/>
+					<BalanceBlock
+						title={ fundLabelStrings.reserve }
+						amount={ tab.reserveFunds }
+						currencyCode={ tab.currency_code }
+					/>
 				</Flex>
 			) }
 		</TabPanel>

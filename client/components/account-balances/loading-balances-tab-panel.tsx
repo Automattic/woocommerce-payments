@@ -2,7 +2,6 @@
  * External dependencies
  */
 import * as React from 'react';
-import Loadable from 'components/loadable';
 import { Flex, TabPanel } from '@wordpress/components';
 import { sprintf } from '@wordpress/i18n';
 
@@ -10,6 +9,7 @@ import { sprintf } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import { currencyBalanceString, fundLabelStrings } from './strings';
+import BalanceBlock from './balance-block';
 
 /**
  * Renders an account balances panel in a loading state.
@@ -30,42 +30,25 @@ const LoadingBalancesTabPanel: React.FC = () => {
 		},
 	];
 
-	const loadingFund = (
-		<Loadable
-			isLoading={ true }
-			display="inline"
-			placeholder="loading amount"
-		/>
-	);
-
 	return (
 		<TabPanel tabs={ loadingTabs }>
 			{ ( tab ) => (
 				<Flex gap={ 0 } className="wcpay-account-balances__balances">
-					<div className="wcpay-account-balances__balances__item">
-						<p className="wcpay-account-balances__balances__item__title">
-							{ fundLabelStrings.available }
-						</p>
-						<p className="wcpay-account-balances__balances__item__amount">
-							{ loadingFund }
-						</p>
-					</div>
-					<div className="wcpay-account-balances__balances__item">
-						<p className="wcpay-account-balances__balances__item__title">
-							{ fundLabelStrings.pending }
-						</p>
-						<p className="wcpay-account-balances__balances__item__amount">
-							{ loadingFund }
-						</p>
-					</div>
-					<div className="wcpay-account-balances__balances__item">
-						<p className="wcpay-account-balances__balances__item__title">
-							{ fundLabelStrings.reserve }
-						</p>
-						<p className="wcpay-account-balances__balances__item__amount">
-							{ loadingFund }
-						</p>
-					</div>
+					<BalanceBlock
+						title={ fundLabelStrings.available }
+						isLoading={ true }
+						currencyCode={ tab.currency_code }
+					/>
+					<BalanceBlock
+						title={ fundLabelStrings.pending }
+						isLoading={ true }
+						currencyCode={ tab.currency_code }
+					/>
+					<BalanceBlock
+						title={ fundLabelStrings.reserve }
+						isLoading={ true }
+						currencyCode={ tab.currency_code }
+					/>
 				</Flex>
 			) }
 		</TabPanel>
