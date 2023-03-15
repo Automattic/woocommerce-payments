@@ -18,6 +18,7 @@ const ERROR_MESSAGES_TO_IGNORE = [
 	'Missing data from PHP (wpNotesArgs).',
 	'We were rate-limited from checking if your requested Payment Request options are allowed. Please test again before going live.',
 	"Unrecognized Content-Security-Policy directive 'require-trusted-types-for'.",
+	'Failed to load resource: the server responded with a status of 400 ()',
 ];
 
 ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {

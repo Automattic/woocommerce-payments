@@ -13,7 +13,6 @@ const e2ePaths = {
 	blocks: path.resolve( __dirname, '../specs/blocks' ),
 	upe: path.resolve( __dirname, '../specs/upe' ),
 	upeSplit: path.resolve( __dirname, '../specs/upe-split' ),
-	atomic: path.resolve( __dirname, '../specs/atomic' ),
 };
 
 // Allow E2E tests to run specific tests - wcpay, subscriptions, blocks, all (default).
@@ -47,8 +46,7 @@ if ( process.env.E2E_GROUP ) {
 } else {
 	// The 'atomic' folder is a temporary measure until we are able to run all E2E tests for Atomic sites.
 	// The only way to run E2E tests locally for the Atomic site is to use E2E_GROUP=atomic, to avoid duplicate tests in other cases.
-	const { atomic, ...regularE2ePaths } = e2ePaths;
-	Object.values( regularE2ePaths ).forEach( ( testPath ) => {
+	Object.values( e2ePaths ).forEach( ( testPath ) => {
 		allowedPaths.push( testPath );
 	} );
 }

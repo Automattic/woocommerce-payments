@@ -24,7 +24,8 @@ jobs:
     env:
       E2E_WP_VERSION: 'nightly'
       E2E_WC_VERSION: 'latest'
-      E2E_GROUP: 'atomic'
+      E2E_GROUP: 'wcpay'
+      E2E_BRANCH: 'shopper'
 
     steps:
       - name: "Checkout repository"
