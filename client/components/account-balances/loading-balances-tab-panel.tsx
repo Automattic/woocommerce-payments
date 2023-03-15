@@ -3,13 +3,13 @@
  */
 import * as React from 'react';
 import { Flex, TabPanel } from '@wordpress/components';
-import { sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
-import { currencyBalanceString, fundLabelStrings } from './strings';
+import { fundLabelStrings } from './strings';
 import BalanceBlock from './balance-block';
+import { getCurrencyTabTitle } from './utils';
 
 /**
  * Renders an account balances panel in a loading state.
@@ -21,12 +21,7 @@ const LoadingBalancesTabPanel: React.FC = () => {
 	const loadingTabs: TabPanel.Tab[] = [
 		{
 			name: 'loading',
-			title: sprintf(
-				// string format: {currency} balance
-				currencyBalanceString,
-				// While the screen is loading, pull the default currency from the settings object.
-				wcpaySettings.accountDefaultCurrency.toUpperCase()
-			),
+			title: getCurrencyTabTitle( wcpaySettings.accountDefaultCurrency ),
 		},
 	];
 
