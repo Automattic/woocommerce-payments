@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getTerms, getCookieValue } from '../upe';
+import { getTerms, getCookieValue, isWCPayChosen } from '../upe';
 
 describe( 'UPE checkout utils', () => {
 	describe( 'getTerms', () => {
@@ -45,6 +45,7 @@ describe( 'UPE checkout utils', () => {
 			);
 		} );
 	} );
+
 	describe( 'getCookieValue', () => {
 		const mockCookieGet = jest.fn();
 
@@ -73,6 +74,26 @@ describe( 'UPE checkout utils', () => {
 				'woocommerce_items_in_cart=1; woocommerce_cart_hash=4a2d0baa7ee12ffa935450f63945824b;'
 			);
 			expect( getCookieValue( 'nom_nom_nom' ) ).toBe( '' );
+		} );
+	} );
+
+	describe( 'isWCPayChosen', () => {
+		const container = document.createElement( 'div' );
+
+		it( 'should return true when WCPay is chosen', () => {
+			container.innerHTML =
+				'<input type="radio" id="payment_method_woocommerce_payments" value="woocommerce-payments" checked>';
+			document.body.appendChild( container );
+			expect( isWCPayChosen() ).toBe( true );
+		} );
+
+		it( 'should return false when WCPay is not chosen', () => {
+			container.innerHTML = `
+				<input type="radio" id="payment_method_woocommerce_payments" value="woocommerce-payments">
+				<input type="radio" id="payment_method_woocommerce_payments_bancontact" value="bancontact" checked>
+				`;
+			document.body.appendChild( container );
+			expect( isWCPayChosen() ).toBe( false );
 		} );
 	} );
 } );
