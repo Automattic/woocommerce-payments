@@ -1,5 +1,14 @@
 .wcpay-account-balances__header {
-	flex-flow: row wrap;
+	flex-flow: row-reverse wrap;
+	flex-direction: row-reverse;
+
+	*:first-child {
+		order: 2;
+	}
+
+	*:last-child {
+		order: 1;
+	}
 }
 
 .wcpay-account-balances__header__greeting {
