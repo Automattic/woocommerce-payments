@@ -12,19 +12,19 @@ import CustomSelectControl, {
 	Item,
 } from 'components/custom-select-control';
 
-export type TextFieldProps = Omit< TextControl.Props, 'type' >;
+export type TextFieldProps = TextControl.Props;
 export type SelectFieldProps< ItemType > = ControlProps< ItemType >;
 
 type FieldProps< ItemType > = {
-	type: 'text' | 'select';
+	component: 'text' | 'select';
 } & ( TextFieldProps | SelectFieldProps< ItemType > );
 
 const Field = < ItemType extends Item >( {
-	type,
+	component,
 	...rest
 }: FieldProps< ItemType > ): JSX.Element => {
 	let props, field;
-	switch ( type ) {
+	switch ( component ) {
 		case 'text':
 			props = rest as TextFieldProps;
 			field = <TextControl { ...props } />;
@@ -39,11 +39,11 @@ const Field = < ItemType extends Item >( {
 };
 
 export const TextField: React.FC< TextFieldProps > = ( props ) => (
-	<Field type={ 'text' } { ...props } />
+	<Field component={ 'text' } { ...props } />
 );
 
 export const SelectField = < ItemType extends Item >(
 	props: SelectFieldProps< ItemType >
-): JSX.Element => <Field type={ 'select' } { ...props } />;
+): JSX.Element => <Field component={ 'select' } { ...props } />;
 
 export default Field;
