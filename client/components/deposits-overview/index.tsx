@@ -9,6 +9,7 @@ import { Card, CardHeader } from '@wordpress/components';
  */
 import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
+import './style.scss';
 import DepositsOverviewSectionHeading from './section-heading';
 
 interface OverviewProps {

@@ -31,8 +31,8 @@ const DepositsOverviewSectionHeading: React.FC< HeadingProps > = ( {
 	isLoading = isLoading || false;
 
 	return (
-		<div className="wcpay-deposits-overview-section__header">
-			<p className="wcpay-deposits-overview-section__header__title">
+		<div className="wcpay-deposits-overview-section__heading">
+			<p className="wcpay-deposits-overview-section__heading__title">
 				<Loadable
 					isLoading={ isLoading }
 					display="inline"
@@ -41,7 +41,7 @@ const DepositsOverviewSectionHeading: React.FC< HeadingProps > = ( {
 				/>
 			</p>
 
-			<p className="wcpay-deposits-overview-section__header__description">
+			<p className="wcpay-deposits-overview-section__heading__description">
 				<Loadable
 					isLoading={ isLoading }
 					display="inline"

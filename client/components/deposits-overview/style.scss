@@ -1,0 +1,26 @@
+.wcpay-deposits-overview-section {
+	&__heading {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 16px 24px;
+		height: 80px;
+
+		p {
+			margin: 0px;
+		}
+
+		&__title {
+			font-weight: 600;
+			font-size: 16px;
+			line-height: 24px;
+			color: #1E1E1E;
+		}
+	
+		&__description {
+			font-size: 13px;
+			line-height: 16px;
+			color: #757575;
+		}
+	}
+}
