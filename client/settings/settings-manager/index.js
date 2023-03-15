@@ -2,9 +2,10 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
+import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -22,7 +23,7 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
-import { useDepositDelayDays } from '../../data';
+import { useDepositDelayDays, useSettings } from '../../data';
 import FraudProtection from '../fraud-protection';
 
 const PaymentMethodsDescription = () => (
@@ -110,6 +111,18 @@ const DepositsDescription = () => {
 };
 
 const FraudProtectionDescription = () => {
+	const { isLoading } = useSettings();
+
+	useLayoutEffect( () => {
+		const { anchor } = getQuery();
+
+		if ( ! isLoading && anchor ) {
+			document
+				.querySelector( decodeURIComponent( anchor ) )
+				.scrollIntoView( { behavior: 'smooth' } );
+		}
+	}, [ isLoading ] );
+
 	return (
 		<>
 			<h2 id="fp-settings">

@@ -12,7 +12,7 @@ const BannerActions = ( {
 	return (
 		<div className="discoverability-card__actions">
 			<Button
-				href="/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments/#fp-settings"
+				href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
 				isPrimary
 			>
 				{ __( 'Learn More', 'woocommerce-payments' ) }
