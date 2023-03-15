@@ -29,8 +29,8 @@ const removeCouponSelector = '.woocommerce-remove-coupon';
 const blocksPageEnabledSelector =
 	'.wc-block-components-main button:not(:disabled)';
 
-describe( 'Checkout with free coupon & after updating cart on Checkout page', () => {
-	describe( 'Checkout with free coupon & after updating cart on Checkout page', () => {
+describe( 'Checkout with free coupon & after modifying cart on Checkout page', () => {
+	describe( 'Classic Checkout', () => {
 		beforeAll( async () => {
 			try {
 				await checkPageExists( 'checkout-wcb' );
@@ -86,7 +86,7 @@ describe( 'Checkout with free coupon & after updating cart on Checkout page', ()
 		} );
 	} );
 
-	describe( 'Checkout with free coupon & after updating cart on Checkout page with UPE', () => {
+	describe( 'UPE', () => {
 		beforeAll( async () => {
 			await merchant.login();
 			await merchantWCP.activateSplitUpe();
