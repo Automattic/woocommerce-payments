@@ -50,13 +50,13 @@ jobs:
           echo "plugin-data=$PLUGIN_DATA" >> $GITHUB_OUTPUT
 
           # 'Version' header in woocommerce-payments.php
-          sed -i "s/^ \* Version: .*$/ * Version: DEV_VERSION/" woocommerce-payments.php
+          sed -i "s/^ \* Version: .*$/ * Version: $DEV_VERSION/" woocommerce-payments.php
 
           # 'version' field in package.json
           sed -ri 's/("version": )".*"/\1"'${DEV_VERSION}'"/' package.json
 
           # 'Stable tag' header in readme.txt;
-          sed -i "s/^Stable tag: .*$/Stable tag: DEV_VERSION/" readme.txt
+          sed -i "s/^Stable tag: .*$/Stable tag: $DEV_VERSION/" readme.txt
 
       - name: "Build the plugin"
         id: build_plugin
