@@ -58,6 +58,7 @@ runs:
 
     # Build WCPay client
     - name: Build WCPay Client
+      if: ${{ ! env.WCPAY_USE_BUILD_ARTIFACT }}
       shell: bash
       run: |
         echo "::group::Build WCPay client"

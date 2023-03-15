@@ -643,6 +643,17 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		if ( WC_Payments_Features::is_upe_split_enabled() ) {
+
+			$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
+
+			$key = array_search( 'link', $payment_methods, true );
+
+			if ( false !== $key && self::$platform_checkout_button_handler->is_woopay_enabled() ) {
+				unset( $payment_methods[ $key ] );
+
+				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
+			}
+
 			if ( self::$platform_checkout_button_handler->is_woopay_enabled() ) {
 				$gateways[] = self::$legacy_card_gateway;
 			} else {
@@ -650,7 +661,7 @@ class WC_Payments {
 			}
 			$all_upe_gateways = [];
 			$reusable_methods = [];
-			foreach ( self::$card_gateway->get_payment_method_ids_enabled_at_checkout() as $payment_method_id ) {
+			foreach ( $payment_methods as $payment_method_id ) {
 				if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
 					continue;
 				}
@@ -1598,7 +1609,7 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function display_express_checkout_separator_if_necessary() {
-		$woopay          = self::$platform_checkout_button_handler->should_show_platform_checkout_button() && self::$platform_checkout_button_handler->is_woopay_enabled();
+		$woopay          = self::$platform_checkout_button_handler->is_woopay_enabled() && self::$platform_checkout_button_handler->should_show_platform_checkout_button();
 		$payment_request = self::$payment_request_button_handler->should_show_payment_request_button();
 		$should_hide     = $payment_request && ! $woopay;
 		if ( $woopay || $payment_request ) {

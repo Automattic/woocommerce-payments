@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Fixes a flaky e2e test.
