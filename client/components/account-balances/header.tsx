@@ -22,18 +22,18 @@ const AccountBalancesHeader: React.FC = () => {
 	const greeting = getGreeting( displayName );
 
 	return (
-		<CardHeader>
+		<CardHeader className="wcpay-account-balances__header">
 			<Flex
 				align="center"
 				justify="space-between"
-				className="wcpay-account-balances__header"
+				className="wcpay-account-balances__header__flex"
 			>
-				<FlexItem className="wcpay-account-balances__header__greeting">
+				<FlexItem className="wcpay-account-balances__header__flex__greeting">
 					{ greeting }
 				</FlexItem>
 				<FlexItem>
 					<img
-						className="wcpay-account-balances__header__greeting__logo"
+						className="wcpay-account-balances__header__flex__logo"
 						src={ wooPaymentsLogo }
 						alt="Woo Payments logo"
 						width={ 107 }
