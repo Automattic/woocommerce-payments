@@ -8,7 +8,6 @@ import { Flex, TabPanel } from '@wordpress/components';
 /**
  * Internal dependencies.
  */
-import LoadingBalancesTabPanel from './loading-balances-tab-panel';
 import { fundLabelStrings } from './strings';
 import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
@@ -24,24 +23,27 @@ const AccountBalancesTabPanel: React.FC = () => {
 		isLoading,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 
+	let depositCurrencyTabs: TabPanel.Tab[] = [
+		{
+			name: 'loading',
+			title: getCurrencyTabTitle( wcpaySettings.accountDefaultCurrency ),
+		},
+	];
+
 	const { currencies } = overviews;
 
-	// For a short period after isLoading resolves, the currencies will be empty,
-	// so we need to render a loading state until the currencies are available.
-	if ( isLoading || currencies.length === 0 ) {
-		return <LoadingBalancesTabPanel />;
+	if ( ! isLoading && currencies.length !== 0 ) {
+		depositCurrencyTabs = currencies.map(
+			( overview: AccountOverview.Overview ) => ( {
+				name: overview.currency,
+				title: getCurrencyTabTitle( overview.currency ),
+				currencyCode: overview.currency,
+				availableFunds: overview.available.amount,
+				pendingFunds: overview.pending.amount,
+				reserveFunds: 0, // TODO: Add reserve funds to the overview object.
+			} )
+		);
 	}
-
-	const depositCurrencyTabs: TabPanel.Tab[] = currencies.map(
-		( overview: AccountOverview.Overview ) => ( {
-			name: overview.currency,
-			title: getCurrencyTabTitle( overview.currency ),
-			currencyCode: overview.currency,
-			availableFunds: overview.available.amount,
-			pendingFunds: overview.pending.amount,
-			reserveFunds: 0, // TODO: Add reserve funds to the overview object.
-		} )
-	);
 
 	return (
 		<TabPanel tabs={ depositCurrencyTabs }>
@@ -51,16 +53,19 @@ const AccountBalancesTabPanel: React.FC = () => {
 						title={ fundLabelStrings.available }
 						amount={ tab.availableFunds }
 						currencyCode={ tab.currency_code }
+						isLoading={ isLoading }
 					/>
 					<BalanceBlock
 						title={ fundLabelStrings.pending }
 						amount={ tab.pendingFunds }
 						currencyCode={ tab.currency_code }
+						isLoading={ isLoading }
 					/>
 					<BalanceBlock
 						title={ fundLabelStrings.reserve }
 						amount={ tab.reserveFunds }
 						currencyCode={ tab.currency_code }
+						isLoading={ isLoading }
 					/>
 				</Flex>
 			) }
