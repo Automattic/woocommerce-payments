@@ -43,6 +43,7 @@ jobs:
           CURRENT_VERSION=$(jq '.version' package.json -r)
           DEV_SUFFIX_VERSION="dev_PR-${PR}_commit-$(git rev-parse --short HEAD)"
           DEV_VERSION="${NEXT_VERSION}-${DEV_SUFFIX_VERSION}"
+          echo "Dev Version: $DEV_VERSION" >> $GITHUB_STEP_SUMMARY
 
           # Plugin data is passed as a JSON object.
           PLUGIN_DATA="{}"          
@@ -62,6 +63,13 @@ jobs:
         id: build_plugin
         uses: ./.github/actions/build
 
+      - name: "Update the structure of artifacts for Jetpack Beta Builder" 
+        run: |
+          cd release
+          mv woocommerce-payments woocommerce-payments-dev
+          zip -q -r "woocommerce-payments-dev.zip" "woocommerce-payments-dev/"
+          rm -fR "woocommerce-payments-dev"
+
       - name: "Add file size notice"
         run: |
           echo ":information_source: Ignore the artifact size mentioned since GitHub calculates the size of the source folder instead of the zip file created." >> $GITHUB_STEP_SUMMARY
@@ -71,9 +79,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: "woocommerce-payments-live-branch"
+          name: plugins # Hard-coded value for Jetpack Beta Builder.
           path: release
-          retention-days: 7
+          retention-days: 1 # Only need to retain for a day since the Jetpack beta builder slurps it up to distribute.
 
       - name: Inform Beta Download webhook
         if: steps.bump-dev-version.outputs.plugin-data != '{}'
