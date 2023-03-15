@@ -36,7 +36,7 @@ const FRTDiscoverabilityBanner = () => {
 			return {
 				...prevSettings,
 				remindMeCount: prevSettings.remindMeCount + 1,
-				remindMeAt: nowTimestamp + DAY_IN_MS,
+				remindMeAt: nowTimestamp + 3 * DAY_IN_MS,
 			};
 		} );
 	};
