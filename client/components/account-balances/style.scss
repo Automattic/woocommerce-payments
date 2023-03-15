@@ -1,3 +1,9 @@
+.wcpay-account-balances__header.components-card__header.is-size-medium {
+	// Override the default padding to adjust for additional margins on child elements.
+	padding-top: 8px;
+	padding-bottom: 8px;
+}
+
 .wcpay-account-balances__header__flex {
 	// Using row-reverse to reverse the order of the elements so that the logo is
 	// last in the DOM, but first in the visual order when wrapping.
@@ -18,6 +24,11 @@
 	display: block;
 	margin-top: 14px;
 	margin-bottom: 10px;
+}
+
+.wcpay-account-balances__header__flex__greeting {
+	margin-top: 8px;
+	margin-bottom: 8px;
 }
 
 .wcpay-account-balances__balances {
