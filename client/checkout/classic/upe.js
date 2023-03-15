@@ -635,18 +635,6 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Checks if the customer is using a saved payment method.
-	 *
-	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
-	 */
-	function isUsingSavedPaymentMethod() {
-		return (
-			$( '#wc-woocommerce_payments-payment-token-new' ).length &&
-			! $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
-		);
-	}
-
-	/**
 	 * Returns the cached payment intent for the current cart state.
 	 *
 	 * @return {Object} The intent id and client secret required for mounting the UPE element.
@@ -774,3 +762,19 @@ jQuery( function ( $ ) {
 		}
 	} );
 } );
+
+/**
+ * Checks if the customer is using a saved payment method.
+ *
+ * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
+ */
+export function isUsingSavedPaymentMethod() {
+	return (
+		null !==
+			document.querySelector(
+				'#wc-woocommerce_payments-payment-token-new'
+			) &&
+		! document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
+			.checked
+	);
+}
