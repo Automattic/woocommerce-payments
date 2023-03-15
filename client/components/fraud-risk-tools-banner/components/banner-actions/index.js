@@ -11,7 +11,10 @@ const BannerActions = ( {
 } ) => {
 	return (
 		<div className="discoverability-card__actions">
-			<Button href="#" isPrimary>
+			<Button
+				href="/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments/#fp-settings"
+				isPrimary
+			>
 				{ __( 'Learn More', 'woocommerce-payments' ) }
 			</Button>
 			<Button isTertiary onClick={ handleRemindOnClick }>
