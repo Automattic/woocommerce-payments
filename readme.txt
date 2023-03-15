@@ -110,6 +110,7 @@ Please note that our support for the checkout block is still experimental and th
 * Fix - Added function exist check to avoid fatal error for undefined function.
 * Fix - Add merge queue trigger to the relevant workflows.
 * Fix - Appending the countries dropdown to body to prevent it being clipped
+* Fix - Fix bug with showing WC tasks when there is no WCPay account
 * Fix - Fix deposit schedule monthly anchor label when set to 'last day of the month'.
 * Fix - Fixes a problem where the Transactions table would have its layout modified when hovering over the currency conversion icon
 * Fix - Fixes focus change on gateway select with split UPE enabled.
@@ -131,6 +132,7 @@ Please note that our support for the checkout block is still experimental and th
 * Dev - Add a feature flag for fraud and risk tools features.
 * Dev - Adding a centralized class to manage the gateway's mode (live/dev/test).
 * Dev - Fixes a flaky e2e test.
+* Dev - Made timezones consistent in tests by generating dynamically.
 * Dev - Release automation - Run smoke tests automatically after release zip is built.
 * Dev - Remove unused code for updating WCPay subscription dates.
 * Dev - Update GH workflow runner images from Ubuntu 18.04 to 20.04
