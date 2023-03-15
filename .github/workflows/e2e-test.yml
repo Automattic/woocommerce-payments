@@ -58,7 +58,7 @@ jobs:
 
     steps:
       - name: Checkout WCPay repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
@@ -110,7 +110,7 @@ jobs:
 
     steps:
       - name: Checkout WCPay repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup

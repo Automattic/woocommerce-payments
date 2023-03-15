@@ -56,12 +56,12 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster and secure checkout'
+				'Save my information for a faster checkout'
 			)
 		).toBeInTheDocument();
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster and secure checkout'
+				'Save my information for a faster checkout'
 			)
 		).not.toBeChecked();
 	} );
@@ -72,7 +72,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster and secure checkout'
+				'Save my information for a faster checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -83,7 +83,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster and secure checkout'
+				'Save my information for a faster checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -96,7 +96,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		render( <CheckoutPageSaveUser /> );
 		expect(
 			screen.queryByLabelText(
-				'Save my information for a faster and secure checkout'
+				'Save my information for a faster checkout'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -104,37 +104,39 @@ describe( 'CheckoutPageSaveUser', () => {
 	it( 'should render the save user form when checkbox is checked for classic checkout', () => {
 		render( <CheckoutPageSaveUser /> );
 
-		const saveUserForm = screen.getByTestId( 'save-user-form' );
 		const label = screen.getByLabelText(
-			'Save my information for a faster and secure checkout'
+			'Save my information for a faster checkout'
 		);
 
 		expect( label ).not.toBeChecked();
-		expect( saveUserForm.classList.contains( 'visible' ) ).toBe( false );
+		expect(
+			screen.queryByTestId( 'save-user-form' )
+		).not.toBeInTheDocument();
 
 		// click on the checkbox
 		userEvent.click( label );
 
 		expect( label ).toBeChecked();
-		expect( saveUserForm.classList.contains( 'visible' ) ).toBe( true );
+		expect( screen.queryByTestId( 'save-user-form' ) ).toBeInTheDocument();
 	} );
 
 	it( 'should render the save user form when checkbox is checked for blocks checkout', () => {
 		render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
 
-		const saveUserForm = screen.getByTestId( 'save-user-form' );
 		const label = screen.getByLabelText(
 			'Save my information for a faster and secure checkout'
 		);
 
 		expect( label ).not.toBeChecked();
-		expect( saveUserForm.classList.contains( 'visible' ) ).toBe( false );
+		expect(
+			screen.queryByTestId( 'save-user-form' )
+		).not.toBeInTheDocument();
 
 		// click on the checkbox
 		userEvent.click( label );
 
 		expect( label ).toBeChecked();
-		expect( saveUserForm.classList.contains( 'visible' ) ).toBe( true );
+		expect( screen.queryByTestId( 'save-user-form' ) ).toBeInTheDocument();
 	} );
 
 	it( 'should not call `extensionCartUpdate` on classic checkout when checkbox is clicked', () => {
@@ -147,7 +149,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		// click on the checkbox
 		userEvent.click(
 			screen.queryByLabelText(
-				'Save my information for a faster and secure checkout'
+				'Save my information for a faster checkout'
 			)
 		);
 
@@ -184,6 +186,9 @@ describe( 'CheckoutPageSaveUser', () => {
 				namespace: 'platform-checkout',
 				data: {
 					save_user_in_platform_checkout: true,
+					platform_checkout_source_url: 'http://localhost/',
+					platform_checkout_is_blocks: true,
+					platform_checkout_viewport: '0x0',
 					platform_checkout_user_phone_field: {
 						full: '+12015555555',
 					},

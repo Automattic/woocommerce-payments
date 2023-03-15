@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Server\Request\List_Documents;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -60,12 +61,8 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_documents( $request ) {
-		$page      = (int) $request->get_param( 'page' );
-		$page_size = (int) $request->get_param( 'pagesize' );
-		$sort      = $request->get_param( 'sort' );
-		$direction = $request->get_param( 'direction' );
-		$filters   = $this->get_documents_filters( $request );
-		return $this->forward_request( 'list_documents', [ $page, $page_size, $sort, $direction, $filters ] );
+		$wcpay_request = List_Documents::from_rest_request( $request );
+		return $wcpay_request->handle_rest_request( 'wcpay_list_documents_request' );
 	}
 
 	/**
@@ -107,7 +104,7 @@ class WC_REST_Payments_Documents_Controller extends WC_Payments_REST_Controller 
 				'wcpay_document_downloaded',
 				[
 					'document_id' => $document_id,
-					'mode'        => WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'live',
+					'mode'        => WC_Payments::mode()->is_test() ? 'test' : 'live',
 				]
 			);
 		}

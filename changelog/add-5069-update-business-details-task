@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-More context to the business details to show the actual message from Stripe, shows a modal if there is more than one error from Stripe.

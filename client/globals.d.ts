@@ -11,12 +11,14 @@ declare const wcpaySettings: {
 		customSearch: boolean;
 		customDepositSchedules: boolean;
 		isAuthAndCaptureEnabled: boolean;
+		simplifyDepositsUi?: boolean;
 	};
 	fraudServices: unknown[];
 	isJetpackConnected: boolean;
 	isJetpackIdcActive: boolean;
 	accountStatus: {
 		email?: string;
+		created: string;
 		error?: boolean;
 		status?: string;
 		country?: string;
@@ -29,6 +31,12 @@ declare const wcpaySettings: {
 		hasSubmittedVatData?: boolean;
 		requirements?: {
 			errors?: Array< RequirementError >;
+		};
+		progressiveOnboarding: {
+			isEnabled: boolean;
+			isComplete: boolean;
+			tpv: number;
+			firstTransactionDate?: string;
 		};
 	};
 	accountLoans: {

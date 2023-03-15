@@ -7,6 +7,7 @@ const WcPayUpeContext = createContext( {
 	isUpeEnabled: false,
 	setIsUpeEnabled: () => null,
 	status: 'resolved',
+	upeType: '',
 } );
 
 export default WcPayUpeContext;

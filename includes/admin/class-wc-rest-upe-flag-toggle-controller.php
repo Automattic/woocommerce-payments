@@ -117,12 +117,32 @@ class WC_REST_UPE_Flag_Toggle_Controller extends WP_REST_Controller {
 		$is_upe_enabled = $request->get_param( 'is_upe_enabled' );
 
 		if ( $is_upe_enabled ) {
-			update_option( WC_Payments_Features::UPE_FLAG_NAME, '1' );
+			update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+
+			// WooCommerce core only includes Tracks in admin, not the REST API, so we need to use this wc_admin method
+			// that includes WC_Tracks in case it's not loaded.
+			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
+				wc_admin_record_tracks_event( 'wcpay_split_upe_enabled' );
+			}
+
 			return;
 		}
 
-		// marking the flag as "disabled", so that we can keep track that the merchant explicitly disabled it.
-		update_option( WC_Payments_Features::UPE_FLAG_NAME, 'disabled' );
+		// If the legacy UPE flag has been enabled, we need to disable the legacy UPE flag.
+		if ( '1' === get_option( WC_Payments_Features::UPE_FLAG_NAME ) ) {
+			update_option( WC_Payments_Features::UPE_FLAG_NAME, 'disabled' );
+
+			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
+				wc_admin_record_tracks_event( 'wcpay_upe_disabled' );
+			}
+		} else {
+			// marking the flag as "disabled", so that we can keep track that the merchant explicitly disabled it.
+			update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, 'disabled' );
+
+			if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
+				wc_admin_record_tracks_event( 'wcpay_split_upe_disabled' );
+			}
+		}
 
 		// resetting a few other things:
 		// removing the UPE payment methods and _only_ leaving "card",
