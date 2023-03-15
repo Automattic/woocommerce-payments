@@ -38,6 +38,10 @@ const OnboardingStepper = () => {
 	const { data } = useOnboardingContext();
 
 	const handleComplete = () => {
+		// TODO GH-5475 - Implement connection to the Intelligent Router and flow switching.
+		// make post request to /wc/v3/payments/onboarding/router/po_eligible
+		// if it's eligible, redirect to the connect page with the progressive onboarding query param
+		// if it's not eligible, redirect to the connect page without the progressive onboarding query param
 		const { connectUrl } = wcpaySettings;
 		const url = addQueryArgs( connectUrl, {
 			progressive: fromDotNotation( data ),
