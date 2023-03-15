@@ -9,6 +9,7 @@ import { Card, CardHeader } from '@wordpress/components';
  */
 import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
+import DepositsOverviewSectionHeading from './section-heading';
 
 interface OverviewProps {
 	overview?: AccountOverview.Overview;
@@ -25,11 +26,16 @@ interface OverviewProps {
 const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = (
 	props
 ) => {
+	const { isLoading }: OverviewProps = props;
+
 	return (
 		<Card>
 			<CardHeader>{ strings.heading }</CardHeader>
-
-			<p>Next Deposits Section Goes here</p>
+			<DepositsOverviewSectionHeading
+				title={ strings.next_deposits.title }
+				desc={ strings.next_deposits.description }
+				isLoading={ isLoading }
+			/>
 
 			<p>Deposits History Section Goes here</p>
 
