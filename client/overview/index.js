@@ -23,6 +23,7 @@ import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
 import ConnectionSuccessNotice from './connection-sucess-notice';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
+import AccountBalances from 'components/account-balances';
 import { useSettings } from 'wcpay/data';
 import './style.scss';
 
@@ -122,7 +123,10 @@ const OverviewPage = () => {
 			{ ! accountRejected && (
 				<ErrorBoundary>
 					{ simplifyDepositsUi ? (
-						<DepositsOverview />
+						<>
+							<AccountBalances />
+							<DepositsOverview />
+						</>
 					) : (
 						<DepositsInformation />
 					) }
