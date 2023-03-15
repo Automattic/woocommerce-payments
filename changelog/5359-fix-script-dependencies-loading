@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Use generated script dependencies to load script assets
