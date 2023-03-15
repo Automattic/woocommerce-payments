@@ -30,14 +30,13 @@ const FRTDiscoverabilityBanner = () => {
 			: false;
 
 	const setReminder = () => {
-		// const DAY_IN_MS = 24 * 60 * 60 * 1000;
-		const MIN_IN_MS = 60 * 1000; // Remove after testing. Also switch all references to DAY_IN_MS.
+		const DAY_IN_MS = 24 * 60 * 60 * 1000;
 		const nowTimestamp = Date.now();
 		setSettings( ( prevSettings ) => {
 			return {
 				...prevSettings,
 				remindMeCount: prevSettings.remindMeCount + 1,
-				remindMeAt: nowTimestamp + MIN_IN_MS, // Change to DAY_IN_MS.
+				remindMeAt: nowTimestamp + DAY_IN_MS,
 			};
 		} );
 	};
