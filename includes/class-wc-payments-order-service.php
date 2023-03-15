@@ -5,8 +5,9 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Fraud_Outcome_Status;
 use WCPay\Constants\Order_Status;
-use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -90,27 +91,93 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Parse the payment intent data and add any necessary notes to the order and update the order status accordingly.
+	 *
+	 * @param WC_Order     $order  The order to update.
+	 * @param object|array $intent The intent.
+	 */
+	public function update_order_status_from_intent( WC_Order $order, $intent ) {
+		$intent_data = $this->get_intent_data( $intent );
+
+		switch ( $intent_data['intent_status'] ) {
+			case Payment_Intent_Status::SUCCEEDED:
+				//$this->remove_session_processing_order( $order->get_id() );
+				$this->mark_payment_completed( $order, $intent_data );
+				break;
+			case Payment_Intent_Status::PROCESSING:
+			case Payment_Intent_Status::REQUIRES_CAPTURE:
+				if ( Fraud_Outcome_Status::REVIEW === $intent_data['fraud_outcome'] ) {
+					$this->mark_order_held_for_review_for_fraud( $order, $intent_data['intent_id'], $intent_data['intent_status'], $intent_data['charge_id'] );
+				} else {
+					$this->mark_payment_authorized( $order, $intent_data );
+				}
+				break;
+			case Payment_Intent_Status::REQUIRES_ACTION:
+			case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
+				$this->mark_payment_started( $order, $intent_data );
+				break;
+			default:
+				Logger::error( 'Uncaught payment intent status of ' . $intent_data['intent_status'] . ' passed for order id: ' . $order->get_id() );
+				break;
+		}
+	}
+
+	private function get_intent_data( $intent ) {
+		if ( is_array( $intent ) ) {
+			$intent_data = [
+				'intent_id'     => $intent['id'],
+				'intent_status' => $intent['status'],
+				'charge_id'     => $intent['charge_id'] ?? '',
+				'fraud_outcome' => $intent['fraud_outcome'] ?? '',
+			];
+		} else {
+			$charge      = $intent->get_charge();
+			$intent_data = [
+				'intent_id'     => $intent->get_id(),
+				'intent_status' => $intent->get_status(),
+				'charge_id'     => $charge ? $charge->get_id() : null,
+				'fraud_outcome' => $intent->get_metadata()['fraud_outcome'] ?? '',
+			];
+		}
+		return $intent_data;
+	}
+
+	/**
 	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
 	 *
 	 * @param WC_Order $order         Order object.
-	 * @param string   $intent_id     The ID of the intent associated with this order.
-	 * @param string   $intent_status The status of the intent related to this order.
-	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 * @param array    $intent_data   The data of the intent associated with this order.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_completed( $order, $intent_id, $intent_status, $charge_id ) {
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+	public function mark_payment_completed( $order, $intent_data ) {
+		$note = $this->generate_payment_success_note( $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) );
+		if ( $this->order_note_exists( $order, $note ) || ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) {
 			return;
 		}
 
-		$note = $this->generate_payment_success_note( $intent_id, $charge_id, $this->get_order_amount( $order ) );
+		// Update the note with the fee breakdown details async, update order status, add order note.
+		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_data['intent_id'] );
+		$this->update_order_status( $order, 'payment_complete', $intent_data['intent_id'] );
+		$order->add_order_note( $note );
 
-		if ( $this->order_note_exists( $order, $note ) ) {
-			return;
+		// If we have an allow status for the fraud outcome, we want to add the proper meta data.
+		if ( Fraud_Outcome_Status::ALLOW === $intent_data['fraud_outcome'] ) {
+			$fraud_status = Order_Status::ON_HOLD === $order->get_status() ? Fraud_Outcome_Status::REVIEW_ALLOWED : Fraud_Outcome_Status::ALLOW;
+			$order->update_meta_data( '_wcpay_fraud_outcome_status', $fraud_status );
 		}
+		$this->complete_order_processing( $order, $intent_data['intent_status'] );
+	}
 
-		// Update the note with the fee breakdown details async.
+	/**
+	 * Schedules an action to add the fee breakdown to order notes.
+	 *
+	 * @param WC_Order $order The order to add the note to.
+	 * @param string   $intent_id The intent ID for the order.
+	 *
+	 * @return void
+	 */
+	private function enqueue_add_fee_breakdown_to_order_notes( WC_Order $order, string $intent_id ) {
 		WC_Payments::get_action_scheduler_service()->schedule_job(
 			time(),
 			self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES,
@@ -120,10 +187,6 @@ class WC_Payments_Order_Service {
 				'is_test_mode' => WC_Payments::mode()->is_test(),
 			]
 		);
-
-		$this->update_order_status( $order, 'payment_complete', $intent_id );
-		$order->add_order_note( $note );
-		$this->complete_order_processing( $order, $intent_status );
 	}
 
 	/**
@@ -138,15 +201,11 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $message = '' ) {
-		if ( $order->has_status( [ Order_Status::FAILED ] )
+		$note = $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
+		if ( $this->order_note_exists( $order, $note )
+			|| $order->has_status( [ Order_Status::FAILED ] )
 			|| 'failed' === $order->get_meta( '_intention_status' )
 			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
-			return;
-		}
-
-		$note = $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
-
-		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
 
@@ -165,15 +224,15 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	public function mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id ) {
+	public function mark_payment_authorized( $order, $intent_data ) {
 		if ( $order->has_status( [ Order_Status::ON_HOLD ] )
-			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			|| ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) {
 			return;
 		}
 
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
-		$this->add_payment_authorized_note( $order, $intent_id, $charge_id );
-		$this->complete_order_processing( $order, $intent_status );
+		$this->add_payment_authorized_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
+		$this->complete_order_processing( $order, $intent_data['intent_status'] );
 	}
 
 	/**
@@ -186,14 +245,14 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	public function mark_payment_started( $order, $intent_id, $intent_status, $charge_id ) {
+	public function mark_payment_started( $order, $intent_data ) {
 		if ( ! $order->has_status( [ Order_Status::PENDING ] )
-			|| ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			|| ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) {
 			return;
 		}
 
-		$this->add_payment_started_note( $order, $intent_id );
-		$this->complete_order_processing( $order, $intent_status );
+		$this->add_payment_started_note( $order, $intent_data['intent_id'] );
+		$this->complete_order_processing( $order, $intent_data['intent_status'] );
 	}
 
 	/**
@@ -211,8 +270,12 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
+		// Update the note with the fee breakdown details async.
+		$this->enqueue_add_fee_breakdown_to_order_notes( $order, $intent_id );
+
 		$this->update_order_status( $order, 'payment_complete', $intent_id );
-		$this->add_capture_success_note( $order, $intent_id, $charge_id );
+		$note = $this->generate_capture_success_note( $order, $intent_id, $charge_id );
+		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -247,13 +310,8 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	public function mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id ) {
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
-			return;
-		}
-
 		$note = $this->generate_capture_expired_note( $intent_id, $charge_id );
-
-		if ( $this->order_note_exists( $order, $note ) ) {
+		if ( $this->order_note_exists( $order, $note ) || ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
 			return;
 		}
 
@@ -356,6 +414,70 @@ class WC_Payments_Order_Service {
 	 */
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
 		$this->update_order_status( $order, Order_Status::COMPLETED, $intent_id );
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Updates an order to processing/completed status, while adding a note with a link to the transaction.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param string   $intent_id     The ID of the intent associated with this order.
+	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	public function mark_order_payment_capture_completed_after_fraud_check( $order, $intent_id, $intent_status, $charge_id ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		$this->update_order_status( $order, 'payment_complete', $intent_id );
+		$order->update_meta_data( '_wcpay_fraud_outcome_status', Fraud_Outcome_Status::REVIEW_ALLOWED );
+		// TODO: What note do we want to add?
+		$this->add_capture_success_note( $order, $intent_id, $charge_id );
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Changes status to On-Hold and adds the fraud held for review note.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param string   $intent_id     The ID of the intent associated with this order.
+	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	public function mark_order_held_for_review_for_fraud( $order, $intent_id, $intent_status, $charge_id ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
+		$order->update_meta_data( '_wcpay_fraud_outcome_status', Fraud_Outcome_Status::REVIEW );
+		$this->add_fraud_held_for_review_note( $order, $intent_id, $charge_id );
+		$this->complete_order_processing( $order, $intent_status );
+	}
+
+	/**
+	 * Changes status to Cancelled and adds the fraud blocked note.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param string   $intent_id     The ID of the intent associated with this order.
+	 * @param string   $intent_status The status of the intent related to this order.
+	 * @param string   $charge_id     The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	public function mark_order_blocked_for_fraud( $order, $intent_id, $intent_status, $charge_id ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
+			return;
+		}
+
+		//$this->update_order_status( $order, Order_Status::CANCELLED );
+		$order->update_meta_data( '_wcpay_fraud_outcome_status', Fraud_Outcome_Status::BLOCK );
+		$this->add_fraud_blocked_note( $order, $intent_id, $charge_id );
 		$this->complete_order_processing( $order, $intent_status );
 	}
 
@@ -754,15 +876,15 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
-	 * Adds the successful capture order note, if needed.
+	 * Generate the successful capture order note.
 	 *
 	 * @param WC_Order $order     Order object.
 	 * @param string   $intent_id The ID of the intent associated with this order.
 	 * @param string   $charge_id The charge ID related to the intent/order.
 	 *
-	 * @return void
+	 * @return string
 	 */
-	private function add_capture_success_note( $order, $intent_id, $charge_id ) {
+	private function generate_capture_success_note( $order, $intent_id, $charge_id ) {
 		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 		$note            = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
@@ -776,8 +898,7 @@ class WC_Payments_Order_Service {
 			$this->get_order_amount( $order ),
 			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
 		);
-
-		$order->add_order_note( $note );
+		return $note;
 	}
 
 	/**
@@ -848,6 +969,62 @@ class WC_Payments_Order_Service {
 		$note = WC_Payments_Utils::esc_interpolated_html(
 			__( 'Payment authorization was successfully <strong>cancelled</strong>.', 'woocommerce-payments' ),
 			[ 'strong' => '<strong>' ]
+		);
+
+		$order->add_order_note( $note );
+	}
+
+/**
+	 * Adds the fraud held for review note to an order.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	private function add_fraud_held_for_review_note( $order, $intent_id, $charge_id ) {
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the authorized amount, %2: transaction ID of the payment */
+				__( '&#x26D4; A payment of %1$s was <strong>held for review</strong> by one or more risk filters.<br><br><a>View more details</a>).', 'woocommerce-payments' ),
+				[
+					'&#x26D4;' => '&#x26D4;',
+					'strong'   => '<strong>',
+					'br'       => '<br>',
+					'a'        => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$this->get_order_amount( $order )
+		);
+
+		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Adds the fraud blocked note to an order.
+	 *
+	 * @param WC_Order $order     Order object.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
+	 *
+	 * @return void
+	 */
+	private function add_fraud_blocked_note( $order, $intent_id, $charge_id ) {
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
+		$note            = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the blocked amount, %2: transaction ID of the payment */
+				__( '&#x1F6AB; A payment of %1$s was <strong>blocked</strong> by one or more risk filters.<br><br><a>View more details</a>.', 'woocommerce-payments' ),
+				[
+					'&#x1F6AB;' => '&#x1F6AB;',
+					'strong'    => '<strong>',
+					'br'        => '<br>',
+					'a'         => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			$this->get_order_amount( $order )
 		);
 
 		$order->add_order_note( $note );

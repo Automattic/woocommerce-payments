@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Constants\Fraud_Outcome_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Constants\Payment_Initiated_By;
@@ -1250,7 +1251,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $status, $payment_method, $customer_id, $charge_id, $currency );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
-		$this->update_order_status_from_intent( $order, $intent_id, $status, $charge_id );
+		if ( Payment_Intent_Status::SUCCEEDED === $status ) {
+			$this->remove_session_processing_order( $order->get_id() );
+		}
+		$this->order_service->update_order_status_from_intent( $order, $intent );
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
@@ -1372,34 +1376,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->update_meta_data( '_wcpay_multi_currency_stripe_exchange_rate', $exchange_rate );
 				$order->save_meta_data();
 			}
-		}
-	}
-
-	/**
-	 * Parse the payment intent data and add any necessary notes to the order and update the order status accordingly.
-	 *
-	 * @param WC_Order $order The order to update.
-	 * @param string   $intent_id The intent ID.
-	 * @param string   $intent_status Intent status.
-	 * @param string   $charge_id Charge ID.
-	 */
-	public function update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id ) {
-		switch ( $intent_status ) {
-			case Payment_Intent_Status::SUCCEEDED:
-				$this->remove_session_processing_order( $order->get_id() );
-				$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
-				break;
-			case Payment_Intent_Status::PROCESSING:
-			case Payment_Intent_Status::REQUIRES_CAPTURE:
-				$this->order_service->mark_payment_authorized( $order, $intent_id, $intent_status, $charge_id );
-				break;
-			case Payment_Intent_Status::REQUIRES_ACTION:
-			case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
-				$this->order_service->mark_payment_started( $order, $intent_id, $intent_status, $charge_id );
-				break;
-			default:
-				Logger::error( 'Uncaught payment intent status of ' . $intent_status . ' passed for order id: ' . $order->get_id() );
-				break;
 		}
 	}
 
@@ -1974,9 +1950,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$charge    = $intent->get_charge();
-		$charge_id = $charge ? $charge->get_id() : null;
-		$this->update_order_status_from_intent( $order, $intent_id, $intent_status, $charge_id );
+		if ( Payment_Intent_Status::SUCCEEDED === $intent_status ) {
+			$this->remove_session_processing_order( $order->get_id() );
+		}
+		$this->order_service->update_order_status_from_intent( $order, $intent );
 
 		$return_url = $this->get_return_url( $order );
 		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
@@ -2348,7 +2325,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$status                   = null;
 		$error_message            = null;
 		$http_code                = null;
-		$currency                 = $this->order_service->get_wcpay_intent_currency_for_order( $order );
 
 		try {
 			$intent_id = $order->get_transaction_id();
@@ -2374,7 +2350,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$intent = $capture_intention_request->send( 'wcpay_capture_intent_request', $order );
 
 			$status    = $intent->get_status();
-			$currency  = $intent->get_currency();
 			$http_code = 200;
 		} catch ( API_Exception $e ) {
 			try {
@@ -2405,7 +2380,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 
 		if ( Payment_Intent_Status::SUCCEEDED === $status ) {
-			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $status, $charge_id );
+			$this->order_service->update_order_status_from_intent( $order, $intent );
 		} elseif ( $is_authorization_expired ) {
 			$this->order_service->mark_payment_capture_expired( $order, $intent_id, Payment_Intent_Status::CANCELED, $charge_id );
 		} else {
@@ -2458,9 +2433,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		if ( Payment_Intent_Status::CANCELED === $status ) {
-			$charge    = $intent->get_charge();
-			$charge_id = ! empty( $charge ) ? $charge->get_id() : null;
-
 			$this->order_service->mark_payment_capture_cancelled( $order, $intent->get_id(), $status );
 			return;
 		} elseif ( ! empty( $error_message ) ) {
@@ -2657,19 +2629,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$charge_id = '';
 			}
 
-			switch ( $status ) {
-				case Payment_Intent_Status::SUCCEEDED:
-					$this->remove_session_processing_order( $order->get_id() );
-					$this->order_service->mark_payment_completed( $order, $intent_id, $status, $charge_id );
-					break;
-				case Payment_Intent_Status::PROCESSING:
-				case Payment_Intent_Status::REQUIRES_CAPTURE:
-					$this->order_service->mark_payment_authorized( $order, $intent_id, $status, $charge_id );
-					break;
-				case Payment_Intent_Status::REQUIRES_PAYMENT_METHOD:
-					$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
-					break;
+
+			if ( Payment_Intent_Status::SUCCEEDED === $status ) {
+				$this->remove_session_processing_order( $order->get_id() );
 			}
+			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			if ( in_array( $status, self::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				wc_reduce_stock_levels( $order_id );

@@ -377,6 +377,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-webhook-data-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
+		include_once __DIR__ . '/constants/class-fraud-outcome-status.php';
 		include_once __DIR__ . '/constants/class-order-status.php';
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
@@ -515,8 +516,9 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
 
-		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-captured-event-note.php';
+		include_once WCPAY_ABSPATH . 'includes/class-wc-payments-captured-event-note.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
+		include_once WCPAY_ABSPATH . 'includes/fraud-prevention/class-order-fraud-and-risk-meta-box.php';
 
 		// Add admin screens.
 		if ( is_admin() ) {
@@ -535,6 +537,12 @@ class WC_Payments {
 			new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
 
 			new WC_Payments_Status( self::get_wc_payments_http(), self::get_account_service() );
+
+			// TODO: Need to have an actual check here once the feature flag is created.
+			$fraud_and_risk_tools_enabled = true;
+			if ( $fraud_and_risk_tools_enabled ) {
+				new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box();
+			}
 		}
 
 		// Load WCPay Subscriptions.
@@ -563,6 +571,18 @@ class WC_Payments {
 
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
+
+		add_filter(
+			'wcpay_api_request_params',
+			function( $params, $api, $method ) {
+				if ( false !== strpos( $api, WC_Payments_API_Client::INTENTIONS_API ) && WC_Payments_API_Client::POST === $method ) {
+					$params['fraud_settings_enabled'] = 'true';
+				}
+				return $params;
+			},
+			10,
+			3
+		);
 	}
 
 	/**
