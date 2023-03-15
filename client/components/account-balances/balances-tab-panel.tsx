@@ -23,6 +23,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 		isLoading,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 
+	// While the data is loading, we show the default currency tab.
 	let depositCurrencyTabs: TabPanel.Tab[] = [
 		{
 			name: wcpaySettings.accountDefaultCurrency,
