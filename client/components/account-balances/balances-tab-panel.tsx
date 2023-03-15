@@ -25,7 +25,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 
 	let depositCurrencyTabs: TabPanel.Tab[] = [
 		{
-			name: 'loading',
+			name: wcpaySettings.accountDefaultCurrency,
 			title: getCurrencyTabTitle( wcpaySettings.accountDefaultCurrency ),
 		},
 	];
