@@ -6,14 +6,11 @@ import './style.scss';
 
 const AmountInput = ( { id, prefix, value, placeholder, help, onChange } ) => {
 	const validateInput = ( subject ) => {
-		if ( null === subject || undefined === subject || isNaN( subject ) ) {
-			return false;
-		}
 		// Only allow decimals, a single dot, and more decimals (or an empty value).
-		return subject.match( /^(\d+\.?\d*)?$/m );
+		return /^(\d+\.?\d*)?$/m.test( subject );
 	};
 
-	if ( null === value || undefined === value || isNaN( value ) ) {
+	if ( ! validateInput( value ) ) {
 		value = '';
 	}
 

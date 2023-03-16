@@ -20,7 +20,7 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 	} = useContext( FraudPreventionSettingsContext );
 
 	const [ maxOrders, setMaxOrders ] = useState(
-		advancedFraudProtectionSettings[ setting ].max_orders ?? 0
+		advancedFraudProtectionSettings[ setting ].max_orders ?? ''
 	);
 	const [ orderInterval, setOrderInterval ] = useState(
 		advancedFraudProtectionSettings[ setting ].interval ?? 24
@@ -44,12 +44,6 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 		setAdvancedFraudProtectionSettings,
 	] );
 
-	const handleInputBlur = ( inputValue, setInputValue ) => {
-		if ( ! /^\d+$/.test( inputValue ) ) {
-			setInputValue( '' );
-		}
-	};
-
 	const isInputEmpty = ! parseInt( maxOrders, 10 );
 
 	return (
@@ -65,11 +59,11 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 						value={ maxOrders }
 						onChange={ setMaxOrders }
 						type={ 'number' }
-						min={ 1 }
-						step={ 1 }
-						onBlur={ () =>
-							handleInputBlur( maxOrders, setMaxOrders )
+						onKeyDown={ ( e ) =>
+							/^[+-.,e]$/m.test( e.key ) && e.preventDefault()
 						}
+						min="1"
+						step="1"
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">

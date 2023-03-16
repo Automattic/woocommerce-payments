@@ -14,6 +14,10 @@ import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
 import FraudPreventionSettingsContext from '../context';
 
+const getFloatValue = ( value ) => {
+	return '' === value || '0' === value ? 0 : parseFloat( value );
+};
+
 const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 	const {
 		advancedFraudProtectionSettings,
@@ -28,10 +32,8 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 	);
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].min_amount =
-			0 === parseFloat( minAmount ) ? null : parseFloat( minAmount );
-		advancedFraudProtectionSettings[ setting ].max_amount =
-			0 === parseFloat( maxAmount ) ? null : parseFloat( maxAmount );
+		advancedFraudProtectionSettings[ setting ].min_amount = minAmount;
+		advancedFraudProtectionSettings[ setting ].max_amount = maxAmount;
 		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
 	}, [
 		setting,
@@ -42,9 +44,11 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 	] );
 
 	const areInputsEmpty =
-		! parseFloat( minAmount ) && ! parseFloat( maxAmount );
+		! getFloatValue( minAmount ) && ! getFloatValue( maxAmount );
 	const isMinGreaterThanMax =
-		parseFloat( minAmount ) > parseFloat( maxAmount );
+		minAmount &&
+		maxAmount &&
+		getFloatValue( minAmount ) > getFloatValue( maxAmount );
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
@@ -151,8 +155,10 @@ export const PurchasePriceThresholdValidation = (
 	{ enabled, min_amount: minAmount, max_amount: maxAmount },
 	setValidationError
 ) => {
+	const minAmountFloat = getFloatValue( minAmount );
+	const maxAmountFloat = getFloatValue( maxAmount );
 	if ( enabled ) {
-		if ( ! minAmount && ! maxAmount ) {
+		if ( ! minAmountFloat && ! maxAmountFloat ) {
 			setValidationError(
 				__(
 					'A price range must be set for the "Purchase Price threshold" filter.',
@@ -162,7 +168,7 @@ export const PurchasePriceThresholdValidation = (
 			return false;
 		}
 
-		if ( parseFloat( minAmount ) > parseFloat( maxAmount ) ) {
+		if ( minAmount && maxAmount && minAmountFloat > maxAmountFloat ) {
 			setValidationError(
 				__(
 					'Maximum purchase price must be greater than the minimum purchase price.',
