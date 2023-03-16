@@ -1,7 +1,12 @@
 /**
  * Internal dependencies
  */
-import { getTerms, getCookieValue, isWCPayChosen } from '../upe';
+import {
+	getTerms,
+	getCookieValue,
+	isWCPayChosen,
+	getPaymentIntentFromSession,
+} from '../upe';
 
 describe( 'UPE checkout utils', () => {
 	describe( 'getTerms', () => {
@@ -34,33 +39,26 @@ describe( 'UPE checkout utils', () => {
 		};
 
 		it( 'should only generate a terms parameter for reusable payment methods', () => {
-			expect( getTerms( paymentMethods, 'always' ) ).toMatchObject(
+			expect( getTerms( paymentMethods, 'always' ) ).toEqual(
 				terms.always
 			);
 		} );
 
 		it( 'should use a specified value for the terms parameter', () => {
-			expect( getTerms( paymentMethods, 'never' ) ).toMatchObject(
+			expect( getTerms( paymentMethods, 'never' ) ).toEqual(
 				terms.never
 			);
 		} );
 	} );
 
 	describe( 'getCookieValue', () => {
-		const mockCookieGet = jest.fn();
-
-		Object.defineProperty( document, 'cookie', {
-			get: mockCookieGet,
-		} );
-
-		beforeEach( () => {
-			mockCookieGet.mockReturnValue(
-				'woocommerce_items_in_cart=1; woocommerce_cart_hash=4a2d0baa7ee12ffa935450f63945824b;'
-			);
-		} );
-
-		afterEach( () => {
-			mockCookieGet.mockReturnValue( '' );
+		beforeAll( () => {
+			Object.defineProperty( document, 'cookie', {
+				get: () => {
+					return 'woocommerce_items_in_cart=1; woocommerce_cart_hash=4a2d0baa7ee12ffa935450f63945824b;';
+				},
+				configurable: true,
+			} );
 		} );
 
 		it( 'should get the value of the specified cookie', () => {
@@ -70,9 +68,6 @@ describe( 'UPE checkout utils', () => {
 		} );
 
 		it( 'should return an empty string when no cookie is found', () => {
-			mockCookieGet.mockReturnValue(
-				'woocommerce_items_in_cart=1; woocommerce_cart_hash=4a2d0baa7ee12ffa935450f63945824b;'
-			);
 			expect( getCookieValue( 'nom_nom_nom' ) ).toBe( '' );
 		} );
 	} );
@@ -94,6 +89,71 @@ describe( 'UPE checkout utils', () => {
 				`;
 			document.body.appendChild( container );
 			expect( isWCPayChosen() ).toBe( false );
+		} );
+	} );
+
+	describe( 'getPaymentIntentFromSession', () => {
+		const paymentMethodsConfig = {
+			card: {
+				upePaymentIntentData:
+					'abcd1234-pi_abc123-pi_abc123_secret_5678xyz',
+			},
+			eps: {
+				upePaymentIntentData: null,
+			},
+		};
+
+		const cardData = {
+			clientSecret: 'pi_abc123_secret_5678xyz',
+			intentId: 'pi_abc123',
+		};
+
+		it( 'should return the correct client secret and intent ID', () => {
+			Object.defineProperty( document, 'cookie', {
+				get: () => {
+					return 'woocommerce_cart_hash=abcd1234;';
+				},
+				configurable: true,
+			} );
+			expect(
+				getPaymentIntentFromSession( paymentMethodsConfig, 'card' )
+			).toEqual( cardData );
+		} );
+
+		it( 'should return an empty object if no payment intent exists', () => {
+			Object.defineProperty( document, 'cookie', {
+				get: () => {
+					return 'woocommerce_cart_hash=abcd1234;';
+				},
+				configurable: true,
+			} );
+			expect(
+				getPaymentIntentFromSession( paymentMethodsConfig, 'eps' )
+			).toEqual( {} );
+		} );
+
+		it( 'should return an empty object if no cart hash exists', () => {
+			Object.defineProperty( document, 'cookie', {
+				get: () => {
+					return 'woocommerce_cart_items=1;';
+				},
+				configurable: true,
+			} );
+			expect(
+				getPaymentIntentFromSession( paymentMethodsConfig, 'card' )
+			).toEqual( {} );
+		} );
+
+		it( 'should return an empty object if the payment intent data does not start with the cart hash', () => {
+			Object.defineProperty( document, 'cookie', {
+				get: () => {
+					return 'woocommerce_cart_hash=xyz9876;';
+				},
+				configurable: true,
+			} );
+			expect(
+				getPaymentIntentFromSession( paymentMethodsConfig, 'card' )
+			).toEqual( {} );
 		} );
 	} );
 } );
