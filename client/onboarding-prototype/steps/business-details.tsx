@@ -72,13 +72,12 @@ const BusinessDetails: React.FC = () => {
 						onChange={ handleTiedChange }
 					/>
 				) }
-			<OnboardingSelectField
+			{ /* <OnboardingSelectField
 				name="mcc"
 				// TODO [GH-4744]: The select control must provide search functionality.
 				// TODO [GH-4853]: Populate MCC options
 				options={ [] }
-			/>
-		</>
+			/> */ }
 	);
 };
 
