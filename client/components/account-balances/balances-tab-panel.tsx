@@ -15,7 +15,7 @@ import BalanceBlock from './balance-block';
 /**
  * Renders an account balances panel with tab navigation for each deposit currency.
  *
- * @return {React.FunctionComponent} Rendered balances panel with tab navigation for each currency.
+ * @return {JSX.Element} Rendered balances panel with tab navigation for each currency.
  */
 const AccountBalancesTabPanel: React.FC = () => {
 	const {
