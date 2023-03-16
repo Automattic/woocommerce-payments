@@ -5,12 +5,14 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Method;
+use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
-use WCPay\Database_Cache;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -137,6 +139,10 @@ class WC_Payments_Webhook_Processing_Service {
 			. var_export( WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 		);
 
+		if ( $this->is_webhook_mode_mismatch( $event_body ) ) {
+			return;
+		};
+
 		try {
 			do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $event_body );
 		} catch ( Exception $e ) {
@@ -174,6 +180,12 @@ class WC_Payments_Webhook_Processing_Service {
 			case 'payment_intent.succeeded':
 				$this->process_webhook_payment_intent_succeeded( $event_body );
 				break;
+			case 'payment_intent.canceled':
+				$this->process_webhook_payment_intent_canceled( $event_body );
+				break;
+			case 'payment_intent.amount_capturable_updated':
+				$this->process_webhook_payment_intent_amount_capturable_updated( $event_body );
+				break;
 			case 'invoice.upcoming':
 				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_upcoming( $event_body );
 				break;
@@ -190,6 +202,34 @@ class WC_Payments_Webhook_Processing_Service {
 		} catch ( Exception $e ) {
 			Logger::error( $e );
 		}
+	}
+
+	/**
+	 * Check webhook mode against the gateway mode.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @return bool Indicates whether the event's mode is different from the gateway's mode
+	 * @throws Invalid_Webhook_Data_Exception Event mode does not match the gateway mode.
+	 */
+	private function is_webhook_mode_mismatch( array $event_body ): bool {
+		$is_gateway_live_mode = WC_Payments::mode()->is_live();
+		$is_event_live_mode   = $this->read_webhook_property( $event_body, 'livemode' );
+
+		if ( $is_gateway_live_mode !== $is_event_live_mode ) {
+			$event_id = $this->read_webhook_property( $event_body, 'id' );
+
+			Logger::error(
+				sprintf(
+					'Webhook event mode did not match the gateway mode (event ID: %s)',
+					$event_id
+				)
+			);
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -257,7 +297,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$wc_refunds = $order->get_refunds();
 		if ( ! empty( $wc_refunds ) ) {
 			foreach ( $wc_refunds as $wc_refund ) {
-				$wcpay_refund_id = $wc_refund->get_meta( '_wcpay_refund_id', true );
+				$wcpay_refund_id = $this->order_service->get_wcpay_refund_id_for_order( $wc_refund );
 				if ( $refund_id === $wcpay_refund_id ) {
 					// Delete WC Refund.
 					$wc_refund->delete();
@@ -268,12 +308,12 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Update order status if order is fully refunded.
 		$current_order_status = $order->get_status();
-		if ( 'refunded' === $current_order_status ) {
-			$order->update_status( 'failed' );
+		if ( Order_Status::REFUNDED === $current_order_status ) {
+			$order->update_status( Order_Status::FAILED );
 		}
 
 		$order->add_order_note( $note );
-		$order->update_meta_data( '_wcpay_refund_status', 'failed' );
+		$this->order_service->set_wcpay_refund_status_for_order( $order, 'failed' );
 		$order->save();
 	}
 
@@ -306,12 +346,45 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		// Get the intent_id and then its status.
-		$intent_id     = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
-		$intent        = $this->api_client->get_intent( $intent_id );
+		$intent_id = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
+
+		$request = Get_Intention::create( $intent_id );
+		$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 		$intent_status = $intent->get_status();
 
 		// TODO: Revisit this logic once we support partial captures or multiple charges for order. We'll need to handle the "payment_intent.canceled" event too.
 		$this->order_service->mark_payment_capture_expired( $order, $intent_id, $intent_status, $charge_id );
+
+		// Clear the authorization summary cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+	}
+
+	/**
+	 * Process webhook for a payment intent canceled event.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @return void
+	 */
+	private function process_webhook_payment_intent_canceled( $event_body ) {
+		// Clear the authorization summary cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
+	}
+
+	/**
+	 * Process webhook for a payment intent amount capturable updated event.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @return void
+	 */
+	private function process_webhook_payment_intent_amount_capturable_updated( $event_body ) {
+		// Clear the authorization summary cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -324,10 +397,13 @@ class WC_Payments_Webhook_Processing_Service {
 	 */
 	private function process_webhook_payment_intent_failed( $event_body ) {
 		// Check to make sure we should process this according to the payment method.
-		$charges_data        = $event_body['data']['object']['charges']['data'][0] ?? null;
-		$payment_method_type = $charges_data['payment_method_details']['type'] ?? null;
+		$charge_id           = $event_body['data']['object']['charges']['data'][0]['id'] ?? '';
+		$last_payment_error  = $event_body['data']['object']['last_payment_error'] ?? null;
+		$payment_method      = $last_payment_error['payment_method'] ?? null;
+		$payment_method_type = $payment_method['type'] ?? null;
 
 		$actionable_methods = [
+			Payment_Method::CARD,
 			Payment_Method::US_BANK_ACCOUNT,
 			Payment_Method::BECS,
 		];
@@ -338,7 +414,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// Get the order and make sure it is an order and the payment methods match.
 		$order             = $this->get_order_from_event_body_intent_id( $event_body );
-		$payment_method_id = $charges_data['payment_method'] ?? null;
+		$payment_method_id = $payment_method['id'] ?? null;
 
 		if ( ! $order
 			|| empty( $payment_method_id )
@@ -350,9 +426,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_object  = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$intent_status = $this->read_webhook_property( $event_object, 'status' );
-		$charge_id     = $this->read_webhook_property( $charges_data, 'id' );
 
-		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_event( $event_body ) );  }
+		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );  }
 
 	/**
 	 * Process webhook for a successful payment intent.
@@ -385,16 +460,20 @@ class WC_Payments_Webhook_Processing_Service {
 			WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY => $currency,
 		];
 
-		$order_changed = false;
+		// Save mandate id, necessary for some subscription renewals.
+		$mandate_id = $event_data['object']['charges']['data'][0]['payment_method_details']['card']['mandate'] ?? null;
+		if ( $mandate_id ) {
+			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
+		}
+
 		foreach ( $meta_data_to_update as $key => $value ) {
-			if ( $value && ! $order->get_meta( $key ) ) {
-				$order_changed = true;
+			// Override existing meta data with incoming values, if present.
+			if ( $value ) {
 				$order->update_meta_data( $key, $value );
 			}
 		}
-		if ( true === $order_changed ) {
-			$order->save();
-		}
+		// Save the order after updating the meta data values.
+		$order->save();
 
 		$this->order_service->mark_payment_completed( $order, $intent_id, $intent_status, $charge_id );
 
@@ -411,6 +490,10 @@ class WC_Payments_Webhook_Processing_Service {
 			];
 			$this->receipt_service->send_customer_ipp_receipt_email( $order, $merchant_settings, $charges_data[0] );
 		}
+
+		// Clear the authorization summary cache to trigger a fetch of new data.
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY );
+		$this->database_cache->delete( DATABASE_CACHE::AUTHORIZATION_SUMMARY_KEY_TEST_MODE );
 	}
 
 	/**
@@ -560,7 +643,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @param array  $array Array to read from.
 	 * @param string $key   ID to fetch on.
 	 *
-	 * @return string|array|int
+	 * @return string|array|int|bool
 	 * @throws Invalid_Webhook_Data_Exception Thrown if ID not set.
 	 */
 	private function read_webhook_property( $array, $key ) {
@@ -623,45 +706,41 @@ class WC_Payments_Webhook_Processing_Service {
 	}
 
 	/**
-	 * Gets the proper failure message from the code in the event.
+	 * Gets the proper failure message from the code in the error.
+	 * Error codes from https://stripe.com/docs/error-codes.
 	 *
-	 * @param array $event_body The event that triggered the webhook.
+	 * @param array $error The last payment error from the payment failed event.
 	 *
 	 * @return string The failure message.
 	 */
-	private function get_failure_message_from_event( $event_body ):string {
-		// Get the failure code from the event body.
-		$event_data    = $this->read_webhook_property( $event_body, 'data' );
-		$event_object  = $this->read_webhook_property( $event_data, 'object' );
-		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
-		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
-		$failure_code  = $charges_data[0]['failure_code'] ?? '';
+	private function get_failure_message_from_error( $error ):string {
+		$code         = $error['code'] ?? '';
+		$decline_code = $error['decline_code'] ?? '';
+		$message      = $error['message'] ?? '';
 
-		switch ( $failure_code ) {
+		switch ( $code ) {
 			case 'account_closed':
-				$failure_message = __( "The customer's bank account has been closed.", 'woocommerce-payments' );
-				break;
+				return __( "The customer's bank account has been closed.", 'woocommerce-payments' );
 			case 'debit_not_authorized':
-				$failure_message = __( 'The customer has notified their bank that this payment was unauthorized.', 'woocommerce-payments' );
-				break;
+				return __( 'The customer has notified their bank that this payment was unauthorized.', 'woocommerce-payments' );
 			case 'insufficient_funds':
-				$failure_message = __( "The customer's account has insufficient funds to cover this payment.", 'woocommerce-payments' );
-				break;
+				return __( "The customer's account has insufficient funds to cover this payment.", 'woocommerce-payments' );
 			case 'no_account':
-				$failure_message = __( "The customer's bank account could not be located.", 'woocommerce-payments' );
-				break;
+				return __( "The customer's bank account could not be located.", 'woocommerce-payments' );
 			case 'payment_method_microdeposit_failed':
-				$failure_message = __( 'Microdeposit transfers failed. Please check the account, institution and transit numbers.', 'woocommerce-payments' );
-				break;
+				return __( 'Microdeposit transfers failed. Please check the account, institution and transit numbers.', 'woocommerce-payments' );
 			case 'payment_method_microdeposit_verification_attempts_exceeded':
-				$failure_message = __( 'You have exceeded the number of allowed verification attempts.', 'woocommerce-payments' );
-				break;
-
-			default:
-				$failure_message = __( 'The payment was not able to be processed.', 'woocommerce-payments' );
-				break;
+				return __( 'You have exceeded the number of allowed verification attempts.', 'woocommerce-payments' );
+			case 'card_declined':
+				switch ( $decline_code ) {
+					case 'debit_notification_undelivered':
+						return __( "The customer's bank could not send pre-debit notification for the payment.", 'woocommerce-payments' );
+					case 'transaction_not_approved':
+						return __( 'For recurring payment greater than mandate amount or INR 15000, payment was not approved by the card holder.', 'woocommerce-payments' );
+				}
 		}
 
-		return $failure_message;
+		// translators: %s Stripe error message.
+		return sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), $message );
 	}
 }

@@ -14,12 +14,20 @@ import {
 	usePlatformCheckoutEnabledSettings,
 	usePlatformCheckoutCustomMessage,
 	usePlatformCheckoutStoreLogo,
+	usePaymentRequestButtonType,
+	usePaymentRequestButtonSize,
+	usePaymentRequestButtonTheme,
+	usePlatformCheckoutLocations,
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
 	usePlatformCheckoutEnabledSettings: jest.fn(),
 	usePlatformCheckoutCustomMessage: jest.fn(),
 	usePlatformCheckoutStoreLogo: jest.fn(),
+	usePaymentRequestButtonType: jest.fn(),
+	usePaymentRequestButtonSize: jest.fn(),
+	usePaymentRequestButtonTheme: jest.fn(),
+	usePlatformCheckoutLocations: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -40,6 +48,23 @@ const getMockPlatformCheckoutStoreLogo = (
 	updatePlatformCheckoutStoreLogoHandler
 ) => [ message, updatePlatformCheckoutStoreLogoHandler ];
 
+const getMockPaymentRequestButtonType = (
+	message,
+	updatePaymentRequestButtonTypeHandler
+) => [ message, updatePaymentRequestButtonTypeHandler ];
+const getMockPaymentRequestButtonSize = (
+	message,
+	updatePaymentRequestButtonSizeHandler
+) => [ message, updatePaymentRequestButtonSizeHandler ];
+const getMockPaymentRequestButtonTheme = (
+	message,
+	updatePaymentRequestButtonThemeHandler
+) => [ message, updatePaymentRequestButtonThemeHandler ];
+const getMockPlatformCheckoutLocations = (
+	message,
+	updatePlatformCheckoutLocationsHandler
+) => [ message, updatePlatformCheckoutLocationsHandler ];
+
 describe( 'PlatformCheckoutSettings', () => {
 	beforeEach( () => {
 		usePlatformCheckoutEnabledSettings.mockReturnValue(
@@ -54,13 +79,29 @@ describe( 'PlatformCheckoutSettings', () => {
 			getMockPlatformCheckoutStoreLogo( '', jest.fn() )
 		);
 
+		usePaymentRequestButtonType.mockReturnValue(
+			getMockPaymentRequestButtonType( [ 'buy' ], jest.fn() )
+		);
+
+		usePaymentRequestButtonSize.mockReturnValue(
+			getMockPaymentRequestButtonSize( [ 'default' ], jest.fn() )
+		);
+
+		usePaymentRequestButtonTheme.mockReturnValue(
+			getMockPaymentRequestButtonTheme( [ 'dark' ], jest.fn() )
+		);
+
+		usePlatformCheckoutLocations.mockReturnValue(
+			getMockPlatformCheckoutLocations( [ true, true, true ], jest.fn() )
+		);
+
 		global.wcpaySettings = {
 			restUrl: 'http://example.com/wp-json/',
 		};
 	} );
 
 	it( 'renders settings with defaults', () => {
-		render( <PlatformCheckoutSettings section="general" /> );
+		render( <PlatformCheckoutSettings section="enable" /> );
 
 		// confirm checkbox groups displayed
 		const [ enableCheckbox ] = screen.queryAllByRole( 'checkbox' );
@@ -78,7 +119,7 @@ describe( 'PlatformCheckoutSettings', () => {
 			)
 		);
 
-		render( <PlatformCheckoutSettings section="general" /> );
+		render( <PlatformCheckoutSettings section="enable" /> );
 
 		expect( updateIsPlatformCheckoutEnabledHandler ).not.toHaveBeenCalled();
 

@@ -8,7 +8,7 @@
 
 const {
 	merchant,
-	verifyAndPublish,
+	shopper,
 	evalAndClick,
 	uiUnblocked,
 	clearAndFillInput,
@@ -28,12 +28,19 @@ const SHOP_MY_ACCOUNT_PAGE = baseUrl + 'my-account/';
 const MY_ACCOUNT_PAYMENT_METHODS = baseUrl + 'my-account/payment-methods';
 const WC_ADMIN_BASE_URL = baseUrl + 'wp-admin/';
 const MY_ACCOUNT_SUBSCRIPTIONS = baseUrl + 'my-account/subscriptions';
+const MY_ACCOUNT_EDIT = baseUrl + 'my-account/edit-account';
+const MY_ACCOUNT_ORDERS = SHOP_MY_ACCOUNT_PAGE + 'orders/';
 const WCPAY_DISPUTES =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/disputes';
 const WCPAY_DEPOSITS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/deposits';
 const WCPAY_TRANSACTIONS =
 	baseUrl + 'wp-admin/admin.php?page=wc-admin&path=/payments/transactions';
+const WCPAY_MULTI_CURRENCY =
+	baseUrl + 'wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency';
+const WCPAY_PAYMENT_SETTINGS =
+	baseUrl +
+	'wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments';
 const WC_SUBSCRIPTIONS_PAGE =
 	baseUrl + 'wp-admin/edit.php?post_type=shop_subscription';
 const ACTION_SCHEDULER = baseUrl + 'wp-admin/tools.php?page=action-scheduler';
@@ -55,6 +62,12 @@ export const RUN_WC_BLOCKS_TESTS = '1' !== process.env.SKIP_WC_BLOCKS_TESTS;
 export const shopperWCP = {
 	goToPaymentMethods: async () => {
 		await page.goto( MY_ACCOUNT_PAYMENT_METHODS, {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	goToOrders: async () => {
+		await page.goto( MY_ACCOUNT_ORDERS, {
 			waitUntil: 'networkidle0',
 		} );
 	},
@@ -109,6 +122,17 @@ export const shopperWCP = {
 	goToSubscriptions: async () => {
 		await page.goto( MY_ACCOUNT_SUBSCRIPTIONS, {
 			waitUntil: 'networkidle0',
+		} );
+	},
+
+	changeAccountCurrencyTo: async ( currencyToSet ) => {
+		await page.goto( MY_ACCOUNT_EDIT, {
+			waitUntil: 'networkidle0',
+		} );
+
+		await page.select( '#wcpay_selected_currency', currencyToSet );
+		await expect( page ).toClick( 'button', {
+			text: 'Save changes',
 		} );
 	},
 
@@ -240,6 +264,13 @@ export const shopperWCP = {
 			text: 'Your cart is currently empty.',
 		} );
 	},
+
+	addToCartBySlug: async ( productSlug ) => {
+		await page.goto( config.get( 'url' ) + `product/${ productSlug }`, {
+			waitUntil: 'networkidle0',
+		} );
+		await shopper.addToCart();
+	},
 };
 
 // The generic flows will be moved to their own package soon (more details in p7bje6-2gV-p2), so we're
@@ -252,7 +283,44 @@ export const merchantWCP = {
 
 		if ( ! ( await page.$( '#_wcpay_feature_upe:checked' ) ) ) {
 			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout',
+				text: 'Enable UPE checkout (legacy)',
+			} );
+		}
+
+		const isSplitUPEEnabled = await page.$(
+			'#_wcpay_feature_upe_split:checked'
+		);
+
+		if ( isSplitUPEEnabled ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Enable Split UPE checkout',
+			} );
+		}
+
+		const isAdditionalPaymentsActive = await page.$(
+			'#_wcpay_feature_upe_additional_payment_methods:checked'
+		);
+
+		if ( ! isAdditionalPaymentsActive ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Add UPE additional payment methods',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	activateSplitUpe: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( ! ( await page.$( '#_wcpay_feature_upe_split:checked' ) ) ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Enable Split UPE checkout',
 			} );
 		}
 
@@ -279,7 +347,7 @@ export const merchantWCP = {
 
 		if ( await page.$( '#_wcpay_feature_upe:checked' ) ) {
 			await expect( page ).toClick( 'label', {
-				text: 'Enable UPE checkout',
+				text: 'Enable UPE checkout (legacy)',
 			} );
 		}
 
@@ -296,6 +364,60 @@ export const merchantWCP = {
 		await expect( page ).toClick( 'input[type="submit"]' );
 		await page.waitForNavigation( {
 			waitUntil: 'networkidle0',
+		} );
+	},
+
+	deactivateSplitUpe: async () => {
+		await page.goto( WCPAY_DEV_TOOLS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		if ( await page.$( '#_wcpay_feature_upe_split:checked' ) ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Enable Split UPE checkout',
+			} );
+		}
+
+		const isAdditionalPaymentsActive = await page.$(
+			'#_wcpay_feature_upe_additional_payment_methods:checked'
+		);
+
+		if ( isAdditionalPaymentsActive ) {
+			await expect( page ).toClick( 'label', {
+				text: 'Add UPE additional payment methods',
+			} );
+		}
+
+		await expect( page ).toClick( 'input[type="submit"]' );
+		await page.waitForNavigation( {
+			waitUntil: 'networkidle0',
+		} );
+	},
+
+	enablePaymentMethod: async ( paymentMethod ) => {
+		await page.goto( WCPAY_PAYMENT_SETTINGS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		await page.$eval( paymentMethod, ( method ) => method.click() );
+		await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
+		await expect( page ).toClick( 'button', {
+			text: 'Save changes',
+		} );
+	},
+
+	disablePaymentMethod: async ( paymentMethod ) => {
+		await page.goto( WCPAY_PAYMENT_SETTINGS, {
+			waitUntil: 'networkidle0',
+		} );
+
+		await page.$eval( paymentMethod, ( method ) => method.click() );
+		await expect( page ).toClick( 'button', {
+			text: 'Remove',
+		} );
+		await new Promise( ( resolve ) => setTimeout( resolve, 2000 ) );
+		await expect( page ).toClick( 'button', {
+			text: 'Save changes',
 		} );
 	},
 
@@ -362,38 +484,6 @@ export const merchantWCP = {
 	 *
 	 */
 
-	createSubscriptionProduct: async (
-		productName,
-		periodTime,
-		includeSignupFee = false,
-		includeFreeTrial = false
-	) => {
-		// Go to "add product" page
-		await merchant.openNewProduct();
-
-		// Make sure we're on the add product page
-		await expect( page.title() ).resolves.toMatch( 'Add new product' );
-		await expect( page ).toFill( '#title', productName );
-		await expect( page ).toSelect( '#product-type', 'Simple subscription' );
-		await expect( page ).toFill( '#_subscription_price', '9.99' );
-		await expect( page ).toSelect( '#_subscription_period', periodTime );
-
-		if ( includeSignupFee ) {
-			await expect( page ).toFill( '#_subscription_sign_up_fee', '1.99' );
-		}
-
-		if ( includeFreeTrial ) {
-			await expect( page ).toFill( '#_subscription_trial_length', '14' );
-		}
-
-		await verifyAndPublish();
-
-		// Return the id of this subscription product
-		const postSubstring = page.url().match( /post=\d+/ )[ 0 ];
-		const productId = postSubstring.replace( 'post=', '' );
-		return productId;
-	},
-
 	openDisputes: async () => {
 		await page.goto( WCPAY_DISPUTES, {
 			waitUntil: 'networkidle0',
@@ -415,8 +505,30 @@ export const merchantWCP = {
 		await uiLoaded();
 	},
 
-	openActionScheduler: async () => {
-		await page.goto( ACTION_SCHEDULER, {
+	openMultiCurrency: async () => {
+		await page.goto( WCPAY_MULTI_CURRENCY, {
+			waitUntil: 'networkidle0',
+		} );
+		await uiLoaded();
+	},
+
+	openOrderAnalytics: async () => {
+		await merchant.openAnalyticsPage( 'orders' );
+		await uiLoaded();
+	},
+
+	openActionScheduler: async ( status, search ) => {
+		let pageUrl = ACTION_SCHEDULER;
+
+		if ( 'undefined' !== typeof status ) {
+			pageUrl += '&status=' + status;
+		}
+
+		if ( 'undefined' !== typeof search ) {
+			pageUrl += '&s=' + search;
+		}
+
+		await page.goto( pageUrl, {
 			waitUntil: 'networkidle0',
 		} );
 	},
@@ -468,6 +580,7 @@ export const merchantWCP = {
 		await expect( page ).toClick(
 			'button.editor-post-publish-panel__toggle'
 		);
+		await page.waitFor( 500 );
 		await expect( page ).toClick( 'button.editor-post-publish-button' );
 		await page.waitForSelector(
 			'.components-snackbar__content',

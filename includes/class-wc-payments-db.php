@@ -42,6 +42,7 @@ class WC_Payments_DB {
 		// The order ID is saved to DB in `WC_Payment_Gateway_WCPay::process_payment()`.
 		$orders = wc_get_orders(
 			[
+				'limit'        => count( $charge_ids ),
 				'meta_key'     => self::META_KEY_CHARGE_ID, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 				'meta_value'   => $charge_ids, //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'meta_compare' => 'IN',

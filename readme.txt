@@ -1,10 +1,10 @@
-=== WooCommerce Payments ===
+=== WooCommerce Payments - Fully Integrated Solution Built and Supported by Woo ===
 Contributors: woocommerce, automattic
-Tags: woocommerce, payment, payment request, credit card, automattic
-Requires at least: 5.8
-Tested up to: 6.0
+Tags: payment gateway, payment, apple pay, credit card, google pay
+Requires at least: 5.9
+Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 4.6.0
+Stable tag: 5.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,8 +38,8 @@ Our global support team is available to answer questions you may have about WooC
 
 = Requirements =
 
-* WordPress 5.8 or newer.
-* WooCommerce 6.6 or newer.
+* WordPress 5.9 or newer.
+* WooCommerce 7.1 or newer.
 * PHP version 7.0 or newer. PHP 7.2 or newer is recommended.
 
 = Try it now =
@@ -97,6 +97,401 @@ Please note that our support for the checkout block is still experimental and th
 4. Manage Disputes
 
 == Changelog ==
+
+= 5.6.0 - 2023-03-15 =
+* Add - Add a component that provides a tour experience.
+* Add - Add a notice for Norwegian merchants using WCPay to update WooCommerce to at least 7.5
+* Add - Added WC_Payments_Customer_Service_API in WCPayCore
+* Add - Add Fraud Protection section to WCPay Settings screen. Section is hidden behind a feature flag DB option.
+* Add - Add WCPay support for CY, LU, DK, EE, FI, GR, LT, LV, MT, NO, SI, SK
+* Add - Display tap to pay fees in transaction timeline view
+* Add - Moved methods used for order metadata update to the Order Service class.
+* Add - Show PO todos in the Things To Do on WCPay overview page.
+* Fix - Added function exist check to avoid fatal error for undefined function.
+* Fix - Add merge queue trigger to the relevant workflows.
+* Fix - Appending the countries dropdown to body to prevent it being clipped
+* Fix - Fix bug with showing WC tasks when there is no WCPay account
+* Fix - Fix deposit schedule monthly anchor label when set to 'last day of the month'.
+* Fix - Fixes a problem where the Transactions table would have its layout modified when hovering over the currency conversion icon
+* Fix - Fixes focus change on gateway select with split UPE enabled.
+* Fix - Fixing the broken search on the Disputes page.
+* Fix - Fix WooPay request on stores with WooPay disabled
+* Fix - Prevent admin error notices being shown for the "subscription trial end" event that was caused by no callbacks being attached to this scheduled action.
+* Fix - Prevent auto-scroll on page load when WooPay is enabled.
+* Fix - Prevent WooPay and Link to be enabled at the same time
+* Fix - prevent WooPay modal from showing up when editing the theme via wp-admin
+* Fix - Re-enable split UPE E2E tests and ensure they pass.
+* Fix - Remove the recurring shipping method cache that caused bugs for third-party plugins like Conditional Shipping and Payments.
+* Fix - Replace PHP dependency myclabs/php-enum with a built-in solution due to conflicts with multiple PHP versions.
+* Fix - Right align cutomize button on the settings page
+* Fix - Use generated script dependencies to load script assets
+* Fix - WCPay Checkout JS is loaded for zero carts
+* Update - Log error message when calling redirect_to_login fails.
+* Update - Updated express payment method UI in settings page
+* Update - Update the deprecating set-output command
+* Dev - Add a feature flag for fraud and risk tools features.
+* Dev - Adding a centralized class to manage the gateway's mode (live/dev/test).
+* Dev - Fixes a flaky e2e test.
+* Dev - Made timezones consistent in tests by generating dynamically.
+* Dev - Release automation - Run smoke tests automatically after release zip is built.
+* Dev - Remove unused code for updating WCPay subscription dates.
+* Dev - Update GH workflow runner images from Ubuntu 18.04 to 20.04
+* Dev - Update subscriptions-core to 5.5.0
+
+= 5.5.1 - 2023-03-01 =
+* Add - When enabling WooPay, if legacy UPE is enabled, upgrades feature flag to split UPE instead.
+* Fix - Avoid rendering save cards checkbox for logged out users
+* Fix - Fix get woopay available countries return type
+* Fix - Fix handling saved tokens for payment gateways while using shortcode checkout
+* Fix - Fix subscription renewal creating multiple charges with UPE.
+* Fix - Fix WooPay settings notice visibility
+
+= 5.5.0 - 2023-02-22 =
+* Add - Added learn more link to deposits page
+* Add - Added tracking for the split UPE feature flag.
+* Add - Declare WooCommerce Payments compatible with High-Performance Order Storage.
+* Add - New support phone and email fields the general settings page.
+* Add - Pass settings fields of the plugins that use newsletter block to woopay.
+* Add - Pass the namespaces from the Store API checkout schema data to WooPay
+* Add - Pass the store's test mode value to WooPay requests to the OTP endpoint.
+* Add - The UPE is now the default checkout experience for newly onboarded merchants. It can sbe disabled with these instructions: https://woocommerce.com/?p=3337362#disabling
+* Fix - Add wp-i18n as split UPE script dependency to load split UPE elements.
+* Fix - Disable WooPay for unavailable countries
+* Fix - Display an error when the request for initiating the platform checkout fails.
+* Fix - External link accessibilty text style
+* Fix - Fixes Stripe Link compatibility with split UPE payment gateway
+* Fix - For stores using HPOS, ensure the originating subscription's currency is used when initiating a subscription switch.
+* Fix - Make sure available payment methods are provided for the automatic subscription renewals.
+* Fix - Point the "Learn more" link to a more appropriate document in the Apple Pay domain registration failure notification.
+* Fix - Re-enabled email triggered WooPay flow with Express Checkout flow. WooPay Express Checkout is currently behind a feature flag.
+* Fix - Remove unnecessary style dependency from WooPay checkbox.
+* Fix - Track user viewport and url when using WooPay
+* Update - Removed saved methods listing in My Account Add Payment Method page
+* Update - Updated express payment method UI in settings page
+* Update - Updated the Express checkout settings page
+* Update - WooPay CTA text in shortcode checkout
+* Dev - Adding a feature flag to allow further development of onboarding UX - currently this will have no effect on live stores.
+* Dev - Merge progressive onboarding prototype under a feature flag
+
+= 5.4.0 - 2023-02-01 =
+* Add - Add logging and order notes when WCPay Subscriptions are suspended or put on-hold.
+* Add - Highlight subscriptions with overdue payment in list view with red icon & tooltip.
+* Add - More context to the business details to show the actual message from Stripe, shows a modal if there is more than one error from Stripe.
+* Add - New wcs_set_order_address() helper function to set an array of address fields on an order or subscription.
+* Add - Skipping the email input step for WooPay express checkout flow when the email input field has already a value. The WooPay express checkout feature is behind a feature flag currently.
+* Fix - "Subscriptions by Payment Gateway" in WooCommerce → Status now shows the correct values when HPOS is enabled.
+* Fix - Add check for session before getting properties from session to avoid fatals in WooCommerce Subscriptions Multi-Currency compatibility.
+* Fix - Catch exceptions when changing payment method associated with a subscription to avoid fatal errors.
+* Fix - Check whether the order actually exists before accessing order properties in wcs_order_contains_subscription().
+* Fix - Decode entities for the store name in the WooPay preview section.
+* Fix - Edit, add, and list Subscription admin pages now work when HPOS is enabled.
+* Fix - Fatal error when loading the Edit Subscription page with custom admin billing or shipping fields.
+* Fix - Fix ability to change currency when a subscription renewal is in the cart.
+* Fix - Fixed issues where multiple subscription purchases wouldn't appear on the My Account > Subscriptions screen on HPOS environments.
+* Fix - Fix TOS acceptance can prevent saving settings or accessing account dashboard
+* Fix - Fix WooPay redirection with express checkout when email is prepopulated. The WooPay express checkout is currently behind a feature flag.
+* Fix - Make the tooltip and fee description pill in Payments > Settings, show the correct Base rate when we have promotional rates applied.
+* Fix - Merge any custom meta_query args passed to wcs_get_orders_with_meta_query() to avoid overriding WC core args that map onto meta_query.
+* Fix - On HPOS environments, ensure subscription related order caches are updated when relationship order meta (eg `_subscription_renewal` or `_subscription_switch`) is updated.
+* Fix - On HPOS environments, update related orders cache when subscription is trashed, deleted, or restored / untrashed.
+* Fix - Prevent erroneously resyncing a subscription every time it is loaded from the database on HPOS environments.
+* Fix - Prevent initializing `Fraud_Prevention_Service` on contexts without session
+* Fix - Refactor `WCS_Meta_Box_Subscription_Data::save` to support HPOS stores, fixing a PHP warning notice when updating an order via the Edit Order screen.
+* Fix - Refactor `WC_Subscriptions_Renewal_Order` and `WC_Subscriptions_Tracker` classes to support HPOS stores.
+* Fix - Removed the potential for an infinite loop when getting a subscription's related orders while the subscription is being loaded.
+* Fix - Repair a potentially corrupted state of enabled payment method settings, that causes an error while saving settings.
+* Fix - Replace code using wp_count_posts(), get_post_type(), get_posts and wp_delete_post() with equivalent WC Data Store functions to support stores that have HPOS enabled.
+* Fix - Set the `download_permissions_granted` value when purchasing a downloadable subscription product when HPOS is enabled.
+* Fix - Shipping address correctly set when resubscribing to subscriptions that contains different billing and shipping addresses.
+* Fix - Updates to the styling of the task list title on the main account overview page to match the component default.
+* Fix - When a customer changes their address on their account or subscription, make sure the new address is saved when HPOS is enabled.
+* Fix - When a subscription's parent order is trashed or deleted, make sure the related subscription is also trashed or deleted on stores with HPOS enabled.
+* Fix - When a subscription is trashed or deleted, make sure it is cancelled first on stores with HPOS enabled.
+* Fix - When processing customer requests to update all their subscription payment methods, ensure the updated subscription is used to fetch the new payment meta, not and old instance.
+* Update - Add Apple Pay and Google Pay as supported payment methods in gateway descriptions.
+* Update - Enable WooPay Express Checkout button feature by default.
+* Update - Generate mandate only for orders using INR currency
+* Update - Show the cards payment method when using UPE and make it active and locked as per UPE requirements.
+* Dev - Add subscriptions-core library version to the WooCommerce system status report.
+* Dev - Allow loading chunks with JS concatenation enabled.
+* Dev - Fix failing unit tests due to spelling change in WooCommerce core.
+* Dev - Fix phpcs violations in the `WC_Subscriptions_Tracker` and `WCS_Admin_System_Status` classes to improve code quality.
+* Dev - Introduced a new `untrash_order()` in the `WCS_Orders_Table_Subscription_Data_Store` class to fix untrashing subscriptions on stores that have HPOS enabled.
+* Dev - Introduced a WCS_Object_Data_Cache_Manager and WCS_Object_Data_Cache_Manager_Many_To_One class as HPOS equivalents of the WCS_Post_Meta_Cache_Manager classes.
+* Dev - Moved the trash, untrash & delete related `add_actions()` in the `WC_Subscriptions_Manager` class to be added on the `woocommerce_loaded` action.
+* Dev - Remove deprecated `strptime` function in favour of `DateTime::createFromFormat`.
+* Dev - Skip running blocks E2E tests, add comment for the same.
+* Dev - unified express checkout settings
+* Dev - Update subscriptions-core to 5.2.0.
+* Dev - Update subscriptions-core to 5.3.1.
+
+= 5.3.0 - 2023-01-11 =
+* Add - Added support for WooPay express checkout on product page. This feature is currently behind a feature flag and is not yet publicly available.
+* Add - Add the processing order_id to WC Session and its handling to prevent duplicate orders
+* Fix - Ensure script dependencies are loaded properly even when trying to register them again in the same request.
+* Fix - Fix an issue which caused synced wcpay subscription to not sync the first payment date when the customer is charged upfront.
+* Fix - Fix subscriptions remaining on-hold after processing a WCPay Subscription renewal on HPOS environments.
+* Fix - Make the webhook processing respect the test/live mode setting for the gateway
+* Fix - Prevent 'No such customer' errors after store is migrated to a new WCPay account.
+* Fix - Prevent occasional fatal errors when creating customers via ActionScheduler jobs
+* Fix - Updates subscriptions' payment token when a new default payment method is set.
+* Update - Bail out before payment processing for WooPay's order validation request
+* Update - Check the status of previously initiated payments and mark orders as processing instead of initiating a new payment.
+* Update - Enhance save my info section on classic and Blocks checkout
+* Dev - Bump minimum required version of WooCommerce to 7.1.1.
+* Dev - Remove redundant compatibility utility class for admin notes.
+* Dev - Replace typed payment intent strings with constants saved in an Enum clas
+* Dev - Retry API requests on network failure if Idempotency-Key header is present.
+* Dev - The PR replaces hard-coded order status constants, with a dedicated Enum class to make it reusable across the codebase.
+
+= 5.2.1 - 2022-12-30 =
+* Fix - UPE not loading on checkout page due to undefined i18n.
+
+= 5.2.0 - 2022-12-21 =
+* Add - Add WooPay Express Checkout button iframe functionality.
+* Add - When deactivating WCPay plugin, warn merchant that active WCPay Subscriptions will continue collecting payment.
+* Fix - Allow the "Your payment information is incomplete." UPE checkout block message to be translated.
+* Fix - Extend Stripe Link availability check with available fees
+* Fix - Prevent `Additional Payment Methods` (UPE) checkboxes within `Payments > Settings` , from getting unchecked and checked automatically while selecting multiple items quickly.
+* Fix - Fix an undefined variable bug in WooPay Express Checkout.
+* Fix - Fix for an issue where a timestamp in the past could be displayed on the update business details task card.
+* Fix - Fix translations job from the post-release workflow
+* Fix - Fix wrong time displayed in the "You need to capture this charge before..." text on the payment details page.
+* Fix - Hide "capture charge" and "cancel authorization" actions on order details page when order status is processing or completed.
+* Fix - Make the tooltips on UPE settings ( Settings > Payments accepted on checkout ) , show the correct custom rates whenever applicable.
+* Fix - PR created by the code freeze workflow is now done by botwoo to allow PR checks to be triggered
+* Fix - Prevent checkboxes from getting unchecked automatically within the UPE onboarding form, when we click multiple selections within a very short time ( 1.5 seconds )
+* Fix - Recurring payments for cards issued by Indian banks.
+* Fix - Remove the UPE notification badge on the Payments > Settings menu item
+* Fix - Set commit author as github-actions bot for the code freeze workflow
+* Fix - Updates subscriptions' payment token when a new default payment method is set.
+* Update - Update currency_rate endpoint to not make a request if currency_from value is not valid/expected value.
+* Dev - Bump minimum required version of WooCommerce to 7.0.
+* Dev - Remove unused pre-release workflow
+* Dev - Replace direct database queries which fetched orders with an invoice ID with an equivalent wc_get_orders() query
+* Dev - Replace direct database queries which fetched subscriptions with a wcpay subscription ID with an equivalent wc_get_orders() query
+* Dev - Show correct authorizations count when switching between live and test modes
+* Dev - Support custom REMOTE_PORT for xDebug
+
+= 5.1.2 - 2022-12-03 =
+* Fix - Import critical package instead of lazy loading.
+
+= 5.1.1 - 2022-12-02 =
+* Fix - Minor patch fix to cron functionality that does not appear to have front-end ramifications for customers.
+
+= 5.1.0 - 2022-11-30 =
+* Add - Add a counter of pending authorizations to Uncaptured tab in Transactions page.
+* Add - Added support for a WooPay express checkout button on checkout blocks. This feature is currently behind a feature flag and is not yet publicly available.
+* Add - Adds encryption to the exposed `client_secret` to harden the store against card testing attacks
+* Add - Add uncaptured transactions count badge to Transactions menu.
+* Add - Enable the improvements to the authorization and capture workflow, that were hidden behind a feature flag.
+* Add - Improve fingerprint mechanism on checkout page
+* Add - New wcs_get_orders_with_meta_query() helper function to query for orders and subscriptions.
+* Add - Send merchant's setting for ship_to_billing_address_only to platform checkout
+* Add - Support creating new platform checkout user from checkout blocks.
+* Fix - Fix an error in the Uncaptured transactions table when it is sorted using the Capture by column.
+* Fix - Fix blocks checkout when card testing prevention is active
+* Fix - fixed bug that would not allow customers to add new payment methods to WooPay
+* Fix - Fixed bug that would not allow customers using firefox to log in to WooPay sometimes
+* Fix - Fix the "Learn more" link on Express Payments section
+* Fix - Fix undefined element error on Cart block for WooPay enabled site.
+* Fix - Handle errors in retrieving a file gracefully
+* Fix - On HPOS stores, ensure payment tokens are copied from the subscription to the renewal order.
+* Fix - On HPOS stores, make sure the links in the related-orders table redirect to the new Edit Order URL.
+* Fix - On HPOS stores, when a subscription is loaded from the database, make sure all core subscription properties are read directly from meta.
+* Fix - On HPOS stores, when querying for subscriptions with wcs_get_orders_with_meta_query() with status 'any', ensure that wc_get_orders() queries for subscription statuses.
+* Fix - On HPOS stores, when saving a subscription make sure subscription properties (ie `_requires_manual_renewal`) are saved to the database.
+* Fix - Processing a manual renewal order with HPOS and data syncing enabled correctly saves the related order cache metadata on the subscription and prevents the post and order meta data getting out of sync.
+* Fix - Redirect modal not closing when customer clicks back button on safari
+* Fix - Refactor `WCS_Meta_Box_Schedule::save` to support HPOS stores, fixing a PHP warning notice when updating an order via the Edit Order screen.
+* Fix - Return a fresh instance of the renewal order after creating it. Fixes caching issues on HPOS sites where the returned order has no line items.
+* Fix - Set payment tokens when copying data between orders and subscriptions in a CRUD compatible way. Fixes PHP notices during renewal order process.
+* Fix - Update margin to fix cropping of search field for Multi-Currency currency search
+* Fix - Use botwoo user for a job in the post-release-updates workflow
+* Fix - Use supported CRUD apis to determine if subscriptions are present on store (`wcs_do_subscriptions_exist`)
+* Fix - When viewing My Account > Subscriptions, fix an issue where no subscriptions were listed when HPOS is enabled.
+* Fix - With HPOS and data syncing enabled, updating the status of a pending manual renewal order to a paid status correctly activates the related subscription.
+* Update - Display related orders table when viewing the new "Edit Order" page (HPOS enabled stores).
+* Update - Don't load WooPay scripts and styles when the WCPay payment gateway isn't available.
+* Update - Refactor our Related Orders data store classes (WCS_Related_Order_Store_Cached_CPT and WCS_Related_Order_Store_CPT) to use CRUD methods to support subscriptions and orders stored in HPOS.
+* Update - Refactor the `wcs_is_subscription` helper function to support HPOS.
+* Update - Replace instances of `get_posts()` across codebase with new wcs_get_orders_with_meta_query() function.
+* Update - Update copy of warning modal appearing while deactivating Subscriptions extension.
+* Dev - Add API docs for authorization endpoints
+* Dev - Add description for capture authorization endpoint
+* Dev - Add new workflow to amend (or generate) the changelog for the release
+* Dev - Add PHPCS `PEAR.WhiteSpace.ObjectOperatorIndent` rule.
+* Dev - Bump minimum required version of WooCommerce to 6.9 and WordPress to 5.9
+* Dev - Fix section divider in Authentication API docs
+* Dev - Introduce a WC_Subscription::set_status() function to handle subscriptions set with a draft or auto-draft status. Replaces the need for the overriding WC_Subscription::get_status() which has been deleted.
+* Dev - Manual renewal orders created with HPOS and data syncing enabled are properly linked to the subscription by its `_subscription_renewal` meta and backfilled to posts table.
+* Dev - Refactor the saving of subscription dates in the subscription datastore to separate fetching changes and saving. Enables backfilling subscription dates when HPOS syncing is enabled.
+* Dev - Removed the deprecated "wcs_subscriptions_for_{$relation_type}_order" dynamic hook used to filter the list of related subscriptions for the given relation type. The following hooks have been removed with no alternative: wcs_subscriptions_for_renewal_order, wcs_subscriptions_for_switch_order, wcs_subscriptions_for_resubscribe_order
+* Dev - Show uncaptured transactions tab only when some specific criteria is met
+
+= 5.0.3 - 2022-11-15 =
+* Fix - Purchasing a synced subscription with WCPay Subscriptions correctly sets the next payment date to the sync date in Stripe.
+
+= 5.0.2 - 2022-11-14 =
+* Fix - Fixed rest api error for payment_gateways endpoint
+
+= 5.0.1 - 2022-11-10 =
+* Fix - Fix fatal error when non-admin access admin pages.
+
+= 5.0.0 - 2022-11-09 =
+* Add - Add capture authorization support from the list of authorizations
+* Add - Add capture authorization support from the payment details page.
+* Add - Added a Refund Confirmation modal on Edit Order screen status change
+* Add - Add endpoint to get platform checkout signature at time of request
+* Add - Add event when skipped the platform checkout
+* Add - Add Stripe Link set up inbox notification
+* Add - New data copier class to copy data to subscriptions and related orders in place of direct database queries in prepraration for HPOS support.
+* Add - New WCS_Orders_Table_Data_Store_Controller class to load the proper subscriptions data store when the store has HPOS enabled.
+* Add - New WCS_Orders_Table_Subscription_Data_Store class to support subscriptions stored in High-Performance Order Storage (HPOS).
+* Add - Pass the value of 'woocommerce_tax_display_cart' option from the merchant's store to WooPay
+* Add - Updated the wording in the balance component header and added a link to the settings page.
+* Add - Wire authorizations data to the transactions > uncaptured screen
+* Fix - Adjust regex to check the format of a tag for a pre-release in our GitHub workflow
+* Fix - Currency switcher block padding while editing it
+* Fix - Enable Link to support authorization/capture scenarios.
+* Fix - Fetch authorization data in payment details page only when the payment needs manual capture
+* Fix - Fixed error when visiting the plugins page
+* Fix - Fix platform checkout auto redirection for user with pre-populated email when they land on the checkout page.
+* Fix - Prevent proceeding to WooPay when in a preview context.
+* Fix - Update Stripe Link inbox notification wording.
+* Fix - When saving sync meta data on a new subscription, use 'woocommerce_new_subscription' instead of 'save_post'. This is to prevent errors when purchasing a subscription on stores that have HPOS enabled.[.
+* Update - Adjust texts and links in WC admin express checkout section.
+* Update - Hide upload buttons and minor UI improvements on submitted dispute form.
+* Update - Improve maybe_add_subscription_meta() and subscription_contains_synced_product() inside our WC_Subscriptions_Synchroniser class to use CRUD methods.
+* Update - Improve wcs_copy_order_address() to use modern APIs for setting address fields.
+* Update - Remove IE11 support.
+* Update - The subscription creation function `wcs_create_subscription` has been updated to use WooCommerce CRUD methods in preparation for supporting High Performance Order Storage (HPOS).
+* Update - Update priority for Multi-Currency filters for frontend prices and currency to later priority to avoid plugin conflicts.
+* Dev - Add filter to record wcpay server api response time
+* Dev - Add new GH workflow for post-release steps and improve formatting/naming in recent workflow files introduced
+* Dev - Add new GitHub workflows for release management (pre-release and release packages)
+* Dev - Add php unit tests watcher
+* Dev - Adds a new tracking event when the new KYC informational modal is opened.
+* Dev - Change mocked data in Authorizations store with actual data from API
+* Dev - Deprecated the "wcs_{type}_meta" dynamic hook used to filter data copied to subscriptions and renewal orders. Third-parties should use wc_subscriptions_{type}_data instead.
+* Dev - Deprecated the "wcs_{type}_meta_query" dynamic hook used to alter the database query used to fetch the meta data to copy between subscriptions and renewal orders. There is no direct replacement. Third-parties should use the "wc_subscriptions_{type}_data" or "wc_subscriptions_object_data" hooks instead.
+* Dev - Fix tests with WordPress 6.1
+* Dev - i18n usage of strftime has been deprecated for subscription titles. Date is now formatted using woocommerce standard date formatting.
+* Dev - Refactor WC_Payment_Gateway_WCPay part 1
+* Dev - Remove unnecessary babel plugins after IE11 support drop.
+* Dev - Replace the use of the deprecated wcs_renewal_order_meta hook with wc_subscription_renewal_order_data in the WCS_Related_Order_Store_Cached_CPT class.
+* Dev - Replace the use of the deprecated wcs_renewal_order_meta_query hook with wc_subscription_renewal_order_data
+* Dev - Switch to @woocommerce/dependency-extraction-webpack-plugin
+* Dev - Update a few workflows to use an env variable for the L-2 version of WC/WP
+* Dev - Update Docker image to wordpress:php7.4 so client dev environment runs with PHP 7.4
+* Dev - Update Gridicons imports to be indivuals, reducing our bundle size.
+* Dev - Update husky to v 8.0.1.
+* Dev - Update lodash to version 4.17.21
+* Dev - Update subscriptions-core to 2.5.1.
+* Dev - Update the deprecated interpolate-components npm package with the @automattic/interpolate-components package, and update to v1.2.1.
+* Dev - wcs_get_objects_property and wcs_set_objects_property have been marked as deprecated. Getters/Setters should be used on the objects instead.
+* Dev - woocommerce_new_subscription_data hook will only work with CPT datastore and so has been deprecated.
+
+= 4.9.0 - 2022-10-20 =
+* Add - Adds new notice and modal informing users about verifying their account during onboarding.
+* Add - Declare WooCommerce Payments incompatible with COT
+* Add - New Multi-Currency filter to display Analytics > Orders in customer currency.
+* Fix - Fix dropdown menu appearance in UPE payment methods when Gutenberg is active.
+* Fix - Fixed issue with Stripe rate limit during the checkout
+* Fix - Fix fatal error with call to MultiCurrency/Compatibility::convert_order_prices method.
+* Fix - Fix platform checkout store logo preview.
+* Fix - Move One Time Shipping metabox fields to use the woocommerce_product_options_shipping_product_data hook introduced in WC 6.0.
+* Fix - Prevent OTP modal from showing up when auto redirection is in progress.
+* Fix - Prevent WooPay OTP after click Place Order button
+* Fix - Save Link payment method tokens for subscription renewal
+* Fix - The ellipsis menu is now readable and we can dismiss the task in the "Things to do" task list from Payments > Overview page
+* Fix - Update default platform checkout host to pay.woo.com
+* Update - Improve handling of subscription bulk action execution.
+* Update - Update formatCurrency to decode HTML entities for rendering currency symbols.
+* Update - Update webhook processing to override existing meta data.
+* Dev - Add authorizations endpoints
+* Dev - Added Apple Pay and Google Pay to tags for the plugin.
+* Dev - Bump minimum required version of WooCommerce to 6.8 to support L2 policy
+* Dev - changed WooPay otp url
+* Dev - Split webpack configuration and enable HMR
+* Dev - Update E2E docker image and change image user
+* Dev - Update subscriptions-core to 2.3.0.
+
+= 4.8.1 - 2022-10-04 =
+* Fix - Fix fatal error thrown during the renewal order payment flow when the store doesn't have the WCPay Subscriptions feature enabled
+
+= 4.8.0 - 2022-09-29 =
+* Add - Add bundle size check for PR's.
+* Add - Allow subscription processing via WooPay.
+* Add - Auto redirect logged in platform checkout users.
+* Add - Remove deprecated beta headers from Stripe requests.
+* Add - Send a few extra pieces of data when checking if a WooPay user exists.
+* Add - StripeLink - prefill first and last names on checkout.
+* Add - Timezone formatting for transaction filters.
+* Fix - Ask for login when guest mode is disabled while checking out with WooPay.
+* Fix - Change 'zero-cost-fee' to 'empty-order', for product_code while sending level 3 data for shipping-only orders, without products.
+* Fix - Correct empty email error when StripeLink is active on checkout page.
+* Fix - Fix off by one error.
+* Fix - Fix the rate calculation when using Table Rate Shipping and per item or per line item calculation type.
+* Fix - Fix trial subscription checkout without WooPay signing up.
+* Fix - Hide button below email field at checkout, when StripeLink is disabled.
+* Fix - Hide Link payment method for non-us accounts.
+* Fix - Limit level 3 product code within 12 digits.
+* Fix - Prevent circumstance where WCPay Subscriptions customers could be double charged when the WC Subscriptions extension is active.
+* Fix - The feature flag for the task list in Payments > Overview page was not passed correctly. We now see the business details and reconnect wpcom user task when appropriate.
+* Update - Add timezone formatting only in case client provides user timezone.
+* Dev - Bump minimum required version of WooCommerce from 6.4 to 6.6.
+* Dev - Removes gutenberg plugin installation from E2E environment setup.
+* Dev - Update node to v16 and npm to v8.
+* Dev - Update to add E2E tests for the Multi-Currency functionality.
+
+= 4.7.2 - 2022-09-15 =
+* Fix - Fixes Order ID appearing as N/A in Payments > Transactions
+
+= 4.7.1 - 2022-09-13 =
+* Fix - Fix Apple Pay domain verify file missing error notice constantly displayed
+* Fix - Retain test mode context in CRON jobs queued up while checking out.
+
+= 4.7.0 - 2022-09-07 =
+* Add - Added meta to payment tokens used in subscriptions.
+* Add - Adding an authorization page part of the transactions view. Currently behind a flag and using mocked data.
+* Add - Adding support for WCA's Analytics and Multi-Currency when using custom order tables.
+* Add - Add support for getting a Stripe invoice.
+* Add - indicate setup-intent use in the request.
+* Add - Merchants can change their deposit schedule via the settings page.
+* Fix - Actualize FAQ link for 'Set up refund policy' inbox note.
+* Fix - Add customer ID to WP user during Store API checkout.
+* Fix - Add handling for guest user while updating customer with order data.
+* Fix - Analytics: Ensure the store default currency always displays in list.
+* Fix - Create WooPay user from trial subscription.
+* Fix - Dismissible country error message for Apple Pay.
+* Fix - Fix - Fatal Error caused in rare cases where quantity is zero during renewal, builds upon fix released in WC Pay 4.3.0.
+* Fix - Fix adding payment tokens for platform-created setup intents.
+* Fix - Fix deprecation notice for Automattic\WooCommerce\Blocks\StoreApi\RoutesController.
+* Fix - Fix error in updating subscription when saved cards are more than posts per page setting.
+* Fix - Fix file permission and merchant country errors for apple pay registration.
+* Fix - Fix Link errors after blocks plugin update.
+* Fix - Improvements to express checkout functionality: prevent errors on PHP 8 with empty product prices, and more percise taxes.
+* Fix - Remove duplication of deposit schedule on overview page.
+* Fix - Update id card to available payment method after disabling UPE.
+* Fix - Update WooCommerce Payments business details via "Things to do" task list leading to a blank page.
+* Fix - Upon losing a dispute, orders will no longer appear as processing, but as refunded instead.
+* Update - Modified query to get customer currencies when COT enabled.
+* Update - Modified usage tracking queries when COT enabled.
+* Update - Move the "Instant deposit" button on the Payments > Overview screen to the "Available balance" block.
+* Update - Only store a new token when paying for a subscription via WooPay if it doesn't exist already.
+* Update - Replaced direct DB query in oorders_with_charge_id_from_charge_ids with wc_get_orders.
+* Update - Replaced direct DB query in order_id_from_meta_key_value with wc_get_orders.
+* Update - The Payments > Overview "Temporarily Suspended" notice will only appear when deposits are "blocked".
+* Dev - Add new E2E workflow for pull requests & split existing tests into 3 jobs.
+* Dev - Bump minimum required version of WooCommerce from 6.2 to 6.4.
+* Dev - Bump minimum required version of WooCommerce in GH compatibility workflow from 6.2.2 to 6.4.1.
+* Dev - Minor readability change in tests.
+* Dev - Update E2E flows for subscription tests.
+* Dev - Update php-stubs/woocommerce-stubs to 6.8.0.
+* Dev - Update subscriptions-core to 2.2.1.
+* Dev - Update WC and Gutenberg versions in GH's oldest compatibility test.
+* Dev - Upgraded NodeJS version to 14.
 
 = 4.6.0 - 2022-08-18 =
 * Add - Adding support for payment request buttons (Apple Pay and Google Pay) to the Pay for Order page.

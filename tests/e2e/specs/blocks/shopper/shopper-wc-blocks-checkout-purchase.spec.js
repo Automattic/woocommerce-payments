@@ -21,6 +21,7 @@ import {
 	merchantWCP,
 	describeif,
 	RUN_WC_BLOCKS_TESTS,
+	checkPageExists,
 } from '../../../utils';
 
 const billingDetails = config.get( 'addresses.customer.billing' );
@@ -35,9 +36,13 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 	'WooCommerce Blocks > Successful purchase',
 	() => {
 		beforeAll( async () => {
-			await merchant.login();
-			await merchantWCP.addNewPageCheckoutWCB();
-			await merchant.logout();
+			try {
+				await checkPageExists( 'checkout-wcb' );
+			} catch ( error ) {
+				await merchant.login();
+				await merchantWCP.addNewPageCheckoutWCB();
+				await merchant.logout();
+			}
 		} );
 
 		it( 'using a basic card', async () => {

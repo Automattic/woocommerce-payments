@@ -7,8 +7,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Constants\Payment_Method;
+use WCPay\Core\Server\Request\Create_Intention;
+use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Logger;
+use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Payment_Method;
 
 /**
  * REST controller for order processing.
@@ -78,6 +82,20 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			$this->rest_base . '/(?P<order_id>\w+)/capture_authorization',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'capture_authorization' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'payment_intent_id' => [
+						'required' => true,
+					],
+				],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			$this->rest_base . '/(?P<order_id>\w+)/create_terminal_intent',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -103,7 +121,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
-	public function capture_terminal_payment( $request ) {
+	public function capture_terminal_payment( WP_REST_Request $request ) {
 		try {
 			$intent_id = $request['payment_intent_id'];
 			$order_id  = $request['order_id'];
@@ -124,7 +142,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			}
 
 			// Do not process intents that can't be captured.
-			$intent                   = $this->api_client->get_intent( $intent_id );
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
@@ -132,7 +152,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				Logger::error( 'Payment capture rejected due to failed validation: order id on intent is incorrect or missing.' );
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
-			if ( ! in_array( $intent->get_status(), [ 'processing', 'requires_capture', 'succeeded' ], true ) ) {
+			if ( ! in_array( $intent->get_status(), WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true ) ) {
 				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
 			}
 
@@ -143,7 +163,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$intent_status = $intent->get_status();
 			$charge        = $intent->get_charge();
 			$charge_id     = $charge ? $charge->get_id() : null;
-			$this->gateway->attach_intent_info_to_order(
+			$this->order_service->attach_intent_info_to_order(
 				$order,
 				$intent_id,
 				$intent_status,
@@ -162,15 +182,15 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
 			// The client may send us the captured intent to link it to its WC order.
 			// Doing so via this endpoint is more reliable than depending on the payment_intent.succeeded event.
-			$is_intent_captured         = 'succeeded' === $intent->get_status();
+			$is_intent_captured         = Payment_Intent_Status::SUCCEEDED === $intent->get_status();
 			$result_for_captured_intent = [
-				'status' => 'succeeded',
+				'status' => Payment_Intent_Status::SUCCEEDED,
 				'id'     => $intent->get_id(),
 			];
 
 			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false );
 
-			if ( 'succeeded' !== $result['status'] ) {
+			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
 				$http_code = $result['http_code'] ?? 502;
 				return new WP_Error(
 					'wcpay_capture_error',
@@ -200,6 +220,78 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Captures an authorization.
+	 * Use-cases: Merchants manually capturing a payment when they enable "capture later" option.
+	 *
+	 * @param  WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 */
+	public function capture_authorization( WP_REST_Request $request ) {
+		try {
+			$intent_id = $request['payment_intent_id'];
+			$order_id  = $request['order_id'];
+
+			// Do not process non-existing orders.
+			$order = wc_get_order( $order_id );
+			if ( false === $order ) {
+				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
+			}
+
+			// Do not process orders with refund(s).
+			if ( 0 < $order->get_total_refunded() ) {
+				return new WP_Error(
+					'wcpay_refunded_order_uncapturable',
+					__( 'Payment cannot be captured for partially or fully refunded orders.', 'woocommerce-payments' ),
+					[ 'status' => 400 ]
+				);
+			}
+
+			// Do not process intents that can't be captured.
+			$request = Get_Intention::create( $intent_id );
+			$intent  = $request->send( 'wcpay_get_intent_request', $order );
+
+			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
+			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
+			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+			if ( $intent_meta_order_id !== $order->get_id() ) {
+				Logger::error( 'Payment capture rejected due to failed validation: order id on intent is incorrect or missing.' );
+				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
+			}
+			if ( ! in_array( $intent->get_status(), WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true ) ) {
+				return new WP_Error( 'wcpay_payment_uncapturable', __( 'The payment cannot be captured', 'woocommerce-payments' ), [ 'status' => 409 ] );
+			}
+
+			$result = $this->gateway->capture_charge( $order, false );
+
+			if ( Payment_Intent_Status::SUCCEEDED !== $result['status'] ) {
+				return new WP_Error(
+					'wcpay_capture_error',
+					sprintf(
+					// translators: %s: the error message.
+						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
+						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
+					),
+					[ 'status' => $result['http_code'] ?? 502 ]
+				);
+			}
+
+			// Actualize order status.
+			$charge = $intent->get_charge();
+			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge->get_id() );
+
+			return rest_ensure_response(
+				[
+					'status' => $result['status'],
+					'id'     => $result['id'],
+				]
+			);
+		} catch ( \Throwable $e ) {
+			Logger::error( 'Failed to capture an authorization via REST API: ' . $e );
+			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );
+		}
+	}
+
+	/**
 	 * Returns customer id from order. Create or update customer if needed.
 	 * Use-cases: It was used by older versions of our Mobile apps in their workflows.
 	 *
@@ -219,13 +311,21 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-			$disallowed_order_statuses = apply_filters( 'wcpay_create_customer_disallowed_order_statuses', [ 'completed', 'cancelled', 'refunded', 'failed' ] );
+			$disallowed_order_statuses = apply_filters(
+				'wcpay_create_customer_disallowed_order_statuses',
+				[
+					Order_Status::COMPLETED,
+					Order_Status::CANCELLED,
+					Order_Status::REFUNDED,
+					Order_Status::FAILED,
+				]
+			);
 			if ( $order->has_status( $disallowed_order_statuses ) ) {
 				return new WP_Error( 'wcpay_invalid_order_status', __( 'Invalid order status', 'woocommerce-payments' ), [ 'status' => 400 ] );
 			}
 
 			$order_user        = $order->get_user();
-			$customer_id       = $order->get_meta( '_stripe_customer_id' );
+			$customer_id       = $this->order_service->get_customer_id_for_order( $order );
 			$customer_data     = WC_Payments_Customer_Service::map_customer_data( $order );
 			$is_guest_customer = false === $order_user;
 
@@ -239,7 +339,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				? $this->customer_service->update_customer_for_user( $customer_id, $order_user, $customer_data )
 				: $this->customer_service->create_customer_for_user( $order_user, $customer_data );
 
-			$order->update_meta_data( '_stripe_customer_id', $customer_id );
+			$this->order_service->set_customer_id_for_order( $order, $customer_id );
 			$order->save();
 
 			return rest_ensure_response(
@@ -266,16 +366,28 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 		if ( false === $order ) {
 			return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 		}
-
 		try {
-			$result = $this->gateway->create_intent(
-				$order,
-				$this->get_terminal_intent_payment_method( $request ),
-				$this->get_terminal_intent_capture_method( $request ),
-				$request->get_param( 'metadata' ) ?? [],
-				$request->get_param( 'customer_id' )
+			$currency                 = strtolower( $order->get_currency() );
+			$customer_id              = $request->get_param( 'customer_id' );
+			$metadata                 = $request->get_param( 'metadata' ) ?? [];
+			$metadata['order_number'] = $order->get_order_number();
+
+			$wcpay_server_request = Create_Intention::create();
+			$wcpay_server_request->set_currency_code( $currency );
+			$wcpay_server_request->set_amount( WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ) );
+			if ( $customer_id ) {
+				$wcpay_server_request->set_customer( $customer_id );
+			}
+			$wcpay_server_request->set_metadata( $metadata );
+			$wcpay_server_request->set_payment_method_types( $this->get_terminal_intent_payment_method( $request ) );
+			$wcpay_server_request->set_capture_method( 'manual' === $this->get_terminal_intent_capture_method( $request ) );
+			$intent = $wcpay_server_request->send( 'wcpay_create_intent_request', $order );
+
+			return rest_ensure_response(
+				[
+					'id' => ! empty( $intent ) ? $intent->get_id() : null,
+				]
 			);
-			return rest_ensure_response( $result );
 		} catch ( \Throwable $e ) {
 			Logger::error( 'Failed to create an intention via REST API: ' . $e );
 			return new WP_Error( 'wcpay_server_error', __( 'Unexpected server error', 'woocommerce-payments' ), [ 'status' => 500 ] );

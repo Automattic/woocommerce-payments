@@ -3,34 +3,45 @@ name: Compatibility - WC, WP and PHP
 on:
   pull_request
 
+env:
+  WC_L2_VERSION: '7.1.1'
+  WP_L2_VERSION: '5.9'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  generate-matrix:
+    name: "Generate the matrix for woocommerce compatibility dynamically"
+    runs-on: ubuntu-20.04
+    outputs:
+      matrix: ${{ steps.generate_matrix.outputs.matrix }}
+    steps:
+      - name: "Generate matrix"
+        id: generate_matrix
+        run: |
+          WC_VERSIONS=$( echo "[\"$WC_L2_VERSION\", \"latest\", \"beta\"]" )
+          MATRIX_INCLUDE=$( echo "[{\"woocommerce\":\"$WC_L2_VERSION\",\"wordpress\":\"$WP_L2_VERSION\",\"gutenberg\":\"13.6.0\",\"php\":\"7.2\"}]" )
+          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"wordpress\":[\"latest\"],\"gutenberg\":[\"latest\"],\"php\":[\"7.4\"], \"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
+
   woocommerce-compatibility:
-    name:    WC compatibility
-    runs-on: ubuntu-18.04
+    name: "WC compatibility"
+    needs: generate-matrix
+    runs-on: ubuntu-20.04
+    env:
+      WP_VERSION: ${{ matrix.wordpress }}
+      WC_VERSION: ${{ matrix.woocommerce }}
+      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
     strategy:
       fail-fast:    false
       max-parallel: 10
-      matrix:
-        # Minimum support version, ..., Latest version, `beta`.
-        woocommerce: [ '6.4.1', '6.5.1', '6.6.1', '6.7.0', 'latest', 'beta' ]
-        wordpress:   [ 'latest' ]
-        gutenberg:   [ 'latest' ]
-        php:         [ '7.4' ]
-        include:
-          # Edge case: oldest dependencies compatibility
-          - woocommerce: '6.2.2'
-            wordpress:   '5.8'
-            gutenberg:   '11.4.0' # The latest version supporting WP 5.6.
-            php:         '7.1' # Minimum supported PHP version
-    env:
-      WP_VERSION:        ${{ matrix.wordpress }}
-      WC_VERSION:        ${{ matrix.woocommerce }}
-      GUTENBERG_VERSION: ${{ matrix.gutenberg }}
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
@@ -48,7 +59,7 @@ jobs:
   # a dedicated job, as allowed to fail
   compatibility-woocommerce-beta:
     name:    Environment - WC beta
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
@@ -62,9 +73,9 @@ jobs:
       GUTENBERG_VERSION: ${{ matrix.gutenberg }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}

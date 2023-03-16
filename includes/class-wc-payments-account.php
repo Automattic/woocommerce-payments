@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Automattic\WooCommerce\Admin\Notes\DataStore;
+use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
@@ -151,6 +152,28 @@ class WC_Payments_Account {
 	}
 
 	/**
+	 * Checks if the account is valid: which means it's connected and has valid card_payments capability status (requested, pending_verification, active and other valid ones).
+	 * Card_payments capability is crucial for account to function properly. If it is unrequested, we shouldn't show
+	 * any other options for the merchants since it'll lead to various errors.
+	 *
+	 * @see https://github.com/Automattic/woocommerce-payments/issues/5275
+	 *
+	 * @return bool True if the account have valid stripe account, false otherwise.
+	 */
+	public function is_stripe_account_valid(): bool {
+		if ( ! $this->is_stripe_connected() ) {
+			return false;
+		}
+		$account = $this->get_cached_account_data();
+
+		if ( ! isset( $account['capabilities']['card_payments'] ) ) {
+			return false;
+		}
+
+		return 'unrequested' !== $account['capabilities']['card_payments'];
+	}
+
+	/**
 	 * Checks if the account has been rejected, assumes the value of false on any account retrieval error.
 	 * Returns false if the account is not connected.
 	 *
@@ -180,9 +203,7 @@ class WC_Payments_Account {
 			];
 		}
 
-		if ( ! isset( $account['status'] )
-			|| ! isset( $account['payments_enabled'] )
-			|| ! isset( $account['deposits']['status'] ) ) {
+		if ( ! isset( $account['status'], $account['payments_enabled'] ) ) {
 			// return an error if any of the account data is missing.
 			return [
 				'error' => true,
@@ -190,15 +211,26 @@ class WC_Payments_Account {
 		}
 
 		return [
-			'email'               => $account['email'] ?? '',
-			'country'             => $account['country'] ?? 'US',
-			'status'              => $account['status'],
-			'paymentsEnabled'     => $account['payments_enabled'],
-			'deposits'            => $account['deposits'],
-			'currentDeadline'     => isset( $account['current_deadline'] ) ? $account['current_deadline'] : false,
-			'pastDue'             => isset( $account['has_overdue_requirements'] ) ? $account['has_overdue_requirements'] : false,
-			'accountLink'         => $this->get_login_url(),
-			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
+			'email'                 => $account['email'] ?? '',
+			'country'               => $account['country'] ?? 'US',
+			'status'                => $account['status'],
+			'created'               => $account['created'] ?? '',
+			'paymentsEnabled'       => $account['payments_enabled'],
+			'deposits'              => $account['deposits'] ?? [],
+			'depositsStatus'        => $account['deposits']['status'] ?? $account['deposits_status'] ?? '',
+			'currentDeadline'       => $account['current_deadline'] ?? false,
+			'pastDue'               => $account['has_overdue_requirements'] ?? false,
+			'accountLink'           => $this->get_login_url(),
+			'hasSubmittedVatData'   => $account['has_submitted_vat_data'] ?? false,
+			'requirements'          => [
+				'errors' => $account['requirements']['errors'] ?? [],
+			],
+			'progressiveOnboarding' => [
+				'isEnabled'            => $account['progressive_onboarding']['is_enabled'] ?? false,
+				'isComplete'           => $account['progressive_onboarding']['is_complete'] ?? false,
+				'tpv'                  => (int) ( $account['progressive_onboarding']['tpv'] ?? 0 ),
+				'firstTransactionDate' => $account['progressive_onboarding']['first_transaction_date'] ?? null,
+			],
 		];
 	}
 
@@ -329,7 +361,7 @@ class WC_Payments_Account {
 	 */
 	public function get_deposit_schedule_monthly_anchor() {
 		$account = $this->get_cached_account_data();
-		return $account['deposits']['monthly_anchor'] ?? null;
+		return ! empty( $account['deposits']['monthly_anchor'] ) ? $account['deposits']['monthly_anchor'] : null;
 	}
 
 	/**
@@ -566,11 +598,11 @@ class WC_Payments_Account {
 	 * @return bool True if the redirection happened.
 	 */
 	public function maybe_redirect_to_onboarding() {
-		if ( wp_doing_ajax() ) {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return false;
 		}
 
-		$is_on_settings_page           = WC_Payment_Gateway_WCPay::is_current_page_settings();
+		$is_on_settings_page           = WC_Payments_Admin_Settings::is_current_page_settings();
 		$should_redirect_to_onboarding = (bool) get_option( 'wcpay_should_redirect_to_onboarding', false );
 
 		if (
@@ -604,6 +636,7 @@ class WC_Payments_Account {
 		$http_referer = sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '' ) );
 		if ( 0 < strpos( $http_referer, 'task=payments' ) ) {
 			$this->maybe_redirect_to_treatment_onboarding_page();
+			$this->redirect_to_prototype_onboarding_page();
 		}
 
 		// Redirect if not connected.
@@ -700,6 +733,8 @@ class WC_Payments_Account {
 			try {
 				$this->redirect_to_login();
 			} catch ( Exception $e ) {
+				Logger::error( 'Failed redirect_to_login: ' . $e );
+
 				wp_safe_redirect(
 					add_query_arg(
 						[ 'wcpay-login-error' => '1' ],
@@ -712,7 +747,7 @@ class WC_Payments_Account {
 		}
 
 		if ( isset( $_GET['wcpay-reconnect-wpcom'] ) && check_admin_referer( 'wcpay-reconnect-wpcom' ) ) {
-			$this->payments_api_client->start_server_connection( WC_Payment_Gateway_WCPay::get_settings_url() );
+			$this->payments_api_client->start_server_connection( WC_Payments_Admin_Settings::get_settings_url() );
 			return;
 		}
 
@@ -723,6 +758,7 @@ class WC_Payments_Account {
 			$from_wc_pay_connect_page = false !== strpos( wp_get_referer(), 'path=%2Fpayments%2Fconnect' );
 			if ( ( $from_wc_admin_task || $from_wc_pay_connect_page ) ) {
 				$this->maybe_redirect_to_treatment_onboarding_page();
+				$this->redirect_to_prototype_onboarding_page();
 			}
 
 			// Hide menu notification badge upon starting setup.
@@ -979,6 +1015,10 @@ class WC_Payments_Account {
 			$country = null;
 		}
 
+		// Progressive onboarding prefill.
+		$progressive_onboarding      = isset( $_GET['progressive'] ) ? wc_clean( wp_unslash( $_GET['progressive'] ) ) : [];
+		$collect_payout_requirements = isset( $_GET['collect_payout_requirements'] ) && (bool) $_GET['collect_payout_requirements'];
+
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			$return_url,
 			array_merge(
@@ -994,7 +1034,9 @@ class WC_Payments_Account {
 				'site_username' => $current_user->user_login,
 				'site_locale'   => get_locale(),
 			],
-			$this->get_actioned_notes()
+			$this->get_actioned_notes(),
+			array_filter( $progressive_onboarding ),
+			$collect_payout_requirements
 		);
 
 		delete_transient( self::ON_BOARDING_STARTED_TRANSIENT );
@@ -1041,6 +1083,9 @@ class WC_Payments_Account {
 		// Store a state after completing KYC for tracks. This is stored temporarily in option because
 		// user might not have agreed to TOS yet.
 		update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => false ] );
+
+		// Automatically enable split UPE for new stores.
+		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
 
 		wp_safe_redirect(
 			add_query_arg(
@@ -1157,7 +1202,7 @@ class WC_Payments_Account {
 		}
 
 		// test accounts are valid only when in dev mode.
-		if ( WC_Payments::get_gateway()->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return true;
 		}
 
@@ -1265,13 +1310,11 @@ class WC_Payments_Account {
 			return $where_clause . " AND name like 'wcpay-promo-%'";
 		};
 
-		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
-
 		add_filter( 'woocommerce_note_where_clauses', $add_like_clause );
 
 		$wcpay_promo_notes = $data_store->get_notes(
 			[
-				'status'     => [ $note_class::E_WC_ADMIN_NOTE_ACTIONED ],
+				'status'     => [ Note::E_WC_ADMIN_NOTE_ACTIONED ],
 				'is_deleted' => false,
 				'per_page'   => 10,
 			]
@@ -1286,7 +1329,7 @@ class WC_Payments_Account {
 
 		// Copy the name of each note into the results.
 		foreach ( (array) $wcpay_promo_notes as $wcpay_note ) {
-			$note               = new $note_class( $wcpay_note->note_id );
+			$note               = new Note( $wcpay_note->note_id );
 			$wcpay_note_names[] = $note->get_name();
 		}
 
@@ -1435,6 +1478,26 @@ class WC_Payments_Account {
 				$this->redirect_to( $onboarding_url );
 
 			}
+		}
+	}
+
+	/**
+	 * Redirects to the onboarding prototype page if the feature flag is enabled.
+	 * Also checks if the server is connect and try to connect it otherwise.
+	 *
+	 * @return void
+	 */
+	private function redirect_to_prototype_onboarding_page() {
+		if ( ! WC_Payments_Features::is_progressive_onboarding_enabled() ) {
+			return;
+		}
+
+		$onboarding_url = admin_url( 'admin.php?page=wc-admin&path=/payments/onboarding-prototype' );
+
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			$this->payments_api_client->start_server_connection( $onboarding_url );
+		} else {
+			$this->redirect_to( $onboarding_url );
 		}
 	}
 }

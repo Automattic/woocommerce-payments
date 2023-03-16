@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Replaced direct DB query in oorders_with_charge_id_from_charge_ids with wc_get_orders

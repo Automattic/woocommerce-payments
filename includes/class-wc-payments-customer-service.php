@@ -8,6 +8,7 @@
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
+use WCPay\Constants\Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -138,8 +139,10 @@ class WC_Payments_Customer_Service {
 			$this->update_user_customer_id( $user->ID, $customer_id );
 		}
 
-		// Save the customer id in the session for non logged in users to reuse it in payments.
-		WC()->session->set( self::CUSTOMER_ID_SESSION_KEY, $customer_id );
+		if ( isset( WC()->session ) ) {
+			// Save the customer id in the session for non logged in users to reuse it in payments.
+			WC()->session->set( self::CUSTOMER_ID_SESSION_KEY, $customer_id );
+		}
 
 		return $customer_id;
 	}
@@ -266,8 +269,10 @@ class WC_Payments_Customer_Service {
 		if ( WC_Payments::is_network_saved_cards_enabled() ) {
 			return; // No need to do anything, payment methods will never be cached in this case.
 		}
-		$customer_id = $this->get_customer_id_by_user_id( $user_id );
-		foreach ( WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids() as $type ) {
+
+		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::SEPA ];
+		$customer_id                      = $this->get_customer_id_by_user_id( $user_id );
+		foreach ( $retrievable_payment_method_types as $type ) {
 			$this->database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
 		}
 	}
@@ -369,7 +374,7 @@ class WC_Payments_Customer_Service {
 	 * @return string The customer ID option name.
 	 */
 	private function get_customer_id_option(): string {
-		return WC_Payments::get_gateway()->is_in_test_mode()
+		return WC_Payments::mode()->is_test()
 			? self::WCPAY_TEST_CUSTOMER_ID_OPTION
 			: self::WCPAY_LIVE_CUSTOMER_ID_OPTION;
 	}
@@ -462,5 +467,51 @@ class WC_Payments_Customer_Service {
 		}
 
 		$this->update_user_customer_id( $user_id, $customer_id );
+	}
+
+	/**
+	 * Prepares customer data to be used on 'Pay for Order' or 'Add Payment Method' pages.
+	 * Customer data is retrieved from order when on Pay for Order.
+	 * Customer data is retrieved from customer when on 'Add Payment Method'.
+	 *
+	 * @return array|null An array with customer data or nothing.
+	 */
+	public function get_prepared_customer_data() {
+		if ( ! isset( $_GET['pay_for_order'] ) && ! is_add_payment_method_page() ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return null;
+		}
+
+		global $wp;
+		$user_email = '';
+		$firstname  = '';
+		$lastname   = '';
+
+		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$order_id = absint( $wp->query_vars['order-pay'] );
+			$order    = wc_get_order( $order_id );
+
+			if ( is_a( $order, 'WC_Order' ) ) {
+				$firstname  = $order->get_billing_first_name();
+				$lastname   = $order->get_billing_last_name();
+				$user_email = $order->get_billing_email();
+			}
+		}
+
+		if ( is_add_payment_method_page() ) {
+			$user = wp_get_current_user();
+
+			if ( $user->ID ) {
+				$firstname  = $user->user_firstname;
+				$lastname   = $user->user_lastname;
+				$user_email = get_user_meta( $user->ID, 'billing_email', true );
+				$user_email = $user_email ? $user_email : $user->user_email;
+			}
+		}
+		$prepared_customer_data = [
+			'name'  => $firstname . ' ' . $lastname,
+			'email' => $user_email,
+		];
+
+		return $prepared_customer_data;
 	}
 }

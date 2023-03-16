@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Adding an authorization page part of the transactions view. Currently behind a flag and using mocked data

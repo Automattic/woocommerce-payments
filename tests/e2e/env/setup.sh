@@ -169,8 +169,8 @@ fi
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
 
-echo "Installing and activating Gutenberg & WordPress Importer..."
-cli wp plugin install gutenberg wordpress-importer --activate
+echo "Installing and activating WordPress Importer..."
+cli wp plugin install wordpress-importer --activate
 
 # Install WooCommerce
 if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
@@ -219,8 +219,17 @@ echo "Adding customer account ..."
 cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer --user_pass="$WC_CUSTOMER_PASSWORD"
 
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
-echo "Activating the WooCommerce Payments plugin..."
-cli wp plugin activate woocommerce-payments
+if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
+	echo "Creating WooCommerce Payments zip file from GitHub artifact..."
+	mv "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments-build
+    cd "$WCPAY_ARTIFACT_DIRECTORY" && zip -r "$cwd"/woocommerce-payments-build.zip . && cd "$cwd"
+
+	echo "Installing & activating the WooCommerce Payments plugin using the zip file created..."
+	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate
+else
+	echo "Activating the WooCommerce Payments plugin..."
+	cli wp plugin activate woocommerce-payments
+fi
 
 echo "Setting up WooCommerce Payments..."
 if [[ "0" == "$(cli wp option list --search=woocommerce_woocommerce_payments_settings --format=count)" ]]; then
@@ -275,6 +284,10 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 	cli wp plugin activate woocommerce-subscriptions
 
 	rm -rf woocommerce-subscriptions-source
+
+	echo "Import WooCommerce Subscription products"
+	cli wp import wp-content/plugins/woocommerce-payments/tests/e2e/env/wc-subscription-products.xml --authors=skip
+
 else
 	echo "Skipping install of WooCommerce Subscriptions"
 fi

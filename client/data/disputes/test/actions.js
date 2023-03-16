@@ -10,14 +10,20 @@ import { apiFetch, dispatch } from '@wordpress/data-controls';
  */
 import { acceptDispute, updateDispute } from '../actions';
 
-window.location.replace = jest.fn();
-
 describe( 'acceptDispute action', () => {
 	const mockDispute = {
 		id: 'dp_mock1',
 		reason: 'product_unacceptable',
 		status: 'lost',
 	};
+
+	beforeEach( () => {
+		Object.defineProperty( window, 'location', {
+			value: {
+				replace: jest.fn(),
+			},
+		} );
+	} );
 
 	test( 'should close dispute and update state with dispute data', () => {
 		const generator = acceptDispute( 'dp_mock1' );

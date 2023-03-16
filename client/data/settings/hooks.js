@@ -30,6 +30,19 @@ export const useCardPresentEligible = () => {
 	return [ isCardPresentEligible, updateIsCardPresentEligible ];
 };
 
+export const useClientSecretEncryption = () => {
+	const { updateIsClientSecretEncryptionEnabled } = useDispatch( STORE_NAME );
+
+	const isClientSecretEncryptionEnabled = useSelect( ( select ) => {
+		return select( STORE_NAME ).getIsClientSecretEncryptionEnabled();
+	}, [] );
+
+	return [
+		isClientSecretEncryptionEnabled,
+		updateIsClientSecretEncryptionEnabled,
+	];
+};
+
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
@@ -43,6 +56,38 @@ export const useEnabledPaymentMethodIds = () => {
 			];
 		},
 		[ updateEnabledPaymentMethodIds ]
+	);
+};
+
+export const useSelectedPaymentMethod = () => {
+	const { updateSelectedPaymentMethod } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
+
+			return [
+				getEnabledPaymentMethodIds(),
+				updateSelectedPaymentMethod,
+			];
+		},
+		[ updateSelectedPaymentMethod ]
+	);
+};
+
+export const useUnselectedPaymentMethod = () => {
+	const { updateUnselectedPaymentMethod } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
+
+			return [
+				getEnabledPaymentMethodIds(),
+				updateUnselectedPaymentMethod,
+			];
+		},
+		[ updateUnselectedPaymentMethod ]
 	);
 };
 
@@ -481,5 +526,32 @@ export const usePlatformCheckoutStoreLogo = () => {
 			];
 		},
 		[ updatePlatformCheckoutStoreLogo ]
+	);
+};
+
+export const usePlatformCheckoutLocations = () => {
+	const { updatePlatformCheckoutLocations } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getPlatformCheckoutLocations } = select( STORE_NAME );
+
+		return [
+			getPlatformCheckoutLocations(),
+			updatePlatformCheckoutLocations,
+		];
+	} );
+};
+
+// TODO: Finish implementation once server API endpoints are deployed.
+export const useCurrentProtectionLevel = () => {
+	const { updateProtectionLevel } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getCurrentProtectionLevel } = select( STORE_NAME );
+
+			return [ getCurrentProtectionLevel(), updateProtectionLevel ];
+		},
+		[ updateProtectionLevel ]
 	);
 };

@@ -1,0 +1,143 @@
+name: "Release - Code freeze"
+
+# This action will run according to the cron schedule or when triggered manually
+on:
+  schedule:
+    - cron: '0 12 * * 0' # Run at 1200 UTC on Sundays.
+  workflow_dispatch:
+    inputs:
+      skipSlackPing:
+        description: "Skip the Slack ping"
+        type: boolean
+        required: false
+        default: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check-code-freeze:
+    name: "Check that today is the day of the code freeze"
+    runs-on: ubuntu-20.04
+    outputs:
+      freeze: ${{ steps.check-freeze.outputs.FREEZE }}
+      nextReleaseVersion: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
+      nextReleaseDate: ${{ steps.define_var.outputs.RELEASE_PLANNED_DATE }}
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          ref: 'develop'
+
+      - name: "Get current version"
+        id: current-version
+        run: |
+          VERSION=$(jq '.version' package.json -r)
+          echo "Current version found: $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      - name: "Calculate the next version"
+        id: next-version
+        env:
+          RELEASE_VERSION: ${{ steps.current-version.outputs.VERSION }}
+        run: php .github/workflows/scripts/get-next-version.php
+
+      - name: "Define the release planned date"
+        id: define_var
+        run: |
+          RELEASE_PLANNED_DATE=$( date "+%Y-%m-%d" -d "next Wednesday" ) # Date formatted as YYYY-MM-DD
+          echo "RELEASE_PLANNED_DATE=$RELEASE_PLANNED_DATE" >> $GITHUB_OUTPUT
+
+      - name: "Check if the next version needs a code freeze"
+        id: check-freeze
+        env:
+          NEXT_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
+        run: |
+          git fetch --tags origin
+          NEXT_VERSION_TAG_STABLE=$(git tag -l "${{ env.NEXT_VERSION }}" | tail -1)
+          NEXT_VERSION_TAG_FROM_WEEK_2=$(git tag -l "${{ env.NEXT_VERSION }}-test-2" | tail -1)
+          if [[ -z "$NEXT_VERSION_TAG_FROM_WEEK_2" ]]; then
+            echo "Code freeze is not needed :x:" >> $GITHUB_STEP_SUMMARY
+            echo "FREEZE=0" >> $GITHUB_OUTPUT
+          elif [[ -z "$NEXT_VERSION_TAG_STABLE" ]]; then
+            echo "Code freeze is needed :white_check_mark:" >> $GITHUB_STEP_SUMMARY
+            echo "FREEZE=1" >> $GITHUB_OUTPUT
+          fi
+
+  create-release-pr:
+    name: "Raise a PR to trunk"
+    needs: check-code-freeze
+    if: needs.check-code-freeze.outputs.freeze == 1
+    uses: ./.github/workflows/release-pr.yml
+    with:
+      releaseVersion: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
+    secrets: inherit
+
+  slack-notification:
+    name: "Send notification to Slack"
+    needs: [check-code-freeze, create-release-pr]
+    if: ${{ ! ( inputs.skipSlackPing && needs.create-release-pr.outputs.release-pr-id ) }}
+    runs-on: ubuntu-20.04
+    env:
+      RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
+      RELEASE_DATE: ${{ needs.check-code-freeze.outputs.nextReleaseDate }}
+      RELEASE_PR_ID: ${{ needs.create-release-pr.outputs.release-pr-id }}
+    steps:
+      - name: "Slack ping"
+        uses: slackapi/slack-github-action@v1.23.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        with:
+          # For posting a rich message using Block Kit (https://api.slack.com/messaging/interactivity)
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Code freeze notification",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The automated workflow just did the following actions:"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n • Raised a <https://github.com/Automattic/woocommerce-payments/pull/${{ env.RELEASE_PR_ID }}|Pull Request> to `trunk`\n • Built a <https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}|zip file and ran smoke tests> against it"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "If you absolutely need to include a PR that was not merged in `develop` yet, please consult the release lead."
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Version:*\n${{ env.RELEASE_VERSION }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Planned date:*\n<https://wcpay.wordpress.com/dev-resources/wc-payments-release-calendar/|${{ env.RELEASE_DATE }}>"
+                    }
+                  ]
+                }
+              ]
+            }

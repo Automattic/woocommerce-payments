@@ -6,6 +6,11 @@ import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 import { createInterpolateElement } from '@wordpress/element';
 
+/**
+ * Internal dependencies.
+ */
+import { getAdminUrl } from 'wcpay/utils';
+
 const formatDate = ( format, date ) =>
 	dateI18n(
 		format,
@@ -43,19 +48,42 @@ export const getNextDepositLabelFormatted = ( deposit ) => {
 	return baseLabel;
 };
 
+export const getDepositMonthlyAnchorLabel = ( {
+	monthlyAnchor,
+	capitalize = true,
+} ) => {
+	// If locale is set up as en_US or en_GB the ordinal will not show up
+	// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
+	// Using 'en' as the locale should be enough to workaround it
+	// TODO: Remove workaround when issue is resolved
+	const fixedLocale = moment.locale().startsWith( 'en' )
+		? 'en'
+		: moment.locale();
+
+	let label = moment()
+		.locale( fixedLocale )
+		.date( monthlyAnchor )
+		.format( 'Do' );
+
+	if ( 31 === monthlyAnchor ) {
+		label = __( 'Last day of the month', 'woocommerce-payments' );
+	}
+	if ( ! capitalize ) {
+		label = label.toLowerCase();
+	}
+	return label;
+};
+
 const formatDepositSchedule = ( schedule ) => {
 	switch ( schedule.interval ) {
 		case 'manual':
-			return __( 'Manual', 'woocommerce-payments' );
+			return __( 'Deposits set to manual.', 'woocommerce-payments' );
 		case 'daily':
-			return __(
-				'Automatic, every business day',
-				'woocommerce-payments'
-			);
+			return __( 'Deposits set to daily.', 'woocommerce-payments' );
 		case 'weekly':
 			return sprintf(
 				/** translators: %s day of the week e.g. Monday */
-				__( 'Automatic, every week on %s', 'woocommerce-payments' ),
+				__( 'Deposits set to every %s.', 'woocommerce-payments' ),
 				// moment().day() is locale based when using strings. Since Stripe's response is in English,
 				// we need to temporarily set the locale to add the day before formatting
 				moment()
@@ -65,23 +93,16 @@ const formatDepositSchedule = ( schedule ) => {
 					.format( 'dddd' )
 			);
 		case 'monthly':
-			// If locale is set up as en_US or en_GB the ordinal will not show up
-			// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
-			// Using 'en' as the locale should be enough to workaround it
-			// TODO: Remove workaround when issue is resolved
-			const fixedLocale = moment.locale().startsWith( 'en' )
-				? 'en'
-				: moment.locale();
 			return sprintf(
 				/** translators: %s day of the month */
 				__(
-					'Automatic, every month on the %s',
+					'Deposits set to monthly on the %s.',
 					'woocommerce-payments'
 				),
-				moment()
-					.locale( fixedLocale )
-					.date( schedule.monthly_anchor )
-					.format( 'Do' )
+				getDepositMonthlyAnchorLabel( {
+					monthlyAnchor: schedule.monthly_anchor,
+					capitalize: false,
+				} )
 			);
 	}
 };
@@ -97,18 +118,48 @@ export const getDepositScheduleDescriptor = ( {
 	const isCustomDepositSchedulesEnabled =
 		window.wcpaySettings?.featureFlags?.customDepositSchedules;
 
+	const hasCompletedWaitingPeriod =
+		window.wcpaySettings?.accountStatus?.deposits
+			?.completed_waiting_period ?? false;
+
+	const learnMoreHref =
+		'https://woocommerce.com/document/payments/faq/deposit-schedule/';
+
 	if (
 		disabled ||
 		blocked ||
 		( ! isCustomDepositSchedulesEnabled && 'manual' === schedule.interval )
 	) {
-		const learnMoreHref =
-			'https://woocommerce.com/document/payments/faq/deposits-suspended/';
 		return createInterpolateElement(
 			/* translators: <a> - suspended accounts FAQ URL */
 			__(
-				'Temporarily suspended (<a>learn more</a>)',
+				'Deposits temporarily suspended (<a>learn more</a>).',
 				'woocommerce-payments'
+			),
+			{
+				a: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
+						href={
+							'https://woocommerce.com/document/payments/faq/deposits-suspended/'
+						}
+						target="_blank"
+						rel="noopener noreferrer"
+					/>
+				),
+			}
+		);
+	}
+
+	if ( ! last ) {
+		return createInterpolateElement(
+			sprintf(
+				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
+				__(
+					'%s Your first deposit is held for seven days (<a>learn more</a>).',
+					'woocommerce-payments'
+				),
+				formatDepositSchedule( schedule )
 			),
 			{
 				a: (
@@ -123,14 +174,12 @@ export const getDepositScheduleDescriptor = ( {
 		);
 	}
 
-	if ( ! last ) {
-		const learnMoreHref =
-			'https://woocommerce.com/document/payments/faq/deposit-schedule/';
+	if ( hasCompletedWaitingPeriod && ! blocked && ! disabled ) {
 		return createInterpolateElement(
 			sprintf(
-				/** translators: %s - deposit schedule, <a> - waiting period doc URL */
+				/** translators: %s - deposit schedule, <a> - Settings page URL */
 				__(
-					'%s – your first deposit is held for seven days (<a>learn more</a>)',
+					'%s <a>Change this</a> or <learn_more_href/>.',
 					'woocommerce-payments'
 				),
 				formatDepositSchedule( schedule )
@@ -139,10 +188,24 @@ export const getDepositScheduleDescriptor = ( {
 				a: (
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
+						href={
+							getAdminUrl( {
+								page: 'wc-settings',
+								section: 'woocommerce_payments',
+								tab: 'checkout',
+							} ) + '#deposit-schedule'
+						}
+					/>
+				),
+				learn_more_href: (
+					// eslint-disable-next-line jsx-a11y/anchor-has-content
+					<a
 						href={ learnMoreHref }
 						target="_blank"
 						rel="noopener noreferrer"
-					/>
+					>
+						{ __( 'learn more', 'woocommerce-payments' ) }
+					</a>
 				),
 			}
 		);

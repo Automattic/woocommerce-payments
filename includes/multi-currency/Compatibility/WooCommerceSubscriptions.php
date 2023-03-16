@@ -9,7 +9,6 @@ namespace WCPay\MultiCurrency\Compatibility;
 
 use WC_Payments_Features;
 use WCPay\MultiCurrency\MultiCurrency;
-use WCPay\MultiCurrency\Utils;
 
 /**
  * Class that controls Multi Currency Compatibility with WooCommerce Subscriptions Plugin and WCPay Subscriptions.
@@ -22,6 +21,13 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 * @var string
 	 */
 	public $switch_cart_item = '';
+
+	/**
+	 * If we are running through our filters.
+	 *
+	 * @var bool
+	 */
+	private $running_override_selected_currency_filters = false;
 
 	/**
 	 * Init the class.
@@ -142,7 +148,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 */
 	public function override_selected_currency( $return ) {
 		// If it's not false, return it.
-		if ( $return ) {
+		if ( $return || $this->running_override_selected_currency_filters ) {
 			return $return;
 		}
 
@@ -152,9 +158,24 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			return $order ? $order->get_currency() : $return;
 		}
 
+		// The running_override_selected_currency_filters property has been added here due to if it isn't, it will create an infinite loop of calls.
+		if ( isset( WC()->session ) && WC()->session->get( 'order_awaiting_payment' ) ) {
+			$this->running_override_selected_currency_filters = true;
+			$order = wc_get_order( WC()->session->get( 'order_awaiting_payment' ) );
+			$this->running_override_selected_currency_filters = false;
+			if ( $order && $this->order_contains_renewal( $order ) ) {
+				return $order->get_currency();
+			}
+		}
+
+		// The running_override_selected_currency_filters property is used to avoid an infinite loop
+		// that can occur on the product page when `get_subscription()` is used.
 		$switch_id = $this->get_subscription_switch_id_from_superglobal();
 		if ( $switch_id ) {
-			return get_post_meta( $switch_id, '_order_currency', true );
+			$this->running_override_selected_currency_filters = true;
+			$switch_subscription                              = $this->get_subscription( $switch_id );
+			$this->running_override_selected_currency_filters = false;
+			return $switch_subscription ? $switch_subscription->get_currency() : $return;
 		}
 
 		$switch_cart_items = $this->get_subscription_switch_cart_items();
@@ -285,6 +306,20 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	}
 
 	/**
+	 * Checks an order  to see if it contains a subscription product renewal.
+	 *
+	 * @param object $order Order object.
+	 *
+	 * @return bool The cart item containing the renewal as an array, else false.
+	 */
+	private function order_contains_renewal( $order ): bool {
+		if ( ! function_exists( 'wcs_order_contains_renewal' ) ) {
+			return false;
+		}
+		return wcs_order_contains_renewal( $order );
+	}
+
+	/**
 	 * Gets the subscription switch items out of the cart.
 	 *
 	 * @return array Empty array or the cart items in an array..
@@ -312,9 +347,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	}
 
 	/**
-	 * Checks $_GET superglobal for a switch id and returns it if found.
+	 * Checks $_GET superglobal for a switch ID from the `switch-subscription` param if it exists.
+	 * This `switch-subscription` param is added to the URL when a customer
+	 * has initiated a switch from the My Account → Subscription page.
 	 *
-	 * @return mixed Id of the sub being switched, or false.
+	 * @return int|bool The ID of the subscription being switched, or false if it cannot be found.
 	 */
 	private function get_subscription_switch_id_from_superglobal() {
 		if ( isset( $_GET['_wcsnonce'] ) && wp_verify_nonce( sanitize_key( $_GET['_wcsnonce'] ), 'wcs_switch_request' ) ) {

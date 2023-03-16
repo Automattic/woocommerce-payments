@@ -415,9 +415,9 @@ exports[`AccountFees renders non-USD base fee 1`] = `
   Euro 
   (EUR) 
   <s>
-    2.9% + 0,25&nbsp;€ per transaction
+    2.9% + 0,25 € per transaction
   </s>
-   2.9% + 0,30&nbsp;€ per transaction
+   2.9% + 0,30 € per transaction
   <p>
     <a
       href="https://woocommerce.com/terms-conditions/woocommerce-payments-promotion/"

@@ -29,10 +29,19 @@ class WC_Payments_DB_Test extends WCPAY_UnitTestCase {
 		$existing_charge_ids = [
 			'ch_1',
 			'ch_2',
+			'ch_3',
+			'ch_4',
+			'ch_5',
+			'ch_6',
+			'ch_7',
+			'ch_8',
+			'ch_9',
+			'ch_10',
+			'ch_11',
 		];
 
 		$non_existing_charge_ids = [
-			'ch_3',
+			'ch_12',
 		];
 
 		foreach ( $existing_charge_ids as $charge_id ) {
@@ -43,7 +52,7 @@ class WC_Payments_DB_Test extends WCPAY_UnitTestCase {
 
 		$orders_with_charge_ids = $this->wcpay_db->orders_with_charge_id_from_charge_ids( array_merge( $existing_charge_ids, $non_existing_charge_ids ) );
 
-		$this->assertCount( 2, $orders_with_charge_ids );
+		$this->assertCount( 11, $orders_with_charge_ids );
 		$this->assertIsArray( $orders_with_charge_ids[0] );
 		$this->assertTrue( in_array( $orders_with_charge_ids[0]['charge_id'], $existing_charge_ids, true ) );
 		$this->assertIsArray( $orders_with_charge_ids[1] );

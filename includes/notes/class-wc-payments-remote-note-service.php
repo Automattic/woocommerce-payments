@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use Automattic\WooCommerce\Admin\Notes\Note;
 use WCPay\Exceptions\Rest_Request_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -69,13 +70,12 @@ class WC_Payments_Remote_Note_Service {
 		$content   = $note_data['content'];
 		$note_name = self::NOTE_NAME_PREFIX . ( $note_data['name'] ?? md5( $title . $content ) );
 
-		$note_class = WC_Payment_Woo_Compat_Utils::get_note_class();
-		$note       = new $note_class();
+		$note = new Note();
 
 		$note->set_title( $title );
 		$note->set_content( $content );
 		$note->set_content_data( (object) [] );
-		$note->set_type( $note_class::E_WC_ADMIN_NOTE_INFORMATIONAL );
+		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( $note_name );
 		$note->set_source( 'woocommerce-payments' );
 
@@ -86,7 +86,7 @@ class WC_Payments_Remote_Note_Service {
 				}
 
 				if ( 'wcpay_settings' === $action['url'] ) {
-					$url = WC_Payment_Gateway_WCPay::get_settings_url();
+					$url = WC_Payments_Admin_Settings::get_settings_url();
 				} elseif ( isset( $action['url_is_admin'] ) && (bool) $action['url_is_admin'] ) {
 					$url = admin_url( $action['url'] );
 				} else {
@@ -97,7 +97,7 @@ class WC_Payments_Remote_Note_Service {
 					$note_name . '-' . $action_key,
 					$action['label'],
 					$url,
-					$action['status'] ?? $note_class::E_WC_ADMIN_NOTE_ACTIONED,
+					$action['status'] ?? Note::E_WC_ADMIN_NOTE_ACTIONED,
 					$action['primary'] ?? false
 				);
 			}

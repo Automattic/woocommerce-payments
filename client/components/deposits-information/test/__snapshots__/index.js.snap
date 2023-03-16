@@ -87,9 +87,21 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Automatic, every week on Thursday
+          Deposits set to every Thursday. 
+          <a
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout#deposit-schedule"
+          >
+            Change this
+          </a>
+           or 
+          <a
+            href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            learn more
+          </a>
+          .
         </p>
       </div>
     </div>
@@ -225,9 +237,21 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Automatic, every week on Thursday
+          Deposits set to every Thursday. 
+          <a
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout#deposit-schedule"
+          >
+            Change this
+          </a>
+           or 
+          <a
+            href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            learn more
+          </a>
+          .
         </p>
       </div>
     </div>
@@ -245,7 +269,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43&nbsp;€
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -270,7 +294,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43&nbsp;€
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -299,7 +323,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          31,60&nbsp;€
+          31,60 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -324,7 +348,7 @@ exports[`Deposits information renders correctly with multiple currencies 1`] = `
         <div
           class="wcpay-deposits-information-block__value"
         >
-          20,30&nbsp;€
+          20,30 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -368,9 +392,21 @@ exports[`Deposits information renders instant deposit button only where applicab
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Automatic, every week on Thursday
+          Deposits set to every Thursday. 
+          <a
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout#deposit-schedule"
+          >
+            Change this
+          </a>
+           or 
+          <a
+            href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            learn more
+          </a>
+          .
         </p>
       </div>
     </div>
@@ -513,9 +549,21 @@ exports[`Deposits information renders instant deposit button only where applicab
               />
             </g>
           </svg>
-          Deposit schedule:
-           
-          Automatic, every week on Thursday
+          Deposits set to every Thursday. 
+          <a
+            href="admin.php?page=wc-settings&section=woocommerce_payments&tab=checkout#deposit-schedule"
+          >
+            Change this
+          </a>
+           or 
+          <a
+            href="https://woocommerce.com/document/payments/faq/deposit-schedule/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            learn more
+          </a>
+          .
         </p>
       </div>
     </div>
@@ -533,7 +581,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43&nbsp;€
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -558,7 +606,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          33,43&nbsp;€
+          33,43 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -587,7 +635,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          31,60&nbsp;€
+          31,60 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"
@@ -612,7 +660,7 @@ exports[`Deposits information renders instant deposit button only where applicab
         <div
           class="wcpay-deposits-information-block__value"
         >
-          20,30&nbsp;€
+          20,30 €
         </div>
         <div
           class="wcpay-deposits-information-block__extra"

@@ -16,9 +16,9 @@ import {
 	TextControl,
 	TextareaControl,
 	SelectControl,
+	Notice,
 } from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
-import moment from 'moment';
 
 /**
  * Internal dependencies.
@@ -26,7 +26,7 @@ import moment from 'moment';
 import '../style.scss';
 import { useDisputeEvidence } from 'wcpay/data';
 import evidenceFields from './fields';
-import { FileUploadControl } from 'components/file-upload';
+import { FileUploadControl, UploadedReadOnly } from 'components/file-upload';
 import Info from '../info';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
@@ -109,7 +109,7 @@ export const DisputeEvidenceForm = ( props ) => {
 			onChange( field.key, value );
 		},
 		disabled: readOnly,
-		help: expandHelp( field.description ),
+		help: readOnly && expandHelp( field.description ),
 	} );
 
 	const composeFileUploadProps = ( field ) => {
@@ -133,14 +133,20 @@ export const DisputeEvidenceForm = ( props ) => {
 			isLoading,
 			isDone,
 			error,
-			help: expandHelp( field.description ),
+			help: readOnly && expandHelp( field.description ),
 		};
 	};
 
 	const composeFieldControl = ( field ) => {
+		const displayAsReadOnly = readOnly && ! evidence[ field.key ];
 		switch ( field.type ) {
 			case 'file':
-				return (
+				return readOnly ? (
+					<UploadedReadOnly
+						key={ field.key }
+						{ ...composeFileUploadProps( field ) }
+					/>
+				) : (
 					<FileUploadControl
 						key={ field.key }
 						{ ...composeFileUploadProps( field ) }
@@ -150,20 +156,44 @@ export const DisputeEvidenceForm = ( props ) => {
 				return (
 					<TextControl
 						key={ field.key }
-						{ ...composeDefaultControlProps( field ) }
+						label={ field.label }
+						value={
+							displayAsReadOnly
+								? __(
+										'No information submitted',
+										'woocommerce-payments'
+								  )
+								: null
+						}
+						disabled={ displayAsReadOnly }
+						{ ...( displayAsReadOnly
+							? {}
+							: composeDefaultControlProps( field ) ) }
 					/>
 				);
 			case 'date':
 				return (
 					<TextControl
 						key={ field.key }
-						type={ 'date' }
-						max={ moment().format( 'YYYY-MM-DD' ) }
-						{ ...composeDefaultControlProps( field ) }
+						label={ field.label }
+						value={
+							displayAsReadOnly
+								? __(
+										'Date not submitted',
+										'woocommerce-payments'
+								  )
+								: null
+						}
+						disabled={ displayAsReadOnly }
+						{ ...( displayAsReadOnly
+							? {}
+							: composeDefaultControlProps( field ) ) }
 					/>
 				);
 			default:
-				return (
+				return displayAsReadOnly ? (
+					''
+				) : (
 					<TextareaControl
 						key={ field.key }
 						maxLength={ field.maxLength }
@@ -178,7 +208,9 @@ export const DisputeEvidenceForm = ( props ) => {
 			<Card size="large" key={ section.key }>
 				<CardHeader>{ section.title }</CardHeader>
 				<CardBody>
-					{ section.description && <p>{ section.description }</p> }
+					{ ! readOnly && section.description && (
+						<p>{ section.description }</p>
+					) }
 					{ section.fields.map( composeFieldControl ) }
 				</CardBody>
 			</Card>
@@ -265,6 +297,19 @@ export const DisputeEvidencePage = ( props ) => {
 	const disputeIsAvailable = ! isLoading && dispute.id;
 	const testModeNotice = <TestModeNotice topic={ topics.disputeDetails } />;
 
+	const readOnlyNotice = (
+		<Notice
+			className="wcpay-test-mode-notice"
+			status="informational"
+			isDismissible={ false }
+		>
+			{ __(
+				'Evidence is already submitted. Details below are read-only.',
+				'woocommerce-payments'
+			) }
+		</Notice>
+	);
+
 	if ( ! isLoading && ! disputeIsAvailable ) {
 		return (
 			<Page isNarrow className="wcpay-dispute-details">
@@ -279,6 +324,7 @@ export const DisputeEvidencePage = ( props ) => {
 	return (
 		<Page isNarrow className="wcpay-dispute-evidence">
 			{ testModeNotice }
+			{ readOnly && ! isLoading && readOnlyNotice }
 			<ErrorBoundary>
 				<Card size="large">
 					<CardHeader>

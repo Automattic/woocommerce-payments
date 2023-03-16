@@ -14,6 +14,8 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { useEffect, useState } from '@wordpress/element';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -22,10 +24,11 @@ import './style.scss';
 import confirmUPEPayment from './confirm-upe-payment.js';
 import { getConfig } from 'utils/checkout';
 import { getTerms } from '../utils/upe';
+import { decryptClientSecret } from '../utils/encryption';
 import { PAYMENT_METHOD_NAME_CARD, WC_STORE_CART } from '../constants.js';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
-import { useDispatch, useSelect } from '@wordpress/data';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
+import { useFingerprint } from './hooks';
 
 const useCustomerData = () => {
 	const { customerData, isInitialized } = useSelect( ( select ) => {
@@ -64,8 +67,10 @@ const WCPayUPEFields = ( {
 	},
 	emitResponse,
 	paymentIntentId,
+	paymentIntentSecret,
 	errorMessage,
 	shouldSavePayment,
+	fingerprint,
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
@@ -100,6 +105,8 @@ const WCPayUPEFields = ( {
 				state: 'components-form-token-input-1',
 				postal_code: 'shipping-postcode',
 				country: 'components-form-token-input-0',
+				first_name: 'shipping-first_name',
+				last_name: 'shipping-last_name',
 			};
 			const billingAddressFields = {
 				line1: 'billing-address_1',
@@ -108,6 +115,8 @@ const WCPayUPEFields = ( {
 				state: 'components-form-token-input-3',
 				postal_code: 'billing-postcode',
 				country: 'components-form-token-input-2',
+				first_name: 'billing-first_name',
+				last_name: 'billing-last_name',
 			};
 
 			enableStripeLinkPaymentMethod( {
@@ -202,7 +211,10 @@ const WCPayUPEFields = ( {
 				if ( ! isUPEComplete ) {
 					return {
 						type: 'error',
-						message: 'Your payment information is incomplete.',
+						message: __(
+							'Your payment information is incomplete.',
+							'woocommerce-payments'
+						),
 					};
 				}
 
@@ -225,6 +237,10 @@ const WCPayUPEFields = ( {
 					};
 				}
 
+				const fraudPreventionToken = document
+					.querySelector( '#wcpay-fraud-prevention-token' )
+					?.getAttribute( 'value' );
+
 				return {
 					type: 'success',
 					meta: {
@@ -232,6 +248,9 @@ const WCPayUPEFields = ( {
 							paymentMethod: PAYMENT_METHOD_NAME_CARD,
 							wc_payment_intent_id: paymentIntentId,
 							wcpay_selected_upe_payment_type: selectedUPEPaymentType,
+							'wcpay-fraud-prevention-token':
+								fraudPreventionToken ?? '',
+							'wcpay-fingerprint': fingerprint,
 						},
 					},
 				};
@@ -243,6 +262,7 @@ const WCPayUPEFields = ( {
 			isUPEComplete,
 			selectedUPEPaymentType,
 			shouldSavePayment,
+			fingerprint,
 		]
 	);
 
@@ -252,18 +272,24 @@ const WCPayUPEFields = ( {
 			onCheckoutAfterProcessingWithSuccess(
 				( { orderId, processingResponse: { paymentDetails } } ) => {
 					async function updateIntent() {
+						if ( api.handleDuplicatePayments( paymentDetails ) ) {
+							return;
+						}
+
 						await api.updateIntent(
 							paymentIntentId,
 							orderId,
 							shouldSavePayment ? 'yes' : 'no',
 							selectedUPEPaymentType,
-							paymentCountry
+							paymentCountry,
+							fingerprint
 						);
 
 						return confirmUPEPayment(
 							api,
 							paymentDetails.redirect_url,
 							paymentDetails.payment_needed,
+							paymentIntentSecret,
 							elements,
 							billingData,
 							emitResponse
@@ -289,13 +315,8 @@ const WCPayUPEFields = ( {
 	// Checks whether there are errors within a field, and saves them for later reporting.
 	const upeOnChange = ( event ) => {
 		// Update WC Blocks gateway config based on selected UPE payment method.
-		if (
-			getConfig( 'isSavedCardsEnabled' ) &&
-			! getConfig( 'cartContainsSubscription' )
-		) {
-			gatewayConfig.supports.showSaveOption =
-				paymentMethodsConfig[ event.value.type ].isReusable;
-		}
+		gatewayConfig.supports.showSaveOption =
+			paymentMethodsConfig[ event.value.type ].showSaveOption;
 
 		setIsUPEComplete( event.complete );
 		setSelectedUPEPaymentType( event.value.type );
@@ -358,12 +379,13 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		getConfig( 'wcBlocksUPEAppearance' )
 	);
 	const [ fontRules ] = useState( getFontRulesFromPage() );
+	const [ fingerprint, fingerprintErrorMessage ] = useFingerprint();
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
 			const upeAppearance = getAppearance( true );
-			await api.saveUPEAppearance( upeAppearance, true );
+			await api.saveUPEAppearance( upeAppearance, 'true' );
 
 			// Update appearance state
 			setAppearance( upeAppearance );
@@ -372,13 +394,18 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 			generateUPEAppearance();
 		}
 
-		if ( paymentIntentId || hasRequestedIntent ) {
+		if ( fingerprintErrorMessage ) {
+			setErrorMessage( fingerprintErrorMessage );
+			return;
+		}
+
+		if ( paymentIntentId || hasRequestedIntent || ! fingerprint ) {
 			return;
 		}
 
 		async function createIntent() {
 			try {
-				const response = await api.createIntent();
+				const response = await api.createIntent( fingerprint );
 				setPaymentIntentId( response.id );
 				setClientSecret( response.client_secret );
 			} catch ( error ) {
@@ -391,7 +418,15 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		}
 		setHasRequestedIntent( true );
 		createIntent();
-	}, [ paymentIntentId, hasRequestedIntent, api, errorMessage, appearance ] );
+	}, [
+		paymentIntentId,
+		hasRequestedIntent,
+		api,
+		errorMessage,
+		appearance,
+		fingerprint,
+		fingerprintErrorMessage,
+	] );
 
 	if ( ! clientSecret ) {
 		if ( errorMessage ) {
@@ -407,19 +442,22 @@ const ConsumableWCPayFields = ( { api, ...props } ) => {
 		return null;
 	}
 
-	const options = {
-		clientSecret,
-		appearance,
-		fonts: fontRules,
-		loader: 'never',
-	};
-
 	return (
-		<Elements stripe={ stripe } options={ options }>
+		<Elements
+			stripe={ stripe }
+			options={ {
+				clientSecret: decryptClientSecret( clientSecret ),
+				appearance,
+				fonts: fontRules,
+				loader: 'never',
+			} }
+		>
 			<WCPayUPEFields
 				api={ api }
 				paymentIntentId={ paymentIntentId }
+				paymentIntentSecret={ clientSecret }
 				errorMessage={ errorMessage }
+				fingerprint={ fingerprint }
 				{ ...props }
 			/>
 		</Elements>

@@ -378,8 +378,8 @@ jQuery( ( $ ) => {
 			$( document.body ).on( 'woocommerce_variation_has_changed', () => {
 				wcpayPaymentRequest.blockPaymentRequestButton();
 
-				$.when( wcpayPaymentRequest.getSelectedProductData() ).then(
-					( response ) => {
+				$.when( wcpayPaymentRequest.getSelectedProductData() )
+					.then( ( response ) => {
 						$.when(
 							paymentRequest.update( {
 								total: response.total,
@@ -388,8 +388,10 @@ jQuery( ( $ ) => {
 						).then( () => {
 							wcpayPaymentRequest.unblockPaymentRequestButton();
 						} );
-					}
-				);
+					} )
+					.catch( () => {
+						wcpayPaymentRequest.hide();
+					} );
 			} );
 
 			// Block the payment request button as soon as an "input" event is fired, to avoid sync issues
@@ -436,11 +438,23 @@ jQuery( ( $ ) => {
 			} );
 		},
 
+		getElements: () => {
+			return $(
+				'#wcpay-payment-request-wrapper,#wcpay-payment-request-button-separator'
+			);
+		},
+
+		hide: () => {
+			wcpayPaymentRequest.getElements().hide();
+		},
+
+		show: () => {
+			wcpayPaymentRequest.getElements().show();
+		},
+
 		showPaymentRequestButton: ( prButton ) => {
 			if ( $( '#wcpay-payment-request-button' ).length ) {
-				$(
-					'#wcpay-payment-request-wrapper, #wcpay-payment-request-button-separator'
-				).show();
+				wcpayPaymentRequest.show();
 				prButton.mount( '#wcpay-payment-request-button' );
 			}
 		},
@@ -458,6 +472,7 @@ jQuery( ( $ ) => {
 		},
 
 		unblockPaymentRequestButton: () => {
+			wcpayPaymentRequest.show();
 			$( '#wcpay-payment-request-button' ).unblock();
 		},
 

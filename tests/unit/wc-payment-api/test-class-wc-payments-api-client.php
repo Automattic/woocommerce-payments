@@ -5,7 +5,9 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 
@@ -67,7 +69,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_create_intention_success() {
 		$expected_amount = 123;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		$this->set_http_mock_response(
 			200,
@@ -83,7 +85,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -112,7 +114,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_create_intention_with_fingerprinting_data() {
 		$expected_amount = 123;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
 		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
@@ -142,7 +144,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -167,7 +169,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_create_and_confirm_intention_with_fingerprinting_data() {
 		$expected_amount = 123;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
 		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
@@ -197,7 +199,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -212,6 +214,73 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			'usd',
 			'pm_123456789',
 			1
+		);
+	}
+
+	/**
+	 * Test a successful call to create_and_confirm_intention with user fingeprint data.
+	 *
+	 * @throws Exception - In the event of test failure.
+	 */
+	public function test_create_and_confirm_intention_with_user_fingerprint_data() {
+		$fingerprint     = 'abc123';
+		$expected_amount = 123;
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
+
+		$mock_fingerprinting   = $this->createMock( Buyer_Fingerprinting_Service::class );
+		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
+
+		Buyer_Fingerprinting_Service::set_instance( $mock_fingerprinting );
+		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
+
+		$mock_fraud_prevention
+			->expects( $this->never() )
+			->method( 'is_enabled' );
+
+		$mock_fingerprinting
+			->expects( $this->once() )
+			->method( 'get_hashed_data_for_customer' )
+			->with( $fingerprint );
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'id'            => 'test_intention_id',
+				'amount'        => $expected_amount,
+				'created'       => 1557224304,
+				'status'        => $expected_status,
+				'charges'       => [
+					'total_count' => 1,
+					'data'        => [
+						[
+							'id'                     => 'test_charge_id',
+							'amount'                 => $expected_amount,
+							'created'                => 1557224305,
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
+							'payment_method_details' => [],
+						],
+					],
+				],
+				'client_secret' => 'test_client_secret',
+				'currency'      => 'usd',
+			]
+		);
+
+		$this->payments_api_client->create_and_confirm_intention(
+			$expected_amount,
+			'usd',
+			'pm_123456789',
+			1,
+			false,
+			false,
+			false,
+			[],
+			[],
+			false,
+			[],
+			null,
+			null,
+			$fingerprint
 		);
 	}
 
@@ -276,7 +345,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							[
 								'id'     => 'test_refund_id',
 								'amount' => $expected_amount,
-								'status' => 'succeeded',
+								'status' => Payment_Intent_Status::SUCCEEDED,
 							]
 						),
 						'response' => [
@@ -302,7 +371,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_create_intention_authorization_success() {
 		$expected_amount = 123;
-		$expected_status = 'requires_capture';
+		$expected_status = Payment_Intent_Status::REQUIRES_CAPTURE;
 
 		$this->set_http_mock_response(
 			200,
@@ -318,7 +387,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -394,7 +463,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_capture_intention_success() {
 		$expected_amount = 103;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		$this->set_http_mock_response(
 			200,
@@ -411,7 +480,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => $expected_amount,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -431,7 +500,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws Exception - In the event of test failure.
 	 */
 	public function test_cancel_intention_success() {
-		$expected_status = 'canceled';
+		$expected_status = Payment_Intent_Status::CANCELED;
 
 		$this->set_http_mock_response(
 			200,
@@ -447,7 +516,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 							'id'                     => 'test_charge_id',
 							'amount'                 => 123,
 							'created'                => 1557224305,
-							'status'                 => 'succeeded',
+							'status'                 => Payment_Intent_Status::SUCCEEDED,
 							'payment_method_details' => [],
 						],
 					],
@@ -508,7 +577,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test a successful fetch of a single transaction.
+	 * Test a successful fetch of a list of transactions.
 	 *
 	 * @throws Exception In case of test failure.
 	 */
@@ -734,23 +803,26 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				),
 				wp_json_encode(
 					[
-						'test_mode'           => false,
-						'return_url'          => 'http://localhost',
-						'business_data'       => [
+						'test_mode'                   => false,
+						'return_url'                  => 'http://localhost',
+						'business_data'               => [
 							'a' => 1,
 							'b' => 2,
 							'c' => 3,
 						],
-						'site_data'           => [
+						'site_data'                   => [
 							'site_username' => 'admin',
 							'site_locale'   => 'en_US',
 						],
-						'create_live_account' => true,
-						'actioned_notes'      => [
+						'create_live_account'         => true,
+						'actioned_notes'              => [
 							'd' => 4,
 							'e' => 5,
 							'f' => 6,
 						],
+						'progressive'                 => false,
+						'collect_payout_requirements' => false,
+						'account_data'                => [],
 					]
 				),
 				true,
@@ -1091,7 +1163,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$intention_id    = 'test_intention_id';
 		$currency_code   = 'usd';
 		$expected_amount = 123;
-		$expected_status = 'succeeded';
+		$expected_status = Payment_Intent_Status::SUCCEEDED;
 
 		// Mock the HTTP client manually to assert we are sending the correct args.
 		$this->mock_http_client
@@ -1164,7 +1236,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$currency_code           = 'eur';
 		$customer_id             = 'cus_123abc';
 		$expected_amount         = 123;
-		$expected_status         = 'succeeded';
+		$expected_status         = Payment_Intent_Status::SUCCEEDED;
 		$selected_payment_method = 'giropay';
 		$payment_country         = 'US';
 		$save_payment_method     = true;
@@ -1280,7 +1352,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$currency_code           = 'eur';
 		$customer_id             = 'cus_123abc';
 		$expected_amount         = 123;
-		$expected_status         = 'succeeded';
+		$expected_status         = Payment_Intent_Status::SUCCEEDED;
 		$selected_payment_method = 'card';
 		$payment_country         = 'US';
 		$save_payment_method     = true;
@@ -1547,8 +1619,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 					'line_items'         => [
 						[
 							'discount_amount'     => 0,
-							'product_code'        => 'zero-cost-fee',
-							'product_description' => 'Zero cost fee',
+							'product_code'        => 'empty-order',
+							'product_description' => 'The order is empty',
 							'quantity'            => 1,
 							'tax_amount'          => 0,
 							'unit_cost'           => 0,
@@ -1707,17 +1779,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
 		$mock_logger = $this->getMockBuilder( 'WC_Logger' )
-							->setMethods( [ 'log' ] )
-							->getMock();
+			->setMethods( [ 'log' ] )
+			->getMock();
 
 		$logger_ref = new ReflectionProperty( 'WCPay\Logger', 'logger' );
 		$logger_ref->setAccessible( true );
 		$logger_ref->setValue( null, $mock_logger );
 
-		$wcpay_dev_mode_true = function () {
-			return true;
-		};
-		add_filter( 'wcpay_dev_mode', $wcpay_dev_mode_true );
+		WC_Payments::mode()->dev();
 
 		$mock_logger
 			->expects( $this->exactly( $logger_num_calls ) )
@@ -1752,7 +1821,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		// clean up.
 		$logger_ref->setAccessible( true );
 		$logger_ref->setValue( null, null );
-		remove_filter( 'wcpay_dev_mode', $wcpay_dev_mode_true );
+		WC_Payments::mode()->live();
 	}
 
 	/**
@@ -1987,6 +2056,282 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->payments_api_client->get_document( 'someDocument' );
 	}
 
+	/**
+	 * Test a successful fetch of a single authorization.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_authorization_success() {
+		$payment_intent_id = 'pi_123smtm';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'payment_intent_id' => $payment_intent_id,
+			]
+		);
+
+		$authorization = $this->payments_api_client->get_authorization( $payment_intent_id );
+		$this->assertSame( $payment_intent_id, $authorization['payment_intent_id'] );
+	}
+
+	/**
+	 * Test fetching of non existing authorization.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_get_authorization_not_found() {
+		$payment_intent_id = 'pi_123smtm';
+		$error_message     = 'The authorization you asked for does not exist';
+
+		$this->set_http_mock_response(
+			404,
+			[
+				'error' => [
+					'code'    => 'authorization_missing',
+					'message' => $error_message,
+				],
+			]
+		);
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( "Error: $error_message" );
+
+		$this->payments_api_client->get_authorization( $payment_intent_id );
+	}
+
+	/**
+	 * Test a successful fetch of a list of authorizations.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_list_authorizations_success() {
+		$payment_intent_id_1 = 'pi_123dytycd';
+		$payment_intent_id_2 = 'pi_123dbap';
+
+		$this->set_http_mock_response(
+			200,
+			[
+				'data' => [
+					[
+						'payment_intent_id' => $payment_intent_id_1,
+					],
+					[
+						'payment_intent_id' => $payment_intent_id_2,
+					],
+				],
+			]
+		);
+
+		$authorizations = $this->payments_api_client->list_authorizations();
+
+		$this->assertSame( $payment_intent_id_1, $authorizations['data'][0]['payment_intent_id'] );
+		$this->assertSame( $payment_intent_id_2, $authorizations['data'][1]['payment_intent_id'] );
+	}
+
+	/**
+	 * Test a successful fetch of authorizations summary.
+	 *
+	 * @throws Exception In case of test failure.
+	 */
+	public function test_authorizations_summary_success() {
+		$this->set_http_mock_response(
+			200,
+			[
+				'count' => 123,
+				'total' => 1200,
+			]
+		);
+
+		$summary = $this->payments_api_client->get_authorizations_summary();
+
+		$this->assertSame( 123, $summary['count'] );
+		$this->assertSame( 1200, $summary['total'] );
+	}
+
+	/**
+	 * Test that API client will retry request in case of network error
+	 *
+	 * POST calls have `Idempotency-Key` set in the `request`, thus are
+	 * possible to retry.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_post_on_network_failure() {
+		$this->mock_http_client
+			->expects( $this->exactly( 4 ) )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
+					'response' => [
+						'code'    => 0,
+						'message' => 'Unknown network error',
+					],
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'POST' ]
+		);
+	}
+
+	/**
+	 * Test that API client will retry request in case of network error
+	 * indiciated by Connection_Exception.
+	 *
+	 * POST calls have `Idempotency-Key` set in the `request`, thus are
+	 * possible to retry.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_post_on_network_failure_exception() {
+		$this->mock_http_client
+			->expects( $this->exactly( 4 ) )
+			->method( 'remote_request' )
+			->willThrowException(
+				new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 500 )
+			);
+
+		$this->expectException( Connection_Exception::class );
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'POST' ]
+		);
+	}
+
+	/**
+	 * Test that API client will retry request in case of network error
+	 * and stop on success.
+	 *
+	 * POST calls have `Idempotency-Key` set in the `request`, thus are
+	 * possible to retry.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_post_on_network_failure_exception_and_stops_on_success() {
+		$this->mock_http_client
+			->expects( $this->exactly( 3 ) )
+			->method( 'remote_request' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException(
+					new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 500 )
+				),
+				$this->throwException(
+					new Connection_Exception( 'HTTP request failed', 'wcpay_http_request_failed', 500 )
+				),
+				[
+					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'POST' ]
+		);
+	}
+
+	/**
+	 * Test that API client will not retry if connection exception indicates there
+	 * was a response.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_doesnt_retry_on_other_exceptions() {
+		$this->mock_http_client
+			->expects( $this->exactly( 1 ) )
+			->method( 'remote_request' )
+			->willThrowException(
+				new Exception( 'Random exception' )
+			);
+
+		$this->expectException( Exception::class );
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'POST' ]
+		);
+	}
+
+	/**
+	 * Test that API client will retry request in case of network error with
+	 * Idempotency-Key header
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_retries_get_with_idempotency_header_on_network_failure() {
+		$this->mock_http_client
+			->expects( $this->exactly( 4 ) )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
+					'response' => [
+						'code'    => 0,
+						'message' => 'Unknown network error',
+					],
+				]
+			);
+
+		$callable = function ( $headers ) {
+			$headers['Idempotency-Key'] = 'ik_42';
+			return $headers;
+		};
+
+		add_filter(
+			'wcpay_api_request_headers',
+			$callable,
+			10,
+			2
+		);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'GET' ]
+		);
+
+		remove_filter(
+			'wcpay_api_request_headers',
+			$callable,
+			10
+		);
+	}
+
+	/**
+	 * Test that API client won't retry GET request without Idemptency-Key header.
+	 *
+	 * @throws Exception in case of the test failure.
+	 */
+	public function test_request_doesnt_retry_get_without_idempotency_header_on_network_failure() {
+		$this->mock_http_client
+			->expects( $this->exactly( 1 ) )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'result' => 'error' ] ),
+					'response' => [
+						'code'    => 0,
+						'message' => 'Unknown network error',
+					],
+				]
+			);
+
+		PHPUnit_Utils::call_method(
+			$this->payments_api_client,
+			'request',
+			[ [], 'intentions', 'GET' ]
+		);
+	}
 	/**
 	 * Set up http mock response.
 	 *

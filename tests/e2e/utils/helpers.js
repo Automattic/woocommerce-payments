@@ -2,6 +2,8 @@
  * Wait for UI placeholders to finish and UI content is loaded.
  *
  */
+const config = require( 'config' );
+
 export const uiLoaded = async () => {
 	await page.waitForFunction(
 		() => ! Boolean( document.querySelector( '.is-loadable-placeholder' ) )
@@ -18,4 +20,15 @@ export const takeScreenshot = ( name ) => {
 		path: `./screenshots/${ name }.png`,
 		fullPage: true,
 	} );
+};
+
+// Check whether specified page exists
+export const checkPageExists = async ( slug ) => {
+	const wcbPage = await page.goto( config.get( 'url' ) + slug, {
+		waitUntil: 'load',
+	} );
+
+	if ( 404 === wcbPage.status() ) {
+		return Promise.reject();
+	}
 };

@@ -4,6 +4,14 @@
  */
 import mapTimelineEvents from '../map-events';
 
+jest.mock( 'gridicons/dist/sync', () => 'SyncIcon' );
+jest.mock( 'gridicons/dist/plus', () => 'PlusIcon' );
+jest.mock( 'gridicons/dist/minus', () => 'MinusIcon' );
+jest.mock( 'gridicons/dist/info-outline', () => 'InfoOutlineIcon' );
+jest.mock( 'gridicons/dist/checkmark', () => 'CheckmarkIcon' );
+jest.mock( 'gridicons/dist/cross', () => 'CrossIcon' );
+jest.mock( 'gridicons/dist/notice-outline', () => 'NoticeOutlineIcon' );
+
 describe( 'mapTimelineEvents', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -383,6 +391,44 @@ describe( 'mapTimelineEvents', () => {
 						datetime: 1643717044,
 						amount: -11000,
 						loan_id: 'flxln_1KOKzdR4ByxURRrFX9A65q40',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'in person payments - tap to pay', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 1980,
+						currency: 'USD',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 61,
+						fee_rates: {
+							percentage: 0.026,
+							fixed: 20,
+							fixed_currency: 'USD',
+							history: [
+								{
+									type: 'base',
+									percentage_rate: 0.026,
+									fixed_rate: 10,
+									currency: 'usd',
+								},
+								{
+									type: 'additional',
+									additional_type: 'device',
+									percentage_rate: 0,
+									fixed_rate: 10,
+									currency: 'usd',
+								},
+							],
+						},
+						type: 'captured',
 					},
 				] )
 			).toMatchSnapshot();

@@ -48,22 +48,12 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 			return;
 		}
 
-		$script_src_url    = plugins_url( 'dist/subscriptions-empty-state.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/subscriptions-empty-state.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require_once $script_asset_path : [ 'dependencies' => [] ];
-		$wcpay_settings    = [
+		WC_Payments::register_script_with_dependencies( 'WCPAY_SUBSCRIPTIONS_EMPTY_STATE', 'dist/subscriptions-empty-state' );
+		$wcpay_settings = [
 			'connectUrl'    => WC_Payments_Account::get_connect_url( 'WC_SUBSCRIPTIONS_TABLE' ),
 			'isConnected'   => $this->account->is_stripe_connected(),
 			'newProductUrl' => WC_Subscriptions_Admin::add_subscription_url(),
 		];
-
-		wp_register_script(
-			'WCPAY_SUBSCRIPTIONS_EMPTY_STATE',
-			$script_src_url,
-			$script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/subscriptions-empty-state.js' ),
-			true
-		);
 
 		wp_localize_script(
 			'WCPAY_SUBSCRIPTIONS_EMPTY_STATE',

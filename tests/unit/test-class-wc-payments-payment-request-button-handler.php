@@ -82,21 +82,19 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		parent::set_up();
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
-									->disableOriginalConstructor()
-									->setMethods(
-										[
-											'get_account_data',
-											'is_server_connected',
-											'capture_intention',
-											'cancel_intention',
-											'get_intent',
-											'create_and_confirm_setup_intent',
-											'get_setup_intent',
-											'get_payment_method',
-											'refund_charge',
-										]
-									)
-									->getMock();
+			->disableOriginalConstructor()
+			->setMethods(
+				[
+					'get_account_data',
+					'is_server_connected',
+					'capture_intention',
+					'cancel_intention',
+					'get_setup_intent',
+					'get_payment_method',
+					'refund_charge',
+				]
+			)
+			->getMock();
 		$this->mock_api_client->expects( $this->any() )->method( 'is_server_connected' )->willReturn( true );
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 
@@ -274,5 +272,76 @@ class WC_Payments_Payment_Request_Button_Handler_Test extends WCPAY_UnitTestCase
 		$this->pr                 = new WC_Payments_Payment_Request_Button_Handler( $this->mock_wcpay_account, $this->mock_wcpay_gateway );
 
 		$this->assertFalse( $this->pr->has_allowed_items_in_cart() );
+	}
+
+	public function test_get_product_price_returns_simple_price() {
+		$this->assertEquals(
+			$this->simple_product->get_price(),
+			$this->pr->get_product_price( $this->simple_product )
+		);
+	}
+
+	public function test_get_product_price_includes_subscription_sign_up_fee() {
+		$mock_product = $this->create_mock_subscription( 'subscription' );
+
+		// We have a helper because we are not loading subscriptions.
+		WC_Subscriptions_Product::set_sign_up_fee( 10 );
+
+		$this->assertEquals( 20, $this->pr->get_product_price( $mock_product ) );
+
+		// Restore the sign-up fee after the test.
+		WC_Subscriptions_Product::set_sign_up_fee( 0 );
+	}
+
+	public function test_get_product_price_includes_variable_subscription_sign_up_fee() {
+		$mock_product = $this->create_mock_subscription( 'subscription_variation' );
+
+		// We have a helper because we are not loading subscriptions.
+		WC_Subscriptions_Product::set_sign_up_fee( 10 );
+
+		$this->assertEquals( 20, $this->pr->get_product_price( $mock_product ) );
+
+		// Restore the sign-up fee after the test.
+		WC_Subscriptions_Product::set_sign_up_fee( 0 );
+	}
+
+	public function test_get_product_price_throws_exception_for_products_without_prices() {
+		if ( version_compare( WC_VERSION, '6.9.0', '>=' ) ) {
+			$this->markTestSkipped( 'This test is useless starting with WooCommerce 6.9.0' );
+			return;
+		}
+
+		$this->simple_product->set_price( 'a' );
+
+		$this->expectException( WCPay\Exceptions\Invalid_Price_Exception::class );
+
+		$this->pr->get_product_price( $this->simple_product );
+	}
+
+	public function test_get_product_price_throws_exception_for_a_non_numeric_signup_fee() {
+		$mock_product = $this->create_mock_subscription( 'subscription' );
+		WC_Subscriptions_Product::set_sign_up_fee( 'a' );
+
+		$this->expectException( WCPay\Exceptions\Invalid_Price_Exception::class );
+		$this->pr->get_product_price( $mock_product );
+
+		// Restore the sign-up fee after the test.
+		WC_Subscriptions_Product::set_sign_up_fee( 0 );
+	}
+
+	private function create_mock_subscription( $type ) {
+		$mock_product = $this->createMock( WC_Subscriptions_Product::class );
+
+		$mock_product
+			->expects( $this->once() )
+			->method( 'get_price' )
+			->willReturn( 10 );
+
+		$mock_product
+			->expects( $this->once() )
+			->method( 'get_type' )
+			->willReturn( $type );
+
+		return $mock_product;
 	}
 }

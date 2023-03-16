@@ -31,7 +31,7 @@ class Track_Upe_Status {
 			return;
 		}
 
-		$upe_value = get_option( \WC_Payments_Features::UPE_FLAG_NAME, 'not-set' );
+		$upe_value = get_option( \WC_Payments_Features::UPE_SPLIT_FLAG_NAME, 'not-set' );
 
 		// Don't trigger the track event when the flag isn't set.
 		if ( 'not-set' !== $upe_value ) {

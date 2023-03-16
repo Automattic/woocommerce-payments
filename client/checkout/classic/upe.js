@@ -1,6 +1,11 @@
 /* global jQuery */
 
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import './style.scss';
@@ -13,9 +18,14 @@ import WCPayAPI from '../api';
 import enqueueFraudScripts from 'fraud-scripts';
 import { getFontRulesFromPage, getAppearance } from '../upe-styles';
 import { getTerms, getCookieValue, isWCPayChosen } from '../utils/upe';
+import { decryptClientSecret } from '../utils/encryption';
 import enableStripeLinkPaymentMethod from '../stripe-link';
 import apiRequest from '../utils/request';
 import showErrorCheckout from '../utils/show-error-checkout';
+import {
+	getFingerprint,
+	appendFingerprintInputToForm,
+} from '../utils/fingerprint';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getConfig( 'fraudServices' ) );
@@ -52,7 +62,10 @@ jQuery( function ( $ ) {
 	let elements = null;
 	let upeElement = null;
 	let paymentIntentId = null;
+	let paymentIntentClientSecret = null;
 	let isUPEComplete = false;
+	let fingerprint = null;
+
 	const hiddenBillingFields = {
 		name:
 			enabledBillingFields.includes( 'billing_first_name' ) ||
@@ -175,6 +188,18 @@ jQuery( function ( $ ) {
 			return;
 		}
 
+		if ( ! fingerprint ) {
+			try {
+				const { visitorId } = await getFingerprint();
+				fingerprint = visitorId;
+			} catch ( error ) {
+				// Do not mount element if fingerprinting is not available
+				showErrorCheckout( error.message );
+
+				return;
+			}
+		}
+
 		/*
 		 * Trigger this event to ensure the tokenization-form.js init
 		 * is executed.
@@ -205,7 +230,7 @@ jQuery( function ( $ ) {
 			try {
 				const newIntent = isSetupIntent
 					? await api.initSetupIntent()
-					: await api.createIntent( orderId );
+					: await api.createIntent( { fingerprint, orderId } );
 				intentId = newIntent.id;
 				clientSecret = newIntent.client_secret;
 			} catch ( error ) {
@@ -226,6 +251,7 @@ jQuery( function ( $ ) {
 		}
 
 		paymentIntentId = intentId;
+		paymentIntentClientSecret = clientSecret;
 
 		let appearance = getConfig( 'upeAppearance' );
 
@@ -235,7 +261,7 @@ jQuery( function ( $ ) {
 		}
 
 		elements = api.getStripe().elements( {
-			clientSecret,
+			clientSecret: decryptClientSecret( clientSecret ),
 			appearance,
 			fonts: getFontRulesFromPage(),
 			loader: 'never',
@@ -266,6 +292,8 @@ jQuery( function ( $ ) {
 					state: 'shipping_state',
 					postal_code: 'shipping_postcode',
 					country: 'shipping_country',
+					first_name: 'shipping_first_name',
+					last_name: 'shipping_last_name',
 				},
 				billing_fields: {
 					line1: 'billing_address_1',
@@ -274,6 +302,8 @@ jQuery( function ( $ ) {
 					state: 'billing_state',
 					postal_code: 'billing_postcode',
 					country: 'billing_country',
+					first_name: 'billing_first_name',
+					last_name: 'billing_last_name',
 				},
 			} );
 		}
@@ -370,17 +400,23 @@ jQuery( function ( $ ) {
 	 */
 	const checkUPEForm = async ( $form, returnUrl = '#' ) => {
 		if ( ! upeElement ) {
-			showErrorCheckout( 'Your payment information is incomplete.' );
+			showErrorCheckout(
+				__(
+					'Your payment information is incomplete.',
+					'woocommerce-payments'
+				)
+			);
 			return false;
 		}
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors
-			const { error } = await api.getStripe().confirmPayment( {
+			const { error } = await api.handlePaymentConfirmation(
 				elements,
-				confirmParams: {
+				{
 					return_url: returnUrl,
 				},
-			} );
+				null
+			);
 			$form.removeClass( 'processing' ).unblock();
 			showErrorCheckout( error.message );
 			return false;
@@ -417,7 +453,7 @@ jQuery( function ( $ ) {
 
 		try {
 			// Update payment intent with level3 data, customer and maybe setup for future use.
-			await api.updateIntent(
+			const updateResponse = await api.updateIntent(
 				paymentIntentId,
 				orderId,
 				savePaymentMethod,
@@ -425,12 +461,19 @@ jQuery( function ( $ ) {
 				$( '#wcpay_payment_country' ).val()
 			);
 
-			const { error } = await api.getStripe().confirmPayment( {
+			if ( updateResponse.data ) {
+				if ( api.handleDuplicatePayments( updateResponse.data ) ) {
+					return;
+				}
+			}
+
+			const { error } = await api.handlePaymentConfirmation(
 				elements,
-				confirmParams: {
+				{
 					return_url: returnUrl,
 				},
-			} );
+				getPaymentIntentSecret()
+			);
 			if ( error ) {
 				throw error;
 			}
@@ -495,8 +538,14 @@ jQuery( function ( $ ) {
 		try {
 			const response = await api.processCheckout(
 				paymentIntentId,
-				formFields
+				formFields,
+				fingerprint ? fingerprint : ''
 			);
+
+			if ( api.handleDuplicatePayments( response ) ) {
+				return;
+			}
+
 			const redirectUrl = response.redirect_url;
 			const upeConfig = {
 				elements,
@@ -509,9 +558,11 @@ jQuery( function ( $ ) {
 			};
 			let error;
 			if ( response.payment_needed ) {
-				( { error } = await api
-					.getStripe()
-					.confirmPayment( upeConfig ) );
+				( { error } = await api.handlePaymentConfirmation(
+					elements,
+					upeConfig.confirmParams,
+					getPaymentIntentSecret()
+				) );
 			} else {
 				( { error } = await api.getStripe().confirmSetup( upeConfig ) );
 			}
@@ -584,18 +635,6 @@ jQuery( function ( $ ) {
 	};
 
 	/**
-	 * Checks if the customer is using a saved payment method.
-	 *
-	 * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
-	 */
-	function isUsingSavedPaymentMethod() {
-		return (
-			$( '#wc-woocommerce_payments-payment-token-new' ).length &&
-			! $( '#wc-woocommerce_payments-payment-token-new' ).is( ':checked' )
-		);
-	}
-
-	/**
 	 * Returns the cached payment intent for the current cart state.
 	 *
 	 * @return {Object} The intent id and client secret required for mounting the UPE element.
@@ -631,6 +670,19 @@ jQuery( function ( $ ) {
 		return {};
 	}
 
+	/**
+	 * Returns stripe intent secret that will be used to confirm payment
+	 *
+	 * @return {string | null} The intent secret required to confirm payment during the rate limit error.
+	 */
+	function getPaymentIntentSecret() {
+		if ( paymentIntentClientSecret ) {
+			return paymentIntentClientSecret;
+		}
+		const { clientSecret } = getPaymentIntentFromSession();
+		return clientSecret ? clientSecret : null;
+	}
+
 	// Handle the checkout form when WooCommerce Payments is chosen.
 	const wcpayPaymentMethods = [
 		PAYMENT_METHOD_NAME_CARD,
@@ -646,6 +698,8 @@ jQuery( function ( $ ) {
 				return false;
 			}
 		}
+
+		appendFingerprintInputToForm( $( this ), fingerprint );
 	} );
 
 	// Handle the add payment method form for WooCommerce Payments.
@@ -708,3 +762,19 @@ jQuery( function ( $ ) {
 		}
 	} );
 } );
+
+/**
+ * Checks if the customer is using a saved payment method.
+ *
+ * @return {boolean} Boolean indicating whether or not a saved payment method is being used.
+ */
+export function isUsingSavedPaymentMethod() {
+	return (
+		null !==
+			document.querySelector(
+				'#wc-woocommerce_payments-payment-token-new'
+			) &&
+		! document.querySelector( '#wc-woocommerce_payments-payment-token-new' )
+			.checked
+	);
+}

@@ -4,6 +4,7 @@ const { useE2EJestConfig } = require( '@woocommerce/e2e-environment' );
 const fs = require( 'fs' );
 
 config( { path: path.resolve( __dirname, '.env' ) } );
+config( { path: path.resolve( __dirname, 'e2e-default.env' ) } );
 config( { path: path.resolve( __dirname, 'local.env' ) } );
 
 // Define paths to look for E2E tests.
@@ -11,6 +12,8 @@ const e2ePaths = {
 	wcpay: path.resolve( __dirname, '../specs/wcpay' ),
 	subscriptions: path.resolve( __dirname, '../specs/subscriptions' ),
 	blocks: path.resolve( __dirname, '../specs/blocks' ),
+	upe: path.resolve( __dirname, '../specs/upe' ),
+	upeSplit: path.resolve( __dirname, '../specs/upe-split' ),
 };
 
 // Allow E2E tests to run specific tests - wcpay, subscriptions, blocks, all (default).

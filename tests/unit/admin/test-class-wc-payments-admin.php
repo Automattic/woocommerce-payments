@@ -74,24 +74,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
-	public function test_it_renders_settings_badge_if_upe_settings_preview_is_enabled_and_upe_is_not() {
-		global $submenu;
-
-		$this->mock_current_user_is_admin();
-
-		update_option( '_wcpay_feature_upe_settings_preview', '1' );
-		update_option( '_wcpay_feature_upe', '0' );
-
-		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
-		$this->payments_admin->add_payments_menu();
-
-		$item_names_by_urls = wp_list_pluck( $submenu['wc-admin&path=/payments/overview'], 0, 2 );
-		$settings_item_name = $item_names_by_urls[ WC_Payment_Gateway_WCPay::get_settings_url() ];
-
-		$this->assertEquals( 'Settings' . WC_Payments_Admin::MENU_NOTIFICATION_BADGE, $settings_item_name );
-	}
-
 	/**
 	 * @dataProvider feature_flag_combinations_not_causing_settings_badge_render_provider
 	 *
@@ -107,11 +89,11 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		update_option( '_wcpay_feature_upe', $is_upe_enabled ? '1' : '0' );
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu['wc-admin&path=/payments/overview'], 0, 2 );
-		$settings_item_name = $item_names_by_urls[ WC_Payment_Gateway_WCPay::get_settings_url() ];
+		$settings_item_name = $item_names_by_urls[ WC_Payments_Admin_Settings::get_settings_url() ];
 
 		$this->assertEquals( 'Settings', $settings_item_name );
 	}
@@ -121,7 +103,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
@@ -134,7 +116,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( false );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( false );
 		update_option( 'wcpay_activation_timestamp', time() - ( 3 * DAY_IN_SECONDS ) );
 		$this->payments_admin->add_payments_menu();
 
@@ -148,7 +130,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( false );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( false );
 		update_option( 'wcpay_menu_badge_hidden', 'no' );
 		update_option( 'wcpay_activation_timestamp', time() - ( DAY_IN_SECONDS * 2 ) );
 		$this->payments_admin->add_payments_menu();
@@ -162,6 +144,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		return [
 			[ false, false ],
 			[ false, true ],
+			[ true, false ],
 			[ true, true ],
 		];
 	}
@@ -269,7 +252,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
@@ -285,9 +268,9 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( $dispute_url, $item_names_by_urls );
 
 		// The expected badge content should include 4 disputes needing a response.
-		$expected_badge = sprintf( WC_Payments_Admin::DISPUTE_NOTIFICATION_BADGE_FORMAT, 4 );
+		$expected_badge = sprintf( WC_Payments_Admin::UNRESOLVED_NOTIFICATION_BADGE_FORMAT, 4 );
 
-		$this->assertEquals( 'Disputes' . $expected_badge, $item_names_by_urls[ $dispute_url ] );
+		$this->assertSame( 'Disputes' . $expected_badge, $item_names_by_urls[ $dispute_url ] );
 	}
 
 	/**
@@ -310,12 +293,100 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_current_user_is_admin();
 
 		// Make sure we render the menu with submenu items.
-		$this->mock_account->method( 'try_is_stripe_connected' )->willReturn( true );
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
 		$dispute_menu_item  = $item_names_by_urls['wc-admin&path=/payments/disputes'];
 
 		$this->assertEquals( 'Disputes', $dispute_menu_item );
+	}
+
+	/**
+	 * Tests WC_Payments_Admin::add_transactions_notification_badge()
+	 */
+	public function test_transactions_notification_badge_display() {
+		global $submenu;
+
+		update_option( \WC_Payments_Features::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
+
+		// Mock the manual capture setting as being enabled.
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'get_option' )
+			->with( 'manual_capture' )
+			->willReturn( 'yes' );
+
+		// Mock the database cache returning authorizations summary.
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'count'          => 3,
+					'currency'       => 'usd',
+					'total'          => 5400,
+					'all_currencies' => [
+						'eur',
+						'usd',
+					],
+				]
+			);
+
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
+
+		$transactions_url = 'wc-admin&path=/payments/transactions';
+
+		// Assert the submenu includes a transactions item that links directly to the Transactions screen.
+		$this->assertArrayHasKey( $transactions_url, $item_names_by_urls );
+
+		// The expected badge content should include 3 uncaptured transactions.
+		$expected_badge = sprintf( WC_Payments_Admin::UNRESOLVED_NOTIFICATION_BADGE_FORMAT, 3 );
+
+		$this->assertSame( 'Transactions' . $expected_badge, $item_names_by_urls[ $transactions_url ] );
+	}
+
+	/**
+	 * Tests WC_Payments_Admin::add_transactions_notification_badge()
+	 */
+	public function test_transactions_notification_badge_no_display() {
+		global $submenu;
+
+		update_option( \WC_Payments_Features::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
+
+		// Mock the manual capture setting as being enabled.
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'get_option' )
+			->with( 'manual_capture' )
+			->willReturn( 'yes' );
+
+		// Mock the database cache returning authorizations summary.
+		$this->mock_database_cache
+			->expects( $this->any() )
+			->method( 'get_or_add' )
+			->willReturn(
+				[
+					'count' => 0,
+					'total' => 0,
+				]
+			);
+
+		$this->mock_current_user_is_admin();
+
+		// Make sure we render the menu with submenu items.
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls     = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
+		$transactions_menu_item = $item_names_by_urls['wc-admin&path=/payments/transactions'];
+
+		$this->assertSame( 'Transactions', $transactions_menu_item );
 	}
 }

@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use Automattic\WooCommerce\Admin\Notes\Notes;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Database_Cache;
 
@@ -73,11 +74,27 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
+	/**
+	 * @param bool $can_manage_woocommerce
+	 *
+	 * @return Closure
+	 */
+	private function create_can_manage_woocommerce_cap_override( bool $can_manage_woocommerce ) {
+		return function ( $allcaps ) use ( $can_manage_woocommerce ) {
+			$allcaps['manage_woocommerce'] = $can_manage_woocommerce;
+
+			return $allcaps;
+		};
+	}
+
 	public function test_maybe_redirect_to_onboarding_stripe_disconnected_redirects() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
 		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new API_Exception( 'test', 'wcpay_account_not_found', 401 ) )
@@ -94,6 +111,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
 		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException(
@@ -117,6 +137,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_empty_cache();
 
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
+
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->throwException( new Exception() )
 		);
@@ -133,6 +156,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
 		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
@@ -152,11 +178,30 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
 	}
 
+	public function test_maybe_redirect_to_onboarding_with_non_admin_user() {
+		// Simulate the situation where the redirect has not happened yet.
+		update_option( 'wcpay_should_redirect_to_onboarding', true );
+
+		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( false );
+		add_filter( 'user_has_cap', $cb );
+
+		$this->mock_api_client->expects( $this->never() )->method( 'get_account_data' );
+
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_to_onboarding() );
+		// The option should be updated.
+		$this->assertTrue( (bool) get_option( 'wcpay_should_redirect_to_onboarding', false ) );
+	}
+
 	public function test_maybe_redirect_to_onboarding_checks_the_account_once() {
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 
 		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
 
 		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
 			$this->returnValue(
@@ -210,6 +255,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Simulate the account details cache not being there and then timing out.
 		$this->mock_empty_cache();
+
+		$cb = $this->create_can_manage_woocommerce_cap_override( true );
+		add_filter( 'user_has_cap', $cb );
 
 		// Simulate the situation where the redirect has not happened yet.
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
@@ -361,6 +409,99 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->is_stripe_connected( false ) );
 	}
 
+	public function test_is_stripe_account_valid_when_not_connected() {
+		$this->mock_empty_cache();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_account_data' )
+			->willThrowException( new API_Exception( 'test', 'wcpay_mock', 500 ) );
+
+		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_empty_account_data() {
+		$this->mock_empty_cache();
+
+		$this->mock_api_client->expects( $this->once() )->method( 'get_account_data' )->will(
+			$this->returnValue( [] )
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_unrequested() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'unrequested',
+				],
+			]
+		);
+
+		$this->assertFalse( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_requested() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'requested',
+				],
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_active() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'active',
+				],
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
+	public function test_is_stripe_account_valid_when_capability_pending_verification() {
+		$this->mock_database_cache->expects( $this->exactly( 2 ) )->method( 'get_or_add' )->willReturn(
+			[
+				'account_id'               => 'acc_test',
+				'live_publishable_key'     => 'pk_live_',
+				'test_publishable_key'     => 'pk_test_',
+				'has_pending_requirements' => true,
+				'current_deadline'         => 12345,
+				'is_live'                  => true,
+				'capabilities'             => [
+					'card_payments' => 'pending_verification',
+				],
+			]
+		);
+
+		$this->assertTrue( $this->wcpay_account->is_stripe_account_valid() );
+	}
+
 	public function test_get_publishable_key_returns_for_live() {
 		$this->mock_empty_cache();
 
@@ -440,7 +581,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_dev_account_in_dev_mode() {
 		// enable dev mode.
-		add_filter( 'wcpay_dev_mode', '__return_true' );
+		WC_Payments::mode()->dev();
 
 		// cache a dev account.
 		$this->cache_account_details(
@@ -459,12 +600,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 
-		remove_filter( 'wcpay_dev_mode', '__return_true' );
+		WC_Payments::mode()->live();
 	}
 
 	public function test_try_is_stripe_connected_returns_false_when_connected_with_dev_account_in_live_mode() {
 		// disable dev mode.
-		add_filter( 'wcpay_dev_mode', '__return_false' );
+		WC_Payments::mode()->live();
 
 		// cache a dev account.
 		$this->cache_account_details(
@@ -485,12 +626,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( $this->wcpay_account->try_is_stripe_connected() );
 
-		remove_filter( 'wcpay_dev_mode', '__return_false' );
+		WC_Payments::mode()->live();
 	}
 
 	public function test_try_is_stripe_connected_returns_true_when_connected_with_live_account_in_dev_mode() {
 		// enable dev mode.
-		add_filter( 'wcpay_dev_mode', '__return_true' );
+		WC_Payments::mode()->dev();
 
 		// cache a live account.
 		$this->cache_account_details(
@@ -509,7 +650,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $this->wcpay_account->try_is_stripe_connected() );
 
-		remove_filter( 'wcpay_dev_mode', '__return_true' );
+		WC_Payments::mode()->live();
 	}
 
 	public function test_is_account_rejected_returns_true() {
@@ -859,13 +1000,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$data_store = WC_Data_Store::load( 'admin-note' );
 		$notes      = $data_store->get_notes_with_name( $note_id );
 		$this->assertCount( 1, $notes );
-		$note      = $notes_class::get_note( $notes[0] );
+		$note      = Notes::get_note( $notes[0] );
 		$note_data = (array) $note->get_content_data();
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );
@@ -895,13 +1035,12 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$notes_class = WC_Payment_Woo_Compat_Utils::get_notes_class();
 		$this->wcpay_account->handle_loan_approved_inbox_note( $this->get_cached_account_loan_data() );
 		$note_id    = WC_Payments_Notes_Loan_Approved::NOTE_NAME;
 		$data_store = WC_Data_Store::load( 'admin-note' );
 		$notes      = $data_store->get_notes_with_name( $note_id );
 		$this->assertCount( 1, $notes );
-		$note      = $notes_class::get_note( $notes[0] );
+		$note      = Notes::get_note( $notes[0] );
 		$note_data = (array) $note->get_content_data();
 		$this->assertEquals( 'Your capital loan has been approved!', $note->get_title() );
 		$this->assertEquals( $advance_amount, $note_data['advance_amount'] );

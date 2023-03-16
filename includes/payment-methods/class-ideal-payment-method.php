@@ -27,5 +27,15 @@ class Ideal_Payment_Method extends UPE_Payment_Method {
 		$this->title       = 'iDEAL';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR' ];
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/ideal.svg', WCPAY_PLUGIN_FILE );
+	}
+
+	/**
+	 * Returns testing credentials to be printed at checkout in test mode.
+	 *
+	 * @return string
+	 */
+	public function get_testing_instructions() {
+		return '';
 	}
 }

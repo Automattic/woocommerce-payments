@@ -10,20 +10,6 @@
 
 // Adapted from woocommerce-admin:client/homescreen/style.scss
 .components-card.woocommerce-task-card {
-	.components-card__header.is-size-large,
-	.components-card__header.is-size-medium {
-		min-height: 63px;
-		min-height: unset;
-		display: grid;
-		grid-template-columns: auto 24px;
-
-		// IE doesn't support `align-items` on grid container
-
-		& > * {
-			align-self: center;
-		}
-	}
-
 	.components-card__body.is-size-large {
 		padding: 0;
 	}
@@ -32,11 +18,11 @@
 		padding: 0 $gap-smaller;
 	}
 
-	.wooocommerce-task-card__header {
-		display: flex;
+	.wcpay-task-list.woocommerce-experimental-list {
+		position: relative;
 
-		.woocommerce-badge {
-			margin-left: 16px;
+		.woocommerce-experimental-list__item {
+			position: initial;
 		}
 	}
 }

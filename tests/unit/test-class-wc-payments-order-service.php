@@ -5,6 +5,9 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Order_Status;
+use WCPay\Constants\Payment_Intent_Status;
+
 /**
  * WC_Payments_Order_Service unit tests.
  */
@@ -56,7 +59,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete. Get updated notes.
-		$this->order_service->mark_payment_completed( 'fake_order', $this->intent_id, 'succeeded', $this->charge_id );
+		$this->order_service->mark_payment_completed( 'fake_order', $this->intent_id, Payment_Intent_Status::SUCCEEDED, $this->charge_id );
 
 		// Assert: Check to make sure the intent/transaction id and intent_status meta were not set.
 		$this->assertEquals( '', $this->order->get_transaction_id() );
@@ -72,11 +75,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_order_status_not_updated_if_order_paid() {
 		// Arrange: Set the order status to processing, default is pending. Get expected notes.
-		$this->order->set_status( 'processing' );
+		$this->order->set_status( Order_Status::PROCESSING );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete.
-		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, 'succeeded', $this->charge_id );
+		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, Payment_Intent_Status::SUCCEEDED, $this->charge_id );
 
 		// Assert: Check to make sure the intent/transaction id and intent_status meta were not set.
 		$this->assertEquals( '', $this->order->get_transaction_id() );
@@ -97,7 +100,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete. Get updated notes.
-		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, 'succeeded', $this->charge_id );
+		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, Payment_Intent_Status::SUCCEEDED, $this->charge_id );
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Assert: Check to make sure the intent/transaction id and intent_status meta were not set.
@@ -114,7 +117,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_completed() {
 		// Arrange: Set the intent status.
-		$intent_status = 'succeeded';
+		$intent_status = Payment_Intent_Status::SUCCEEDED;
 
 		// Act: Attempt to mark the payment/order complete.
 		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -180,7 +183,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_mark_payment_failed_exits_on_existing_order_status_failed() {
 		// Arrange: Set the intent status, order status, and get the expected notes.
 		$intent_status = 'failed';
-		$this->order->set_status( 'failed' );
+		$this->order->set_status( Order_Status::FAILED );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order failed.
@@ -219,8 +222,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_authorized() {
 		// Arrange: Set the intent and order statuses.
-		$intent_status = 'requires_capture';
-		$order_status  = 'on-hold';
+		$intent_status = Payment_Intent_Status::REQUIRES_CAPTURE;
+		$order_status  = Order_Status::ON_HOLD;
 
 		// Act: Attempt to mark the payment/order on-hold.
 		$this->order_service->mark_payment_authorized( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -246,8 +249,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_authorized_exits_on_existing_order_status_on_hold() {
 		// Arrange: Set the intent status, order status, and get the expected notes.
-		$intent_status = 'requires_capture';
-		$this->order->set_status( 'on-hold' );
+		$intent_status = Payment_Intent_Status::REQUIRES_CAPTURE;
+		$this->order->set_status( Order_Status::ON_HOLD );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order on-hold.
@@ -266,8 +269,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_started() {
 		// Arrange: Set the intent and order statuses.
-		$intent_status = 'requires_action';
-		$order_status  = 'pending';
+		$intent_status = Payment_Intent_Status::REQUIRES_ACTION;
+		$order_status  = Order_Status::PENDING;
 
 		// Act: Attempt to mark the payment/order pending.
 		$this->order_service->mark_payment_started( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -292,8 +295,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_started_exits_on_existing_order_status_not_pending() {
 		// Arrange: Set the intent status, order status, and get the expected notes.
-		$intent_status = 'requires_action';
-		$this->order->set_status( 'on-hold' );
+		$intent_status = Payment_Intent_Status::REQUIRES_ACTION;
+		$this->order->set_status( Order_Status::ON_HOLD );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order pending.
@@ -312,7 +315,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_completed() {
 		// Arrange: Set the intent status.
-		$intent_status = 'succeeded';
+		$intent_status = Payment_Intent_Status::SUCCEEDED;
 
 		// Act: Attempt to mark the payment/order complete.
 		$this->order_service->mark_payment_capture_completed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -348,7 +351,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
 
 		// Assert: Check that the order status was not updated.
-		$this->assertTrue( $this->order->has_status( [ 'pending' ] ) );
+		$this->assertTrue( $this->order->has_status( [ Order_Status::PENDING ] ) );
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -373,7 +376,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( '', $this->order->get_meta( '_intention_status' ) );
 
 		// Assert: Check that the order status was not updated.
-		$this->assertTrue( $this->order->has_status( [ 'pending' ] ) );
+		$this->assertTrue( $this->order->has_status( [ Order_Status::PENDING ] ) );
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -389,8 +392,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_expired() {
 		// Arrange: Set the intent and order statuses.
-		$intent_status = 'canceled';  // Stripe uses single 'l'.
-		$order_status  = 'cancelled'; // WooCommerce uses double 'l'.
+		$intent_status     = Payment_Intent_Status::CANCELED;  // Stripe uses single 'l'.
+		$order_status      = Order_Status::CANCELLED; // WooCommerce uses double 'l'.
+		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
 		$this->order_service->mark_payment_capture_expired( $this->order, $this->intent_id, $intent_status, $this->charge_id );
@@ -403,7 +407,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to Cancelled', $notes[1]->content );
+		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[1]->content );
 		$this->assertStringContainsString( 'Payment authorization has <strong>expired</strong>', $notes[0]->content );
 		$this->assertStringContainsString( '/payments/transactions/details&id=pi_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
 
@@ -421,8 +425,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_payment_capture_cancelled() {
 		// Arrange: Set the intent and order statuses.
-		$intent_status = 'canceled';  // Stripe uses single 'l'.
-		$order_status  = 'cancelled'; // WooCommerce uses double 'l'.
+		$intent_status     = Payment_Intent_Status::CANCELED;  // Stripe uses single 'l'.
+		$order_status      = Order_Status::CANCELLED; // WooCommerce uses double 'l' in the background.
+		$wc_order_statuses = wc_get_order_statuses(); // WooCommerce uses single 'l' for US English.
 
 		// Act: Attempt to mark the payment/order expired/cancelled.
 		$this->order_service->mark_payment_capture_cancelled( $this->order, $this->intent_id, $intent_status );
@@ -435,7 +440,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to Cancelled', $notes[1]->content );
+		$this->assertStringContainsString( 'Pending payment to ' . $wc_order_statuses['wc-cancelled'], $notes[1]->content );
 		$this->assertStringContainsString( 'Payment authorization was successfully <strong>cancelled</strong>', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
@@ -449,7 +454,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Arrange: Set the dispute_id and reason, and the order status.
 		$dispute_id   = 'dp_123';
 		$reason       = 'product_not_received';
-		$order_status = 'on-hold';
+		$order_status = Order_Status::ON_HOLD;
 
 		// Act: Attempt to mark payment dispute created.
 		$this->order_service->mark_payment_dispute_created( $this->order, $dispute_id, $reason );
@@ -476,7 +481,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Arrange: Set the dispute_id and status, and the order status.
 		$dispute_id   = 'dp_123';
 		$status       = 'won';
-		$order_status = 'completed';
+		$order_status = Order_Status::COMPLETED;
 
 		// Act: Attempt to mark payment dispute created.
 		$this->order_service->mark_payment_dispute_closed( $this->order, $dispute_id, $status );
@@ -503,7 +508,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Arrange: Set the dispute_id, dispute status, the order status, and update the order status.
 		$dispute_id   = 'dp_123';
 		$status       = 'lost';
-		$order_status = 'on-hold';
+		$order_status = Order_Status::ON_HOLD;
 		$this->order->update_status( $order_status ); // When a dispute is created, the order status is changed to On Hold.
 
 		// Act: Attempt to mark payment dispute created.
@@ -534,8 +539,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_mark_terminal_payment_completed() {
 		// Arrange: Set the intent status.
-		$intent_status = 'succeeded';
-		$order_status  = 'completed';
+		$intent_status = Payment_Intent_Status::SUCCEEDED;
+		$order_status  = Order_Status::COMPLETED;
 
 		// Act: Attempt to mark the payment/order complete.
 		$this->order_service->mark_terminal_payment_completed( $this->order, $this->intent_id, $intent_status );
@@ -573,5 +578,150 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			'Note exists at the beginning'               => [ [ 'check_string', 'note 1', 'note 2' ], 'check_string', true ],
 			'Note exists at the end'                     => [ [ 'note 1', 'note 2', 'check_string' ], 'check_string', true ],
 		];
+	}
+
+	public function test_set_intent_id_for_order() {
+		$order     = WC_Helper_Order::create_order();
+		$intent_id = 'pi_mock_123';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+		$this->assertEquals( $order->get_meta( '_intent_id', true ), $intent_id );
+		$this->assertSame( 1, did_action( 'wcpay_order_intent_id_updated' ) );
+		$this->assertSame( 0, did_action( 'wcpay_order_payment_method_id_updated' ) );
+	}
+
+	public function test_get_intent_id_for_order() {
+		$intent_id = 'pi_mock';
+		$order     = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->save_meta_data();
+		$intent_id_from_service = $this->order_service->get_intent_id_for_order( $order->get_id() );
+		$this->assertEquals( $intent_id_from_service, $intent_id );
+	}
+
+	public function test_set_payment_method_id() {
+		$order          = WC_Helper_Order::create_order();
+		$payment_method = 'pm_mock';
+		$this->order_service->set_payment_method_id_for_order( $order, $payment_method );
+		$this->assertEquals( $order->get_meta( '_payment_method_id', true ), $payment_method );
+		$this->assertSame( 0, did_action( 'wcpay_order_intent_id_updated' ) );
+		$this->assertSame( 1, did_action( 'wcpay_order_payment_method_id_updated' ) );
+	}
+
+	public function test_get_payment_method_id() {
+		$payment_method_id = 'pm_mock_123';
+		$order             = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->save_meta_data();
+		$payment_method_from_service = $this->order_service->get_payment_method_id_for_order( $order->get_id() );
+		$this->assertEquals( $payment_method_from_service, $payment_method_id );
+	}
+
+	public function test_set_charge_id() {
+		$order     = WC_Helper_Order::create_order();
+		$charge_id = 'ch_mock';
+		$this->order_service->set_charge_id_for_order( $order, $charge_id );
+		$this->assertEquals( $order->get_meta( '_charge_id', true ), $charge_id );
+	}
+
+	public function test_get_charge_id() {
+		$charge_id = 'ch_mock';
+		$order     = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save_meta_data();
+		$charge_id_from_service = $this->order_service->get_charge_id_for_order( $order->get_id() );
+		$this->assertEquals( $charge_id_from_service, $charge_id );
+	}
+
+	public function test_set_intention_status() {
+		$order            = WC_Helper_Order::create_order();
+		$intention_status = 'mock_status';
+		$this->order_service->set_intention_status_for_order( $order, $intention_status );
+		$this->assertEquals( $order->get_meta( '_intention_status', true ), $intention_status );
+	}
+
+	public function test_get_intention_status() {
+		$intention_status = 'succeeded';
+		$order            = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intention_status', $intention_status );
+		$order->save_meta_data();
+		$intention_status_from_service = $this->order_service->get_intention_status_for_order( $order->get_id() );
+		$this->assertEquals( $intention_status_from_service, $intention_status );
+	}
+
+	public function test_set_customer_id() {
+		$order       = WC_Helper_Order::create_order();
+		$customer_id = 'cus_123';
+		$this->order_service->set_customer_id_for_order( $order, $customer_id );
+		$this->assertEquals( $order->get_meta( '_stripe_customer_id', true ), $customer_id );
+	}
+
+	public function test_get_customer_id() {
+		$customer_id = 'cus_mock';
+		$order       = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_stripe_customer_id', $customer_id );
+		$order->save_meta_data();
+		$customer_id_from_service = $this->order_service->get_customer_id_for_order( $order->get_id() );
+		$this->assertEquals( $customer_id_from_service, $customer_id );
+	}
+
+	public function test_set_wcpay_intent_currency() {
+		$order                 = WC_Helper_Order::create_order();
+		$wcpay_intent_currency = 'mock_curr';
+		$this->order_service->set_wcpay_intent_currency_for_order( $order, $wcpay_intent_currency );
+		$this->assertEquals( $order->get_meta( '_wcpay_intent_currency', true ), $wcpay_intent_currency );
+	}
+
+	public function test_get_wcpay_intent_currency() {
+		$wcpay_intent_currency = 'EUR';
+		$order                 = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_intent_currency', $wcpay_intent_currency );
+		$order->save_meta_data();
+		$wcpay_intent_currency_from_service = $this->order_service->get_wcpay_intent_currency_for_order( $order->get_id() );
+		$this->assertEquals( $wcpay_intent_currency_from_service, $wcpay_intent_currency );
+	}
+
+	public function test_set_wcpay_refund_id() {
+		$order           = WC_Helper_Order::create_order();
+		$wcpay_refund_id = 'ri_mock';
+		$this->order_service->set_wcpay_refund_id_for_order( $order, $wcpay_refund_id );
+		$this->assertEquals( $order->get_meta( '_wcpay_refund_id', true ), $wcpay_refund_id );
+	}
+
+	public function test_get_wcpay_refund_id() {
+		$wcpay_refund_id = 'ri_1234';
+		$order           = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_refund_id', $wcpay_refund_id );
+		$order->save_meta_data();
+		$wcpay_refund_id_from_service = $this->order_service->get_wcpay_refund_id_for_order( $order->get_id() );
+		$this->assertEquals( $wcpay_refund_id_from_service, $wcpay_refund_id );
+	}
+
+	public function test_set_wcpay_refund_status() {
+		$order               = WC_Helper_Order::create_order();
+		$wcpay_refund_status = 'failed';
+		$this->order_service->set_wcpay_refund_status_for_order( $order, $wcpay_refund_status );
+		$this->assertEquals( $order->get_meta( '_wcpay_refund_status', true ), $wcpay_refund_status );
+	}
+
+	public function test_get_wcpay_refund_status() {
+		$wcpay_refund_status = 'mock_status';
+		$order               = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_refund_status', $wcpay_refund_status );
+		$order->save_meta_data();
+		$wcpay_refund_status_from_service = $this->order_service->get_wcpay_refund_status_for_order( $order->get_id() );
+		$this->assertEquals( $wcpay_refund_status_from_service, $wcpay_refund_status );
+	}
+
+	public function test_attach_intent_info_to_order() {
+		$order          = WC_Helper_Order::create_order();
+		$intent_id      = 'pi_mock';
+		$intent_status  = 'succeeded';
+		$payment_method = 'woocommerce_payments';
+		$customer_id    = 'cus_12345';
+		$charge_id      = 'ch_mock';
+		$currency       = 'USD';
+		$this->order_service->attach_intent_info_to_order( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency );
+
+		$this->assertEquals( $intent_id, $order->get_meta( '_intent_id', true ) );
 	}
 }

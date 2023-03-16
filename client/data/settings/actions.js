@@ -28,6 +28,12 @@ export function updateIsCardPresentEligible( isEnabled ) {
 	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
 }
 
+export function updateIsClientSecretEncryptionEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_client_secret_encryption_enabled: isEnabled,
+	} );
+}
+
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
@@ -72,6 +78,20 @@ export function updateIsSavingSettings( isSaving, error ) {
 		type: ACTION_TYPES.SET_IS_SAVING_SETTINGS,
 		isSaving,
 		error,
+	};
+}
+
+export function updateSelectedPaymentMethod( id ) {
+	return {
+		type: ACTION_TYPES.SET_SELECTED_PAYMENT_METHOD,
+		id,
+	};
+}
+
+export function updateUnselectedPaymentMethod( id ) {
+	return {
+		type: ACTION_TYPES.SET_UNSELECTED_PAYMENT_METHOD,
+		id,
 	};
 }
 
@@ -216,4 +236,15 @@ export function updatePlatformCheckoutStoreLogo( storeLogo ) {
 	return updateSettingsValues( {
 		platform_checkout_store_logo: storeLogo,
 	} );
+}
+
+export function updatePlatformCheckoutLocations( locations ) {
+	return updateSettingsValues( {
+		platform_checkout_enabled_locations: [ ...locations ],
+	} );
+}
+
+// TODO: Finish implementation once server API endpoints are deployed.
+export function updateProtectionLevel( level ) {
+	return updateSettingsValues( { current_protection_level: level } );
 }

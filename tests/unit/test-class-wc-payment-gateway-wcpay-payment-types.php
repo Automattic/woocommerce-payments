@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 
@@ -162,23 +163,33 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		);
 	}
 
+	private function mock_wcs_get_subscriptions_for_order( $value ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order ) use ( $value ) {
+				return $value;
+			}
+		);
+	}
+
+	private function mock_wcs_get_subscriptions_for_renewal_order( $value ) {
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $order ) use ( $value ) {
+				return $value;
+			}
+		);
+	}
+
 	public function test_single_payment() {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( false );
+		$this->mock_wcs_get_subscriptions_for_order( [] );
 
-		$intent = WC_Helper_Intention::create_intention();
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
+		$intent  = WC_Helper_Intention::create_intention();
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
 			->with(
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				// Metadata argument.
 				$this->callback(
 					function( $metadata ) use ( $order ) {
 						$this->assertEquals( $metadata['payment_type'], 'single' );
@@ -186,8 +197,11 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 						return is_array( $metadata );
 					}
 				)
-			)
-			->will( $this->returnValue( $intent ) );
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$mock_fraud_prevention = $this->createMock( Fraud_Prevention_Service::class );
 		Fraud_Prevention_Service::set_instance( $mock_fraud_prevention );
@@ -200,22 +214,18 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	}
 
 	public function test_initial_subscription_payment() {
-		$order = WC_Helper_Order::create_order();
+		$order        = WC_Helper_Order::create_order();
+		$subscription = new WC_Subscription();
+		$subscription->set_parent( $order );
 		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( [ $subscription ] );
 
-		$intent = WC_Helper_Intention::create_intention();
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
+		$intent  = WC_Helper_Intention::create_intention();
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
 			->with(
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				// Metadata argument.
 				$this->callback(
 					function( $metadata ) use ( $order ) {
 						$this->assertEquals( $metadata['payment_type'], 'recurring' );
@@ -223,13 +233,52 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 						return is_array( $metadata );
 					}
 				)
-			)
-			->will( $this->returnValue( $intent ) );
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_renewal_subscription_payment() {
+		$order             = WC_Helper_Order::create_order();
+		$mock_subscription = new WC_Subscription();
+		$mock_subscription->set_parent( $order );
+
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( [ $mock_subscription ] );
+		$this->mock_wcs_get_subscriptions_for_renewal_order( [] );
+
+		$order->add_payment_token( $this->token );
+
+		$intent  = WC_Helper_Intention::create_intention();
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' )
+			->with(
+				$this->callback(
+					function( $metadata ) use ( $order ) {
+						$this->assertEquals( $metadata['payment_type'], 'recurring' );
+						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
+						return is_array( $metadata );
+					}
+				)
+			);
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+
+		$this->mock_wcpay_gateway->scheduled_subscription_payment( 100, $order );
+	}
+
+	/**
+	 * Test the scheduled_subscription_payment method is halted before payment when the renewal order is linked to a WCPay Subscription.
+	 */
+	public function test_scheduled_subscription_payment_skipped() {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( true );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
@@ -239,29 +288,24 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		);
 		$order->add_payment_token( $this->token );
 
-		$intent = WC_Helper_Intention::create_intention();
+		// Mock a subscription that is a WCPay Subscription.
+		$mock_subscription                 = new WC_Subscription();
+		$mock_subscription->payment_method = 'woocommerce_payments';
+
+		$mock_subscription->update_meta_data( '_wcpay_subscription_id', 'test_is_wcpay_subscription' );
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $id ) use ( $mock_subscription ) {
+				return [ '1' => $mock_subscription ];
+			}
+		);
+
+		// Make sure the payment is skipped for WCPay Subscriptions.
 		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'create_and_confirm_intention' )
-			->with(
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				$this->anything(),
-				// Metadata argument.
-				$this->callback(
-					function( $metadata ) use ( $order ) {
-						$this->assertEquals( $metadata['payment_type'], 'recurring' );
-						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
-						return is_array( $metadata );
-					}
-				)
-			)
-			->will( $this->returnValue( $intent ) );
+			->expects( $this->never() )
+			->method( 'create_and_confirm_intention' );
 
 		$this->mock_wcpay_gateway->scheduled_subscription_payment( 100, $order );
+
 	}
 }

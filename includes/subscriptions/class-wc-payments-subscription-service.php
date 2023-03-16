@@ -133,11 +133,10 @@ class WC_Payments_Subscription_Service {
 
 		add_action( 'woocommerce_subscription_status_cancelled', [ $this, 'cancel_subscription' ] );
 		add_action( 'woocommerce_subscription_status_expired', [ $this, 'cancel_subscription' ] );
-		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'suspend_subscription' ] );
+		add_action( 'woocommerce_subscription_status_on-hold', [ $this, 'handle_subscription_status_on_hold' ] );
 		add_action( 'woocommerce_subscription_status_pending-cancel', [ $this, 'set_pending_cancel_for_subscription' ] );
 		add_action( 'woocommerce_subscription_status_pending-cancel_to_active', [ $this, 'reactivate_subscription' ] );
 		add_action( 'woocommerce_subscription_status_on-hold_to_active', [ $this, 'reactivate_subscription' ] );
-		add_action( 'save_post_shop_subscription', [ $this, 'maybe_update_date_for_subscription' ] );
 
 		// Save the new token on the WCPay subscription when it's added to a WC subscription.
 		add_action( 'woocommerce_payment_token_added_to_order', [ $this, 'update_wcpay_subscription_payment_method' ], 10, 3 );
@@ -159,12 +158,14 @@ class WC_Payments_Subscription_Service {
 		$trial_end = $subscription->get_time( 'trial_end' );
 		$has_sync  = false;
 
-		// TODO: Check if there is a better way to see if sync date is today.
 		if ( WC_Subscriptions_Synchroniser::is_syncing_enabled() && WC_Subscriptions_Synchroniser::subscription_contains_synced_product( $subscription ) ) {
 			$has_sync = true;
 
 			foreach ( $subscription->get_items() as $item ) {
-				if ( WC_Subscriptions_Synchroniser::is_payment_upfront( $item->get_product() ) ) {
+				$synced_payment_date = WC_Subscriptions_Synchroniser::calculate_first_payment_date( $item->get_product(), 'timestamp' );
+
+				// Check if the subscription starts from today because in those cases we don't need a dynamic trial period to align to the payment date.
+				if ( WC_Subscriptions_Synchroniser::is_today( $synced_payment_date ) ) {
 					$has_sync = false;
 					break;
 				}
@@ -182,19 +183,19 @@ class WC_Payments_Subscription_Service {
 	 * @return WC_Subscription|bool The WC subscription or false if it can't be found.
 	 */
 	public static function get_subscription_from_wcpay_subscription_id( string $wcpay_subscription_id ) {
-		global $wpdb;
-
-		$subscription_id = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT post_id FROM {$wpdb->prefix}postmeta
-				WHERE meta_key = %s
-				AND meta_value = %s",
-				self::SUBSCRIPTION_ID_META_KEY,
-				$wcpay_subscription_id
-			)
+		$subscriptions = wcs_get_subscriptions(
+			[
+				'subscriptions_per_page' => 1,
+				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'   => self::SUBSCRIPTION_ID_META_KEY,
+						'value' => $wcpay_subscription_id,
+					],
+				],
+			]
 		);
 
-		return wcs_get_subscription( $subscription_id );
+		return empty( $subscriptions ) ? false : reset( $subscriptions );
 	}
 
 	/**
@@ -450,13 +451,59 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Suspends the WCPay subscription when a WC subscription is put on-hold.
+	 * Handle subscription status change to on-hold.
 	 *
-	 * @param WC_Subscription $subscription The WC subscription that was suspended.
+	 * @param WC_Subscription $subscription The WC subscription.
+	 *
+	 * @return void
+	 */
+	public function handle_subscription_status_on_hold( WC_Subscription $subscription ) {
+		// Check if the subscription is a WCPay subscription before proceeding.
+		// In stores that have WC Subscriptions active, or previously had WC S,
+		// this method may be called with regular tokenised subscriptions.
+		if ( ! $this->is_wcpay_subscription( $subscription ) ) {
+			return;
+		}
+
+		$this->suspend_subscription( $subscription );
+
+		// Add an order note as a visible record of suspend.
+		$subscription->add_order_note( __( 'Suspended WCPay Subscription because subscription status changed to on-hold.', 'woocommerce-payments' ) );
+
+		// Log that the subscription was suspended.
+		// Include a brief stack trace to help determine where status change originated.
+		// For example, admin user action, or a code interaction with customizations.
+		$e     = new Exception();
+		$trace = $e->getTraceAsString();
+		Logger::log(
+			sprintf(
+				'Suspended WCPay Subscription because subscription status changed to on-hold. WC ID: %d; WCPay ID: %s; stack: %s',
+				$subscription->get_id(),
+				self::get_wcpay_subscription_id( $subscription ),
+				$trace
+			)
+		);
+	}
+
+	/**
+	 * Suspends a WCPay subscription.
+	 *
+	 * @param WC_Subscription $subscription The WC subscription to suspend.
 	 *
 	 * @return void
 	 */
 	public function suspend_subscription( WC_Subscription $subscription ) {
+		// Check if the subscription is a WCPay subscription before proceeding.
+		if ( ! $this->is_wcpay_subscription( $subscription ) ) {
+			Logger::log(
+				sprintf(
+					'Aborting WC_Payments_Subscription_Service::suspend_subscription; subscription is a tokenised (non WCPay) subscription. WC ID: %d.',
+					$subscription->get_id()
+				)
+			);
+			return;
+		}
+
 		$this->update_subscription( $subscription, [ 'pause_collection' => [ 'behavior' => 'void' ] ] );
 	}
 
@@ -516,38 +563,6 @@ class WC_Payments_Subscription_Service {
 					return;
 				}
 			}
-		}
-	}
-
-	/**
-	 * Updates the next payment or trial end dates for a WCPay Subscription.
-	 *
-	 * @param int $post_id WC Subscription ID.
-	 *
-	 * @return void
-	 */
-	public function maybe_update_date_for_subscription( int $post_id ) {
-		if ( empty( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( wc_clean( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
-			return;
-		}
-
-		$subscription = wcs_get_subscription( $post_id );
-
-		if ( ! self::get_wcpay_subscription_id( $subscription ) ) {
-			return;
-		}
-
-		// Check for new trial end date.
-		if ( array_key_exists( 'trial_end_timestamp_utc', $_POST ) && (int) $_POST['trial_end_timestamp_utc'] !== $subscription->get_time( 'trial_end' ) ) {
-			$timestamp = empty( $_POST['trial_end_timestamp_utc'] ) ? 0 : (int) $_POST['trial_end_timestamp_utc'];
-			$this->set_trial_end_for_subscription( $subscription, $timestamp );
-			return; // Trial end should be equal to next payment, so we can return early.
-		}
-
-		// Check for new next payment date.
-		if ( array_key_exists( 'next_payment_timestamp_utc', $_POST ) && (int) $_POST['next_payment_timestamp_utc'] !== $subscription->get_time( 'next_payment' ) ) {
-			$timestamp = empty( $_POST['next_payment_timestamp_utc'] ) ? 0 : (int) $_POST['next_payment_timestamp_utc'];
-			$this->set_trial_end_for_subscription( $subscription, $timestamp );
 		}
 	}
 
@@ -1003,5 +1018,29 @@ class WC_Payments_Subscription_Service {
 				throw new Exception( sprintf( 'The subscription billing period cannot be any longer than one year. A billing period of "every %s %s(s)" was given.', $billing_interval, $billing_period ) );
 			}
 		}
+	}
+
+	/**
+	 * Determines if the store has any active WCPay subscriptions.
+	 *
+	 * @return bool True if store has active WCPay subscriptions, otherwise false.
+	 */
+	public static function store_has_active_wcpay_subscriptions() {
+		$results = wcs_get_subscriptions(
+			[
+				'subscriptions_per_page' => 1,
+				'subscription_status'    => 'active',
+				// Ignoring phpcs warning, we need to search meta.
+				'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => self::SUBSCRIPTION_ID_META_KEY,
+						'compare' => 'EXISTS',
+					],
+				],
+			]
+		);
+
+		$store_has_active_wcpay_subscriptions = count( $results ) > 0;
+		return $store_has_active_wcpay_subscriptions;
 	}
 }

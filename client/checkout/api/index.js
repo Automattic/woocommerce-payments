@@ -9,6 +9,7 @@ import {
 	getPaymentRequestAjaxURL,
 	buildAjaxURL,
 } from '../../payment-request/utils';
+import { decryptClientSecret } from '../utils/encryption';
 
 /**
  * Handles generic connections to the server and Stripe.
@@ -37,10 +38,6 @@ export default class WCPayAPI {
 			options.betas = betas;
 		}
 
-		if ( betas.includes( 'link_beta_2' ) ) {
-			options.apiVersion = '2020-08-27;link_beta=v1';
-		}
-
 		return new Stripe( publishableKey, options );
 	}
 
@@ -60,7 +57,11 @@ export default class WCPayAPI {
 			isStripeLinkEnabled,
 		} = this.options;
 
-		if ( forceNetworkSavedCards && ! forceAccountRequest ) {
+		if (
+			forceNetworkSavedCards &&
+			! forceAccountRequest &&
+			! isUPEEnabled
+		) {
 			if ( ! this.stripePlatform ) {
 				this.stripePlatform = this.createStripe(
 					publishableKey,
@@ -74,10 +75,7 @@ export default class WCPayAPI {
 			if ( isUPEEnabled ) {
 				let betas = [ 'card_country_event_beta_1' ];
 				if ( isStripeLinkEnabled ) {
-					betas = betas.concat( [
-						'link_autofill_modal_beta_1',
-						'link_beta_2',
-					] );
+					betas = betas.concat( [ 'link_autofill_modal_beta_1' ] );
 				}
 
 				this.stripe = this.createStripe(
@@ -100,12 +98,13 @@ export default class WCPayAPI {
 	/**
 	 * Load Stripe for payment request button.
 	 *
+	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Promise} Promise with the Stripe object or an error.
 	 */
-	loadStripe() {
+	loadStripe( forceAccountRequest = false ) {
 		return new Promise( ( resolve ) => {
 			try {
-				resolve( this.getStripe() );
+				resolve( this.getStripe( forceAccountRequest ) );
 			} catch ( error ) {
 				// In order to avoid showing console error publicly to users,
 				// we resolve instead of rejecting when there is an error.
@@ -249,7 +248,9 @@ export default class WCPayAPI {
 			// If this is a setup intent we're not processing a platform checkout payment so we can
 			// use the regular getStripe function.
 			if ( isSetupIntent ) {
-				return this.getStripe().confirmCardSetup( clientSecret );
+				return this.getStripe().confirmCardSetup(
+					decryptClientSecret( clientSecret )
+				);
 			}
 
 			// For platform checkout we need the capability to switch up the account ID specifically for
@@ -259,12 +260,19 @@ export default class WCPayAPI {
 					publishableKey,
 					locale,
 					accountIdForIntentConfirmation
-				).confirmCardPayment( clientSecret );
+				).confirmCardPayment(
+					decryptClientSecret(
+						clientSecret,
+						accountIdForIntentConfirmation
+					)
+				);
 			}
 
 			// When not dealing with a setup intent or platform checkout we need to force an account
 			// specific request in Stripe.
-			return this.getStripe( true ).confirmCardPayment( clientSecret );
+			return this.getStripe( true ).confirmCardPayment(
+				decryptClientSecret( clientSecret )
+			);
 		};
 
 		const confirmAction = confirmPaymentOrSetup();
@@ -327,13 +335,17 @@ export default class WCPayAPI {
 	/**
 	 * Creates a setup intent without confirming it.
 	 *
+	 * @param {string} paymentMethodType Stripe payment method type ID.
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	initSetupIntent() {
-		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_setup_intent' ),
-			{ _ajax_nonce: getConfig( 'createSetupIntentNonce' ) }
-		).then( ( response ) => {
+	initSetupIntent( paymentMethodType = '' ) {
+		let path = 'init_setup_intent';
+		if ( this.options.isUPESplitEnabled && paymentMethodType ) {
+			path += `_${ paymentMethodType }`;
+		}
+		return this.request( buildAjaxURL( getConfig( 'wcAjaxUrl' ), path ), {
+			_ajax_nonce: getConfig( 'createSetupIntentNonce' ),
+		} ).then( ( response ) => {
 			if ( ! response.success ) {
 				throw response.data.error;
 			}
@@ -363,7 +375,9 @@ export default class WCPayAPI {
 			}
 
 			return this.getStripe()
-				.confirmCardSetup( response.data.client_secret )
+				.confirmCardSetup(
+					decryptClientSecret( response.data.client_secret )
+				)
 				.then( ( confirmedSetupIntent ) => {
 					const { setupIntent, error } = confirmedSetupIntent;
 					if ( error ) {
@@ -378,17 +392,28 @@ export default class WCPayAPI {
 	/**
 	 * Creates an intent based on a payment method.
 	 *
-	 * @param {int} orderId The id of the order if creating the intent on Order Pay page.
+	 * @param {Object} options Object containing intent optional parameters (fingerprint, paymentMethodType, orderId)
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	createIntent( orderId ) {
+	createIntent( options ) {
+		const { fingerprint, paymentMethodType, orderId } = options;
+		let path = 'create_payment_intent';
+		const params = {
+			_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
+			'wcpay-fingerprint': fingerprint,
+		};
+
+		if ( this.options.isUPESplitEnabled && paymentMethodType ) {
+			path += `_${ paymentMethodType }`;
+		}
+		if ( orderId ) {
+			params.wcpay_order_id = orderId;
+		}
+
 		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'create_payment_intent' ),
-			{
-				wcpay_order_id: orderId,
-				_ajax_nonce: getConfig( 'createPaymentIntentNonce' ),
-			}
+			buildAjaxURL( getConfig( 'wcAjaxUrl' ), path ),
+			params
 		)
 			.then( ( response ) => {
 				if ( ! response.success ) {
@@ -407,13 +432,14 @@ export default class WCPayAPI {
 	}
 
 	/**
-	 * Updates a payment intent with data from order: customer, level3 data and and maybe sets the payment for future use.
+	 * Updates a payment intent with data from order: customer, level3 data and maybe sets the payment for future use.
 	 *
 	 * @param {string} paymentIntentId The id of the payment intent.
 	 * @param {int} orderId The id of the order.
 	 * @param {string} savePaymentMethod 'yes' if saving.
 	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type or empty string.
 	 * @param {string?} paymentCountry The payment two-letter iso country code or null.
+	 * @param {string?} fingerprint User fingerprint.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
@@ -422,19 +448,22 @@ export default class WCPayAPI {
 		orderId,
 		savePaymentMethod,
 		selectedUPEPaymentType,
-		paymentCountry
+		paymentCountry,
+		fingerprint
 	) {
-		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'update_payment_intent' ),
-			{
-				wcpay_order_id: orderId,
-				wc_payment_intent_id: paymentIntentId,
-				save_payment_method: savePaymentMethod,
-				wcpay_selected_upe_payment_type: selectedUPEPaymentType,
-				wcpay_payment_country: paymentCountry,
-				_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
-			}
-		)
+		let path = 'update_payment_intent';
+		if ( this.options.isUPESplitEnabled ) {
+			path += `_${ selectedUPEPaymentType }`;
+		}
+		return this.request( buildAjaxURL( getConfig( 'wcAjaxUrl' ), path ), {
+			wcpay_order_id: orderId,
+			wc_payment_intent_id: paymentIntentId,
+			save_payment_method: savePaymentMethod,
+			wcpay_selected_upe_payment_type: selectedUPEPaymentType,
+			wcpay_payment_country: paymentCountry,
+			_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
+			'wcpay-fingerprint': fingerprint,
+		} )
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {
 					throw new Error( response.messages );
@@ -452,14 +481,53 @@ export default class WCPayAPI {
 	}
 
 	/**
+	 * Confirm Stripe payment with fallback for rate limit error.
+	 *
+	 * @param {Object|StripeElements} elements Stripe elements.
+	 * @param {Object} confirmParams Confirm payment request parameters.
+	 * @param {string|null} paymentIntentSecret Payment intent secret used to validate payment on rate limit error
+	 *
+	 * @return {Promise} The payment confirmation promise.
+	 */
+	async handlePaymentConfirmation(
+		elements,
+		confirmParams,
+		paymentIntentSecret
+	) {
+		const stripe = this.getStripe();
+		const confirmPaymentResult = await stripe.confirmPayment( {
+			elements,
+			confirmParams,
+		} );
+		if (
+			paymentIntentSecret &&
+			confirmPaymentResult.error &&
+			'lock_timeout' === confirmPaymentResult.error.code
+		) {
+			const paymentIntentResult = await stripe.retrievePaymentIntent(
+				decryptClientSecret( paymentIntentSecret )
+			);
+			if (
+				! paymentIntentResult.error &&
+				'succeeded' === paymentIntentResult.paymentIntent.status
+			) {
+				window.location.href = confirmParams.redirect_url;
+				return paymentIntentResult; //To prevent returning an error during the redirection.
+			}
+		}
+
+		return confirmPaymentResult;
+	}
+
+	/**
 	 * Saves the calculated UPE appearance values in a transient.
 	 *
 	 * @param {Object} appearance The UPE appearance object with style values
-	 * @param {boolean} isBlocksCheckout True if save request is for Blocks Checkout. Default false.
+	 * @param {string} isBlocksCheckout 'true' if save request is for Blocks Checkout. Default 'false'.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	saveUPEAppearance( appearance, isBlocksCheckout = false ) {
+	saveUPEAppearance( appearance, isBlocksCheckout = 'false' ) {
 		return this.request( getConfig( 'ajaxUrl' ), {
 			is_blocks_checkout: isBlocksCheckout,
 			appearance: JSON.stringify( appearance ),
@@ -486,14 +554,16 @@ export default class WCPayAPI {
 	 *
 	 * @param {string} paymentIntentId ID of payment intent to be updated.
 	 * @param {Object} fields Checkout fields.
+	 * @param {string} fingerprint User fingerprint.
 	 * @return {Promise} Promise containing redirect URL for UPE element.
 	 */
-	processCheckout( paymentIntentId, fields ) {
+	processCheckout( paymentIntentId, fields, fingerprint ) {
 		return this.request(
 			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'checkout', '' ),
 			{
 				...fields,
 				wc_payment_intent_id: paymentIntentId,
+				'wcpay-fingerprint': fingerprint,
 			}
 		)
 			.then( ( response ) => {
@@ -602,14 +672,26 @@ export default class WCPayAPI {
 	}
 
 	initPlatformCheckout( userEmail, platformCheckoutUserSession ) {
+		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
+		const nonce = getConfig( 'initPlatformCheckoutNonce' );
 		return this.request(
-			buildAjaxURL( getConfig( 'wcAjaxUrl' ), 'init_platform_checkout' ),
+			buildAjaxURL( wcAjaxUrl, 'init_platform_checkout' ),
 			{
-				_wpnonce: getConfig( 'initPlatformCheckoutNonce' ),
+				_wpnonce: nonce,
 				email: userEmail,
 				user_session: platformCheckoutUserSession,
 			}
 		);
+	}
+
+	expressCheckoutAddToCart( productData ) {
+		const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
+		const addToCartNonce = getConfig( 'addToCartNonce' );
+
+		return this.request( buildAjaxURL( wcAjaxUrl, 'add_to_cart' ), {
+			security: addToCartNonce,
+			...productData,
+		} );
 	}
 
 	paymentRequestPayForOrder( order, paymentData ) {
@@ -637,5 +719,31 @@ export default class WCPayAPI {
 			// There is not any action to take or harm caused by a failed update, so just returning true.
 			return true;
 		} );
+	}
+
+	/**
+	 * Redirect to the order-received page for duplicate payments.
+	 *
+	 * @param {Object} response Response data to check if doing the redirect.
+	 * @return {boolean} Returns true if doing the redirection.
+	 */
+	handleDuplicatePayments( {
+		wcpay_upe_paid_for_previous_order: previouslyPaid,
+		wcpay_upe_previous_successful_intent: previousSuccessfulIntent,
+		redirect,
+	} ) {
+		if ( redirect ) {
+			// Another order has the same cart content and was paid.
+			if ( previouslyPaid ) {
+				return ( window.location = redirect );
+			}
+
+			// Another intent has the equivalent successful status for the order.
+			if ( previousSuccessfulIntent ) {
+				return ( window.location = redirect );
+			}
+		}
+
+		return false;
 	}
 }

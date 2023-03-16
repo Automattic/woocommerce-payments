@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { BaseControl, Button } from '@wordpress/components';
-import Gridicon from 'gridicons';
+import TrashIcon from 'gridicons/dist/trash';
 import classNames from 'classnames';
 
 /**
@@ -83,8 +83,6 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 		const body = new FormData();
 		body.append( 'file', file );
 		body.append( 'purpose', purpose );
-		// Interpreting as_account as Boolean false in the backend
-		body.append( 'as_account', '0' );
 
 		try {
 			const uploadedFile: unknown = await apiFetch( {
@@ -166,6 +164,7 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 					onFileChange={ handleFileChange }
 					onFileRemove={ handleFileRemove }
 					showPreview={ true }
+					type="image"
 					uploadButtonLabel={ __(
 						'Upload custom logo',
 						'woocommerce-payments'
@@ -189,7 +188,7 @@ const PlatformCheckoutFileUpload: React.FunctionComponent< PlatformCheckoutFileU
 									'Remove file',
 									'woocommerce-payments'
 								) }
-								icon={ <Gridicon icon="trash" size={ 18 } /> }
+								icon={ <TrashIcon size={ 18 } /> }
 								onClick={ handleFileRemove }
 							/>
 						</>

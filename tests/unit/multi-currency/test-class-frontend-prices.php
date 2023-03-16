@@ -55,7 +55,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	 */
 	public function test_registers_woocommerce_filter( $filter, $function_name ) {
 		$this->assertGreaterThan(
-			10,
+			500,
 			has_filter( $filter, [ $this->frontend_prices, $function_name ] ),
 			"Filter '$filter' was not registered with '$function_name' with a priority higher than the default"
 		);
@@ -90,8 +90,8 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 
 		$this->frontend_prices->register_free_shipping_filters();
 
-		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $default_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
-		$this->assertGreaterThan( 10, has_filter( 'option_woocommerce_free_shipping_' . $new_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
+		$this->assertGreaterThan( 500, has_filter( 'option_woocommerce_free_shipping_' . $default_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
+		$this->assertGreaterThan( 500, has_filter( 'option_woocommerce_free_shipping_' . $new_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
 	}
 
 	public function test_get_product_price_returns_empty_price() {
@@ -179,7 +179,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_convert_shipping_method_rate_cost_converts() {
+	public function test_convert_shipping_method_rate_cost_for_string_cost() {
 		$this->mock_multi_currency
 			->expects( $this->once() )
 			->method( 'get_price' )
@@ -212,6 +212,50 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$shipping_method->add_rate(
 			[
 				'cost'  => '10',
+				'id'    => 1,
+				'label' => 'label',
+			]
+		);
+		$shipping_rate = $shipping_method->rates[1];
+
+		// Cost gets converted and taxes properly calculated based on it.
+		$this->assertSame( '25.00', $shipping_rate->cost );
+		$this->assertSame( 2.5, $shipping_rate->taxes[1] );
+	}
+
+	public function test_convert_shipping_method_rate_cost_for_array_cost() {
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_price' )
+			->with( '11' )
+			->willReturn( 25.0 );
+
+		add_filter( 'wc_tax_enabled', '__return_true' );
+		add_filter(
+			'woocommerce_find_rates',
+			function() {
+				return [
+					1 =>
+						[
+							'rate'     => 10.0,
+							'label'    => 'Tax',
+							'shipping' => 'yes',
+							'compound' => 'no',
+						],
+				];
+			},
+			50,
+			2
+		);
+
+		WC()->session->init();
+		WC()->customer->set_location( 'US', 'CA' );
+
+		$shipping_method             = new \WC_Shipping_Flat_Rate();
+		$shipping_method->tax_status = 'taxable';
+		$shipping_method->add_rate(
+			[
+				'cost'  => [ '10', '1' ],
 				'id'    => 1,
 				'label' => 'label',
 			]
