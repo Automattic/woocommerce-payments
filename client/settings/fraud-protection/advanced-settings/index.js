@@ -113,14 +113,16 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	};
 
 	// Hack to make "WooCommerce > Settings" the active selected menu item.
-	const wcSettingsMenuItem = document.querySelector(
-		'#toplevel_page_woocommerce a[href="admin.php?page=wc-settings"]'
-	);
-	if ( wcSettingsMenuItem ) {
-		wcSettingsMenuItem.setAttribute( 'aria-current', 'page' );
-		wcSettingsMenuItem.classList.add( 'current' );
-		wcSettingsMenuItem.parentElement.classList.add( 'current' );
-	}
+	useEffect( () => {
+		const wcSettingsMenuItem = document.querySelector(
+			'#toplevel_page_woocommerce a[href="admin.php?page=wc-settings"]'
+		);
+		if ( wcSettingsMenuItem ) {
+			wcSettingsMenuItem.setAttribute( 'aria-current', 'page' );
+			wcSettingsMenuItem.classList.add( 'current' );
+			wcSettingsMenuItem.parentElement.classList.add( 'current' );
+		}
+	}, [] );
 
 	return (
 		<FraudPreventionSettingsContext.Provider
