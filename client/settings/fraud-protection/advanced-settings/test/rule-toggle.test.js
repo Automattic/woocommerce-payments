@@ -10,27 +10,21 @@ import { render } from '@testing-library/react';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudPreventionSettingsContext from '../context';
 
-const mockSettings = {
-	test_rule: { enabled: false, block: false },
-};
-const mockContext = {
-	advancedFraudProtectionSettings: mockSettings,
-	setAdvancedFraudProtectionSettings: ( newSettings ) => {
-		mockContext.advancedFraudProtectionSettings = newSettings;
-	},
-};
-
 describe( 'Fraud protection rule toggle tests', () => {
+	let mockContext = null;
+
 	beforeEach( () => {
-		jest.mock( '../context', () => ( {
-			FraudPreventionSettingsContext: mockContext,
-		} ) );
-	} );
-	afterEach( () => {
-		mockContext.advancedFraudProtectionSettings = {
-			test_rule: { enabled: false, block: false },
+		mockContext = {
+			advancedFraudProtectionSettings: {
+				test_rule: {
+					enabled: false,
+					block: false,
+				},
+			},
+			setAdvancedFraudProtectionSettings: jest.fn(),
 		};
 	} );
+
 	test( 'renders correctly when disabled', () => {
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
