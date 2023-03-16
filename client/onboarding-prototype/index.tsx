@@ -10,12 +10,17 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import { OnboardingContextProvider, useOnboardingContext } from './context';
 import { Stepper, useStepperContext } from 'components/stepper';
-import { OnboardingSteps } from './types';
+import {
+	ProgressiveOnboardingEligibleFields,
+	ProgressiveOnboardingEligibleResult,
+	OnboardingSteps,
+} from './types';
 import { fromDotNotation } from './utils';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
 import strings from './strings';
+import apiFetch from '@wordpress/api-fetch';
 
 interface Props {
 	name: OnboardingSteps;
@@ -37,16 +42,36 @@ const Step: React.FC< Props > = ( { name, children } ) => {
 const OnboardingStepper = () => {
 	const { data } = useOnboardingContext();
 
-	const handleComplete = () => {
-		// TODO GH-5475 - Implement connection to the Intelligent Router and flow switching.
-		// make post request to /wc/v3/payments/onboarding/router/po_eligible
-		// if it's eligible, redirect to the connect page with the progressive onboarding query param
-		// if it's not eligible, redirect to the connect page without the progressive onboarding query param
-		const { connectUrl } = wcpaySettings;
-		const url = addQueryArgs( connectUrl, {
-			progressive: fromDotNotation( data ),
+	const isEligibleForPo = async () => {
+		// TODO GH-5475 maybe move somewhere, not sure if it's the best place for this
+		const businessDetails: ProgressiveOnboardingEligibleFields = {
+			country: data.country,
+			type: data.business_type,
+			mcc: 'computers_peripherals_and_software', // TODO add real MCC here
+			annual_revenue: data.annual_revenue,
+			go_live_timeframe: data.go_live_timeframe,
+		};
+		const eligibleResult = await apiFetch<
+			ProgressiveOnboardingEligibleResult
+		>( {
+			path: '/wc/v3/payments/onboarding/router/po_eligible',
+			method: 'POST',
+			data: {
+				business: businessDetails,
+			},
 		} );
-		window.location.href = url;
+
+		return 'eligible' === eligibleResult.result;
+	};
+
+	const handleComplete = async () => {
+		const { connectUrl } = wcpaySettings;
+		const resultUrl = ( await isEligibleForPo() )
+			? addQueryArgs( connectUrl, {
+					progressive: fromDotNotation( data ),
+			  } )
+			: connectUrl;
+		window.location.href = resultUrl;
 	};
 
 	return (

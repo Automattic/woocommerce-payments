@@ -2001,6 +2001,25 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Get if the merchant is eligible for Progressive Onboarding.
+	 *
+	 * @param array $business_info Business information.
+	 *
+	 * @return array HTTP response on success.
+	 *
+	 * @throws API_Exception - If not connected to server or request failed.
+	 */
+	public function get_onboarding_po_eligible( $business_info ) {
+		return $this->request(
+			[
+				'business' => $business_info,
+			],
+			self::ONBOARDING_API . '/router/po_eligible',
+			self::POST
+		);
+	}
+
+	/**
 	 * Sends a request object.
 	 *
 	 * @param  Request $request The request to send.
