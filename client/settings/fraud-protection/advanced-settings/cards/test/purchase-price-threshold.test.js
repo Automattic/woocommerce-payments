@@ -152,7 +152,7 @@ describe( 'Purchase price threshold card', () => {
 		settings.purchase_price_threshold.min_amount = 100;
 		const setValidationError = jest.fn();
 		const validationResult = PurchasePriceThresholdValidation(
-			settings,
+			settings.purchase_price_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( true );
@@ -165,7 +165,7 @@ describe( 'Purchase price threshold card', () => {
 		settings.purchase_price_threshold.min_amount = null;
 		const setValidationError = jest.fn();
 		const validationResult = PurchasePriceThresholdValidation(
-			settings,
+			settings.purchase_price_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( true );
@@ -191,7 +191,7 @@ describe( 'Purchase price threshold card', () => {
 		settings.purchase_price_threshold.min_amount = null;
 		const setValidationError = jest.fn();
 		const validationResult = PurchasePriceThresholdValidation(
-			settings,
+			settings.purchase_price_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( true );
@@ -204,7 +204,7 @@ describe( 'Purchase price threshold card', () => {
 		settings.purchase_price_threshold.min_amount = null;
 		const setValidationError = jest.fn();
 		const validationResult = PurchasePriceThresholdValidation(
-			settings,
+			settings.purchase_price_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( false );
@@ -220,7 +220,7 @@ describe( 'Purchase price threshold card', () => {
 		settings.purchase_price_threshold.min_amount = 100;
 		const setValidationError = jest.fn();
 		const validationResult = PurchasePriceThresholdValidation(
-			settings,
+			settings.purchase_price_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( false );

@@ -70,7 +70,7 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 					<TextControl
 						id={ 'fraud-protection-order-items-minimum' }
 						placeholder={ '0' }
-						value={ minItemsCount }
+						value={ isNaN( minItemsCount ) ? '' : minItemsCount }
 						type="number"
 						onChange={ setMinItemsCount }
 						help={ __(
@@ -95,7 +95,7 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 						id={ 'fraud-protection-order-items-maximum' }
 						placeholder={ '0' }
 						type="number"
-						value={ maxItemsCount }
+						value={ isNaN( maxItemsCount ) ? '' : maxItemsCount }
 						onChange={ setMaxItemsCount }
 						help={ __(
 							'Leave blank for no limit',
