@@ -53,7 +53,7 @@ const FraudProtectionTour: React.FC = () => {
 				<Tour.Content
 					title={ __( 'Enhanced fraud protection is here 🔒' ) }
 					description={ __(
-						"Incoming transactions will now be screened for common risk factors, at the level of your choosing. Review any transactions caught by these filters and select whether you'd like to approve or decline them"
+						'You can now choose a level of protection to have for screening incoming transactions. You will then be able to review any caught transactions and select whether you would like to approve or decline them.'
 					) }
 				/>
 
