@@ -44,6 +44,18 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 		advancedFraudProtectionSettings,
 		setAdvancedFraudProtectionSettings,
 	] );
+
+	const handleInputBlur = ( inputValue, setInputValue ) => {
+		if ( ! /^\d+$/.test( inputValue ) ) {
+			setInputValue( '' );
+		}
+	};
+
+	const isItemRangeEmpty =
+		! parseInt( minItemsCount, 10 ) && ! parseInt( maxItemsCount, 10 );
+	const isMinGreaterThanMax =
+		parseInt( minItemsCount, 10 ) > parseInt( maxItemsCount, 10 );
+
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
 			<strong>Limits</strong>
@@ -58,7 +70,7 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 					<TextControl
 						id={ 'fraud-protection-order-items-minimum' }
 						placeholder={ '0' }
-						value={ minItemsCount }
+						value={ isNaN( minItemsCount ) ? '' : minItemsCount }
 						type="number"
 						onChange={ setMinItemsCount }
 						help={ __(
@@ -67,11 +79,9 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 						) }
 						min={ 1 }
 						step={ 1 }
-						onBlur={ () => {
-							if ( ! ( '' + minItemsCount ).match( /^\d+$/ ) ) {
-								setMinItemsCount( '' );
-							}
-						} }
+						onBlur={ () =>
+							handleInputBlur( minItemsCount, setMinItemsCount )
+						}
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
@@ -85,7 +95,7 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 						id={ 'fraud-protection-order-items-maximum' }
 						placeholder={ '0' }
 						type="number"
-						value={ maxItemsCount }
+						value={ isNaN( maxItemsCount ) ? '' : maxItemsCount }
 						onChange={ setMaxItemsCount }
 						help={ __(
 							'Leave blank for no limit',
@@ -93,27 +103,24 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 						) }
 						min={ 1 }
 						step={ 1 }
-						onBlur={ () => {
-							if ( ! ( '' + maxItemsCount ).match( /^\d+$/ ) ) {
-								setMaxItemsCount( '' );
-							}
-						} }
+						onBlur={ () =>
+							handleInputBlur( maxItemsCount, setMaxItemsCount )
+						}
 					/>
 				</div>
 			</div>
-			{ ! parseInt( minItemsCount, 10 ) &&
-				! parseInt( maxItemsCount, 10 ) && (
-					<div>
-						<br />
-						<FraudProtectionRuleCardNotice type={ 'warning' }>
-							{ __(
-								'An item range must be set for this filter to take effect.',
-								'woocommerce-payments'
-							) }
-						</FraudProtectionRuleCardNotice>
-					</div>
-				) }
-			{ parseInt( minItemsCount, 10 ) > parseInt( maxItemsCount, 10 ) ? (
+			{ isItemRangeEmpty && (
+				<div>
+					<br />
+					<FraudProtectionRuleCardNotice type={ 'warning' }>
+						{ __(
+							'An item range must be set for this filter to take effect.',
+							'woocommerce-payments'
+						) }
+					</FraudProtectionRuleCardNotice>
+				</div>
+			) }
+			{ isMinGreaterThanMax ? (
 				<div>
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'error' }>
@@ -135,41 +142,35 @@ const OrderItemsThresholdRuleCard = () => (
 			'woocommerce-payments'
 		) }
 	>
-		<div>
-			<FraudProtectionRuleToggle
+		<FraudProtectionRuleToggle
+			setting={ 'order_items_threshold' }
+			label={ __(
+				'Screen transactions for abnormal item counts',
+				'woocommerce-payments'
+			) }
+			helpText={ __(
+				'When enabled, the payment method will not be charged until you review and approve the transaction'
+			) }
+		>
+			<OrderItemsThresholdCustomForm
 				setting={ 'order_items_threshold' }
-				label={ __(
-					'Screen transactions for abnormal item counts',
-					'woocommerce-payments'
-				) }
-				helpText={ __(
-					'When enabled, the payment method will not be charged until you review and approve the transaction'
-				) }
-			>
-				<OrderItemsThresholdCustomForm
-					setting={ 'order_items_threshold' }
-				/>
-			</FraudProtectionRuleToggle>
-			<FraudProtectionRuleDescription>
-				{ __(
-					'An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleDescription>
-		</div>
+			/>
+		</FraudProtectionRuleToggle>
+		<FraudProtectionRuleDescription>
+			{ __(
+				'An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.',
+				'woocommerce-payments'
+			) }
+		</FraudProtectionRuleDescription>
 	</FraudProtectionRuleCard>
 );
 
 export const OrderItemsThresholdValidation = (
-	settings,
+	{ enabled, min_items: minItems, max_items: maxItems },
 	setValidationError
 ) => {
-	const key = 'order_items_threshold';
-	if ( settings[ key ].enabled ) {
-		if (
-			! parseInt( settings[ key ].min_items, 10 ) &&
-			! parseInt( settings[ key ].max_items, 10 )
-		) {
+	if ( enabled ) {
+		if ( ! parseInt( minItems, 10 ) && ! parseInt( maxItems, 10 ) ) {
 			setValidationError(
 				__(
 					'An item range must be set for the "Order Item Threshold" filter.',
@@ -178,10 +179,7 @@ export const OrderItemsThresholdValidation = (
 			);
 			return false;
 		}
-		if (
-			parseInt( settings[ key ].min_items, 10 ) >
-			parseInt( settings[ key ].max_items, 10 )
-		) {
+		if ( parseInt( minItems, 10 ) > parseInt( maxItems, 10 ) ) {
 			setValidationError(
 				__(
 					'Maximum item count must be greater than the minimum item count on the "Order Item Threshold" rule.',

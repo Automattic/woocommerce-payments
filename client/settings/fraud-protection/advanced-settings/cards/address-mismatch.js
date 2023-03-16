@@ -23,39 +23,37 @@ const AddressMismatchRuleCard = () => (
 			'woocommerce-payments'
 		) }
 	>
-		<div>
-			<FraudProtectionRuleToggle
-				setting={ 'address_mismatch' }
-				label={ __(
-					'Screen transactions for mismatched addresses',
+		<FraudProtectionRuleToggle
+			setting={ 'address_mismatch' }
+			label={ __(
+				'Screen transactions for mismatched addresses',
+				'woocommerce-payments'
+			) }
+			helpText={ __(
+				'When enabled, the payment method will not be charged until you review and approve the transaction'
+			) }
+		/>
+		<FraudProtectionRuleDescription>
+			{ __(
+				'There are legitimate reasons for a billing/shipping mismatch with a customer purchase, ' +
+					'but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.',
+				'woocommerce-payments'
+			) }
+		</FraudProtectionRuleDescription>
+		<FraudProtectionRuleCardNotice type="info">
+			{ interpolateComponents( {
+				mixedString: __(
+					'This filter may modify the address input on your checkout. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 					'woocommerce-payments'
-				) }
-				helpText={ __(
-					'When enabled, the payment method will not be charged until you review and approve the transaction'
-				) }
-			/>
-			<FraudProtectionRuleDescription>
-				{ __(
-					'There are legitimate reasons for a billing/shipping mismatch with a customer purchase, ' +
-						'but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleDescription>
-			<FraudProtectionRuleCardNotice type="info">
-				{ interpolateComponents( {
-					mixedString: __(
-						'This filter may modify the address input on your checkout. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-						'woocommerce-payments'
+				),
+				components: {
+					learnMoreLink: (
+						// eslint-disable-next-line max-len
+						<Link href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
 					),
-					components: {
-						learnMoreLink: (
-							// eslint-disable-next-line max-len
-							<Link href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
-						),
-					},
-				} ) }
-			</FraudProtectionRuleCardNotice>
-		</div>
+				},
+			} ) }
+		</FraudProtectionRuleCardNotice>
 	</FraudProtectionRuleCard>
 );
 

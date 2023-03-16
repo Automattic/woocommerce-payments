@@ -22,30 +22,28 @@ const AVSMismatchRuleCard = () => (
 			'woocommerce-payments'
 		) }
 	>
-		<div>
-			<FraudProtectionRuleDescription>
-				{ __(
-					'Buyers who can provide the street number and post code on file with the issuing bank ' +
-						'are more likely to be the actual account holder. AVS matches, however, are not a guarantee.',
+		<FraudProtectionRuleDescription>
+			{ __(
+				'Buyers who can provide the street number and post code on file with the issuing bank ' +
+					'are more likely to be the actual account holder. AVS matches, however, are not a guarantee.',
+				'woocommerce-payments'
+			) }
+		</FraudProtectionRuleDescription>
+		<FraudProtectionRuleCardNotice type="warning">
+			{ interpolateComponents( {
+				mixedString: __(
+					'Payments failing address verification will be blocked. For security, this filter ' +
+						'cannot be modified. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleDescription>
-			<FraudProtectionRuleCardNotice type="warning">
-				{ interpolateComponents( {
-					mixedString: __(
-						'Payments failing address verification will be blocked. For security, this filter ' +
-							'cannot be modified. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-						'woocommerce-payments'
+				),
+				components: {
+					learnMoreLink: (
+						// eslint-disable-next-line max-len
+						<Link href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
 					),
-					components: {
-						learnMoreLink: (
-							// eslint-disable-next-line max-len
-							<Link href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
-						),
-					},
-				} ) }
-			</FraudProtectionRuleCardNotice>
-		</div>
+				},
+			} ) }
+		</FraudProtectionRuleCardNotice>
 	</FraudProtectionRuleCard>
 );
 
