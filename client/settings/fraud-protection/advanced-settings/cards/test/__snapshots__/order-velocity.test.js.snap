@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Order items threshold card renders correctly 1`] = `
+exports[`Order velocity card renders correctly 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -83,7 +83,7 @@ exports[`Order items threshold card renders correctly 1`] = `
 </div>
 `;
 
-exports[`Order items threshold card renders correctly when enabled 1`] = `
+exports[`Order velocity card renders correctly when enabled 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -180,7 +180,7 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
                       min="1"
                       step="1"
                       type="number"
-                      value="0"
+                      value=""
                     />
                   </div>
                 </div>
@@ -381,7 +381,7 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
 </div>
 `;
 
-exports[`Order items threshold card renders correctly when enabled and checked 1`] = `
+exports[`Order velocity card renders correctly when enabled and checked 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
@@ -478,7 +478,7 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
                       min="1"
                       step="1"
                       type="number"
-                      value="0"
+                      value=""
                     />
                   </div>
                 </div>
@@ -694,7 +694,7 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
 </div>
 `;
 
-exports[`Order items threshold card renders like disabled when checked, but not enabled 1`] = `
+exports[`Order velocity card renders like disabled when checked, but not enabled 1`] = `
 <div>
   <div
     class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
