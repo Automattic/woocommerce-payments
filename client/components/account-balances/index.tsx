@@ -2,10 +2,12 @@
  * External dependencies
  */
 import React from 'react';
-import { Card, CardHeader } from '@wordpress/components';
+import { Card } from '@wordpress/components';
+
 /**
  * Internal dependencies
  */
+import AccountBalancesHeader from './header';
 import './style.scss';
 import AccountBalancesTabPanel from './balances-tab-panel';
 
@@ -17,7 +19,7 @@ import AccountBalancesTabPanel from './balances-tab-panel';
 const AccountBalances: React.FC = () => {
 	return (
 		<Card className="wcpay-account-balances">
-			<CardHeader size="small">Good afternoon</CardHeader>
+			<AccountBalancesHeader />
 
 			<AccountBalancesTabPanel />
 		</Card>
