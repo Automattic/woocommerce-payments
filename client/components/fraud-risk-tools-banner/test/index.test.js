@@ -9,25 +9,7 @@ import { render } from '@testing-library/react';
 import FRTDiscoverabilityBanner from '..';
 
 jest.mock( '@wordpress/data', () => ( {
-	registerStore: jest.fn(),
-	combineReducers: jest.fn(),
 	useDispatch: jest.fn( () => ( { updateOptions: jest.fn() } ) ),
-	dispatch: jest.fn( () => ( { setIsMatching: jest.fn() } ) ),
-	withDispatch: jest.fn( () => jest.fn() ),
-	createRegistryControl: jest.fn(),
-	select: jest.fn(),
-	withSelect: jest.fn( () => jest.fn() ),
-	useSelect: jest.fn( () => ( { getNotices: jest.fn() } ) ),
-} ) );
-jest.mock( '@wordpress/data-controls' );
-jest.mock( 'wcpay/data', () => ( {
-	useSettings: jest.fn().mockReturnValue( {
-		settings: { enabled_payment_method_ids: [ 'foo', 'bar' ] },
-	} ),
-	useAllDepositsOverviews: jest
-		.fn()
-		.mockReturnValue( { overviews: { currencies: [] } } ),
-	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
 } ) );
 
 describe( 'FRTDiscoverabilityBanner', () => {
