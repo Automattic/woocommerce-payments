@@ -158,14 +158,6 @@ export const PurchasePriceThresholdValidation = (
 	const minAmountFloat = getFloatValue( minAmount );
 	const maxAmountFloat = getFloatValue( maxAmount );
 	if ( enabled ) {
-		console.log(
-			minAmount,
-			minAmountFloat,
-			maxAmount,
-			maxAmountFloat,
-			minAmountFloat > maxAmountFloat
-		);
-
 		if ( ! minAmountFloat && ! maxAmountFloat ) {
 			setValidationError(
 				__(

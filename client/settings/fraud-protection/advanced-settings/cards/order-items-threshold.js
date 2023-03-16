@@ -45,12 +45,6 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 		setAdvancedFraudProtectionSettings,
 	] );
 
-	const handleInputBlur = ( inputValue, setInputValue ) => {
-		if ( ! /^\d+$/.test( inputValue ) ) {
-			setInputValue( '' );
-		}
-	};
-
 	const isItemRangeEmpty =
 		! parseInt( minItemsCount, 10 ) && ! parseInt( maxItemsCount, 10 );
 	const isMinGreaterThanMax =
@@ -70,18 +64,18 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 					<TextControl
 						id={ 'fraud-protection-order-items-minimum' }
 						placeholder={ '0' }
-						value={ isNaN( minItemsCount ) ? '' : minItemsCount }
+						value={ minItemsCount }
 						type="number"
-						onChange={ setMinItemsCount }
+						onChange={ ( value ) => setMinItemsCount( value ) }
+						onKeyDown={ ( e ) =>
+							/^[+-.,e]$/m.test( e.key ) && e.preventDefault()
+						}
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
 						) }
-						min={ 1 }
-						step={ 1 }
-						onBlur={ () =>
-							handleInputBlur( minItemsCount, setMinItemsCount )
-						}
+						min="1"
+						step="1"
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
@@ -95,17 +89,17 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 						id={ 'fraud-protection-order-items-maximum' }
 						placeholder={ '0' }
 						type="number"
-						value={ isNaN( maxItemsCount ) ? '' : maxItemsCount }
-						onChange={ setMaxItemsCount }
+						value={ maxItemsCount }
+						onChange={ ( value ) => setMaxItemsCount( value ) }
+						onKeyDown={ ( e ) =>
+							/^[+-.,e]$/m.test( e.key ) && e.preventDefault()
+						}
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
 						) }
-						min={ 1 }
-						step={ 1 }
-						onBlur={ () =>
-							handleInputBlur( maxItemsCount, setMaxItemsCount )
-						}
+						min="1"
+						step="1"
 					/>
 				</div>
 			</div>
