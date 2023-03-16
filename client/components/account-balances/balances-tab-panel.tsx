@@ -41,7 +41,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 				currencyCode: overview.currency,
 				availableFunds: overview.available.amount,
 				pendingFunds: overview.pending.amount,
-				reserveFunds: 0, // TODO: Add reserve funds to the overview object.
+				reservedFunds: 0, // TODO: Add reserve funds to the overview object.
 			} )
 		);
 	}
@@ -63,8 +63,8 @@ const AccountBalancesTabPanel: React.FC = () => {
 						isLoading={ isLoading }
 					/>
 					<BalanceBlock
-						title={ fundLabelStrings.reserve }
-						amount={ tab.reserveFunds }
+						title={ fundLabelStrings.reserved }
+						amount={ tab.reservedFunds }
 						currencyCode={ tab.currency_code }
 						isLoading={ isLoading }
 					/>
