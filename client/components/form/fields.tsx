@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { TextControl } from '@wordpress/components';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
@@ -11,9 +12,16 @@ import CustomSelectControl, {
 	ControlProps,
 	Item,
 } from 'components/custom-select-control';
+import './style.scss';
 
-export type TextFieldProps = TextControl.Props;
-export type SelectFieldProps< ItemType > = ControlProps< ItemType >;
+interface CommonProps {
+	error?: string;
+	isTouched?: boolean;
+}
+
+export type TextFieldProps = TextControl.Props & CommonProps;
+export type SelectFieldProps< ItemType > = ControlProps< ItemType > &
+	CommonProps;
 
 type FieldProps< ItemType > = {
 	component: 'text' | 'select';
@@ -21,8 +29,14 @@ type FieldProps< ItemType > = {
 
 const Field = < ItemType extends Item >( {
 	component,
+	error,
+	isTouched,
 	...rest
 }: FieldProps< ItemType > ): JSX.Element => {
+	if ( isTouched && error ) {
+		rest.className = classNames( rest.className, 'has-error' );
+	}
+
 	let props, field;
 	switch ( component ) {
 		case 'text':
@@ -35,7 +49,14 @@ const Field = < ItemType extends Item >( {
 			break;
 	}
 
-	return <>{ field }</>;
+	return (
+		<>
+			{ field }
+			{ isTouched && error && (
+				<div className="components-form-field__error">{ error }</div>
+			) }
+		</>
+	);
 };
 
 export const TextField: React.FC< TextFieldProps > = ( props ) => (
