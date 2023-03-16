@@ -62,8 +62,7 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 				setData( { [ name ]: value } );
 				validate( value );
 			} }
-			error={ getError() }
-			isTouched={ isTouched() }
+			{ ...( isTouched() && { error: getError() } ) }
 			{ ...rest }
 		/>
 	);
@@ -101,8 +100,7 @@ export const OnboardingSelectField = < ItemType extends Item >( {
 				validate( selectedItem?.key );
 			} }
 			options={ [] }
-			error={ getError() }
-			isTouched={ isTouched() }
+			{ ...( isTouched() && { error: getError() } ) }
 			{ ...rest }
 		/>
 	);

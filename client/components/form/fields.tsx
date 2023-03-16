@@ -16,7 +16,6 @@ import './style.scss';
 
 interface CommonProps {
 	error?: string;
-	isTouched?: boolean;
 }
 
 export type TextFieldProps = TextControl.Props & CommonProps;
@@ -30,10 +29,9 @@ type FieldProps< ItemType > = {
 const Field = < ItemType extends Item >( {
 	component,
 	error,
-	isTouched,
 	...rest
 }: FieldProps< ItemType > ): JSX.Element => {
-	if ( isTouched && error ) {
+	if ( error ) {
 		rest.className = classNames( rest.className, 'has-error' );
 	}
 
@@ -52,7 +50,7 @@ const Field = < ItemType extends Item >( {
 	return (
 		<>
 			{ field }
-			{ isTouched && error && (
+			{ error && (
 				<div className="components-form-field__error">{ error }</div>
 			) }
 		</>
