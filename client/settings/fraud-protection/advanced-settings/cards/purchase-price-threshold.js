@@ -28,11 +28,20 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 	);
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].min_amount =
-			0 === parseFloat( minAmount ) ? null : parseFloat( minAmount );
-		advancedFraudProtectionSettings[ setting ].max_amount =
-			0 === parseFloat( maxAmount ) ? null : parseFloat( maxAmount );
-		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
+		setAdvancedFraudProtectionSettings( ( settings ) => ( {
+			...settings,
+			[ setting ]: {
+				...settings[ setting ],
+				min_amount:
+					0 === parseFloat( minAmount )
+						? null
+						: parseFloat( minAmount ),
+				max_amount:
+					0 === parseFloat( maxAmount )
+						? null
+						: parseFloat( maxAmount ),
+			},
+		} ) );
 	}, [
 		setting,
 		minAmount,

@@ -77,9 +77,7 @@ const FraudProtectionRuleToggle = ( {
 					help={ helpText }
 					checked={ toggleState }
 					className="fraud-protection-rule-toggle-toggle"
-					onChange={ () => {
-						setToggleState( ! toggleState );
-					} }
+					onChange={ () => setToggleState( ( value ) => ! value ) }
 				></ToggleControl>
 				{ toggleState && (
 					<div>
@@ -95,9 +93,9 @@ const FraudProtectionRuleToggle = ( {
 								) }
 								className="fraud-protection-rule-toggle-checkbox"
 								checked={ checkState }
-								onChange={ () => {
-									setCheckState( ! checkState );
-								} }
+								onChange={ () =>
+									setCheckState( ( state ) => ! state )
+								}
 							></CheckboxControl>
 							<Tooltip
 								content={ __(

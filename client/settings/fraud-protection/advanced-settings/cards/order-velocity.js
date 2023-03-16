@@ -27,15 +27,14 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 	);
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].max_orders = parseInt(
-			maxOrders,
-			10
-		);
-		advancedFraudProtectionSettings[ setting ].interval = parseInt(
-			orderInterval,
-			10
-		);
-		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
+		setAdvancedFraudProtectionSettings( ( settings ) => ( {
+			...settings,
+			[ setting ]: {
+				...settings[ setting ],
+				max_orders: parseInt( maxOrders, 10 ),
+				interval: parseInt( orderInterval, 10 ),
+			},
+		} ) );
 	}, [
 		setting,
 		maxOrders,
