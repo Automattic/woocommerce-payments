@@ -25,5 +25,5 @@ export const fundLabelStrings = {
 	reserved: __( 'Reserved funds', 'woocommerce-payments' ),
 };
 
-// Translators: %s is the currency code, e.g. USD.
+/** translators: %s is the currency code, e.g. USD. */
 export const currencyBalanceString = __( '%s Balance', 'woocommerce-payments' );
