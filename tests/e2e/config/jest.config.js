@@ -44,8 +44,6 @@ if ( process.env.E2E_GROUP ) {
 		allowedPaths.push( e2ePaths[ process.env.E2E_GROUP ] );
 	}
 } else {
-	// The 'atomic' folder is a temporary measure until we are able to run all E2E tests for Atomic sites.
-	// The only way to run E2E tests locally for the Atomic site is to use E2E_GROUP=atomic, to avoid duplicate tests in other cases.
 	Object.values( e2ePaths ).forEach( ( testPath ) => {
 		allowedPaths.push( testPath );
 	} );
@@ -53,8 +51,8 @@ if ( process.env.E2E_GROUP ) {
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 const testConfig = useE2EJestConfig( {
-	rootDir: path.resolve( __dirname, '../../../' ),
 	setupFiles: [ '<rootDir>/tests/e2e/config/env.setup.js' ],
+	rootDir: path.resolve( __dirname, '../../../' ),
 	roots: allowedPaths,
 	testSequencer: path.resolve(
 		__dirname,
