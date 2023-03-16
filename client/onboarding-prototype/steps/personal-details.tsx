@@ -8,12 +8,12 @@ import { Flex, FlexBlock } from '@wordpress/components';
  * Internal dependencies
  */
 import strings from '../strings';
-import { OnboardingTextField } from '../fields';
+import { OnboardingForm, OnboardingTextField } from '../form';
 
 const PersonalDetails: React.FC = () => {
 	return (
-		<>
-			<Flex>
+		<OnboardingForm>
+			<Flex align="top">
 				<FlexBlock>
 					<OnboardingTextField name="individual.first_name" />
 				</FlexBlock>
@@ -29,7 +29,7 @@ const PersonalDetails: React.FC = () => {
 				}
 			</div>
 			<OnboardingTextField name="phone" />
-		</>
+		</OnboardingForm>
 	);
 };
 
