@@ -73,6 +73,12 @@ export default {
 			'woocommerce-payments'
 		),
 	},
+	errors: {
+		generic: __( 'Please provide a response', 'woocommerce-payments' ),
+		email: __( 'Please provide a valid email', 'woocommerce-payments' ),
+		phone: __( 'Please provide a valid phone', 'woocommerce-payments' ),
+		url: __( 'Please provide a valid website', 'woocommerce-payments' ),
+	},
 	placeholders: {
 		country: __( 'Select a location', 'woocommerce-payments' ),
 		business_type: __(

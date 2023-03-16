@@ -10,10 +10,15 @@ import { OnboardingFields } from './types';
 
 const useContextValue = () => {
 	const [ data, setData ] = useState( {} as OnboardingFields );
+	const [ errors, setErrors ] = useState( {} as OnboardingFields );
+
 	return {
 		data,
 		setData: ( value: Record< string, string | undefined > ) =>
-			setData( { ...data, ...value } ),
+			setData( ( prev ) => ( { ...prev, ...value } ) ),
+		errors,
+		setErrors: ( value: Record< string, string | undefined > ) =>
+			setErrors( ( prev ) => ( { ...prev, ...value } ) ),
 	};
 };
 
