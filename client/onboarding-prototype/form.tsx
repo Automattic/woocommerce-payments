@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { Button } from '@wordpress/components';
+import { isEmpty, mapValues } from 'lodash';
 
 /**
  * Internal dependencies
@@ -21,12 +22,15 @@ import { useValidation } from './validation';
 import strings from './strings';
 
 export const OnboardingForm: React.FC = ( { children } ) => {
-	const { errors } = useOnboardingContext();
+	const { errors, touched, setTouched } = useOnboardingContext();
 	const { nextStep } = useStepperContext();
 
-	const hasErrors = Object.keys( errors ).length > 0;
+	const isValid = isEmpty( errors );
 
-	const handleContinue = () => ! hasErrors && nextStep();
+	const handleContinue = () => {
+		if ( isValid ) return nextStep();
+		setTouched( mapValues( touched, () => true ) );
+	};
 
 	return (
 		<form
@@ -36,7 +40,7 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 			} }
 		>
 			{ children }
-			<Button isPrimary onClick={ handleContinue }>
+			<Button isPrimary onClick={ handleContinue } type="submit">
 				{ strings.continue }
 			</Button>
 		</form>
@@ -52,7 +56,7 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 	...rest
 } ) => {
 	const { data, setData } = useOnboardingContext();
-	const { validate, getError, isTouched } = useValidation( name );
+	const { validate, error } = useValidation( name );
 
 	return (
 		<TextField
@@ -62,7 +66,7 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = ( {
 				setData( { [ name ]: value } );
 				validate( value );
 			} }
-			{ ...( isTouched() && { error: getError() } ) }
+			error={ error() }
 			{ ...rest }
 		/>
 	);
@@ -80,7 +84,7 @@ export const OnboardingSelectField = < ItemType extends Item >( {
 	...rest
 }: OnboardingSelectFieldProps< ItemType > ): JSX.Element => {
 	const { data, setData } = useOnboardingContext();
-	const { validate, getError, isTouched } = useValidation( name );
+	const { validate, error } = useValidation( name );
 
 	return (
 		<SelectField
@@ -100,7 +104,7 @@ export const OnboardingSelectField = < ItemType extends Item >( {
 				validate( selectedItem?.key );
 			} }
 			options={ [] }
-			{ ...( isTouched() && { error: getError() } ) }
+			error={ error() }
 			{ ...rest }
 		/>
 	);

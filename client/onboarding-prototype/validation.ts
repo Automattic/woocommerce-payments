@@ -18,20 +18,25 @@ const isValid = ( name: keyof OnboardingFields, value?: string ): boolean => {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const useValidation = ( name: keyof OnboardingFields ) => {
-	const { data, errors, setErrors } = useOnboardingContext();
+	const { errors, setErrors, touched, setTouched } = useOnboardingContext();
 
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	useEffect( () => setErrors( { [ name ]: '' } ), [] );
+	const validate = ( value?: string ) => {
+		if ( ! touched[ name ] ) setTouched( { [ name ]: true } );
+		const error = isValid( name, value )
+			? undefined
+			: ( strings.errors as Record< string, string > )[ name ] ||
+			  strings.errors.generic;
+		setErrors( { [ name ]: error } );
+	};
+
+	useEffect( () => {
+		validate();
+		setTouched( { [ name ]: false } );
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [] );
 
 	return {
-		validate: ( value?: string ) => {
-			const error = isValid( name, value )
-				? undefined
-				: ( strings.errors as Record< string, string > )[ name ] ||
-				  strings.errors.generic;
-			setErrors( { [ name ]: error } );
-		},
-		getError: () => errors[ name ],
-		isTouched: () => data[ name ] !== undefined,
+		validate,
+		error: () => ( touched[ name ] ? errors[ name ] : undefined ),
 	};
 };

@@ -4,6 +4,14 @@
 	}
 }
 
+.components-custom-select-control.has-error {
+	margin-bottom: $gap-smaller;
+
+	button {
+		border-color: $alert-red;
+	}
+}
+
 .components-form-field__error {
 	margin-top: -$gap-smallest;
 	margin-bottom: $gap-smaller;
