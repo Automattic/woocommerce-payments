@@ -27,26 +27,24 @@ const InternationalBillingAddressRuleCard = () => (
 			},
 		} ) }
 	>
-		<div>
-			<FraudProtectionRuleToggle
-				setting={ 'international_billing_address' }
-				label={ __(
-					'Screen transactions for international billing addresses',
-					'woocommerce-payments'
-				) }
-				helpText={ __(
-					'When enabled, the payment method will not be charged until you review and approve the transaction'
-				) }
-			></FraudProtectionRuleToggle>
-			<FraudProtectionRuleDescription>
-				{ __(
-					'Due to the difficulty of authenticating foreign citizens and cross-border legal ' +
-						'enforcement against fraudulent activities, you should exercise caution when ' +
-						'accepting orders from customers in foreign countries who are using non-domestic addresses.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleDescription>
-		</div>
+		<FraudProtectionRuleToggle
+			setting={ 'international_billing_address' }
+			label={ __(
+				'Screen transactions for international billing addresses',
+				'woocommerce-payments'
+			) }
+			helpText={ __(
+				'When enabled, the payment method will not be charged until you review and approve the transaction'
+			) }
+		></FraudProtectionRuleToggle>
+		<FraudProtectionRuleDescription>
+			{ __(
+				'Due to the difficulty of authenticating foreign citizens and cross-border legal ' +
+					'enforcement against fraudulent activities, you should exercise caution when ' +
+					'accepting orders from customers in foreign countries who are using non-domestic addresses.',
+				'woocommerce-payments'
+			) }
+		</FraudProtectionRuleDescription>
 	</FraudProtectionRuleCard>
 );
 

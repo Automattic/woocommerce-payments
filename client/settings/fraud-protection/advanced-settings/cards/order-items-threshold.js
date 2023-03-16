@@ -142,28 +142,26 @@ const OrderItemsThresholdRuleCard = () => (
 			'woocommerce-payments'
 		) }
 	>
-		<div>
-			<FraudProtectionRuleToggle
+		<FraudProtectionRuleToggle
+			setting={ 'order_items_threshold' }
+			label={ __(
+				'Screen transactions for abnormal item counts',
+				'woocommerce-payments'
+			) }
+			helpText={ __(
+				'When enabled, the payment method will not be charged until you review and approve the transaction'
+			) }
+		>
+			<OrderItemsThresholdCustomForm
 				setting={ 'order_items_threshold' }
-				label={ __(
-					'Screen transactions for abnormal item counts',
-					'woocommerce-payments'
-				) }
-				helpText={ __(
-					'When enabled, the payment method will not be charged until you review and approve the transaction'
-				) }
-			>
-				<OrderItemsThresholdCustomForm
-					setting={ 'order_items_threshold' }
-				/>
-			</FraudProtectionRuleToggle>
-			<FraudProtectionRuleDescription>
-				{ __(
-					'An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleDescription>
-		</div>
+			/>
+		</FraudProtectionRuleToggle>
+		<FraudProtectionRuleDescription>
+			{ __(
+				'An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.',
+				'woocommerce-payments'
+			) }
+		</FraudProtectionRuleDescription>
 	</FraudProtectionRuleCard>
 );
 
