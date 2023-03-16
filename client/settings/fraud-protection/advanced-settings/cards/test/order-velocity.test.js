@@ -83,7 +83,7 @@ describe( 'Order items threshold card', () => {
 		settings.order_velocity.max_orders = 100;
 		const setValidationError = jest.fn();
 		const validationResult = OrderVelocityValidation(
-			settings,
+			settings.order_velocity,
 			setValidationError
 		);
 		expect( validationResult ).toBe( true );
@@ -95,7 +95,7 @@ describe( 'Order items threshold card', () => {
 		settings.order_velocity.max_orders = null;
 		const setValidationError = jest.fn();
 		const validationResult = OrderVelocityValidation(
-			settings,
+			settings.order_velocity,
 			setValidationError
 		);
 		expect( validationResult ).toBe( true );
@@ -107,7 +107,7 @@ describe( 'Order items threshold card', () => {
 		settings.order_velocity.max_orders = null;
 		const setValidationError = jest.fn();
 		const validationResult = OrderVelocityValidation(
-			settings,
+			settings.order_velocity,
 			setValidationError
 		);
 		expect( validationResult ).toBe( false );

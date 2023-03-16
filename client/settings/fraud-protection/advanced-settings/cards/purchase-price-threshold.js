@@ -28,12 +28,10 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 	);
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].min_amount = parseFloat(
-			minAmount
-		);
-		advancedFraudProtectionSettings[ setting ].max_amount = parseFloat(
-			maxAmount
-		);
+		advancedFraudProtectionSettings[ setting ].min_amount =
+			0 === parseFloat( minAmount ) ? null : parseFloat( minAmount );
+		advancedFraudProtectionSettings[ setting ].max_amount =
+			0 === parseFloat( maxAmount ) ? null : parseFloat( maxAmount );
 		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
 	}, [
 		setting,
@@ -42,6 +40,11 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 		advancedFraudProtectionSettings,
 		setAdvancedFraudProtectionSettings,
 	] );
+
+	const areInputsEmpty =
+		! parseFloat( minAmount ) && ! parseFloat( maxAmount );
+	const isMinGreaterThanMax =
+		parseFloat( minAmount ) > parseFloat( maxAmount );
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
@@ -59,9 +62,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 						prefix={ '$' }
 						placeholder={ '0.00' }
 						value={ minAmount }
-						onChange={ ( val ) => {
-							setMinAmount( val );
-						} }
+						onChange={ setMinAmount }
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
@@ -80,9 +81,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 						prefix={ '$' }
 						placeholder={ '0.00' }
 						value={ maxAmount }
-						onChange={ ( val ) => {
-							setMaxAmount( val );
-						} }
+						onChange={ setMaxAmount }
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
@@ -90,7 +89,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 					/>
 				</div>
 			</div>
-			{ ! parseFloat( minAmount ) && ! parseFloat( maxAmount ) && (
+			{ areInputsEmpty && (
 				<div>
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'warning' }>
@@ -101,7 +100,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 					</FraudProtectionRuleCardNotice>
 				</div>
 			) }
-			{ parseFloat( minAmount ) > parseFloat( maxAmount ) ? (
+			{ isMinGreaterThanMax ? (
 				<div>
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'error' }>
@@ -124,42 +123,36 @@ const PurchasePriceThresholdRuleCard = () => (
 			'woocommerce-payments'
 		) }
 	>
-		<div>
-			<FraudProtectionRuleToggle
+		<FraudProtectionRuleToggle
+			setting={ 'purchase_price_threshold' }
+			label={ __(
+				'Screen transactions for abnormal purchase prices',
+				'woocommerce-payments'
+			) }
+			helpText={ __(
+				'When enabled, the payment method will not be charged until you review and approve the transaction'
+			) }
+		>
+			<PurchasePriceThresholdCustomForm
 				setting={ 'purchase_price_threshold' }
-				label={ __(
-					'Screen transactions for abnormal purchase prices',
-					'woocommerce-payments'
-				) }
-				helpText={ __(
-					'When enabled, the payment method will not be charged until you review and approve the transaction'
-				) }
-			>
-				<PurchasePriceThresholdCustomForm
-					setting={ 'purchase_price_threshold' }
-				/>
-			</FraudProtectionRuleToggle>
-			<FraudProtectionRuleDescription>
-				{ __(
-					'An unusually high purchase amount, compared to the average for your business, ' +
-						'can indicate potential fraudulent activity.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleDescription>
-		</div>
+			/>
+		</FraudProtectionRuleToggle>
+		<FraudProtectionRuleDescription>
+			{ __(
+				'An unusually high purchase amount, compared to the average for your business, ' +
+					'can indicate potential fraudulent activity.',
+				'woocommerce-payments'
+			) }
+		</FraudProtectionRuleDescription>
 	</FraudProtectionRuleCard>
 );
 
 export const PurchasePriceThresholdValidation = (
-	settings,
+	{ enabled, min_amount: minAmount, max_amount: maxAmount },
 	setValidationError
 ) => {
-	const key = 'purchase_price_threshold';
-	if ( settings[ key ].enabled ) {
-		if (
-			! parseFloat( settings[ key ].min_amount ) &&
-			! parseFloat( settings[ key ].max_amount )
-		) {
+	if ( enabled ) {
+		if ( ! minAmount && ! maxAmount ) {
 			setValidationError(
 				__(
 					'A price range must be set for the "Purchase Price threshold" filter.',
@@ -169,10 +162,7 @@ export const PurchasePriceThresholdValidation = (
 			return false;
 		}
 
-		if (
-			parseFloat( settings[ key ].min_amount ) >
-			parseFloat( settings[ key ].max_amount )
-		) {
+		if ( parseFloat( minAmount ) > parseFloat( maxAmount ) ) {
 			setValidationError(
 				__(
 					'Maximum purchase price must be greater than the minimum purchase price.',

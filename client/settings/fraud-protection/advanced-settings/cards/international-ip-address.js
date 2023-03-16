@@ -28,25 +28,23 @@ const InternationalIPAddressRuleCard = () => {
 				},
 			} ) }
 		>
-			<div>
-				<FraudProtectionRuleToggle
-					setting={ 'international_ip_address' }
-					label={ __(
-						'Screen transactions for international IP addresses',
-						'woocommerce-payments'
-					) }
-					helpText={ __(
-						'When enabled, the payment method will not be charged until you review and approve the transaction'
-					) }
-				></FraudProtectionRuleToggle>
-				<FraudProtectionRuleDescription>
-					{ __(
-						'You should be especially wary when a customer has an international IP address but uses domestic billing and ' +
-							'shipping information. Fraudsters often pretend to live in one location, but live and shop from another.',
-						'woocommerce-payments'
-					) }
-				</FraudProtectionRuleDescription>
-			</div>
+			<FraudProtectionRuleToggle
+				setting={ 'international_ip_address' }
+				label={ __(
+					'Screen transactions for international IP addresses',
+					'woocommerce-payments'
+				) }
+				helpText={ __(
+					'When enabled, the payment method will not be charged until you review and approve the transaction'
+				) }
+			></FraudProtectionRuleToggle>
+			<FraudProtectionRuleDescription>
+				{ __(
+					'You should be especially wary when a customer has an international IP address but uses domestic billing and ' +
+						'shipping information. Fraudsters often pretend to live in one location, but live and shop from another.',
+					'woocommerce-payments'
+				) }
+			</FraudProtectionRuleDescription>
 		</FraudProtectionRuleCard>
 	);
 };

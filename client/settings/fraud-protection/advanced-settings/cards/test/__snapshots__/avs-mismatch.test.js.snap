@@ -25,58 +25,56 @@ exports[`AVS mismatch card renders correctly 1`] = `
     <div
       class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
     >
-      <div>
+      <div
+        class="fraud-protection-rule-description"
+      >
+        <strong>
+          How does this filter protect me?
+        </strong>
+        <p>
+          Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
+        </p>
+      </div>
+      <div
+        class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+      >
         <div
-          class="fraud-protection-rule-description"
+          class="fraud-protection-rule-card-notice-icon"
         >
-          <strong>
-            How does this filter protect me?
-          </strong>
-          <p>
-            Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder. AVS matches, however, are not a guarantee.
-          </p>
+          <svg
+            data-testid="rule-card-notice-warning-icon-svg"
+            fill="none"
+            height="18"
+            viewBox="0 0 18 18"
+            width="18"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              clip-rule="evenodd"
+              d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
+              fill="#bd8600"
+              fill-rule="evenodd"
+            />
+            <path
+              d="M10 4H8V10H10V4Z"
+              fill="#bd8600"
+            />
+            <path
+              d="M10 12H8V14H10V12Z"
+              fill="#bd8600"
+            />
+          </svg>
         </div>
         <div
-          class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning"
+          class="fraud-protection-rule-card-notice-text"
         >
-          <div
-            class="fraud-protection-rule-card-notice-icon"
+          Payments failing address verification will be blocked. For security, this filter cannot be modified. 
+          <a
+            data-link-type="wc-admin"
+            href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
           >
-            <svg
-              data-testid="rule-card-notice-warning-icon-svg"
-              fill="none"
-              height="18"
-              viewBox="0 0 18 18"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                clip-rule="evenodd"
-                d="M9 1.75C4.99594 1.75 1.75 4.99594 1.75 9C1.75 13.0041 4.99594 16.25 9 16.25C13.0041 16.25 16.25 13.0041 16.25 9C16.25 4.99594 13.0041 1.75 9 1.75ZM0.25 9C0.25 4.16751 4.16751 0.25 9 0.25C13.8325 0.25 17.75 4.16751 17.75 9C17.75 13.8325 13.8325 17.75 9 17.75C4.16751 17.75 0.25 13.8325 0.25 9Z"
-                fill="#bd8600"
-                fill-rule="evenodd"
-              />
-              <path
-                d="M10 4H8V10H10V4Z"
-                fill="#bd8600"
-              />
-              <path
-                d="M10 12H8V14H10V12Z"
-                fill="#bd8600"
-              />
-            </svg>
-          </div>
-          <div
-            class="fraud-protection-rule-card-notice-text"
-          >
-            Payments failing address verification will be blocked. For security, this filter cannot be modified. 
-            <a
-              data-link-type="wc-admin"
-              href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-            >
-              Learn more
-            </a>
-          </div>
+            Learn more
+          </a>
         </div>
       </div>
     </div>
