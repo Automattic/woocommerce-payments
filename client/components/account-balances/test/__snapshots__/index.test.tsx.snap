@@ -35,10 +35,10 @@ exports[`AccountBalances renders 1`] = `
         role="tablist"
       >
         <button
-          aria-controls="tab-panel-0-USD-view"
+          aria-controls="tab-panel-0-usd-view"
           aria-selected="true"
           class="components-button components-tab-panel__tabs-item is-active"
-          id="tab-panel-0-USD"
+          id="tab-panel-0-usd"
           role="tab"
           type="button"
         >
@@ -46,16 +46,16 @@ exports[`AccountBalances renders 1`] = `
         </button>
       </div>
       <div
-        aria-labelledby="tab-panel-0-USD"
+        aria-labelledby="tab-panel-0-usd"
         class="components-tab-panel__tab-content"
-        id="tab-panel-0-USD-view"
+        id="tab-panel-0-usd-view"
         role="tabpanel"
       >
         <div
           class="components-flex wcpay-account-balances__balances css-1xu3jp0-Flex eboqfv50"
         >
           <div
-            class="wcpay-account-balances__balances__item"
+            class="wcpay-account-balances__balances__item wcpay-account-available__balance_item"
           >
             <p
               class="wcpay-account-balances__balances__item__title"
@@ -65,11 +65,11 @@ exports[`AccountBalances renders 1`] = `
             <p
               class="wcpay-account-balances__balances__item__amount"
             >
-              $0.00
+              $2.00
             </p>
           </div>
           <div
-            class="wcpay-account-balances__balances__item"
+            class="wcpay-account-balances__balances__item wcpay-account-pending__balance_item"
           >
             <p
               class="wcpay-account-balances__balances__item__title"
@@ -79,11 +79,11 @@ exports[`AccountBalances renders 1`] = `
             <p
               class="wcpay-account-balances__balances__item__amount"
             >
-              $0.00
+              $1.00
             </p>
           </div>
           <div
-            class="wcpay-account-balances__balances__item"
+            class="wcpay-account-balances__balances__item wcpay-account-reserved__balance_item"
           >
             <p
               class="wcpay-account-balances__balances__item__title"
