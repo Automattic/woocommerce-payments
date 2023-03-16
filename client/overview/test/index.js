@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { select } from '@wordpress/data';
 
 /**
@@ -12,6 +12,7 @@ import { select } from '@wordpress/data';
 import OverviewPage from '../';
 import { getTasks } from '../task-list/tasks';
 import { getQuery } from '@woocommerce/navigation';
+import userEvent from '@testing-library/user-event';
 
 const settingsMock = {
 	enabled_payment_method_ids: [ 'foo', 'bar' ],
@@ -88,6 +89,12 @@ describe( 'Overview page', () => {
 				accountOverviewTaskList: true,
 			},
 			accountLoans: {},
+			isFraudProtectionSettingsEnabled: true,
+			frtDiscoverBannerSettings: JSON.stringify( {
+				remindMeCount: 0,
+				remindMeAt: null,
+				dontShowAgain: false,
+			} ),
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
@@ -241,5 +248,46 @@ describe( 'Overview page', () => {
 		expect(
 			container.querySelector( '.wcpay-loan-summary-header' )
 		).toBeVisible();
+	} );
+
+	it( 'dismisses the FRTDiscoverabilityBanner when remind me later button is clicked', async () => {
+		render( <OverviewPage /> );
+
+		const bannerHeader = screen.getByText(
+			'Enhanced fraud protection for your store'
+		);
+
+		expect( bannerHeader ).toBeInTheDocument();
+
+		userEvent.click( screen.getByText( 'Remind me later' ) );
+
+		await waitFor( () => {
+			expect( bannerHeader ).not.toBeInTheDocument();
+		} );
+	} );
+
+	it( 'dismisses the FRTDiscoverabilityBanner when dont show again button is clicked', async () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			frtDiscoverBannerSettings: JSON.stringify( {
+				remindMeCount: 3,
+				remindMeAt: null,
+				dontShowAgain: false,
+			} ),
+		};
+
+		render( <OverviewPage /> );
+
+		const bannerHeader = screen.getByText(
+			'Enhanced fraud protection for your store'
+		);
+
+		expect( bannerHeader ).toBeInTheDocument();
+
+		userEvent.click( screen.getByText( "Don't show me this again" ) );
+
+		await waitFor( () => {
+			expect( bannerHeader ).not.toBeInTheDocument();
+		} );
 	} );
 } );
