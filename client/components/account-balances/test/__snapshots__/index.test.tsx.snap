@@ -6,9 +6,27 @@ exports[`AccountBalances renders 1`] = `
     class="components-card is-size-medium wcpay-account-balances css-1xs3c37-CardUI e1q7k77g0"
   >
     <div
-      class="components-flex components-card__header is-size-small e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
+      class="components-flex components-card__header is-size-medium wcpay-account-balances__header e1q7k77g1 css-1ufeymn-Flex-HeaderUI eboqfv50"
     >
-      Good afternoon
+      <div
+        class="components-flex wcpay-account-balances__header__flex css-1rdm0qk-Flex eboqfv50"
+      >
+        <div
+          class="components-flex__item wcpay-account-balances__header__flex__greeting css-1s295sp-Item eboqfv51"
+        >
+          Good afternoon, Tester 👋
+        </div>
+        <div
+          class="components-flex__item css-1s295sp-Item eboqfv51"
+        >
+          <img
+            alt="Woo Payments logo"
+            class="wcpay-account-balances__header__flex__logo"
+            src="[object Object]"
+            width="107"
+          />
+        </div>
+      </div>
     </div>
     <div>
       <div
