@@ -12,6 +12,7 @@ const AmountInput = ( { id, prefix, value, placeholder, help, onChange } ) => {
 
 	if ( ! validateInput( value ) ) {
 		value = '';
+		onChange( value );
 	}
 
 	const handleChange = ( inputvalue ) => {

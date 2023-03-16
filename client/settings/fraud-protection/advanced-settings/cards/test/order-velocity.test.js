@@ -11,7 +11,7 @@ import OrderVelocityRuleCard, {
 	OrderVelocityValidation,
 } from '../order-velocity';
 
-describe( 'Order items threshold card', () => {
+describe( 'Order velocity card', () => {
 	const settings = {
 		order_velocity: {
 			enabled: false,

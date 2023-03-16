@@ -20,22 +20,25 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 		setAdvancedFraudProtectionSettings,
 	} = useContext( FraudPreventionSettingsContext );
 
+	const minItemsTemp = parseInt(
+		advancedFraudProtectionSettings[ setting ].min_items,
+		10
+	);
+	const maxItemsTemp = parseInt(
+		advancedFraudProtectionSettings[ setting ].max_items,
+		10
+	);
+
 	const [ minItemsCount, setMinItemsCount ] = useState(
-		advancedFraudProtectionSettings[ setting ].min_items ?? ''
+		isNaN( minItemsTemp ) ? '' : minItemsTemp
 	);
 	const [ maxItemsCount, setMaxItemsCount ] = useState(
-		advancedFraudProtectionSettings[ setting ].max_items ?? ''
+		isNaN( maxItemsTemp ) ? '' : maxItemsTemp
 	);
 
 	useEffect( () => {
-		advancedFraudProtectionSettings[ setting ].min_items = parseInt(
-			minItemsCount,
-			10
-		);
-		advancedFraudProtectionSettings[ setting ].max_items = parseInt(
-			maxItemsCount,
-			10
-		);
+		advancedFraudProtectionSettings[ setting ].min_items = minItemsCount;
+		advancedFraudProtectionSettings[ setting ].max_items = maxItemsCount;
 		setAdvancedFraudProtectionSettings( advancedFraudProtectionSettings );
 	}, [
 		setting,
@@ -66,7 +69,7 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 						placeholder={ '0' }
 						value={ minItemsCount }
 						type="number"
-						onChange={ ( value ) => setMinItemsCount( value ) }
+						onChange={ setMinItemsCount }
 						onKeyDown={ ( e ) =>
 							/^[+-.,e]$/m.test( e.key ) && e.preventDefault()
 						}
@@ -90,7 +93,7 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 						placeholder={ '0' }
 						type="number"
 						value={ maxItemsCount }
-						onChange={ ( value ) => setMaxItemsCount( value ) }
+						onChange={ setMaxItemsCount }
 						onKeyDown={ ( e ) =>
 							/^[+-.,e]$/m.test( e.key ) && e.preventDefault()
 						}
