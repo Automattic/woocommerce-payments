@@ -2,12 +2,12 @@
  * External dependencies
  */
 import * as React from 'react';
-import { useAllDepositsOverviews } from 'wcpay/data';
 import { Flex, TabPanel } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
+import { useAllDepositsOverviews } from 'wcpay/data';
 import { fundLabelStrings } from './strings';
 import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';

@@ -2,6 +2,10 @@
  * External dependencies
  */
 import * as React from 'react';
+
+/**
+ * Internal dependencies
+ */
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from 'components/loadable';
 
