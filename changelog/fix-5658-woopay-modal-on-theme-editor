@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-prevent WooPay modal from showing up when editing the theme via wp-admin
