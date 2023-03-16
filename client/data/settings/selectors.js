@@ -1,5 +1,10 @@
 /** @format */
 
+/**
+ * Internal dependencies
+ */
+import { ProtectionLevel } from '../../settings/fraud-protection/advanced-settings/constants';
+
 const EMPTY_OBJ = {};
 const EMPTY_ARR = [];
 
@@ -202,7 +207,10 @@ export const getPlatformCheckoutLocations = ( state ) => {
 };
 
 export const getCurrentProtectionLevel = ( state ) => {
-	return getSettings( state ).current_protection_level || 'standard';
+	return (
+		getSettings( state ).current_protection_level ||
+		ProtectionLevel.STANDARD
+	);
 };
 
 export const getAdvancedFraudProtectionSettings = ( state ) => {

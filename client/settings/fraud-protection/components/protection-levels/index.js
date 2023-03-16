@@ -18,6 +18,7 @@ import {
 import interpolateComponents from 'interpolate-components';
 import { Button } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
+import { ProtectionLevel } from '../../advanced-settings/constants';
 
 const ProtectionLevels = () => {
 	const [ isStandardModalOpen, setStandardModalOpen ] = useState( false );
@@ -42,13 +43,18 @@ const ProtectionLevels = () => {
 						<input
 							name={ 'fraud-protection-level-select' }
 							id={ 'fraud-protection__standard-level' }
-							value={ 'standard' }
+							value={ ProtectionLevel.STANDARD }
 							type={ 'radio' }
 							className={
 								'fraud-protection-single-radio-wrapper__item'
 							}
-							checked={ 'standard' === currentProtectionLevel }
-							onChange={ () => handleLevelChange( 'standard' ) }
+							checked={
+								ProtectionLevel.STANDARD ===
+								currentProtectionLevel
+							}
+							onChange={ () =>
+								handleLevelChange( ProtectionLevel.STANDARD )
+							}
 						/>
 						<label
 							className="fraud-protection-single-radio-wrapper__item"
@@ -73,26 +79,32 @@ const ProtectionLevels = () => {
 							onClick={ () => setStandardModalOpen( true ) }
 						/>
 						<StandardFraudProtectionModal
-							level="standard"
+							level={ ProtectionLevel.STANDARD }
 							isStandardModalOpen={ isStandardModalOpen }
 							setStandardModalOpen={ setStandardModalOpen }
 							storeCurrency={ storeCurrency }
 						/>
 					</div>
-					<FraudProtectionHelpText level="standard" />
+					<FraudProtectionHelpText
+						level={ ProtectionLevel.STANDARD }
+					/>
 				</li>
 				<li>
 					<div className="fraud-protection-single-radio-wrapper">
 						<input
 							name={ 'fraud-protection-level-select' }
 							id={ 'fraud-protection__high-level' }
-							value={ 'high' }
+							value={ ProtectionLevel.HIGH }
 							type={ 'radio' }
 							className={
 								'fraud-protection-single-radio-wrapper__item'
 							}
-							checked={ 'high' === currentProtectionLevel }
-							onChange={ () => handleLevelChange( 'high' ) }
+							checked={
+								ProtectionLevel.HIGH === currentProtectionLevel
+							}
+							onChange={ () =>
+								handleLevelChange( ProtectionLevel.HIGH )
+							}
 						/>
 						<label
 							className="fraud-protection-single-radio-wrapper__item"
@@ -107,13 +119,13 @@ const ProtectionLevels = () => {
 							onClick={ () => setHighModalOpen( true ) }
 						/>
 						<HighFraudProtectionModal
-							level="high"
+							level={ ProtectionLevel.HIGH }
 							isHighModalOpen={ isHighModalOpen }
 							setHighModalOpen={ setHighModalOpen }
 							storeCurrency={ storeCurrency }
 						/>
 					</div>
-					<FraudProtectionHelpText level="high" />
+					<FraudProtectionHelpText level={ ProtectionLevel.HIGH } />
 				</li>
 				<hr className="fraud-protection__list-divider" />
 				<li className="fraud-protection__advanced-level-container">
@@ -124,20 +136,25 @@ const ProtectionLevels = () => {
 								id={
 									'fraud-protection-level-select_advanced-level'
 								}
-								value={ 'advanced' }
+								value={ ProtectionLevel.ADVANCED }
 								type={ 'radio' }
 								checked={
-									'advanced' === currentProtectionLevel
+									ProtectionLevel.ADVANCED ===
+									currentProtectionLevel
 								}
 								onChange={ () =>
-									handleLevelChange( 'advanced' )
+									handleLevelChange(
+										ProtectionLevel.ADVANCED
+									)
 								}
 							/>
 							<p className="fraud-protection-single-radio-wrapper__item">
 								{ __( 'Advanced', 'woocommerce-payments' ) }
 							</p>
 						</div>
-						<FraudProtectionHelpText level="advanced" />
+						<FraudProtectionHelpText
+							level={ ProtectionLevel.ADVANCED }
+						/>
 					</label>
 					<Button
 						href={ getAdminUrl( {
@@ -145,7 +162,9 @@ const ProtectionLevels = () => {
 							path: '/payments/fraud-protection',
 						} ) }
 						isSecondary
-						disabled={ 'advanced' !== currentProtectionLevel }
+						disabled={
+							ProtectionLevel.ADVANCED !== currentProtectionLevel
+						}
 					>
 						{ __( 'Configure', 'woocommerce-payments' ) }
 					</Button>

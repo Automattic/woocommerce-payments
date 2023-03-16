@@ -5,6 +5,12 @@
  */
 import { sprintf } from '@wordpress/i18n';
 
+export const ProtectionLevel = {
+	STANDARD: 'standard',
+	HIGH: 'high',
+	ADVANCED: 'advanced',
+};
+
 export const Outcomes = {
 	BLOCK: 'block',
 	REVIEW: 'review',
@@ -122,10 +128,7 @@ export const buildRuleset = (
 					],
 				};
 			} else {
-				ruleBase.check = parseInt(
-					parseInt( ruleConfiguration.min_items, 10 ),
-					10
-				)
+				ruleBase.check = parseInt( ruleConfiguration.min_items, 10 )
 					? {
 							key: Checks.CHECK_ITEM_COUNT,
 							operator: CheckOperators.OPERATOR_LT,

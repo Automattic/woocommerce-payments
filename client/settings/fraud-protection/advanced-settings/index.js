@@ -7,11 +7,14 @@ import { sprintf, __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { LoadableBlock } from 'wcpay/components/loadable';
 import { Button, Notice } from '@wordpress/components';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import './../style.scss';
+import { useCurrentProtectionLevel, useSettings } from '../../../data';
+import ErrorBoundary from '../../../components/error-boundary';
+import { getAdminUrl } from '../../../utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import AVSMismatchRuleCard from './cards/avs-mismatch';
 import CVCVerificationRuleCard from './cards/cvc-verification';
@@ -28,11 +31,9 @@ import OrderItemsThresholdRuleCard, {
 	OrderItemsThresholdValidation,
 } from './cards/order-items-threshold';
 import FraudPreventionSettingsContext from './context';
-import { useCurrentProtectionLevel, useSettings } from '../../../data';
-import ErrorBoundary from 'wcpay/components/error-boundary';
-import { getAdminUrl } from 'wcpay/utils';
-import { dispatch } from '@wordpress/data';
-import { readRuleset, writeRuleset } from './constants';
+import './../style.scss';
+
+import { ProtectionLevel, readRuleset, writeRuleset } from './constants';
 
 const Breadcrumb = () => (
 	<h2 className="fraud-protection-header-breadcrumb">
@@ -109,8 +110,8 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	const handleSaveSettings = async () => {
 		if ( validateSettings( advancedFraudProtectionSettings ) ) {
 			setIsSavingSettings( true );
-			if ( 'advanced' !== currentProtectionLevel ) {
-				await updateProtectionLevel( 'advanced' );
+			if ( ProtectionLevel.ADVANCED !== currentProtectionLevel ) {
+				await updateProtectionLevel( ProtectionLevel.ADVANCED );
 				dispatch( 'core/notices' ).createSuccessNotice(
 					__(
 						'Current protection level is set to "advanced".',
