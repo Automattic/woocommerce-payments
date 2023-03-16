@@ -69,7 +69,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 						prefix={ '$' }
 						placeholder={ '0.00' }
 						value={ minAmount }
-						onChange={ setMinAmount }
+						onChange={ ( val ) => setMinAmount( val ) }
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
@@ -88,7 +88,7 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 						prefix={ '$' }
 						placeholder={ '0.00' }
 						value={ maxAmount }
-						onChange={ setMaxAmount }
+						onChange={ ( val ) => setMaxAmount( val ) }
 						help={ __(
 							'Leave blank for no limit',
 							'woocommerce-payments'
