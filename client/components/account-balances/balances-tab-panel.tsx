@@ -13,6 +13,27 @@ import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
 
 /**
+ * BalanceTab
+ *
+ * @typedef {Object} BalanceTab
+ *
+ * @param {string} name           Name of the tab.
+ * @param {string} title          Title of the tab.
+ * @param {string} currencyCode   Currency code of the tab.
+ * @param {number} availableFunds Available funds of the tab.
+ * @param {number} pendingFunds   Pending funds of the tab.
+ * @param {number} reservedFunds  Reserved funds of the tab.
+ */
+type BalanceTab = {
+	name: string;
+	title: string;
+	currencyCode: string;
+	availableFunds: number;
+	pendingFunds: number;
+	reservedFunds: number;
+};
+
+/**
  * Renders an account balances panel with tab navigation for each deposit currency.
  *
  * @return {JSX.Element} Rendered balances panel with tab navigation for each currency.
@@ -24,10 +45,14 @@ const AccountBalancesTabPanel: React.FC = () => {
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 
 	// While the data is loading, we show the default currency tab.
-	let depositCurrencyTabs: TabPanel.Tab[] = [
+	let depositCurrencyTabs: BalanceTab[] = [
 		{
 			name: wcpaySettings.accountDefaultCurrency,
 			title: getCurrencyTabTitle( wcpaySettings.accountDefaultCurrency ),
+			currencyCode: wcpaySettings.accountDefaultCurrency,
+			availableFunds: 0,
+			pendingFunds: 0,
+			reservedFunds: 0,
 		},
 	];
 
@@ -48,24 +73,24 @@ const AccountBalancesTabPanel: React.FC = () => {
 
 	return (
 		<TabPanel tabs={ depositCurrencyTabs }>
-			{ ( tab ) => (
+			{ ( tab: BalanceTab ) => (
 				<Flex gap={ 0 } className="wcpay-account-balances__balances">
 					<BalanceBlock
 						title={ fundLabelStrings.available }
 						amount={ tab.availableFunds }
-						currencyCode={ tab.currency_code }
+						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
 					/>
 					<BalanceBlock
 						title={ fundLabelStrings.pending }
 						amount={ tab.pendingFunds }
-						currencyCode={ tab.currency_code }
+						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
 					/>
 					<BalanceBlock
 						title={ fundLabelStrings.reserved }
 						amount={ tab.reservedFunds }
-						currencyCode={ tab.currency_code }
+						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
 					/>
 				</Flex>
