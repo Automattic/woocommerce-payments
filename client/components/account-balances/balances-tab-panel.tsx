@@ -8,7 +8,6 @@ import { Flex, TabPanel } from '@wordpress/components';
  * Internal dependencies.
  */
 import { useAllDepositsOverviews } from 'wcpay/data';
-import { fundLabelStrings } from './strings';
 import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
 
@@ -76,19 +75,19 @@ const AccountBalancesTabPanel: React.FC = () => {
 			{ ( tab: BalanceTab ) => (
 				<Flex gap={ 0 } className="wcpay-account-balances__balances">
 					<BalanceBlock
-						title={ fundLabelStrings.available }
+						type="available"
 						amount={ tab.availableFunds }
 						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
 					/>
 					<BalanceBlock
-						title={ fundLabelStrings.pending }
+						type="pending"
 						amount={ tab.pendingFunds }
 						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
 					/>
 					<BalanceBlock
-						title={ fundLabelStrings.reserved }
+						type="reserved"
 						amount={ tab.reservedFunds }
 						currencyCode={ tab.currencyCode }
 						isLoading={ isLoading }
