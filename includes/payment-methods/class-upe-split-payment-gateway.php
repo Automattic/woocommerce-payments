@@ -78,10 +78,14 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		Session_Rate_Limiter $failed_transaction_rate_limiter,
 		WC_Payments_Order_Service $order_service
 	) {
+		$this->stripe_id = $payment_method->get_id();
+		if ( 'card' !== $this->stripe_id ) {
+			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
+			$this->method_title = "WooCommerce Payments ($this->title)";
+		}
 		parent::__construct( $payments_api_client, $account, $customer_service, $token_service, $action_scheduler_service, $payment_methods, $failed_transaction_rate_limiter, $order_service );
 		$this->method_description = __( 'Payments made simple, with no monthly fees - designed exclusively for WooCommerce stores. Accept credit cards, debit cards, and other popular payment methods.', 'woocommerce-payments' );
 		$this->description        = '';
-		$this->stripe_id          = $payment_method->get_id();
 		$this->payment_method     = $payment_method;
 		$this->title              = $payment_method->get_title();
 		$this->icon               = $payment_method->get_icon();
@@ -89,11 +93,6 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 		add_action( "wc_ajax_wcpay_create_payment_intent_$this->stripe_id", [ $this, 'create_payment_intent_ajax' ] );
 		add_action( "wc_ajax_wcpay_update_payment_intent_$this->stripe_id", [ $this, 'update_payment_intent_ajax' ] );
 		add_action( "wc_ajax_wcpay_init_setup_intent_$this->stripe_id", [ $this, 'init_setup_intent_ajax' ] );
-
-		if ( 'card' !== $this->stripe_id ) {
-			$this->id           = self::GATEWAY_ID . '_' . $this->stripe_id;
-			$this->method_title = "WooCommerce Payments ($this->title)";
-		}
 	}
 
 	/**
