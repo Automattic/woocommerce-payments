@@ -24,8 +24,12 @@ const PurchasePriceThresholdCustomForm = ( { setting } ) => {
 		setAdvancedFraudProtectionSettings,
 	} = useContext( FraudPreventionSettingsContext );
 
-	const [ minAmount, setMinAmount ] = useState( '' );
-	const [ maxAmount, setMaxAmount ] = useState( '' );
+	const [ minAmount, setMinAmount ] = useState(
+		advancedFraudProtectionSettings[ setting ].min_amount ?? ''
+	);
+	const [ maxAmount, setMaxAmount ] = useState(
+		advancedFraudProtectionSettings[ setting ].max_amount ?? ''
+	);
 
 	useEffect( () => {
 		advancedFraudProtectionSettings[ setting ].min_amount = minAmount;
