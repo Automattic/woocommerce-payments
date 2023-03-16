@@ -88,7 +88,7 @@ exports[`AccountBalances renders 1`] = `
             <p
               class="wcpay-account-balances__balances__item__title"
             >
-              Reserve funds
+              Reserved funds
             </p>
             <p
               class="wcpay-account-balances__balances__item__amount"
