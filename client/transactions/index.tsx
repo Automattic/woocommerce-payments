@@ -138,10 +138,7 @@ export const TransactionsPage = (): JSX.Element => {
 		},
 		{
 			name: 'blocked-page',
-			title: sprintf(
-				__( 'Blocked', 'woocommerce-payments' ),
-				authorizationsSummary.count ?? '...'
-			),
+			title: __( 'Blocked', 'woocommerce-payments' ),
 			className: 'blocked-list',
 		},
 	].filter( ( item ) => {

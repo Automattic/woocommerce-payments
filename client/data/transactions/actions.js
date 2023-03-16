@@ -53,3 +53,18 @@ export function updateErrorForBlockedTransactions( error ) {
 		error,
 	};
 }
+
+export function updateOnReviewTransactions( data ) {
+	return {
+		type: TYPES.SET_ON_REVIEW_TRANSACTIONS,
+		data,
+	};
+}
+
+export function updateErrorForOnReviewTransactions( error ) {
+	return {
+		type: TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS,
+		data: null,
+		error,
+	};
+}

@@ -94,6 +94,17 @@ const receiveTransactions = (
 					},
 				},
 			};
+		case TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS:
+			return {
+				...state,
+				fraudProtection: {
+					...state.fraudProtection,
+					review: {
+						...state.fraudProtection.review,
+						error,
+					},
+				},
+			};
 	}
 
 	// Fallback to returning the same state.

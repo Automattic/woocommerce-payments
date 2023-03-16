@@ -284,3 +284,56 @@ export const useBlockedTransactions = ( {
 			isLoading: isResolving( 'getBlockedTransactions', [ query ] ),
 		};
 	}, [] );
+
+export const useOnReviewTransactions = ( {
+	paged,
+	per_page: perPage,
+	orderby,
+	order,
+	match,
+	date_before: dateBefore,
+	date_after: dateAfter,
+	date_between: dateBetween,
+	type_is: typeIs,
+	type_is_not: typeIsNot,
+	store_currency_is: storeCurrencyIs,
+	customer_currency_is: customerCurrencyIs,
+	customer_currency_is_not: customerCurrencyIsNot,
+	loan_id_is: loanIdIs,
+	search,
+}: Query ) =>
+	useSelect( ( select ) => {
+		const {
+			getOnReviewTransactions,
+			getOnReviewTransactionsError,
+			isResolving,
+		} = select( STORE_NAME );
+
+		const query = {
+			paged: Number.isNaN( parseInt( paged ?? '', 10 ) ) ? '1' : paged,
+			perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
+				? '25'
+				: perPage,
+			orderby: orderby || 'date',
+			order: order || 'desc',
+			match,
+			dateBefore,
+			dateAfter,
+			dateBetween:
+				dateBetween &&
+				dateBetween.sort( ( a, b ) => moment( a ).diff( moment( b ) ) ),
+			typeIs,
+			typeIsNot,
+			storeCurrencyIs,
+			customerCurrencyIs,
+			customerCurrencyIsNot,
+			loanIdIs,
+			search,
+		};
+
+		return {
+			transactions: getOnReviewTransactions( query ),
+			transactionsError: getOnReviewTransactionsError( query ),
+			isLoading: isResolving( 'getOnReviewTransactions', [ query ] ),
+		};
+	}, [] );

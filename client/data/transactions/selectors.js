@@ -64,13 +64,18 @@ export const getTransactionsSummaryError = ( state, query ) => {
 	return getTransactionsSummaryForQuery( state, query ).error || {};
 };
 
-/**
- *
- */
 export const getBlockedTransactions = ( state ) => {
 	return getTransactionsState( state ).fraudProtection.blocked.data || [];
 };
 
 export const getBlockedTransactionsError = ( state ) => {
 	return getTransactionsState( state ).fraudProtection.blocked.error || null;
+};
+
+export const getOnReviewTransactions = ( state ) => {
+	return getTransactionsState( state ).fraudProtection.review.data || [];
+};
+
+export const getOnReviewTransactionsError = ( state ) => {
+	return getTransactionsState( state ).fraudProtection.review.error || null;
 };

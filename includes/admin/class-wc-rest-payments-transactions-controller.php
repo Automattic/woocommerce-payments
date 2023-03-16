@@ -45,6 +45,15 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/review',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_on_review_transactions' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/download',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -98,6 +107,13 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 */
 	public function get_blocked_transactions() {
 		return $this->forward_request( 'list_blocked_transactions', [] );
+	}
+
+	/**
+	 * Retrieve on review transactions to respond with via API.
+	 */
+	public function get_on_review_transactions() {
+		return $this->forward_request( 'list_on_review_transactions', [] );
 	}
 
 	/**

@@ -19,6 +19,8 @@ import {
 	updateErrorForTransactionsSummary,
 	updateBlockedTransactions,
 	updateErrorForBlockedTransactions,
+	updateOnReviewTransactions,
+	updateErrorForOnReviewTransactions,
 } from './actions';
 import { formatDateValue } from 'utils';
 
@@ -102,8 +104,9 @@ export function* getTransactionsSummary( query ) {
 }
 
 /**
+ * Retrieves the blocked transactions.
  *
- * @param {Query} query
+ * @param { string } query Data on which to parameterize the selection.
  */
 export function* getBlockedTransactions( query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/transactions/blocked`, {
@@ -127,5 +130,35 @@ export function* getBlockedTransactions( query ) {
 			)
 		);
 		yield updateErrorForBlockedTransactions( e );
+	}
+}
+
+/**
+ * Retrieves the on review transactions.
+ *
+ * @param { string } query Data on which to parameterize the selection.
+ */
+export function* getOnReviewTransactions( query ) {
+	const path = addQueryArgs( `${ NAMESPACE }/transactions/review`, {
+		page: query.paged,
+		pagesize: query.perPage,
+		sort: query.orderby,
+		direction: query.order,
+		...formatQueryFilters( query ),
+	} );
+
+	try {
+		const results = yield apiFetch( { path } );
+		yield updateOnReviewTransactions( results || [] );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving on review transactions.',
+				'woocommerce-payments'
+			)
+		);
+		yield updateErrorForOnReviewTransactions( e );
 	}
 }

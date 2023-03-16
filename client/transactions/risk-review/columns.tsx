@@ -14,10 +14,10 @@ import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { formatExplicitCurrency } from 'utils/currency';
-import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
+import CaptureAuthorizationButton from 'components/capture-authorization-button';
 import wcpayTracks from 'tracks';
 import { Authorization } from '../../types/authorizations';
-import TransactionStatusChip from 'wcpay/components/transaction-status-chip';
+import TransactionStatusChip from 'components/transaction-status-chip';
 
 interface Column extends TableCardColumn {
 	key: 'created' | 'amount' | 'customer' | 'risk_level' | 'status';

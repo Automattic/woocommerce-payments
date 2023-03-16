@@ -11,13 +11,8 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import {
-	useAuthorizations,
-	useAuthorizationsSummary,
-	useBlockedTransactions,
-} from 'data/index';
+import { useBlockedTransactions } from 'data/index';
 import Page from '../../components/page';
-import { formatExplicitCurrency } from 'utils/currency';
 import wcpayTracks from 'tracks';
 import {
 	getBlockedListColumns,
