@@ -237,7 +237,7 @@ class WC_Payments_Features {
 		$account    = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
 		$is_enabled = is_array( $account ) && ( $account['is_fraud_protection_settings_enabled'] ?? false );
 
-		return '1' === get_option( self::WCPAY_FRAUD_PROTECTION_SETTINGS_FLAG_NAME, $is_enabled ? '1' : '0'  );
+		return '1' === get_option( self::WCPAY_FRAUD_PROTECTION_SETTINGS_FLAG_NAME, $is_enabled ? '1' : '0' );
 	}
 
 	/**
