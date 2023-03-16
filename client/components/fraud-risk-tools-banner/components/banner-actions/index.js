@@ -15,7 +15,7 @@ const BannerActions = ( {
 				href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
 				isPrimary
 			>
-				{ __( 'Learn More', 'woocommerce-payments' ) }
+				{ __( 'Learn more', 'woocommerce-payments' ) }
 			</Button>
 			<Button isTertiary onClick={ handleRemindOnClick }>
 				{ __( 'Remind me later', 'woocommerce-payments' ) }

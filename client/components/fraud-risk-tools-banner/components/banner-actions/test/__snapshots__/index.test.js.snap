@@ -9,7 +9,7 @@ exports[`BannerActions renders with dont show again button when remindMeCount gr
       class="components-button is-primary"
       href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
     >
-      Learn More
+      Learn more
     </a>
     <button
       class="components-button is-tertiary"
@@ -36,7 +36,7 @@ exports[`BannerActions renders without dont show again button when remindMeCount
       class="components-button is-primary"
       href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
     >
-      Learn More
+      Learn more
     </a>
     <button
       class="components-button is-tertiary"

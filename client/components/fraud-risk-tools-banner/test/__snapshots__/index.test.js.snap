@@ -40,7 +40,7 @@ exports[`FRTDiscoverabilityBanner renders 1`] = `
           class="components-button is-primary"
           href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
-          Learn More
+          Learn more
         </a>
         <button
           class="components-button is-tertiary"
@@ -88,7 +88,7 @@ exports[`FRTDiscoverabilityBanner renders when remindMeAt timestamp is in the pa
           class="components-button is-primary"
           href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
-          Learn More
+          Learn more
         </a>
         <button
           class="components-button is-tertiary"
@@ -136,7 +136,7 @@ exports[`FRTDiscoverabilityBanner renders with dont show again button if remindM
           class="components-button is-primary"
           href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
-          Learn More
+          Learn more
         </a>
         <button
           class="components-button is-tertiary"
@@ -190,7 +190,7 @@ exports[`FRTDiscoverabilityBanner renders without dont show again button if remi
           class="components-button is-primary"
           href="/wp-admin/admin.php?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/"
         >
-          Learn More
+          Learn more
         </a>
         <button
           class="components-button is-tertiary"
