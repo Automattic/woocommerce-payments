@@ -16,7 +16,6 @@ type WPUser = {
 
 export const useCurrentWpUser = (): {
 	user?: WPUser;
-	displayName?: string;
 	isLoading: boolean;
 } => {
 	const { user, isLoading } = useSelect( ( select ) => {
@@ -27,7 +26,5 @@ export const useCurrentWpUser = (): {
 		};
 	} );
 
-	const displayName = user?.first_name || user?.nickname || user?.name;
-
-	return { user, displayName, isLoading };
+	return { user, isLoading };
 };

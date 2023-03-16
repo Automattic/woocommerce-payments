@@ -18,8 +18,8 @@ import './style.scss';
  * @return {JSX.Element} Rendered element with the account balances card header.
  */
 const AccountBalancesHeader: React.FC = () => {
-	const { displayName } = useCurrentWpUser();
-	const greeting = getGreeting( displayName );
+	const { user } = useCurrentWpUser();
+	const greeting = getGreeting( user?.first_name );
 
 	return (
 		<CardHeader className="wcpay-account-balances__header">

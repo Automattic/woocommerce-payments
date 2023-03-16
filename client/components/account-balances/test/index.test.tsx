@@ -12,6 +12,17 @@ import AccountBalancesHeader from '../header';
 import { getGreeting } from '../utils';
 import { useCurrentWpUser } from '../hooks';
 
+const mockUser = {
+	id: 123,
+	first_name: 'Tester',
+	username: 'admin',
+	name: 'admin',
+	nickname: 'Tester-nickname',
+	last_name: 'Tester-lastname',
+	email: 'tester@test.com',
+	locale: 'en',
+};
+
 jest.mock( '../utils', () => ( {
 	getTimeOfDayString: jest.fn(),
 	getGreeting: jest.fn(),
@@ -33,7 +44,7 @@ describe( 'AccountBalances', () => {
 		const expectedGreeting = 'Good afternoon, Tester 👋';
 		mockGetGreeting.mockReturnValue( expectedGreeting );
 		mockUseCurrentWpUser.mockReturnValue( {
-			displayName: 'Tester',
+			user: mockUser,
 			isLoading: false,
 		} );
 		const { container } = render( <AccountBalances /> );
@@ -46,7 +57,7 @@ describe( 'AccountBalancesHeader', () => {
 		const expectedGreeting = 'Good afternoon, Tester 👋';
 		mockGetGreeting.mockReturnValue( expectedGreeting );
 		mockUseCurrentWpUser.mockReturnValue( {
-			displayName: 'Tester',
+			user: mockUser,
 			isLoading: false,
 		} );
 		const { getByText } = render( <AccountBalancesHeader /> );
