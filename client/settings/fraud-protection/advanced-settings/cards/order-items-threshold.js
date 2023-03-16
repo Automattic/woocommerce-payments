@@ -168,15 +168,11 @@ const OrderItemsThresholdRuleCard = () => (
 );
 
 export const OrderItemsThresholdValidation = (
-	settings,
+	{ enabled, min_items: minItems, max_items: maxItems },
 	setValidationError
 ) => {
-	const key = 'order_items_threshold';
-	if ( settings[ key ].enabled ) {
-		if (
-			! parseInt( settings[ key ].min_items, 10 ) &&
-			! parseInt( settings[ key ].max_items, 10 )
-		) {
+	if ( enabled ) {
+		if ( ! parseInt( minItems, 10 ) && ! parseInt( maxItems, 10 ) ) {
 			setValidationError(
 				__(
 					'An item range must be set for the "Order Item Threshold" filter.',
@@ -185,10 +181,7 @@ export const OrderItemsThresholdValidation = (
 			);
 			return false;
 		}
-		if (
-			parseInt( settings[ key ].min_items, 10 ) >
-			parseInt( settings[ key ].max_items, 10 )
-		) {
+		if ( parseInt( minItems, 10 ) > parseInt( maxItems, 10 ) ) {
 			setValidationError(
 				__(
 					'Maximum item count must be greater than the minimum item count on the "Order Item Threshold" rule.',

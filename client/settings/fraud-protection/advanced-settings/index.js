@@ -84,20 +84,20 @@ const FraudProtectionAdvancedSettingsPage = () => {
 
 	const validateSettings = ( fraudProtectionSettings ) => {
 		setValidationError( null );
-		let validationResult = true;
-		validationResult &&= OrderItemsThresholdValidation(
-			fraudProtectionSettings,
-			setValidationError
-		);
-		validationResult &&= OrderVelocityValidation(
-			fraudProtectionSettings,
-			setValidationError
-		);
-		validationResult &&= PurchasePriceThresholdValidation(
-			fraudProtectionSettings,
-			setValidationError
-		);
-		return validationResult;
+		const validators = {
+			order_items_threshold: OrderItemsThresholdValidation,
+			order_velocity: OrderVelocityValidation,
+			purchase_price_threshold: PurchasePriceThresholdValidation,
+		};
+
+		return Object.keys( validators )
+			.map( ( key ) =>
+				validators[ key ](
+					fraudProtectionSettings[ key ],
+					setValidationError
+				)
+			)
+			.every( Boolean );
 	};
 
 	const handleSaveSettings = async () => {

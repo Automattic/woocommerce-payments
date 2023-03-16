@@ -147,10 +147,12 @@ const OrderVelocityRuleCard = () => (
 	</FraudProtectionRuleCard>
 );
 
-export const OrderVelocityValidation = ( settings, setValidationError ) => {
-	const key = 'order_velocity';
-	if ( settings[ key ].enabled ) {
-		if ( ! parseInt( settings[ key ].max_orders, 10 ) ) {
+export const OrderVelocityValidation = (
+	{ enabled, max_orders: maxOrders },
+	setValidationError
+) => {
+	if ( enabled ) {
+		if ( ! parseInt( maxOrders, 10 ) ) {
 			setValidationError(
 				__(
 					'A maximum order count must be set for the "Order Velocity" filter.',

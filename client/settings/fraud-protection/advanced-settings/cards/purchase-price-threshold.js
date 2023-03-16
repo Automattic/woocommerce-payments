@@ -150,12 +150,11 @@ const PurchasePriceThresholdRuleCard = () => (
 );
 
 export const PurchasePriceThresholdValidation = (
-	settings,
+	{ enabled, min_amount: minAmount, max_amount: maxAmount },
 	setValidationError
 ) => {
-	const key = 'purchase_price_threshold';
-	if ( settings[ key ].enabled ) {
-		if ( ! settings[ key ].min_amount && ! settings[ key ].max_amount ) {
+	if ( enabled ) {
+		if ( ! minAmount && ! maxAmount ) {
 			setValidationError(
 				__(
 					'A price range must be set for the "Purchase Price threshold" filter.',
@@ -165,10 +164,7 @@ export const PurchasePriceThresholdValidation = (
 			return false;
 		}
 
-		if (
-			parseFloat( settings[ key ].min_amount ) >
-			parseFloat( settings[ key ].max_amount )
-		) {
+		if ( parseFloat( minAmount ) > parseFloat( maxAmount ) ) {
 			setValidationError(
 				__(
 					'Maximum purchase price must be greater than the minimum purchase price.',
