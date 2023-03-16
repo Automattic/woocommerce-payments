@@ -44,6 +44,18 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 		advancedFraudProtectionSettings,
 		setAdvancedFraudProtectionSettings,
 	] );
+
+	const handleInputBlur = ( inputValue, setInputValue ) => {
+		if ( ! /^\d+$/.test( inputValue ) ) {
+			setInputValue( '' );
+		}
+	};
+
+	const isItemRangeEmpty =
+		! parseInt( minItemsCount, 10 ) && ! parseInt( maxItemsCount, 10 );
+	const isMinGreaterThanMax =
+		parseInt( minItemsCount, 10 ) > parseInt( maxItemsCount, 10 );
+
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
 			<strong>Limits</strong>
@@ -67,11 +79,9 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 						) }
 						min={ 1 }
 						step={ 1 }
-						onBlur={ () => {
-							if ( ! ( '' + minItemsCount ).match( /^\d+$/ ) ) {
-								setMinItemsCount( '' );
-							}
-						} }
+						onBlur={ () =>
+							handleInputBlur( minItemsCount, setMinItemsCount )
+						}
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
@@ -93,27 +103,24 @@ const OrderItemsThresholdCustomForm = ( { setting } ) => {
 						) }
 						min={ 1 }
 						step={ 1 }
-						onBlur={ () => {
-							if ( ! ( '' + maxItemsCount ).match( /^\d+$/ ) ) {
-								setMaxItemsCount( '' );
-							}
-						} }
+						onBlur={ () =>
+							handleInputBlur( maxItemsCount, setMaxItemsCount )
+						}
 					/>
 				</div>
 			</div>
-			{ ! parseInt( minItemsCount, 10 ) &&
-				! parseInt( maxItemsCount, 10 ) && (
-					<div>
-						<br />
-						<FraudProtectionRuleCardNotice type={ 'warning' }>
-							{ __(
-								'An item range must be set for this filter to take effect.',
-								'woocommerce-payments'
-							) }
-						</FraudProtectionRuleCardNotice>
-					</div>
-				) }
-			{ parseInt( minItemsCount, 10 ) > parseInt( maxItemsCount, 10 ) ? (
+			{ isItemRangeEmpty && (
+				<div>
+					<br />
+					<FraudProtectionRuleCardNotice type={ 'warning' }>
+						{ __(
+							'An item range must be set for this filter to take effect.',
+							'woocommerce-payments'
+						) }
+					</FraudProtectionRuleCardNotice>
+				</div>
+			) }
+			{ isMinGreaterThanMax ? (
 				<div>
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'error' }>
