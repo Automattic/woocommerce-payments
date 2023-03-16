@@ -15,7 +15,6 @@ export type TimeOfDay = 'morning' | 'afternoon' | 'evening';
  *
  * @param {Date} date A date object to calculate the time of day for. Defaults to the current time.
  * @return {TimeOfDay} The time of day. One of 'morning', 'afternoon' or 'evening'.
- *
  */
 export const getTimeOfDayString = ( date: Date = new Date() ): TimeOfDay => {
 	const hour = date.getHours();
