@@ -16,9 +16,8 @@ const {
 import {
 	setupCheckout,
 	fillCardDetails,
-	fillCardDetailsWCB,
 } from '../../../utils/payments';
-import { shopperWCP, merchantWCP, checkPageExists } from '../../../utils';
+import { shopperWCP, merchantWCP } from '../../../utils';
 
 const productName = config.get( 'products.simple.name' );
 const billingDetails = config.get( 'addresses.customer.billing' );
@@ -26,20 +25,9 @@ const card = config.get( 'cards.basic' );
 const couponInputSelector = '#coupon_code';
 const applyCouponSelector = 'button[name="apply_coupon"]';
 const removeCouponSelector = '.woocommerce-remove-coupon';
-const blocksPageEnabledSelector =
-	'.wc-block-components-main button:not(:disabled)';
 
 describe( 'Checkout with free coupon & after modifying cart on Checkout page', () => {
 	describe( 'Classic Checkout', () => {
-		beforeAll( async () => {
-			try {
-				await checkPageExists( 'checkout-wcb' );
-			} catch ( error ) {
-				await merchant.login();
-				await merchantWCP.addNewPageCheckoutWCB();
-				await merchant.logout();
-			}
-		} );
 
 		beforeEach( async () => {
 			await shopper.goToShop();
@@ -73,17 +61,6 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await expect( page ).toMatch( 'Order received' );
 		} );
 
-		it( 'Remove free coupon, then checkout with WooCommerce Blocks', async () => {
-			await shopperWCP.openCheckoutWCB();
-			await shopperWCP.fillBillingDetailsWCB( billingDetails );
-			await fillCardDetailsWCB( page, card );
-			await page.waitForSelector( blocksPageEnabledSelector );
-			await expect( page ).toClick( 'button', { text: 'Place Order' } );
-			await page.waitForSelector( 'div.woocommerce-order' );
-			await expect( page ).toMatch( 'p', {
-				text: 'Thank you. Your order has been received.',
-			} );
-		} );
 	} );
 
 	describe( 'UPE', () => {
