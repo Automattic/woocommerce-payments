@@ -715,6 +715,35 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 *
+	 */
+	public function list_blocked_transactions( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [] ) {
+		$query = array_merge(
+			$filters,
+			[
+				'page'      => $page,
+				'pagesize'  => $page_size,
+				'sort'      => $sort,
+				'direction' => $direction,
+			]
+		);
+
+		$fraud_outcomes = $this->request( $query, 'fraud_outcomes/block', self::GET );
+
+		foreach ( $fraud_outcomes as &$outcome ) {
+			$order = wc_get_order( $outcome['order_id'] );
+
+			$outcome['order']    = $this->build_order_info( $order );
+			$outcome['total']    = $order->get_total();
+			$outcome['currency'] = $order->get_currency();
+
+			unset( $outcome );
+		}
+
+		return $fraud_outcomes;
+	}
+
+	/**
 	 * Initiates transactions export via API.
 	 *
 	 * @param array  $filters    The filters to be used in the query.

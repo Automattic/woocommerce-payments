@@ -36,6 +36,15 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/blocked',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_blocked_transactions' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/download',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -82,6 +91,13 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		$wcpay_request = List_Transactions::from_rest_request( $request );
 
 		return $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+	}
+
+	/**
+	 * Retrieve blocked transactions to respond with via API.
+	 */
+	public function get_blocked_transactions() {
+		return $this->forward_request( 'list_blocked_transactions', [] );
 	}
 
 	/**

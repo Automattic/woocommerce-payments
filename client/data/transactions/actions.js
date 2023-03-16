@@ -38,3 +38,18 @@ export function updateErrorForTransactionsSummary( query, data, error ) {
 		error,
 	};
 }
+
+export function updateBlockedTransactions( data ) {
+	return {
+		type: TYPES.SET_BLOCKED_TRANSACTIONS,
+		data,
+	};
+}
+
+export function updateErrorForBlockedTransactions( error ) {
+	return {
+		type: TYPES.SET_ERROR_FOR_BLOCKED_TRANSACTIONS,
+		data: null,
+		error,
+	};
+}

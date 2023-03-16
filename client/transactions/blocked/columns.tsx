@@ -102,9 +102,9 @@ export const getBlockedListRowContent = (
 			display: clickable( riskLevel ),
 		},
 		amount: {
-			value: data.amount,
+			value: data.total,
 			display: clickable(
-				formatExplicitCurrency( data.amount, data.currency )
+				formatExplicitCurrency( data.total, data.currency )
 			),
 		},
 		customer: {

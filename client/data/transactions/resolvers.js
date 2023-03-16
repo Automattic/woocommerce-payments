@@ -17,6 +17,8 @@ import {
 	updateErrorForTransactions,
 	updateTransactionsSummary,
 	updateErrorForTransactionsSummary,
+	updateBlockedTransactions,
+	updateErrorForBlockedTransactions,
 } from './actions';
 import { formatDateValue } from 'utils';
 
@@ -96,5 +98,34 @@ export function* getTransactionsSummary( query ) {
 		yield updateTransactionsSummary( query, summary );
 	} catch ( e ) {
 		yield updateErrorForTransactionsSummary( query, null, e );
+	}
+}
+
+/**
+ *
+ * @param {Query} query
+ */
+export function* getBlockedTransactions( query ) {
+	const path = addQueryArgs( `${ NAMESPACE }/transactions/blocked`, {
+		page: query.paged,
+		pagesize: query.perPage,
+		sort: query.orderby,
+		direction: query.order,
+		...formatQueryFilters( query ),
+	} );
+
+	try {
+		const results = yield apiFetch( { path } );
+		yield updateBlockedTransactions( results || [] );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving blocked transactions.',
+				'woocommerce-payments'
+			)
+		);
+		yield updateErrorForBlockedTransactions( e );
 	}
 }
