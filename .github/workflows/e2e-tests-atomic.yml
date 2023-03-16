@@ -19,13 +19,25 @@ jobs:
   wp-nightly-tests:
     runs-on: ubuntu-22.04
     
-    name: "WP - nightly | WC - latest | wcpay - shopper"
+    strategy:
+      fail-fast: false
+      matrix:
+        test_groups: [ 'wcpay', 'subscriptions', 'upe', 'upeSplit' ]
+        test_branches: [ 'merchant', 'shopper' ]
+        exclude:
+          - test_groups: 'subscriptions'
+          - test_groups: 'upe'
+            test_branches: 'merchant'
+          - test_groups: 'upeSplit'
+            test_branches: 'merchant'
+    
+    name: "WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}"
 
     env:
       E2E_WP_VERSION: 'nightly'
       E2E_WC_VERSION: 'latest'
-      E2E_GROUP: 'wcpay'
-      E2E_BRANCH: 'shopper'
+      E2E_GROUP: ${{ matrix.test_groups }}
+      E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
       - name: "Checkout repository"

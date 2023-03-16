@@ -19,6 +19,10 @@ const ERROR_MESSAGES_TO_IGNORE = [
 	'We were rate-limited from checking if your requested Payment Request options are allowed. Please test again before going live.',
 	"Unrecognized Content-Security-Policy directive 'require-trusted-types-for'.",
 	'Failed to load resource: the server responded with a status of 400 ()',
+	"WebSocket connection to 'wss://public-api.wordpress.com/pinghub/wpcom/me/newest-note-data' failed",
+	'Failed to load resource: the server responded with a status of 500 ()',
+	'Scripts that have a dependency on',
+	'was preloaded using link preload but not used within a few seconds',
 ];
 
 ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {
@@ -34,6 +38,28 @@ const pageEvents = [];
 
 async function setupBrowser() {
 	await setBrowserViewport( 'large' );
+}
+
+/**
+ * Adds a few event listeners to the page for debugging purposes.
+ */
+function addPageDebugEvents() {
+	page.on( 'pageerror', ( error ) => {
+		console.log( 'pageerror: ' + error.message );
+	} );
+
+	page.on( 'response', ( response ) => {
+		if ( 200 !== response.status() && 204 !== response.status() ) {
+			console.log( 'response: ' + response.status(), response.url() );
+		}
+	} );
+
+	page.on( 'requestfailed', ( request ) => {
+		console.log(
+			'requestfailed: ' + request.failure().errorText,
+			request.url()
+		);
+	} );
 }
 
 /**
@@ -68,6 +94,9 @@ function setTestTimeouts() {
 // other posts/comments/etc. aren't dirtying tests and tests don't depend on
 // each other's side-effects.
 beforeAll( async () => {
+	if ( process.env.E2E_MORE_DEBUG ) {
+		addPageDebugEvents();
+	}
 	capturePageEventsForTearDown();
 	enablePageDialogAccept();
 	setTestTimeouts();
