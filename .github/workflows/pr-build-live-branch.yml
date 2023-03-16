@@ -37,10 +37,11 @@ jobs:
         id: bump-dev-version
         env: 
           NEXT_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
-          PR: ${{ github.event.number }}
+          PR_NUMBER: ${{ github.event.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           CURRENT_VERSION=$(jq '.version' package.json -r)
-          DEV_SUFFIX_VERSION="dev_PR-${PR}_commit-$(git rev-parse --short HEAD)"
+          DEV_SUFFIX_VERSION="dev_PR-${PR_NUMBER}_commit-${PR_HEAD_SHA}"
           DEV_VERSION="${NEXT_VERSION}-${DEV_SUFFIX_VERSION}"
           echo "Dev Version: $DEV_VERSION" >> $GITHUB_STEP_SUMMARY
 
@@ -100,6 +101,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           ARTIFACT_RETENTION_DAY: ${{ env.WCPAY_LIVE_BRANCH_ARTIFACT_RETENTION_DAYS }}
         run: |
           EXPIRY_TIME=$(date -u "+%Y-%m-%d %H:%M:%S UTC" -d "+${ARTIFACT_RETENTION_DAY} day")
@@ -108,7 +110,7 @@ jobs:
           
           :x: This build file is NOT ready for production. It's available for testing only.
 
-          - Latest commit: ${GITHUB_SHA}
+          - Latest commit: ${PR_HEAD_SHA}
           - Build file in the 'Artifacts' section: https://github.com/Automattic/woocommerce-payments/actions/runs/${GITHUB_RUN_ID}
           - Expired at: ${EXPIRY_TIME}
 
