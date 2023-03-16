@@ -43,6 +43,15 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 		advancedFraudProtectionSettings,
 		setAdvancedFraudProtectionSettings,
 	] );
+
+	const handleInputBlur = ( inputValue, setInputValue ) => {
+		if ( ! /^\d+$/.test( inputValue ) ) {
+			setInputValue( '' );
+		}
+	};
+
+	const isInputEmpty = ! parseInt( maxOrders, 10 );
+
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
 			<strong>{ __( 'Limits', 'woocommerce-payments' ) }</strong>
@@ -58,11 +67,9 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 						type={ 'number' }
 						min={ 1 }
 						step={ 1 }
-						onBlur={ () => {
-							if ( ! ( '' + maxOrders ).match( /^\d+$/ ) ) {
-								setMaxOrders( '' );
-							}
-						} }
+						onBlur={ () =>
+							handleInputBlur( maxOrders, setMaxOrders )
+						}
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
@@ -94,7 +101,7 @@ const OrderVelocityCustomForm = ( { setting } ) => {
 					/>
 				</div>
 			</div>
-			{ ! parseInt( maxOrders, 10 ) && (
+			{ isInputEmpty && (
 				<div>
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'warning' }>
@@ -140,10 +147,12 @@ const OrderVelocityRuleCard = () => (
 	</FraudProtectionRuleCard>
 );
 
-export const OrderVelocityValidation = ( settings, setValidationError ) => {
-	const key = 'order_velocity';
-	if ( settings[ key ].enabled ) {
-		if ( ! parseInt( settings[ key ].max_orders, 10 ) ) {
+export const OrderVelocityValidation = (
+	{ enabled, max_orders: maxOrders },
+	setValidationError
+) => {
+	if ( enabled ) {
+		if ( ! parseInt( maxOrders, 10 ) ) {
 			setValidationError(
 				__(
 					'A maximum order count must be set for the "Order Velocity" filter.',

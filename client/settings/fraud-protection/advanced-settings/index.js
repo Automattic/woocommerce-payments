@@ -84,20 +84,20 @@ const FraudProtectionAdvancedSettingsPage = () => {
 
 	const validateSettings = ( fraudProtectionSettings ) => {
 		setValidationError( null );
-		let validationResult = true;
-		validationResult &&= OrderItemsThresholdValidation(
-			fraudProtectionSettings,
-			setValidationError
-		);
-		validationResult &&= OrderVelocityValidation(
-			fraudProtectionSettings,
-			setValidationError
-		);
-		validationResult &&= PurchasePriceThresholdValidation(
-			fraudProtectionSettings,
-			setValidationError
-		);
-		return validationResult;
+		const validators = {
+			order_items_threshold: OrderItemsThresholdValidation,
+			order_velocity: OrderVelocityValidation,
+			purchase_price_threshold: PurchasePriceThresholdValidation,
+		};
+
+		return Object.keys( validators )
+			.map( ( key ) =>
+				validators[ key ](
+					fraudProtectionSettings[ key ],
+					setValidationError
+				)
+			)
+			.every( Boolean );
 	};
 
 	const handleSaveSettings = async () => {
@@ -113,14 +113,16 @@ const FraudProtectionAdvancedSettingsPage = () => {
 	};
 
 	// Hack to make "WooCommerce > Settings" the active selected menu item.
-	const wcSettingsMenuItem = document.querySelector(
-		'#toplevel_page_woocommerce a[href="admin.php?page=wc-settings"]'
-	);
-	if ( wcSettingsMenuItem ) {
-		wcSettingsMenuItem.setAttribute( 'aria-current', 'page' );
-		wcSettingsMenuItem.classList.add( 'current' );
-		wcSettingsMenuItem.parentElement.classList.add( 'current' );
-	}
+	useEffect( () => {
+		const wcSettingsMenuItem = document.querySelector(
+			'#toplevel_page_woocommerce a[href="admin.php?page=wc-settings"]'
+		);
+		if ( wcSettingsMenuItem ) {
+			wcSettingsMenuItem.setAttribute( 'aria-current', 'page' );
+			wcSettingsMenuItem.classList.add( 'current' );
+			wcSettingsMenuItem.parentElement.classList.add( 'current' );
+		}
+	}, [] );
 
 	return (
 		<FraudPreventionSettingsContext.Provider

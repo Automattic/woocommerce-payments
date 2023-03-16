@@ -153,7 +153,7 @@ describe( 'Order items threshold card', () => {
 		settings.order_items_threshold.min_items = 100;
 		const setValidationError = jest.fn();
 		const validationResult = OrderItemsThresholdValidation(
-			settings,
+			settings.order_items_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( true );
@@ -166,7 +166,7 @@ describe( 'Order items threshold card', () => {
 		settings.order_items_threshold.min_items = null;
 		const setValidationError = jest.fn();
 		const validationResult = OrderItemsThresholdValidation(
-			settings,
+			settings.order_items_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( true );
@@ -179,7 +179,7 @@ describe( 'Order items threshold card', () => {
 		settings.order_items_threshold.min_items = 10;
 		const setValidationError = jest.fn();
 		const validationResult = OrderItemsThresholdValidation(
-			settings,
+			settings.order_items_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( true );
@@ -192,7 +192,7 @@ describe( 'Order items threshold card', () => {
 		settings.order_items_threshold.min_items = null;
 		const setValidationError = jest.fn();
 		const validationResult = OrderItemsThresholdValidation(
-			settings,
+			settings.order_items_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( true );
@@ -205,7 +205,7 @@ describe( 'Order items threshold card', () => {
 		settings.order_items_threshold.min_items = null;
 		const setValidationError = jest.fn();
 		const validationResult = OrderItemsThresholdValidation(
-			settings,
+			settings.order_items_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( false );
@@ -221,7 +221,7 @@ describe( 'Order items threshold card', () => {
 		settings.order_items_threshold.min_items = 100;
 		const setValidationError = jest.fn();
 		const validationResult = OrderItemsThresholdValidation(
-			settings,
+			settings.order_items_threshold,
 			setValidationError
 		);
 		expect( validationResult ).toBe( false );
