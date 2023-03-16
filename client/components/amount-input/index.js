@@ -1,19 +1,29 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import './style.scss';
 
-const AmountInput = ( { id, prefix, value, placeholder, help, onChange } ) => {
-	const validateInput = ( subject ) => {
+const AmountInput = ( {
+	id,
+	prefix,
+	value,
+	placeholder,
+	help,
+	onChange = () => {},
+} ) => {
+	const validateInput = useCallback( ( subject ) => {
 		// Only allow decimals, a single dot, and more decimals (or an empty value).
 		return /^(\d+\.?\d*)?$/m.test( subject );
-	};
+	}, [] );
 
-	if ( ! validateInput( value ) ) {
-		value = '';
-		onChange( value );
-	}
+	useEffect( () => {
+		if ( ! validateInput( value ) ) {
+			onChange( '' );
+		}
+	}, [ validateInput, value, onChange ] );
+
+	if ( isNaN( value ) || null === value ) value = '';
 
 	const handleChange = ( inputvalue ) => {
 		if ( validateInput( inputvalue ) ) {
