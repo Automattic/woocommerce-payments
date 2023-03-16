@@ -34,4 +34,13 @@ class WooPay_Create_And_Confirm_Intention extends Create_And_Confirm_Intention {
 		$this->set_param( 'woopay_has_subscription', $has );
 	}
 
+	/**
+	 * Save payment method to platform.
+	 *
+	 * @param bool $save save payment method to platform.
+	 */
+	public function set_save_payment_method_to_platform( $save = true ) {
+		$this->set_param( 'save_payment_method_to_platform', $save );
+	}
+
 }
