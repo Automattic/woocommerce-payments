@@ -1,4 +1,4 @@
-.wcpay-deposits-overview-section {
+.wcpay-deposits-overview__next {
 	&__heading {
 		display: flex;
 		flex-direction: column;
@@ -6,17 +6,13 @@
 		padding: 16px 24px;
 		height: 80px;
 
-		p {
-			margin: 0px;
-		}
-
 		&__title {
 			font-weight: 600;
 			font-size: 16px;
 			line-height: 24px;
-			color: #1E1E1E;
+			color: #1e1e1e;
 		}
-	
+
 		&__description {
 			font-size: 13px;
 			line-height: 16px;

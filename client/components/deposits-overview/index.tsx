@@ -10,7 +10,7 @@ import { Card, CardHeader } from '@wordpress/components';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import strings from './strings';
 import './style.scss';
-import DepositsOverviewSectionHeading from './section-heading';
+import NextDepositDetails from './next-deposit';
 
 interface OverviewProps {
 	overview?: AccountOverview.Overview;
@@ -32,11 +32,7 @@ const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = (
 	return (
 		<Card>
 			<CardHeader>{ strings.heading }</CardHeader>
-			<DepositsOverviewSectionHeading
-				title={ strings.next_deposits.title }
-				desc={ strings.next_deposits.description }
-				isLoading={ isLoading }
-			/>
+			<NextDepositDetails isLoading={ isLoading } />
 
 			<p>Deposits History Section Goes here</p>
 
