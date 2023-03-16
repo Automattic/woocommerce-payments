@@ -173,8 +173,7 @@ Handy utility scripts for managing environment:
 
 <br>
 
-For running E2E tests on an Atomic site, follow the same guidelines mentioned above, and specify `NODE_ENV=atomic`, such
-as this:
+For running E2E tests on an Atomic site, follow the same guidelines mentioned above, and specify `NODE_ENV=atomic`, such as this:
 
 `npm run test:e2e-dev -- --NODE_ENV=atomic`
 
