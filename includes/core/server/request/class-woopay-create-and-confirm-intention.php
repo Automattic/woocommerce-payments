@@ -12,8 +12,9 @@ namespace WCPay\Core\Server\Request;
  */
 class WooPay_Create_And_Confirm_Intention extends Create_And_Confirm_Intention {
 	const DEFAULT_PARAMS = [
-		'is_platform_payment_method' => false,
-		'woopay_has_subscription'    => false,
+		'is_platform_payment_method'      => false,
+		'woopay_has_subscription'         => false,
+		'save_payment_method_to_platform' => false,
 	];
 
 	/**
