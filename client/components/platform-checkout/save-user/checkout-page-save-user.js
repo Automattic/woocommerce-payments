@@ -9,6 +9,7 @@ import { useDispatch } from '@wordpress/data';
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 import { Icon, info } from '@wordpress/icons';
 import interpolateComponents from 'interpolate-components';
+import LockIconG from 'gridicons/dist/lock';
 
 /**
  * Internal dependencies
@@ -18,11 +19,10 @@ import { getConfig } from 'utils/checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
 import Container from './container';
-import LockIcon from '../icons/lock';
 import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { WC_STORE_CART } from '../../../checkout/constants';
-import WooPayIcon from '../../../../assets/images/woopay.svg';
+import WooPayIcon from 'assets/images/woopay.svg?asset';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -235,8 +235,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 					</div>
 					<img
 						src={ WooPayIcon }
-						alt="WooPay"
 						className="woopay-logo"
+						alt="WooPay"
 					/>
 					<Icon
 						icon={ info }
@@ -255,7 +255,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						onBlur={ setInfoFlyoutNotVisible }
 					>
 						<div>
-							<LockIcon />
+							<LockIconG size={ 16 } />
 						</div>
 						<span>
 							{ interpolateComponents( {

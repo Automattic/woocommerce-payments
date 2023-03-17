@@ -20,13 +20,13 @@ import {
 	usePlatformCheckoutEnabledSettings,
 } from 'wcpay/data';
 import CardBody from '../card-body';
-import WooIcon from '../../gateway-icons/woo';
 import './style.scss';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import LinkIcon from '../../gateway-icons/link';
 import Tooltip from 'components/tooltip';
-import ApplePay from 'wcpay/gateway-icons/apple-pay';
-import GooglePay from 'wcpay/gateway-icons/google-pay';
+import ApplePay from 'assets/images/cards/apple-pay.svg?asset';
+import GooglePay from 'assets/images/cards/google-pay.svg?asset';
+import LinkIcon from 'assets/images/payment-methods/link.svg?asset';
+import WooIcon from 'assets/images/payment-methods/woo.svg?asset';
 
 const ExpressCheckout = () => {
 	const [
@@ -118,7 +118,7 @@ const ExpressCheckout = () => {
 								) }
 							</div>
 							<div className="express-checkout__icon">
-								<WooIcon />
+								<img src={ WooIcon } alt="WooPay" />
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label">
@@ -207,7 +207,7 @@ const ExpressCheckout = () => {
 						<div>
 							<div className="express-checkout__subgroup">
 								<div className="express-checkout__icon">
-									<ApplePay />
+									<img src={ ApplePay } alt="Apple Pay" />
 								</div>
 								<div className="express-checkout__label-container">
 									<div className="express-checkout__label">
@@ -259,7 +259,7 @@ const ExpressCheckout = () => {
 							</div>
 							<div className="express-checkout__subgroup">
 								<div className="express-checkout__icon">
-									<GooglePay />
+									<img src={ GooglePay } alt="Google Pay" />
 								</div>
 								<div className="express-checkout__label-container">
 									<div className="express-checkout__label">
@@ -359,7 +359,7 @@ const ExpressCheckout = () => {
 								) }
 							</div>
 							<div className="express-checkout__icon">
-								<LinkIcon />
+								<img src={ LinkIcon } alt="Link" />
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label">
