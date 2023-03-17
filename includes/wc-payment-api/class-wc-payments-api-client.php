@@ -731,12 +731,7 @@ class WC_Payments_API_Client {
 		$fraud_outcomes = $this->request( $query, 'fraud_outcomes/block', self::GET );
 
 		foreach ( $fraud_outcomes as &$outcome ) {
-			$order = wc_get_order( $outcome['order_id'] );
-
-			$outcome['order']    = $this->build_order_info( $order );
-			$outcome['total']    = $order->get_total();
-			$outcome['currency'] = $order->get_currency();
-
+			$outcome = $this->build_fraud_outcome_transactions_order_info( $outcome );
 			unset( $outcome );
 		}
 
@@ -759,18 +754,8 @@ class WC_Payments_API_Client {
 
 		$fraud_outcomes = $this->request( $query, 'fraud_outcomes/review', self::GET );
 
-		// The fraud outcome result doesn't give all the data required to list the on review transactions.
-		// So we need to fill in any empty data, such as payment_intent_id and the actual data from the payment intent.
 		foreach ( $fraud_outcomes as &$outcome ) {
-			$order = wc_get_order( $outcome['order_id'] );
-
-			$outcome['payment_intent']           = [];
-			$outcome['payment_intent']['id']     = $order->get_meta( '_intent_id' );
-			$outcome['payment_intent']['status'] = $order->get_meta( '_intention_status' );
-
-			$outcome['amount']        = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
-			$outcome['customer_name'] = wc_clean( $order->get_billing_first_name() ) . ' ' . wc_clean( $order->get_billing_last_name() );
-
+			$outcome = $this->build_fraud_outcome_transactions_order_info( $outcome );
 			unset( $outcome );
 		}
 
@@ -783,6 +768,29 @@ class WC_Payments_API_Client {
 		);
 
 		return $fraud_outcomes;
+	}
+
+	/**
+	 * Builds the order info for fraud outcome transaction.
+	 *
+	 * The fraud outcome result doesn't give all the data required to list the on review transactions.
+	 * So we need to fill in any empty data, such as payment_intent_id and the actual data from the payment intent.
+	 *
+	 * @param array $outcome Fraud outcome array.
+	 *
+	 * @return array
+	 */
+	private function build_fraud_outcome_transactions_order_info( $outcome ) {
+		$order = wc_get_order( $outcome['order_id'] );
+
+		$outcome['payment_intent']           = [];
+		$outcome['payment_intent']['id']     = $order->get_meta( '_intent_id' );
+		$outcome['payment_intent']['status'] = $order->get_meta( '_intention_status' );
+
+		$outcome['amount']        = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+		$outcome['customer_name'] = wc_clean( $order->get_billing_first_name() ) . ' ' . wc_clean( $order->get_billing_last_name() );
+
+		return $outcome;
 	}
 
 	/**
