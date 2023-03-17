@@ -45,20 +45,40 @@ async function setupBrowser() {
  */
 function addPageDebugEvents() {
 	page.on( 'pageerror', ( error ) => {
+		// eslint-disable-next-line no-console
 		console.log( 'pageerror: ' + error.message );
 	} );
 
 	page.on( 'response', ( response ) => {
 		if ( 200 !== response.status() && 204 !== response.status() ) {
+			// eslint-disable-next-line no-console
 			console.log( 'response: ' + response.status(), response.url() );
 		}
 	} );
 
 	page.on( 'requestfailed', ( request ) => {
+		// eslint-disable-next-line no-console
 		console.log(
 			'requestfailed: ' + request.failure().errorText,
 			request.url()
 		);
+	} );
+}
+
+/**
+ * Adds a special cookie during the session to avoid the support session detection page.
+ * This is temporarily displayed when navigating to the login page while Jetpack SSO and protect modules are disabled.
+ * Relevant for Atomic sites only.
+ */
+async function addSupportSessionDetectedCookie() {
+	const [ , ...rest ] = new URL( process.env.WP_BASE_URL ).hostname.split(
+		'.'
+	);
+	const nakedDomain = `.${ rest.join( '.' ) }`;
+	await page.setCookie( {
+		value: 'true',
+		name: '_wpcomsh_support_session_detected',
+		domain: nakedDomain,
 	} );
 }
 
@@ -97,6 +117,11 @@ beforeAll( async () => {
 	if ( process.env.E2E_MORE_DEBUG ) {
 		addPageDebugEvents();
 	}
+
+	if ( ! process.env.WP_BASE_URL.includes( 'localhost' ) ) {
+		await addSupportSessionDetectedCookie();
+	}
+
 	capturePageEventsForTearDown();
 	enablePageDialogAccept();
 	setTestTimeouts();
