@@ -33,7 +33,8 @@ import OrderItemsThresholdRuleCard, {
 import FraudPreventionSettingsContext from './context';
 import './../style.scss';
 
-import { ProtectionLevel, readRuleset, writeRuleset } from './constants';
+import { ProtectionLevel } from './constants';
+import { readRuleset, writeRuleset } from './utils';
 
 const Breadcrumb = () => (
 	<h2 className="fraud-protection-header-breadcrumb">
