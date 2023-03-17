@@ -14,7 +14,7 @@ runs:
     - name: "Set up E2E environment"
       shell: bash
       run: |
-        mkdir -p tests/e2e/screenshots
+        mkdir screenshots
 
     - name: "Run tests, upload screenshots & logs"
       uses: ./.github/actions/e2e/run-log-tests
