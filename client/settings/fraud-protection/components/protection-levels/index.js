@@ -169,41 +169,6 @@ const ProtectionLevels = () => {
 						{ __( 'Configure', 'woocommerce-payments' ) }
 					</Button>
 				</li>
-				<hr className="fraud-protection__list-divider" />
-				<li className="fraud-protection__advanced-level-container">
-					<label htmlFor="fraud-protection-level-select_advanced-level">
-						<div className="fraud-protection-single-radio-wrapper">
-							<input
-								name={ 'fraud-protection-level-select' }
-								id={
-									'fraud-protection-level-select_advanced-level'
-								}
-								value={ 'advanced' }
-								type={ 'radio' }
-								checked={
-									'advanced' === currentProtectionLevel
-								}
-								onChange={ () =>
-									handleLevelChange( 'advanced' )
-								}
-							/>
-							<p className="fraud-protection-single-radio-wrapper__item">
-								{ __( 'Advanced', 'woocommerce-payments' ) }
-							</p>
-						</div>
-						<FraudProtectionHelpText level="advanced" />
-					</label>
-					<Button
-						href={ getAdminUrl( {
-							page: 'wc-admin',
-							path: '/payments/fraud-protection',
-						} ) }
-						isSecondary
-						disabled={ 'advanced' !== currentProtectionLevel }
-					>
-						{ __( 'Configure', 'woocommerce-payments' ) }
-					</Button>
-				</li>
 			</ul>
 		</fieldset>
 	);
