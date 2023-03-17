@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         WCPay Live Branches
 // @namespace    https://wordpress.com/
-// @version      1.0
+// @version      1.1
 // @description  Adds links to PRs pointing to Jurassic Ninja sites for live-testing a changeset
 // @grant        GM_xmlhttpRequest
 // @connect      jurassic.ninja
@@ -78,7 +78,7 @@
 			const contents = `
 				<p><strong>This branch is already merged.</strong></p>
 				<p><a target="_blank" rel="nofollow noopener" href="${ getLink() }">
-					Test with <code>trunk</code> branch instead.
+					Test with <code>trunk/develop</code> branch instead.
 				</a></p>
 			`;
 			appendHtml( markdownBody, contents );
@@ -116,7 +116,8 @@
 									name: `branches.${ k }`,
 									value: currentBranch,
 									label: encodeHtmlEntities( data.name ),
-									checked: data.labels && data.labels.some( l => labels.has( l ) ),
+									checked: k === 'woocommerce-payments',
+									disabled: k === 'woocommerce-payments',
 								} );
 							}
 						} );
@@ -141,12 +142,14 @@
 						<summary>Expand for JN site options:</summary>
 						<h4>Test Plugins</h4>
 						${ getOptionsList( plugins, 33 ) }
+
 						<h4>Settings</h4>
 						${ getOptionsList(
 							[
 								{
 									label: 'A shortlived site',
 									name: 'shortlived',
+									checked: true,
 								},
 								{
 									checked: true,
@@ -166,27 +169,42 @@
 									name: 'content',
 								},
 								{
-									label: 'Pre-generate CRM data',
-									name: 'jpcrm-populate-crm-data',
-								},
-								{
-									label: 'Pre-generate CRM Woo data',
-									name: 'jpcrm-populate-woo-data',
-								},
-								{
 									label: '<code>xmlrpc.php</code> unavailable',
 									name: 'blockxmlrpc',
 								},
 							],
 							100
 						) }
-						<h4>Plugins</h4>
+						<h4>Woo plugins</h4>
+						${ getOptionsList(
+							[
+								{
+									label: 'WooCommerce',
+									name: 'woocommerce',
+									checked: true,
+								},
+								{
+									label: 'WooCommerce Payments Dev Tools',
+									name: 'woocommerce-payments-dev-tools',
+								},
+								{
+									label: 'WooCommerce Smooth Generator',
+									name: 'wc-smooth-generator',
+								},
+								{
+									label: 'WooCommerce Beta Tester',
+									name: 'woocommerce-beta-tester',
+								},
+							],
+							100
+						) }
+
+						<h4>Other plugins</h4>
 						${ getOptionsList(
 							[
 								{
 									label: 'Jetpack',
 									name: 'nojetpack',
-									checked: true,
 									invert: true,
 								},
 								{
@@ -200,18 +218,6 @@
 								{
 									label: 'Classic Editor',
 									name: 'classic-editor',
-								},
-								{
-									label: 'AMP',
-									name: 'amp',
-								},
-								{
-									label: 'WooCommerce',
-									name: 'woocommerce',
-								},
-								{
-									label: 'WooCommerce Beta Tester',
-									name: 'woocommerce-beta-tester',
 								},
 								{
 									label: 'Config Constants',
@@ -230,14 +236,6 @@
 									name: 'wp-downgrade',
 								},
 								{
-									label: 'WP Super Cache',
-									name: 'wp-super-cache',
-								},
-								{
-									label: 'WP Job Manager',
-									name: 'wp-job-manager',
-								},
-								{
 									label: 'Jetpack Debug Helper',
 									name: 'jetpack-debug-helper',
 								},
@@ -245,19 +243,9 @@
 							33
 						) }
 
-						<h4>Themes</h4>
-						${ getOptionsList(
-							[
-								{
-									label: 'TT1-Blocks FSE Theme',
-									name: 'tt1-blocks',
-								},
-							],
-							33
-						) }
 					</details>
 					<p>
-						<a id="jetpack-beta-branch-link" target="_blank" rel="nofollow noopener" href="#">…</a>
+						<a id="wcpay-beta-branch-link" target="_blank" rel="nofollow noopener" href="#">…</a>
 					</p>
 					`;
 					appendHtml( markdownBody, contents );
@@ -324,7 +312,7 @@
 		function getLink() {
 			const query = [ 'jetpack-beta' ];
 			$(
-				'#jetpack-live-branches input[type=checkbox]:checked:not([data-invert]), #jetpack-live-branches input[type=checkbox][data-invert]:not(:checked)'
+				'#wcpay-live-branches input[type=checkbox]:checked:not([data-invert]), #wcpay-live-branches input[type=checkbox][data-invert]:not(:checked)'
 			).each( ( i, input ) => {
 				if ( input.value ) {
 					query.push( encodeURIComponent( input.name ) + '=' + encodeURIComponent( input.value ) );
@@ -399,10 +387,10 @@
 		 */
 		function appendHtml( el, contents ) {
 			const $el = $( el );
-			const liveBranches = $( '<div id="jetpack-live-branches" />' ).append(
-				`<h2>Jetpack Live Branches</h2> ${ contents }`
+			const liveBranches = $( '<div id="wcpay-live-branches" />' ).append(
+				`<h2>WCPay Live Branches</h2> ${ contents }`
 			);
-			$( '#jetpack-live-branches' ).remove();
+			$( '#wcpay-live-branches' ).remove();
 			$el.append( liveBranches );
 			liveBranches
 				.find( 'input[type=checkbox]' )
@@ -429,7 +417,7 @@
 		 * Update the link.
 		 */
 		function updateLink() {
-			const $link = $( '#jetpack-beta-branch-link' );
+			const $link = $( '#wcpay-beta-branch-link' );
 			const [ url, query ] = getLink();
 
 			if ( url.match( /[?&]branch(es\.[^&=]*)?=/ ) ) {

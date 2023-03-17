@@ -11,7 +11,7 @@
 ### Development
 
 1. Make sure you update the version in the **wcpay-live-branches.user.js** file. That will trigger auto-update for consumers.
-2. Create a PR in this same repo.
+2. Create a PR in this repo.
 
 ### Additional Info
 
