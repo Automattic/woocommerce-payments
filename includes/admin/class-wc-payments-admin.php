@@ -532,6 +532,7 @@ class WC_Payments_Admin {
 			'fraudProtection'                  => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
+			'accountDefaultCurrency'           => $this->account->get_account_default_currency(),
 		];
 
 		wp_localize_script(
