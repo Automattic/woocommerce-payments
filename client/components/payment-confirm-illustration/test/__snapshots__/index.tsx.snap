@@ -37,7 +37,7 @@ exports[`PaymentConfirmIllustration renders with icon 1`] = `
       <img
         alt=""
         class="payment-confirm-illustration__payment-icon"
-        src="assets/images/payment-methods/woo.svg"
+        src="assets/images/cards/woo-card.svg"
       />
       <svg
         class="gridicon gridicons-help payment-confirm-illustration__payment-question-mark-icon"

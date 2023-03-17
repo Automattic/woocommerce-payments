@@ -37,7 +37,7 @@ exports[`PaymentDeleteIllustration renders with icon 1`] = `
       <img
         alt=""
         class="payment-delete-illustration__payment-icon"
-        src="assets/images/payment-methods/woo.svg"
+        src="assets/images/cards/woo-card.svg"
       />
       <svg
         class="gridicon gridicons-cross-circle payment-delete-illustration__payment-cross-icon"
