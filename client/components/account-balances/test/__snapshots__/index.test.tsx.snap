@@ -55,42 +55,48 @@ exports[`AccountBalances renders 1`] = `
           class="components-flex wcpay-account-balances__balances css-1xu3jp0-Flex eboqfv50"
         >
           <div
-            class="wcpay-account-balances__balances__item wcpay-account-available__balance_item"
+            class="wcpay-account-balances__balances__item"
           >
             <p
               class="wcpay-account-balances__balances__item__title"
+              id="wcpay-account-balances-usd-available-title"
             >
               Available funds
             </p>
             <p
+              aria-labelledby="wcpay-account-balances-usd-available-title"
               class="wcpay-account-balances__balances__item__amount"
             >
               $2.00
             </p>
           </div>
           <div
-            class="wcpay-account-balances__balances__item wcpay-account-pending__balance_item"
+            class="wcpay-account-balances__balances__item"
           >
             <p
               class="wcpay-account-balances__balances__item__title"
+              id="wcpay-account-balances-usd-pending-title"
             >
               Pending funds
             </p>
             <p
+              aria-labelledby="wcpay-account-balances-usd-pending-title"
               class="wcpay-account-balances__balances__item__amount"
             >
               $1.00
             </p>
           </div>
           <div
-            class="wcpay-account-balances__balances__item wcpay-account-reserved__balance_item"
+            class="wcpay-account-balances__balances__item"
           >
             <p
               class="wcpay-account-balances__balances__item__title"
+              id="wcpay-account-balances-usd-reserved-title"
             >
               Reserved funds
             </p>
             <p
+              aria-labelledby="wcpay-account-balances-usd-reserved-title"
               class="wcpay-account-balances__balances__item__amount"
             >
               $0.00

@@ -49,14 +49,19 @@ const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 	amount = 0,
 	isLoading = false,
 } ) => {
+	const titleElementID = `wcpay-account-balances-${ currencyCode }-${ type }-title`;
 	return (
-		<div
-			className={ `wcpay-account-balances__balances__item wcpay-account-${ type }__balance_item` }
-		>
-			<p className="wcpay-account-balances__balances__item__title">
+		<div className="wcpay-account-balances__balances__item">
+			<p
+				id={ titleElementID }
+				className="wcpay-account-balances__balances__item__title"
+			>
 				{ fundLabelStrings[ type ] }
 			</p>
-			<p className="wcpay-account-balances__balances__item__amount">
+			<p
+				className="wcpay-account-balances__balances__item__amount"
+				aria-labelledby={ titleElementID }
+			>
 				<Loadable
 					isLoading={ isLoading }
 					display="inline"

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -36,6 +36,35 @@ const mockAccount: AccountOverview.Account = {
 	},
 };
 
+// Mock the wcpaySettings localized variables needed by these tests.
+declare const global: {
+	wcpaySettings: {
+		accountDefaultCurrency: string;
+		zeroDecimalCurrencies: string[];
+		currencyData: Record< string, any >;
+		connect: {
+			country: string;
+		};
+	};
+};
+const mockWcPaySettings = {
+	accountDefaultCurrency: 'USD',
+	zeroDecimalCurrencies: [],
+	connect: {
+		country: 'US',
+	},
+	currencyData: {
+		US: {
+			code: 'USD',
+			symbol: '$',
+			symbolPosition: 'left',
+			thousandSeparator: ',',
+			decimalSeparator: '.',
+			precision: 2,
+		},
+	},
+};
+
 jest.mock( '../utils', () => ( {
 	getTimeOfDayString: jest.fn(),
 	getGreeting: jest.fn(),
@@ -62,18 +91,6 @@ const mockGetCurrencyTabTitle = getCurrencyTabTitle as jest.MockedFunction<
 const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
 	typeof useAllDepositsOverviews
 >;
-
-// Mock the wcpaySettings localized variables needed by these tests.
-declare const global: {
-	wcpaySettings: {
-		accountDefaultCurrency: 'USD';
-		zeroDecimalCurrencies: string[];
-		currencyData: Record< string, any >;
-		connect: {
-			country: string;
-		};
-	};
-};
 
 // Mocks the DepositsOverviews hook to return the given currencies.
 const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
@@ -143,23 +160,7 @@ const createMockOverview = (
 
 describe( 'AccountBalances', () => {
 	beforeEach( () => {
-		global.wcpaySettings = {
-			accountDefaultCurrency: 'USD',
-			zeroDecimalCurrencies: [],
-			connect: {
-				country: 'US',
-			},
-			currencyData: {
-				US: {
-					code: 'USD',
-					symbol: '$',
-					symbolPosition: 'left',
-					thousandSeparator: ',',
-					decimalSeparator: '.',
-					precision: 2,
-				},
-			},
-		};
+		global.wcpaySettings = mockWcPaySettings;
 	} );
 
 	test( 'renders', () => {
@@ -190,19 +191,25 @@ describe( 'AccountBalancesHeader', () => {
 } );
 
 describe( 'AccountBalancesTabPanel', () => {
+	beforeEach( () => {
+		global.wcpaySettings = mockWcPaySettings;
+	} );
+
 	test( 'renders the correct tab title and currency data', () => {
 		mockGetCurrencyTabTitle.mockReturnValue( 'USD Balance' );
 		mockOverviews( [ createMockOverview( 'usd', 10000, 20000 ) ] );
 
-		render( <AccountBalancesTabPanel /> );
+		// Use a query method returned by the render function: (you could also use `container` which will represent `document`)
+		const { getByText, getByLabelText } = render(
+			<AccountBalancesTabPanel />
+		);
 
-		const availableAmount = document.querySelector(
-			'.wcpay-account-available__balance_item .wcpay-account-balances__balances__item__amount'
-		) as HTMLElement;
+		// Check the tab title is rendered correctly.
+		getByText( 'Available funds' );
+		getByText( 'Pending funds' );
 
-		const pendingAmount = document.querySelector(
-			'.wcpay-account-pending__balance_item .wcpay-account-balances__balances__item__amount'
-		) as HTMLElement;
+		const availableAmount = getByLabelText( 'Available funds' );
+		const pendingAmount = getByLabelText( 'Pending funds' );
 
 		// Check the available and pending amounts are rendered correctly.
 		expect( availableAmount ).toHaveTextContent( '$200.00' );
@@ -213,15 +220,16 @@ describe( 'AccountBalancesTabPanel', () => {
 		mockGetCurrencyTabTitle.mockReturnValue( 'JPY Balance' );
 		mockOverviews( [ createMockOverview( 'jpy', 12300, 4560 ) ] );
 
-		render( <AccountBalancesTabPanel /> );
+		const { getByText, getByLabelText } = render(
+			<AccountBalancesTabPanel />
+		);
 
-		const availableAmount = document.querySelector(
-			'.wcpay-account-available__balance_item .wcpay-account-balances__balances__item__amount'
-		) as HTMLElement;
+		// Check the tab title is rendered correctly.
+		getByText( 'Available funds' );
+		getByText( 'Pending funds' );
 
-		const pendingAmount = document.querySelector(
-			'.wcpay-account-pending__balance_item .wcpay-account-balances__balances__item__amount'
-		) as HTMLElement;
+		const availableAmount = getByLabelText( 'Available funds' );
+		const pendingAmount = getByLabelText( 'Pending funds' );
 
 		// Check the available and pending amounts are rendered correctly.
 		expect( availableAmount ).toHaveTextContent( '¥46' );
@@ -240,61 +248,42 @@ describe( 'AccountBalancesTabPanel', () => {
 			createMockOverview( 'jpy', 2000, 9000 ),
 		] );
 
-		render( <AccountBalancesTabPanel /> );
+		const { getByLabelText } = render( <AccountBalancesTabPanel /> );
 
-		// Check the tab titles are rendered correctly.
-		const tabTitles = document.querySelectorAll(
-			'.components-tab-panel__tabs-item'
-		) as NodeListOf< HTMLElement >;
+		// Get all the tab elements to check the tab titles are rendered correctly and for testing tab switching.
+		const tabTitles = screen.getAllByRole( 'tab' );
 
 		expect( tabTitles[ 0 ] ).toHaveTextContent( 'EUR Balance' );
 		expect( tabTitles[ 1 ] ).toHaveTextContent( 'USD Balance' );
 		expect( tabTitles[ 2 ] ).toHaveTextContent( 'JPY Balance' );
 
-		const eurAvailableAmount = document.querySelector(
-			'.wcpay-account-available__balance_item .wcpay-account-balances__balances__item__amount'
-		) as HTMLElement;
-
-		const eurPendingAmount = document.querySelector(
-			'.wcpay-account-pending__balance_item .wcpay-account-balances__balances__item__amount'
-		) as HTMLElement;
+		// Check the first tab (EUR).
+		const eurAvailableAmount = getByLabelText( 'Available funds' );
+		const eurPendingAmount = getByLabelText( 'Pending funds' );
 
 		// Check the available and pending amounts are rendered correctly for the first tab.
 		expect( eurAvailableAmount ).toHaveTextContent( '€27.39' );
 		expect( eurPendingAmount ).toHaveTextContent( '€76.60' );
 
-		// Create a click event to trigger clicking on the other tabs.
-		const clickEvent = new MouseEvent( 'click', {
-			view: window,
-			bubbles: true,
-			cancelable: true,
-		} );
+		/**
+		 * Change the tab to the second tab (USD).
+		 */
+		fireEvent.click( tabTitles[ 1 ] );
 
-		// Trigger clicking on the second tab.
-		tabTitles[ 1 ].dispatchEvent( clickEvent );
-
-		const usdAvailableAmount = document.querySelector(
-			'.wcpay-account-available__balance_item .wcpay-account-balances__balances__item__amount'
-		) as HTMLElement;
-
-		const usdPendingAmount = document.querySelector(
-			'.wcpay-account-pending__balance_item .wcpay-account-balances__balances__item__amount'
-		) as HTMLElement;
+		const usdAvailableAmount = getByLabelText( 'Available funds' );
+		const usdPendingAmount = getByLabelText( 'Pending funds' );
 
 		// Check the available and pending amounts are rendered correctly for the first tab.
 		expect( usdAvailableAmount ).toHaveTextContent( '$479.41' );
 		expect( usdPendingAmount ).toHaveTextContent( '$848.75' );
 
-		// Trigger clicking on the second tab.
-		tabTitles[ 2 ].dispatchEvent( clickEvent );
+		/**
+		 * Change the tab to the third tab (JPY).
+		 */
+		fireEvent.click( tabTitles[ 2 ] );
 
-		const jpyAvailableAmount = document.querySelector(
-			'.wcpay-account-available__balance_item .wcpay-account-balances__balances__item__amount'
-		) as HTMLElement;
-
-		const jpyPendingAmount = document.querySelector(
-			'.wcpay-account-pending__balance_item .wcpay-account-balances__balances__item__amount'
-		) as HTMLElement;
+		const jpyAvailableAmount = getByLabelText( 'Available funds' );
+		const jpyPendingAmount = getByLabelText( 'Pending funds' );
 
 		// Check the available and pending amounts are rendered correctly for the first tab.
 		expect( jpyAvailableAmount ).toHaveTextContent( '¥90' );
