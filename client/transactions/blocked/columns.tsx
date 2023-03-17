@@ -11,8 +11,6 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies
  */
-
-import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { formatExplicitCurrency } from 'utils/currency';
 import { Authorization } from '../../types/authorizations';
 import TransactionStatusChip from '../../components/transaction-status-chip';
@@ -61,15 +59,6 @@ export const getBlockedListColumns = (): Column[] =>
 			isLeftAligned: true,
 		},
 		{
-			key: 'risk_level',
-			label: __( 'Risk level', 'woocommerce-payments' ),
-			screenReaderLabel: __(
-				'Risk level of transaction',
-				'woocommerce-payments'
-			),
-			isLeftAligned: true,
-		},
-		{
 			key: 'status',
 			label: __( 'Status', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Status', 'woocommerce-payments' ),
@@ -81,7 +70,6 @@ export const getBlockedListColumns = (): Column[] =>
 export const getBlockedListRowContent = (
 	data: Authorization
 ): Record< string, TableCardBodyColumn > => {
-	const riskLevel = <RiskLevel risk={ data.risk_level } />;
 	const detailsURL = getDetailsURL( data.order_id );
 	const formattedCreatedDate = dateI18n(
 		'M j, Y / g:iA',
@@ -108,10 +96,6 @@ export const getBlockedListRowContent = (
 		created: {
 			value: formattedCreatedDate,
 			display: clickable( formattedCreatedDate ),
-		},
-		risk_level: {
-			value: calculateRiskMapping( data.risk_level ),
-			display: clickable( riskLevel ),
 		},
 		amount: {
 			value: data.amount,

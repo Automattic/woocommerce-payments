@@ -13,7 +13,6 @@ import { Button } from '@wordpress/components';
  */
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
-import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { formatExplicitCurrency } from 'utils/currency';
 import wcpayTracks from 'tracks';
 import { Authorization } from '../../types/authorizations';
@@ -57,15 +56,6 @@ export const getRiskReviewListColumns = (): Column[] =>
 			isLeftAligned: true,
 		},
 		{
-			key: 'risk_level',
-			label: __( 'Risk level', 'woocommerce-payments' ),
-			screenReaderLabel: __(
-				'Risk level of transaction',
-				'woocommerce-payments'
-			),
-			isLeftAligned: true,
-		},
-		{
 			key: 'status',
 			label: __( 'Status', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Status', 'woocommerce-payments' ),
@@ -85,7 +75,6 @@ export const getRiskReviewListColumns = (): Column[] =>
 export const getRiskReviewListRowContent = (
 	data: Authorization
 ): Record< string, TableCardBodyColumn > => {
-	const riskLevel = <RiskLevel risk={ data.payment_intent.risk_level } />;
 	const detailsURL = getDetailsURL( data.payment_intent.id, 'transactions' );
 	const formattedCreatedDate = dateI18n(
 		'M j, Y / g:iA',
@@ -107,18 +96,12 @@ export const getRiskReviewListRowContent = (
 
 	return {
 		status: {
-			value: ( data as any ).status,
-			display: (
-				<TransactionStatusChip status={ ( data as any ).status } />
-			),
+			value: data.status,
+			display: <TransactionStatusChip status={ data.status } />,
 		},
 		created: {
 			value: formattedCreatedDate,
 			display: clickable( formattedCreatedDate ),
-		},
-		risk_level: {
-			value: calculateRiskMapping( data.payment_intent.risk_level ),
-			display: clickable( riskLevel ),
 		},
 		amount: {
 			value: data.amount,
@@ -133,8 +116,8 @@ export const getRiskReviewListRowContent = (
 		action: {
 			display: (
 				<Button
-					href={ detailsURL }
 					isSecondary
+					href={ detailsURL }
 					onClick={ handleActionButtonClick }
 				>
 					{ __( 'Review' ) }
