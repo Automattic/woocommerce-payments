@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
+
 /**
  * WC_Payments unit tests.
  */
@@ -16,14 +18,16 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	public function set_up() {
 		// Mock the main class's cache service.
-		$this->_cache     = WC_Payments::get_database_cache();
-		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		$this->_cache       = WC_Payments::get_database_cache();
+		$this->mock_cache   = $this->createMock( WCPay\Database_Cache::class );
+		$this->card_gateway = WC_Payments::get_card_gateway();
 		WC_Payments::set_database_cache( $this->mock_cache );
 	}
 
 	public function tear_down() {
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+		WC_Payments::set_card_gateway( $this->card_gateway );
 		WC_Payments::mode()->live();
 		parent::tear_down();
 	}
@@ -62,6 +66,23 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		foreach ( self::EXPECTED_PLATFORM_CHECKOUT_HOOKS as $hook => $callback ) {
 			$this->assertEquals( 10, has_filter( $hook, $callback ) );
 		}
+	}
+
+	public function test_it_registers_link_gateway_with_split_upe_and_no_woopay() {
+		$card_gateway_mock = $this->createMock( UPE_Split_Payment_Gateway::class );
+		WC_Payments::set_card_gateway( $card_gateway_mock );
+		$card_gateway_mock
+			->expects( $this->once() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn(
+				[
+					'link',
+					'card',
+				]
+			);
+
+		$this->assertNotNull( WC_Payments::get_card_gateway() );
+		$this->assertEquals( 'link', WC_Payments::get_card_gateway()->get_payment_method_ids_enabled_at_checkout()[0] );
 	}
 
 	public function test_it_does_not_register_platform_checkout_hooks_if_feature_flag_is_disabled() {
