@@ -2265,7 +2265,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
 			return [];
 		}
-    
+
 		// Check if Stripe is connected.
 		if ( ! $this->is_connected() ) {
 			return [];
