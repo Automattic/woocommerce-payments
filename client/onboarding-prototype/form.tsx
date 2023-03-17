@@ -40,7 +40,7 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 			} }
 		>
 			{ children }
-			<Button isPrimary onClick={ handleContinue } type="submit">
+			<Button isPrimary type="submit">
 				{ strings.continue }
 			</Button>
 		</form>
