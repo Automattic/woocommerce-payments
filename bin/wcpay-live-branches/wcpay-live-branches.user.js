@@ -77,9 +77,9 @@
 		if ( branchStatus === 'Merged' ) {
 			const contents = `
 				<p><strong>This branch is already merged.</strong></p>
-				<p><a target="_blank" rel="nofollow noopener" href="${ getLink() }">
+				<p>
 					Test with <code>trunk/develop</code> branch instead.
-				</a></p>
+				</p>
 			`;
 			appendHtml( markdownBody, contents );
 		} else if ( branchStatus === 'Draft' ) {
