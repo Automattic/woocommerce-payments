@@ -27,6 +27,7 @@ const isEventTriggeredWithin = (
 	if ( event.target instanceof Node && element.contains( event.target ) ) {
 		return true;
 	}
+	return false;
 };
 
 type UseHideDelayProps = {
