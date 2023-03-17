@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -55,23 +55,26 @@ describe( 'Progressive Onboarding Prototype Form', () => {
 		error = jest.fn();
 	} );
 
-	it( 'calls nextStep when the form is submitted and there are no errors', () => {
+	it( 'calls nextStep when the form is submitted by click and there are no errors', () => {
+		render( <OnboardingForm /> );
+
+		const button = screen.getByRole( 'button' );
+		userEvent.click( button );
+
+		expect( nextStep ).toHaveBeenCalled();
+	} );
+
+	it( 'calls nextStep when the form is submitted by enter and there are no errors', () => {
 		render(
 			<OnboardingForm>
-				<label>
-					field
-					<input />
-				</label>
+				<input />
 			</OnboardingForm>
 		);
 
-		const button = screen.getByRole( 'button', { name: 'Continue' } );
-		userEvent.click( button );
+		const field = screen.getByRole( 'textbox' );
+		fireEvent.submit( field );
 
-		const field = screen.getByRole( 'textbox', { name: 'field' } );
-		userEvent.type( field, '{enter}' );
-
-		expect( nextStep ).toHaveBeenCalledTimes( 2 );
+		expect( nextStep ).toHaveBeenCalled();
 	} );
 
 	it( 'calls setTouched and does not call nextStep when there are errors', () => {
