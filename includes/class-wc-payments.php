@@ -398,6 +398,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
+		include_once __DIR__ . '/fraud-prevention/class-fraud-risk-tools.php';
+		include_once __DIR__ . '/fraud-prevention/wc-payments-fraud-risk-tools.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
@@ -487,7 +489,7 @@ class WC_Payments {
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway() );
+		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
 		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );

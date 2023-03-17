@@ -10,6 +10,7 @@ declare const wcpaySettings: {
 	featureFlags: {
 		customSearch: boolean;
 		isAuthAndCaptureEnabled: boolean;
+		simplifyDepositsUi?: boolean;
 	};
 	fraudServices: unknown[];
 	isJetpackConnected: boolean;
