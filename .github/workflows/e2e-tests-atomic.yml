@@ -11,12 +11,14 @@ env:
   WC_E2E_SCREENSHOTS: 1
   E2E_SLACK_CHANNEL: ${{ secrets.E2E_SLACK_CHANNEL }}
   E2E_SLACK_TOKEN: ${{ secrets.E2E_SLACK_TOKEN }}
+  E2E_WP_VERSION: 'nightly'
+  E2E_WC_VERSION: 'latest'
   E2E_RESULT_FILEPATH: 'tests/e2e/results.json'
   NODE_ENV: 'atomic'
 
 jobs:
-  # Run tests against WP Nightly & WC latest
-  wp-nightly-tests:
+  # Run tests against WP Nightly & WC latest. Not UPE ones to avoid impacting the other tests with UPE enabled.
+  wp-nightly-tests-first-batch:
     runs-on: ubuntu-22.04
     
     strategy:
@@ -26,32 +28,31 @@ jobs:
         test_branches: [ 'merchant', 'shopper' ]
         exclude:
           - test_groups: 'subscriptions'
-          - test_groups: 'upe'
-            test_branches: 'merchant'
-          - test_groups: 'upeSplit'
-            test_branches: 'merchant'
     
     name: "WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}"
 
     env:
-      E2E_WP_VERSION: 'nightly'
-      E2E_WC_VERSION: 'latest'
       E2E_GROUP: ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
-      - name: "Checkout repository"
-        uses: actions/checkout@v3
+      uses: ./.github/actions/e2e/atomic-prepare-and-run
+  
+  # Run tests against WP Nightly & WC latest. Only UPE ones after the first batch is done, to avoid impacting the other tests with UPE enabled.
+  wp-nightly-tests-second-batch:
+    runs-on: ubuntu-22.04
+    needs: wp-nightly-tests-first-batch
+    strategy:
+      fail-fast: false
+      matrix:
+        test_groups: [ 'upe', 'upeSplit' ]
+        test_branches: [ 'shopper' ]
 
-      - name: "Set up repository"
-        uses: ./.github/actions/setup-repo
+    name: "WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}"
 
-      - name: "Install dependencies"
-        run: npm ci
+    env:
+      E2E_GROUP: ${{ matrix.test_groups }}
+      E2E_BRANCH: ${{ matrix.test_branches }}
 
-      - name: "Set up E2E environment"
-        run: |
-          mkdir -p tests/e2e/screenshots
-
-      - name: "Run tests, upload screenshots & logs"
-        uses: ./.github/actions/e2e/run-log-tests
+    steps:
+      uses: ./.github/actions/e2e/atomic-prepare-and-run
