@@ -11,11 +11,7 @@ import { Item } from 'components/custom-select-control';
 import { useBusinessTypes } from 'onboarding-experiment/hooks';
 import { OnboardingFields } from '../types';
 import { BusinessType } from 'onboarding-experiment/types';
-import {
-	OnboardingForm,
-	OnboardingTextField,
-	OnboardingSelectField,
-} from '../form';
+import { OnboardingTextField, OnboardingSelectField } from '../form';
 
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
@@ -44,7 +40,7 @@ const BusinessDetails: React.FC = () => {
 	};
 
 	return (
-		<OnboardingForm>
+		<>
 			<OnboardingTextField name="business_name" />
 			<OnboardingTextField name="url" />
 			<OnboardingSelectField
@@ -82,7 +78,7 @@ const BusinessDetails: React.FC = () => {
 				// TODO [GH-4853]: Populate MCC options
 				options={ [] }
 			/> */ }
-		</OnboardingForm>
+		</>
 	);
 };
 

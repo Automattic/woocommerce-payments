@@ -11,6 +11,7 @@ import { OnboardingContextProvider, useOnboardingContext } from './context';
 import { Stepper } from 'components/stepper';
 import { OnboardingSteps } from './types';
 import { fromDotNotation } from './utils';
+import { OnboardingForm } from './form';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
@@ -43,13 +44,19 @@ const OnboardingStepper = () => {
 	return (
 		<Stepper onComplete={ handleComplete }>
 			<Step name="personal">
-				<PersonalDetails />
+				<OnboardingForm>
+					<PersonalDetails />
+				</OnboardingForm>
 			</Step>
 			<Step name="business">
-				<BusinessDetails />
+				<OnboardingForm>
+					<BusinessDetails />
+				</OnboardingForm>
 			</Step>
 			<Step name="store">
-				<StoreDetails />
+				<OnboardingForm>
+					<StoreDetails />
+				</OnboardingForm>
 			</Step>
 		</Stepper>
 	);
