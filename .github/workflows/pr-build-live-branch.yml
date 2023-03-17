@@ -33,23 +33,23 @@ jobs:
           RELEASE_VERSION: ${{ steps.current-version.outputs.VERSION }}
         run: php .github/workflows/scripts/get-next-version.php # outputs.NEXT_RELEASE_VERSION
 
-      - name: "Bump dev version"
-        id: bump-dev-version
-        env: 
-          NEXT_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
+      - name: "Get dev version"
+        id: get-dev-version
+        env:
+          NEXT_RELEASE_VERSION: ${{ steps.next-version.outputs.NEXT_RELEASE_VERSION }}
           PR_NUMBER: ${{ github.event.number }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          CURRENT_VERSION=$(jq '.version' package.json -r)
           DEV_SUFFIX_VERSION="dev_PR-${PR_NUMBER}_commit-${PR_HEAD_SHA}"
-          DEV_VERSION="${NEXT_VERSION}-${DEV_SUFFIX_VERSION}"
-          echo "Dev Version: $DEV_VERSION" >> $GITHUB_STEP_SUMMARY
+          DEV_VERSION="${NEXT_RELEASE_VERSION}-${DEV_SUFFIX_VERSION}"
+          echo "Dev Version: $DEV_VERSION" >> $GITHUB_STEP_SUMMARY          
+          echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_OUTPUT
 
-          # Plugin data is passed as a JSON object.
-          PLUGIN_DATA="{}"          
-          PLUGIN_DATA=$( jq -c --arg slug "woocommerce-payments" --arg ver "$DEV_VERSION" '.[ $slug ] = { version: $ver }' <<<"$PLUGIN_DATA" )
-          echo "plugin-data=$PLUGIN_DATA" >> $GITHUB_OUTPUT
-
+      - name: "Bump dev version"
+        id: bump-dev-version
+        env:
+          DEV_VERSION: ${{ steps.get-dev-version.outputs.DEV_VERSION }}
+        run: |
           # 'Version' header in woocommerce-payments.php
           sed -i "s/^ \* Version: .*$/ * Version: $DEV_VERSION/" woocommerce-payments.php
 
@@ -83,11 +83,21 @@ jobs:
           path: release
           retention-days: ${{ env.WCPAY_LIVE_BRANCH_ARTIFACT_RETENTION_DAYS }}
 
-      - name: Inform Beta Download webhook
-        if: steps.bump-dev-version.outputs.plugin-data != '{}'
+      - name: "Get plugin data for Jetpack Beta Builder"
+        id: get-plugin-data
+        env:
+          DEV_VERSION: ${{ steps.get-dev-version.outputs.DEV_VERSION }}          
+        run: |
+          # Plugin data is passed as a JSON object.
+          PLUGIN_DATA="{}"          
+          PLUGIN_DATA=$( jq -c --arg slug "woocommerce-payments" --arg ver "$DEV_VERSION" '.[ $slug ] = { version: $ver }' <<<"$PLUGIN_DATA" )
+          echo "plugin-data=$PLUGIN_DATA" >> $GITHUB_OUTPUT
+
+      - name: "Inform Jetpack Beta Builder webhook"
+        if: steps.get-plugin-data.outputs.plugin-data != '{}'
         env:
           SECRET: ${{ secrets.WCPAYBETA_SECRET }}
-          PLUGIN_DATA: ${{ steps.bump-dev-version.outputs.plugin-data }}
+          PLUGIN_DATA: ${{ steps.get-plugin-data.outputs.plugin-data }}
           PR: ${{ github.event.number }}
         run: |
           curl -v --fail -L \
