@@ -16,6 +16,10 @@ env:
   E2E_RESULT_FILEPATH: 'tests/e2e/results.json'
   NODE_ENV: 'atomic'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Run tests against WP Nightly & WC latest. Not UPE ones to avoid impacting the other tests with UPE enabled.
   wp-nightly-tests-first-batch:
