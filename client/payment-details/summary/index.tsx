@@ -42,6 +42,20 @@ const placeholderValues = {
 	refunded: null,
 };
 
+const isTapToPay = ( model: string ) => {
+	if ( model === 'COTS_DEVICE' ) {
+		return true;
+	}
+
+	return false;
+};
+
+const getTapToPayChannel = ( platform: string ) => {
+	return platform === 'ios'
+		? __( 'Tap to Pay on iPhone', 'woocommerce-payments' )
+		: __( 'Tap to Pay on Android', 'woocommerce-payments' );
+};
+
 const composePaymentSummaryItems = ( {
 	charge,
 	metadata,
@@ -63,8 +77,11 @@ const composePaymentSummaryItems = ( {
 			title: __( 'Channel', 'woocommerce-payments' ),
 			content: (
 				<span>
-					{ getChargeChannel( charge.payment_method_details?.type ) }
-					{ metadata?.platform }
+					{ isTapToPay( metadata?.reader_model || '' )
+						? getTapToPayChannel( metadata?.platform || '' )
+						: getChargeChannel(
+								charge.payment_method_details?.type
+						  ) }
 				</span>
 			),
 		},
