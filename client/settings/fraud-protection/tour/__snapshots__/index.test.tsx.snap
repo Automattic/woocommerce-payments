@@ -123,8 +123,8 @@ exports[`FraudProtectionTour should render the tour component correctly 1`] = `
       alt="Enhanced fraud protection is here 🔒"
       class="tour-modal__image"
       height="204"
-      src="[object Object]"
-      srcset="[object Object], [object Object] 2x"
+      src="assets/images/fraud-protection/tour/enhanced-protection-step.png"
+      srcset="assets/images/fraud-protection/tour/enhanced-protection-step.png, assets/images/fraud-protection/tour/enhanced-protection-step@2x.png 2x"
       width="350"
     />
     <div
