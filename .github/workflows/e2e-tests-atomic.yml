@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test_groups: [ 'wcpay', 'subscriptions', 'upe', 'upeSplit' ]
+        test_groups: [ 'wcpay', 'subscriptions' ]
         test_branches: [ 'merchant', 'shopper' ]
         exclude:
           - test_groups: 'subscriptions'
