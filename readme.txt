@@ -98,6 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
+= 5.6.1 - 2023-03-17 =
+* Fix - Fix new user not being saved in platform
+
 = 5.6.0 - 2023-03-15 =
 * Add - Add a component that provides a tour experience.
 * Add - Add a notice for Norwegian merchants using WCPay to update WooCommerce to at least 7.5
