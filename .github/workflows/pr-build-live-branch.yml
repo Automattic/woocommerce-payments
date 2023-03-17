@@ -1,4 +1,4 @@
-name: Build live branch for PR
+name: Prepare live branch for Jetpack Beta Builder
 
 on:
   pull_request:
