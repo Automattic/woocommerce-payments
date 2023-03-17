@@ -529,6 +529,7 @@ class WC_Payments_Admin {
 			'restUrl'                          => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 			'numDisputesNeedingResponse'       => $this->get_disputes_awaiting_response_count(),
 			'isFraudProtectionSettingsEnabled' => WC_Payments_Features::is_fraud_protection_settings_enabled(),
+			'accountDefaultCurrency'           => $this->account->get_account_default_currency(),
 		];
 
 		wp_localize_script(
