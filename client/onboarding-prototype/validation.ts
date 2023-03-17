@@ -16,6 +16,7 @@ const isValid = ( name: keyof OnboardingFields, value?: string ): boolean => {
 	return true;
 };
 
+// TS is smart enough to infer the return type here.
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const useValidation = ( name: keyof OnboardingFields ) => {
 	const { errors, setErrors, touched, setTouched } = useOnboardingContext();
@@ -32,6 +33,7 @@ export const useValidation = ( name: keyof OnboardingFields ) => {
 	useEffect( () => {
 		validate();
 		setTouched( { [ name ]: false } );
+		// We only want to run this once, so we disable the exhaustive deps rule.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
