@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fixes a problem where the Transactions table would have its layout modified when hovering over the currency conversion icon

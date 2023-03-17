@@ -37,14 +37,23 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	private $gateway;
 
 	/**
+	 * Platform_Checkout_Utilities instance.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	private $platform_checkout_utilities;
+
+	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_Account      $account Account information.
-	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway.
+	 * @param WC_Payments_Account         $account Account information.
+	 * @param WC_Payment_Gateway_WCPay    $gateway WCPay gateway.
+	 * @param Platform_Checkout_Utilities $platform_checkout_utilities WCPay gateway.
 	 */
-	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
-		$this->account = $account;
-		$this->gateway = $gateway;
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, Platform_Checkout_Utilities $platform_checkout_utilities ) {
+		$this->account                     = $account;
+		$this->gateway                     = $gateway;
+		$this->platform_checkout_utilities = $platform_checkout_utilities;
 
 		add_action( 'init', [ $this, 'init' ] );
 	}
@@ -487,8 +496,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		}
 
 		// Check if WooPay is available in the user country.
-		$platform_checkout_utilities = new Platform_Checkout_Utilities();
-		if ( ! $platform_checkout_utilities->is_country_available( $this->gateway ) ) {
+		if ( ! $this->platform_checkout_utilities->is_country_available( $this->gateway ) ) {
 			return false;
 		}
 
