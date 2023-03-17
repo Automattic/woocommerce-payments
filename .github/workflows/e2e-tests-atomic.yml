@@ -19,8 +19,8 @@ env:
 jobs:
   # Run tests against WP Nightly & WC latest. Not UPE ones to avoid impacting the other tests with UPE enabled.
   wp-nightly-tests-first-batch:
+    name: "WP - ${{ env.E2E_WP_VERSION }} | WC - ${{ env.E2E_WC_VERSION }} | ${{ env.E2E_GROUP }} - ${{ env.E2E_BRANCH }}"
     runs-on: ubuntu-22.04
-    
     strategy:
       fail-fast: false
       matrix:
@@ -28,13 +28,10 @@ jobs:
         test_branches: [ 'merchant', 'shopper' ]
         exclude:
           - test_groups: 'subscriptions'
-    
-    name: "WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}"
-
     env:
       E2E_GROUP: ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
-
+    
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
@@ -44,12 +41,10 @@ jobs:
   
   # Run UPE tests against WP Nightly & WC latest.
   wp-nightly-tests-upe:
+    name: "WP - ${{ env.E2E_WP_VERSION }} | WC - ${{ env.E2E_WC_VERSION }} | ${{ env.E2E_GROUP }} - ${{ env.E2E_BRANCH }}"
     runs-on: ubuntu-22.04
     needs: wp-nightly-tests-first-batch
     if: always()
-
-    name: "WP - nightly | WC - latest | upe - shopper"
-
     env:
       E2E_GROUP: 'upe'
       E2E_BRANCH: 'shopper'
@@ -63,12 +58,10 @@ jobs:
   
   # Run UPE tests against WP Nightly & WC latest.
   wp-nightly-tests-upe-split:
+    name: "WP - ${{ env.E2E_WP_VERSION }} | WC - ${{ env.E2E_WC_VERSION }} | ${{ env.E2E_GROUP }} - ${{ env.E2E_BRANCH }}"
     runs-on: ubuntu-22.04
-    needs: [ wp-nightly-tests-first-batch, wp-nightly-tests-upe ]
+    needs: wp-nightly-tests-upe
     if: always()
-
-    name: "WP - nightly | WC - latest | upeSplit - shopper"
-
     env:
       E2E_GROUP: 'upeSplit'
       E2E_BRANCH: 'shopper'
