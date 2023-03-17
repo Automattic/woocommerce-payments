@@ -42,7 +42,13 @@ const placeholderValues = {
 	refunded: null,
 };
 
-const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
+const composePaymentSummaryItems = ( {
+	charge,
+	metadata,
+}: {
+	charge: Charge;
+	metadata: Record< string, any >;
+} ) =>
 	[
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
@@ -58,6 +64,7 @@ const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 			content: (
 				<span>
 					{ getChargeChannel( charge.payment_method_details?.type ) }
+					{ metadata?.platform }
 				</span>
 			),
 		},
@@ -98,9 +105,11 @@ const composePaymentSummaryItems = ( { charge }: { charge: Charge } ) =>
 
 const PaymentDetailsSummary = ( {
 	charge,
+	metadata,
 	isLoading,
 }: {
 	charge: Charge;
+	metadata: Record< string, any >;
 	isLoading: boolean;
 } ): JSX.Element => {
 	const balance = charge.amount
@@ -247,7 +256,10 @@ const PaymentDetailsSummary = ( {
 			<CardBody>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
-						items={ composePaymentSummaryItems( { charge } ) }
+						items={ composePaymentSummaryItems( {
+							charge,
+							metadata,
+						} ) }
 					/>
 				</LoadableBlock>
 			</CardBody>
@@ -300,6 +312,7 @@ const PaymentDetailsSummary = ( {
 
 export default ( props: {
 	charge: Charge;
+	metadata: Record< string, any >;
 	isLoading: boolean;
 } ): JSX.Element => {
 	return (

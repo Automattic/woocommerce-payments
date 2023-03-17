@@ -80,7 +80,11 @@ const getBaseCharge = (): Charge =>
 
 function renderCharge( charge: Charge, isLoading = false ) {
 	const { container } = render(
-		<PaymentDetailsSummary charge={ charge } isLoading={ isLoading } />
+		<PaymentDetailsSummary
+			charge={ charge }
+			metadata={ {} }
+			isLoading={ isLoading }
+		/>
 	);
 	return container;
 }
