@@ -160,13 +160,15 @@ export const shopperWCP = {
 		);
 		await linkPhoneNumber.type( billing.phone, { delay: 20 } );
 
-		const linkName = await stripeFrame.waitForSelector(
-			'[name="linkLegalName"]',
-			{ timeout: 30000 }
-		);
-		await linkName.type( billing.firstname + ' ' + billing.lastname, {
-			delay: 20,
-		} );
+		if ( await stripeFrame.$( '[name="linkLegalName"]' ) ) {
+			const linkName = await stripeFrame.waitForSelector(
+				'[name="linkLegalName"]',
+				{ timeout: 30000 }
+			);
+			await linkName.type( billing.firstname + ' ' + billing.lastname, {
+				delay: 20,
+			} );
+		}
 	},
 
 	toggleSavePaymentMethod: async () => {
