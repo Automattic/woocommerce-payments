@@ -250,19 +250,22 @@ export const readRuleset = ( rulesetConfig ) => {
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
-					min_items: minItems ? minItems.value : '',
-					max_items: maxItems ? maxItems.value : '',
+					min_items: minItems.value ?? '',
+					max_items: maxItems.value ?? '',
 				};
 				break;
 			case Rules.RULE_ORDER_VELOCITY:
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
-					max_orders: rule.check.value,
-					interval: parseInt(
-						rule.check.key.match( /^orders_since_(\d+)h$/ )[ 1 ],
-						10
-					),
+					max_orders: rule.check.value ?? '',
+					interval:
+						parseInt(
+							rule.check.key.match(
+								/^orders_since_(\d+)h$/
+							)[ 1 ],
+							10
+						) ?? null,
 				};
 				break;
 			case Rules.RULE_PURCHASE_PRICE_THRESHOLD:
@@ -279,8 +282,8 @@ export const readRuleset = ( rulesetConfig ) => {
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
-					min_amount: minAmount ? minAmount.value : '',
-					max_amount: maxAmount ? maxAmount.value : '',
+					min_amount: minAmount.value ?? '',
+					max_amount: maxAmount.value ?? '',
 				};
 				break;
 		}

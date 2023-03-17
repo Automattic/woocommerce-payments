@@ -256,10 +256,275 @@ describe( 'Ruleset adapter utilities test', () => {
 		const output = readRuleset( ruleset );
 		expect( output ).toEqual( expected );
 	} );
+	test( 'converts an incomplete ruleset with the default values merged', () => {
+		const ruleset = [
+			{
+				key: Rules.RULE_PURCHASE_PRICE_THRESHOLD,
+				outcome: Outcomes.BLOCK,
+				check: {
+					operator: CheckOperators.LIST_OPERATOR_OR,
+					checks: [
+						{
+							key: Checks.CHECK_ORDER_TOTAL,
+							operator: CheckOperators.OPERATOR_LT,
+							value: 1,
+						},
+					],
+				},
+			},
+		];
+		const expected = Object.assign( {}, defaultUIConfig, {
+			purchase_price_threshold: {
+				block: true,
+				enabled: true,
+				max_amount: '',
+				min_amount: 1,
+			},
+		} );
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
+	test( 'test unknown key', () => {
+		const ruleset = [
+			{
+				key: 'unknown_key',
+				outcome: Outcomes.BLOCK,
+				check: {
+					key: Checks.CHECK_ORDER_TOTAL,
+					operator: CheckOperators.OPERATOR_LT,
+					value: 1,
+				},
+			},
+		];
+		const expected = Object.assign( {}, defaultUIConfig );
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
+	test( 'test unknown outcome', () => {
+		const ruleset = [
+			{
+				key: Rules.RULE_PURCHASE_PRICE_THRESHOLD,
+				outcome: 'nop',
+				check: {
+					key: Checks.CHECK_ORDER_TOTAL,
+					operator: CheckOperators.OPERATOR_LT,
+					value: 1,
+				},
+			},
+		];
+		const expected = Object.assign( {}, defaultUIConfig, {
+			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
+				enabled: true,
+				block: false,
+				min_amount: 1,
+				max_amount: '',
+			},
+		} );
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
+	test( 'test unknown check key', () => {
+		const ruleset = [
+			{
+				key: Rules.RULE_PURCHASE_PRICE_THRESHOLD,
+				outcome: Outcomes.BLOCK,
+				check: {
+					key: 'unknown_key',
+					operator: CheckOperators.OPERATOR_LT,
+					value: 1,
+				},
+			},
+		];
+		const expected = Object.assign( {}, defaultUIConfig, {
+			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
+				enabled: true,
+				block: true,
+				min_amount: '',
+				max_amount: '',
+			},
+		} );
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
+	test( 'test unknown check operator', () => {
+		const ruleset = [
+			{
+				key: Rules.RULE_PURCHASE_PRICE_THRESHOLD,
+				outcome: Outcomes.BLOCK,
+				check: {
+					key: Checks.CHECK_ORDER_TOTAL,
+					operator: 'exp',
+					value: 1,
+				},
+			},
+		];
+		const expected = Object.assign( {}, defaultUIConfig, {
+			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
+				enabled: true,
+				block: true,
+				min_amount: '',
+				max_amount: '',
+			},
+		} );
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
+	test( 'test missing key', () => {
+		const ruleset = [
+			{
+				outcome: Outcomes.BLOCK,
+				check: {
+					key: Checks.CHECK_ORDER_TOTAL,
+					operator: CheckOperators.OPERATOR_LT,
+					value: 1,
+				},
+			},
+		];
+		const expected = Object.assign( {}, defaultUIConfig );
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
+	test( 'test missing outcome', () => {
+		const ruleset = [
+			{
+				key: Rules.RULE_PURCHASE_PRICE_THRESHOLD,
+				check: {
+					key: Checks.CHECK_ORDER_TOTAL,
+					operator: CheckOperators.OPERATOR_LT,
+					value: 1,
+				},
+			},
+		];
+		const expected = Object.assign( {}, defaultUIConfig, {
+			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
+				enabled: true,
+				block: false,
+				min_amount: 1,
+				max_amount: '',
+			},
+		} );
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
+	test( 'test missing check key', () => {
+		const ruleset = [
+			{
+				key: Rules.RULE_PURCHASE_PRICE_THRESHOLD,
+				outcome: Outcomes.BLOCK,
+				check: {
+					operator: CheckOperators.OPERATOR_LT,
+					value: 1,
+				},
+			},
+		];
+		const expected = Object.assign( {}, defaultUIConfig, {
+			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
+				enabled: true,
+				block: true,
+				min_amount: '',
+				max_amount: '',
+			},
+		} );
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
+	test( 'test missing check operator', () => {
+		const ruleset = [
+			{
+				key: Rules.RULE_PURCHASE_PRICE_THRESHOLD,
+				outcome: Outcomes.BLOCK,
+				check: {
+					key: Checks.CHECK_ORDER_TOTAL,
+					value: 1,
+				},
+			},
+		];
+		const expected = Object.assign( {}, defaultUIConfig, {
+			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
+				enabled: true,
+				block: true,
+				min_amount: '',
+				max_amount: '',
+			},
+		} );
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
+	test( 'test missing check value', () => {
+		const ruleset = [
+			{
+				key: Rules.RULE_PURCHASE_PRICE_THRESHOLD,
+				outcome: Outcomes.BLOCK,
+				check: {
+					key: Checks.CHECK_ORDER_TOTAL,
+					operator: CheckOperators.OPERATOR_LT,
+				},
+			},
+		];
+		const expected = Object.assign( {}, defaultUIConfig, {
+			[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
+				enabled: true,
+				block: true,
+				min_amount: '',
+				max_amount: '',
+			},
+		} );
+		const output = readRuleset( ruleset );
+		expect( output ).toEqual( expected );
+	} );
 	test( 'converts an empty UI config to an empty ruleset', () => {
 		const config = {};
 		const expected = [];
 		const output = writeRuleset( config );
 		expect( output ).toEqual( expected );
 	} );
+
+	test.each( [ true, false ] )(
+		'converts enabled address mismatch filter to ruleset, blocking %s',
+		( { block } ) => {
+			const config = Object.assign( {}, defaultUIConfig, {
+				[ Rules.RULE_ADDRESS_MISMATCH ]: {
+					enabled: true,
+					block: block,
+				},
+			} );
+			const expected = [
+				{
+					key: Rules.RULE_ADDRESS_MISMATCH,
+					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
+					check: {
+						key: Checks.CHECK_BILLING_SHIPPING_ADDRESS_SAME,
+						operator: CheckOperators.OPERATOR_EQUALS,
+						value: false,
+					},
+				},
+			];
+			const output = writeRuleset( config );
+			expect( output ).toEqual( expected );
+		}
+	);
+	test.each( [ true, false ] )(
+		'converts enabled AVS mismatch filter to ruleset, blocking %s',
+		( { block } ) => {
+			const config = Object.assign( {}, defaultUIConfig, {
+				[ Rules.RULE_AVS_MISMATCH ]: {
+					enabled: true,
+					block: block,
+				},
+			} );
+			const expected = [
+				{
+					key: Rules.RULE_AVS_MISMATCH,
+					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
+					check: {
+						key: Checks.CHECK_AVS_CHECK,
+						operator: CheckOperators.OPERATOR_EQUALS,
+						value: false,
+					},
+				},
+			];
+			const output = writeRuleset( config );
+			expect( output ).toEqual( expected );
+		}
+	);
 } );

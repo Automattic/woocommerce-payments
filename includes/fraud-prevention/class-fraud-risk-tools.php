@@ -11,7 +11,6 @@ require_once dirname( __FILE__ ) . '/models/class-check.php';
 require_once dirname( __FILE__ ) . '/models/class-rule.php';
 
 use WC_Payments;
-use WC_Payments_API_Client;
 use WC_Payments_Account;
 use WC_Payments_Features;
 use WCPay\Fraud_Prevention\Models\Check;
@@ -31,13 +30,6 @@ class Fraud_Risk_Tools {
 	protected static $instance = null;
 
 	/**
-	 * Payments API client.
-	 *
-	 * @var WC_Payments_API_Client
-	 */
-	protected $api_client;
-  
-  /**
 	 * Instance of WC_Payments_Account.
 	 *
 	 * @var WC_Payments_Account
@@ -54,7 +46,7 @@ class Fraud_Risk_Tools {
 	 */
 	public static function instance() {
 		if ( is_null( self::$instance ) ) {
-			self::$instance = new self( WC_Payments::get_payments_api_client(), WC_Payments::get_account_service() );
+			self::$instance = new self( WC_Payments::get_account_service() );
 		}
 		return self::$instance;
 	}
@@ -72,11 +64,9 @@ class Fraud_Risk_Tools {
 	/**
 	 * Class constructor.
 	 *
-	 * @param WC_Payments_API_Client $api_client Payments API client.
 	 * @param WC_Payments_Account $payments_account WC_Payments_Account instance.
-   */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_Account $payments_account ) {
-  	$this->api_client = $api_client;
+	 */
+	public function __construct( WC_Payments_Account $payments_account ) {
 		$this->payments_account = $payments_account;
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			add_action( 'admin_menu', [ $this, 'init_advanced_settings_page' ] );
