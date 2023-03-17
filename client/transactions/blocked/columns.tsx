@@ -6,12 +6,12 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
-import { getDetailsURL } from 'components/details-link';
-import ClickableCell from 'components/clickable-cell';
+
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { formatExplicitCurrency } from 'utils/currency';
 import { Authorization } from '../../types/authorizations';
@@ -26,6 +26,12 @@ interface Column extends TableCardColumn {
 const rowDataFallback: TableCardBodyColumn = {
 	display: null,
 };
+
+const getDetailsURL = ( id: string ) =>
+	addQueryArgs( 'post.php', {
+		post: id,
+		action: 'edit',
+	} );
 
 export const getBlockedListColumns = (): Column[] =>
 	[
@@ -76,14 +82,20 @@ export const getBlockedListRowContent = (
 	data: Authorization
 ): Record< string, TableCardBodyColumn > => {
 	const riskLevel = <RiskLevel risk={ data.risk_level } />;
-	const detailsURL = getDetailsURL( data.payment_intent_id, 'transactions' );
+	const detailsURL = getDetailsURL( data.order_id );
 	const formattedCreatedDate = dateI18n(
 		'M j, Y / g:iA',
 		moment.utc( data.created ).local().toISOString()
 	);
 
 	const clickable = ( children: JSX.Element | string ) => (
-		<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
+		<a
+			href={ detailsURL }
+			tabIndex={ -1 }
+			className="woocommerce-table__clickable-cell"
+		>
+			{ children }
+		</a>
 	);
 
 	return {
@@ -102,9 +114,9 @@ export const getBlockedListRowContent = (
 			display: clickable( riskLevel ),
 		},
 		amount: {
-			value: data.total,
+			value: data.amount,
 			display: clickable(
-				formatExplicitCurrency( data.total, data.currency )
+				formatExplicitCurrency( data.amount, data.currency )
 			),
 		},
 		customer: {
