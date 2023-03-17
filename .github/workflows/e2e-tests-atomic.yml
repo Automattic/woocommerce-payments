@@ -42,22 +42,36 @@ jobs:
       - name: "Run the tests"
         uses: ./.github/actions/e2e/atomic-prepare-and-run
   
-  # Run tests against WP Nightly & WC latest. Only UPE ones after the first batch is done, to avoid impacting the other tests with UPE enabled.
-  wp-nightly-tests-second-batch:
+  # Run UPE tests against WP Nightly & WC latest.
+  wp-nightly-tests-upe:
     runs-on: ubuntu-22.04
     needs: wp-nightly-tests-first-batch
     if: always()
-    strategy:
-      fail-fast: false
-      matrix:
-        test_groups: [ 'upe', 'upeSplit' ]
-        test_branches: [ 'shopper' ]
 
-    name: "WP - nightly | WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}"
+    name: "WP - nightly | WC - latest | upe - shopper"
 
     env:
-      E2E_GROUP: ${{ matrix.test_groups }}
-      E2E_BRANCH: ${{ matrix.test_branches }}
+      E2E_GROUP: 'upe'
+      E2E_BRANCH: 'shopper'
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v3
+
+      - name: "Run the tests"
+        uses: ./.github/actions/e2e/atomic-prepare-and-run
+  
+  # Run UPE tests against WP Nightly & WC latest.
+  wp-nightly-tests-upe-split:
+    runs-on: ubuntu-22.04
+    needs: [ wp-nightly-tests-first-batch, wp-nightly-tests-upe ]
+    if: always()
+
+    name: "WP - nightly | WC - latest | upeSplit - shopper"
+
+    env:
+      E2E_GROUP: 'upeSplit'
+      E2E_BRANCH: 'shopper'
 
     steps:
       - name: "Checkout repository"
