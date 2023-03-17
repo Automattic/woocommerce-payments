@@ -20,7 +20,7 @@ class WC_Payments_Features {
 	const AUTH_AND_CAPTURE_FLAG_NAME                = '_wcpay_feature_auth_and_capture';
 	const PROGRESSIVE_ONBOARDING_FLAG_NAME          = '_wcpay_feature_progressive_onboarding';
 	const SIMPLIFY_DEPOSITS_UI_FLAG_NAME            = '_wcpay_feature_simplify_deposits_ui';
-	const WCPAY_FRAUD_PROTECTION_SETTINGS_FLAG_NAME = '_wcpay_fraud_protection_settings_active';
+	const WCPAY_FRAUD_PROTECTION_SETTINGS_FLAG_NAME = '_wcpay_fraud_protection_settings_enabled';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
