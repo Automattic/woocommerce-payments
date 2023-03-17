@@ -2,6 +2,8 @@
  * External dependencies
  */
 import * as React from 'react';
+import { Flex, FlexItem, Icon } from '@wordpress/components';
+import { calendar } from '@wordpress/icons';
 
 /**
  * Internal dependencies.
@@ -30,6 +32,9 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	isLoading,
 	overview,
 }: NextDepositProps ): JSX.Element => {
+	const tableClass = 'wcpay-deposits-overview__table';
+	const nextDeposit = getNextDeposit( overview );
+
 	return (
 		<>
 			{ /* Next Deposit Heading */ }
@@ -49,6 +54,63 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 				</span>
 			</div>
 			{ /* Next Deposit Table */ }
+			<div className={ tableClass }>
+				<Flex className={ `${ tableClass }__row__header` }>
+					<FlexItem className={ `${ tableClass }__cell` }>
+						<Loadable
+							isLoading={ isLoading }
+							value={ strings.table_headers.next_deposit_date }
+						/>
+					</FlexItem>
+					<FlexItem className={ `${ tableClass }__cell` }>
+						<Loadable
+							isLoading={ isLoading }
+							value={ strings.table_headers.status }
+						/>
+					</FlexItem>
+					<FlexItem className={ `${ tableClass }__cell` }>
+						<Loadable
+							isLoading={ isLoading }
+							value={ strings.table_headers.amount }
+						/>
+					</FlexItem>
+				</Flex>
+				<Flex className={ `${ tableClass }__row` }>
+					<FlexItem className={ `${ tableClass }__cell` }>
+						{ ! isLoading && (
+							<Icon icon={ calendar } size={ 17 } />
+						) }
+						<Loadable
+							isLoading={ isLoading }
+							placeholder="MMMM DD, YYYY"
+							value={
+								nextDeposit.date
+									? getDepositDate( nextDeposit.date )
+									: '-'
+							}
+						/>
+					</FlexItem>
+					<FlexItem className={ `${ tableClass }__cell` }>
+						<Loadable
+							isLoading={ isLoading }
+							placeholder="Estimated"
+							children={
+								<DepositStatusChip
+									status={ nextDeposit.status }
+									isCompact
+								/>
+							}
+						/>
+					</FlexItem>
+					<FlexItem className={ `${ tableClass }__cell` }>
+						<Loadable
+							isLoading={ isLoading }
+							placeholder="$00,000.00"
+							value={ nextDeposit.amount }
+						/>
+					</FlexItem>
+				</Flex>
+			</div>
 		</>
 	);
 };

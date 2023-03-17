@@ -12,4 +12,12 @@ export default {
 			'woocommerce-payments'
 		),
 	},
+	table_headers: {
+		next_deposit_date: __(
+			'Estimated dispatch date',
+			'woocommerce-payments'
+		),
+		status: __( 'Status', 'woocommerce-payments' ),
+		amount: __( 'Amount', 'woocommerce-payments' ),
+	},
 };

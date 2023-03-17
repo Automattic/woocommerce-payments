@@ -19,4 +19,40 @@
 			color: $gray-700;
 		}
 	}
+
+	&__table {
+		&__row {
+			height: 52px;
+			color: $gray-900;
+			align-items: center;
+
+			&__header {
+				box-shadow: inset 0 -1px 0 #ddd;
+				font-weight: 600;
+				height: 34px;
+			}
+		}
+
+		&__cell {
+			display: flex;
+			padding: 8px 24px;
+			font-size: 13px;
+			align-items: center;
+
+			svg {
+				fill: $gray-900;
+				position: relative;
+				left: 2.5px;
+				margin-right: 24px;
+			}
+		}
+
+		&__cell:first-child {
+			width: 35%;
+		}
+
+		&__cell:last-child {
+			margin-left: auto;
+		}
+	}
 }
