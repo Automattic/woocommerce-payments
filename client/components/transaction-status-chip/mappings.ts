@@ -6,15 +6,15 @@
 import { __ } from '@wordpress/i18n';
 
 const transactionStatusMapping = {
-	succeeded: {
+	allow: {
 		type: 'primary',
 		message: __( 'Succeeded', 'woocommerce-payments' ),
 	},
-	on_review: {
+	review: {
 		type: 'warning',
 		message: __( 'Needs review', 'woocommerce-payments' ),
 	},
-	blocked: {
+	block: {
 		type: 'alert',
 		message: __( 'Blocked', 'woocommerce-payments' ),
 	},
