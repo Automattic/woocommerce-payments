@@ -78,11 +78,17 @@ const getBaseCharge = (): Charge =>
 		},
 	} as any );
 
-function renderCharge( charge: Charge, isLoading = false ) {
+const getBaseMetadata = () => ( {
+	platform: 'ios',
+	reader_id: 'APPLEBUILTINSIMULATOR-1',
+	reader_model: 'COTS_DEVICE',
+} );
+
+function renderCharge( charge: Charge, metadata = {}, isLoading = false ) {
 	const { container } = render(
 		<PaymentDetailsSummary
 			charge={ charge }
-			metadata={ {} }
+			metadata={ metadata }
 			isLoading={ isLoading }
 		/>
 	);
@@ -162,6 +168,13 @@ describe( 'PaymentDetailsSummary', () => {
 		} as any;
 
 		expect( renderCharge( charge ) ).toMatchSnapshot();
+	} );
+
+	test( 'renders the Tap to Pay channel from metadata', () => {
+		const charge = getBaseCharge();
+		const metadata = getBaseMetadata();
+
+		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
 	} );
 
 	test( 'renders a charge with subscriptions', () => {
