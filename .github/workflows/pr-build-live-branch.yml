@@ -6,11 +6,9 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-env:
-  # Only need to retain for a day since the Jetpack beta builder slurps it up to distribute.
-  WCPAY_LIVE_BRANCH_ARTIFACT_RETENTION_DAYS: 1
+
 jobs:
-  build-and-upload-zip-file:
+  build-and-inform-zip-file:
     name: "Build and inform the zip file"
     runs-on: ubuntu-20.04
     steps:
@@ -81,7 +79,8 @@ jobs:
         with:
           name: plugins # Hard-coded value for Jetpack Beta Builder.
           path: release
-          retention-days: ${{ env.WCPAY_LIVE_BRANCH_ARTIFACT_RETENTION_DAYS }}
+          # Only need to retain for a day since the Jetpack Beta Builder slurps it up to distribute.
+          retention-days: 1
 
       - name: "Get plugin data for Jetpack Beta Builder"
         id: get-plugin-data
@@ -112,24 +111,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          ARTIFACT_RETENTION_DAY: ${{ env.WCPAY_LIVE_BRANCH_ARTIFACT_RETENTION_DAYS }}
+          PR_HEAD_REF: ${{ github.head_ref }}
         run: |
-          EXPIRY_TIME=$(date -u "+%Y-%m-%d %H:%M:%S UTC" -d "+${ARTIFACT_RETENTION_DAY} day")
+          BODY="### Test the build on Jurassic Ninja 
           
-          BODY="### Grab the build file for this PR
+          This feature is only available for A12s. Please log in into https://jurassic.ninja/specialops/ before clicking the link below:
           
-          :x: This build file is NOT ready for production. It's available for testing only.
+          https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&branches.woocommerce-payments=${PR_HEAD_REF}
 
           - Latest commit: ${PR_HEAD_SHA}
-          - Build file in the 'Artifacts' section: https://github.com/Automattic/woocommerce-payments/actions/runs/${GITHUB_RUN_ID}
-          - Expired at: ${EXPIRY_TIME}
+          - Build time: $(date -u "+%Y-%m-%d %H:%M:%S UTC")
 
-          _Note: this comment is updated when a new commit is pushed to this PR._"
-
-          PR_URL="https://github.com/Automattic/woocommerce-payments/pull/${PR_NUMBER}"
+          _Note: the build is updated when a new commit is pushed to this PR._"
+          # End declaring variable BODY
 
           # Try to update the last comment first. If not work, just create a new comment.
-          if ! gh pr comment ${PR_URL} --body "${BODY}" --edit-last
+          if ! gh pr comment ${PR_NUMBER} --body "${BODY}" --edit-last
           then
-            gh pr comment ${PR_URL} --body "${BODY}"
+            gh pr comment ${PR_NUMBER} --body "${BODY}"
           fi
