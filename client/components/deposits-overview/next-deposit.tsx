@@ -27,8 +27,8 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	return (
 		<>
 			{ /* Next Deposit Heading */ }
-			<div className="wcpay-deposits-overview__next__heading">
-				<span className="wcpay-deposits-overview__next__heading__title">
+			<div className="wcpay-deposits-overview__heading">
+				<span className="wcpay-deposits-overview__heading__title">
 					<Loadable
 						isLoading={ isLoading }
 						display="inline"
@@ -37,7 +37,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 					/>
 				</span>
 
-				<span className="wcpay-deposits-overview__next__heading__description">
+				<span className="wcpay-deposits-overview__heading__description">
 					<Loadable
 						isLoading={ isLoading }
 						display="inline"
