@@ -27,12 +27,12 @@ interface OverviewProps {
 const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = (
 	props
 ) => {
-	const { isLoading }: OverviewProps = props;
+	const { isLoading, overview }: OverviewProps = props;
 
 	return (
 		<Card>
 			<CardHeader>{ strings.heading }</CardHeader>
-			<NextDepositDetails isLoading={ isLoading } />
+			<NextDepositDetails isLoading={ isLoading } overview={ overview } />
 
 			<p>Deposits History Section Goes here</p>
 

@@ -9,10 +9,15 @@ import * as React from 'react';
 import strings from './strings';
 import './style.scss';
 import Loadable from 'components/loadable';
+import { getNextDeposit } from './utils';
+import DepositStatusChip from 'components/deposit-status-chip';
+import { getDepositDate } from 'deposits/utils';
 
 interface NextDepositProps {
 	isLoading: boolean;
+	overview?: AccountOverview.Overview | undefined;
 }
+
 /**
  * Renders the Next Deposit details component.
  *
@@ -23,6 +28,7 @@ interface NextDepositProps {
  */
 const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	isLoading,
+	overview,
 }: NextDepositProps ): JSX.Element => {
 	return (
 		<>
