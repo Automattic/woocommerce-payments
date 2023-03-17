@@ -100,7 +100,7 @@ const FraudProtectionTour: React.FC = () => {
 					title={ __( 'Ready for review 📥️' ) }
 					description={ interpolateComponents( {
 						mixedString: __(
-							"Payments that have been caught by a risk filter will appear under {{strong}}Transactions > Payments{{/strong}}. We'll let you know why each payment was flagged so that you can determine whether to approve or block it."
+							"Payments that have been caught by a risk filter will appear under {{strong}}Payments > Transactions{{/strong}}. We'll let you know why each payment was flagged so that you can determine whether to approve or block it."
 						),
 						components: { strong: <strong /> },
 					} ) }
