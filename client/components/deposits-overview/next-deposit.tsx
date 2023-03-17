@@ -14,12 +14,12 @@ interface NextDepositProps {
 	isLoading: boolean;
 }
 /**
- * Renders a Deposits Overview Section Heading.
+ * Renders the Next Deposit details component.
  *
- * Used in the Deposits Overview component to render Next Deposits and Deposits History section headings.
+ * This component included the next deposit heading, table and notice.
  *
- * @param {HeadingProps} props Section heading props { title, desc, isLoading (optional) }
- * @return {JSX.Element} Rendered element with deposits overview
+ * @param {NextDepositProps} props Next Deposit details props.
+ * @return {JSX.Element} Rendered element with Next Deposit details.
  */
 const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	isLoading,
