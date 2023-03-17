@@ -1105,7 +1105,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			$statement_descriptor = $this->get_statement_descriptor( $order->get_payment_method(), $order );
+			$statement_descriptor = $this->maybe_use_statement_descriptor( $order->get_payment_method(), $order );
 
 			if ( empty( $intent ) ) {
 				$request = Create_And_Confirm_Intention::create();
@@ -2356,23 +2356,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Get the statement descriptor value considering the payment methods.
+	 * Returns the account statement descriptor, the shortened statement descriptor,
+	 * or null, depending on the payment method.
+	 *
+	 * If it returns null, the default statement descriptor will be used by default
+	 * because it's also set in the Stripe account. However, that's not what happen when
+	 * the payment method is not a card, that's why we have a condition for it.
 	 *
 	 * @param  string   $payment_method Payment method being used.
 	 * @param  WC_Order $order WC Order.
 	 *
 	 * @return string|null Statement descriptor.
 	 */
-	public function get_statement_descriptor( $payment_method, $order ) {
-		$full_statement_descriptor             = $this->get_account_statement_descriptor();
+	public function maybe_use_statement_descriptor( $payment_method, $order ) {
+		$is_card_payment                       = in_array( $payment_method, [ 'card', 'woocommerce_payments' ], true );
+		$statement_descriptor                  = $this->get_account_statement_descriptor();
 		$short_statement_descriptor            = $this->get_option( 'short_statement_descriptor', '' );
 		$is_short_statement_descriptor_enabled = 'yes' === $this->get_option( 'is_short_statement_descriptor_enabled' );
 
-		if ( in_array( $payment_method, [ 'card', 'woocommerce_payments' ], true ) && $is_short_statement_descriptor_enabled && ! empty( $short_statement_descriptor ) ) {
+		if ( $is_card_payment && $is_short_statement_descriptor_enabled && ! empty( $short_statement_descriptor ) ) {
 			// Use the shortened statement descriptor for card transactions only.
 			return WC_Payments_Utils::get_dynamic_statement_descriptor( $short_statement_descriptor, $order );
-		} elseif ( ! empty( $full_statement_descriptor ) ) {
-			return $full_statement_descriptor;
+		} elseif ( ! ( $is_card_payment || empty( $statement_descriptor ) ) ) {
+			return $statement_descriptor;
 		}
 
 		return null;
