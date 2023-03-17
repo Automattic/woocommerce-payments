@@ -36,7 +36,7 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
-      uses: ./.github/actions/e2e/atomic-prepare-and-run
+      - uses: ./.github/actions/e2e/atomic-prepare-and-run
   
   # Run tests against WP Nightly & WC latest. Only UPE ones after the first batch is done, to avoid impacting the other tests with UPE enabled.
   wp-nightly-tests-second-batch:
@@ -55,4 +55,4 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
 
     steps:
-      uses: ./.github/actions/e2e/atomic-prepare-and-run
+      - uses: ./.github/actions/e2e/atomic-prepare-and-run
