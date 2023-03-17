@@ -74,7 +74,10 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 						},
 					],
 				};
-			} else {
+			} else if (
+				parseInt( ruleConfiguration.min_items, 10 ) ||
+				parseInt( ruleConfiguration.max_items, 10 )
+			) {
 				ruleBase.check = parseInt( ruleConfiguration.min_items, 10 )
 					? {
 							key: Checks.CHECK_ITEM_COUNT,
@@ -122,7 +125,10 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 						},
 					],
 				};
-			} else {
+			} else if (
+				parseFloat( ruleConfiguration.min_amount ) ||
+				parseFloat( ruleConfiguration.max_amount )
+			) {
 				ruleBase.check = parseFloat( ruleConfiguration.min_amount )
 					? {
 							key: Checks.CHECK_ORDER_TOTAL,
