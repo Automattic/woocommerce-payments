@@ -13,13 +13,17 @@ const colorMappings = {
 	highest: 'red',
 };
 
+const getRiskLevel = ( risk ) => {
+	return riskOrder.includes( risk ) ? risk : riskOrder[ risk ];
+};
+
 export function calculateRiskMapping( risk ) {
-	const riskLevel = riskOrder[ risk ];
+	const riskLevel = getRiskLevel( risk );
 	return riskMappings[ riskLevel ] || riskMappings.not_assessed;
 }
 
 const RiskLevel = ( { risk } ) => {
-	const riskLevel = riskOrder[ risk ];
+	const riskLevel = getRiskLevel( risk );
 
 	return (
 		<span style={ { color: colorMappings[ riskLevel ] } }>

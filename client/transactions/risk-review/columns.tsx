@@ -6,6 +6,7 @@ import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import moment from 'moment';
 import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -14,7 +15,6 @@ import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { formatExplicitCurrency } from 'utils/currency';
-import CaptureAuthorizationButton from 'components/capture-authorization-button';
 import wcpayTracks from 'tracks';
 import { Authorization } from '../../types/authorizations';
 import TransactionStatusChip from 'components/transaction-status-chip';
@@ -78,14 +78,17 @@ export const getRiskReviewListColumns = (): Column[] =>
 			screenReaderLabel: '',
 			visible: true,
 			required: true,
+			isNumeric: true,
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
 export const getRiskReviewListRowContent = (
 	data: Authorization
 ): Record< string, TableCardBodyColumn > => {
-	const riskLevel = <RiskLevel risk={ data.risk_level } />;
-	const detailsURL = getDetailsURL( data.payment_intent_id, 'transactions' );
+	const riskLevel = (
+		<RiskLevel risk={ data.payment_intent.charge.outcome.risk_level } />
+	);
+	const detailsURL = getDetailsURL( data.payment_intent.id, 'transactions' );
 	const formattedCreatedDate = dateI18n(
 		'M j, Y / g:iA',
 		moment.utc( data.created ).local().toISOString()
@@ -99,7 +102,7 @@ export const getRiskReviewListRowContent = (
 		wcpayTracks.recordEvent(
 			'payments_transactions_risk_review_list_review_button_click',
 			{
-				payment_intent_id: data.payment_intent_id,
+				payment_intent_id: data.payment_intent.id,
 			}
 		);
 	};
@@ -116,26 +119,33 @@ export const getRiskReviewListRowContent = (
 			display: clickable( formattedCreatedDate ),
 		},
 		risk_level: {
-			value: calculateRiskMapping( data.risk_level ),
+			value: calculateRiskMapping(
+				data.payment_intent.charge.outcome.risk_level
+			),
 			display: clickable( riskLevel ),
 		},
 		amount: {
-			value: data.amount,
+			value: data.payment_intent.amount,
 			display: clickable(
-				formatExplicitCurrency( data.amount, data.currency )
+				formatExplicitCurrency(
+					data.payment_intent.amount,
+					data.payment_intent.currency
+				)
 			),
 		},
 		customer: {
-			value: data.customer_name,
-			display: clickable( data.customer_name ),
+			value: data.payment_intent.metadata.customer_name,
+			display: clickable( data.payment_intent.metadata.customer_name ),
 		},
 		action: {
 			display: (
-				<CaptureAuthorizationButton
-					orderId={ data.order_id }
-					paymentIntentId={ data.payment_intent_id }
+				<Button
+					href={ detailsURL }
+					isSecondary
 					onClick={ handleActionButtonClick }
-				/>
+				>
+					{ __( 'Review' ) }
+				</Button>
 			),
 		},
 	};

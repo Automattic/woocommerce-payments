@@ -18,6 +18,7 @@ import {
 	getRiskReviewListColumns,
 	getRiskReviewListColumnsStructure,
 } from './columns';
+import './style.scss';
 
 export const RiskReviewList = (): JSX.Element => {
 	const query = getQuery();

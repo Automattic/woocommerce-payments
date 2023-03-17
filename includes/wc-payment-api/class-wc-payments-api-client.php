@@ -760,11 +760,14 @@ class WC_Payments_API_Client {
 		$fraud_outcomes = $this->request( $query, 'fraud_outcomes/review', self::GET );
 
 		foreach ( $fraud_outcomes as &$outcome ) {
-			$order = wc_get_order( $outcome['order_id'] );
+			$payment_intent = $outcome['payment_intent_id'];
 
-			$outcome['order']    = $this->build_order_info( $order );
-			$outcome['total']    = $order->get_total();
-			$outcome['currency'] = $order->get_currency();
+			if ( empty( $payment_intent ) ) {
+				$order          = wc_get_order( $outcome['order_id'] );
+				$payment_intent = $order->get_transaction_id();
+			}
+
+			$outcome['payment_intent'] = $this->get_intent( $payment_intent );
 
 			unset( $outcome );
 		}
