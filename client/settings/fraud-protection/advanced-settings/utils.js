@@ -259,9 +259,10 @@ export const readRuleset = ( rulesetConfig ) => {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,
 					max_orders: rule.check.value,
-					interval: rule.check.key.match(
-						/^orders_since_(\d+)h$/
-					)[ 1 ],
+					interval: parseInt(
+						rule.check.key.match( /^orders_since_(\d+)h$/ )[ 1 ],
+						10
+					),
 				};
 				break;
 			case Rules.RULE_PURCHASE_PRICE_THRESHOLD:
