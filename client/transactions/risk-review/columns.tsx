@@ -85,9 +85,7 @@ export const getRiskReviewListColumns = (): Column[] =>
 export const getRiskReviewListRowContent = (
 	data: Authorization
 ): Record< string, TableCardBodyColumn > => {
-	const riskLevel = (
-		<RiskLevel risk={ data.payment_intent.charge.outcome.risk_level } />
-	);
+	const riskLevel = <RiskLevel risk={ data.payment_intent.risk_level } />;
 	const detailsURL = getDetailsURL( data.payment_intent.id, 'transactions' );
 	const formattedCreatedDate = dateI18n(
 		'M j, Y / g:iA',
@@ -119,23 +117,18 @@ export const getRiskReviewListRowContent = (
 			display: clickable( formattedCreatedDate ),
 		},
 		risk_level: {
-			value: calculateRiskMapping(
-				data.payment_intent.charge.outcome.risk_level
-			),
+			value: calculateRiskMapping( data.payment_intent.risk_level ),
 			display: clickable( riskLevel ),
 		},
 		amount: {
-			value: data.payment_intent.amount,
+			value: data.amount,
 			display: clickable(
-				formatExplicitCurrency(
-					data.payment_intent.amount,
-					data.payment_intent.currency
-				)
+				formatExplicitCurrency( data.amount, data.currency )
 			),
 		},
 		customer: {
-			value: data.payment_intent.metadata.customer_name,
-			display: clickable( data.payment_intent.metadata.customer_name ),
+			value: data.customer_name,
+			display: clickable( data.customer_name ),
 		},
 		action: {
 			display: (

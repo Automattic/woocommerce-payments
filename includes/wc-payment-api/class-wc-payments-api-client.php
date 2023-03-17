@@ -759,18 +759,28 @@ class WC_Payments_API_Client {
 
 		$fraud_outcomes = $this->request( $query, 'fraud_outcomes/review', self::GET );
 
+		// The fraud outcome result doesn't give all the data required to list the on review transactions.
+		// So we need to fill in any empty data, such as payment_intent_id and the actual data from the payment intent.
 		foreach ( $fraud_outcomes as &$outcome ) {
-			$payment_intent = $outcome['payment_intent_id'];
+			$order = wc_get_order( $outcome['order_id'] );
 
-			if ( empty( $payment_intent ) ) {
-				$order          = wc_get_order( $outcome['order_id'] );
-				$payment_intent = $order->get_transaction_id();
-			}
+			$outcome['payment_intent']           = [];
+			$outcome['payment_intent']['id']     = $order->get_meta( '_intent_id' );
+			$outcome['payment_intent']['status'] = $order->get_meta( '_intention_status' );
 
-			$outcome['payment_intent'] = $this->get_intent( $payment_intent );
+			$outcome['amount']        = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+			$outcome['customer_name'] = wc_clean( $order->get_billing_first_name() ) . ' ' . wc_clean( $order->get_billing_last_name() );
 
 			unset( $outcome );
 		}
+
+		// Removes the entries that don't have the status "requires_capture".
+		$fraud_outcomes = array_filter(
+			$fraud_outcomes,
+			function ( $outcome ) {
+				return 'requires_capture' === $outcome['payment_intent']['status'];
+			}
+		);
 
 		return $fraud_outcomes;
 	}
