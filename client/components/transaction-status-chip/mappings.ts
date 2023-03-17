@@ -16,7 +16,7 @@ const transactionStatusMapping = {
 	},
 	block: {
 		type: 'alert',
-		message: __( 'Blocked', 'woocommerce-payments' ),
+		message: __( 'Payment blocked', 'woocommerce-payments' ),
 	},
 };
 
