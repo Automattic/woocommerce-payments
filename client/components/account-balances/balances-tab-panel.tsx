@@ -30,6 +30,7 @@ type BalanceTab = {
 	availableFunds: number;
 	pendingFunds: number;
 	reservedFunds: number;
+	delayDays: number;
 };
 
 /**
@@ -52,10 +53,11 @@ const AccountBalancesTabPanel: React.FC = () => {
 			availableFunds: 0,
 			pendingFunds: 0,
 			reservedFunds: 0,
+			delayDays: 0,
 		},
 	];
 
-	const { currencies } = overviews;
+	const { currencies, account } = overviews;
 
 	if ( ! isLoading && currencies.length !== 0 ) {
 		depositCurrencyTabs = currencies.map(
@@ -66,6 +68,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 				availableFunds: overview.available.amount,
 				pendingFunds: overview.pending.amount,
 				reservedFunds: 0, // TODO: Add reserve funds to the overview object.
+				delayDays: account.deposits_schedule.delay_days,
 			} )
 		);
 	}
@@ -78,18 +81,22 @@ const AccountBalancesTabPanel: React.FC = () => {
 						type="available"
 						amount={ tab.availableFunds }
 						currencyCode={ tab.currencyCode }
+						delayDays={ tab.delayDays }
 						isLoading={ isLoading }
+						isNegativeBalance={ tab.availableFunds < 0 }
 					/>
 					<BalanceBlock
 						type="pending"
 						amount={ tab.pendingFunds }
 						currencyCode={ tab.currencyCode }
+						delayDays={ tab.delayDays }
 						isLoading={ isLoading }
 					/>
 					<BalanceBlock
 						type="reserved"
 						amount={ tab.reservedFunds }
 						currencyCode={ tab.currencyCode }
+						delayDays={ tab.delayDays }
 						isLoading={ isLoading }
 					/>
 				</Flex>

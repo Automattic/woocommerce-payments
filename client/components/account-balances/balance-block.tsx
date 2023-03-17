@@ -9,11 +9,12 @@ import * as React from 'react';
 import { formatCurrency } from 'wcpay/utils/currency';
 import Loadable from 'components/loadable';
 import { fundLabelStrings } from './strings';
+import BalanceTooltip from './balance-tooltip';
 
 /**
  * balanceType
  */
-type balanceType = 'pending' | 'available' | 'reserved';
+export type balanceType = 'pending' | 'available' | 'reserved';
 
 /**
  * BalanceBlockProps
@@ -29,6 +30,8 @@ interface BalanceBlockProps {
 	type: balanceType;
 	currencyCode: string;
 	amount?: number;
+	delayDays: number;
+	isNegativeBalance?: boolean;
 	isLoading?: boolean;
 }
 
@@ -46,6 +49,8 @@ interface BalanceBlockProps {
 const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 	type,
 	currencyCode,
+	delayDays,
+	isNegativeBalance,
 	amount = 0,
 	isLoading = false,
 } ) => {
@@ -57,6 +62,13 @@ const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 				className="wcpay-account-balances__balances__item__title"
 			>
 				{ fundLabelStrings[ type ] }
+				&ensp;
+				<BalanceTooltip
+					type={ type }
+					delayDays={ delayDays }
+					isNegativeBalance={ isNegativeBalance }
+					className="wcpay-account-balances__balances__item__tooltip-button"
+				/>
 			</p>
 			<p
 				className="wcpay-account-balances__balances__item__amount"
