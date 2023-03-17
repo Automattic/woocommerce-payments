@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments_Features {
 	const UPE_FLAG_NAME                     = '_wcpay_feature_upe';
 	const UPE_SPLIT_FLAG_NAME               = '_wcpay_feature_upe_split';
+	const UPE_DEFERRED_INTENT_FLAG_NAME     = '_wcpay_feature_upe_deferred_intent';
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
@@ -27,7 +28,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_upe_enabled() {
-		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled();
+		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled();
 	}
 
 	/**
@@ -36,7 +37,7 @@ class WC_Payments_Features {
 	 * @return string
 	 */
 	public static function get_enabled_upe_type() {
-		if ( self::is_upe_split_enabled() ) {
+		if ( self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled() ) {
 			return 'split';
 		}
 
@@ -59,7 +60,8 @@ class WC_Payments_Features {
 		}
 
 		// if the merchant is not eligible for the Split UPE, but they have the flag enabled, fallback to the "legacy" UPE (for now).
-		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && ! self::is_upe_split_eligible();
+		return ( '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) || '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) )
+			&& ! self::is_upe_split_eligible();
 	}
 
 	/**
@@ -67,6 +69,13 @@ class WC_Payments_Features {
 	 */
 	public static function is_upe_split_enabled() {
 		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
+	}
+
+	/**
+	 * Checks whether the Split UPE with deferred intent is enabled
+	 */
+	public static function is_upe_deferred_intent_enabled() {
+		return '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
 	}
 
 	/**
