@@ -37,14 +37,23 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	private $gateway;
 
 	/**
+	 * Platform_Checkout_Utilities instance.
+	 *
+	 * @var Platform_Checkout_Utilities
+	 */
+	private $platform_checkout_utilities;
+
+	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payments_Account      $account Account information.
-	 * @param WC_Payment_Gateway_WCPay $gateway WCPay gateway.
+	 * @param WC_Payments_Account         $account Account information.
+	 * @param WC_Payment_Gateway_WCPay    $gateway WCPay gateway.
+	 * @param Platform_Checkout_Utilities $platform_checkout_utilities WCPay gateway.
 	 */
-	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
-		$this->account = $account;
-		$this->gateway = $gateway;
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway, Platform_Checkout_Utilities $platform_checkout_utilities ) {
+		$this->account                     = $account;
+		$this->gateway                     = $gateway;
+		$this->platform_checkout_utilities = $platform_checkout_utilities;
 
 		add_action( 'init', [ $this, 'init' ] );
 	}
@@ -144,11 +153,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 			return;
 		}
 
-		$script_src_url    = plugins_url( 'dist/platform-checkout-express-button.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/platform-checkout-express-button.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', $script_src_url, $script_asset['dependencies'], WC_Payments::get_file_version( 'dist/platform-checkout-express-button.js' ), true );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PLATFORM_CHECKOUT_EXPRESS_BUTTON', 'dist/platform-checkout-express-button' );
 
 		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
 
@@ -485,8 +490,7 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		}
 
 		// Check if WooPay is available in the user country.
-		$platform_checkout_utilities = new Platform_Checkout_Utilities();
-		if ( ! $platform_checkout_utilities->is_country_available( $this->gateway ) ) {
+		if ( ! $this->platform_checkout_utilities->is_country_available( $this->gateway ) ) {
 			return false;
 		}
 

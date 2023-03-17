@@ -25,6 +25,7 @@ use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -607,15 +608,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $this->supports( 'tokenization' ) ) {
 			$script_dependencies[] = 'woocommerce-tokenization-form';
 		}
-
-		wp_register_script(
-			'WCPAY_CHECKOUT',
-			plugins_url( 'dist/checkout.js', WCPAY_PLUGIN_FILE ),
-			$script_dependencies,
-			WC_Payments::get_file_version( 'dist/checkout.js' ),
-			true
-		);
-
+		WC_Payments::register_script_with_dependencies( 'WCPAY_CHECKOUT', 'dist/checkout', $script_dependencies );
 		wp_set_script_translations( 'WCPAY_CHECKOUT', 'woocommerce-payments' );
 
 	}
@@ -1050,14 +1043,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
-
-			if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
-				$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
-			} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
-				$payment_methods = [ 'card' ];
-			} else {
-				$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
-			}
 
 			if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
 				$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
@@ -1709,6 +1694,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_deposit_status();
 			case 'deposit_completed_waiting_period':
 				return $this->get_deposit_completed_waiting_period();
+			case 'advanced_fraud_protection_settings':
+				return $this->get_advanced_fraud_protection_settings();
 
 			default:
 				return parent::get_option( $key, $empty_value );
@@ -2250,6 +2237,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
 		}
 		return $empty_value;
+	}
+
+	/**
+	 * Gets the advanced fraud protection level settings value.
+	 *
+	 * @return  array The advanced level fraud settings for the store, if not saved, the default ones.
+	 */
+	protected function get_advanced_fraud_protection_settings() {
+		// If fraud and risk tools feature is not enabled, do not expose the settings.
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			return [];
+		}
+
+		// Check if Stripe is connected.
+		if ( ! $this->is_connected() ) {
+			return [];
+		}
+
+		$settings = get_option( 'advanced_fraud_protection_settings', false );
+		if ( ! $settings ) {
+			return Fraud_Risk_Tools::get_default_protection_settings();
+		}
+		return json_decode( $settings, true );
 	}
 
 	/**

@@ -31,6 +31,7 @@ import OverviewPage from 'overview';
 import DocumentsPage from 'documents';
 import OnboardingExperimentPage from 'onboarding-experiment';
 import OnboardingPrototype from 'onboarding-prototype';
+import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
 
 addFilter(
@@ -251,6 +252,17 @@ addFilter(
 				navArgs: {
 					id: 'wc-payments-documents',
 				},
+				capability: 'manage_woocommerce',
+			} );
+		}
+		if ( wcpaySettings && wcpaySettings.isFraudProtectionSettingsEnabled ) {
+			pages.push( {
+				container: FraudProtectionAdvancedSettingsPage,
+				path: '/payments/fraud-protection',
+				wpOpenMenu: 'toplevel_page_woocommerce',
+				breadcrumbs: [
+					__( 'WooCommerce Payments', 'woocommerce-payments' ),
+				],
 				capability: 'manage_woocommerce',
 			} );
 		}

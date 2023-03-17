@@ -541,3 +541,29 @@ export const usePlatformCheckoutLocations = () => {
 		];
 	} );
 };
+
+// TODO: Finish implementation once server API endpoints are deployed.
+export const useCurrentProtectionLevel = () => {
+	const { updateProtectionLevel } = useDispatch( STORE_NAME );
+
+	return useSelect(
+		( select ) => {
+			const { getCurrentProtectionLevel } = select( STORE_NAME );
+
+			return [ getCurrentProtectionLevel(), updateProtectionLevel ];
+		},
+		[ updateProtectionLevel ]
+	);
+};
+
+export const useAdvancedFraudProtectionSettings = () => {
+	const { updateAdvancedFraudProtectionSettings } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getAdvancedFraudProtectionSettings } = select( STORE_NAME );
+		return [
+			getAdvancedFraudProtectionSettings(),
+			updateAdvancedFraudProtectionSettings,
+		];
+	} );
+};

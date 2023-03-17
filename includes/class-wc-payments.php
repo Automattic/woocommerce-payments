@@ -376,6 +376,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-process-payment-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-webhook-data-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
+		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-order-status.php';
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
@@ -397,6 +398,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
+		include_once __DIR__ . '/fraud-prevention/class-fraud-risk-tools.php';
+		include_once __DIR__ . '/fraud-prevention/wc-payments-fraud-risk-tools.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-utilities.php';
 		include_once __DIR__ . '/platform-checkout/class-platform-checkout-order-status-sync.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
@@ -486,7 +489,7 @@ class WC_Payments {
 
 		// Payment Request and Apple Pay.
 		self::$payment_request_button_handler   = new WC_Payments_Payment_Request_Button_Handler( self::$account, self::get_gateway() );
-		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway() );
+		self::$platform_checkout_button_handler = new WC_Payments_Platform_Checkout_Button_Handler( self::$account, self::get_gateway(), self::$platform_checkout_util );
 		self::$apple_pay_registration           = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
@@ -539,7 +542,7 @@ class WC_Payments {
 		// Load WCPay Subscriptions.
 		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::get_gateway(), self::$account );
+			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account );
 		}
 
 		$is_woopay_express_checkout_enabled = WC_Payments_Features::is_woopay_express_checkout_enabled();
@@ -639,6 +642,17 @@ class WC_Payments {
 	 */
 	public static function register_gateway( $gateways ) {
 		if ( WC_Payments_Features::is_upe_split_enabled() ) {
+
+			$payment_methods = self::$card_gateway->get_payment_method_ids_enabled_at_checkout();
+
+			$key = array_search( 'link', $payment_methods, true );
+
+			if ( false !== $key && self::$platform_checkout_button_handler->is_woopay_enabled() ) {
+				unset( $payment_methods[ $key ] );
+
+				self::get_gateway()->update_option( 'upe_enabled_payment_method_ids', $payment_methods );
+			}
+
 			if ( self::$platform_checkout_button_handler->is_woopay_enabled() ) {
 				$gateways[] = self::$legacy_card_gateway;
 			} else {
@@ -646,7 +660,7 @@ class WC_Payments {
 			}
 			$all_upe_gateways = [];
 			$reusable_methods = [];
-			foreach ( self::$card_gateway->get_payment_method_ids_enabled_at_checkout() as $payment_method_id ) {
+			foreach ( $payment_methods as $payment_method_id ) {
 				if ( 'card' === $payment_method_id || 'link' === $payment_method_id ) {
 					continue;
 				}
@@ -957,6 +971,30 @@ class WC_Payments {
 			return (string) filemtime( WCPAY_ABSPATH . trim( $file, '/' ) );
 		}
 		return WCPAY_VERSION_NUMBER;
+	}
+
+	/**
+	 * Load script with all required dependencies.
+	 *
+	 * @param string $handler Script handler.
+	 * @param string $script Script name.
+	 * @param array  $dependencies Additional dependencies.
+	 *
+	 * @return void
+	 */
+	public static function register_script_with_dependencies( string $handler, string $script, array $dependencies = [] ) {
+		$script_file                  = $script . '.js';
+		$script_src_url               = plugins_url( $script_file, WCPAY_PLUGIN_FILE );
+		$script_asset_path            = WCPAY_ABSPATH . $script . '.asset.php';
+		$script_asset                 = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
+		$script_asset['dependencies'] = array_merge( $script_asset['dependencies'], $dependencies );
+		wp_register_script(
+			$handler,
+			$script_src_url,
+			$script_asset['dependencies'],
+			self::get_file_version( $script_file ),
+			true
+		);
 	}
 
 	/**
@@ -1570,7 +1608,7 @@ class WC_Payments {
 	 * @return void
 	 */
 	public static function display_express_checkout_separator_if_necessary() {
-		$woopay          = self::$platform_checkout_button_handler->should_show_platform_checkout_button() && self::$platform_checkout_button_handler->is_woopay_enabled();
+		$woopay          = self::$platform_checkout_button_handler->is_woopay_enabled() && self::$platform_checkout_button_handler->should_show_platform_checkout_button();
 		$payment_request = self::$payment_request_button_handler->should_show_payment_request_button();
 		$should_hide     = $payment_request && ! $woopay;
 		if ( $woopay || $payment_request ) {

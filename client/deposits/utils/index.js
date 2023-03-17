@@ -48,6 +48,32 @@ export const getNextDepositLabelFormatted = ( deposit ) => {
 	return baseLabel;
 };
 
+export const getDepositMonthlyAnchorLabel = ( {
+	monthlyAnchor,
+	capitalize = true,
+} ) => {
+	// If locale is set up as en_US or en_GB the ordinal will not show up
+	// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
+	// Using 'en' as the locale should be enough to workaround it
+	// TODO: Remove workaround when issue is resolved
+	const fixedLocale = moment.locale().startsWith( 'en' )
+		? 'en'
+		: moment.locale();
+
+	let label = moment()
+		.locale( fixedLocale )
+		.date( monthlyAnchor )
+		.format( 'Do' );
+
+	if ( 31 === monthlyAnchor ) {
+		label = __( 'Last day of the month', 'woocommerce-payments' );
+	}
+	if ( ! capitalize ) {
+		label = label.toLowerCase();
+	}
+	return label;
+};
+
 const formatDepositSchedule = ( schedule ) => {
 	switch ( schedule.interval ) {
 		case 'manual':
@@ -67,23 +93,16 @@ const formatDepositSchedule = ( schedule ) => {
 					.format( 'dddd' )
 			);
 		case 'monthly':
-			// If locale is set up as en_US or en_GB the ordinal will not show up
-			// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
-			// Using 'en' as the locale should be enough to workaround it
-			// TODO: Remove workaround when issue is resolved
-			const fixedLocale = moment.locale().startsWith( 'en' )
-				? 'en'
-				: moment.locale();
 			return sprintf(
 				/** translators: %s day of the month */
 				__(
 					'Deposits set to monthly on the %s.',
 					'woocommerce-payments'
 				),
-				moment()
-					.locale( fixedLocale )
-					.date( schedule.monthly_anchor )
-					.format( 'Do' )
+				getDepositMonthlyAnchorLabel( {
+					monthlyAnchor: schedule.monthly_anchor,
+					capitalize: false,
+				} )
 			);
 	}
 };

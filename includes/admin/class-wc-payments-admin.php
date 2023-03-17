@@ -444,16 +444,7 @@ class WC_Payments_Admin {
 	 * Register the CSS and JS scripts
 	 */
 	public function register_payments_scripts() {
-		$script_src_url    = plugins_url( 'dist/index.js', WCPAY_PLUGIN_FILE );
-		$script_asset_path = WCPAY_ABSPATH . 'dist/index.asset.php';
-		$script_asset      = file_exists( $script_asset_path ) ? require $script_asset_path : [ 'dependencies' => [] ];
-		wp_register_script(
-			'WCPAY_DASH_APP',
-			$script_src_url,
-			$script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/index.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index' );
 
 		// Has on-boarding been disabled? Set the flag for use in the front-end so messages and notices can be altered
 		// as appropriate.
@@ -538,6 +529,7 @@ class WC_Payments_Admin {
 			'restUrl'                          => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 			'numDisputesNeedingResponse'       => $this->get_disputes_awaiting_response_count(),
 			'isFraudProtectionSettingsEnabled' => WC_Payments_Features::is_fraud_protection_settings_enabled(),
+			'accountDefaultCurrency'           => $this->account->get_account_default_currency(),
 		];
 
 		wp_localize_script(
@@ -555,17 +547,7 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/index.css' )
 		);
 
-		$tos_script_src_url    = plugins_url( 'dist/tos.js', WCPAY_PLUGIN_FILE );
-		$tos_script_asset_path = WCPAY_ABSPATH . 'dist/tos.asset.php';
-		$tos_script_asset      = file_exists( $tos_script_asset_path ) ? require $tos_script_asset_path : [ 'dependencies' => [] ];
-
-		wp_register_script(
-			'WCPAY_TOS',
-			$tos_script_src_url,
-			$tos_script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/tos.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_TOS', 'dist/tos' );
 		wp_set_script_translations( 'WCPAY_TOS', 'woocommerce-payments' );
 
 		wp_register_style(
@@ -575,13 +557,8 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/tos.css' )
 		);
 
-		wp_register_script(
-			'WCPAY_ADMIN_ORDER_ACTIONS',
-			plugins_url( 'dist/order.js', WCPAY_PLUGIN_FILE ),
-			array_merge( $script_asset['dependencies'], [ 'jquery-tiptip' ] ),
-			WC_Payments::get_file_version( 'dist/order.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_ORDER_ACTIONS', 'dist/order', [ 'jquery-tiptip' ] );
+
 		wp_register_style(
 			'WCPAY_ADMIN_ORDER_ACTIONS',
 			plugins_url( 'dist/order.css', WCPAY_PLUGIN_FILE ),
@@ -589,16 +566,7 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/order.css' )
 		);
 
-		$settings_script_src_url    = plugins_url( 'dist/settings.js', WCPAY_PLUGIN_FILE );
-		$settings_script_asset_path = WCPAY_ABSPATH . 'dist/settings.asset.php';
-		$settings_script_asset      = file_exists( $settings_script_asset_path ) ? require $settings_script_asset_path : [ 'dependencies' => [] ];
-		wp_register_script(
-			'WCPAY_ADMIN_SETTINGS',
-			$settings_script_src_url,
-			$settings_script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/settings.js' ),
-			true
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_SETTINGS', 'dist/settings' );
 
 		wp_localize_script(
 			'WCPAY_ADMIN_SETTINGS',
@@ -626,17 +594,8 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/settings.css' )
 		);
 
-		$payment_gateways_script_src_url    = plugins_url( 'dist/payment-gateways.js', WCPAY_PLUGIN_FILE );
-		$payment_gateways_script_asset_path = WCPAY_ABSPATH . 'dist/payment-gateways.asset.php';
-		$payment_gateways_script_asset      = file_exists( $payment_gateways_script_asset_path ) ? require $payment_gateways_script_asset_path : [ 'dependencies' => [] ];
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_GATEWAYS_PAGE', 'dist/payment-gateways' );
 
-		wp_register_script(
-			'WCPAY_PAYMENT_GATEWAYS_PAGE',
-			$payment_gateways_script_src_url,
-			$payment_gateways_script_asset['dependencies'],
-			WC_Payments::get_file_version( 'dist/payment-gateways.js' ),
-			true
-		);
 		wp_register_style(
 			'WCPAY_PAYMENT_GATEWAYS_PAGE',
 			plugins_url( 'dist/payment-gateways.css', WCPAY_PLUGIN_FILE ),

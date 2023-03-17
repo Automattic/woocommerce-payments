@@ -200,3 +200,12 @@ export const getPlatformCheckoutLocations = ( state ) => {
 		getSettings( state ).platform_checkout_enabled_locations || EMPTY_ARR
 	);
 };
+
+// TODO: Finish implementation once server API endpoints are deployed.
+export const getCurrentProtectionLevel = ( state ) => {
+	return getSettings( state ).current_protection_level || 'standard';
+};
+
+export const getAdvancedFraudProtectionSettings = ( state ) => {
+	return getSettings( state ).advanced_fraud_protection_settings || EMPTY_OBJ;
+};
