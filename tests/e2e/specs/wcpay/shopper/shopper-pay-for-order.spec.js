@@ -1,8 +1,4 @@
-const {
-	createSimpleProduct,
-	uiUnblocked,
-	shopper,
-} = require( '@woocommerce/e2e-utils' );
+const { uiUnblocked, shopper } = require( '@woocommerce/e2e-utils' );
 const {
 	setupProductCheckout,
 	fillCardDetails,
@@ -14,7 +10,6 @@ const { shopperWCP } = require( '../../../utils' );
 describe( 'Shopper > Pay for Order', () => {
 	beforeAll( async () => {
 		await shopper.login();
-		await createSimpleProduct();
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);

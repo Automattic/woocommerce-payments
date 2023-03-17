@@ -2,27 +2,22 @@
  * External dependencies
  */
 import config from 'config';
-
-const {
-	createSimpleProduct,
-	uiUnblocked,
-} = require( '@woocommerce/e2e-utils' );
-
 /**
  * Internal dependencies
  */
 import { shopperWCP } from '../../../utils';
 
 import {
-	fillCardDetails,
 	clearCardDetails,
-	setupProductCheckout,
 	confirmCardAuthentication,
+	fillCardDetails,
+	setupProductCheckout,
 } from '../../../utils/payments';
+
+const { uiUnblocked } = require( '@woocommerce/e2e-utils' );
 
 describe( 'Shopper > Checkout > Failures with various cards', () => {
 	beforeAll( async () => {
-		await createSimpleProduct();
 		await setupProductCheckout(
 			config.get( 'addresses.customer.billing' )
 		);
