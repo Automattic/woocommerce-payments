@@ -24,7 +24,22 @@ const ConnectionSuccessNotice: React.FC = () => {
 				<>
 					<h2>
 						{ __(
-							'Your store is ready to start selling!',
+							"Congratulations, you're ready to accept payments. Happy selling!",
+							'woocommerce-payments'
+						) }
+					</h2>
+					<p>
+						{ __(
+							'Take a moment to celebrate and look out for the first sale.',
+							'woocommerce-payments'
+						) }
+					</p>
+				</>
+			) : (
+				<>
+					<h2>
+						{ __(
+							'Your store fully verified now!',
 							'woocommerce-payments'
 						) }
 					</h2>
@@ -35,13 +50,6 @@ const ConnectionSuccessNotice: React.FC = () => {
 						) }
 					</p>
 				</>
-			) : (
-				<h2>
-					{ __(
-						'Your store has been fully verified!',
-						'woocommerce-payments'
-					) }
-				</h2>
 			) }
 		</Card>
 	);
