@@ -50,7 +50,7 @@ jobs:
     name: "WP - nightly | WC - latest | upe - shopper"
     runs-on: ubuntu-22.04
     needs: wp-nightly-tests-first-batch
-    if: always()
+    if: success() || failure()
     env:
       E2E_GROUP: 'upe'
       E2E_BRANCH: 'shopper'
@@ -67,7 +67,7 @@ jobs:
     name: "WP - nightly | WC - latest | upeSplit - shopper"
     runs-on: ubuntu-22.04
     needs: wp-nightly-tests-upe
-    if: always()
+    if: success() || failure()
     env:
       E2E_GROUP: 'upeSplit'
       E2E_BRANCH: 'shopper'
