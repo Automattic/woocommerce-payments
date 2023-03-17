@@ -14,12 +14,35 @@ import './style.scss';
 const rootElement =
 	document.getElementById( 'wpbody-content' ) || document.body;
 
-const isEventTriggeredWithin = ( event, element ) =>
-	element && ( element === event.target || element.contains( event.target ) );
+const isEventTriggeredWithin = (
+	event: MouseEvent,
+	element?: ChildNode | null
+) => {
+	if ( ! element ) {
+		return false;
+	}
+	if ( element === event.target ) {
+		return true;
+	}
+	if ( event.target instanceof Node && element.contains( event.target ) ) {
+		return true;
+	}
+};
 
+type UseHideDelayProps = {
+	hideDelayMs?: number;
+	triggerRef: React.RefObject< HTMLElement >;
+	tooltipRef: React.RefObject< HTMLElement >;
+	onHide?: () => void;
+};
 const useHideDelay = (
-	isVisibleProp,
-	{ hideDelayMs = 600, triggerRef, tooltipRef, onHide = noop }
+	isVisibleProp: boolean,
+	{
+		hideDelayMs = 600,
+		triggerRef,
+		tooltipRef,
+		onHide = noop,
+	}: UseHideDelayProps
 ) => {
 	const [ isVisible, setIsVisible ] = useState( isVisibleProp );
 	// not using state for this, we don't need to cause a re-render
@@ -32,7 +55,7 @@ const useHideDelay = (
 
 	// hide delay
 	useEffect( () => {
-		let timer = null;
+		let timer: ReturnType< typeof setTimeout > | null = null;
 
 		if ( ! hasMountedRef.current ) {
 			hasMountedRef.current = true;
@@ -57,7 +80,9 @@ const useHideDelay = (
 		}, hideDelayMs );
 
 		return () => {
-			clearTimeout( timer );
+			if ( timer ) {
+				clearTimeout( timer );
+			}
 		};
 	}, [ setIsVisible, hideDelayMs, isVisibleProp, isVisible ] );
 
@@ -72,7 +97,7 @@ const useHideDelay = (
 		};
 
 		// do not hide the tooltip if a click event has occurred and the click happened within the tooltip or within the wrapped element
-		const handleDocumentClick = ( event ) => {
+		const handleDocumentClick = ( event: MouseEvent ) => {
 			if (
 				isEventTriggeredWithin(
 					event,
@@ -103,7 +128,7 @@ const useHideDelay = (
 };
 
 const TooltipPortal = memo( ( { children } ) => {
-	const node = useRef( null );
+	const node = useRef< HTMLElement | null >( null );
 	if ( ! node.current ) {
 		node.current = document.createElement( 'div' );
 		rootElement.appendChild( node.current );
@@ -112,28 +137,40 @@ const TooltipPortal = memo( ( { children } ) => {
 	// on component unmount, clear any reference to the created node
 	useEffect( () => {
 		return () => {
-			rootElement.removeChild( node.current );
-			node.current = null;
+			if ( node.current ) {
+				rootElement.removeChild( node.current );
+				node.current = null;
+			}
 		};
 	}, [] );
 
 	return createPortal( children, node.current );
 } );
 
-const TooltipBase = ( {
+export type TooltipBaseProps = {
+	className?: string;
+	children?: React.ReactNode;
+	content: React.ReactNode;
+	hideDelayMs?: number;
+	isVisible?: boolean;
+	onHide?: () => void;
+	maxWidth?: string;
+};
+
+const TooltipBase: React.FC< TooltipBaseProps > = ( {
 	className,
 	children,
 	content,
-	hideDelayMs,
+	hideDelayMs = 600,
 	isVisible,
 	onHide,
 	maxWidth = '250px',
 } ) => {
-	const wrapperRef = useRef( null );
-	const tooltipWrapperRef = useRef( null );
+	const wrapperRef = useRef< HTMLDivElement >( null );
+	const tooltipWrapperRef = useRef< HTMLDivElement >( null );
 
 	// using a delayed hide, to allow the fade-out animation to complete
-	const isTooltipVisible = useHideDelay( isVisible, {
+	const isTooltipVisible = useHideDelay( !! isVisible, {
 		hideDelayMs,
 		triggerRef: wrapperRef,
 		tooltipRef: tooltipWrapperRef,
@@ -150,6 +187,10 @@ const TooltipBase = ( {
 			const tooltipElement = tooltipWrapperRef.current;
 			const wrappedElement = wrapperRef.current?.firstChild;
 			if ( ! tooltipElement || ! wrappedElement ) {
+				return;
+			}
+
+			if ( ! ( wrappedElement instanceof HTMLElement ) ) {
 				return;
 			}
 
@@ -171,7 +212,7 @@ const TooltipBase = ( {
 
 			// make it visible only after all the calculations are done.
 			tooltipElement.style.visibility = 'visible';
-			tooltipElement.style.opacity = 1;
+			tooltipElement.style.opacity = '1';
 		};
 
 		calculateTooltipPosition();
