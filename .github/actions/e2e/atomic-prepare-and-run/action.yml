@@ -4,9 +4,6 @@ description: 'Runs E2E tests with retry & upload logs and screenshots'
 runs:
   using: "composite"
   steps:
-    - name: "Checkout repository"
-      uses: actions/checkout@v3
-
     - name: "Set up repository"
       uses: ./.github/actions/setup-repo
 
