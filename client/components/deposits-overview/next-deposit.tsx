@@ -31,8 +31,6 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 				<span className="wcpay-deposits-overview__heading__title">
 					<Loadable
 						isLoading={ isLoading }
-						display="inline"
-						placeholder={ strings.next_deposits.title }
 						value={ strings.next_deposits.title }
 					/>
 				</span>
@@ -40,8 +38,6 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 				<span className="wcpay-deposits-overview__heading__description">
 					<Loadable
 						isLoading={ isLoading }
-						display="inline"
-						placeholder={ strings.next_deposits.description }
 						value={ strings.next_deposits.description }
 					/>
 				</span>
