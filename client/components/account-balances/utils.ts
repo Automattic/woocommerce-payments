@@ -6,7 +6,7 @@ import { sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { greetingStrings } from './strings';
+import { greetingStrings, currencyBalanceString } from './strings';
 
 export type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 
@@ -48,4 +48,18 @@ export const getGreeting = (
 	}
 	greeting += ' 👋';
 	return greeting;
+};
+
+/**
+ * Generates a currency tab title.
+ *
+ * @param {string} currencyCode The currency code.
+ * @return {string} The currency tab title. Example: "USD balance"
+ */
+export const getCurrencyTabTitle = ( currencyCode: string ): string => {
+	return sprintf(
+		// string format: {currency} balance
+		currencyBalanceString,
+		currencyCode.toUpperCase()
+	);
 };
