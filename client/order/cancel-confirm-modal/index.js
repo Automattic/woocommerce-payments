@@ -31,6 +31,39 @@ const CancelConfirmationModal = ( { originalOrderStatus } ) => {
 		closeModal();
 	};
 
+	const buttonContent = (
+		<>
+			<Button isSecondary onClick={ doNotCancel }>
+				{ __( 'Do Nothing', 'woocommerce-payments' ) }
+			</Button>
+			<Button isPrimary onClick={ cancelOrder }>
+				{ __( 'Cancel order', 'woocommerce-payments' ) }
+			</Button>
+		</>
+	);
+
+	const confirmationMessage = interpolateComponents( {
+		mixedString: __(
+			'Are you trying to issue a refund for this order? If so, please click ' +
+				'{{doNothingBold/}} and see our documentation on {{howtoIssueRefunds/}}. If you want ' +
+				'to mark this order as Cancelled without issuing a refund, click {{cancelOrderBold/}}.',
+			'woocommerce-payments'
+		),
+		components: {
+			doNothingBold: <b>Do Nothing</b>,
+			cancelOrderBold: <b>Cancel Order</b>,
+			howtoIssueRefunds: (
+				<a
+					target="_blank"
+					href="https://woocommerce.com/document/woocommerce-payments/managing-money/#refunds"
+					rel="noopener noreferrer"
+				>
+					{ __( 'how to issue refunds', 'woocommerce-payments' ) }
+				</a>
+			),
+		},
+	} );
+
 	return (
 		<>
 			{ isCancelConfirmationModalOpen && (
@@ -38,43 +71,9 @@ const CancelConfirmationModal = ( { originalOrderStatus } ) => {
 					title={ __( 'Cancel order', 'woocommerce-payments' ) }
 					isDismissible={ false }
 					className="cancel-confirmation-modal"
-					actions={
-						<>
-							<Button isSecondary onClick={ doNotCancel }>
-								{ __( 'Do Nothing', 'woocommerce-payments' ) }
-							</Button>
-							<Button isPrimary onClick={ cancelOrder }>
-								{ __( 'Cancel order', 'woocommerce-payments' ) }
-							</Button>
-						</>
-					}
+					actions={ buttonContent }
 				>
-					<p>
-						{ interpolateComponents( {
-							mixedString: __(
-								'Are you trying to issue a refund for this order? If so, please click ' +
-									'{{doNothingBold/}} and see our documentation on {{howtoIssueRefunds/}}. If you want ' +
-									'to mark this order as Cancelled without issuing a refund, click {{cancelOrderBold/}}.',
-								'woocommerce-payments'
-							),
-							components: {
-								doNothingBold: <b>Do Nothing</b>,
-								cancelOrderBold: <b>Cancel Order</b>,
-								howtoIssueRefunds: (
-									<a
-										target="_blank"
-										href="https://woocommerce.com/document/woocommerce-payments/managing-money/#refunds"
-										rel="noopener noreferrer"
-									>
-										{ __(
-											'how to issue refunds',
-											'woocommerce-payments'
-										) }
-									</a>
-								),
-							},
-						} ) }
-					</p>
+					<p>{ confirmationMessage }</p>
 				</ConfirmationModal>
 			) }
 		</>
