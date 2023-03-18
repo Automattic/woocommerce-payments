@@ -65,11 +65,23 @@ export const getTransactionsSummaryError = ( state, query ) => {
 };
 
 export const getBlockedTransactions = ( state ) => {
-	return getTransactionsState( state ).fraudProtection.blocked.data || [];
+	return getTransactionsState( state ).fraudProtection.block.data || [];
 };
 
 export const getBlockedTransactionsError = ( state ) => {
-	return getTransactionsState( state ).fraudProtection.blocked.error || null;
+	return getTransactionsState( state ).fraudProtection.block.error || null;
+};
+
+export const getBlockedTransactionsSummary = ( state ) => {
+	return (
+		getTransactionsState( state ).fraudProtection.block.summary.data || {}
+	);
+};
+
+export const getBlockedTransactionsSummaryError = ( state ) => {
+	return (
+		getTransactionsState( state ).fraudProtection.block.summary.error || {}
+	);
 };
 
 export const getOnReviewTransactions = ( state ) => {
@@ -78,4 +90,16 @@ export const getOnReviewTransactions = ( state ) => {
 
 export const getOnReviewTransactionsError = ( state ) => {
 	return getTransactionsState( state ).fraudProtection.review.error || null;
+};
+
+export const getOnReviewTransactionsSummary = ( state ) => {
+	return (
+		getTransactionsState( state ).fraudProtection.review.summary.data || {}
+	);
+};
+
+export const getOnReviewTransactionsSummaryError = ( state ) => {
+	return (
+		getTransactionsState( state ).fraudProtection.review.summary.error || {}
+	);
 };

@@ -11,11 +11,15 @@ const defaultState = {
 	fraudProtection: {
 		review: {
 			data: [],
-			summary: {},
+			summary: {
+				data: {},
+			},
 		},
-		blocked: {
+		block: {
 			data: [],
-			summary: {},
+			summary: {
+				data: {},
+			},
 		},
 	},
 };
@@ -66,8 +70,8 @@ const receiveTransactions = (
 				...state,
 				fraudProtection: {
 					...state.fraudProtection,
-					blocked: {
-						...state.fraudProtection.blocked,
+					block: {
+						...state.fraudProtection.block,
 						data,
 					},
 				},
@@ -77,8 +81,8 @@ const receiveTransactions = (
 				...state,
 				fraudProtection: {
 					...state.fraudProtection,
-					blocked: {
-						...state.fraudProtection.blocked,
+					block: {
+						...state.fraudProtection.block,
 						error,
 					},
 				},
@@ -102,6 +106,62 @@ const receiveTransactions = (
 					review: {
 						...state.fraudProtection.review,
 						error,
+					},
+				},
+			};
+		case TYPES.SET_BLOCKED_TRANSACTIONS_SUMMARY:
+			return {
+				...state,
+				fraudProtection: {
+					...state.fraudProtection,
+					block: {
+						...state.fraudProtection.block,
+						summary: {
+							...state.fraudProtection.block.summary,
+							data,
+						},
+					},
+				},
+			};
+		case TYPES.SET_ERROR_FOR_BLOCKED_TRANSACTIONS_SUMMARY:
+			return {
+				...state,
+				fraudProtection: {
+					...state.fraudProtection,
+					block: {
+						...state.fraudProtection.block,
+						summary: {
+							...state.fraudProtection.block.summary,
+							error,
+						},
+					},
+				},
+			};
+		case TYPES.SET_ON_REVIEW_TRANSACTIONS_SUMMARY:
+			return {
+				...state,
+				fraudProtection: {
+					...state.fraudProtection,
+					review: {
+						...state.fraudProtection.review,
+						summary: {
+							...state.fraudProtection.review.summary,
+							data,
+						},
+					},
+				},
+			};
+		case TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS_SUMMARY:
+			return {
+				...state,
+				fraudProtection: {
+					...state.fraudProtection,
+					review: {
+						...state.fraudProtection.review,
+						summary: {
+							...state.fraudProtection.review.summary,
+							error,
+						},
 					},
 				},
 			};

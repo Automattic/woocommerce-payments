@@ -21,6 +21,10 @@ import {
 	updateErrorForBlockedTransactions,
 	updateOnReviewTransactions,
 	updateErrorForOnReviewTransactions,
+	updateOnReviewTransactionsSummary,
+	updateErrorForOnReviewTransactionsSummary,
+	updateBlockedTransactionsSummary,
+	updateErrorForBlockedTransactionsSummary,
 } from './actions';
 import { formatDateValue } from 'utils';
 
@@ -109,7 +113,7 @@ export function* getTransactionsSummary( query ) {
  * @param { string } query Data on which to parameterize the selection.
  */
 export function* getBlockedTransactions( query ) {
-	const path = addQueryArgs( `${ NAMESPACE }/transactions/blocked`, {
+	const path = addQueryArgs( `${ NAMESPACE }/transactions/block`, {
 		page: query.paged,
 		pagesize: query.perPage,
 		sort: query.orderby,
@@ -119,7 +123,7 @@ export function* getBlockedTransactions( query ) {
 
 	try {
 		const results = yield apiFetch( { path } );
-		yield updateBlockedTransactions( results || [] );
+		yield updateBlockedTransactions( results.data || [] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
@@ -130,6 +134,36 @@ export function* getBlockedTransactions( query ) {
 			)
 		);
 		yield updateErrorForBlockedTransactions( e );
+	}
+}
+
+/**
+ * Retrieves the on review transactions.
+ *
+ * @param { string } query Data on which to parameterize the selection.
+ */
+export function* getBlockedTransactionsSummary( query ) {
+	const path = addQueryArgs( `${ NAMESPACE }/transactions/block/summary`, {
+		page: query.paged,
+		pagesize: query.perPage,
+		sort: query.orderby,
+		direction: query.order,
+		...formatQueryFilters( query ),
+	} );
+
+	try {
+		const results = yield apiFetch( { path } );
+		yield updateBlockedTransactionsSummary( results || [] );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving on review transactions.',
+				'woocommerce-payments'
+			)
+		);
+		yield updateErrorForBlockedTransactionsSummary( e );
 	}
 }
 
@@ -149,7 +183,7 @@ export function* getOnReviewTransactions( query ) {
 
 	try {
 		const results = yield apiFetch( { path } );
-		yield updateOnReviewTransactions( results || [] );
+		yield updateOnReviewTransactions( results.data || [] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
@@ -160,5 +194,35 @@ export function* getOnReviewTransactions( query ) {
 			)
 		);
 		yield updateErrorForOnReviewTransactions( e );
+	}
+}
+
+/**
+ * Retrieves the on review transactions.
+ *
+ * @param { string } query Data on which to parameterize the selection.
+ */
+export function* getOnReviewTransactionsSummary( query ) {
+	const path = addQueryArgs( `${ NAMESPACE }/transactions/review/summary`, {
+		page: query.paged,
+		pagesize: query.perPage,
+		sort: query.orderby,
+		direction: query.order,
+		...formatQueryFilters( query ),
+	} );
+
+	try {
+		const results = yield apiFetch( { path } );
+		yield updateOnReviewTransactionsSummary( results || [] );
+	} catch ( e ) {
+		yield dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving on review transactions.',
+				'woocommerce-payments'
+			)
+		);
+		yield updateErrorForOnReviewTransactionsSummary( e );
 	}
 }

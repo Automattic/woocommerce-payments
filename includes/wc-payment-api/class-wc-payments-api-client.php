@@ -715,9 +715,13 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieves transaction list for a given fraud outcome status.
 	 *
+	 * @param string $status Fraud outcome status.
+	 *
+	 * @return array
 	 */
-	public function list_blocked_transactions( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [] ) {
+	public function list_fraud_outcome_transactions( $status, $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [] ) {
 		$query = array_merge(
 			$filters,
 			[
@@ -728,46 +732,48 @@ class WC_Payments_API_Client {
 			]
 		);
 
-		$fraud_outcomes = $this->request( $query, 'fraud_outcomes/block', self::GET );
+		$fraud_outcomes = $this->request( $query, 'fraud_outcomes/' . $status, self::GET );
+		$response       = [];
 
 		foreach ( $fraud_outcomes as &$outcome ) {
 			$outcome = $this->build_fraud_outcome_transactions_order_info( $outcome );
+
+			if ( 'review' === $status && 'requires_capture' !== $outcome['payment_intent']['status'] ) {
+				continue;
+			}
+
+			$response[] = $outcome;
 			unset( $outcome );
 		}
 
-		return $fraud_outcomes;
+		return [
+			'data' => $response,
+		];
 	}
 
 	/**
+	 * Retrieves transactions summary for a given fraud outcome status.
 	 *
+	 * @param string $status Fraud outcome status.
+	 *
+	 * @return array
 	 */
-	public function list_on_review_transactions( $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [] ) {
-		$query = array_merge(
-			$filters,
-			[
-				'page'      => $page,
-				'pagesize'  => $page_size,
-				'sort'      => $sort,
-				'direction' => $direction,
-			]
-		);
+	public function list_fraud_outcome_transactions_summary( $status ) {
+		$fraud_outcomes = $this->list_fraud_outcome_transactions( $status );
 
-		$fraud_outcomes = $this->request( $query, 'fraud_outcomes/review', self::GET );
+		$total      = 0;
+		$currencies = [];
 
-		foreach ( $fraud_outcomes as &$outcome ) {
-			$outcome = $this->build_fraud_outcome_transactions_order_info( $outcome );
-			unset( $outcome );
+		foreach ( $fraud_outcomes['data'] as $outcome ) {
+			$total       += $outcome['amount'];
+			$currencies[] = strtolower( $outcome['currency'] );
 		}
 
-		// Removes the entries that don't have the status "requires_capture".
-		$fraud_outcomes = array_filter(
-			$fraud_outcomes,
-			function ( $outcome ) {
-				return 'requires_capture' === $outcome['payment_intent']['status'];
-			}
-		);
-
-		return $fraud_outcomes;
+		return [
+			'count'      => count( $fraud_outcomes['data'] ),
+			'total'      => (int) $total,
+			'currencies' => array_unique( $currencies ),
+		];
 	}
 
 	/**
@@ -788,6 +794,7 @@ class WC_Payments_API_Client {
 		$outcome['payment_intent']['status'] = $order->get_meta( '_intention_status' );
 
 		$outcome['amount']        = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
+		$outcome['currency']      = $order->get_currency();
 		$outcome['customer_name'] = wc_clean( $order->get_billing_first_name() ) . ' ' . wc_clean( $order->get_billing_last_name() );
 
 		return $outcome;

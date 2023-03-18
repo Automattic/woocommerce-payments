@@ -36,10 +36,19 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/blocked',
+			'/' . $this->rest_base . '/block',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_blocked_transactions' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/block/summary',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_blocked_transactions_summary' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -49,6 +58,15 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_on_review_transactions' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/review/summary',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_on_review_transactions_summary' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -106,14 +124,28 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * Retrieve blocked transactions to respond with via API.
 	 */
 	public function get_blocked_transactions() {
-		return $this->forward_request( 'list_blocked_transactions', [] );
+		return $this->forward_request( 'list_fraud_outcome_transactions', [ 'block' ] );
 	}
 
 	/**
 	 * Retrieve on review transactions to respond with via API.
 	 */
 	public function get_on_review_transactions() {
-		return $this->forward_request( 'list_on_review_transactions', [] );
+		return $this->forward_request( 'list_fraud_outcome_transactions', [ 'review' ] );
+	}
+
+	/**
+	 * Retrieve blocked transactions summary to respond with via API.
+	 */
+	public function get_blocked_transactions_summary() {
+		return $this->forward_request( 'list_fraud_outcome_transactions_summary', [ 'block' ] );
+	}
+
+	/**
+	 * Retrieve on review transactions summary to respond with via API.
+	 */
+	public function get_on_review_transactions_summary() {
+		return $this->forward_request( 'list_fraud_outcome_transactions_summary', [ 'review' ] );
 	}
 
 	/**

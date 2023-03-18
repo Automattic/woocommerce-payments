@@ -11,21 +11,32 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { useBlockedTransactions } from 'data/index';
+import {
+	useBlockedTransactions,
+	useBlockedTransactionsSummary,
+} from 'data/index';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 import {
 	getBlockedListColumns,
 	getBlockedListColumnsStructure,
 } from './columns';
+import { formatExplicitCurrency } from '../../utils/currency';
 
 export const BlockedList = (): JSX.Element => {
+	const query = getQuery();
+
 	const columnsToDisplay = getBlockedListColumns();
 	const {
 		isLoading,
 		transactions,
 		transactionsError,
-	} = useBlockedTransactions( getQuery() );
+	} = useBlockedTransactions( query );
+
+	const {
+		transactionsSummary,
+		isLoading: isSummaryLoading,
+	} = useBlockedTransactionsSummary( query );
 
 	const rows = transactions.map( ( transaction ) =>
 		getBlockedListColumnsStructure( transaction, columnsToDisplay )
@@ -33,38 +44,31 @@ export const BlockedList = (): JSX.Element => {
 
 	let summary;
 
-	// const isAuthorizationsSummaryLoaded =
-	// 	authorizationsSummary.count !== undefined &&
-	// 	authorizationsSummary.total !== undefined &&
-	// 	false === isSummaryLoading;
-	// const totalRows = authorizationsSummary.count || 0;
+	const isAuthorizationsSummaryLoaded =
+		transactionsSummary.count !== undefined &&
+		transactionsSummary.total !== undefined &&
+		false === isSummaryLoading;
+	const totalRows = transactionsSummary.count || 0;
 
-	// if ( isAuthorizationsSummaryLoaded ) {
-	// 	summary = [
-	// 		{
-	// 			label: __( 'transactions(s)', 'woocommerce-payments' ),
-	// 			value: String( authorizationsSummary.count ),
-	// 		},
-	// 	];
+	if ( isAuthorizationsSummaryLoaded ) {
+		summary = [
+			{
+				label: __( 'transactions(s)', 'woocommerce-payments' ),
+				value: String( totalRows ),
+			},
+		];
 
-	// 	if (
-	// 		authorizationsSummary.count &&
-	// 		authorizationsSummary.count > 0 &&
-	// 		authorizationsSummary.all_currencies &&
-	// 		authorizationsSummary.all_currencies.length === 1
-	// 	) {
-	// 		// Only show the total if there is one currency available
-	// 		summary.push( {
-	// 			label: __( 'blocked', 'woocommerce-payments' ),
-	// 			value: `${ formatExplicitCurrency(
-	// 				// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
-	// 				// that so we remove the `undefined` in the type manually.
-	// 				authorizationsSummary.total as number,
-	// 				authorizationsSummary.currency
-	// 			) }`,
-	// 		} );
-	// 	}
-	// }
+		if ( totalRows > 0 && transactionsSummary.currencies?.length === 1 ) {
+			// Only show the total if there is one currency available
+			summary.push( {
+				label: __( 'blocked', 'woocommerce-payments' ),
+				value: `${ formatExplicitCurrency(
+					transactionsSummary.total,
+					transactionsSummary.currency
+				) }`,
+			} );
+		}
+	}
 
 	useEffect( () => {
 		wcpayTracks.recordEvent( 'page_view', {
@@ -79,7 +83,7 @@ export const BlockedList = (): JSX.Element => {
 				title={ __( 'Blocked transactions', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
-				totalRows={ 10 }
+				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }

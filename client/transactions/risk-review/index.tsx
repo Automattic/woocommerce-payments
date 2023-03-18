@@ -11,7 +11,10 @@ import { onQueryChange, getQuery } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { useOnReviewTransactions } from 'data/index';
+import {
+	useOnReviewTransactions,
+	useOnReviewTransactionsSummary,
+} from 'data/index';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
 import {
@@ -19,6 +22,7 @@ import {
 	getRiskReviewListColumnsStructure,
 } from './columns';
 import './style.scss';
+import { formatExplicitCurrency } from '../../utils/currency';
 
 export const RiskReviewList = (): JSX.Element => {
 	const query = getQuery();
@@ -30,6 +34,11 @@ export const RiskReviewList = (): JSX.Element => {
 		isLoading,
 	} = useOnReviewTransactions( query );
 
+	const {
+		transactionsSummary,
+		isLoading: isSummaryLoading,
+	} = useOnReviewTransactionsSummary( query );
+
 	// const { authorizations, isLoading } = useAuthorizations( query );
 
 	const rows = transactions.map( ( transaction ) =>
@@ -38,38 +47,31 @@ export const RiskReviewList = (): JSX.Element => {
 
 	let summary;
 
-	// const isAuthorizationsSummaryLoaded =
-	// 	authorizationsSummary.count !== undefined &&
-	// 	authorizationsSummary.total !== undefined &&
-	// 	false === isSummaryLoading;
-	// const totalRows = authorizationsSummary.count || 0;
+	const isAuthorizationsSummaryLoaded =
+		transactionsSummary.count !== undefined &&
+		transactionsSummary.total !== undefined &&
+		false === isSummaryLoading;
+	const totalRows = transactionsSummary.count || 0;
 
-	// if ( isAuthorizationsSummaryLoaded ) {
-	// 	summary = [
-	// 		{
-	// 			label: __( 'transactions(s)', 'woocommerce-payments' ),
-	// 			value: String( authorizationsSummary.count ),
-	// 		},
-	// 	];
+	if ( isAuthorizationsSummaryLoaded ) {
+		summary = [
+			{
+				label: __( 'transactions(s)', 'woocommerce-payments' ),
+				value: String( totalRows ),
+			},
+		];
 
-	// 	if (
-	// 		authorizationsSummary.count &&
-	// 		authorizationsSummary.count > 0 &&
-	// 		authorizationsSummary.all_currencies &&
-	// 		authorizationsSummary.all_currencies.length === 1
-	// 	) {
-	// 		// Only show the total if there is one currency available
-	// 		summary.push( {
-	// 			label: __( 'pending', 'woocommerce-payments' ),
-	// 			value: `${ formatExplicitCurrency(
-	// 				// We've already checked that `.total` is not undefined, but TypeScript doesn't detect
-	// 				// that so we remove the `undefined` in the type manually.
-	// 				authorizationsSummary.total as number,
-	// 				authorizationsSummary.currency
-	// 			) }`,
-	// 		} );
-	// 	}
-	// }
+		if ( totalRows > 0 && transactionsSummary.currencies?.length === 1 ) {
+			// Only show the total if there is one currency available
+			summary.push( {
+				label: __( 'pending', 'woocommerce-payments' ),
+				value: `${ formatExplicitCurrency(
+					transactionsSummary.total,
+					transactionsSummary.currencies[ 0 ]
+				) }`,
+			} );
+		}
+	}
 
 	useEffect( () => {
 		wcpayTracks.recordEvent( 'page_view', {
@@ -84,7 +86,7 @@ export const RiskReviewList = (): JSX.Element => {
 				title={ __( 'Flagged transactions', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
-				totalRows={ 10 }
+				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }

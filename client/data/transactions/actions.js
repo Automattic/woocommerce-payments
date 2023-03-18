@@ -54,6 +54,21 @@ export function updateErrorForBlockedTransactions( error ) {
 	};
 }
 
+export function updateBlockedTransactionsSummary( data ) {
+	return {
+		type: TYPES.SET_BLOCKED_TRANSACTIONS_SUMMARY,
+		data,
+	};
+}
+
+export function updateErrorForBlockedTransactionsSummary( error ) {
+	return {
+		type: TYPES.SET_ERROR_FOR_BLOCKED_TRANSACTIONS_SUMMARY,
+		data: null,
+		error,
+	};
+}
+
 export function updateOnReviewTransactions( data ) {
 	return {
 		type: TYPES.SET_ON_REVIEW_TRANSACTIONS,
@@ -64,6 +79,21 @@ export function updateOnReviewTransactions( data ) {
 export function updateErrorForOnReviewTransactions( error ) {
 	return {
 		type: TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS,
+		data: null,
+		error,
+	};
+}
+
+export function updateOnReviewTransactionsSummary( data ) {
+	return {
+		type: TYPES.SET_ON_REVIEW_TRANSACTIONS_SUMMARY,
+		data,
+	};
+}
+
+export function updateErrorForOnReviewTransactionsSummary( error ) {
+	return {
+		type: TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS_SUMMARY,
 		data: null,
 		error,
 	};

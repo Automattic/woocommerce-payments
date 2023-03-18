@@ -27,6 +27,7 @@ import {
 	useManualCapture,
 	useSettings,
 	useAuthorizationsSummary,
+	useOnReviewTransactionsSummary,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import RiskReviewList from './risk-review';
@@ -103,6 +104,10 @@ export const TransactionsPage = (): JSX.Element => {
 	const { isLoading: isLoadingSettings } = useSettings();
 	const { authorizationsSummary } = useAuthorizationsSummary( {} );
 
+	const {
+		transactionsSummary: riskReviewSummary,
+	} = useOnReviewTransactionsSummary( getQuery() );
+
 	// The Uncaptured authorizations screen will be shown only if:
 	// 1. The feature is turned on for all accounts
 	// 2. Manual capture settings are turned on for this store
@@ -132,7 +137,7 @@ export const TransactionsPage = (): JSX.Element => {
 			title: sprintf(
 				/* translators: %1: number of transactions hold for review */
 				__( 'Risk Review (%1$s)', 'woocommerce-payments' ),
-				authorizationsSummary.count ?? '...'
+				riskReviewSummary.count ?? '...'
 			),
 			className: 'review-list',
 		},
