@@ -50,10 +50,7 @@ describe( 'Link with enabled split UPE', () => {
 
 		console.log( 'about to place an order' );
 		await shopper.placeOrder();
-
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		console.log( 'waiting for the order received notification' );
 		await expect( page ).toMatch( 'Order received' );
 		await shopperWCP.logout();
 	} );
