@@ -186,8 +186,9 @@ class UPE_Split_Payment_Gateway extends UPE_Payment_Gateway {
 			$save_payment_method       = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false;
 			$selected_upe_payment_type = $this->stripe_id;
 			$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
+			$statement_descriptor      = isset( $_POST['statement_descriptor'] ) ? wc_clean( wp_unslash( $_POST['statement_descriptor'] ) ) : null;
 
-			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country, $fingerprint ), 200 );
+			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country, $fingerprint, $statement_descriptor ), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(

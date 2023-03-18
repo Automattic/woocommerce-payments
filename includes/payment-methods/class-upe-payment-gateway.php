@@ -178,8 +178,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			$save_payment_method       = isset( $_POST['save_payment_method'] ) ? 'yes' === wc_clean( wp_unslash( $_POST['save_payment_method'] ) ) : false;
 			$selected_upe_payment_type = ! empty( $_POST['wcpay_selected_upe_payment_type'] ) ? wc_clean( wp_unslash( $_POST['wcpay_selected_upe_payment_type'] ) ) : '';
 			$payment_country           = ! empty( $_POST['wcpay_payment_country'] ) ? wc_clean( wp_unslash( $_POST['wcpay_payment_country'] ) ) : null;
+			$statement_descriptor      = isset( $_POST['statement_descriptor'] ) ? wc_clean( wp_unslash( $_POST['statement_descriptor'] ) ) : null;
 
-			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country, $fingerprint ), 200 );
+			wp_send_json_success( $this->update_payment_intent( $payment_intent_id, $order_id, $save_payment_method, $selected_upe_payment_type, $payment_country, $fingerprint, $statement_descriptor ), 200 );
 		} catch ( Exception $e ) {
 			// Send back error so it can be displayed to the customer.
 			wp_send_json_error(
@@ -202,10 +203,11 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 	 * @param string  $selected_upe_payment_type The name of the selected UPE payment type or empty string.
 	 * @param ?string $payment_country           The payment two-letter iso country code or null.
 	 * @param ?string $fingerprint               Fingerprint data.
+	 * @param ?string $statement_descriptor      Statement descriptor.
 	 *
 	 * @return array|null An array with result of the update, or nothing
 	 */
-	public function update_payment_intent( $payment_intent_id = '', $order_id = null, $save_payment_method = false, $selected_upe_payment_type = '', $payment_country = null, $fingerprint = '' ) {
+	public function update_payment_intent( $payment_intent_id = '', $order_id = null, $save_payment_method = false, $selected_upe_payment_type = '', $payment_country = null, $fingerprint = '', $statement_descriptor = null ) {
 		$order = wc_get_order( $order_id );
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
@@ -244,6 +246,9 @@ class UPE_Payment_Gateway extends WC_Payment_Gateway_WCPay {
 			}
 			if ( $customer_id ) {
 				$request->set_customer( $customer_id );
+			}
+			if ( $statement_descriptor ) {
+				$request->set_statement_descriptor( $statement_descriptor );
 			}
 
 			$request->send( 'wcpay_update_intention_request', $order, $payment_intent_id );

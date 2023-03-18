@@ -458,7 +458,9 @@ jQuery( function ( $ ) {
 				orderId,
 				savePaymentMethod,
 				paymentMethodType,
-				upeComponents.country
+				upeComponents.country,
+				null,
+				api.maybeUseAccountDescriptor( paymentMethodType, orderId )
 			);
 
 			if ( updateResponse.data ) {

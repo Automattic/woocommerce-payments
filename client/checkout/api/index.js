@@ -456,6 +456,7 @@ export default class WCPayAPI {
 	 * @param {string} selectedUPEPaymentType The name of the selected UPE payment type or empty string.
 	 * @param {string?} paymentCountry The payment two-letter iso country code or null.
 	 * @param {string?} fingerprint User fingerprint.
+	 * @param {string?} accountDescriptor Statement descriptor.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
@@ -465,7 +466,8 @@ export default class WCPayAPI {
 		savePaymentMethod,
 		selectedUPEPaymentType,
 		paymentCountry,
-		fingerprint
+		fingerprint,
+		accountDescriptor
 	) {
 		let path = 'update_payment_intent';
 		if ( this.options.isUPESplitEnabled ) {
@@ -479,6 +481,7 @@ export default class WCPayAPI {
 			wcpay_payment_country: paymentCountry,
 			_ajax_nonce: getConfig( 'updatePaymentIntentNonce' ),
 			'wcpay-fingerprint': fingerprint,
+			statement_descriptor: accountDescriptor,
 		} )
 			.then( ( response ) => {
 				if ( 'failure' === response.result ) {
@@ -758,5 +761,55 @@ export default class WCPayAPI {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns the account descriptor, the shortened account descriptor,
+	 * or null, depending on the payment method.
+	 *
+	 * @param {string} paymentMethod Payment method being used.
+	 * @param {string} orderId Order ID.
+	 * @return {string?} Account descriptor or null if not applicable.
+	 */
+	maybeUseAccountDescriptor( paymentMethod, orderId ) {
+		const isCardPayment = 'card' === paymentMethod;
+		const accountDescriptor = getConfig( 'accountDescriptor' );
+		const shortAccountDescriptor = getConfig( 'shortAccountDescriptor' );
+		const isShortAccountDescriptorEnabled = getConfig(
+			'isShortAccountDescriptorEnabled'
+		);
+
+		if (
+			isCardPayment &&
+			isShortAccountDescriptorEnabled &&
+			shortAccountDescriptor
+		) {
+			// Use the shortened account descriptor for card transactions only.
+			return this.getDynamicAccountDescriptor(
+				shortAccountDescriptor,
+				orderId
+			);
+		} else if ( ! isCardPayment && accountDescriptor ) {
+			return accountDescriptor;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Retrieve the (ideally) shortened account descriptor concatenated with the order number.
+	 * The shortened descriptor will be used as prefix and the order ID will be concatenated, acting as a suffix.
+	 *
+	 * @param {string} descriptor Account descriptor.
+	 * @param {string} orderId Order ID.
+	 * @return {string} Dynamic account descriptor.
+	 */
+	getDynamicAccountDescriptor( descriptor, orderId ) {
+		let dynamicDescriptor = descriptor;
+		if ( orderId ) {
+			dynamicDescriptor = dynamicDescriptor + '* #' + orderId;
+		}
+		// Limit it to 22 characters just in case.
+		return dynamicDescriptor.substring( 0, 22 );
 	}
 }

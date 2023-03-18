@@ -440,12 +440,17 @@ jQuery( function ( $ ) {
 
 		try {
 			// Update payment intent with level3 data, customer and maybe setup for future use.
+			const paymentMethodType = $(
+				'#wcpay_selected_upe_payment_type'
+			).val();
 			const updateResponse = await api.updateIntent(
 				paymentIntentId,
 				orderId,
 				savePaymentMethod,
 				getSelectedUPEPaymentType(),
-				$( '#wcpay_payment_country' ).val()
+				$( '#wcpay_payment_country' ).val(),
+				null,
+				api.maybeUseAccountDescriptor( paymentMethodType, orderId )
 			);
 
 			if ( updateResponse.data ) {
