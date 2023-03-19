@@ -23,7 +23,7 @@ interface NextDepositProps {
  */
 const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	isLoading,
-}: NextDepositProps ): JSX.Element => {
+} ): JSX.Element => {
 	return (
 		<>
 			{ /* Next Deposit Heading */ }
