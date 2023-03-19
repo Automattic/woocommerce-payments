@@ -128,25 +128,31 @@ const useHideDelay = (
 	return isVisible;
 };
 
-const TooltipPortal = memo( ( { children } ) => {
-	const node = useRef< HTMLElement | null >( null );
-	if ( ! node.current ) {
-		node.current = document.createElement( 'div' );
-		rootElement.appendChild( node.current );
+type TooltipPortalProps = {
+	children: React.ReactNode;
+};
+
+const TooltipPortal: React.FC< TooltipPortalProps > = memo(
+	( { children } ) => {
+		const node = useRef< HTMLElement | null >( null );
+		if ( ! node.current ) {
+			node.current = document.createElement( 'div' );
+			rootElement.appendChild( node.current );
+		}
+
+		// on component unmount, clear any reference to the created node
+		useEffect( () => {
+			return () => {
+				if ( node.current ) {
+					rootElement.removeChild( node.current );
+					node.current = null;
+				}
+			};
+		}, [] );
+
+		return createPortal( children, node.current );
 	}
-
-	// on component unmount, clear any reference to the created node
-	useEffect( () => {
-		return () => {
-			if ( node.current ) {
-				rootElement.removeChild( node.current );
-				node.current = null;
-			}
-		};
-	}, [] );
-
-	return createPortal( children, node.current );
-} );
+);
 
 export type TooltipBaseProps = {
 	className?: string;
