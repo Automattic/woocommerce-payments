@@ -47,9 +47,7 @@ describe( 'Link with enabled split UPE', () => {
 		const button = await page.$( '.wcpay-stripelink-modal-trigger' );
 		expect( button ).toBeTruthy();
 
-		console.log( 'about to place an order' );
 		await shopper.placeOrder();
-		console.log( 'waiting for the order received notification' );
 		await expect( page ).toMatch( 'Order received' );
 		await shopperWCP.logout();
 	} );

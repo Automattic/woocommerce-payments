@@ -33,6 +33,7 @@ describeif( RUN_WC_BLOCKS_TESTS )(
 			email: randomizeEmail(
 				config.get( 'addresses.customer.billing.email' )
 			),
+			phone: '14587777777',
 		};
 
 		beforeAll( async () => {

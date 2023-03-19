@@ -14,12 +14,12 @@ const { shopper, merchant, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 const linkPaymentsCheckbox = '#inspector-checkbox-control-10';
 
 describe( 'Link with enabled UPE', () => {
-	const randomEmail = randomizeEmail(
-		config.get( 'addresses.customer.billing.email' )
-	);
 	const billingAddress = {
 		...config.get( 'addresses.customer.billing' ),
-		email: randomEmail,
+		email: randomizeEmail(
+			config.get( 'addresses.customer.billing.email' )
+		),
+		phone: '14587777777',
 	};
 
 	beforeAll( async () => {
@@ -28,7 +28,6 @@ describe( 'Link with enabled UPE', () => {
 		await merchantWCP.enablePaymentMethod( linkPaymentsCheckbox );
 		await merchant.logout();
 		await shopper.login();
-		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 	} );
 
 	afterAll( async () => {
@@ -48,10 +47,7 @@ describe( 'Link with enabled UPE', () => {
 		const button = await page.$( '.wcpay-stripelink-modal-trigger' );
 		expect( button ).toBeTruthy();
 
-		shopper.placeOrder();
-		await page.waitForNavigation( {
-			waitUntil: 'networkidle0',
-		} );
+		await shopper.placeOrder();
 		await expect( page ).toMatch( 'Order received' );
 		await shopperWCP.logout();
 	} );
