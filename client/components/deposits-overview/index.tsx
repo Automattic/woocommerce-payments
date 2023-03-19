@@ -24,10 +24,9 @@ interface OverviewProps {
  * @param {OverviewProps} props Deposits overview
  * @return {JSX.Element} Rendered element with deposits overview
  */
-const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = (
-	props
-) => {
-	const { isLoading }: OverviewProps = props;
+const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = ( {
+	isLoading,
+} ) => {
 
 	return (
 		<Card>
