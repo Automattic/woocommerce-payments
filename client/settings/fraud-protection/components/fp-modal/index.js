@@ -109,7 +109,7 @@ export const HighFraudProtectionModal = ( {
 							</li>
 							<li>
 								{ __(
-									'An order is shipping or billing to a non-domestic address.',
+									'The billing address is a non-domestic address.',
 									'woocommerce-payments'
 								) }
 							</li>
