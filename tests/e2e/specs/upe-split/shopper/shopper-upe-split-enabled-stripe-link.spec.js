@@ -14,12 +14,12 @@ const { shopper, merchant, uiUnblocked } = require( '@woocommerce/e2e-utils' );
 const linkPaymentsCheckbox = '#inspector-checkbox-control-10';
 
 describe( 'Link with enabled split UPE', () => {
-	const randomEmail = randomizeEmail(
-		config.get( 'addresses.customer.billing.email' )
-	);
 	const billingAddress = {
 		...config.get( 'addresses.customer.billing' ),
-		email: randomEmail,
+		email: randomizeEmail(
+			config.get( 'addresses.customer.billing.email' )
+		),
+		phone: '14587777777',
 	};
 
 	beforeAll( async () => {
