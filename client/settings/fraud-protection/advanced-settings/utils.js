@@ -15,23 +15,9 @@ const getRuleBase = ( setting, block ) => {
 const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 	const ruleBase = getRuleBase( ruleKey, shouldBlock );
 	switch ( ruleKey ) {
-		case Rules.RULE_AVS_MISMATCH:
-			ruleBase.check = {
-				key: Checks.CHECK_AVS_CHECK,
-				operator: CheckOperators.OPERATOR_EQUALS,
-				value: false,
-			};
-			break;
 		case Rules.RULE_ADDRESS_MISMATCH:
 			ruleBase.check = {
 				key: Checks.CHECK_BILLING_SHIPPING_ADDRESS_SAME,
-				operator: CheckOperators.OPERATOR_EQUALS,
-				value: false,
-			};
-			break;
-		case Rules.RULE_CVC_VERIFICATION:
-			ruleBase.check = {
-				key: Checks.CHECK_CVC_CHECK,
 				operator: CheckOperators.OPERATOR_EQUALS,
 				value: false,
 			};
@@ -178,8 +164,6 @@ export const writeRuleset = ( config ) => {
 
 export const readRuleset = ( rulesetConfig ) => {
 	const defaultUIConfig = {
-		[ Rules.RULE_AVS_MISMATCH ]: { enabled: false, block: false },
-		[ Rules.RULE_CVC_VERIFICATION ]: { enabled: false, block: false },
 		[ Rules.RULE_ADDRESS_MISMATCH ]: { enabled: false, block: false },
 		[ Rules.RULE_INTERNATIONAL_IP_ADDRESS ]: {
 			enabled: false,
@@ -212,19 +196,7 @@ export const readRuleset = ( rulesetConfig ) => {
 	for ( const id in rulesetConfig ) {
 		const rule = rulesetConfig[ id ];
 		switch ( rule.key ) {
-			case Rules.RULE_AVS_MISMATCH:
-				parsedUIConfig[ rule.key ] = {
-					enabled: true,
-					block: rule.outcome === Outcomes.BLOCK,
-				};
-				break;
 			case Rules.RULE_ADDRESS_MISMATCH:
-				parsedUIConfig[ rule.key ] = {
-					enabled: true,
-					block: rule.outcome === Outcomes.BLOCK,
-				};
-				break;
-			case Rules.RULE_CVC_VERIFICATION:
 				parsedUIConfig[ rule.key ] = {
 					enabled: true,
 					block: rule.outcome === Outcomes.BLOCK,

@@ -15,14 +15,6 @@ const defaultUIConfig = {
 		block: false,
 		enabled: false,
 	},
-	avs_mismatch: {
-		block: false,
-		enabled: false,
-	},
-	cvc_verification: {
-		block: false,
-		enabled: false,
-	},
 	international_billing_address: {
 		block: false,
 		enabled: false,
@@ -72,50 +64,6 @@ describe( 'Ruleset adapter utilities test', () => {
 		const expected = Object.assign( {}, defaultUIConfig, {
 			address_mismatch: {
 				block: false,
-				enabled: true,
-			},
-		} );
-
-		const output = readRuleset( ruleset );
-		expect( output ).toEqual( expected );
-	} );
-	test( 'converts an AVS mismatch ruleset to matching UI config', () => {
-		const ruleset = [
-			{
-				key: Rules.RULE_AVS_MISMATCH,
-				outcome: Outcomes.BLOCK,
-				check: {
-					key: Checks.CHECK_AVS_CHECK,
-					operator: CheckOperators.OPERATOR_EQUALS,
-					value: false,
-				},
-			},
-		];
-		const expected = Object.assign( {}, defaultUIConfig, {
-			avs_mismatch: {
-				block: true,
-				enabled: true,
-			},
-		} );
-
-		const output = readRuleset( ruleset );
-		expect( output ).toEqual( expected );
-	} );
-	test( 'converts a CVC verification ruleset to matching UI config', () => {
-		const ruleset = [
-			{
-				key: Rules.RULE_CVC_VERIFICATION,
-				outcome: Outcomes.BLOCK,
-				check: {
-					key: Checks.CHECK_CVC_CHECK,
-					operator: CheckOperators.OPERATOR_EQUALS,
-					value: false,
-				},
-			},
-		];
-		const expected = Object.assign( {}, defaultUIConfig, {
-			cvc_verification: {
-				block: true,
 				enabled: true,
 			},
 		} );
@@ -499,78 +447,6 @@ describe( 'Ruleset adapter utilities test', () => {
 					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
 					check: {
 						key: Checks.CHECK_BILLING_SHIPPING_ADDRESS_SAME,
-						operator: CheckOperators.OPERATOR_EQUALS,
-						value: false,
-					},
-				},
-			];
-			const output = writeRuleset( config );
-			expect( output ).toEqual( expected );
-		}
-	);
-	test.each( [ true, false ] )(
-		'converts enabled AVS mismatch filter to ruleset, blocking %s',
-		( block ) => {
-			const config = Object.assign( {}, defaultUIConfig, {
-				[ Rules.RULE_AVS_MISMATCH ]: {
-					enabled: true,
-					block: block,
-				},
-			} );
-			const expected = [
-				{
-					key: Rules.RULE_AVS_MISMATCH,
-					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
-					check: {
-						key: Checks.CHECK_AVS_CHECK,
-						operator: CheckOperators.OPERATOR_EQUALS,
-						value: false,
-					},
-				},
-			];
-			const output = writeRuleset( config );
-			expect( output ).toEqual( expected );
-		}
-	);
-	test.each( [ true, false ] )(
-		'converts enabled CVC verification filter to ruleset, blocking %s',
-		( block ) => {
-			const config = Object.assign( {}, defaultUIConfig, {
-				[ Rules.RULE_CVC_VERIFICATION ]: {
-					enabled: true,
-					block: block,
-				},
-			} );
-			const expected = [
-				{
-					key: Rules.RULE_CVC_VERIFICATION,
-					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
-					check: {
-						key: Checks.CHECK_CVC_CHECK,
-						operator: CheckOperators.OPERATOR_EQUALS,
-						value: false,
-					},
-				},
-			];
-			const output = writeRuleset( config );
-			expect( output ).toEqual( expected );
-		}
-	);
-	test.each( [ true, false ] )(
-		'converts enabled CVC verification filter to ruleset, blocking %s',
-		( block ) => {
-			const config = Object.assign( {}, defaultUIConfig, {
-				[ Rules.RULE_CVC_VERIFICATION ]: {
-					enabled: true,
-					block: block,
-				},
-			} );
-			const expected = [
-				{
-					key: Rules.RULE_CVC_VERIFICATION,
-					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
-					check: {
-						key: Checks.CHECK_CVC_CHECK,
 						operator: CheckOperators.OPERATOR_EQUALS,
 						value: false,
 					},

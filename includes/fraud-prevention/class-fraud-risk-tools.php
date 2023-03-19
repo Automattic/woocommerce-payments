@@ -52,8 +52,6 @@ class Fraud_Risk_Tools {
 	}
 
 	// Rule names.
-	const RULE_AVS_MISMATCH                  = 'avs_mismatch';
-	const RULE_CVC_VERIFICATION              = 'cvc_verification';
 	const RULE_ADDRESS_MISMATCH              = 'address_mismatch';
 	const RULE_INTERNATIONAL_IP_ADDRESS      = 'international_ip_address';
 	const RULE_INTERNATIONAL_BILLING_ADDRESS = 'international_billing_address';
@@ -118,12 +116,7 @@ class Fraud_Risk_Tools {
 	 * @return  array
 	 */
 	public static function get_basic_protection_settings() {
-		$rules = [
-			// BLOCK The billing address does not match what is on file with the card issuer.
-			new Rule( self::RULE_AVS_MISMATCH, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'avs_check', Check::OPERATOR_EQUALS, false ) ),
-			// BLOCK The card's issuing bank cannot verify the CVV.
-			new Rule( self::RULE_CVC_VERIFICATION, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'cvc_check', Check::OPERATOR_EQUALS, false ) ),
-		];
+		$rules = [];
 
 		return self::get_ruleset_array( $rules );
 	}
@@ -135,10 +128,6 @@ class Fraud_Risk_Tools {
 	 */
 	public static function get_standard_protection_settings() {
 		$rules = [
-			// BLOCK The billing address does not match what is on file with the card issuer.
-			new Rule( self::RULE_AVS_MISMATCH, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'avs_check', Check::OPERATOR_EQUALS, false ) ),
-			// REVIEW The card's issuing bank cannot verify the CVV.
-			new Rule( self::RULE_CVC_VERIFICATION, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'cvc_check', Check::OPERATOR_EQUALS, false ) ),
 			// REVIEW An order originates from an IP address outside your country.
 			new Rule( self::RULE_INTERNATIONAL_IP_ADDRESS, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'ip_country_same_with_account_country', Check::OPERATOR_EQUALS, false ) ),
 			// REVIEW An order exceeds $1,000.00 or 10 items.
@@ -158,16 +147,12 @@ class Fraud_Risk_Tools {
 	 */
 	public static function get_high_protection_settings() {
 		$rules = [
-			// BLOCK The billing address does not match what is on file with the card issuer.
-			new Rule( self::RULE_AVS_MISMATCH, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'avs_check', Check::OPERATOR_EQUALS, false ) ),
 			// BLOCK An order originates from an IP address outside your country.
 			new Rule( self::RULE_INTERNATIONAL_IP_ADDRESS, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'ip_country_same_with_account_country', Check::OPERATOR_EQUALS, false ) ),
 			// BLOCK An order exceeds $1,000.00.
 			new Rule( self::RULE_PURCHASE_PRICE_THRESHOLD, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'order_total', Check::OPERATOR_GT, 1000 ) ),
 			// BLOCK The same card or IP Address submits 5 orders within 72 hours.
 			new Rule( self::RULE_ORDER_VELOCITY, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'orders_since_72h', Check::OPERATOR_EQUALS, 5 ) ),
-			// REVIEW The card's issuing bank cannot verify the CVV.
-			new Rule( self::RULE_CVC_VERIFICATION, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'cvc_check', Check::OPERATOR_EQUALS, false ) ),
 			// REVIEW An order has less than 2 items or more than 10 items.
 			new Rule( self::RULE_ORDER_ITEMS_THRESHOLD, Rule::FRAUD_OUTCOME_REVIEW, Check::list( Check::LIST_OPERATOR_OR, [ Check::check( 'item_count', Check::OPERATOR_LT, 2 ), Check::check( 'item_count', Check::OPERATOR_GT, 10 ) ] ) ),
 			// REVIEW The shipping and billing address don't match.
