@@ -198,7 +198,12 @@ class Check {
 		if ( ! empty( $this->checks ) ) {
 			return [
 				'operator' => $this->operator,
-				'checks'   => array_map( [ $this->checks[0], 'to_array' ], $this->checks ),
+				'checks'   => array_map(
+					function( Check $check ) {
+						return $check->to_array();
+					},
+					$this->checks
+				),
 			];
 		}
 		return [

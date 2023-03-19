@@ -800,7 +800,15 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				$ruleset_config = Fraud_Risk_Tools::get_high_protection_settings();
 				break;
 			case 'advanced':
-				$ruleset_config = $request->get_param( 'advanced_fraud_protection_settings' );
+				$referer                   = $request->get_header( 'referer' );
+				$is_advanced_settings_page = 0 < strpos( $referer, 'fraud-protection' );
+				if ( $is_advanced_settings_page ) {
+					// When the button is clicked from the Payments > Settings page, the advanced fraud protection settings shouldn't change.
+					$ruleset_config = get_transient( 'wcpay_fraud_protection_settings' ) ?? [];
+				} else {
+					// When the button is clicked from the Advanced fraud protection settings page, it should change.
+					$ruleset_config = $request->get_param( 'advanced_fraud_protection_settings' );
+				}
 				break;
 		}
 

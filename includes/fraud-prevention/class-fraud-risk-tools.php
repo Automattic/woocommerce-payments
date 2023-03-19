@@ -2,7 +2,7 @@
 /**
  * Class Fraud_Risk_Tools
  *
- * @package WooCommerce\Payments\FraudRiskTools
+ * @package WooCommerce\Payments\Fraud_Risk_Tools
  */
 
 namespace WCPay\Fraud_Prevention;
@@ -37,9 +37,9 @@ class Fraud_Risk_Tools {
 	private $payments_account;
 
 	/**
-	 * Main FraudRiskTools Instance.
+	 * Main Fraud_Risk_Tools Instance.
 	 *
-	 * Ensures only one instance of FraudRiskTools is loaded or can be loaded.
+	 * Ensures only one instance of Fraud_Risk_Tools is loaded or can be loaded.
 	 *
 	 * @static
 	 * @return Fraud_Risk_Tools - Main instance.
@@ -129,12 +129,44 @@ class Fraud_Risk_Tools {
 	public static function get_standard_protection_settings() {
 		$rules = [
 			// REVIEW An order originates from an IP address outside your country.
-			new Rule( self::RULE_INTERNATIONAL_IP_ADDRESS, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'ip_country_same_with_account_country', Check::OPERATOR_EQUALS, false ) ),
+			new Rule(
+				self::RULE_INTERNATIONAL_IP_ADDRESS,
+				Rule::FRAUD_OUTCOME_REVIEW,
+				Check::check(
+					'ip_country_same_with_account_country',
+					Check::OPERATOR_EQUALS,
+					false
+				)
+			),
 			// REVIEW An order exceeds $1,000.00 or 10 items.
-			new Rule( self::RULE_ORDER_ITEMS_THRESHOLD, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'item_count', Check::OPERATOR_LT, 10 ) ),
-			new Rule( self::RULE_PURCHASE_PRICE_THRESHOLD, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'order_total', Check::OPERATOR_GT, 1000 ) ),
+			new Rule(
+				self::RULE_ORDER_ITEMS_THRESHOLD,
+				Rule::FRAUD_OUTCOME_REVIEW,
+				Check::check(
+					'item_count',
+					Check::OPERATOR_GT,
+					10
+				)
+			),
+			new Rule(
+				self::RULE_PURCHASE_PRICE_THRESHOLD,
+				Rule::FRAUD_OUTCOME_REVIEW,
+				Check::check(
+					'order_total',
+					Check::OPERATOR_GT,
+					1000
+				)
+			),
 			// REVIEW The same card or IP address submits 5 orders within 72 hours.
-			new Rule( self::RULE_ORDER_VELOCITY, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'orders_since_72h', Check::OPERATOR_EQUALS, 5 ) ),
+			new Rule(
+				self::RULE_ORDER_VELOCITY,
+				Rule::FRAUD_OUTCOME_REVIEW,
+				Check::check(
+					'orders_since_72h',
+					Check::OPERATOR_EQUALS,
+					5
+				)
+			),
 		];
 
 		return self::get_ruleset_array( $rules );
@@ -148,17 +180,67 @@ class Fraud_Risk_Tools {
 	public static function get_high_protection_settings() {
 		$rules = [
 			// BLOCK An order originates from an IP address outside your country.
-			new Rule( self::RULE_INTERNATIONAL_IP_ADDRESS, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'ip_country_same_with_account_country', Check::OPERATOR_EQUALS, false ) ),
+			new Rule(
+				self::RULE_INTERNATIONAL_IP_ADDRESS,
+				Rule::FRAUD_OUTCOME_BLOCK,
+				Check::check(
+					'ip_country_same_with_account_country',
+					Check::OPERATOR_EQUALS,
+					false
+				)
+			),
 			// BLOCK An order exceeds $1,000.00.
-			new Rule( self::RULE_PURCHASE_PRICE_THRESHOLD, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'order_total', Check::OPERATOR_GT, 1000 ) ),
+			new Rule(
+				self::RULE_PURCHASE_PRICE_THRESHOLD,
+				Rule::FRAUD_OUTCOME_BLOCK,
+				Check::check(
+					'order_total',
+					Check::OPERATOR_GT,
+					1000
+				)
+			),
 			// BLOCK The same card or IP Address submits 5 orders within 72 hours.
-			new Rule( self::RULE_ORDER_VELOCITY, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'orders_since_72h', Check::OPERATOR_EQUALS, 5 ) ),
+			new Rule(
+				self::RULE_ORDER_VELOCITY,
+				Rule::FRAUD_OUTCOME_BLOCK,
+				Check::check(
+					'orders_since_72h',
+					Check::OPERATOR_EQUALS,
+					5
+				)
+			),
 			// REVIEW An order has less than 2 items or more than 10 items.
-			new Rule( self::RULE_ORDER_ITEMS_THRESHOLD, Rule::FRAUD_OUTCOME_REVIEW, Check::list( Check::LIST_OPERATOR_OR, [ Check::check( 'item_count', Check::OPERATOR_LT, 2 ), Check::check( 'item_count', Check::OPERATOR_GT, 10 ) ] ) ),
+			new Rule(
+				self::RULE_ORDER_ITEMS_THRESHOLD,
+				Rule::FRAUD_OUTCOME_REVIEW,
+				Check::list(
+					Check::LIST_OPERATOR_OR,
+					[
+						Check::check( 'item_count', Check::OPERATOR_LT, 2 ),
+						Check::check( 'item_count', Check::OPERATOR_GT, 10 ),
+					]
+				)
+			),
 			// REVIEW The shipping and billing address don't match.
-			new Rule( self::RULE_ADDRESS_MISMATCH, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'billing_shipping_address_same', Check::OPERATOR_EQUALS, false ) ),
+			new Rule(
+				self::RULE_ADDRESS_MISMATCH,
+				Rule::FRAUD_OUTCOME_REVIEW,
+				Check::check(
+					'billing_shipping_address_same',
+					Check::OPERATOR_EQUALS,
+					false
+				)
+			),
 			// REVIEW An order is shipping or billing to a non-domestic address.
-			new Rule( self::RULE_INTERNATIONAL_BILLING_ADDRESS, Rule::FRAUD_OUTCOME_REVIEW, Check::check( 'billing_country_same_with_account_country', Check::OPERATOR_EQUALS, false ) ),
+			new Rule(
+				self::RULE_INTERNATIONAL_BILLING_ADDRESS,
+				Rule::FRAUD_OUTCOME_REVIEW,
+				Check::check(
+					'billing_country_same_with_account_country',
+					Check::OPERATOR_EQUALS,
+					false
+				)
+			),
 		];
 
 		return self::get_ruleset_array( $rules );
