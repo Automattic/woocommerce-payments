@@ -154,6 +154,13 @@ export const shopperWCP = {
 		);
 		linkCheckbox.evaluate( ( node ) => node.click() );
 
+		const linkPhoneCountry = await stripeFrame.waitForSelector(
+			'[name="linkMobilePhoneCountry"]',
+			{ timeout: 30000 }
+		);
+
+		await linkPhoneCountry.select( 'US' );
+
 		const linkPhoneNumber = await stripeFrame.waitForSelector(
 			'[name="linkMobilePhone"]',
 			{ timeout: 30000 }

@@ -28,7 +28,6 @@ describe( 'Link with enabled split UPE', () => {
 		await merchantWCP.enablePaymentMethod( linkPaymentsCheckbox );
 		await merchant.logout();
 		await shopper.login();
-		await shopperWCP.changeAccountCurrencyTo( 'USD' );
 	} );
 
 	afterAll( async () => {
