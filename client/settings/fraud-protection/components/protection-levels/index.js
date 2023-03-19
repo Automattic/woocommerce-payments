@@ -42,6 +42,32 @@ const ProtectionLevels = () => {
 					<div className="fraud-protection-single-radio-wrapper">
 						<input
 							name={ 'fraud-protection-level-select' }
+							id={ 'fraud-protection__basic-level' }
+							value={ ProtectionLevel.BASIC }
+							type={ 'radio' }
+							className={
+								'fraud-protection-single-radio-wrapper__item'
+							}
+							checked={
+								ProtectionLevel.BASIC === currentProtectionLevel
+							}
+							onChange={ () =>
+								handleLevelChange( ProtectionLevel.BASIC )
+							}
+						/>
+						<label
+							className="fraud-protection-single-radio-wrapper__item"
+							htmlFor="fraud-protection__basic-level"
+						>
+							{ __( 'Basic', 'woocommerce-payments' ) }
+						</label>
+					</div>
+					<FraudProtectionHelpText level={ ProtectionLevel.BASIC } />
+				</li>
+				<li>
+					<div className="fraud-protection-single-radio-wrapper">
+						<input
+							name={ 'fraud-protection-level-select' }
 							id={ 'fraud-protection__standard-level' }
 							value={ ProtectionLevel.STANDARD }
 							type={ 'radio' }

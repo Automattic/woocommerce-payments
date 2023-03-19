@@ -2252,7 +2252,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return '';
 		}
 
-		return get_option( 'current_protection_level', 'standard' );
+		return get_option( 'current_protection_level', 'basic' );
 	}
 
 	/**
@@ -2275,13 +2275,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$cached_server_settings = get_transient( 'wcpay_fraud_protection_settings' );
 		if ( ! $cached_server_settings ) {
 			try {
+				// There's no cached ruleset, or the cache has expired. Try to fetch it from the server.
+				Logger::log( 'Refreshed the settings from the server' );
 				$latest_server_ruleset = $this->payments_api_client->get_latest_fraud_ruleset();
-				if ( isset( $latest_server_ruleset['ruleset_config'] ) ) {
-					set_transient( 'wcpay_fraud_protection_settings', $latest_server_ruleset['ruleset_config'], 1 * DAY_IN_SECONDS );
-					return $latest_server_ruleset['ruleset_config'];
-				}
-				return [];
+				set_transient( 'wcpay_fraud_protection_settings', $latest_server_ruleset['ruleset_config'], 1 * DAY_IN_SECONDS );
+				update_option( 'fetched_from_server', 1 );
+				return $latest_server_ruleset['ruleset_config'];
 			} catch ( API_Exception $ex ) {
+				if ( 'wcpay_fraud_ruleset_not_found' === $ex->get_error_code() ) {
+					Logger::log( 'Created a new protection settings because server doesn\'t have a saved value' );
+					// There is no ruleset saved on the server. Send the basic protection level as the default.
+					$basic_protection_settings = Fraud_Risk_Tools::get_basic_protection_settings();
+					$this->payments_api_client->save_fraud_ruleset( $basic_protection_settings );
+					set_transient( 'wcpay_fraud_protection_settings', $basic_protection_settings, 1 * DAY_IN_SECONDS );
+					update_option( 'current_protection_level', 'basic' );
+					return $basic_protection_settings;
+				}
 				set_transient( 'wcpay_fraud_protection_settings', [], 1 * DAY_IN_SECONDS );
 				return [];
 			}

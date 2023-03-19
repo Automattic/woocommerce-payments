@@ -113,12 +113,19 @@ class Fraud_Risk_Tools {
 	}
 
 	/**
-	 * Returns the default protection settings.
+	 * Returns the basic protection rules.
 	 *
 	 * @return  array
 	 */
-	public static function get_default_protection_settings() {
-		return [];
+	public static function get_basic_protection_settings() {
+		$rules = [
+			// BLOCK The billing address does not match what is on file with the card issuer.
+			new Rule( self::RULE_AVS_MISMATCH, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'avs_check', Check::OPERATOR_EQUALS, false ) ),
+			// BLOCK The card's issuing bank cannot verify the CVV.
+			new Rule( self::RULE_CVC_VERIFICATION, Rule::FRAUD_OUTCOME_BLOCK, Check::check( 'cvc_check', Check::OPERATOR_EQUALS, false ) ),
+		];
+
+		return self::get_ruleset_array( $rules );
 	}
 
 	/**

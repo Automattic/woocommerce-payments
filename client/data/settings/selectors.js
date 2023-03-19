@@ -208,8 +208,7 @@ export const getPlatformCheckoutLocations = ( state ) => {
 
 export const getCurrentProtectionLevel = ( state ) => {
 	return (
-		getSettings( state ).current_protection_level ||
-		ProtectionLevel.STANDARD
+		getSettings( state ).current_protection_level || ProtectionLevel.BASIC
 	);
 };
 

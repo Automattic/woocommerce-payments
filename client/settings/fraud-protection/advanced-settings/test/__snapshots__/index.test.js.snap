@@ -163,7 +163,7 @@ Object {
                   <div
                     class="fraud-protection-rule-card-notice-text"
                   >
-                    Payments failing address verification will be blocked. For security, this filter cannot be modified. 
+                    For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                     <a
                       data-link-type="wc-admin"
                       href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -240,7 +240,7 @@ Object {
                   <div
                     class="fraud-protection-rule-card-notice-text"
                   >
-                    Payments failing CVC verification will be blocked. For security, this filter cannot be modified. 
+                    For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                     <a
                       data-link-type="wc-admin"
                       href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -1118,7 +1118,7 @@ Object {
                 <div
                   class="fraud-protection-rule-card-notice-text"
                 >
-                  Payments failing address verification will be blocked. For security, this filter cannot be modified. 
+                  For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                   <a
                     data-link-type="wc-admin"
                     href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -1195,7 +1195,7 @@ Object {
                 <div
                   class="fraud-protection-rule-card-notice-text"
                 >
-                  Payments failing CVC verification will be blocked. For security, this filter cannot be modified. 
+                  For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                   <a
                     data-link-type="wc-admin"
                     href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -2105,7 +2105,7 @@ Object {
                 <div
                   class="fraud-protection-rule-card-notice-text"
                 >
-                  Payments failing address verification will be blocked. For security, this filter cannot be modified. 
+                  For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                   <a
                     data-link-type="wc-admin"
                     href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -2182,7 +2182,7 @@ Object {
                 <div
                   class="fraud-protection-rule-card-notice-text"
                 >
-                  Payments failing CVC verification will be blocked. For security, this filter cannot be modified. 
+                  For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                   <a
                     data-link-type="wc-admin"
                     href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -2815,7 +2815,7 @@ Object {
               <div
                 class="fraud-protection-rule-card-notice-text"
               >
-                Payments failing address verification will be blocked. For security, this filter cannot be modified. 
+                For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                 <a
                   data-link-type="wc-admin"
                   href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -2892,7 +2892,7 @@ Object {
               <div
                 class="fraud-protection-rule-card-notice-text"
               >
-                Payments failing CVC verification will be blocked. For security, this filter cannot be modified. 
+                For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                 <a
                   data-link-type="wc-admin"
                   href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -3625,7 +3625,7 @@ Object {
                   <div
                     class="fraud-protection-rule-card-notice-text"
                   >
-                    Payments failing address verification will be blocked. For security, this filter cannot be modified. 
+                    For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                     <a
                       data-link-type="wc-admin"
                       href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -3702,7 +3702,7 @@ Object {
                   <div
                     class="fraud-protection-rule-card-notice-text"
                   >
-                    Payments failing CVC verification will be blocked. For security, this filter cannot be modified. 
+                    For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                     <a
                       data-link-type="wc-admin"
                       href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -4510,7 +4510,7 @@ Object {
                 <div
                   class="fraud-protection-rule-card-notice-text"
                 >
-                  Payments failing address verification will be blocked. For security, this filter cannot be modified. 
+                  For security, this filter is enabled and cannot be modified. Payments failing address verification will be blocked. 
                   <a
                     data-link-type="wc-admin"
                     href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
@@ -4587,7 +4587,7 @@ Object {
                 <div
                   class="fraud-protection-rule-card-notice-text"
                 >
-                  Payments failing CVC verification will be blocked. For security, this filter cannot be modified. 
+                  For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                   <a
                     data-link-type="wc-admin"
                     href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"

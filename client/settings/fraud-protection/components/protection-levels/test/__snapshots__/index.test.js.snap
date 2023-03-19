@@ -11,6 +11,30 @@ exports[`ProtectionLevels renders 1`] = `
           <input
             checked=""
             class="fraud-protection-single-radio-wrapper__item"
+            id="fraud-protection__basic-level"
+            name="fraud-protection-level-select"
+            type="radio"
+            value="basic"
+          />
+          <label
+            class="fraud-protection-single-radio-wrapper__item"
+            for="fraud-protection__basic-level"
+          >
+            Basic
+          </label>
+        </div>
+        <p
+          class="fraud-protection__text--help-text"
+        >
+          Provides the base level of platform protection.
+        </p>
+      </li>
+      <li>
+        <div
+          class="fraud-protection-single-radio-wrapper"
+        >
+          <input
+            class="fraud-protection-single-radio-wrapper__item"
             id="fraud-protection__standard-level"
             name="fraud-protection-level-select"
             type="radio"

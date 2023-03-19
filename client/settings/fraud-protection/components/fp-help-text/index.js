@@ -22,6 +22,11 @@ const getFraudProtectionLevelText = function ( level ) {
 				"Provides a standard level of filtering that's suitable for most businesses.",
 				'woocommerce-payments'
 			);
+		case ProtectionLevel.BASIC:
+			return __(
+				'Provides the base level of platform protection.',
+				'woocommerce-payments'
+			);
 		default:
 			return '';
 	}

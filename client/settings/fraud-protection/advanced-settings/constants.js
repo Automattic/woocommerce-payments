@@ -1,6 +1,7 @@
 /** @format */
 
 export const ProtectionLevel = {
+	BASIC: 'basic',
 	STANDARD: 'standard',
 	HIGH: 'high',
 	ADVANCED: 'advanced',

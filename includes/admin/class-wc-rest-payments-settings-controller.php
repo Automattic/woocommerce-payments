@@ -784,12 +784,15 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$protection_level = $request->get_param( 'current_protection_level' );
 
 		// Check validity of the protection level.
-		if ( ! in_array( $protection_level, [ 'standard', 'high', 'advanced' ], true ) ) {
+		if ( ! in_array( $protection_level, [ 'basic', 'standard', 'high', 'advanced' ], true ) ) {
 			return;
 		}
 
 		// Get rulesets per protection level.
 		switch ( $protection_level ) {
+			case 'basic':
+				$ruleset_config = Fraud_Risk_Tools::get_basic_protection_settings();
+				break;
 			case 'standard':
 				$ruleset_config = Fraud_Risk_Tools::get_standard_protection_settings();
 				break;
