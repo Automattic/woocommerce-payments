@@ -31,14 +31,14 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 				<span className="wcpay-deposits-overview__heading__title">
 					<Loadable
 						isLoading={ isLoading }
-						value={ strings.next_deposits.title }
+						value={ strings.nextDeposit.title }
 					/>
 				</span>
 
 				<span className="wcpay-deposits-overview__heading__description">
 					<Loadable
 						isLoading={ isLoading }
-						value={ strings.next_deposits.description }
+						value={ strings.nextDeposit.description }
 					/>
 				</span>
 			</div>
