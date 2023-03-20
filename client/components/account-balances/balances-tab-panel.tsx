@@ -22,6 +22,7 @@ import BalanceBlock from './balance-block';
  * @param {number} availableFunds Available funds of the tab.
  * @param {number} pendingFunds   Pending funds of the tab.
  * @param {number} reservedFunds  Reserved funds of the tab.
+ * @param {number} delayDays	  The account's pending period in days.
  */
 type BalanceTab = {
 	name: string;
