@@ -113,12 +113,23 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_HEAD_REF: ${{ github.head_ref }}
         run: |
-          BODY="### Test the build on Jurassic Ninja 
+          BODY="### Test the build 
           
-          This feature is only available for A12s. Please log in into https://jurassic.ninja/specialops/ before clicking the link below:
+          #### Option 1. With Jurassic Ninja - available for logged-in A12s
+         
+         :rocket: [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
           
-          :rocket: [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
+          :information_source: [Install Tampermonkey](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
+          
+          #### Option 2. With Jetpack Beta - available for everyone
+          
+          - Install and activate [Jetpack Beta](https://jetpack.com/download-jetpack-beta/).
+          - Use this build by searching for PR number `${PR_NUMBER}` or branch name `${PR_HEAD_REF}` in /wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments
+          
+          ---
 
+          Build info: 
+          
           - Latest commit: ${PR_HEAD_SHA}
           - Build time: $(date -u "+%Y-%m-%d %H:%M:%S UTC")
 
