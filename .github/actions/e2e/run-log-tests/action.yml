@@ -9,13 +9,15 @@ runs:
       # Use +e to trap errors when running E2E tests.
       shell: /bin/bash +e {0}
       run: |
-        npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH" --NODE_ENV="$NODE_ENV"
+        npm run test:e2e -- --json --outputFile="≈" --NODE_ENV="$NODE_ENV"
         
         if [[ -f "$E2E_RESULT_FILEPATH" ]]
         then
           E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
         else
-          E2E_NUM_FAILED_TEST_SUITES=0
+          echo "::notice::${E2E_RESULT_FILEPATH} didn't exist so results are unclear and we will not try again."
+          echo "FIRST_RUN_FAILED_TEST_SUITES=0 >> $GITHUB_OUTPUT
+          exit 1
         fi
         
         echo "FIRST_RUN_FAILED_TEST_SUITES=$(echo $E2E_NUM_FAILED_TEST_SUITES)" >> $GITHUB_OUTPUT
