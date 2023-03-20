@@ -5,7 +5,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Card, CheckboxControl, VisuallyHidden } from '@wordpress/components';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 import { useContext } from '@wordpress/element';
 import { Icon, warning } from '@wordpress/icons';
 
