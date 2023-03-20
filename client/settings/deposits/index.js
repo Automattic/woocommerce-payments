@@ -217,7 +217,7 @@ const Deposits = () => {
 					</h4>
 					<p className="deposits__bank-information-help">
 						{ __(
-							'Manage and update your deposit account information to receive payments and payouts.',
+							'Manage and update your deposit account information to receive payments and deposits.',
 							'woocommerce-payments'
 						) }{ ' ' }
 						<ExternalLink href={ accountLink }>

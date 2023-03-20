@@ -15,7 +15,7 @@ import { useContext } from '@wordpress/element';
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 import { getPaymentRequestData } from '../../payment-request/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import {
