@@ -46,10 +46,16 @@
 			font-size: 20px;
 			font-weight: 400;
 			letter-spacing: 0.7px;
+			line-height: 28px;
+			margin-bottom: 0;
 
 			@media ( min-width: 783px ) {
 				padding: 0 10%;
 			}
+		}
+
+		p {
+			color: $gray-700;
 		}
 	}
 }
