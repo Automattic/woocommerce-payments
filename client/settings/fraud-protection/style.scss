@@ -211,27 +211,11 @@
 			border-bottom: 1px solid #e0e0e0;
 			border-top: 0;
 		}
-		&-notice {
-			padding: 12px 16px;
-			display: flex;
-			&-warning {
-				background-color: #fcf9e8;
-			}
-			&-info {
-				background-color: #f0f6fc;
-			}
-			&-error {
-				background-color: #fcf0f1;
-			}
-			&-icon svg {
-				margin: 2px 16px 2px 2px;
-			}
-			&-text {
-				font-size: 13px;
-				line-height: 24px;
-				font-weight: 400;
-				color: #1e1e1e;
-				flex: 1;
+		.wcpay-banner-notice.fraud-protection-rule-card-notice {
+			margin-left: 0;
+			margin-right: 0;
+			.wcpay-banner-info-notice__icon svg {
+				fill: transparent;
 			}
 		}
 	}
