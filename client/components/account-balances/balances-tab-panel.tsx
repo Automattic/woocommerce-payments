@@ -10,6 +10,7 @@ import { Flex, TabPanel } from '@wordpress/components';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
+import { AccountOverview } from 'wcpay/types/account-overview';
 
 /**
  * BalanceTab

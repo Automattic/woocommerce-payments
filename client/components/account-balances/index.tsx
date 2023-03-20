@@ -7,7 +7,6 @@ import { Card } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { AccountOverview } from 'wcpay/types/account-overview';
 import AccountBalancesHeader from './header';
 import './style.scss';
 import AccountBalancesTabPanel from './balances-tab-panel';
