@@ -28,11 +28,7 @@ export const RiskReviewList = (): JSX.Element => {
 	const query = getQuery();
 	const columnsToDisplay = getRiskReviewListColumns();
 
-	const {
-		transactions,
-		transactionsError,
-		isLoading,
-	} = useOnReviewTransactions( query );
+	const { transactions, isLoading } = useOnReviewTransactions( query );
 
 	const {
 		transactionsSummary,
@@ -66,7 +62,7 @@ export const RiskReviewList = (): JSX.Element => {
 			summary.push( {
 				label: __( 'pending', 'woocommerce-payments' ),
 				value: `${ formatExplicitCurrency(
-					transactionsSummary.total,
+					transactionsSummary.total as number,
 					transactionsSummary.currencies[ 0 ]
 				) }`,
 			} );
@@ -85,12 +81,12 @@ export const RiskReviewList = (): JSX.Element => {
 				className="authorizations-list woocommerce-report-table has-search"
 				title={ __( 'Flagged transactions', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
-				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
+				rowsPerPage={ parseInt( query.per_page ?? '', 10 ) || 25 }
 				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
-				query={ getQuery() }
+				query={ query }
 				onQueryChange={ onQueryChange }
 			/>
 		</Page>

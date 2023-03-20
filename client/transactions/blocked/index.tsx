@@ -27,11 +27,7 @@ export const BlockedList = (): JSX.Element => {
 	const query = getQuery();
 
 	const columnsToDisplay = getBlockedListColumns();
-	const {
-		isLoading,
-		transactions,
-		transactionsError,
-	} = useBlockedTransactions( query );
+	const { isLoading, transactions } = useBlockedTransactions( query );
 
 	const {
 		transactionsSummary,
@@ -63,8 +59,8 @@ export const BlockedList = (): JSX.Element => {
 			summary.push( {
 				label: __( 'blocked', 'woocommerce-payments' ),
 				value: `${ formatExplicitCurrency(
-					transactionsSummary.total,
-					transactionsSummary.currency
+					transactionsSummary.total as number,
+					transactionsSummary.currencies[ 0 ]
 				) }`,
 			} );
 		}
@@ -82,12 +78,12 @@ export const BlockedList = (): JSX.Element => {
 				className="authorizations-list woocommerce-report-table has-search"
 				title={ __( 'Blocked transactions', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
-				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
+				rowsPerPage={ parseInt( query.per_page ?? '', 10 ) || 25 }
 				totalRows={ totalRows }
 				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
-				query={ getQuery() }
+				query={ query }
 				onQueryChange={ onQueryChange }
 			/>
 		</Page>

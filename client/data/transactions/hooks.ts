@@ -93,6 +93,34 @@ interface TransactionsSummary {
 	isLoading: boolean;
 }
 
+export interface FraudOutcomeTransaction {
+	amount: number;
+	created: string;
+	currency: string;
+	customer_name: string;
+	order_id: number;
+	payment_intent: {
+		id: string;
+		status: string;
+	};
+	status: 'allow' | 'review' | 'block';
+}
+
+interface FraudOutcomeTransactions {
+	transactions: FraudOutcomeTransaction[];
+	transactionsError?: string;
+	isLoading: boolean;
+}
+
+interface FraudOutcomeTransactionsSummary {
+	transactionsSummary: {
+		count?: number;
+		total?: number;
+		currencies?: string[];
+	};
+	isLoading: boolean;
+}
+
 export const useTransactions = (
 	{
 		paged,
@@ -237,18 +265,7 @@ export const useBlockedTransactions = ( {
 	per_page: perPage,
 	orderby,
 	order,
-	match,
-	date_before: dateBefore,
-	date_after: dateAfter,
-	date_between: dateBetween,
-	type_is: typeIs,
-	type_is_not: typeIsNot,
-	store_currency_is: storeCurrencyIs,
-	customer_currency_is: customerCurrencyIs,
-	customer_currency_is_not: customerCurrencyIsNot,
-	loan_id_is: loanIdIs,
-	search,
-}: Query ) =>
+}: Query ): FraudOutcomeTransactions =>
 	useSelect( ( select ) => {
 		const {
 			getBlockedTransactions,
@@ -263,19 +280,6 @@ export const useBlockedTransactions = ( {
 				: perPage,
 			orderby: orderby || 'date',
 			order: order || 'desc',
-			match,
-			dateBefore,
-			dateAfter,
-			dateBetween:
-				dateBetween &&
-				dateBetween.sort( ( a, b ) => moment( a ).diff( moment( b ) ) ),
-			typeIs,
-			typeIsNot,
-			storeCurrencyIs,
-			customerCurrencyIs,
-			customerCurrencyIsNot,
-			loanIdIs,
-			search,
 		};
 
 		return {
@@ -290,18 +294,7 @@ export const useBlockedTransactionsSummary = ( {
 	per_page: perPage,
 	orderby,
 	order,
-	match,
-	date_before: dateBefore,
-	date_after: dateAfter,
-	date_between: dateBetween,
-	type_is: typeIs,
-	type_is_not: typeIsNot,
-	store_currency_is: storeCurrencyIs,
-	customer_currency_is: customerCurrencyIs,
-	customer_currency_is_not: customerCurrencyIsNot,
-	loan_id_is: loanIdIs,
-	search,
-}: Query ) =>
+}: Query ): FraudOutcomeTransactionsSummary =>
 	useSelect( ( select ) => {
 		const {
 			getBlockedTransactionsSummary,
@@ -316,19 +309,6 @@ export const useBlockedTransactionsSummary = ( {
 				: perPage,
 			orderby: orderby || 'date',
 			order: order || 'desc',
-			match,
-			dateBefore,
-			dateAfter,
-			dateBetween:
-				dateBetween &&
-				dateBetween.sort( ( a, b ) => moment( a ).diff( moment( b ) ) ),
-			typeIs,
-			typeIsNot,
-			storeCurrencyIs,
-			customerCurrencyIs,
-			customerCurrencyIsNot,
-			loanIdIs,
-			search,
 		};
 
 		return {
@@ -348,106 +328,72 @@ export const useOnReviewTransactions = ( {
 	orderby,
 	order,
 	match,
-	date_before: dateBefore,
-	date_after: dateAfter,
-	date_between: dateBetween,
-	type_is: typeIs,
-	type_is_not: typeIsNot,
-	store_currency_is: storeCurrencyIs,
-	customer_currency_is: customerCurrencyIs,
-	customer_currency_is_not: customerCurrencyIsNot,
-	loan_id_is: loanIdIs,
 	search,
-}: Query ) =>
-	useSelect( ( select ) => {
-		const {
-			getOnReviewTransactions,
-			getOnReviewTransactionsError,
-			isResolving,
-		} = select( STORE_NAME );
+}: Query ): FraudOutcomeTransactions =>
+	useSelect(
+		( select ) => {
+			const {
+				getOnReviewTransactions,
+				getOnReviewTransactionsError,
+				isResolving,
+			} = select( STORE_NAME );
 
-		const query = {
-			paged: Number.isNaN( parseInt( paged ?? '', 10 ) ) ? '1' : paged,
-			perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
-				? '25'
-				: perPage,
-			orderby: orderby || 'date',
-			order: order || 'desc',
-			match,
-			dateBefore,
-			dateAfter,
-			dateBetween:
-				dateBetween &&
-				dateBetween.sort( ( a, b ) => moment( a ).diff( moment( b ) ) ),
-			typeIs,
-			typeIsNot,
-			storeCurrencyIs,
-			customerCurrencyIs,
-			customerCurrencyIsNot,
-			loanIdIs,
-			search,
-		};
+			const query = {
+				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
+					? '1'
+					: paged,
+				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
+					? '25'
+					: perPage,
+				orderby: orderby || 'date',
+				order: order || 'desc',
+				match,
+				search,
+			};
 
-		return {
-			transactions: getOnReviewTransactions( query ),
-			transactionsError: getOnReviewTransactionsError( query ),
-			isLoading: isResolving( 'getOnReviewTransactions', [ query ] ),
-		};
-	}, [] );
+			return {
+				transactions: getOnReviewTransactions( query ),
+				transactionsError: getOnReviewTransactionsError( query ),
+				isLoading: isResolving( 'getOnReviewTransactions', [ query ] ),
+			};
+		},
+		[ paged, perPage, orderby, order ]
+	);
 
 export const useOnReviewTransactionsSummary = ( {
 	paged,
 	per_page: perPage,
 	orderby,
 	order,
-	match,
-	date_before: dateBefore,
-	date_after: dateAfter,
-	date_between: dateBetween,
-	type_is: typeIs,
-	type_is_not: typeIsNot,
-	store_currency_is: storeCurrencyIs,
-	customer_currency_is: customerCurrencyIs,
-	customer_currency_is_not: customerCurrencyIsNot,
-	loan_id_is: loanIdIs,
-	search,
-}: Query ) =>
-	useSelect( ( select ) => {
-		const {
-			getOnReviewTransactionsSummary,
-			getOnReviewTransactionsSummaryError,
-			isResolving,
-		} = select( STORE_NAME );
+}: Query ): FraudOutcomeTransactionsSummary =>
+	useSelect(
+		( select ) => {
+			const {
+				getOnReviewTransactionsSummary,
+				getOnReviewTransactionsSummaryError,
+				isResolving,
+			} = select( STORE_NAME );
 
-		const query = {
-			paged: Number.isNaN( parseInt( paged ?? '', 10 ) ) ? '1' : paged,
-			perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
-				? '25'
-				: perPage,
-			orderby: orderby || 'date',
-			order: order || 'desc',
-			match,
-			dateBefore,
-			dateAfter,
-			dateBetween:
-				dateBetween &&
-				dateBetween.sort( ( a, b ) => moment( a ).diff( moment( b ) ) ),
-			typeIs,
-			typeIsNot,
-			storeCurrencyIs,
-			customerCurrencyIs,
-			customerCurrencyIsNot,
-			loanIdIs,
-			search,
-		};
+			const query = {
+				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
+					? '1'
+					: paged,
+				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
+					? '25'
+					: perPage,
+				orderby: orderby || 'date',
+				order: order || 'desc',
+			};
 
-		return {
-			transactionsSummary: getOnReviewTransactionsSummary( query ),
-			transactionsSummaryError: getOnReviewTransactionsSummaryError(
-				query
-			),
-			isLoading: isResolving( 'getOnReviewTransactionsSummary', [
-				query,
-			] ),
-		};
-	}, [] );
+			return {
+				transactionsSummary: getOnReviewTransactionsSummary( query ),
+				transactionsSummaryError: getOnReviewTransactionsSummaryError(
+					query
+				),
+				isLoading: isResolving( 'getOnReviewTransactionsSummary', [
+					query,
+				] ),
+			};
+		},
+		[ paged, perPage, orderby, order ]
+	);

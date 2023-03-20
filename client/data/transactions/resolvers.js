@@ -123,7 +123,7 @@ export function* getBlockedTransactions( query ) {
 
 	try {
 		const results = yield apiFetch( { path } );
-		yield updateBlockedTransactions( results.data || [] );
+		yield updateBlockedTransactions( query, results.data || [] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
@@ -133,7 +133,7 @@ export function* getBlockedTransactions( query ) {
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForBlockedTransactions( e );
+		yield updateErrorForBlockedTransactions( query, e );
 	}
 }
 
@@ -153,7 +153,7 @@ export function* getBlockedTransactionsSummary( query ) {
 
 	try {
 		const results = yield apiFetch( { path } );
-		yield updateBlockedTransactionsSummary( results || [] );
+		yield updateBlockedTransactionsSummary( query, results || [] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
@@ -163,7 +163,7 @@ export function* getBlockedTransactionsSummary( query ) {
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForBlockedTransactionsSummary( e );
+		yield updateErrorForBlockedTransactionsSummary( query, e );
 	}
 }
 
@@ -183,7 +183,7 @@ export function* getOnReviewTransactions( query ) {
 
 	try {
 		const results = yield apiFetch( { path } );
-		yield updateOnReviewTransactions( results.data || [] );
+		yield updateOnReviewTransactions( query, results.data || [] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
@@ -193,7 +193,7 @@ export function* getOnReviewTransactions( query ) {
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForOnReviewTransactions( e );
+		yield updateErrorForOnReviewTransactions( query, e );
 	}
 }
 
@@ -213,7 +213,7 @@ export function* getOnReviewTransactionsSummary( query ) {
 
 	try {
 		const results = yield apiFetch( { path } );
-		yield updateOnReviewTransactionsSummary( results || [] );
+		yield updateOnReviewTransactionsSummary( query, results || [] );
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
@@ -223,6 +223,6 @@ export function* getOnReviewTransactionsSummary( query ) {
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForOnReviewTransactionsSummary( e );
+		yield updateErrorForOnReviewTransactionsSummary( query, e );
 	}
 }

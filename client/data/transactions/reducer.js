@@ -10,16 +10,10 @@ const defaultState = {
 	summary: {},
 	fraudProtection: {
 		review: {
-			data: [],
-			summary: {
-				data: {},
-			},
+			summary: {},
 		},
 		block: {
-			data: [],
-			summary: {
-				data: {},
-			},
+			summary: {},
 		},
 	},
 };
@@ -72,7 +66,9 @@ const receiveTransactions = (
 					...state.fraudProtection,
 					block: {
 						...state.fraudProtection.block,
-						data,
+						[ index ]: {
+							data,
+						},
 					},
 				},
 			};
@@ -83,7 +79,9 @@ const receiveTransactions = (
 					...state.fraudProtection,
 					block: {
 						...state.fraudProtection.block,
-						error,
+						[ index ]: {
+							error,
+						},
 					},
 				},
 			};
@@ -94,7 +92,9 @@ const receiveTransactions = (
 					...state.fraudProtection,
 					review: {
 						...state.fraudProtection.review,
-						data,
+						[ index ]: {
+							data,
+						},
 					},
 				},
 			};
@@ -105,7 +105,9 @@ const receiveTransactions = (
 					...state.fraudProtection,
 					review: {
 						...state.fraudProtection.review,
-						error,
+						[ index ]: {
+							error,
+						},
 					},
 				},
 			};
@@ -118,7 +120,9 @@ const receiveTransactions = (
 						...state.fraudProtection.block,
 						summary: {
 							...state.fraudProtection.block.summary,
-							data,
+							[ index ]: {
+								data,
+							},
 						},
 					},
 				},
@@ -132,7 +136,9 @@ const receiveTransactions = (
 						...state.fraudProtection.block,
 						summary: {
 							...state.fraudProtection.block.summary,
-							error,
+							[ index ]: {
+								error,
+							},
 						},
 					},
 				},
@@ -146,7 +152,9 @@ const receiveTransactions = (
 						...state.fraudProtection.review,
 						summary: {
 							...state.fraudProtection.review.summary,
-							data,
+							[ index ]: {
+								data,
+							},
 						},
 					},
 				},
@@ -160,7 +168,9 @@ const receiveTransactions = (
 						...state.fraudProtection.review,
 						summary: {
 							...state.fraudProtection.review.summary,
-							error,
+							[ index ]: {
+								error,
+							},
 						},
 					},
 				},

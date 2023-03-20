@@ -717,34 +717,20 @@ class WC_Payments_API_Client {
 	/**
 	 * Retrieves transaction list for a given fraud outcome status.
 	 *
-	 * @param string $status Fraud outcome status.
+	 * @param string $status    Fraud outcome status.
+	 * @param int    $page      The requested page.
+	 * @param int    $page_size The size of the requested page.
+	 * @param string $sort      The column to be used for sorting.
+	 * @param string $direction The sorting direction.
+	 * @param array  $filters   The filters to be used in the query.
 	 *
 	 * @return array
 	 */
-	public function list_fraud_outcome_transactions( $status, $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [] ) {
-		$query = array_merge(
-			$filters,
-			[
-				'page'      => $page,
-				'pagesize'  => $page_size,
-				'sort'      => $sort,
-				'direction' => $direction,
-			]
-		);
+	public function list_fraud_outcome_transactions_paginated( $status, $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [] ) {
+		$response = $this->get_fraud_outcome_transactions( $status, $sort, $direction, $filters );
 
-		$fraud_outcomes = $this->request( $query, 'fraud_outcomes/' . $status, self::GET );
-		$response       = [];
-
-		foreach ( $fraud_outcomes as &$outcome ) {
-			$outcome = $this->build_fraud_outcome_transactions_order_info( $outcome );
-
-			if ( 'review' === $status && 'requires_capture' !== $outcome['payment_intent']['status'] ) {
-				continue;
-			}
-
-			$response[] = $outcome;
-			unset( $outcome );
-		}
+		// Handles the pagination.
+		$response = array_slice( $response, ( $page - 1 ) * $page_size, $page_size );
 
 		return [
 			'data' => $response,
@@ -759,21 +745,58 @@ class WC_Payments_API_Client {
 	 * @return array
 	 */
 	public function list_fraud_outcome_transactions_summary( $status ) {
-		$fraud_outcomes = $this->list_fraud_outcome_transactions( $status );
+		$fraud_outcomes = $this->get_fraud_outcome_transactions( $status );
 
 		$total      = 0;
 		$currencies = [];
 
-		foreach ( $fraud_outcomes['data'] as $outcome ) {
+		foreach ( $fraud_outcomes as $outcome ) {
 			$total       += $outcome['amount'];
 			$currencies[] = strtolower( $outcome['currency'] );
 		}
 
 		return [
-			'count'      => count( $fraud_outcomes['data'] ),
+			'count'      => count( $fraud_outcomes ),
 			'total'      => (int) $total,
 			'currencies' => array_unique( $currencies ),
 		];
+	}
+
+	/**
+	 * Retrieves transaction list for a given fraud outcome status.
+	 *
+	 * @param string $status    Fraud outcome status.
+	 * @param string $sort      The column to be used for sorting.
+	 * @param string $direction The sorting direction.
+	 * @param array  $filters   The filters to be used in the query.
+	 *
+	 * @return array
+	 */
+	private function get_fraud_outcome_transactions( $status, $sort = 'date', $direction = 'desc', $filters = [] ) {
+		$query = array_merge(
+			$filters,
+			[
+				'sort'      => $sort,
+				'direction' => $direction,
+			]
+		);
+
+		$fraud_outcomes = $this->request( $query, 'fraud_outcomes/' . $status, self::GET );
+		$response       = [];
+
+		foreach ( $fraud_outcomes as &$outcome ) {
+			$outcome = $this->build_fraud_outcome_transactions_order_info( $outcome );
+
+			if ( 'review' === $status && 'requires_capture' !== $outcome['payment_intent']['status'] ) {
+				unset( $outcome );
+				continue;
+			}
+
+			$response[] = $outcome;
+			unset( $outcome );
+		}
+
+		return $response;
 	}
 
 	/**

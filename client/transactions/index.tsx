@@ -35,78 +35,79 @@ import BlockedList from './blocked';
 
 declare const window: any;
 
-const currentQuery = getQuery();
-const initialTab = currentQuery.tab ?? null;
-const onTabSelected = ( tab: string ) => {
-	// When switching tabs, make sure to revert the query strings to default values
-	updateQueryString(
-		{
-			paged: '1',
-			per_page: '25',
-			order: '',
-			orderby: '',
-			tab: tab,
-		},
-		'/payments/transactions'
+export const TransactionsPage: React.FC = () => {
+	const currentQuery = getQuery();
+	const initialTab = currentQuery.tab ?? null;
+
+	const onTabSelected = ( tab: string ) => {
+		// When switching tabs, make sure to revert the query strings to default values
+		updateQueryString(
+			{
+				paged: '1',
+				per_page: '25',
+				order: '',
+				orderby: '',
+				tab: tab,
+			},
+			'/payments/transactions'
+		);
+	};
+
+	const defaultExperience = (
+		<>
+			<TestModeNotice topic={ topics.transactions } />
+			<TransactionsList />
+		</>
 	);
-};
 
-const defaultExperience = (
-	<>
-		<TestModeNotice topic={ topics.transactions } />
-		<TransactionsList />
-	</>
-);
-
-const treatmentExperience = wcpaySettings.accountStatus.status ? (
-	defaultExperience
-) : (
-	<EmptyStateTable
-		headers={ EmptyStateTableHeaders }
-		title="Transactions"
-		content={
-			<EmptyStateList
-				listBanner={ ( props ) => (
-					<img
-						src={ ListBanner }
-						alt="transaction banner"
-						{ ...props }
-					/>
-				) }
-			/>
-		}
-	/>
-);
-
-const tabsComponentMap = {
-	'transactions-page': (
-		<Experiment
-			name="wcpay_empty_state_preview_mode_v5"
-			treatmentExperience={ treatmentExperience }
-			defaultExperience={ defaultExperience }
+	const treatmentExperience = wcpaySettings.accountStatus.status ? (
+		defaultExperience
+	) : (
+		<EmptyStateTable
+			headers={ EmptyStateTableHeaders }
+			title="Transactions"
+			content={
+				<EmptyStateList
+					listBanner={ ( props ) => (
+						<img
+							src={ ListBanner }
+							alt="transaction banner"
+							{ ...props }
+						/>
+					) }
+				/>
+			}
 		/>
-	),
-	'uncaptured-page': (
-		<>
-			<TestModeNotice topic={ topics.authorizations } />
-			<Authorizations />
-		</>
-	),
-	'review-page': (
-		<>
-			<TestModeNotice topic={ topics.riskReviewTransactions } />
-			<RiskReviewList />
-		</>
-	),
-	'blocked-page': (
-		<>
-			<TestModeNotice topic={ topics.blockedTransactions } />
-			<BlockedList />
-		</>
-	),
-};
+	);
 
-export const TransactionsPage = (): JSX.Element => {
+	const tabsComponentMap = {
+		'transactions-page': (
+			<Experiment
+				name="wcpay_empty_state_preview_mode_v5"
+				treatmentExperience={ treatmentExperience }
+				defaultExperience={ defaultExperience }
+			/>
+		),
+		'uncaptured-page': (
+			<>
+				<TestModeNotice topic={ topics.authorizations } />
+				<Authorizations />
+			</>
+		),
+		'review-page': (
+			<>
+				<TestModeNotice topic={ topics.riskReviewTransactions } />
+				<RiskReviewList />
+			</>
+		),
+		'blocked-page': (
+			<>
+				<TestModeNotice topic={ topics.blockedTransactions } />
+				<BlockedList />
+			</>
+		),
+	};
+
 	const {
 		featureFlags: { isAuthAndCaptureEnabled },
 	} = useContext( WCPaySettingsContext );
@@ -116,7 +117,7 @@ export const TransactionsPage = (): JSX.Element => {
 
 	const {
 		transactionsSummary: riskReviewSummary,
-	} = useOnReviewTransactionsSummary( getQuery() );
+	} = useOnReviewTransactionsSummary( {} );
 
 	// The Uncaptured authorizations screen will be shown only if:
 	// 1. The feature is turned on for all accounts

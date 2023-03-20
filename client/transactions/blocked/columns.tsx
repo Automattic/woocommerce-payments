@@ -12,11 +12,11 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { formatExplicitCurrency } from 'utils/currency';
-import { Authorization } from '../../types/authorizations';
 import TransactionStatusChip from '../../components/transaction-status-chip';
+import { FraudOutcomeTransaction } from '../../data';
 
 interface Column extends TableCardColumn {
-	key: 'created' | 'amount' | 'customer' | 'risk_level' | 'status';
+	key: 'created' | 'amount' | 'customer' | 'status';
 	visible?: boolean;
 	cellClassName?: string;
 }
@@ -68,9 +68,9 @@ export const getBlockedListColumns = (): Column[] =>
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
 export const getBlockedListRowContent = (
-	data: Authorization
+	data: FraudOutcomeTransaction
 ): Record< string, TableCardBodyColumn > => {
-	const detailsURL = getDetailsURL( data.order_id );
+	const detailsURL = getDetailsURL( data.order_id.toString() );
 	const formattedCreatedDate = dateI18n(
 		'M j, Y / g:iA',
 		moment.utc( data.created ).local().toISOString()
@@ -88,10 +88,8 @@ export const getBlockedListRowContent = (
 
 	return {
 		status: {
-			value: ( data as any ).status,
-			display: (
-				<TransactionStatusChip status={ ( data as any ).status } />
-			),
+			value: data.status,
+			display: <TransactionStatusChip status={ data.status } />,
 		},
 		created: {
 			value: formattedCreatedDate,
@@ -111,7 +109,7 @@ export const getBlockedListRowContent = (
 };
 
 export const getBlockedListColumnsStructure = (
-	data: Authorization,
+	data: FraudOutcomeTransaction,
 	columns: Column[]
 ): TableCardBodyColumn[] => {
 	const content = getBlockedListRowContent( data );

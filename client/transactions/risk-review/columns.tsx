@@ -15,11 +15,11 @@ import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'utils/currency';
 import wcpayTracks from 'tracks';
-import { Authorization } from '../../types/authorizations';
 import TransactionStatusChip from 'components/transaction-status-chip';
+import { FraudOutcomeTransaction } from '../../data';
 
 interface Column extends TableCardColumn {
-	key: 'created' | 'amount' | 'customer' | 'risk_level' | 'status';
+	key: 'created' | 'amount' | 'customer' | 'status';
 	visible?: boolean;
 	cellClassName?: string;
 }
@@ -73,7 +73,7 @@ export const getRiskReviewListColumns = (): Column[] =>
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
 export const getRiskReviewListRowContent = (
-	data: Authorization
+	data: FraudOutcomeTransaction
 ): Record< string, TableCardBodyColumn > => {
 	const detailsURL = getDetailsURL( data.payment_intent.id, 'transactions' );
 	const formattedCreatedDate = dateI18n(
@@ -128,7 +128,7 @@ export const getRiskReviewListRowContent = (
 };
 
 export const getRiskReviewListColumnsStructure = (
-	data: Authorization,
+	data: FraudOutcomeTransaction,
 	columns: Column[]
 ): TableCardBodyColumn[] => {
 	const content = getRiskReviewListRowContent( data );

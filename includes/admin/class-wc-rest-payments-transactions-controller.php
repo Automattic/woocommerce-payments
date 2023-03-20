@@ -122,16 +122,26 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 
 	/**
 	 * Retrieve blocked transactions to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function get_blocked_transactions() {
-		return $this->forward_request( 'list_fraud_outcome_transactions', [ 'block' ] );
+	public function get_blocked_transactions( $request ) {
+		$page     = (int) $request->get_param( 'page' );
+		$pagesize = (int) ( $request->get_param( 'pagesize' ) ?? 25 );
+
+		return $this->forward_request( 'list_fraud_outcome_transactions_paginated', [ 'block', $page, $pagesize ] );
 	}
 
 	/**
 	 * Retrieve on review transactions to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function get_on_review_transactions() {
-		return $this->forward_request( 'list_fraud_outcome_transactions', [ 'review' ] );
+	public function get_on_review_transactions( $request ) {
+		$page     = (int) $request->get_param( 'page' );
+		$pagesize = (int) ( $request->get_param( 'pagesize' ) ?? 25 );
+
+		return $this->forward_request( 'list_fraud_outcome_transactions_paginated', [ 'review', $page, $pagesize ] );
 	}
 
 	/**

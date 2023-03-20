@@ -39,61 +39,69 @@ export function updateErrorForTransactionsSummary( query, data, error ) {
 	};
 }
 
-export function updateBlockedTransactions( data ) {
+export function updateBlockedTransactions( query, data ) {
 	return {
 		type: TYPES.SET_BLOCKED_TRANSACTIONS,
+		query,
 		data,
 	};
 }
 
-export function updateErrorForBlockedTransactions( error ) {
+export function updateErrorForBlockedTransactions( query, error ) {
 	return {
 		type: TYPES.SET_ERROR_FOR_BLOCKED_TRANSACTIONS,
+		query,
 		data: null,
 		error,
 	};
 }
 
-export function updateBlockedTransactionsSummary( data ) {
+export function updateBlockedTransactionsSummary( query, data ) {
 	return {
 		type: TYPES.SET_BLOCKED_TRANSACTIONS_SUMMARY,
+		query,
 		data,
 	};
 }
 
-export function updateErrorForBlockedTransactionsSummary( error ) {
+export function updateErrorForBlockedTransactionsSummary( query, error ) {
 	return {
 		type: TYPES.SET_ERROR_FOR_BLOCKED_TRANSACTIONS_SUMMARY,
+		query,
 		data: null,
 		error,
 	};
 }
 
-export function updateOnReviewTransactions( data ) {
+export function updateOnReviewTransactions( query, data ) {
 	return {
 		type: TYPES.SET_ON_REVIEW_TRANSACTIONS,
+		query,
 		data,
 	};
 }
 
-export function updateErrorForOnReviewTransactions( error ) {
+export function updateErrorForOnReviewTransactions( query, error ) {
 	return {
 		type: TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS,
+		query,
 		data: null,
 		error,
 	};
 }
 
-export function updateOnReviewTransactionsSummary( data ) {
+export function updateOnReviewTransactionsSummary( query, data ) {
 	return {
 		type: TYPES.SET_ON_REVIEW_TRANSACTIONS_SUMMARY,
+		query,
 		data,
 	};
 }
 
-export function updateErrorForOnReviewTransactionsSummary( error ) {
+export function updateErrorForOnReviewTransactionsSummary( query, error ) {
 	return {
 		type: TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS_SUMMARY,
+		query,
 		data: null,
 		error,
 	};
