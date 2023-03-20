@@ -21,9 +21,6 @@ import CVCVerificationRuleCard from './cards/cvc-verification';
 import InternationalIPAddressRuleCard from './cards/international-ip-address';
 import InternationalBillingAddressRuleCard from './cards/international-billing-address';
 import AddressMismatchRuleCard from './cards/address-mismatch';
-import OrderVelocityRuleCard, {
-	OrderVelocityValidation,
-} from './cards/order-velocity';
 import PurchasePriceThresholdRuleCard, {
 	PurchasePriceThresholdValidation,
 } from './cards/purchase-price-threshold';
@@ -94,7 +91,6 @@ const FraudProtectionAdvancedSettingsPage = () => {
 		setValidationError( null );
 		const validators = {
 			order_items_threshold: OrderItemsThresholdValidation,
-			order_velocity: OrderVelocityValidation,
 			purchase_price_threshold: PurchasePriceThresholdValidation,
 		};
 
@@ -189,9 +185,6 @@ const FraudProtectionAdvancedSettingsPage = () => {
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<AddressMismatchRuleCard />
-						</LoadableBlock>
-						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
-							<OrderVelocityRuleCard />
 						</LoadableBlock>
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<PurchasePriceThresholdRuleCard />

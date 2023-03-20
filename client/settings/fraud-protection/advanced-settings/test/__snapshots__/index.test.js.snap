@@ -297,9 +297,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-6__help"
+                          aria-describedby="inspector-toggle-control-5__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-6"
+                          id="inspector-toggle-control-5"
                           type="checkbox"
                         />
                         <span
@@ -311,14 +311,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-6"
+                        for="inspector-toggle-control-5"
                       >
                         Screen transactions for international IP addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-6__help"
+                      id="inspector-toggle-control-5__help"
                     >
                       When enabled, the payment method will not be charged until you review and approve the transaction
                     </p>
@@ -382,9 +382,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-7__help"
+                          aria-describedby="inspector-toggle-control-6__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-7"
+                          id="inspector-toggle-control-6"
                           type="checkbox"
                         />
                         <span
@@ -396,14 +396,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-7"
+                        for="inspector-toggle-control-6"
                       >
                         Screen transactions for international billing addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-7__help"
+                      id="inspector-toggle-control-6__help"
                     >
                       When enabled, the payment method will not be charged until you review and approve the transaction
                     </p>
@@ -460,9 +460,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-8__help"
+                          aria-describedby="inspector-toggle-control-7__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-8"
+                          id="inspector-toggle-control-7"
                           type="checkbox"
                         />
                         <span
@@ -474,14 +474,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-8"
+                        for="inspector-toggle-control-7"
                       >
                         Screen transactions for mismatched addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-8__help"
+                      id="inspector-toggle-control-7__help"
                     >
                       When enabled, the payment method will not be charged until you review and approve the transaction
                     </p>
@@ -495,84 +495,6 @@ Object {
                   </strong>
                   <p>
                     There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div
-              class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-            >
-              <div
-                class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-              >
-                <div>
-                  <p
-                    class="fraud-protection-rule-card-header"
-                  >
-                    Order Velocity
-                  </p>
-                  <p
-                    class="fraud-protection-rule-card-description"
-                  >
-                    This filter screens for excessive repeat orders from the same IP address or payment card.
-                  </p>
-                </div>
-              </div>
-              <hr />
-              <div
-                class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-              >
-                <div
-                  class="fraud-protection-rule-toggle"
-                >
-                  <strong>
-                    Enable filtering
-                  </strong>
-                  <div
-                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-                  >
-                    <div
-                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                    >
-                      <span
-                        class="components-form-toggle"
-                      >
-                        <input
-                          aria-describedby="inspector-toggle-control-9__help"
-                          class="components-form-toggle__input"
-                          id="inspector-toggle-control-9"
-                          type="checkbox"
-                        />
-                        <span
-                          class="components-form-toggle__track"
-                        />
-                        <span
-                          class="components-form-toggle__thumb"
-                        />
-                      </span>
-                      <label
-                        class="components-toggle-control__label"
-                        for="inspector-toggle-control-9"
-                      >
-                        Screen transactions for excessive repeat orders
-                      </label>
-                    </div>
-                    <p
-                      class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-9__help"
-                    >
-                      When enabled, the payment method will not be charged until you review and approve the transaction
-                    </p>
-                  </div>
-                </div>
-                <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Fraudsters often submit multiple purchases using an automated script that tests unknown card numbers. Alternatively, the fraudster may attempt to bypass other filters by making multiple small purchases with multiple stolen account numbers.
                   </p>
                 </div>
               </div>
@@ -616,9 +538,9 @@ Object {
                         class="components-form-toggle is-checked"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-10__help"
+                          aria-describedby="inspector-toggle-control-8__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-10"
+                          id="inspector-toggle-control-8"
                           type="checkbox"
                         />
                         <span
@@ -630,14 +552,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-10"
+                        for="inspector-toggle-control-8"
                       >
                         Screen transactions for abnormal purchase prices
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-10__help"
+                      id="inspector-toggle-control-8__help"
                     >
                       When enabled, the payment method will not be charged until you review and approve the transaction
                     </p>
@@ -889,9 +811,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-11__help"
+                          aria-describedby="inspector-toggle-control-9__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-11"
+                          id="inspector-toggle-control-9"
                           type="checkbox"
                         />
                         <span
@@ -903,14 +825,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-11"
+                        for="inspector-toggle-control-9"
                       >
                         Screen transactions for abnormal item counts
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-11__help"
+                      id="inspector-toggle-control-9__help"
                     >
                       When enabled, the payment method will not be charged until you review and approve the transaction
                     </p>
@@ -1201,9 +1123,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-6__help"
+                        aria-describedby="inspector-toggle-control-5__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-6"
+                        id="inspector-toggle-control-5"
                         type="checkbox"
                       />
                       <span
@@ -1215,14 +1137,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-6"
+                      for="inspector-toggle-control-5"
                     >
                       Screen transactions for international IP addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-6__help"
+                    id="inspector-toggle-control-5__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -1286,9 +1208,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-7__help"
+                        aria-describedby="inspector-toggle-control-6__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-7"
+                        id="inspector-toggle-control-6"
                         type="checkbox"
                       />
                       <span
@@ -1300,14 +1222,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-7"
+                      for="inspector-toggle-control-6"
                     >
                       Screen transactions for international billing addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-7__help"
+                    id="inspector-toggle-control-6__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -1364,9 +1286,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-8__help"
+                        aria-describedby="inspector-toggle-control-7__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-8"
+                        id="inspector-toggle-control-7"
                         type="checkbox"
                       />
                       <span
@@ -1378,14 +1300,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-8"
+                      for="inspector-toggle-control-7"
                     >
                       Screen transactions for mismatched addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-8__help"
+                    id="inspector-toggle-control-7__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -1399,84 +1321,6 @@ Object {
                 </strong>
                 <p>
                   There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div
-            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-          >
-            <div
-              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div>
-                <p
-                  class="fraud-protection-rule-card-header"
-                >
-                  Order Velocity
-                </p>
-                <p
-                  class="fraud-protection-rule-card-description"
-                >
-                  This filter screens for excessive repeat orders from the same IP address or payment card.
-                </p>
-              </div>
-            </div>
-            <hr />
-            <div
-              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div
-                class="fraud-protection-rule-toggle"
-              >
-                <strong>
-                  Enable filtering
-                </strong>
-                <div
-                  class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-                >
-                  <div
-                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                  >
-                    <span
-                      class="components-form-toggle"
-                    >
-                      <input
-                        aria-describedby="inspector-toggle-control-9__help"
-                        class="components-form-toggle__input"
-                        id="inspector-toggle-control-9"
-                        type="checkbox"
-                      />
-                      <span
-                        class="components-form-toggle__track"
-                      />
-                      <span
-                        class="components-form-toggle__thumb"
-                      />
-                    </span>
-                    <label
-                      class="components-toggle-control__label"
-                      for="inspector-toggle-control-9"
-                    >
-                      Screen transactions for excessive repeat orders
-                    </label>
-                  </div>
-                  <p
-                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-9__help"
-                  >
-                    When enabled, the payment method will not be charged until you review and approve the transaction
-                  </p>
-                </div>
-              </div>
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Fraudsters often submit multiple purchases using an automated script that tests unknown card numbers. Alternatively, the fraudster may attempt to bypass other filters by making multiple small purchases with multiple stolen account numbers.
                 </p>
               </div>
             </div>
@@ -1520,9 +1364,9 @@ Object {
                       class="components-form-toggle is-checked"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-10__help"
+                        aria-describedby="inspector-toggle-control-8__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-10"
+                        id="inspector-toggle-control-8"
                         type="checkbox"
                       />
                       <span
@@ -1534,14 +1378,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-10"
+                      for="inspector-toggle-control-8"
                     >
                       Screen transactions for abnormal purchase prices
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-10__help"
+                    id="inspector-toggle-control-8__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -1793,9 +1637,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-11__help"
+                        aria-describedby="inspector-toggle-control-9__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-11"
+                        id="inspector-toggle-control-9"
                         type="checkbox"
                       />
                       <span
@@ -1807,14 +1651,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-11"
+                      for="inspector-toggle-control-9"
                     >
                       Screen transactions for abnormal item counts
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-11__help"
+                    id="inspector-toggle-control-9__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -2349,12 +2193,12 @@ Object {
                 <p
                   class="fraud-protection-rule-card-header"
                 >
-                  Order Velocity
+                  Purchase Price Threshold
                 </p>
                 <p
                   class="fraud-protection-rule-card-description"
                 >
-                  This filter screens for excessive repeat orders from the same IP address or payment card.
+                  This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
                 </p>
               </div>
             </div>
@@ -2394,90 +2238,12 @@ Object {
                       class="components-toggle-control__label"
                       for="inspector-toggle-control-3"
                     >
-                      Screen transactions for excessive repeat orders
-                    </label>
-                  </div>
-                  <p
-                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-3__help"
-                  >
-                    When enabled, the payment method will not be charged until you review and approve the transaction
-                  </p>
-                </div>
-              </div>
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Fraudsters often submit multiple purchases using an automated script that tests unknown card numbers. Alternatively, the fraudster may attempt to bypass other filters by making multiple small purchases with multiple stolen account numbers.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div
-            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-          >
-            <div
-              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div>
-                <p
-                  class="fraud-protection-rule-card-header"
-                >
-                  Purchase Price Threshold
-                </p>
-                <p
-                  class="fraud-protection-rule-card-description"
-                >
-                  This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
-                </p>
-              </div>
-            </div>
-            <hr />
-            <div
-              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div
-                class="fraud-protection-rule-toggle"
-              >
-                <strong>
-                  Enable filtering
-                </strong>
-                <div
-                  class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-                >
-                  <div
-                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                  >
-                    <span
-                      class="components-form-toggle"
-                    >
-                      <input
-                        aria-describedby="inspector-toggle-control-4__help"
-                        class="components-form-toggle__input"
-                        id="inspector-toggle-control-4"
-                        type="checkbox"
-                      />
-                      <span
-                        class="components-form-toggle__track"
-                      />
-                      <span
-                        class="components-form-toggle__thumb"
-                      />
-                    </span>
-                    <label
-                      class="components-toggle-control__label"
-                      for="inspector-toggle-control-4"
-                    >
                       Screen transactions for abnormal purchase prices
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-4__help"
+                    id="inspector-toggle-control-3__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -2534,9 +2300,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-5__help"
+                        aria-describedby="inspector-toggle-control-4__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-5"
+                        id="inspector-toggle-control-4"
                         type="checkbox"
                       />
                       <span
@@ -2548,14 +2314,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-5"
+                      for="inspector-toggle-control-4"
                     >
                       Screen transactions for abnormal item counts
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-5__help"
+                    id="inspector-toggle-control-4__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -3008,12 +2774,12 @@ Object {
               <p
                 class="fraud-protection-rule-card-header"
               >
-                Order Velocity
+                Purchase Price Threshold
               </p>
               <p
                 class="fraud-protection-rule-card-description"
               >
-                This filter screens for excessive repeat orders from the same IP address or payment card.
+                This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
               </p>
             </div>
           </div>
@@ -3053,90 +2819,12 @@ Object {
                     class="components-toggle-control__label"
                     for="inspector-toggle-control-3"
                   >
-                    Screen transactions for excessive repeat orders
-                  </label>
-                </div>
-                <p
-                  class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                  id="inspector-toggle-control-3__help"
-                >
-                  When enabled, the payment method will not be charged until you review and approve the transaction
-                </p>
-              </div>
-            </div>
-            <div
-              class="fraud-protection-rule-description"
-            >
-              <strong>
-                How does this filter protect me?
-              </strong>
-              <p>
-                Fraudsters often submit multiple purchases using an automated script that tests unknown card numbers. Alternatively, the fraudster may attempt to bypass other filters by making multiple small purchases with multiple stolen account numbers.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div
-          class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-        >
-          <div
-            class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-          >
-            <div>
-              <p
-                class="fraud-protection-rule-card-header"
-              >
-                Purchase Price Threshold
-              </p>
-              <p
-                class="fraud-protection-rule-card-description"
-              >
-                This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
-              </p>
-            </div>
-          </div>
-          <hr />
-          <div
-            class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-          >
-            <div
-              class="fraud-protection-rule-toggle"
-            >
-              <strong>
-                Enable filtering
-              </strong>
-              <div
-                class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-              >
-                <div
-                  class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                >
-                  <span
-                    class="components-form-toggle"
-                  >
-                    <input
-                      aria-describedby="inspector-toggle-control-4__help"
-                      class="components-form-toggle__input"
-                      id="inspector-toggle-control-4"
-                      type="checkbox"
-                    />
-                    <span
-                      class="components-form-toggle__track"
-                    />
-                    <span
-                      class="components-form-toggle__thumb"
-                    />
-                  </span>
-                  <label
-                    class="components-toggle-control__label"
-                    for="inspector-toggle-control-4"
-                  >
                     Screen transactions for abnormal purchase prices
                   </label>
                 </div>
                 <p
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                  id="inspector-toggle-control-4__help"
+                  id="inspector-toggle-control-3__help"
                 >
                   When enabled, the payment method will not be charged until you review and approve the transaction
                 </p>
@@ -3193,9 +2881,9 @@ Object {
                     class="components-form-toggle"
                   >
                     <input
-                      aria-describedby="inspector-toggle-control-5__help"
+                      aria-describedby="inspector-toggle-control-4__help"
                       class="components-form-toggle__input"
-                      id="inspector-toggle-control-5"
+                      id="inspector-toggle-control-4"
                       type="checkbox"
                     />
                     <span
@@ -3207,14 +2895,14 @@ Object {
                   </span>
                   <label
                     class="components-toggle-control__label"
-                    for="inspector-toggle-control-5"
+                    for="inspector-toggle-control-4"
                   >
                     Screen transactions for abnormal item counts
                   </label>
                 </div>
                 <p
                   class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                  id="inspector-toggle-control-5__help"
+                  id="inspector-toggle-control-4__help"
                 >
                   When enabled, the payment method will not be charged until you review and approve the transaction
                 </p>
@@ -3555,9 +3243,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-12__help"
+                          aria-describedby="inspector-toggle-control-10__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-12"
+                          id="inspector-toggle-control-10"
                           type="checkbox"
                         />
                         <span
@@ -3569,14 +3257,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-12"
+                        for="inspector-toggle-control-10"
                       >
                         Screen transactions for international IP addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-12__help"
+                      id="inspector-toggle-control-10__help"
                     >
                       When enabled, the payment method will not be charged until you review and approve the transaction
                     </p>
@@ -3640,9 +3328,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-13__help"
+                          aria-describedby="inspector-toggle-control-11__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-13"
+                          id="inspector-toggle-control-11"
                           type="checkbox"
                         />
                         <span
@@ -3654,14 +3342,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-13"
+                        for="inspector-toggle-control-11"
                       >
                         Screen transactions for international billing addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-13__help"
+                      id="inspector-toggle-control-11__help"
                     >
                       When enabled, the payment method will not be charged until you review and approve the transaction
                     </p>
@@ -3718,9 +3406,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-14__help"
+                          aria-describedby="inspector-toggle-control-12__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-14"
+                          id="inspector-toggle-control-12"
                           type="checkbox"
                         />
                         <span
@@ -3732,14 +3420,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-14"
+                        for="inspector-toggle-control-12"
                       >
                         Screen transactions for mismatched addresses
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-14__help"
+                      id="inspector-toggle-control-12__help"
                     >
                       When enabled, the payment method will not be charged until you review and approve the transaction
                     </p>
@@ -3753,84 +3441,6 @@ Object {
                   </strong>
                   <p>
                     There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div
-              class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-            >
-              <div
-                class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-              >
-                <div>
-                  <p
-                    class="fraud-protection-rule-card-header"
-                  >
-                    Order Velocity
-                  </p>
-                  <p
-                    class="fraud-protection-rule-card-description"
-                  >
-                    This filter screens for excessive repeat orders from the same IP address or payment card.
-                  </p>
-                </div>
-              </div>
-              <hr />
-              <div
-                class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-              >
-                <div
-                  class="fraud-protection-rule-toggle"
-                >
-                  <strong>
-                    Enable filtering
-                  </strong>
-                  <div
-                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-                  >
-                    <div
-                      class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                    >
-                      <span
-                        class="components-form-toggle"
-                      >
-                        <input
-                          aria-describedby="inspector-toggle-control-15__help"
-                          class="components-form-toggle__input"
-                          id="inspector-toggle-control-15"
-                          type="checkbox"
-                        />
-                        <span
-                          class="components-form-toggle__track"
-                        />
-                        <span
-                          class="components-form-toggle__thumb"
-                        />
-                      </span>
-                      <label
-                        class="components-toggle-control__label"
-                        for="inspector-toggle-control-15"
-                      >
-                        Screen transactions for excessive repeat orders
-                      </label>
-                    </div>
-                    <p
-                      class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-15__help"
-                    >
-                      When enabled, the payment method will not be charged until you review and approve the transaction
-                    </p>
-                  </div>
-                </div>
-                <div
-                  class="fraud-protection-rule-description"
-                >
-                  <strong>
-                    How does this filter protect me?
-                  </strong>
-                  <p>
-                    Fraudsters often submit multiple purchases using an automated script that tests unknown card numbers. Alternatively, the fraudster may attempt to bypass other filters by making multiple small purchases with multiple stolen account numbers.
                   </p>
                 </div>
               </div>
@@ -3874,9 +3484,9 @@ Object {
                         class="components-form-toggle is-checked"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-16__help"
+                          aria-describedby="inspector-toggle-control-13__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-16"
+                          id="inspector-toggle-control-13"
                           type="checkbox"
                         />
                         <span
@@ -3888,14 +3498,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-16"
+                        for="inspector-toggle-control-13"
                       >
                         Screen transactions for abnormal purchase prices
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-16__help"
+                      id="inspector-toggle-control-13__help"
                     >
                       When enabled, the payment method will not be charged until you review and approve the transaction
                     </p>
@@ -4108,9 +3718,9 @@ Object {
                         class="components-form-toggle"
                       >
                         <input
-                          aria-describedby="inspector-toggle-control-17__help"
+                          aria-describedby="inspector-toggle-control-14__help"
                           class="components-form-toggle__input"
-                          id="inspector-toggle-control-17"
+                          id="inspector-toggle-control-14"
                           type="checkbox"
                         />
                         <span
@@ -4122,14 +3732,14 @@ Object {
                       </span>
                       <label
                         class="components-toggle-control__label"
-                        for="inspector-toggle-control-17"
+                        for="inspector-toggle-control-14"
                       >
                         Screen transactions for abnormal item counts
                       </label>
                     </div>
                     <p
                       class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                      id="inspector-toggle-control-17__help"
+                      id="inspector-toggle-control-14__help"
                     >
                       When enabled, the payment method will not be charged until you review and approve the transaction
                     </p>
@@ -4389,9 +3999,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-12__help"
+                        aria-describedby="inspector-toggle-control-10__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-12"
+                        id="inspector-toggle-control-10"
                         type="checkbox"
                       />
                       <span
@@ -4403,14 +4013,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-12"
+                      for="inspector-toggle-control-10"
                     >
                       Screen transactions for international IP addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-12__help"
+                    id="inspector-toggle-control-10__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -4474,9 +4084,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-13__help"
+                        aria-describedby="inspector-toggle-control-11__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-13"
+                        id="inspector-toggle-control-11"
                         type="checkbox"
                       />
                       <span
@@ -4488,14 +4098,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-13"
+                      for="inspector-toggle-control-11"
                     >
                       Screen transactions for international billing addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-13__help"
+                    id="inspector-toggle-control-11__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -4552,9 +4162,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-14__help"
+                        aria-describedby="inspector-toggle-control-12__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-14"
+                        id="inspector-toggle-control-12"
                         type="checkbox"
                       />
                       <span
@@ -4566,14 +4176,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-14"
+                      for="inspector-toggle-control-12"
                     >
                       Screen transactions for mismatched addresses
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-14__help"
+                    id="inspector-toggle-control-12__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -4587,84 +4197,6 @@ Object {
                 </strong>
                 <p>
                   There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div
-            class="components-card is-size-medium fraud-protection-rule-card css-1xs3c37-CardUI e1q7k77g0"
-          >
-            <div
-              class="components-card__body is-size-medium wcpay-card-body fraud-protection-rule-card-header-container css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div>
-                <p
-                  class="fraud-protection-rule-card-header"
-                >
-                  Order Velocity
-                </p>
-                <p
-                  class="fraud-protection-rule-card-description"
-                >
-                  This filter screens for excessive repeat orders from the same IP address or payment card.
-                </p>
-              </div>
-            </div>
-            <hr />
-            <div
-              class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
-            >
-              <div
-                class="fraud-protection-rule-toggle"
-              >
-                <strong>
-                  Enable filtering
-                </strong>
-                <div
-                  class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper e1puf3u0"
-                >
-                  <div
-                    class="components-base-control__field css-11vcxb9-StyledField e1puf3u1"
-                  >
-                    <span
-                      class="components-form-toggle"
-                    >
-                      <input
-                        aria-describedby="inspector-toggle-control-15__help"
-                        class="components-form-toggle__input"
-                        id="inspector-toggle-control-15"
-                        type="checkbox"
-                      />
-                      <span
-                        class="components-form-toggle__track"
-                      />
-                      <span
-                        class="components-form-toggle__thumb"
-                      />
-                    </span>
-                    <label
-                      class="components-toggle-control__label"
-                      for="inspector-toggle-control-15"
-                    >
-                      Screen transactions for excessive repeat orders
-                    </label>
-                  </div>
-                  <p
-                    class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-15__help"
-                  >
-                    When enabled, the payment method will not be charged until you review and approve the transaction
-                  </p>
-                </div>
-              </div>
-              <div
-                class="fraud-protection-rule-description"
-              >
-                <strong>
-                  How does this filter protect me?
-                </strong>
-                <p>
-                  Fraudsters often submit multiple purchases using an automated script that tests unknown card numbers. Alternatively, the fraudster may attempt to bypass other filters by making multiple small purchases with multiple stolen account numbers.
                 </p>
               </div>
             </div>
@@ -4708,9 +4240,9 @@ Object {
                       class="components-form-toggle is-checked"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-16__help"
+                        aria-describedby="inspector-toggle-control-13__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-16"
+                        id="inspector-toggle-control-13"
                         type="checkbox"
                       />
                       <span
@@ -4722,14 +4254,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-16"
+                      for="inspector-toggle-control-13"
                     >
                       Screen transactions for abnormal purchase prices
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-16__help"
+                    id="inspector-toggle-control-13__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
@@ -4942,9 +4474,9 @@ Object {
                       class="components-form-toggle"
                     >
                       <input
-                        aria-describedby="inspector-toggle-control-17__help"
+                        aria-describedby="inspector-toggle-control-14__help"
                         class="components-form-toggle__input"
-                        id="inspector-toggle-control-17"
+                        id="inspector-toggle-control-14"
                         type="checkbox"
                       />
                       <span
@@ -4956,14 +4488,14 @@ Object {
                     </span>
                     <label
                       class="components-toggle-control__label"
-                      for="inspector-toggle-control-17"
+                      for="inspector-toggle-control-14"
                     >
                       Screen transactions for abnormal item counts
                     </label>
                   </div>
                   <p
                     class="components-base-control__help css-1wm1a55-StyledHelp e1puf3u3"
-                    id="inspector-toggle-control-17__help"
+                    id="inspector-toggle-control-14__help"
                   >
                     When enabled, the payment method will not be charged until you review and approve the transaction
                   </p>
