@@ -23,7 +23,6 @@ runs:
           echo "::notice::${E2E_RESULT_FILEPATH} doesn't exist so results are unclear and we will not try again."
           exit 1
         fi
-        echo "::notice::Testing notice after exit."
 
     # Retry failed E2E tests
     - name: Re-try Failed E2E Files
