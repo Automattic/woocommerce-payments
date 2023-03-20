@@ -16,14 +16,20 @@ import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice, topics } from 'components/test-mode-notice';
 import PaymentCardReaderChargeDetails from './readers';
-import { PaymentChargeDetails, isPaymentIntent, isCharge } from './types';
+import {
+	PaymentChargeDetails,
+	isPaymentIntent,
+	isCharge,
+	PaymentDetailsProps,
+	PaymentChargeDetailsProps,
+} from './types';
 import { Charge } from '../types/charges';
 import {
 	getIsChargeId,
 	usePaymentIntentWithChargeFallback,
 } from 'wcpay/data/payment-intents';
 
-const PaymentDetails = ( props: Record< string, any > ): JSX.Element => {
+const PaymentDetails: React.FC< PaymentDetailsProps > = ( props ) => {
 	if ( 'card_reader_fee' === props.query.transaction_type ) {
 		return (
 			<PaymentCardReaderChargeDetails
@@ -36,7 +42,9 @@ const PaymentDetails = ( props: Record< string, any > ): JSX.Element => {
 	return <PaymentChargeDetails id={ props.query.id } />;
 };
 
-const PaymentChargeDetails = ( { id }: { id: string } ): JSX.Element => {
+const PaymentChargeDetails: React.FC< PaymentChargeDetailsProps > = ( {
+	id,
+} ) => {
 	const {
 		data,
 		error,
@@ -48,19 +56,25 @@ const PaymentChargeDetails = ( { id }: { id: string } ): JSX.Element => {
 
 	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
+	const charge =
+		( isPaymentIntent( data ) ? data.charge : data ) || ( {} as Charge );
+	const metadata = isPaymentIntent( data ) ? data.metadata : {};
+
 	useEffect( () => {
-		if ( isCharge( data ) ) {
-			const shouldRedirect = !! ( isChargeId && data.payment_intent );
+		if ( ! isCharge( data ) ) {
+			return;
+		}
 
-			if ( shouldRedirect ) {
-				const url = getAdminUrl( {
-					page: 'wc-admin',
-					path: '/payments/transactions/details',
-					id: data.payment_intent,
-				} );
+		const shouldRedirect = !! ( isChargeId && data.payment_intent );
 
-				window.location.href = url;
-			}
+		if ( shouldRedirect ) {
+			const url = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/transactions/details',
+				id: data.payment_intent,
+			} );
+
+			window.location.href = url;
 		}
 	}, [ data, isChargeId ] );
 
@@ -86,11 +100,8 @@ const PaymentChargeDetails = ( { id }: { id: string } ): JSX.Element => {
 			{ testModeNotice }
 			<ErrorBoundary>
 				<PaymentDetailsSummary
-					charge={
-						( isPaymentIntent( data ) ? data.charge : data ) ||
-						( {} as Charge )
-					}
-					metadata={ isPaymentIntent( data ) ? data.metadata : {} }
+					charge={ charge }
+					metadata={ metadata }
 					isLoading={ isLoading }
 				/>
 			</ErrorBoundary>
@@ -101,10 +112,7 @@ const PaymentChargeDetails = ( { id }: { id: string } ): JSX.Element => {
 			) }
 			<ErrorBoundary>
 				<PaymentDetailsPaymentMethod
-					charge={
-						( isPaymentIntent( data ) ? data.charge : data ) ||
-						( {} as Charge )
-					}
+					charge={ charge }
 					isLoading={ isLoading }
 				/>
 			</ErrorBoundary>

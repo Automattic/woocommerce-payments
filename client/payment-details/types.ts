@@ -11,6 +11,18 @@ export interface PaymentChargeDetails {
 	isLoading: boolean;
 }
 
+export interface PaymentDetailsProps {
+	query: {
+		id: string;
+		transaction_id?: string;
+		transaction_type?: string;
+	};
+}
+
+export interface PaymentChargeDetailsProps {
+	id: string;
+}
+
 export const isPaymentIntent = (
 	data: PaymentIntent | Charge
 ): data is PaymentIntent => {
