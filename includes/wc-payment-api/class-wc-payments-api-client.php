@@ -729,6 +729,26 @@ class WC_Payments_API_Client {
 	public function list_fraud_outcome_transactions_paginated( $status, $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [] ) {
 		$response = $this->get_fraud_outcome_transactions( $status, $sort, $direction, $filters );
 
+		$compare_filters = function ( $a, $b ) use ( $sort, $direction ) {
+			$key = 'date' === $sort ? 'created' : $sort;
+
+			$a_value = $a[ $key ];
+			$b_value = $b[ $key ];
+
+			if ( $a_value === $b_value ) {
+				return 0;
+			};
+
+			if ( 'desc' === $direction ) {
+				return $a_value < $b_value ? 1 : -1;
+			};
+
+			return $a_value < $b_value ? -1 : 1;
+		};
+
+		// Handles the filtering.
+		usort( $response, $compare_filters );
+
 		// Handles the pagination.
 		$response = array_slice( $response, ( $page - 1 ) * $page_size, $page_size );
 

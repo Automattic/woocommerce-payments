@@ -126,10 +126,12 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_blocked_transactions( $request ) {
-		$page     = (int) $request->get_param( 'page' );
-		$pagesize = (int) ( $request->get_param( 'pagesize' ) ?? 25 );
+		$page      = (int) $request->get_param( 'page' );
+		$pagesize  = (int) ( $request->get_param( 'pagesize' ) ?? 25 );
+		$sort      = $request->get_param( 'sort' );
+		$direction = $request->get_param( 'direction' );
 
-		return $this->forward_request( 'list_fraud_outcome_transactions_paginated', [ 'block', $page, $pagesize ] );
+		return $this->forward_request( 'list_fraud_outcome_transactions_paginated', [ 'block', $page, $pagesize, $sort, $direction ] );
 	}
 
 	/**
@@ -138,10 +140,12 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_on_review_transactions( $request ) {
-		$page     = (int) $request->get_param( 'page' );
-		$pagesize = (int) ( $request->get_param( 'pagesize' ) ?? 25 );
+		$page      = (int) $request->get_param( 'page' );
+		$pagesize  = (int) ( $request->get_param( 'pagesize' ) ?? 25 );
+		$sort      = $request->get_param( 'sort' );
+		$direction = $request->get_param( 'direction' );
 
-		return $this->forward_request( 'list_fraud_outcome_transactions_paginated', [ 'review', $page, $pagesize ] );
+		return $this->forward_request( 'list_fraud_outcome_transactions_paginated', [ 'review', $page, $pagesize, $sort, $direction ] );
 	}
 
 	/**
