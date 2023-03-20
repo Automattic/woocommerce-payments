@@ -10,7 +10,7 @@ import { Button, Modal } from '@wordpress/components';
  */
 import ExceedsDollarAmountRule from '../exceeds-dollar-amount-rule';
 import ProtectionLevelModalNotice from '../protection-level-modal-notice';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 export const HighFraudProtectionModal = ( {
 	level,
