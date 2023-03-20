@@ -71,14 +71,11 @@ function addPageDebugEvents() {
  * Relevant for Atomic sites only.
  */
 async function addSupportSessionDetectedCookie() {
-	const [ , ...rest ] = new URL( process.env.WP_BASE_URL ).hostname.split(
-		'.'
-	);
-	const nakedDomain = `.${ rest.join( '.' ) }`;
+	const domain = new URL( process.env.WP_BASE_URL ).hostname;
 	await page.setCookie( {
 		value: 'true',
 		name: '_wpcomsh_support_session_detected',
-		domain: nakedDomain,
+		domain: domain,
 	} );
 }
 
