@@ -248,3 +248,9 @@ export function updatePlatformCheckoutLocations( locations ) {
 export function updateProtectionLevel( level ) {
 	return updateSettingsValues( { current_protection_level: level } );
 }
+
+export function updateAdvancedFraudProtectionSettings( settings ) {
+	return updateSettingsValues( {
+		advanced_fraud_protection_settings: settings,
+	} );
+}
