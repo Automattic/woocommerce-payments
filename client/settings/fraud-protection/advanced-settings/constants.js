@@ -17,7 +17,6 @@ export const Rules = {
 	RULE_ADDRESS_MISMATCH: 'address_mismatch',
 	RULE_INTERNATIONAL_IP_ADDRESS: 'international_ip_address',
 	RULE_INTERNATIONAL_BILLING_ADDRESS: 'international_billing_address',
-	RULE_ORDER_VELOCITY: 'order_velocity',
 	RULE_ORDER_ITEMS_THRESHOLD: 'order_items_threshold',
 	RULE_PURCHASE_PRICE_THRESHOLD: 'purchase_price_threshold',
 };

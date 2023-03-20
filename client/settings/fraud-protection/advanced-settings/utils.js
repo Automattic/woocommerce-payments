@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { sprintf } from '@wordpress/i18n';
 import { CheckOperators, Checks, Outcomes, Rules } from './constants';
 
 const getRuleBase = ( setting, block ) => {
@@ -80,16 +79,6 @@ const buildRuleset = ( ruleKey, shouldBlock, ruleConfiguration = {} ) => {
 								null,
 					  };
 			}
-			break;
-		case Rules.RULE_ORDER_VELOCITY:
-			ruleBase.check = {
-				key: sprintf(
-					Checks.CHECK_ORDERS_SINCE_H,
-					ruleConfiguration.interval
-				),
-				operator: CheckOperators.OPERATOR_GT,
-				value: parseInt( ruleConfiguration.max_orders, 10 ),
-			};
 			break;
 		case Rules.RULE_PURCHASE_PRICE_THRESHOLD:
 			if (
@@ -173,12 +162,6 @@ export const readRuleset = ( rulesetConfig ) => {
 			enabled: false,
 			block: false,
 		},
-		[ Rules.RULE_ORDER_VELOCITY ]: {
-			enabled: false,
-			block: false,
-			max_orders: 0,
-			interval: 24,
-		},
 		[ Rules.RULE_ORDER_ITEMS_THRESHOLD ]: {
 			enabled: false,
 			block: false,
@@ -230,20 +213,6 @@ export const readRuleset = ( rulesetConfig ) => {
 					block: rule.outcome === Outcomes.BLOCK,
 					min_items: minItems.value ?? '',
 					max_items: maxItems.value ?? '',
-				};
-				break;
-			case Rules.RULE_ORDER_VELOCITY:
-				parsedUIConfig[ rule.key ] = {
-					enabled: true,
-					block: rule.outcome === Outcomes.BLOCK,
-					max_orders: rule.check.value ?? '',
-					interval:
-						parseInt(
-							rule.check.key.match(
-								/^orders_since_(\d+)h$/
-							)[ 1 ],
-							10
-						) ?? null,
 				};
 				break;
 			case Rules.RULE_PURCHASE_PRICE_THRESHOLD:

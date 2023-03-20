@@ -1,10 +1,4 @@
 /* @format */
-
-/**
- * External dependencies
- */
-import { sprintf } from '@wordpress/i18n';
-
 /**
  * Internal dependencies
  */
@@ -28,12 +22,6 @@ const defaultUIConfig = {
 		enabled: false,
 		max_items: null,
 		min_items: null,
-	},
-	order_velocity: {
-		block: false,
-		enabled: false,
-		interval: 24,
-		max_orders: 0,
 	},
 	purchase_price_threshold: {
 		block: false,
@@ -143,29 +131,6 @@ describe( 'Ruleset adapter utilities test', () => {
 				enabled: true,
 				max_items: 10,
 				min_items: 1,
-			},
-		} );
-		const output = readRuleset( ruleset );
-		expect( output ).toEqual( expected );
-	} );
-	test( 'converts an order velocity ruleset to matching UI config', () => {
-		const ruleset = [
-			{
-				key: Rules.RULE_ORDER_VELOCITY,
-				outcome: Outcomes.BLOCK,
-				check: {
-					key: sprintf( 'orders_since_%dh', 12 ),
-					operator: CheckOperators.OPERATOR_GT,
-					value: 100,
-				},
-			},
-		];
-		const expected = Object.assign( {}, defaultUIConfig, {
-			order_velocity: {
-				block: true,
-				enabled: true,
-				max_orders: 100,
-				interval: 12,
 			},
 		} );
 		const output = readRuleset( ruleset );
@@ -589,39 +554,6 @@ describe( 'Ruleset adapter utilities test', () => {
 					check: null,
 				} );
 			}
-			const output = writeRuleset( config );
-			expect( output ).toEqual( expected );
-		}
-	);
-	const orderVelocityCases = [
-		[ true, 5, 12 ],
-		[ false, 10, 24 ],
-		[ false, 10, 36 ],
-	];
-	test.each( orderVelocityCases )(
-		'converts enabled order velocity filter to ruleset, blocking %s, min %s, max %s',
-		( block, maxOrders, interval ) => {
-			const config = Object.assign( {}, defaultUIConfig, {
-				[ Rules.RULE_ORDER_VELOCITY ]: {
-					enabled: true,
-					block: block,
-					max_orders: maxOrders,
-					interval: interval,
-				},
-			} );
-
-			const expected = [
-				{
-					key: Rules.RULE_ORDER_VELOCITY,
-					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
-					check: {
-						key: sprintf( Checks.CHECK_ORDERS_SINCE_H, interval ),
-						operator: CheckOperators.OPERATOR_GT,
-						value: maxOrders,
-					},
-				},
-			];
-
 			const output = writeRuleset( config );
 			expect( output ).toEqual( expected );
 		}

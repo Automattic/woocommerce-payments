@@ -55,7 +55,6 @@ class Fraud_Risk_Tools {
 	const RULE_ADDRESS_MISMATCH              = 'address_mismatch';
 	const RULE_INTERNATIONAL_IP_ADDRESS      = 'international_ip_address';
 	const RULE_INTERNATIONAL_BILLING_ADDRESS = 'international_billing_address';
-	const RULE_ORDER_VELOCITY                = 'order_velocity';
 	const RULE_ORDER_ITEMS_THRESHOLD         = 'order_items_threshold';
 	const RULE_PURCHASE_PRICE_THRESHOLD      = 'purchase_price_threshold';
 
@@ -157,16 +156,6 @@ class Fraud_Risk_Tools {
 					1000
 				)
 			),
-			// REVIEW The same card or IP address submits 5 orders within 72 hours.
-			new Rule(
-				self::RULE_ORDER_VELOCITY,
-				Rule::FRAUD_OUTCOME_REVIEW,
-				Check::check(
-					'orders_since_72h',
-					Check::OPERATOR_EQUALS,
-					5
-				)
-			),
 		];
 
 		return self::get_ruleset_array( $rules );
@@ -197,16 +186,6 @@ class Fraud_Risk_Tools {
 					'order_total',
 					Check::OPERATOR_GT,
 					1000
-				)
-			),
-			// BLOCK The same card or IP Address submits 5 orders within 72 hours.
-			new Rule(
-				self::RULE_ORDER_VELOCITY,
-				Rule::FRAUD_OUTCOME_BLOCK,
-				Check::check(
-					'orders_since_72h',
-					Check::OPERATOR_EQUALS,
-					5
 				)
 			),
 			// REVIEW An order has less than 2 items or more than 10 items.
