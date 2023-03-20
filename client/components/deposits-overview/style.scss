@@ -20,14 +20,13 @@
 	}
 
 	&__table {
-		&__row {
-			color: $gray-900;
-			align-items: center;
+		color: $gray-900;
+		align-items: center;
 
+		&__row {
 			&__header {
 				box-shadow: inset 0 -1px 0 #ddd;
 				font-weight: 600;
-
 				div {
 					padding: 8px 24px;
 				}
@@ -46,14 +45,14 @@
 				left: 2.5px;
 				margin-right: 24px;
 			}
-		}
 
-		&__cell:first-child {
-			width: 35%;
-		}
+			&:first-child {
+				width: 35%;
+			}
 
-		&__cell:last-child {
-			margin-left: auto;
+			&:last-child {
+				margin-left: auto;
+			}
 		}
 	}
 }
