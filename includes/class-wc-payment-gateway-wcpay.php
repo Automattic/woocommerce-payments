@@ -672,6 +672,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
+			WC()->cart instanceof WC_Cart &&
 			! WC()->cart->is_empty() &&
 			WC()->cart->needs_payment()
 		) {
