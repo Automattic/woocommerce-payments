@@ -81,7 +81,7 @@
 }
 
 .payment-method__brand--p24 {
-	background: no-repeat url( '../images/payment-methods/przelewy24.svg' );
+	background: no-repeat url( '../images/payment-methods/p24.svg' );
 	background-size: contain;
 }
 
@@ -116,17 +116,17 @@
 }
 
 .payment-method__brand--sepa_debit {
-	background: no-repeat url( '../images/payment-methods/sepa_debit.svg' );
+	background: no-repeat url( '../images/payment-methods/sepa-debit.svg' );
 	background-size: contain;
 }
 
 .payment-method__brand--au_becs_debit {
-	background: no-repeat url( '../images/payment-methods/bank_debit.svg' );
+	background: no-repeat url( '../images/payment-methods/bank-debit.svg' );
 	background-size: contain;
 }
 
 .payment-method__brand--link {
-	background: no-repeat url( '../images/cards/link.png' );
+	background: no-repeat url( '../images/payment-methods/link.svg' );
 	background-size: contain;
 }
 
