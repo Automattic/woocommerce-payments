@@ -37,7 +37,6 @@ jobs:
       E2E_GROUP: ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
     
-    
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v3
