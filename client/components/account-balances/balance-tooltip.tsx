@@ -11,6 +11,7 @@ import { sprintf } from '@wordpress/i18n';
 import Tooltip from 'components/tooltip';
 import {
 	documentationUrls,
+	fundLabelStrings,
 	fundTooltipStrings,
 	learnMoreString,
 } from './strings';
@@ -30,6 +31,7 @@ const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 	className,
 } ) => {
 	let content = null;
+	const tooltipButtonLabel = `${ fundLabelStrings[ type ] } tooltip`;
 
 	if ( type === 'available' ) {
 		content = (
@@ -90,7 +92,11 @@ const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 
 	return (
 		<Tooltip content={ content } ignoreMouseHover>
-			<div className={ className }>
+			<div
+				className={ className }
+				role="button"
+				aria-label={ tooltipButtonLabel }
+			>
 				<HelpOutlineIcon size={ 18 } />
 			</div>
 		</Tooltip>
