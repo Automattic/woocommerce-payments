@@ -11,11 +11,13 @@ import TooltipBase, { TooltipBaseProps } from './tooltip-base';
 
 type TooltipProps = TooltipBaseProps & {
 	isVisible?: boolean;
+	ignoreMouseHover?: boolean;
 	onHide?: () => void;
 };
 
 const Tooltip: React.FC< TooltipProps > = ( {
 	isVisible,
+	ignoreMouseHover = false,
 	onHide = noop,
 	...props
 } ) => {
@@ -23,11 +25,17 @@ const Tooltip: React.FC< TooltipProps > = ( {
 	const [ isClicked, setIsClicked ] = useState( false );
 
 	const handleMouseEnter = () => {
-		setIsHovered( true );
+		// If ignoreMouseHover is true, we don't want to update state on mouse enter.
+		if ( ! ignoreMouseHover ) {
+			setIsHovered( true );
+		}
 	};
 	const handleMouseLeave = () => {
-		setIsHovered( false );
-		onHide();
+		// If ignoreMouseHover is true, we don't want to update state on mouse leave.
+		if ( ! ignoreMouseHover ) {
+			setIsHovered( false );
+			onHide();
+		}
 	};
 	const handleMouseClick = () => {
 		setIsClicked( ( val ) => ! val );

@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -12,9 +12,15 @@ import userEvent from '@testing-library/user-event';
  */
 import Tooltip from '..';
 
-jest.useFakeTimers();
-
 describe( 'Tooltip', () => {
+	beforeEach( () => {
+		jest.useFakeTimers();
+	} );
+
+	afterEach( () => {
+		jest.useRealTimers();
+	} );
+
 	it( 'does not render its content when hidden', () => {
 		const handleHideMock = jest.fn();
 		render(
@@ -80,6 +86,111 @@ describe( 'Tooltip', () => {
 		jest.runAllTimers();
 
 		expect( handleHideMock ).toHaveBeenCalled();
+	} );
+
+	it( 'renders and hides its content when clicked and ignoreMouseHover = true', () => {
+		const handleHideMock = jest.fn();
+		render(
+			<Tooltip
+				content="Tooltip content"
+				onHide={ handleHideMock }
+				ignoreMouseHover
+			>
+				<span>Trigger element</span>
+			</Tooltip>
+		);
+
+		jest.runAllTimers();
+
+		expect(
+			screen.queryByText( 'Tooltip content' )
+		).not.toBeInTheDocument();
+
+		act( () => {
+			userEvent.click( screen.getByText( 'Trigger element' ) );
+			jest.runAllTimers();
+		} );
+
+		expect( screen.queryByText( 'Tooltip content' ) ).toBeInTheDocument();
+		expect( handleHideMock ).not.toHaveBeenCalled();
+
+		act( () => {
+			userEvent.click( screen.getByText( 'Trigger element' ) );
+			jest.runAllTimers();
+		} );
+
+		expect(
+			screen.queryByText( 'Tooltip content' )
+		).not.toBeInTheDocument();
+		expect( handleHideMock ).toHaveBeenCalled();
+	} );
+
+	it( 'renders and hides its content when hovered', () => {
+		const handleHideMock = jest.fn();
+		render(
+			<Tooltip content="Tooltip content" onHide={ handleHideMock }>
+				<span>Trigger element</span>
+			</Tooltip>
+		);
+
+		expect(
+			screen.queryByText( 'Tooltip content' )
+		).not.toBeInTheDocument();
+
+		act( () => {
+			fireEvent.mouseOver( screen.getByText( 'Trigger element' ) );
+			jest.runAllTimers();
+		} );
+
+		expect( screen.queryByText( 'Tooltip content' ) ).toBeInTheDocument();
+		expect( handleHideMock ).not.toHaveBeenCalled();
+
+		act( () => {
+			fireEvent.mouseLeave( screen.getByText( 'Trigger element' ) );
+			jest.advanceTimersByTime( 1000 );
+		} );
+
+		expect(
+			screen.queryByText( 'Tooltip content' )
+		).not.toBeInTheDocument();
+		expect( handleHideMock ).toHaveBeenCalled();
+	} );
+
+	it( 'remains hidden when hovered ignoreMouseHover = true', () => {
+		const handleHideMock = jest.fn();
+		render(
+			<Tooltip
+				content="Tooltip content"
+				onHide={ handleHideMock }
+				ignoreMouseHover
+			>
+				<span>Trigger element</span>
+			</Tooltip>
+		);
+
+		expect(
+			screen.queryByText( 'Tooltip content' )
+		).not.toBeInTheDocument();
+
+		act( () => {
+			fireEvent.mouseOver( screen.getByText( 'Trigger element' ) );
+			jest.runAllTimers();
+		} );
+
+		expect(
+			screen.queryByText( 'Tooltip content' )
+		).not.toBeInTheDocument();
+		expect( handleHideMock ).not.toHaveBeenCalled();
+
+		act( () => {
+			fireEvent.mouseLeave( screen.getByText( 'Trigger element' ) );
+			jest.advanceTimersByTime( 1000 );
+		} );
+
+		expect(
+			screen.queryByText( 'Tooltip content' )
+		).not.toBeInTheDocument();
+		expect( handleHideMock ).not.toHaveBeenCalled();
 	} );
 
 	it( 'asks other Tooltips to hide, when multiple are opened', () => {
