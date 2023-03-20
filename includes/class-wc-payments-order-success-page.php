@@ -77,7 +77,7 @@ class WC_Payments_Order_Success_Page {
 	 *
 	 * @return string
 	 */
-	public function add_notice_previous_paid_order( string $text ) {
+	public function add_notice_previous_paid_order( $text ) {
 		if ( isset( $_GET[ WC_Payment_Gateway_WCPay::FLAG_PREVIOUS_ORDER_PAID ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			$text .= sprintf(
 				'<div class="woocommerce-info">%s</div>',
@@ -95,7 +95,7 @@ class WC_Payments_Order_Success_Page {
 	 *
 	 * @return string
 	 */
-	public function add_notice_previous_successful_intent( string $text ) {
+	public function add_notice_previous_successful_intent( $text ) {
 		if ( isset( $_GET[ WC_Payment_Gateway_WCPay::FLAG_PREVIOUS_SUCCESSFUL_INTENT ] ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			$text .= sprintf(
 				'<div class="woocommerce-info">%s</div>',
