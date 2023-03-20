@@ -61,8 +61,9 @@ exports[`AccountBalances renders 1`] = `
               class="wcpay-account-balances__balances__item__title"
               id="wcpay-account-balances-usd-available-title"
             >
-              Available funds
-               
+              <span>
+                Available funds
+              </span>
               <button
                 class="wcpay-tooltip__content-wrapper"
                 type="button"
@@ -71,10 +72,12 @@ exports[`AccountBalances renders 1`] = `
                   class="wcpay-tooltip__content-wrapper"
                 >
                   <div
+                    aria-label="Available funds tooltip"
                     class="wcpay-account-balances__balances__item__tooltip-button"
+                    role="button"
                   >
                     <svg
-                      class="gridicon gridicons-help-outline needs-offset"
+                      class="gridicon gridicons-help-outline wcpay-account-balances__balances__item__tooltip-button__icon needs-offset"
                       height="18"
                       viewBox="0 0 24 24"
                       width="18"
@@ -104,8 +107,9 @@ exports[`AccountBalances renders 1`] = `
               class="wcpay-account-balances__balances__item__title"
               id="wcpay-account-balances-usd-pending-title"
             >
-              Pending funds
-               
+              <span>
+                Pending funds
+              </span>
               <button
                 class="wcpay-tooltip__content-wrapper"
                 type="button"
@@ -114,10 +118,12 @@ exports[`AccountBalances renders 1`] = `
                   class="wcpay-tooltip__content-wrapper"
                 >
                   <div
+                    aria-label="Pending funds tooltip"
                     class="wcpay-account-balances__balances__item__tooltip-button"
+                    role="button"
                   >
                     <svg
-                      class="gridicon gridicons-help-outline needs-offset"
+                      class="gridicon gridicons-help-outline wcpay-account-balances__balances__item__tooltip-button__icon needs-offset"
                       height="18"
                       viewBox="0 0 24 24"
                       width="18"
@@ -147,8 +153,9 @@ exports[`AccountBalances renders 1`] = `
               class="wcpay-account-balances__balances__item__title"
               id="wcpay-account-balances-usd-reserved-title"
             >
-              Reserved funds
-               
+              <span>
+                Reserved funds
+              </span>
               <button
                 class="wcpay-tooltip__content-wrapper"
                 type="button"
@@ -157,10 +164,12 @@ exports[`AccountBalances renders 1`] = `
                   class="wcpay-tooltip__content-wrapper"
                 >
                   <div
+                    aria-label="Reserved funds tooltip"
                     class="wcpay-account-balances__balances__item__tooltip-button"
+                    role="button"
                   >
                     <svg
-                      class="gridicon gridicons-help-outline needs-offset"
+                      class="gridicon gridicons-help-outline wcpay-account-balances__balances__item__tooltip-button__icon needs-offset"
                       height="18"
                       viewBox="0 0 24 24"
                       width="18"
