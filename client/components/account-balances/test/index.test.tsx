@@ -10,9 +10,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import AccountBalances from '../';
 import AccountBalancesHeader from '../header';
 import AccountBalancesTabPanel from '../balances-tab-panel';
+import BalanceTooltip from '../balance-tooltip';
 import { getGreeting, getCurrencyTabTitle } from '../utils';
 import { useCurrentWpUser } from '../hooks';
 import { useAllDepositsOverviews } from 'wcpay/data';
+import { fundTooltipStrings } from '../strings';
 
 const mockUser = {
 	id: 123,
@@ -288,5 +290,76 @@ describe( 'AccountBalancesTabPanel', () => {
 		// Check the available and pending amounts are rendered correctly for the first tab.
 		expect( jpyAvailableAmount ).toHaveTextContent( '¥90' );
 		expect( jpyPendingAmount ).toHaveTextContent( '¥20' );
+	} );
+} );
+
+describe( 'BalanceTooltip', () => {
+	test( 'renders the correct tooltip text for the available balance', () => {
+		const expectedTooltipText = fundTooltipStrings.available;
+
+		render(
+			<BalanceTooltip
+				type="available"
+				isNegativeBalance={ false }
+				delayDays={ 2 }
+			/>
+		);
+
+		const tooltipButton = screen.getByRole( 'button', {
+			name: 'Available funds tooltip',
+		} );
+		fireEvent.click( tooltipButton );
+
+		screen.getByText( expectedTooltipText );
+	} );
+
+	test( 'renders the correct tooltip text for a negative available balance', () => {
+		const expectedTooltipText = fundTooltipStrings.availableNegativeBalance;
+
+		render(
+			<BalanceTooltip
+				type="available"
+				isNegativeBalance
+				delayDays={ 2 }
+			/>
+		);
+
+		const tooltipButton = screen.getByRole( 'button', {
+			name: 'Available funds tooltip',
+		} );
+		fireEvent.click( tooltipButton );
+
+		screen.getByText( expectedTooltipText );
+	} );
+
+	test( 'renders the correct tooltip text for the pending balance', () => {
+		const delayDays = 17;
+		// Insert the delayDays value into the expected tooltip text.
+		const expectedTooltipText = fundTooltipStrings.pending.replace(
+			'%d',
+			delayDays.toString()
+		);
+
+		render( <BalanceTooltip type="pending" delayDays={ delayDays } /> );
+
+		const tooltipButton = screen.getByRole( 'button', {
+			name: 'Pending funds tooltip',
+		} );
+		fireEvent.click( tooltipButton );
+
+		screen.getByText( expectedTooltipText );
+	} );
+
+	test( 'renders the correct tooltip text for the reserved balance', () => {
+		const expectedTooltipText = fundTooltipStrings.reserved;
+
+		render( <BalanceTooltip type="reserved" delayDays={ 2 } /> );
+
+		const tooltipButton = screen.getByRole( 'button', {
+			name: 'Reserved funds tooltip',
+		} );
+		fireEvent.click( tooltipButton );
+
+		screen.getByText( expectedTooltipText );
 	} );
 } );
