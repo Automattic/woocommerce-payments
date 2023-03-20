@@ -112,6 +112,7 @@
     "@wordpress/data": "4.23.1",
     "@wordpress/data-controls": "1.6.0",
     "@wordpress/date": "3.9.0",
+    "@wordpress/dom-ready": "^3.29.0",
     "@wordpress/e2e-test-utils": "^8.0.0",
     "@wordpress/element": "2.20.3",
     "@wordpress/hooks": "3.2.0",
