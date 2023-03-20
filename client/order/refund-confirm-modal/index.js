@@ -44,7 +44,9 @@ const RefundConfirmationModal = ( {
 	};
 
 	const resetOrderStatus = () => {
-		jQuery( '#order_status' ).val( orderStatus ).change();
+		const orderStatusElement = document.querySelector( '#order_status' );
+		orderStatusElement.value = orderStatus;
+		orderStatusElement.dispatchEvent( new Event( 'change' ) );
 	};
 
 	const handleRefundCancel = () => {

@@ -1,4 +1,3 @@
-/* global jQuery */
 /** @format */
 /**
  * External dependencies
@@ -23,7 +22,9 @@ const CancelConfirmationModal = ( { originalOrderStatus } ) => {
 	};
 
 	const doNotCancel = () => {
-		jQuery( '#order_status' ).val( originalOrderStatus ).change();
+		const orderStatusElement = document.querySelector( '#order_status' );
+		orderStatusElement.value = originalOrderStatus;
+		orderStatusElement.dispatchEvent( new Event( 'change' ) );
 		closeModal();
 	};
 
