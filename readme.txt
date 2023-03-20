@@ -98,7 +98,9 @@ Please note that our support for the checkout block is still experimental and th
 
 == Changelog ==
 
-= 5.6.1 - 2023-03-17 =
+= 5.6.1 - 2023-03-20 =
+* Fix - Check whether we have an instance of WC_Cart before invoking its methods on checkout
+* Fix - Fatal errors on the thank-you page due to the strong type check in our filters.
 * Fix - Fix new user not being saved in platform
 
 = 5.6.0 - 2023-03-15 =
