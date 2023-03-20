@@ -47,11 +47,15 @@ function BannerNotice( props: BannerNoticeProps ): JSX.Element {
 	// Convert the notice actions to buttons or link elements.
 	let actions = null;
 	if ( noticeProps.actions ) {
-		actions = noticeProps.actions.map( ( action ) => {
+		const actionClass = 'wcpay-banner-notice__action';
+		actions = noticeProps.actions.map( ( action, index ) => {
+			// Actions that contain a URL will be rendered as a link.
+			// This matches WP Notice component behavior.
 			if ( 'url' in action ) {
 				return (
 					<a
-						className="wcpay-banner-notice__action"
+						key={ index }
+						className={ actionClass }
 						href={ action.url }
 					>
 						{ action.label }
@@ -61,8 +65,8 @@ function BannerNotice( props: BannerNoticeProps ): JSX.Element {
 
 			return (
 				<Button
-					key={ action.label }
-					className="wcpay-banner-notice__action"
+					key={ index }
+					className={ actionClass }
 					onClick={ action.onClick }
 				>
 					{ action.label }
