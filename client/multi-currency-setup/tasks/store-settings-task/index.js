@@ -4,7 +4,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies

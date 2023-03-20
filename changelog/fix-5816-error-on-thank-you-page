@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fatal errors on the thank-you page due to the strong type check in our filters.
