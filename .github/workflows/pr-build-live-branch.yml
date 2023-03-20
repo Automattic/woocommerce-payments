@@ -119,8 +119,6 @@ jobs:
           
           :rocket: [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
 
-          Wanna more options? Follow up [this instruction](https://github.com/Automattic/woocommerce-payments/tree/add/jn-userscript-for-live-branch/bin/wcpay-live-branches).
-
           - Latest commit: ${PR_HEAD_SHA}
           - Build time: $(date -u "+%Y-%m-%d %H:%M:%S UTC")
 
