@@ -21,14 +21,12 @@ type BalanceTooltipProps = {
 	type: balanceType;
 	delayDays?: number;
 	isNegativeBalance?: boolean;
-	className?: string;
 };
 
 const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 	type,
 	delayDays,
 	isNegativeBalance,
-	className,
 } ) => {
 	let content = null;
 	const tooltipButtonLabel = `${ fundLabelStrings[ type ] } tooltip`;
@@ -93,11 +91,14 @@ const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 	return (
 		<Tooltip content={ content } ignoreMouseHover>
 			<div
-				className={ className }
+				className="wcpay-account-balances__balances__item__tooltip-button"
 				role="button"
 				aria-label={ tooltipButtonLabel }
 			>
-				<HelpOutlineIcon size={ 18 } />
+				<HelpOutlineIcon
+					size={ 18 }
+					className="wcpay-account-balances__balances__item__tooltip-button__icon"
+				/>
 			</div>
 		</Tooltip>
 	);

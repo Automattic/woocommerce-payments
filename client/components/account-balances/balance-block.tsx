@@ -63,13 +63,11 @@ const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 				id={ titleElementID }
 				className="wcpay-account-balances__balances__item__title"
 			>
-				{ fundLabelStrings[ type ] }
-				&ensp;
+				<span>{ fundLabelStrings[ type ] }</span>
 				<BalanceTooltip
 					type={ type }
 					delayDays={ delayDays }
 					isNegativeBalance={ isNegativeBalance }
-					className="wcpay-account-balances__balances__item__tooltip-button"
 				/>
 			</p>
 			<p

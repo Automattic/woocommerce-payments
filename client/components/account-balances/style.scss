@@ -66,6 +66,13 @@
 
 .wcpay-account-balances__balances__item__tooltip-button {
 	cursor: pointer;
+	display: flex;
+	align-items: center;
+	margin-left: 0.5em;
+
+	&__icon {
+		fill: $gray-900;
+	}
 }
 
 @media screen and ( max-width: 500px ) {
