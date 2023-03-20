@@ -11,20 +11,19 @@ runs:
       run: |
         npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH" --NODE_ENV="$NODE_ENV"
         
-        if [[ -f "$E2E_RESULT_FILEPATH" ]]
-        then
+        if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
           E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.numFailedTestSuites')
-          echo "FIRST_RUN_FAILED_TEST_SUITES=$(echo $E2E_NUM_FAILED_TEST_SUITES)" >> $GITHUB_OUTPUT
           if [[ ${E2E_NUM_FAILED_TEST_SUITES} -gt 0 ]]; then
             echo "::notice::${E2E_NUM_FAILED_TEST_SUITES} E2E test(s) failed in the first run but we will try (it) them again in the second run."
             exit 0
           fi
         else
+          E2E_NUM_FAILED_TEST_SUITES=0
           echo "::notice::${E2E_RESULT_FILEPATH} doesn't exist so results are unclear and we will not try again."
-          echo "FIRST_RUN_FAILED_TEST_SUITES=0 >> $GITHUB_OUTPUT
           exit 1
         fi
-    
+        echo "FIRST_RUN_FAILED_TEST_SUITES=$(echo $E2E_NUM_FAILED_TEST_SUITES)" >> $GITHUB_OUTPUT
+
     # Retry failed E2E tests
     - name: Re-try Failed E2E Files
       if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
