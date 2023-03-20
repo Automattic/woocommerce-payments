@@ -15,10 +15,10 @@ import { getNextDeposit } from './utils';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 
-interface NextDepositProps {
+type NextDepositProps = {
 	isLoading: boolean;
 	overview?: AccountOverview.Overview | undefined;
-}
+};
 
 /**
  * Renders the Next Deposit details component.
