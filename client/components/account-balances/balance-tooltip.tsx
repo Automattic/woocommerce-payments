@@ -89,7 +89,7 @@ const BalanceTooltip: React.FC< BalanceTooltipProps > = ( {
 	}
 
 	return (
-		<Tooltip content={ content }>
+		<Tooltip content={ content } ignoreMouseHover>
 			<div className={ className }>
 				<HelpOutlineIcon size={ 18 } />
 			</div>

@@ -64,6 +64,10 @@
 	align-items: center;
 }
 
+.wcpay-account-balances__balances__item__tooltip-button {
+	cursor: pointer;
+}
+
 @media screen and ( max-width: 500px ) {
 	// On small devices, the logo and greeting should be centered.
 	.wcpay-account-balances__header__flex {
