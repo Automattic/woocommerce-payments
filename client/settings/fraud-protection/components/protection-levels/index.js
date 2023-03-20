@@ -15,7 +15,7 @@ import {
 	HighFraudProtectionModal,
 	StandardFraudProtectionModal,
 } from '../index';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 import { Button } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';
