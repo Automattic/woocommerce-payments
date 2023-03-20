@@ -72,9 +72,6 @@ describe( 'Link with enabled UPE', () => {
 			);
 			await shopperWCP.autofillExistingStripeLinkAccount();
 
-			// TODO uncomment the below assertions as part of #XYZ.
-			// expect(await getInputTextValue('#billing_first_name')).toEqual(billingAddress.firstname);
-			// expect(await getInputTextValue('#billing_last_name')).toEqual(billingAddress.lastname);
 			expect( billingAddress.firstname ).toContain(
 				await getInputTextValue( '#billing_first_name' )
 			);
@@ -169,9 +166,6 @@ describe( 'Link with enabled UPE', () => {
 			);
 			await shopperWCP.autofillExistingStripeLinkAccount();
 
-			// TODO uncomment the below assertions as part of #XYZ.
-			// expect(await getInputTextValue('#billing_first_name')).toEqual(billingAddress.firstname);
-			// expect(await getInputTextValue('#billing_last_name')).toEqual(billingAddress.lastname);
 			expect( billingAddress.firstname ).toContain(
 				await getInputTextValue( '#billing_first_name' )
 			);

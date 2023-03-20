@@ -117,7 +117,7 @@ export const shopperWCP = {
 		);
 		const selectors = await selector.$$( '.OtpCodeField-inputGroup' );
 
-		await page.waitFor( 10000 );
+		await page.waitFor( 2000 );
 
 		selectors.forEach( async ( sel ) => {
 			const fields = await sel.$$( 'input' );
