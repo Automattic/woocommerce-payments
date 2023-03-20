@@ -13,10 +13,7 @@ const {
 /**
  * Internal dependencies
  */
-import {
-	setupCheckout,
-	fillCardDetails,
-} from '../../../utils/payments';
+import { setupCheckout, fillCardDetails } from '../../../utils/payments';
 import { shopperWCP, merchantWCP } from '../../../utils';
 
 const productName = config.get( 'products.simple.name' );
@@ -28,7 +25,6 @@ const removeCouponSelector = '.woocommerce-remove-coupon';
 
 describe( 'Checkout with free coupon & after modifying cart on Checkout page', () => {
 	describe( 'Classic Checkout', () => {
-
 		beforeEach( async () => {
 			await shopper.goToShop();
 			await shopper.addToCartFromShopPage( productName );
@@ -60,7 +56,6 @@ describe( 'Checkout with free coupon & after modifying cart on Checkout page', (
 			await shopper.placeOrder();
 			await expect( page ).toMatch( 'Order received' );
 		} );
-
 	} );
 
 	describe( 'UPE', () => {
