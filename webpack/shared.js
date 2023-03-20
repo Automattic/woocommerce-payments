@@ -88,16 +88,20 @@ module.exports = {
 			},
 			{
 				test: /\.(svg|png)$/,
-				exclude: [
-					/node_modules/,
-					/client\/components\/platform-checkout\/icons/,
+				exclude: [ /node_modules/ ],
+				oneOf: [
+					{
+						resourceQuery: /asset/,
+						type: 'asset/resource',
+						generator: {
+							emit: false,
+							filename: '../[file]?ver=[hash]',
+						},
+					},
+					{
+						type: 'asset/inline',
+					},
 				],
-				type: 'asset/inline',
-			},
-			{
-				test: /\.svg$/,
-				use: [ '@svgr/webpack' ],
-				include: [ /client\/components\/platform-checkout/ ],
 			},
 		],
 	},
@@ -105,6 +109,7 @@ module.exports = {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [ path.join( process.cwd(), 'client' ), 'node_modules' ],
 		alias: {
+			assets: path.resolve( process.cwd(), 'assets' ),
 			wcpay: path.resolve( process.cwd(), 'client' ),
 			iti: path.resolve(
 				process.cwd(),
@@ -142,4 +147,10 @@ module.exports = {
 			},
 		} ),
 	],
+	resolveLoader: {
+		modules: [
+			path.resolve( process.cwd(), 'node_modules' ),
+			path.resolve( process.cwd(), 'webpack/loaders' ),
+		],
+	},
 };

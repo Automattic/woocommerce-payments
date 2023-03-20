@@ -27,7 +27,7 @@ class P24_Payment_Method extends UPE_Payment_Method {
 		$this->title       = 'Przelewy24 (P24)';
 		$this->is_reusable = false;
 		$this->currencies  = [ 'EUR', 'PLN' ];
-		$this->icon_url    = plugins_url( 'assets/images/payment-methods/przelewy24.svg', WCPAY_PLUGIN_FILE );
+		$this->icon_url    = plugins_url( 'assets/images/payment-methods/p24.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

@@ -31,7 +31,7 @@ interface NextDepositProps {
 const NextDepositDetails: React.FC< NextDepositProps > = ( {
 	isLoading,
 	overview,
-}: NextDepositProps ): JSX.Element => {
+} ): JSX.Element => {
 	const tableClass = 'wcpay-deposits-overview__table';
 	const nextDeposit = getNextDeposit( overview );
 
@@ -42,14 +42,14 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 				<span className="wcpay-deposits-overview__heading__title">
 					<Loadable
 						isLoading={ isLoading }
-						value={ strings.next_deposits.title }
+						value={ strings.nextDeposit.title }
 					/>
 				</span>
 
 				<span className="wcpay-deposits-overview__heading__description">
 					<Loadable
 						isLoading={ isLoading }
-						value={ strings.next_deposits.description }
+						value={ strings.nextDeposit.description }
 					/>
 				</span>
 			</div>

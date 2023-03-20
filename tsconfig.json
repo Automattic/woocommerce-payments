@@ -13,6 +13,7 @@
     "esModuleInterop": true,
     "noImplicitAny": true,
     "paths": {
+      "assets/*": [ "../assets/*" ],
       "wcpay/*": [ "./*" ],
       "iti/utils": [ "../node_modules/intl-tel-input/build/js/utils" ]
     },
