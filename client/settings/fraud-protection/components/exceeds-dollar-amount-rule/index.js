@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { sprintf, __ } from '@wordpress/i18n';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const USDollarComponent = ( { level } ) => {
 	const isHighProtectionLevel = 'high' === level;
