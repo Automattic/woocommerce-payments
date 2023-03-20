@@ -232,8 +232,8 @@ class WC_Payments_Account {
 				'firstTransactionDate' => $account['progressive_onboarding']['first_transaction_date'] ?? null,
 			],
 			'fraudProtection'       => [
-				'declineOnAVSFailure' => $account['settings']['avs_check_enabled'] ?? null,
-				'declineOnCVCFailure' => $account['settings']['cvc_check_enabled'] ?? null,
+				'declineOnAVSFailure' => $account['fraud_mitigation_settings']['avs_check_enabled'] ?? null,
+				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
 			],
 		];
 	}

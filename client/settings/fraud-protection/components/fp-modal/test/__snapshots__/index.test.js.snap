@@ -82,6 +82,9 @@ exports[`HighFraudProtectionModal renders the high protection level content with
         The billing address does not match what is on file with the card issuer.
       </li>
       <li>
+        The card's issuing bank cannot verify the CVV.
+      </li>
+      <li>
         An order originates from an IP address outside your country
       </li>
       <li>
@@ -90,16 +93,6 @@ exports[`HighFraudProtectionModal renders the high protection level content with
           $1,000.00
         </strong>
         .
-      </li>
-      <li>
-        The same card or IP address submits 
-        <strong>
-          5 orders
-        </strong>
-         within 
-        <strong>
-          72 hours.
-        </strong>
       </li>
     </ul>
     <p>
@@ -112,9 +105,6 @@ exports[`HighFraudProtectionModal renders the high protection level content with
        if:
     </p>
     <ul>
-      <li>
-        The card's issuing bank cannot verify the CVV.
-      </li>
       <li>
         An order has less than 
         <strong>
@@ -224,6 +214,9 @@ exports[`HighFraudProtectionModal renders the high protection level content with
         The billing address does not match what is on file with the card issuer.
       </li>
       <li>
+        The card's issuing bank cannot verify the CVV.
+      </li>
+      <li>
         An order originates from an IP address outside your country
       </li>
       <li>
@@ -232,16 +225,6 @@ exports[`HighFraudProtectionModal renders the high protection level content with
           $1,000.00 USD
         </strong>
          in Euro.
-      </li>
-      <li>
-        The same card or IP address submits 
-        <strong>
-          5 orders
-        </strong>
-         within 
-        <strong>
-          72 hours.
-        </strong>
       </li>
     </ul>
     <p>
@@ -254,9 +237,6 @@ exports[`HighFraudProtectionModal renders the high protection level content with
        if:
     </p>
     <ul>
-      <li>
-        The card's issuing bank cannot verify the CVV.
-      </li>
       <li>
         An order has less than 
         <strong>
@@ -297,7 +277,7 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
     >
       <h1
         class="components-modal__header-heading"
-        id="components-modal-header-2"
+        id="components-modal-header-5"
       >
         Standard filter level
       </h1>
@@ -365,6 +345,9 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
       <li>
         The billing address does not match what is on file with the card issuer.
       </li>
+      <li>
+        The card's issuing bank cannot verify the CVV.
+      </li>
     </ul>
     <p>
       Payments will be 
@@ -377,9 +360,6 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
     </p>
     <ul>
       <li>
-        The card's issuing bank cannot verify the CVV.
-      </li>
-      <li>
         An order originates from an IP address outside your country.
       </li>
       <li>
@@ -390,16 +370,6 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
          or 
         <strong>
           10 items.
-        </strong>
-      </li>
-      <li>
-        The same card or IP address submits 
-        <strong>
-          5 orders
-        </strong>
-         within 
-        <strong>
-          72 hours.
         </strong>
       </li>
     </ul>
@@ -426,7 +396,7 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
     >
       <h1
         class="components-modal__header-heading"
-        id="components-modal-header-3"
+        id="components-modal-header-6"
       >
         Standard filter level
       </h1>
@@ -494,6 +464,9 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
       <li>
         The billing address does not match what is on file with the card issuer.
       </li>
+      <li>
+        The card's issuing bank cannot verify the CVV.
+      </li>
     </ul>
     <p>
       Payments will be 
@@ -506,9 +479,6 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
     </p>
     <ul>
       <li>
-        The card's issuing bank cannot verify the CVV.
-      </li>
-      <li>
         An order originates from an IP address outside your country.
       </li>
       <li>
@@ -519,16 +489,6 @@ exports[`StandardFraudProtectionModal renders the standard protection level cont
          in Euro or 
         <strong>
           10 items.
-        </strong>
-      </li>
-      <li>
-        The same card or IP address submits 
-        <strong>
-          5 orders
-        </strong>
-         within 
-        <strong>
-          72 hours.
         </strong>
       </li>
     </ul>
