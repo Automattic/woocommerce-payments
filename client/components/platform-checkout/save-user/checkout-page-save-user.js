@@ -8,7 +8,7 @@ import { useDispatch } from '@wordpress/data';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 import { Icon, info } from '@wordpress/icons';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 import LockIconG from 'gridicons/dist/lock';
 
 /**
