@@ -35,7 +35,7 @@ export default {
 	infoNotice: {
 		description: createInterpolateElement(
 			__(
-				"In order to receive payouts with <a>WooCommerce Payments</a>, you'll need to share business details to verify who you are.",
+				"In order to receive deposits with <a>WooCommerce Payments</a>, you'll need to share business details to verify who you are.",
 				'woocommerce-payments'
 			),
 			{
@@ -50,7 +50,7 @@ export default {
 			}
 		),
 		button: __(
-			'Learn more about how to receive payouts.',
+			'Learn more about how to receive deposits.',
 			'woocommerce-payments'
 		),
 	},

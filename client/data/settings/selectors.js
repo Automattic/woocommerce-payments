@@ -205,3 +205,7 @@ export const getPlatformCheckoutLocations = ( state ) => {
 export const getCurrentProtectionLevel = ( state ) => {
 	return getSettings( state ).current_protection_level || 'standard';
 };
+
+export const getAdvancedFraudProtectionSettings = ( state ) => {
+	return getSettings( state ).advanced_fraud_protection_settings || EMPTY_OBJ;
+};
