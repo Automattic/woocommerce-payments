@@ -6,6 +6,8 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+import { dispatch } from '@wordpress/data';
+
 /**
  * Internal dependencies
  */
@@ -71,7 +73,9 @@ const RefundConfirmationModal = ( {
 					window.location.reload();
 				} else {
 					resetOrderStatus();
-					window.alert( response.data.error );
+					dispatch( 'core/notices' ).createErrorNotice(
+						response.data.error
+					);
 				}
 			},
 			complete: function () {

@@ -2,7 +2,7 @@
 
 import { __ } from '@wordpress/i18n';
 import ReactDOM from 'react-dom';
-
+import { dispatch } from '@wordpress/data';
 /**
  * Internal dependencies
  */
@@ -70,11 +70,15 @@ jQuery( function ( $ ) {
 		refundAmount
 	) {
 		if ( ! canRefund ) {
-			alert( __( 'Order cannot be refunded', 'woocommerce-payments' ) );
+			dispatch( 'core/notices' ).createErrorNotice(
+				__( 'Order cannot be refunded', 'woocommerce-payments' )
+			);
 			return;
 		}
 		if ( 0 >= refundAmount ) {
-			alert( __( 'Invalid Refund Amount', 'woocommerce-payments' ) );
+			dispatch( 'core/notices' ).createErrorNotice(
+				__( 'Invalid Refund Amount', 'woocommerce-payments' )
+			);
 			return;
 		}
 		renderModal(
