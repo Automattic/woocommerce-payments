@@ -5,7 +5,7 @@ import React, { useContext, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import { Button, ExternalLink } from '@wordpress/components';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
