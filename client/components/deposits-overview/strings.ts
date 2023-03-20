@@ -12,8 +12,8 @@ export default {
 			'woocommerce-payments'
 		),
 	},
-	table_headers: {
-		next_deposit_date: __(
+	tableHeaders: {
+		nextDepositDate: __(
 			'Estimated dispatch date',
 			'woocommerce-payments'
 		),

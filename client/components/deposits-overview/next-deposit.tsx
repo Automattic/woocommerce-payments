@@ -59,19 +59,19 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 					<FlexItem className={ `${ tableClass }__cell` }>
 						<Loadable
 							isLoading={ isLoading }
-							value={ strings.table_headers.next_deposit_date }
+							value={ strings.tableHeaders.nextDepositDate }
 						/>
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						<Loadable
 							isLoading={ isLoading }
-							value={ strings.table_headers.status }
+							value={ strings.tableHeaders.status }
 						/>
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
 						<Loadable
 							isLoading={ isLoading }
-							value={ strings.table_headers.amount }
+							value={ strings.tableHeaders.amount }
 						/>
 					</FlexItem>
 				</Flex>
