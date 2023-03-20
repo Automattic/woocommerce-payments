@@ -6,9 +6,18 @@ runs:
   steps:
     - name: "Set up repository"
       uses: ./.github/actions/setup-repo
+    
+    # Cache node dependencies
+    - name: "Cache node modules"
+      id: node-cache
+      uses: actions/cache@v3
+      with:
+        path: ./node_modules
+        key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
 
     - name: "Install dependencies"
       shell: bash
+      if: ${{ steps.node-cache.outputs.cache-hit == false }}
       run: npm ci
 
     - name: "Set up E2E environment"
