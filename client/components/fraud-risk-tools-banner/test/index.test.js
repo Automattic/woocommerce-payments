@@ -25,16 +25,6 @@ describe( 'FRTDiscoverabilityBanner', () => {
 		expect( frtBanner ).toMatchSnapshot();
 	} );
 
-	it( 'does not render if feature flag option is false', () => {
-		global.wcpaySettings = {
-			isFraudProtectionSettingsEnabled: false,
-		};
-
-		const { container: frtBanner } = render( <FRTDiscoverabilityBanner /> );
-
-		expect( frtBanner ).toMatchSnapshot();
-	} );
-
 	it( 'renders with dont show again button if remindMeCount greater than or equal to 3', () => {
 		global.wcpaySettings = {
 			...global.wcpaySettings,

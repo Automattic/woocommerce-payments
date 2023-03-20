@@ -11,6 +11,7 @@ import { useDispatch } from '@wordpress/data';
  */
 import { BannerBody, NewPill, BannerActions } from './components';
 import './style.scss';
+import { TIME } from '../../constants';
 
 const FRTDiscoverabilityBanner = () => {
 	const { frtDiscoverBannerSettings } = wcpaySettings;
@@ -24,19 +25,16 @@ const FRTDiscoverabilityBanner = () => {
 	} );
 
 	const showBanner =
-		( null === settings.remindMeAt && ! settings.dontShowAgain ) ||
-		( Date.now() > settings.remindMeAt && ! settings.dontShowAgain )
-			? true
-			: false;
+		! settings.dontShowAgain &&
+		( null === settings.remindMeAt || Date.now() > settings.remindMeAt );
 
 	const setReminder = () => {
-		const DAY_IN_MS = 24 * 60 * 60 * 1000;
 		const nowTimestamp = Date.now();
 		setSettings( ( prevSettings ) => {
 			return {
 				...prevSettings,
 				remindMeCount: prevSettings.remindMeCount + 1,
-				remindMeAt: nowTimestamp + 3 * DAY_IN_MS,
+				remindMeAt: nowTimestamp + 3 * TIME.DAY_IN_MS,
 			};
 		} );
 	};
@@ -68,7 +66,7 @@ const FRTDiscoverabilityBanner = () => {
 		setDontShowAgain();
 	};
 
-	if ( ! wcpaySettings.isFraudProtectionSettingsEnabled || ! showBanner ) {
+	if ( ! showBanner ) {
 		return null;
 	}
 

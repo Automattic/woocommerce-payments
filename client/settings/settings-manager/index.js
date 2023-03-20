@@ -111,18 +111,6 @@ const DepositsDescription = () => {
 };
 
 const FraudProtectionDescription = () => {
-	const { isLoading } = useSettings();
-
-	useLayoutEffect( () => {
-		const { anchor } = getQuery();
-
-		if ( ! isLoading && anchor ) {
-			document
-				.querySelector( decodeURIComponent( anchor ) )
-				.scrollIntoView( { behavior: 'smooth' } );
-		}
-	}, [ isLoading ] );
-
 	return (
 		<>
 			<h2 id="fp-settings">
@@ -155,6 +143,18 @@ const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
+
+	const { isLoading } = useSettings();
+
+	useLayoutEffect( () => {
+		const { anchor } = getQuery();
+
+		if ( ! isLoading && anchor ) {
+			document
+				.querySelector( decodeURIComponent( anchor ) )
+				?.scrollIntoView( { behavior: 'smooth' } );
+		}
+	}, [ isLoading ] );
 
 	return (
 		<SettingsLayout>

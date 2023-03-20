@@ -290,4 +290,25 @@ describe( 'Overview page', () => {
 			expect( bannerHeader ).not.toBeInTheDocument();
 		} );
 	} );
+
+	it( 'does not render FRTDiscoverabilityBanner if feature flag option is false', () => {
+		global.wcpaySettings = {
+			...global.wcpaySettings,
+			isFraudProtectionSettingsEnabled: false,
+		};
+
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( 'Enhanced fraud protection for your store' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'renders FRTDiscoverabilityBanner if feature flag option is true', () => {
+		render( <OverviewPage /> );
+
+		expect(
+			screen.queryByText( 'Enhanced fraud protection for your store' )
+		).toBeInTheDocument();
+	} );
 } );

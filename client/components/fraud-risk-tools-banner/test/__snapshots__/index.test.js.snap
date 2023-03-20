@@ -1,7 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`FRTDiscoverabilityBanner does not render if feature flag option is false 1`] = `<div />`;
-
 exports[`FRTDiscoverabilityBanner does not render when dontShowAgain is true 1`] = `<div />`;
 
 exports[`FRTDiscoverabilityBanner does not render when remindMeAt timestamp is in the future 1`] = `<div />`;
