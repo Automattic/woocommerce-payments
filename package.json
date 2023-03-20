@@ -156,6 +156,7 @@
     "react-dom": "16.14.0",
     "react-refresh": "0.14.0",
     "react-test-renderer": "16.14.0",
+    "react-transition-group": "4.4.5",
     "sass": "1.43.4",
     "sass-loader": "12.1.0",
     "shelljs": "0.8.4",
