@@ -497,57 +497,6 @@ Object {
                     There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
                   </p>
                 </div>
-                <div
-                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-                >
-                  <div
-                    class="fraud-protection-rule-card-notice-icon"
-                  >
-                    <svg
-                      data-testid="rule-card-notice-info-icon-svg"
-                      fill="none"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      width="18"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle
-                        cx="12"
-                        cy="9"
-                        r="5"
-                        stroke="#007CBA"
-                        stroke-width="1.42857"
-                      />
-                      <line
-                        stroke="#007CBA"
-                        stroke-width="1.5"
-                        x1="9"
-                        x2="15"
-                        y1="16.8818"
-                        y2="16.8818"
-                      />
-                      <line
-                        stroke="#007CBA"
-                        stroke-width="1.5"
-                        x1="10"
-                        x2="14"
-                        y1="19.25"
-                        y2="19.25"
-                      />
-                    </svg>
-                  </div>
-                  <div
-                    class="fraud-protection-rule-card-notice-text"
-                  >
-                    This filter may modify the address input on your checkout. 
-                    <a
-                      data-link-type="wc-admin"
-                      href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-                    >
-                      Learn more
-                    </a>
-                  </div>
-                </div>
               </div>
             </div>
             <div
@@ -1451,57 +1400,6 @@ Object {
                 <p>
                   There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
                 </p>
-              </div>
-              <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-              >
-                <div
-                  class="fraud-protection-rule-card-notice-icon"
-                >
-                  <svg
-                    data-testid="rule-card-notice-info-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                      cx="12"
-                      cy="9"
-                      r="5"
-                      stroke="#007CBA"
-                      stroke-width="1.42857"
-                    />
-                    <line
-                      stroke="#007CBA"
-                      stroke-width="1.5"
-                      x1="9"
-                      x2="15"
-                      y1="16.8818"
-                      y2="16.8818"
-                    />
-                    <line
-                      stroke="#007CBA"
-                      stroke-width="1.5"
-                      x1="10"
-                      x2="14"
-                      y1="19.25"
-                      y2="19.25"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  This filter may modify the address input on your checkout. 
-                  <a
-                    data-link-type="wc-admin"
-                    href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-                  >
-                    Learn more
-                  </a>
-                </div>
               </div>
             </div>
           </div>
@@ -2439,57 +2337,6 @@ Object {
                   There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
                 </p>
               </div>
-              <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-              >
-                <div
-                  class="fraud-protection-rule-card-notice-icon"
-                >
-                  <svg
-                    data-testid="rule-card-notice-info-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                      cx="12"
-                      cy="9"
-                      r="5"
-                      stroke="#007CBA"
-                      stroke-width="1.42857"
-                    />
-                    <line
-                      stroke="#007CBA"
-                      stroke-width="1.5"
-                      x1="9"
-                      x2="15"
-                      y1="16.8818"
-                      y2="16.8818"
-                    />
-                    <line
-                      stroke="#007CBA"
-                      stroke-width="1.5"
-                      x1="10"
-                      x2="14"
-                      y1="19.25"
-                      y2="19.25"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  This filter may modify the address input on your checkout. 
-                  <a
-                    data-link-type="wc-admin"
-                    href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-                  >
-                    Learn more
-                  </a>
-                </div>
-              </div>
             </div>
           </div>
           <div
@@ -3148,57 +2995,6 @@ Object {
               <p>
                 There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
               </p>
-            </div>
-            <div
-              class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-            >
-              <div
-                class="fraud-protection-rule-card-notice-icon"
-              >
-                <svg
-                  data-testid="rule-card-notice-info-icon-svg"
-                  fill="none"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  width="18"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle
-                    cx="12"
-                    cy="9"
-                    r="5"
-                    stroke="#007CBA"
-                    stroke-width="1.42857"
-                  />
-                  <line
-                    stroke="#007CBA"
-                    stroke-width="1.5"
-                    x1="9"
-                    x2="15"
-                    y1="16.8818"
-                    y2="16.8818"
-                  />
-                  <line
-                    stroke="#007CBA"
-                    stroke-width="1.5"
-                    x1="10"
-                    x2="14"
-                    y1="19.25"
-                    y2="19.25"
-                  />
-                </svg>
-              </div>
-              <div
-                class="fraud-protection-rule-card-notice-text"
-              >
-                This filter may modify the address input on your checkout. 
-                <a
-                  data-link-type="wc-admin"
-                  href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-                >
-                  Learn more
-                </a>
-              </div>
             </div>
           </div>
         </div>
@@ -3958,57 +3754,6 @@ Object {
                   <p>
                     There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
                   </p>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-                >
-                  <div
-                    class="fraud-protection-rule-card-notice-icon"
-                  >
-                    <svg
-                      data-testid="rule-card-notice-info-icon-svg"
-                      fill="none"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      width="18"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle
-                        cx="12"
-                        cy="9"
-                        r="5"
-                        stroke="#007CBA"
-                        stroke-width="1.42857"
-                      />
-                      <line
-                        stroke="#007CBA"
-                        stroke-width="1.5"
-                        x1="9"
-                        x2="15"
-                        y1="16.8818"
-                        y2="16.8818"
-                      />
-                      <line
-                        stroke="#007CBA"
-                        stroke-width="1.5"
-                        x1="10"
-                        x2="14"
-                        y1="19.25"
-                        y2="19.25"
-                      />
-                    </svg>
-                  </div>
-                  <div
-                    class="fraud-protection-rule-card-notice-text"
-                  >
-                    This filter may modify the address input on your checkout. 
-                    <a
-                      data-link-type="wc-admin"
-                      href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-                    >
-                      Learn more
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>
@@ -4843,57 +4588,6 @@ Object {
                 <p>
                   There are legitimate reasons for a billing/shipping mismatch with a customer purchase, but a mismatch could also indicate that someone is using a stolen identity to complete a purchase.
                 </p>
-              </div>
-              <div
-                class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
-              >
-                <div
-                  class="fraud-protection-rule-card-notice-icon"
-                >
-                  <svg
-                    data-testid="rule-card-notice-info-icon-svg"
-                    fill="none"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    width="18"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                      cx="12"
-                      cy="9"
-                      r="5"
-                      stroke="#007CBA"
-                      stroke-width="1.42857"
-                    />
-                    <line
-                      stroke="#007CBA"
-                      stroke-width="1.5"
-                      x1="9"
-                      x2="15"
-                      y1="16.8818"
-                      y2="16.8818"
-                    />
-                    <line
-                      stroke="#007CBA"
-                      stroke-width="1.5"
-                      x1="10"
-                      x2="14"
-                      y1="19.25"
-                      y2="19.25"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="fraud-protection-rule-card-notice-text"
-                >
-                  This filter may modify the address input on your checkout. 
-                  <a
-                    data-link-type="wc-admin"
-                    href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-                  >
-                    Learn more
-                  </a>
-                </div>
               </div>
             </div>
           </div>

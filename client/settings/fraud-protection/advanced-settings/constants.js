@@ -28,7 +28,6 @@ export const Checks = {
 		'ip_country_same_with_account_country',
 	CHECK_BILLING_COUNTRY_SAME_WITH_ACCOUNT_COUNTRY:
 		'billing_country_same_with_account_country',
-	CHECK_MAX_ORDERS: 'max_orders',
 	CHECK_ORDERS_SINCE_H: 'orders_since_%dh',
 	CHECK_ITEM_COUNT: 'item_count',
 	CHECK_ORDER_TOTAL: 'order_total',
