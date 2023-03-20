@@ -54,6 +54,7 @@ declare const wcpaySettings: {
 	restUrl: string;
 	shouldUseExplicitPrice: boolean;
 	numDisputesNeedingResponse: string;
+	accountDefaultCurrency: string;
 };
 
 declare const wcTracks: any;

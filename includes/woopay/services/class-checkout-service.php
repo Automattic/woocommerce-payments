@@ -30,6 +30,7 @@ class Checkout_Service {
 	public function create_intention_request( Request $base_request, Payment_Information $payment_information ) {
 		$request = WooPay_Create_And_Confirm_Intention::extend( $base_request );
 		$request->set_has_woopay_subscription( '1' === $payment_information->get_order()->get_meta( '_woopay_has_subscription' ) );
+		$request->set_save_payment_method_to_platform( $payment_information->should_save_payment_method_to_platform() );
 		$request->set_is_platform_payment_method( $this->is_platform_payment_method( $payment_information->is_using_saved_payment_method() ) );
 		return $request;
 	}

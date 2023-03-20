@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Pass an instance of Platform_Checkout_Utilities when instantiating WC_Payments_Platform_Checkout_Button_Handler.
