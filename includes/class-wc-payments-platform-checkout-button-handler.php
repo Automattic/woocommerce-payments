@@ -484,6 +484,12 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 	 * @return bool
 	 */
 	public function should_show_platform_checkout_button() {
+		// WCPay is not available.
+		$gateways = WC()->payment_gateways->get_available_payment_gateways();
+		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
+			return false;
+		}
+
 		// Page not supported.
 		if ( ! $this->is_product() && ! $this->is_cart() && ! $this->is_checkout() ) {
 			return false;
@@ -506,6 +512,18 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 
 		// Cart page, but not available in settings.
 		if ( $this->is_cart() && ! $this->is_available_at( 'cart' ) ) {
+			return false;
+		}
+
+		// Product page, but has unsupported product type.
+		if ( $this->is_product() && ! $this->is_product_supported() ) {
+			Logger::log( 'Product page has unsupported product type ( WooPay Express button disabled )' );
+			return false;
+		}
+
+		// Cart has unsupported product type.
+		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
+			Logger::log( 'Items in the cart have unsupported product type ( WooPay Express button disabled )' );
 			return false;
 		}
 
@@ -539,4 +557,70 @@ class WC_Payments_Platform_Checkout_Button_Handler {
 		<?php
 	}
 
+	/**
+	 * Whether the product page has a product compatible with the WooPay Express button.
+	 *
+	 * @return boolean
+	 */
+	private function is_product_supported() {
+		$product      = $this->get_product();
+		$is_supported = true;
+
+		if ( ! is_object( $product ) ) {
+			$is_supported = false;
+		}
+
+		// Pre Orders products to be charged upon release are not supported.
+		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
+			$is_supported = false;
+		}
+
+		return apply_filters( 'wcpay_platform_checkout_button_is_product_supported', $is_supported, $product );
+	}
+
+	/**
+	 * Checks the cart to see if the WooPay Express button supports all of its items.
+	 *
+	 * @todo Abstract this. This is a copy of the same method in the `WC_Payments_Payment_Request_Button_Handler` class.
+	 *
+	 * @return boolean
+	 */
+	private function has_allowed_items_in_cart() {
+		$is_supported = true;
+
+		// We don't support pre-order products to be paid upon release.
+		if (
+			class_exists( 'WC_Pre_Orders_Cart' ) &&
+			WC_Pre_Orders_Cart::cart_contains_pre_order() &&
+			class_exists( 'WC_Pre_Orders_Product' ) &&
+			WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() )
+		) {
+			$is_supported = false;
+		}
+
+		return apply_filters( 'wcpay_platform_checkout_button_are_cart_items_supported', $is_supported );
+	}
+
+	/**
+	 * Get product from product page or product_page shortcode.
+	 *
+	 * @todo Abstract this. This is a copy of the same method in the `WC_Payments_Payment_Request_Button_Handler` class.
+	 *
+	 * @return WC_Product|false|null Product object.
+	 */
+	private function get_product() {
+		global $post;
+
+		if ( is_product() ) {
+			return wc_get_product( $post->ID );
+		} elseif ( wc_post_content_has_shortcode( 'product_page' ) ) {
+			// Get id from product_page shortcode.
+			preg_match( '/\[product_page id="(?<id>\d+)"\]/', $post->post_content, $shortcode_match );
+			if ( isset( $shortcode_match['id'] ) ) {
+				return wc_get_product( $shortcode_match['id'] );
+			}
+		}
+
+		return false;
+	}
 }
