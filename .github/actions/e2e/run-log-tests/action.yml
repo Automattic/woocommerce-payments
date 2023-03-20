@@ -9,7 +9,7 @@ runs:
       # Use +e to trap errors when running E2E tests.
       shell: /bin/bash +e {0}
       run: |
-        npm run test:e2e -- --json --outputFile="≈" --NODE_ENV="$NODE_ENV"
+        npm run test:e2e -- --json --outputFile="$E2E_RESULT_FILEPATH" --NODE_ENV="$NODE_ENV"
         
         if [[ -f "$E2E_RESULT_FILEPATH" ]]
         then
