@@ -57,3 +57,9 @@
 		}
 	}
 }
+
+@media screen and ( max-width: 605px ) {
+	.wcpay-deposits-overview__table__cell:first-child {
+		width: 45%;
+	}
+}
