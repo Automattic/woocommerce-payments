@@ -34,6 +34,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 } ): JSX.Element => {
 	const tableClass = 'wcpay-deposits-overview__table';
 	const nextDeposit = getNextDeposit( overview );
+	const nextDepositDate = getDepositDate( nextDeposit?.date ?? 0 );
 
 	return (
 		<>
@@ -83,11 +84,7 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 						<Loadable
 							isLoading={ isLoading }
 							placeholder="MMMM DD, YYYY"
-							value={
-								nextDeposit.date
-									? getDepositDate( nextDeposit.date )
-									: '-'
-							}
+							value={ nextDepositDate }
 						/>
 					</FlexItem>
 					<FlexItem className={ `${ tableClass }__cell` }>
