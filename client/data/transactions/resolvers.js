@@ -17,14 +17,10 @@ import {
 	updateErrorForTransactions,
 	updateTransactionsSummary,
 	updateErrorForTransactionsSummary,
-	updateBlockedTransactions,
-	updateErrorForBlockedTransactions,
-	updateOnReviewTransactions,
-	updateErrorForOnReviewTransactions,
-	updateOnReviewTransactionsSummary,
-	updateErrorForOnReviewTransactionsSummary,
-	updateBlockedTransactionsSummary,
-	updateErrorForBlockedTransactionsSummary,
+	updateFraudOutcomeTransactions,
+	updateErrorForFraudOutcomeTransactions,
+	updateFraudOutcomeTransactionsSummary,
+	updateErrorForFraudOutcomeTransactionsSummary,
 } from './actions';
 import { formatDateValue } from 'utils';
 
@@ -110,50 +106,62 @@ export function* getTransactionsSummary( query ) {
 /**
  * Retrieves the blocked transactions.
  *
+ * @param { string } status Fraud outcome status to be filtered.
  * @param { string } query Data on which to parameterize the selection.
  */
-export function* getBlockedTransactions( query ) {
-	const path = addQueryArgs( `${ NAMESPACE }/transactions/block`, {
+export function* getFraudOutcomeTransactions( status, query ) {
+	const path = addQueryArgs( `${ NAMESPACE }/transactions/fraud-outcomes`, {
 		page: query.paged,
 		pagesize: query.perPage,
 		sort: query.orderby,
 		direction: query.order,
+		status,
 		...formatQueryFilters( query ),
 	} );
 
 	try {
 		const results = yield apiFetch( { path } );
-		yield updateBlockedTransactions( query, results.data || [] );
+		yield updateFraudOutcomeTransactions(
+			status,
+			query,
+			results.data || []
+		);
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
 			'createErrorNotice',
-			__(
-				'Error retrieving blocked transactions.',
-				'woocommerce-payments'
-			)
+			__( 'Error retrieving transactions.', 'woocommerce-payments' )
 		);
-		yield updateErrorForBlockedTransactions( query, e );
+		yield updateErrorForFraudOutcomeTransactions( status, query, e );
 	}
 }
 
 /**
  * Retrieves the on review transactions.
  *
+ * @param { string } status Fraud outcome status to be filtered.
  * @param { string } query Data on which to parameterize the selection.
  */
-export function* getBlockedTransactionsSummary( query ) {
-	const path = addQueryArgs( `${ NAMESPACE }/transactions/block/summary`, {
-		page: query.paged,
-		pagesize: query.perPage,
-		sort: query.orderby,
-		direction: query.order,
-		...formatQueryFilters( query ),
-	} );
+export function* getFraudOutcomeTransactionsSummary( status, query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/transactions/fraud-outcomes/summary`,
+		{
+			page: query.paged,
+			pagesize: query.perPage,
+			sort: query.orderby,
+			direction: query.order,
+			status,
+			...formatQueryFilters( query ),
+		}
+	);
 
 	try {
 		const results = yield apiFetch( { path } );
-		yield updateBlockedTransactionsSummary( query, results || [] );
+		yield updateFraudOutcomeTransactionsSummary(
+			status,
+			query,
+			results || []
+		);
 	} catch ( e ) {
 		yield dispatch(
 			'core/notices',
@@ -163,66 +171,6 @@ export function* getBlockedTransactionsSummary( query ) {
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForBlockedTransactionsSummary( query, e );
-	}
-}
-
-/**
- * Retrieves the on review transactions.
- *
- * @param { string } query Data on which to parameterize the selection.
- */
-export function* getOnReviewTransactions( query ) {
-	const path = addQueryArgs( `${ NAMESPACE }/transactions/review`, {
-		page: query.paged,
-		pagesize: query.perPage,
-		sort: query.orderby,
-		direction: query.order,
-		...formatQueryFilters( query ),
-	} );
-
-	try {
-		const results = yield apiFetch( { path } );
-		yield updateOnReviewTransactions( query, results.data || [] );
-	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
-			__(
-				'Error retrieving on review transactions.',
-				'woocommerce-payments'
-			)
-		);
-		yield updateErrorForOnReviewTransactions( query, e );
-	}
-}
-
-/**
- * Retrieves the on review transactions.
- *
- * @param { string } query Data on which to parameterize the selection.
- */
-export function* getOnReviewTransactionsSummary( query ) {
-	const path = addQueryArgs( `${ NAMESPACE }/transactions/review/summary`, {
-		page: query.paged,
-		pagesize: query.perPage,
-		sort: query.orderby,
-		direction: query.order,
-		...formatQueryFilters( query ),
-	} );
-
-	try {
-		const results = yield apiFetch( { path } );
-		yield updateOnReviewTransactionsSummary( query, results || [] );
-	} catch ( e ) {
-		yield dispatch(
-			'core/notices',
-			'createErrorNotice',
-			__(
-				'Error retrieving on review transactions.',
-				'woocommerce-payments'
-			)
-		);
-		yield updateErrorForOnReviewTransactionsSummary( query, e );
+		yield updateErrorForFraudOutcomeTransactionsSummary( status, query, e );
 	}
 }

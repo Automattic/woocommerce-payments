@@ -64,40 +64,27 @@ export const getTransactionsSummaryError = ( state, query ) => {
 	return getTransactionsSummaryForQuery( state, query ).error || {};
 };
 
-const getFraudOutcomeTransactionsForQuery = ( state, query, status ) => {
+const getFraudOutcomeTransactionsForQuery = ( state, status, query ) => {
 	const index = getResourceId( query );
 	return (
 		getTransactionsState( state ).fraudProtection[ status ][ index ] || {}
 	);
 };
 
-export const getBlockedTransactions = ( state, query ) => {
+export const getFraudOutcomeTransactions = ( state, status, query ) => {
 	return (
-		getFraudOutcomeTransactionsForQuery( state, query, 'block' ).data || []
+		getFraudOutcomeTransactionsForQuery( state, status, query ).data || []
 	);
 };
 
-export const getBlockedTransactionsError = ( state, query ) => {
+export const getFraudOutcomeTransactionsError = ( state, status, query ) => {
 	return (
-		getFraudOutcomeTransactionsForQuery( state, query, 'block' ).error ||
+		getFraudOutcomeTransactionsForQuery( state, status, query ).error ||
 		null
 	);
 };
 
-export const getOnReviewTransactions = ( state, query ) => {
-	return (
-		getFraudOutcomeTransactionsForQuery( state, query, 'review' ).data || []
-	);
-};
-
-export const getOnReviewTransactionsError = ( state, query ) => {
-	return (
-		getFraudOutcomeTransactionsForQuery( state, query, 'review' ).error ||
-		null
-	);
-};
-
-const getFraudOutcomeTransactionsSummaryForQuery = ( state, query, status ) => {
+const getFraudOutcomeTransactionsSummaryForQuery = ( state, status, query ) => {
 	const index = getResourceId( query );
 	return (
 		getTransactionsState( state ).fraudProtection[ status ].summary[
@@ -106,30 +93,20 @@ const getFraudOutcomeTransactionsSummaryForQuery = ( state, query, status ) => {
 	);
 };
 
-export const getBlockedTransactionsSummary = ( state, query ) => {
+export const getFraudOutcomeTransactionsSummary = ( state, status, query ) => {
 	return (
-		getFraudOutcomeTransactionsSummaryForQuery( state, query, 'block' )
+		getFraudOutcomeTransactionsSummaryForQuery( state, status, query )
 			.data || {}
 	);
 };
 
-export const getBlockedTransactionsSummaryError = ( state, query ) => {
+export const getFraudOutcomeTransactionsSummaryError = (
+	state,
+	status,
+	query
+) => {
 	return (
-		getFraudOutcomeTransactionsSummaryForQuery( state, query, 'block' )
-			.error || null
-	);
-};
-
-export const getOnReviewTransactionsSummary = ( state, query ) => {
-	return (
-		getFraudOutcomeTransactionsSummaryForQuery( state, query, 'review' )
-			.data || {}
-	);
-};
-
-export const getOnReviewTransactionsSummaryError = ( state, query ) => {
-	return (
-		getFraudOutcomeTransactionsSummaryForQuery( state, query, 'review' )
+		getFraudOutcomeTransactionsSummaryForQuery( state, status, query )
 			.error || null
 	);
 };

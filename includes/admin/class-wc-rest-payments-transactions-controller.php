@@ -36,37 +36,28 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/block',
+			'/' . $this->rest_base . '/fraud-outcomes',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_blocked_transactions' ],
+				'callback'            => [ $this, 'get_fraud_outcome_transactions' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/block/summary',
+			'/' . $this->rest_base . '/fraud-outcomes/summary',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_blocked_transactions_summary' ],
+				'callback'            => [ $this, 'get_fraud_outcome_transactions_summary' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/review',
+			'/' . $this->rest_base . '/fraud-outcomes/search',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_on_review_transactions' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/review/summary',
-			[
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_on_review_transactions_summary' ],
+				'callback'            => [ $this, 'get_fraud_outcome_transactions_search_autocomplete' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -121,45 +112,43 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	}
 
 	/**
-	 * Retrieve blocked transactions to respond with via API.
+	 * Retrieve fraud outcome transactions to respond with via API.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function get_blocked_transactions( $request ) {
+	public function get_fraud_outcome_transactions( $request ) {
+		$status    = $request->get_param( 'status' );
 		$page      = (int) $request->get_param( 'page' );
 		$pagesize  = (int) ( $request->get_param( 'pagesize' ) ?? 25 );
 		$sort      = $request->get_param( 'sort' );
 		$direction = $request->get_param( 'direction' );
+		$search    = $request->get_param( 'search' );
 
-		return $this->forward_request( 'list_fraud_outcome_transactions_paginated', [ 'block', $page, $pagesize, $sort, $direction ] );
+		return $this->forward_request( 'list_fraud_outcome_transactions_paginated', [ $status, $search, $page, $pagesize, $sort, $direction ] );
 	}
 
 	/**
-	 * Retrieve on review transactions to respond with via API.
+	 * Retrieve fraud outcome transactions summary to respond with via API.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function get_on_review_transactions( $request ) {
-		$page      = (int) $request->get_param( 'page' );
-		$pagesize  = (int) ( $request->get_param( 'pagesize' ) ?? 25 );
-		$sort      = $request->get_param( 'sort' );
-		$direction = $request->get_param( 'direction' );
+	public function get_fraud_outcome_transactions_summary( $request ) {
+		$status = $request->get_param( 'status' );
+		$search = $request->get_param( 'search' );
 
-		return $this->forward_request( 'list_fraud_outcome_transactions_paginated', [ 'review', $page, $pagesize, $sort, $direction ] );
+		return $this->forward_request( 'list_fraud_outcome_transactions_summary', [ $status, $search ] );
 	}
 
 	/**
-	 * Retrieve blocked transactions summary to respond with via API.
+	 * Retrieve transactions search options to respond with via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function get_blocked_transactions_summary() {
-		return $this->forward_request( 'list_fraud_outcome_transactions_summary', [ 'block' ] );
-	}
+	public function get_fraud_outcome_transactions_search_autocomplete( $request ) {
+		$status      = $request->get_param( 'status' );
+		$search_term = $request->get_param( 'search_term' );
 
-	/**
-	 * Retrieve on review transactions summary to respond with via API.
-	 */
-	public function get_on_review_transactions_summary() {
-		return $this->forward_request( 'list_fraud_outcome_transactions_summary', [ 'review' ] );
+		return $this->forward_request( 'get_fraud_outcome_transactions_search_autocomplete', [ $status, $search_term ] );
 	}
 
 	/**

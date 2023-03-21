@@ -27,7 +27,7 @@ import {
 	useManualCapture,
 	useSettings,
 	useAuthorizationsSummary,
-	useOnReviewTransactionsSummary,
+	useFraudOutcomeTransactionsSummary,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import RiskReviewList from './risk-review';
@@ -117,7 +117,7 @@ export const TransactionsPage: React.FC = () => {
 
 	const {
 		transactionsSummary: riskReviewSummary,
-	} = useOnReviewTransactionsSummary( {} );
+	} = useFraudOutcomeTransactionsSummary( 'review', {} );
 
 	// The Uncaptured authorizations screen will be shown only if:
 	// 1. The feature is turned on for all accounts

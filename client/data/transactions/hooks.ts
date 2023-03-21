@@ -260,81 +260,15 @@ export const useTransactionsSummary = (
 		]
 	);
 
-export const useBlockedTransactions = ( {
-	paged,
-	per_page: perPage,
-	orderby,
-	order,
-}: Query ): FraudOutcomeTransactions =>
-	useSelect( ( select ) => {
-		const {
-			getBlockedTransactions,
-			getBlockedTransactionsError,
-			isResolving,
-		} = select( STORE_NAME );
-
-		const query = {
-			paged: Number.isNaN( parseInt( paged ?? '', 10 ) ) ? '1' : paged,
-			perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
-				? '25'
-				: perPage,
-			orderby: orderby || 'date',
-			order: order || 'desc',
-		};
-
-		return {
-			transactions: getBlockedTransactions( query ),
-			transactionsError: getBlockedTransactionsError( query ),
-			isLoading: isResolving( 'getBlockedTransactions', [ query ] ),
-		};
-	}, [] );
-
-export const useBlockedTransactionsSummary = ( {
-	paged,
-	per_page: perPage,
-	orderby,
-	order,
-}: Query ): FraudOutcomeTransactionsSummary =>
-	useSelect( ( select ) => {
-		const {
-			getBlockedTransactionsSummary,
-			getBlockedTransactionsSummaryError,
-			isResolving,
-		} = select( STORE_NAME );
-
-		const query = {
-			paged: Number.isNaN( parseInt( paged ?? '', 10 ) ) ? '1' : paged,
-			perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
-				? '25'
-				: perPage,
-			orderby: orderby || 'date',
-			order: order || 'desc',
-		};
-
-		return {
-			transactionsSummary: getBlockedTransactionsSummary( query ),
-			transactionsSummaryError: getBlockedTransactionsSummaryError(
-				query
-			),
-			isLoading: isResolving( 'getBlockedTransactionsSummary', [
-				query,
-			] ),
-		};
-	}, [] );
-
-export const useOnReviewTransactions = ( {
-	paged,
-	per_page: perPage,
-	orderby,
-	order,
-	match,
-	search,
-}: Query ): FraudOutcomeTransactions =>
+export const useFraudOutcomeTransactions = (
+	status: string,
+	{ paged, per_page: perPage, orderby, order, search }: Query
+): FraudOutcomeTransactions =>
 	useSelect(
 		( select ) => {
 			const {
-				getOnReviewTransactions,
-				getOnReviewTransactionsError,
+				getFraudOutcomeTransactions,
+				getFraudOutcomeTransactionsError,
 				isResolving,
 			} = select( STORE_NAME );
 
@@ -347,53 +281,52 @@ export const useOnReviewTransactions = ( {
 					: perPage,
 				orderby: orderby || 'date',
 				order: order || 'desc',
-				match,
 				search,
 			};
 
 			return {
-				transactions: getOnReviewTransactions( query ),
-				transactionsError: getOnReviewTransactionsError( query ),
-				isLoading: isResolving( 'getOnReviewTransactions', [ query ] ),
-			};
-		},
-		[ paged, perPage, orderby, order ]
-	);
-
-export const useOnReviewTransactionsSummary = ( {
-	paged,
-	per_page: perPage,
-	orderby,
-	order,
-}: Query ): FraudOutcomeTransactionsSummary =>
-	useSelect(
-		( select ) => {
-			const {
-				getOnReviewTransactionsSummary,
-				getOnReviewTransactionsSummaryError,
-				isResolving,
-			} = select( STORE_NAME );
-
-			const query = {
-				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
-					? '1'
-					: paged,
-				perPage: Number.isNaN( parseInt( perPage ?? '', 10 ) )
-					? '25'
-					: perPage,
-				orderby: orderby || 'date',
-				order: order || 'desc',
-			};
-
-			return {
-				transactionsSummary: getOnReviewTransactionsSummary( query ),
-				transactionsSummaryError: getOnReviewTransactionsSummaryError(
+				transactions: getFraudOutcomeTransactions( status, query ),
+				transactionsError: getFraudOutcomeTransactionsError(
+					status,
 					query
 				),
-				isLoading: isResolving( 'getOnReviewTransactionsSummary', [
+				isLoading: isResolving( 'getFraudOutcomeTransactions', [
+					status,
 					query,
 				] ),
 			};
 		},
-		[ paged, perPage, orderby, order ]
+		[ paged, perPage, orderby, order, JSON.stringify( search ) ]
+	);
+
+export const useFraudOutcomeTransactionsSummary = (
+	status: string,
+	{ search }: Query
+): FraudOutcomeTransactionsSummary =>
+	useSelect(
+		( select ) => {
+			const {
+				getFraudOutcomeTransactionsSummary,
+				getFraudOutcomeTransactionsSummaryError,
+				isResolving,
+			} = select( STORE_NAME );
+
+			const query = { search };
+
+			return {
+				transactionsSummary: getFraudOutcomeTransactionsSummary(
+					status,
+					query
+				),
+				transactionsSummaryError: getFraudOutcomeTransactionsSummaryError(
+					status,
+					query
+				),
+				isLoading: isResolving( 'getFraudOutcomeTransactionsSummary', [
+					status,
+					query,
+				] ),
+			};
+		},
+		[ status, JSON.stringify( search ) ]
 	);

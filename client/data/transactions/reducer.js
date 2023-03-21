@@ -20,7 +20,7 @@ const defaultState = {
 
 const receiveTransactions = (
 	state = defaultState,
-	{ type, query = {}, data = [], error }
+	{ type, query = {}, data = [], error, status }
 ) => {
 	const index = getResourceId( query );
 
@@ -59,67 +59,41 @@ const receiveTransactions = (
 					},
 				},
 			};
-		case TYPES.SET_BLOCKED_TRANSACTIONS:
+		case TYPES.SET_FRAUD_OUTCOME_TRANSACTIONS:
 			return {
 				...state,
 				fraudProtection: {
 					...state.fraudProtection,
-					block: {
-						...state.fraudProtection.block,
+					[ status ]: {
+						...state.fraudProtection[ status ],
 						[ index ]: {
 							data,
 						},
 					},
 				},
 			};
-		case TYPES.SET_ERROR_FOR_BLOCKED_TRANSACTIONS:
+		case TYPES.SET_ERROR_FOR_FRAUD_OUTCOME_TRANSACTIONS:
 			return {
 				...state,
 				fraudProtection: {
 					...state.fraudProtection,
-					block: {
-						...state.fraudProtection.block,
+					[ status ]: {
+						...state.fraudProtection[ status ],
 						[ index ]: {
 							error,
 						},
 					},
 				},
 			};
-		case TYPES.SET_ON_REVIEW_TRANSACTIONS:
+		case TYPES.SET_FRAUD_OUTCOME_TRANSACTIONS_SUMMARY:
 			return {
 				...state,
 				fraudProtection: {
 					...state.fraudProtection,
-					review: {
-						...state.fraudProtection.review,
-						[ index ]: {
-							data,
-						},
-					},
-				},
-			};
-		case TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS:
-			return {
-				...state,
-				fraudProtection: {
-					...state.fraudProtection,
-					review: {
-						...state.fraudProtection.review,
-						[ index ]: {
-							error,
-						},
-					},
-				},
-			};
-		case TYPES.SET_BLOCKED_TRANSACTIONS_SUMMARY:
-			return {
-				...state,
-				fraudProtection: {
-					...state.fraudProtection,
-					block: {
-						...state.fraudProtection.block,
+					[ status ]: {
+						...state.fraudProtection[ status ],
 						summary: {
-							...state.fraudProtection.block.summary,
+							...state.fraudProtection[ status ].summary,
 							[ index ]: {
 								data,
 							},
@@ -127,47 +101,15 @@ const receiveTransactions = (
 					},
 				},
 			};
-		case TYPES.SET_ERROR_FOR_BLOCKED_TRANSACTIONS_SUMMARY:
+		case TYPES.SET_ERROR_FOR_FRAUD_OUTCOME_TRANSACTIONS_SUMMARY:
 			return {
 				...state,
 				fraudProtection: {
 					...state.fraudProtection,
-					block: {
-						...state.fraudProtection.block,
+					[ status ]: {
+						...state.fraudProtection[ status ],
 						summary: {
-							...state.fraudProtection.block.summary,
-							[ index ]: {
-								error,
-							},
-						},
-					},
-				},
-			};
-		case TYPES.SET_ON_REVIEW_TRANSACTIONS_SUMMARY:
-			return {
-				...state,
-				fraudProtection: {
-					...state.fraudProtection,
-					review: {
-						...state.fraudProtection.review,
-						summary: {
-							...state.fraudProtection.review.summary,
-							[ index ]: {
-								data,
-							},
-						},
-					},
-				},
-			};
-		case TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS_SUMMARY:
-			return {
-				...state,
-				fraudProtection: {
-					...state.fraudProtection,
-					review: {
-						...state.fraudProtection.review,
-						summary: {
-							...state.fraudProtection.review.summary,
+							...state.fraudProtection[ status ].summary,
 							[ index ]: {
 								error,
 							},

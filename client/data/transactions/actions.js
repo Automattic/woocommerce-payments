@@ -39,68 +39,42 @@ export function updateErrorForTransactionsSummary( query, data, error ) {
 	};
 }
 
-export function updateBlockedTransactions( query, data ) {
+export function updateFraudOutcomeTransactions( status, query, data ) {
 	return {
-		type: TYPES.SET_BLOCKED_TRANSACTIONS,
+		type: TYPES.SET_FRAUD_OUTCOME_TRANSACTIONS,
+		status,
 		query,
 		data,
 	};
 }
 
-export function updateErrorForBlockedTransactions( query, error ) {
+export function updateErrorForFraudOutcomeTransactions( status, query, error ) {
 	return {
-		type: TYPES.SET_ERROR_FOR_BLOCKED_TRANSACTIONS,
+		type: TYPES.SET_ERROR_FOR_FRAUD_OUTCOME_TRANSACTIONS,
+		status,
 		query,
 		data: null,
 		error,
 	};
 }
 
-export function updateBlockedTransactionsSummary( query, data ) {
+export function updateFraudOutcomeTransactionsSummary( status, query, data ) {
 	return {
-		type: TYPES.SET_BLOCKED_TRANSACTIONS_SUMMARY,
+		type: TYPES.SET_FRAUD_OUTCOME_TRANSACTIONS_SUMMARY,
+		status,
 		query,
 		data,
 	};
 }
 
-export function updateErrorForBlockedTransactionsSummary( query, error ) {
+export function updateErrorForFraudOutcomeTransactionsSummary(
+	status,
+	query,
+	error
+) {
 	return {
-		type: TYPES.SET_ERROR_FOR_BLOCKED_TRANSACTIONS_SUMMARY,
-		query,
-		data: null,
-		error,
-	};
-}
-
-export function updateOnReviewTransactions( query, data ) {
-	return {
-		type: TYPES.SET_ON_REVIEW_TRANSACTIONS,
-		query,
-		data,
-	};
-}
-
-export function updateErrorForOnReviewTransactions( query, error ) {
-	return {
-		type: TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS,
-		query,
-		data: null,
-		error,
-	};
-}
-
-export function updateOnReviewTransactionsSummary( query, data ) {
-	return {
-		type: TYPES.SET_ON_REVIEW_TRANSACTIONS_SUMMARY,
-		query,
-		data,
-	};
-}
-
-export function updateErrorForOnReviewTransactionsSummary( query, error ) {
-	return {
-		type: TYPES.SET_ERROR_FOR_ON_REVIEW_TRANSACTIONS_SUMMARY,
+		type: TYPES.SET_ERROR_FOR_FRAUD_OUTCOME_TRANSACTIONS_SUMMARY,
+		status,
 		query,
 		data: null,
 		error,

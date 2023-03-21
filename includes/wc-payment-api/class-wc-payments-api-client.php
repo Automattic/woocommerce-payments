@@ -718,6 +718,7 @@ class WC_Payments_API_Client {
 	 * Retrieves transaction list for a given fraud outcome status.
 	 *
 	 * @param string $status    Fraud outcome status.
+	 * @param array  $search    The search terms.
 	 * @param int    $page      The requested page.
 	 * @param int    $page_size The size of the requested page.
 	 * @param string $sort      The column to be used for sorting.
@@ -726,28 +727,8 @@ class WC_Payments_API_Client {
 	 *
 	 * @return array
 	 */
-	public function list_fraud_outcome_transactions_paginated( $status, $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [] ) {
-		$response = $this->get_fraud_outcome_transactions( $status, $sort, $direction, $filters );
-
-		$compare_filters = function ( $a, $b ) use ( $sort, $direction ) {
-			$key = 'date' === $sort ? 'created' : $sort;
-
-			$a_value = $a[ $key ];
-			$b_value = $b[ $key ];
-
-			if ( $a_value === $b_value ) {
-				return 0;
-			};
-
-			if ( 'desc' === $direction ) {
-				return $a_value < $b_value ? 1 : -1;
-			};
-
-			return $a_value < $b_value ? -1 : 1;
-		};
-
-		// Handles the filtering.
-		usort( $response, $compare_filters );
+	public function list_fraud_outcome_transactions_paginated( $status, $search = [], $page = 0, $page_size = 25, $sort = 'date', $direction = 'desc', $filters = [] ) {
+		$response = $this->get_fraud_outcome_transactions( $status, $search, $sort, $direction, $filters );
 
 		// Handles the pagination.
 		$response = array_slice( $response, ( $page - 1 ) * $page_size, $page_size );
@@ -761,11 +742,12 @@ class WC_Payments_API_Client {
 	 * Retrieves transactions summary for a given fraud outcome status.
 	 *
 	 * @param string $status Fraud outcome status.
+	 * @param array  $search The search terms.
 	 *
 	 * @return array
 	 */
-	public function list_fraud_outcome_transactions_summary( $status ) {
-		$fraud_outcomes = $this->get_fraud_outcome_transactions( $status );
+	public function list_fraud_outcome_transactions_summary( $status, $search ) {
+		$fraud_outcomes = $this->get_fraud_outcome_transactions( $status, $search );
 
 		$total      = 0;
 		$currencies = [];
@@ -783,16 +765,58 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Fetch transactions search options for provided query.
+	 *
+	 * @param string $status Fraud outcome status.
+	 * @param string $search_term Query to be used to get search options - can be an order ID, or part of a name or email.
+	 *
+	 * @return array|WP_Error Search results.
+	 */
+	public function get_fraud_outcome_transactions_search_autocomplete( $status, $search_term ) {
+		$fraud_outcomes = $this->get_fraud_outcome_transactions( $status );
+
+		$order = wc_get_order( $search_term );
+
+		$results = array_filter(
+			$fraud_outcomes,
+			function ( $outcome ) use ( $search_term ) {
+				return preg_match( "/{$search_term}/i", $outcome['customer_name'] );
+			}
+		);
+
+		$results = array_map(
+			function ( $result ) {
+				return [
+					'label' => $result['customer_name'],
+				];
+			},
+			$fraud_outcomes
+		);
+
+		if ( $order ) {
+			if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $order ) ) {
+				$prefix = __( 'Subscription #', 'woocommerce-payments' );
+			} else {
+				$prefix = __( 'Order #', 'woocommerce-payments' );
+			}
+			array_unshift( $results, [ 'label' => $prefix . $search_term ] );
+		}
+
+		return $results;
+	}
+
+	/**
 	 * Retrieves transaction list for a given fraud outcome status.
 	 *
 	 * @param string $status    Fraud outcome status.
+	 * @param array  $search    The search terms.
 	 * @param string $sort      The column to be used for sorting.
 	 * @param string $direction The sorting direction.
 	 * @param array  $filters   The filters to be used in the query.
 	 *
 	 * @return array
 	 */
-	private function get_fraud_outcome_transactions( $status, $sort = 'date', $direction = 'desc', $filters = [] ) {
+	private function get_fraud_outcome_transactions( $status, $search = [], $sort = 'date', $direction = 'desc', $filters = [] ) {
 		$query = array_merge(
 			$filters,
 			[
@@ -815,6 +839,51 @@ class WC_Payments_API_Client {
 			$response[] = $outcome;
 			unset( $outcome );
 		}
+
+		// Handles the search.
+		if ( is_array( $search ) && ! empty( $search ) ) {
+			$response = array_filter(
+				$response,
+				function ( $outcome ) use ( $search ) {
+					return array_filter(
+						$search,
+						function ( $term ) use ( $outcome ) {
+							// Search for order id.
+							if ( preg_match( '/#\d+/', $term ) ) {
+								return false !== strpos( $term, (string) $outcome['order_id'] );
+							};
+
+							// Search for customer name.
+							return preg_match( "/{$term}/i", $outcome['customer_name'] );
+						}
+					);
+				}
+			);
+		}
+
+		// Handles the sorting.
+		$compare_sorting = function ( $a, $b ) use ( $sort, $direction ) {
+			$key = 'date' === $sort ? 'created' : $sort;
+
+			if ( ! array_key_exists( $key, $a ) || ! array_key_exists( $key, $b ) ) {
+				return 0;
+			}
+
+			$a_value = $a[ $key ];
+			$b_value = $b[ $key ];
+
+			if ( $a_value === $b_value ) {
+				return 0;
+			};
+
+			if ( 'desc' === $direction ) {
+				return $a_value < $b_value ? 1 : -1;
+			};
+
+			return $a_value < $b_value ? -1 : 1;
+		};
+
+		usort( $response, $compare_sorting );
 
 		return $response;
 	}

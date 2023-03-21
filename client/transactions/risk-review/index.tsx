@@ -5,15 +5,20 @@
  */
 import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
-import { TableCard } from '@woocommerce/components';
-import { onQueryChange, getQuery } from '@woocommerce/navigation';
+import { Search, TableCard } from '@woocommerce/components';
+import {
+	onQueryChange,
+	getQuery,
+	updateQueryString,
+} from '@woocommerce/navigation';
+import { uniq } from 'lodash';
 
 /**
  * Internal dependencies
  */
 import {
-	useOnReviewTransactions,
-	useOnReviewTransactionsSummary,
+	useFraudOutcomeTransactions,
+	useFraudOutcomeTransactionsSummary,
 } from 'data/index';
 import Page from '../../components/page';
 import wcpayTracks from 'tracks';
@@ -23,17 +28,21 @@ import {
 } from './columns';
 import './style.scss';
 import { formatExplicitCurrency } from '../../utils/currency';
+import autocompleter from '../fraud-protection/autocompleter';
 
 export const RiskReviewList = (): JSX.Element => {
 	const query = getQuery();
 	const columnsToDisplay = getRiskReviewListColumns();
 
-	const { transactions, isLoading } = useOnReviewTransactions( query );
+	const { transactions, isLoading } = useFraudOutcomeTransactions(
+		'review',
+		query
+	);
 
 	const {
 		transactionsSummary,
 		isLoading: isSummaryLoading,
-	} = useOnReviewTransactionsSummary( query );
+	} = useFraudOutcomeTransactionsSummary( 'review', query );
 
 	// const { authorizations, isLoading } = useAuthorizations( query );
 
@@ -69,6 +78,26 @@ export const RiskReviewList = (): JSX.Element => {
 		}
 	}
 
+	const searchedLabels =
+		getQuery().search &&
+		getQuery().search?.map( ( v ) => ( {
+			key: v,
+			label: v,
+		} ) );
+
+	const onSearchChange = ( values: { key: string; label: string }[] ) => {
+		updateQueryString( {
+			search: values.length
+				? uniq( values.map( ( v ) => v.key || v.label ) )
+				: undefined,
+		} );
+	};
+
+	const searchPlaceholder = __(
+		'Search by order number or customer name',
+		'woocommerce-payments'
+	);
+
 	useEffect( () => {
 		wcpayTracks.recordEvent( 'page_view', {
 			path: 'payments_transactions_risk_review',
@@ -88,6 +117,22 @@ export const RiskReviewList = (): JSX.Element => {
 				summary={ summary }
 				query={ query }
 				onQueryChange={ onQueryChange }
+				actions={ [
+					<Search
+						inlineTags
+						key="search"
+						onChange={ onSearchChange }
+						placeholder={ searchPlaceholder }
+						selected={ searchedLabels }
+						showClearButton={ true }
+						type={
+							wcpaySettings.featureFlags.customSearch
+								? 'custom'
+								: 'customers'
+						}
+						autocompleter={ autocompleter( 'review' ) }
+					/>,
+				] }
 			/>
 		</Page>
 	);
