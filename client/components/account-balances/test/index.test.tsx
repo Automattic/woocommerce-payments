@@ -13,6 +13,7 @@ import AccountBalancesTabPanel from '../balances-tab-panel';
 import { getGreeting, getCurrencyTabTitle } from '../utils';
 import { useCurrentWpUser } from '../hooks';
 import { useAllDepositsOverviews } from 'wcpay/data';
+import { useSelectedCurrency } from 'wcpay/overview/hooks';
 
 const mockUser = {
 	id: 123,
@@ -79,6 +80,10 @@ jest.mock( 'wcpay/data', () => ( {
 	useAllDepositsOverviews: jest.fn(),
 } ) );
 
+jest.mock( 'wcpay/overview/hooks', () => ( {
+	useSelectedCurrency: jest.fn(),
+} ) );
+
 const mockGetGreeting = getGreeting as jest.MockedFunction<
 	typeof getGreeting
 >;
@@ -91,6 +96,9 @@ const mockGetCurrencyTabTitle = getCurrencyTabTitle as jest.MockedFunction<
 const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
 	typeof useAllDepositsOverviews
 >;
+const mockUseSelectedCurrency = useSelectedCurrency as jest.MockedFunction<
+	typeof useSelectedCurrency
+>;
 
 // Mocks the DepositsOverviews hook to return the given currencies.
 const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
@@ -102,6 +110,13 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 		isLoading: null === currencies || ! currencies.length,
 	} );
 };
+
+// Mocks the useSelectedCurrency hook to return no previously selected currency.
+mockUseSelectedCurrency.mockReturnValue( {
+	selectedCurrency: undefined,
+	setSelectedCurrency: jest.fn(),
+	isLoading: false,
+} );
 
 // Creates a mock Overview object for the given currency code and balance amounts.
 const createMockOverview = (
@@ -172,6 +187,7 @@ describe( 'AccountBalances', () => {
 		} );
 		mockGetCurrencyTabTitle.mockReturnValue( 'USD Balance' );
 		mockOverviews( [ createMockOverview( 'usd', 100, 200 ) ] );
+
 		const { container } = render( <AccountBalances /> );
 		expect( container ).toMatchSnapshot();
 	} );
