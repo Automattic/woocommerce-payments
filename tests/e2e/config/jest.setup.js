@@ -23,6 +23,7 @@ const ERROR_MESSAGES_TO_IGNORE = [
 	'Failed to load resource: the server responded with a status of 500 ()',
 	'Scripts that have a dependency on',
 	'was preloaded using link preload but not used within a few seconds',
+	'No UI will be shown. CanMakePayment and hasEnrolledInstrument',
 ];
 
 ERROR_MESSAGES_TO_IGNORE.forEach( ( errorMessage ) => {

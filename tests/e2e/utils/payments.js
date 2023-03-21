@@ -38,10 +38,8 @@ export async function fillCardDetails( page, card ) {
 		);
 		await cardCvcInput.type( card.cvc, { delay: 20 } );
 
-		if ( null !== ( await page.$( '#add_payment_method' ) ) ) {
-			const zip = await stripeFrame.waitForSelector(
-				'[name="postalCode"]'
-			);
+		const zip = await stripeFrame.$( '[name="postalCode"]' );
+		if ( null !== zip ) {
 			await zip.type( '90210', { delay: 20 } );
 		}
 	} else {

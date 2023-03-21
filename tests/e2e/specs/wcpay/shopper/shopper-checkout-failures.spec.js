@@ -146,7 +146,6 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 
 	it( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
 		const declinedCard = config.get( 'cards.declined-3ds' );
-		await uiUnblocked();
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await confirmCardAuthentication( page, '3DS' );
