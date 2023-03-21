@@ -43,6 +43,10 @@ describe( 'Overview page', () => {
 					status: 'enabled',
 					interval: 'weekly',
 				},
+				progressiveOnboarding: {
+					isComplete: false,
+					isEnabled: false,
+				},
 			},
 			accountFees: {
 				base: {
@@ -100,9 +104,7 @@ describe( 'Overview page', () => {
 		const { container } = render( <OverviewPage /> );
 
 		expect(
-			container.querySelector(
-				'.wcpay-connection-success.components-notice.is-success'
-			)
+			container.querySelector( '.wcpay-connection-success' )
 		).toBeVisible();
 	} );
 
