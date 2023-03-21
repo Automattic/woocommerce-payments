@@ -802,7 +802,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			case 'advanced':
 				$referer                   = $request->get_header( 'referer' );
 				$is_advanced_settings_page = 0 < strpos( $referer, 'fraud-protection' );
-				if ( $is_advanced_settings_page ) {
+				if ( ! $is_advanced_settings_page ) {
 					// When the button is clicked from the Payments > Settings page, the advanced fraud protection settings shouldn't change.
 					$ruleset_config = get_transient( 'wcpay_fraud_protection_settings' ) ?? [];
 				} else {
