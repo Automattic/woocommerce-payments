@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useDispatch, useSelect } from '@wordpress/data';
+import { useAllDepositsOverviews } from 'wcpay/data';
 
 type CurrencyCode = string;
 
@@ -39,4 +40,45 @@ export const useSelectedCurrency = (): SelectedCurrencyResponse => {
 			selectedCurrency: getOption( selectedCurrencyOptionName ),
 		};
 	} );
+};
+
+type SelectedCurrencyOverviewResponse = {
+	account?: AccountOverview.Account;
+	overview?: AccountOverview.Overview;
+	isLoading: boolean;
+};
+/**
+ * A custom hook to get the selected currency overview.
+ * If the selected currency is not valid, the first currency overview is returned.
+ * If the selected currency is valid, the overview for that currency is returned.
+ *
+ * @return {SelectedCurrencyOverviewResponse} An object containing the account and the overview for the selected currency.
+ */
+export const useSelectedCurrencyOverview = (): SelectedCurrencyOverviewResponse => {
+	const {
+		overviews,
+		isLoading: isAccountOverviewsLoading,
+	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
+	const { currencies, account } = overviews;
+
+	const {
+		selectedCurrency,
+		isLoading: isSelectedCurrencyLoading,
+	} = useSelectedCurrency();
+
+	const isSelectedCurrencyValid = currencies.some(
+		( currency ) => currency.currency === selectedCurrency
+	);
+
+	const overview = isSelectedCurrencyValid
+		? currencies.find(
+				( currency ) => currency.currency === selectedCurrency
+		  )
+		: currencies[ 0 ];
+
+	return {
+		account,
+		overview,
+		isLoading: isAccountOverviewsLoading || isSelectedCurrencyLoading,
+	};
 };
