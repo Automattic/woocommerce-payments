@@ -7,7 +7,7 @@ import { Card, CardHeader } from '@wordpress/components';
 /**
  * Internal dependencies.
  */
-import { useAllDepositsOverviews } from 'wcpay/data';
+import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import strings from './strings';
 import NextDepositDetails from './next-deposit';
 
@@ -39,18 +39,11 @@ const DepositsOverviewDetails: React.FunctionComponent< OverviewProps > = ( {
 };
 
 const DepositsOverview = (): JSX.Element => {
-	const {
-		overviews,
-		isLoading,
-	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
-
-	const { currencies, account } = overviews;
+	const { account, overview, isLoading } = useSelectedCurrencyOverview();
 
 	if ( isLoading ) {
 		return <DepositsOverviewDetails isLoading={ isLoading } />;
 	}
-
-	const overview = currencies[ 0 ]; // TODO: To handle multiple currencies we'll need to fetch the currently selected currency.
 
 	return (
 		<>
