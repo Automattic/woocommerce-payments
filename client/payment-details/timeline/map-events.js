@@ -415,6 +415,18 @@ export const feeBreakdown = ( event ) => {
 						'Subscription transaction fee: %1$s%%',
 						'woocommerce-payments'
 				  ),
+		'additional-device':
+			0 !== fixedRate
+				? __(
+						/* translators: %1$s% is the fee amount and %2$s is the fixed rate */
+						'Tap to pay transaction fee: %1$s%% + %2$s',
+						'woocommerce-payments'
+				  )
+				: __(
+						/* translators: %1$s% is the fee amount */
+						'Tap to pay transaction fee: %1$s%%',
+						'woocommerce-payments'
+				  ),
 		discount: __( 'Discount', 'woocommerce-payments' ),
 	} );
 

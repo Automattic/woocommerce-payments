@@ -395,6 +395,44 @@ describe( 'mapTimelineEvents', () => {
 				] )
 			).toMatchSnapshot();
 		} );
+
+		test( 'in person payments - tap to pay', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 1980,
+						currency: 'USD',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 61,
+						fee_rates: {
+							percentage: 0.026,
+							fixed: 20,
+							fixed_currency: 'USD',
+							history: [
+								{
+									type: 'base',
+									percentage_rate: 0.026,
+									fixed_rate: 10,
+									currency: 'usd',
+								},
+								{
+									type: 'additional',
+									additional_type: 'device',
+									percentage_rate: 0,
+									fixed_rate: 10,
+									currency: 'usd',
+								},
+							],
+						},
+						type: 'captured',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
 	} );
 
 	describe( 'Multi-Currency events', () => {

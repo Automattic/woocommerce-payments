@@ -8,7 +8,8 @@ import { useDispatch } from '@wordpress/data';
 // eslint-disable-next-line import/no-unresolved
 import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 import { Icon, info } from '@wordpress/icons';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
+import LockIconG from 'gridicons/dist/lock';
 
 /**
  * Internal dependencies
@@ -18,11 +19,10 @@ import { getConfig } from 'utils/checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
 import Container from './container';
-import LockIcon from '../icons/lock';
 import usePlatformCheckoutUser from '../hooks/use-platform-checkout-user';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { WC_STORE_CART } from '../../../checkout/constants';
-import WooPayIcon from '../../../../assets/images/woopay.svg';
+import WooPayIcon from 'assets/images/woopay.svg?asset';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
@@ -62,6 +62,10 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 
 		// Take out any non-digit characters, except +.
 		phoneFieldValue = phoneFieldValue.replace( /[^\d+]*/g, '' );
+
+		if ( ! phoneFieldValue.startsWith( '+' ) ) {
+			phoneFieldValue = '+1' + phoneFieldValue;
+		}
 
 		return phoneFieldValue;
 	};
@@ -217,17 +221,22 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								</svg>
 							) }
 							<span>
-								{ __(
-									'Save my information for a faster and secure checkout',
-									'woocommerce-payments'
-								) }
+								{ isBlocksCheckout
+									? __(
+											'Save my information for a faster and secure checkout',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Save my information for a faster checkout',
+											'woocommerce-payments'
+									  ) }
 							</span>
 						</label>
 					</div>
 					<img
 						src={ WooPayIcon }
-						alt="WooPay"
 						className="woopay-logo"
+						alt="WooPay"
 					/>
 					<Icon
 						icon={ info }
@@ -246,7 +255,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						onBlur={ setInfoFlyoutNotVisible }
 					>
 						<div>
-							<LockIcon />
+							<LockIconG size={ 16 } />
 						</div>
 						<span>
 							{ interpolateComponents( {

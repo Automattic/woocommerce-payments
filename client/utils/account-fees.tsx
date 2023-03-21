@@ -4,7 +4,7 @@
  * External depencencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 import './account-fees.scss';
 
 /**
@@ -26,16 +26,28 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	AT: 'austria',
 	BE: 'belgium',
 	CA: 'canada',
+	CY: 'cyprus',
 	FR: 'france',
+	LU: 'luxembourg',
 	DE: 'germany',
+	DK: 'denmark',
+	EE: 'estonia',
+	FI: 'finland',
+	GR: 'greece',
 	HK: 'hong-kong',
 	IE: 'ireland',
 	IT: 'italy',
+	LT: 'lithuania',
+	LV: 'latvia',
+	MT: 'malta',
 	NL: 'netherlands',
+	NO: 'norway',
 	NZ: 'new-zealand',
 	PL: 'poland',
 	PT: 'portugal',
 	SG: 'singapore',
+	SI: 'slovenia',
+	SK: 'slovakia',
 	ES: 'spain',
 	CH: 'switzerland',
 	UK: 'united-kingdom',

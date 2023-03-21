@@ -50,11 +50,11 @@ describe( 'ExpressCheckout', () => {
 		const updateIsPaymentRequestEnabledHandler = jest.fn();
 
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
-		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
 		usePlatformCheckoutEnabledSettings.mockReturnValue(
 			getMockPlatformCheckoutEnabledSettings(
-				false,
+				true,
 				updateIsPlatformCheckoutEnabledHandler
 			)
 		);
@@ -73,19 +73,10 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		const [
-			platformCheckoutCheckbox,
-			paymentRequestCheckbox,
-		] = screen.queryAllByRole( 'checkbox' );
-
-		userEvent.click( platformCheckoutCheckbox );
-		userEvent.click( paymentRequestCheckbox );
+		userEvent.click( screen.getByLabelText( 'WooPay' ) );
 
 		expect( updateIsPlatformCheckoutEnabledHandler ).toHaveBeenCalledWith(
-			true
-		);
-		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
-			true
+			false
 		);
 	} );
 
@@ -171,5 +162,36 @@ describe( 'ExpressCheckout', () => {
 		);
 		const linkCheckbox = container.getByLabelText( 'Link by Stripe' );
 		expect( linkCheckbox ).not.toBeChecked();
+	} );
+
+	it( 'should prevent enabling both Link and WooPay at the same time', async () => {
+		const updateIsPlatformCheckoutEnabledHandler = jest.fn();
+		usePlatformCheckoutEnabledSettings.mockReturnValue(
+			getMockPlatformCheckoutEnabledSettings(
+				false,
+				updateIsPlatformCheckoutEnabledHandler
+			)
+		);
+		const context = { featureFlags: { platformCheckout: true } };
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByText(
+				'WooPay cannot be enabled at checkout. Click to expand.'
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				'Link by Stripe cannot be enabled at checkout. Click to expand.'
+			)
+		).not.toBeInTheDocument();
+		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeChecked();
 	} );
 } );

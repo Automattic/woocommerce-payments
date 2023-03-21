@@ -64,7 +64,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		delete_user_option( 1, self::CUSTOMER_LIVE_META_KEY );
 		delete_user_option( 1, self::CUSTOMER_TEST_META_KEY );
 		delete_user_option( 1, '_wcpay_customer_id' );
-		WC_Payments::get_gateway()->update_option( 'test_mode', 'no' );
+		WC_Payments::mode()->live();
 		WC()->session->__unset( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY );
 		parent::tear_down();
 	}
@@ -84,7 +84,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	 * Test get customer ID by user ID for test mode.
 	 */
 	public function test_get_customer_id_by_user_id_test_mode() {
-		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		WC_Payments::mode()->test();
 		update_user_option( 1, self::CUSTOMER_TEST_META_KEY, 'cus_test12345' );
 
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
@@ -94,7 +94,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_customer_id_by_user_id_migrates_deprecated_meta_to_live_key_for_live_accounts() {
 		// We're using test mode here to assert the account is migrated to the live key regardless of it.
-		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		WC_Payments::mode()->test();
 		update_user_option( 1, '_wcpay_customer_id', 'cus_12345' );
 		$this->mock_account->method( 'get_is_live' )->willReturn( true );
 
@@ -194,7 +194,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	 * Test create customer for user for test mode.
 	 */
 	public function test_create_customer_for_user_test_mode() {
-		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		WC_Payments::mode()->test();
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
@@ -327,7 +327,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	 * Test update customer for user when user not found for test mode.
 	 */
 	public function test_update_customer_for_user_when_user_not_found_test_mode() {
-		WC_Payments::get_gateway()->update_option( 'test_mode', 'yes' );
+		WC_Payments::mode()->test();
 		$user             = new WP_User( 1 );
 		$user->user_login = 'testUser';
 
@@ -680,5 +680,22 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( 'wcpay_cus_test12345' );
 
 		$this->assertEquals( $this->customer_service->get_customer_id_for_order( $order ), 'wcpay_cus_test12345' );
+	}
+
+	public function test_clear_cached_payment_methods_for_user() {
+		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_test12345' );
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
+
+		$expected_card_cache_key = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_card';
+		$expected_sepa_cache_key = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_sepa_debit';
+
+		$this->mock_db_cache
+			->expects( $this->exactly( 2 ) )
+			->method( 'delete' )
+			->withConsecutive(
+				[ $expected_card_cache_key ],
+				[ $expected_sepa_cache_key ]
+			);
+		$this->customer_service->clear_cached_payment_methods_for_user( 1 );
 	}
 }

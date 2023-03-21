@@ -374,8 +374,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'payment_method_statuses'             => $this->wcpay_gateway->get_upe_enabled_payment_method_statuses(),
 				'is_wcpay_enabled'                    => $this->wcpay_gateway->is_enabled(),
 				'is_manual_capture_enabled'           => 'yes' === $this->wcpay_gateway->get_option( 'manual_capture' ),
-				'is_test_mode_enabled'                => $this->wcpay_gateway->is_in_test_mode(),
-				'is_dev_mode_enabled'                 => $this->wcpay_gateway->is_in_dev_mode(),
+				'is_test_mode_enabled'                => WC_Payments::mode()->is_test(),
+				'is_dev_mode_enabled'                 => WC_Payments::mode()->is_dev(),
 				'is_multi_currency_enabled'           => WC_Payments_Features::is_customer_multi_currency_enabled(),
 				'is_client_secret_encryption_enabled' => WC_Payments_Features::is_client_secret_encryption_enabled(),
 				'is_wcpay_subscriptions_enabled'      => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
@@ -409,6 +409,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'deposit_delay_days'                  => $this->wcpay_gateway->get_option( 'deposit_delay_days' ),
 				'deposit_status'                      => $this->wcpay_gateway->get_option( 'deposit_status' ),
 				'deposit_completed_waiting_period'    => $this->wcpay_gateway->get_option( 'deposit_completed_waiting_period' ),
+				'advanced_fraud_protection_settings'  => $this->wcpay_gateway->get_option( 'advanced_fraud_protection_settings' ),
 			]
 		);
 	}
@@ -436,6 +437,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_platform_checkout_store_logo( $request );
 		$this->update_platform_checkout_custom_message( $request );
 		$this->update_platform_checkout_enabled_locations( $request );
+		$this->update_advanced_fraud_protection_settings( $request );
 
 		return new WP_REST_Response( [], 200 );
 	}
@@ -535,7 +537,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function update_is_test_mode_enabled( WP_REST_Request $request ) {
 		// avoiding updating test mode when dev mode is enabled.
-		if ( $this->wcpay_gateway->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return;
 		}
 
@@ -555,7 +557,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 */
 	private function update_is_debug_log_enabled( WP_REST_Request $request ) {
 		// avoiding updating test mode when dev mode is enabled.
-		if ( $this->wcpay_gateway->is_in_dev_mode() ) {
+		if ( WC_Payments::mode()->is_dev() ) {
 			return;
 		}
 
@@ -758,5 +760,24 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$platform_checkout_enabled_locations = $request->get_param( 'platform_checkout_enabled_locations' );
 
 		$this->wcpay_gateway->update_option( 'platform_checkout_button_locations', $platform_checkout_enabled_locations );
+	}
+
+	/**
+	 * Updates the settings of advanced fraud protection rules.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_advanced_fraud_protection_settings( WP_REST_Request $request ) {
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			return;
+		}
+
+		if ( ! $request->has_param( 'advanced_fraud_protection_settings' ) ) {
+			return;
+		}
+
+		$advanced_fraud_protection_settings = $request->get_param( 'advanced_fraud_protection_settings' );
+
+		update_option( 'advanced_fraud_protection_settings', wp_json_encode( $advanced_fraud_protection_settings ) );
 	}
 }

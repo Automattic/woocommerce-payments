@@ -44,6 +44,8 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+		delete_option( '_wcpay_feature_upe' );
+		delete_option( '_wcpay_feature_upe_split' );
 
 		parent::tear_down();
 	}
@@ -196,6 +198,64 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_progressive_onboarding_enabled_returns_false_when_flag_is_not_set() {
 		$this->assertFalse( WC_Payments_Features::is_progressive_onboarding_enabled() );
+	}
+
+	public function test_split_upe_disabled_with_ineligible_merchant() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'capabilities' => [ 'sepa_debit_payments' => 'active' ] ] );
+		update_option( '_wcpay_feature_upe', '0' );
+		update_option( '_wcpay_feature_upe_split', '0' );
+
+		$this->assertFalse( WC_Payments_Features::is_upe_enabled() );
+		$this->assertFalse( WC_Payments_Features::is_upe_legacy_enabled() );
+		$this->assertFalse( WC_Payments_Features::is_upe_split_enabled() );
+	}
+
+	public function test_legacy_upe_enabled_with_split_upe_ineligible_merchant() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'capabilities' => [ 'sepa_debit_payments' => 'active' ] ] );
+		update_option( '_wcpay_feature_upe', '0' );
+		update_option( '_wcpay_feature_upe_split', '1' );
+
+		$this->assertTrue( WC_Payments_Features::is_upe_enabled() );
+		$this->assertTrue( WC_Payments_Features::is_upe_legacy_enabled() );
+		$this->assertFalse( WC_Payments_Features::is_upe_split_enabled() );
+	}
+
+	public function test_split_upe_enabled_with_eligible_merchant() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'capabilities' => [ 'sepa_debit_payments' => 'inactive' ] ] );
+		update_option( '_wcpay_feature_upe', '0' );
+		update_option( '_wcpay_feature_upe_split', '1' );
+
+		$this->assertTrue( WC_Payments_Features::is_upe_enabled() );
+		$this->assertFalse( WC_Payments_Features::is_upe_legacy_enabled() );
+		$this->assertTrue( WC_Payments_Features::is_upe_split_enabled() );
+	}
+
+	public function test_is_fraud_protection_settings_enabled_returns_true() {
+		add_filter(
+			'pre_option_wcpay_fraud_protection_settings_active',
+			function ( $pre_option, $option, $default ) {
+				return '1';
+			},
+			10,
+			3
+		);
+		$this->assertTrue( WC_Payments_Features::is_fraud_protection_settings_enabled() );
+	}
+
+	public function test_is_fraud_protection_settings_enabled_returns_false_when_flag_is_false() {
+		add_filter(
+			'pre_option_wcpay_fraud_protection_settings_active',
+			function ( $pre_option, $option, $default ) {
+				return '0';
+			},
+			10,
+			3
+		);
+		$this->assertFalse( WC_Payments_Features::is_fraud_protection_settings_enabled() );
+	}
+
+	public function test_is_fraud_protection_settings_enabled_returns_false_when_flag_is_not_set() {
+		$this->assertFalse( WC_Payments_Features::is_fraud_protection_settings_enabled() );
 	}
 
 	private function setup_enabled_flags( array $enabled_flags ) {

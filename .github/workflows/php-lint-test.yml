@@ -1,22 +1,27 @@
 name: PHP linting and tests
 
 on:
-  pull_request
+  pull_request:
+  merge_group:
 
 env:
   WP_VERSION:        latest
   WC_L2_VERSION: '7.1.1'  # the min supported version as per L-2 policy
   GUTENBERG_VERSION: latest
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
     name:    PHP linting
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
@@ -31,7 +36,7 @@ jobs:
 
   test:
     name:    PHP testing
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast:    false
       max-parallel: 10
@@ -39,9 +44,9 @@ jobs:
         php: [ '7.2', '7.3', '7.4' ]
     steps:
       # clone the repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       # enable dependencies caching
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}

@@ -443,7 +443,9 @@ export const handlePlatformCheckoutEmailInput = async (
 	const closeLoginSessionIframe = () => {
 		loginSessionIframeWrapper.remove();
 		loginSessionIframe.classList.remove( 'open' );
-		platformCheckoutEmailInput.focus();
+		platformCheckoutEmailInput.focus( {
+			preventScroll: true,
+		} );
 
 		// Check the initial value of the email input and trigger input validation.
 		if ( validateEmail( platformCheckoutEmailInput.value ) ) {
@@ -511,21 +513,34 @@ export const handlePlatformCheckoutEmailInput = async (
 				api.initPlatformCheckout(
 					'',
 					e.data.platformCheckoutUserSession
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						loginSessionIframeWrapper.classList.add(
-							'platform-checkout-login-session-iframe-wrapper'
-						);
-						loginSessionIframe.classList.add( 'open' );
-						wcpayTracks.recordUserEvent(
-							wcpayTracks.events.PLATFORM_CHECKOUT_AUTO_REDIRECT
-						);
+				)
+					.then( ( response ) => {
+						if ( 'success' === response.result ) {
+							loginSessionIframeWrapper.classList.add(
+								'platform-checkout-login-session-iframe-wrapper'
+							);
+							loginSessionIframe.classList.add( 'open' );
+							wcpayTracks.recordUserEvent(
+								wcpayTracks.events
+									.PLATFORM_CHECKOUT_AUTO_REDIRECT
+							);
+							spinner.remove();
+							window.location = response.url;
+						} else {
+							closeLoginSessionIframe();
+						}
+					} )
+					.catch( ( err ) => {
+						// Only show the error if it's not an AbortError,
+						// it occurs when the fetch request is aborted because user
+						// clicked the Place Order button while loading.
+						if ( 'AbortError' !== err.name ) {
+							showErrorMessage();
+						}
+					} )
+					.finally( () => {
 						spinner.remove();
-						window.location = response.url;
-					} else {
-						closeLoginSessionIframe();
-					}
-				} );
+					} );
 				break;
 			case 'close_auto_redirection_modal':
 				hasCheckedLoginSession = true;
@@ -538,14 +553,19 @@ export const handlePlatformCheckoutEmailInput = async (
 				api.initPlatformCheckout(
 					platformCheckoutEmailInput.value,
 					e.data.platformCheckoutUserSession
-				).then( ( response ) => {
-					if ( 'success' === response.result ) {
-						window.location = response.url;
-					} else {
+				)
+					.then( ( response ) => {
+						if ( 'success' === response.result ) {
+							window.location = response.url;
+						} else {
+							showErrorMessage();
+							closeIframe( false );
+						}
+					} )
+					.catch( () => {
 						showErrorMessage();
 						closeIframe( false );
-					}
-				} );
+					} );
 				break;
 			case 'otp_validation_failed':
 				wcpayTracks.recordUserEvent(

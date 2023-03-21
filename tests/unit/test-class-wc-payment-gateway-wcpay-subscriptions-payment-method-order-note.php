@@ -75,6 +75,16 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	 */
 	private $mock_wcpay_account;
 
+	public function tear_down() {
+		parent::tear_down();
+
+		// So that the gateway hooks are re-attached for the next test, we need to reset the flag that prevents the integration hooks from being attached.
+		$reflection = new \ReflectionClass( $this->wcpay_gateway );
+		$property   = $reflection->getProperty( 'has_attached_integration_hooks' );
+		$property->setAccessible( true );
+		$property->setValue( $this->wcpay_gateway, false );
+	}
+
 	public function set_up() {
 		parent::set_up();
 
