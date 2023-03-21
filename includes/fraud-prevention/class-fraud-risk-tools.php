@@ -226,6 +226,36 @@ class Fraud_Risk_Tools {
 	}
 
 	/**
+	 * Returns the matching predef for a given ruleset array, if nothing matches, returns "advanced".
+	 *
+	 * @param   array $fraud_ruleset  The ruleset config to match to.
+	 *
+	 * @return  string  The matching protection level.
+	 */
+	public static function get_matching_protection_level( $fraud_ruleset ) {
+		// Check if the ruleset contains the basic protection config.
+		$target_ruleset = self::get_basic_protection_settings();
+		if ( $target_ruleset === $fraud_ruleset ) {
+			return 'basic';
+		}
+
+		// Check if the ruleset contains the standard protection config.
+		$target_ruleset = self::get_standard_protection_settings();
+		if ( $target_ruleset === $fraud_ruleset ) {
+			return 'standard';
+		}
+
+		// Check if the ruleset contains the high protection config.
+		$target_ruleset = self::get_high_protection_settings();
+		if ( $target_ruleset === $fraud_ruleset ) {
+			return 'high';
+		}
+
+		// The ruleset contains custom configuration.
+		return 'advanced';
+	}
+
+	/**
 	 * Returns the array representation of ruleset.
 	 *
 	 * @param array $array The array of Rule objects.

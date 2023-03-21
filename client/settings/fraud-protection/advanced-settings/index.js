@@ -171,6 +171,18 @@ const FraudProtectionAdvancedSettingsPage = () => {
 								</Notice>
 							</div>
 						) }
+						{ 'error' ===
+							settings.advanced_fraud_protection_settings && (
+							<div className="fraud-protection-advanced-settings-error-notice">
+								<Notice status="error" isDismissible={ false }>
+									{ __(
+										'There was an error retrieving your fraud protection settings.' +
+											' Please refresh the page to try again.',
+										'woocommerce-payments'
+									) }
+								</Notice>
+							</div>
+						) }
 						<LoadableBlock isLoading={ isLoading } numLines={ 20 }>
 							<AVSMismatchRuleCard />
 						</LoadableBlock>
@@ -201,7 +213,12 @@ const FraudProtectionAdvancedSettingsPage = () => {
 						isPrimary
 						isBusy={ isSavingSettings }
 						onClick={ handleSaveSettings }
-						disabled={ isSavingSettings || isLoading }
+						disabled={
+							isSavingSettings ||
+							isLoading ||
+							'error' ===
+								settings.advanced_fraud_protection_settings
+						}
 					>
 						{ __( 'Save Changes', 'woocommerce-payments' ) }
 					</Button>

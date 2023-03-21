@@ -61,6 +61,29 @@ describe( 'Advanced fraud protection settings', () => {
 		const container = render( <FraudProtectionAdvancedSettingsPage /> );
 		expect( container ).toMatchSnapshot();
 	} );
+	it( 'renders an error message when settings can not be fetched from the server', async () => {
+		useSettings.mockReturnValue( {
+			settings: {
+				advanced_fraud_protection_settings: 'error',
+			},
+			saveSettings: jest.fn(),
+			isLoading: false,
+		} );
+		const container = render(
+			<div>
+				<div className="woocommerce-layout__header-wrapper">
+					<div className="woocommerce-layout__header-heading"></div>
+				</div>
+				<FraudProtectionAdvancedSettingsPage />
+			</div>
+		);
+		expect( container ).toMatchSnapshot();
+		expect( container.baseElement ).toHaveTextContent(
+			/There was an error retrieving your fraud protection settings/i
+		);
+		const saveButton = await container.findByText( 'Save Changes' );
+		expect( saveButton ).toBeDisabled();
+	} );
 	test( "doesn't save when there's validation errors", async () => {
 		defaultSettings.push( {
 			key: 'purchase_price_threshold',
