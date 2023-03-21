@@ -8,6 +8,7 @@ import { Flex, TabPanel } from '@wordpress/components';
  * Internal dependencies.
  */
 import { useAllDepositsOverviews } from 'wcpay/data';
+import { useSelectedCurrency } from 'wcpay/overview/hooks';
 import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
 
@@ -42,6 +43,15 @@ const AccountBalancesTabPanel: React.FC = () => {
 		overviews,
 		isLoading: isAccountOverviewsLoading,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
+	const {
+		selectedCurrency,
+		setSelectedCurrency,
+		isLoading: isSelectedCurrencyLoading,
+	} = useSelectedCurrency();
+
+	const onSelect = ( tabName: BalanceTab[ 'name' ] ) => {
+		setSelectedCurrency( tabName );
+	};
 
 	// While the data is loading, we show the default currency tab.
 	let depositCurrencyTabs: BalanceTab[] = [
@@ -70,27 +80,40 @@ const AccountBalancesTabPanel: React.FC = () => {
 		);
 	}
 
+	const isLoading = isSelectedCurrencyLoading || isAccountOverviewsLoading;
+
+	// Selected currency is not valid if it is not in the list of deposit currencies.
+	const isSelectedCurrencyValid =
+		selectedCurrency &&
+		depositCurrencyTabs.some( ( tab ) => tab.name === selectedCurrency );
+
 	return (
-		<TabPanel tabs={ depositCurrencyTabs }>
+		<TabPanel
+			tabs={ depositCurrencyTabs }
+			onSelect={ onSelect }
+			initialTabName={
+				isSelectedCurrencyValid ? selectedCurrency : undefined
+			}
+		>
 			{ ( tab: BalanceTab ) => (
 				<Flex gap={ 0 } className="wcpay-account-balances__balances">
 					<BalanceBlock
 						type="available"
 						amount={ tab.availableFunds }
 						currencyCode={ tab.currencyCode }
-						isLoading={ isAccountOverviewsLoading }
+						isLoading={ isLoading }
 					/>
 					<BalanceBlock
 						type="pending"
 						amount={ tab.pendingFunds }
 						currencyCode={ tab.currencyCode }
-						isLoading={ isAccountOverviewsLoading }
+						isLoading={ isLoading }
 					/>
 					<BalanceBlock
 						type="reserved"
 						amount={ tab.reservedFunds }
 						currencyCode={ tab.currencyCode }
-						isLoading={ isAccountOverviewsLoading }
+						isLoading={ isLoading }
 					/>
 				</Flex>
 			) }
