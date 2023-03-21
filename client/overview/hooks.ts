@@ -3,21 +3,21 @@
  */
 import { useDispatch, useSelect } from '@wordpress/data';
 
-type Currency = string;
+type CurrencyCode = string;
 
 type SelectedCurrencyResponse = {
 	isLoading: boolean;
-	selectedCurrency?: Currency;
-	setSelectedCurrency: ( selectedCurrency: Currency ) => void;
+	selectedCurrency?: CurrencyCode;
+	setSelectedCurrency: ( selectedCurrency: CurrencyCode ) => void;
 };
 
 export const useSelectedCurrency = (): SelectedCurrencyResponse => {
 	const selectedCurrencyOptionName = 'wcpay_overview_selected_currency';
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
-	const setSelectedCurrency = ( currency: Currency ) => {
+	const setSelectedCurrency = ( currencyCode: CurrencyCode ) => {
 		updateOptions( {
-			[ selectedCurrencyOptionName ]: currency,
+			[ selectedCurrencyOptionName ]: currencyCode,
 		} );
 	};
 
