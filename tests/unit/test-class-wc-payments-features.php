@@ -232,7 +232,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_fraud_protection_settings_enabled_returns_true() {
 		add_filter(
-			'pre_option_' . WC_Payments_Features::WCPAY_FRAUD_PROTECTION_SETTINGS_FLAG_NAME,
+			'pre_option_wcpay_fraud_protection_settings_active',
 			function ( $pre_option, $option, $default ) {
 				return '1';
 			},

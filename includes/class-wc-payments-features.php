@@ -13,14 +13,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC Payments Features class
  */
 class WC_Payments_Features {
-	const UPE_FLAG_NAME                             = '_wcpay_feature_upe';
-	const UPE_SPLIT_FLAG_NAME                       = '_wcpay_feature_upe_split';
-	const WCPAY_SUBSCRIPTIONS_FLAG_NAME             = '_wcpay_feature_subscriptions';
-	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME         = '_wcpay_feature_woopay_express_checkout';
-	const AUTH_AND_CAPTURE_FLAG_NAME                = '_wcpay_feature_auth_and_capture';
-	const PROGRESSIVE_ONBOARDING_FLAG_NAME          = '_wcpay_feature_progressive_onboarding';
-	const SIMPLIFY_DEPOSITS_UI_FLAG_NAME            = '_wcpay_feature_simplify_deposits_ui';
-	const WCPAY_FRAUD_PROTECTION_SETTINGS_FLAG_NAME = '_wcpay_fraud_protection_settings_enabled';
+	const UPE_FLAG_NAME                     = '_wcpay_feature_upe';
+	const UPE_SPLIT_FLAG_NAME               = '_wcpay_feature_upe_split';
+	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
+	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
+	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
+	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
+	const SIMPLIFY_DEPOSITS_UI_FLAG_NAME    = '_wcpay_feature_simplify_deposits_ui';
 
 	/**
 	 * Checks whether any UPE gateway is enabled.
@@ -234,10 +233,7 @@ class WC_Payments_Features {
 	 * @return  bool
 	 */
 	public static function is_fraud_protection_settings_enabled(): bool {
-		$account    = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
-		$is_enabled = is_array( $account ) && ( $account['is_fraud_protection_settings_enabled'] ?? false );
-
-		return '1' === get_option( self::WCPAY_FRAUD_PROTECTION_SETTINGS_FLAG_NAME, $is_enabled ? '1' : '0' );
+		return '1' === get_option( 'wcpay_fraud_protection_settings_active', '0' );
 	}
 
 	/**
