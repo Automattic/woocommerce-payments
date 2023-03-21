@@ -51,8 +51,12 @@ const CancelConfirmationModal = ( { originalOrderStatus } ) => {
 			'woocommerce-payments'
 		),
 		components: {
-			doNothingBold: <b>{ __( 'Do Nothing', 'woocommerce-payments' ) }</b>,
-			cancelOrderBold: <b>{ __( 'Cancel order', 'woocommerce-payments' ) }</b>,
+			doNothingBold: (
+				<b>{ __( 'Do Nothing', 'woocommerce-payments' ) }</b>
+			),
+			cancelOrderBold: (
+				<b>{ __( 'Cancel order', 'woocommerce-payments' ) }</b>
+			),
 			howtoIssueRefunds: (
 				<a
 					target="_blank"
