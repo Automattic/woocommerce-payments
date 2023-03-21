@@ -24,6 +24,7 @@ import InboxNotifications from './inbox-notifications';
 import ConnectionSuccessNotice from './connection-sucess-notice';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import AccountBalances from 'components/account-balances';
+import FRTDiscoverabilityBanner from 'wcpay/components/fraud-risk-tools-banner';
 import { useSettings } from 'wcpay/data';
 import './style.scss';
 
@@ -117,6 +118,12 @@ const OverviewPage = () => {
 			) }
 
 			<TestModeNotice topic={ topics.overview } />
+
+			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
+				<ErrorBoundary>
+					<FRTDiscoverabilityBanner />
+				</ErrorBoundary>
+			) }
 
 			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 
