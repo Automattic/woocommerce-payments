@@ -49,7 +49,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 		isLoading: isSelectedCurrencyLoading,
 	} = useSelectedCurrency();
 
-	const onSelect = ( tabName: BalanceTab[ 'name' ] ) => {
+	const onTabSelect = ( tabName: BalanceTab[ 'name' ] ) => {
 		setSelectedCurrency( tabName );
 	};
 
@@ -90,7 +90,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 	return (
 		<TabPanel
 			tabs={ depositCurrencyTabs }
-			onSelect={ onSelect }
+			onSelect={ onTabSelect }
 			initialTabName={
 				isSelectedCurrencyValid ? selectedCurrency : undefined
 			}
