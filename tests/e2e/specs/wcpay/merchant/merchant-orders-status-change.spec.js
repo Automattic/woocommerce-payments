@@ -23,7 +23,7 @@ const selectedOrderStatusSelector = '.wc-order-status > span';
 let orderId;
 
 describe( 'Order > Status Change', () => {
-	describe( 'Change Status of order to Refunded', () => {
+	describe( 'Change Status of order to Cancelled', () => {
 		beforeAll( async () => {
 			// Place an order to change its status later
 			await setupProductCheckout(
@@ -206,7 +206,9 @@ describe( 'Order > Status Change', () => {
 			await page.waitForNavigation( { waitUntil: 'networkidle0' } );
 
 			// Get the order price
-			const priceElement = await page.$( '.woocommerce-Price-amount' );
+			const priceElement = await page.$(
+				'#woocommerce-order-items .total .woocommerce-Price-amount'
+			);
 			const orderAmount = await page.evaluate(
 				( el ) => el.textContent,
 				priceElement
