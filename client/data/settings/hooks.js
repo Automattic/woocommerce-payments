@@ -555,3 +555,15 @@ export const useCurrentProtectionLevel = () => {
 		[ updateProtectionLevel ]
 	);
 };
+
+export const useAdvancedFraudProtectionSettings = () => {
+	const { updateAdvancedFraudProtectionSettings } = useDispatch( STORE_NAME );
+
+	return useSelect( ( select ) => {
+		const { getAdvancedFraudProtectionSettings } = select( STORE_NAME );
+		return [
+			getAdvancedFraudProtectionSettings(),
+			updateAdvancedFraudProtectionSettings,
+		];
+	} );
+};

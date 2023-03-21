@@ -71,8 +71,9 @@ export const getTasks = ( {
 		pastDue,
 		accountLink,
 		requirements,
-		progressiveOnboarding: { isEnabled: isPoEnabled },
+		progressiveOnboarding,
 	} = accountStatus;
+	const isPoEnabled = progressiveOnboarding?.isEnabled;
 	const accountRestrictedSoon = 'restricted_soon' === status;
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	const errorMessages = getErrorMessagesFromRequirements( requirements );

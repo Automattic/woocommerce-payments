@@ -151,6 +151,23 @@ describe( 'getTasks()', () => {
 		);
 	} );
 
+	it( 'returns the expected keys when the account is not onboarded', () => {
+		const tasks = getTasks( {
+			isAccountOverviewTasksEnabled: true,
+			showUpdateDetailsTask: true,
+			wpcomReconnectUrl: 'http://example.com',
+			accountStatus: {
+				error: true,
+			},
+		} );
+
+		expect( tasks ).toEqual(
+			expect.arrayContaining( [
+				expect.objectContaining( { key: 'reconnect-wpcom-user' } ),
+			] )
+		);
+	} );
+
 	it( 'returns the expected keys when the account overview flag is disabled', () => {
 		const tasks = getTasks( {
 			showUpdateDetailsTask: true,

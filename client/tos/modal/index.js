@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 import { Button, Notice, Modal } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 import { addQueryArgs } from '@wordpress/url';
