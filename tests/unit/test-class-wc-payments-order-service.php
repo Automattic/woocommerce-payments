@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Fraud_Outcome_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Payment_Intent_Status;
 
@@ -42,6 +43,13 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	private $charge_id = 'py_123';
 
 	/**
+	 * Mock charge id.
+	 *
+	 * @var WC_Payments_API_Intention
+	 */
+	private $intent;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -49,6 +57,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
 		$this->order         = WC_Helper_Order::create_order();
+		$this->intent        = WC_Helper_Intention::create_intention();
 	}
 
 	/**
@@ -59,11 +68,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete. Get updated notes.
-		$this->order_service->mark_payment_completed( 'fake_order', $this->intent_id, Payment_Intent_Status::SUCCEEDED, $this->charge_id );
+		$this->order_service->update_order_status_from_intent( 'fake_order', $this->intent );
 
 		// Assert: Check to make sure the intent/transaction id and intent_status meta were not set.
 		$this->assertEquals( '', $this->order->get_transaction_id() );
-		$this->assertEquals( '', $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( '', $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the notes were not updated.
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -79,11 +88,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete.
-		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, Payment_Intent_Status::SUCCEEDED, $this->charge_id );
+		$this->order_service->update_order_status_from_intent( $this->order, $this->intent );
 
 		// Assert: Check to make sure the intent/transaction id and intent_status meta were not set.
 		$this->assertEquals( '', $this->order->get_transaction_id() );
-		$this->assertEquals( '', $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( '', $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the notes were not updated.
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -96,16 +105,15 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	public function test_order_status_not_updated_if_order_locked() {
 		// Arrange: Lock the order. Get expected notes.
 		$transient_name = 'wcpay_processing_intent_' . $this->order->get_id();
-		set_transient( $transient_name, $this->intent_id, 5 * MINUTE_IN_SECONDS );
+		set_transient( $transient_name, $this->intent->get_id(), 5 * MINUTE_IN_SECONDS );
 		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 
 		// Act: Attempt to mark the payment/order complete. Get updated notes.
-		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, Payment_Intent_Status::SUCCEEDED, $this->charge_id );
-		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->order_service->update_order_status_from_intent( $this->order, $this->intent );
 
 		// Assert: Check to make sure the intent/transaction id and intent_status meta were not set.
 		$this->assertEquals( '', $this->order->get_transaction_id() );
-		$this->assertEquals( '', $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( '', $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the notes were not updated.
 		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
@@ -113,36 +121,243 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests if the order was completed successfully.
+	 * Tests if the order is marked completed correctly.
+	 * Public method update_order_status_from_intent calls private method mark_payment_completed.
+	 *
+	 * @dataProvider mark_payment_completed_provider
 	 */
-	public function test_mark_payment_completed() {
-		// Arrange: Set the intent status.
-		$intent_status = Payment_Intent_Status::SUCCEEDED;
+	public function test_mark_payment_completed( $order_status, $intent_args, $expected_note_1, $expected_fraud_outcome ) {
+		// Arrange: Create intention with proper outcome status, update order status if needed.
+		$this->intent = WC_Helper_Intention::create_intention( $intent_args );
+		if ( $order_status ) {
+			$this->order->set_status( $order_status );
+			$this->order->save();
+		}
 
 		// Act: Attempt to mark the payment/order complete.
-		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$this->order_service->update_order_status_from_intent( $this->order, $this->intent );
 
 		// Assert: Check to make sure the intent/transaction id was set, and that intent_status meta was set.
-		$this->assertEquals( $this->intent_id, $this->order->get_transaction_id() );
-		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( $this->intent->get_id(), $this->order->get_transaction_id() );
+		$this->assertEquals( $this->intent->get_status(), $this->order_service->get_intention_status_for_order( $this->order ) );
+
+		// Assert: Confirm that the fraud outcome status was set correctly.
+		$this->assertEquals( $expected_fraud_outcome, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
 
 		// Assert: Check that the order status was updated to a paid status.
 		$this->assertTrue( $this->order->has_status( wc_get_is_paid_statuses() ) );
 
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to Processing', $notes[1]->content );
+		$this->assertStringContainsString( $expected_note_1, $notes[1]->content );
 		$this->assertStringContainsString( 'successfully charged</strong> using WooCommerce Payments', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
 
 		// Assert: Check that the order was unlocked.
 		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
 
 		// Assert: Applying the same data multiple times does not cause duplicate actions.
-		$this->order_service->mark_payment_completed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
+		$this->order_service->update_order_status_from_intent( $this->order, $this->intent );
 		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertCount( 2, $notes_2 );
+		$this->assertEquals( count( $notes ), count( $notes_2 ) );
 	}
+
+	public function mark_payment_completed_provider() {
+		return [
+			'mark_complete_no_fraud_outcome'     => [
+				'order_status'           => false,
+				'intent_args'            => [],
+				'expected_note_1'        => 'Pending payment to Processing',
+				'expected_fraud_outcome' => false,
+			],
+			'mark_complete_fraud_outcome_allow'  => [
+				'order_status'           => false,
+				'intent_args'            => [
+					'metadata' => [
+						'fraud_outcome' => Fraud_Outcome_Status::ALLOW,
+					],
+				],
+				'expected_note_1'        => 'Pending payment to Processing',
+				'expected_fraud_outcome' => Fraud_Outcome_Status::ALLOW,
+			],
+			'mark_complete_fraud_outcome_review' => [
+				'order_status'           => Order_Status::ON_HOLD,
+				'intent_args'            => [
+					'metadata' => [
+						'fraud_outcome' => Fraud_Outcome_Status::ALLOW,
+					],
+				],
+				'expected_note_1'        => 'On hold to Processing',
+				'expected_fraud_outcome' => Fraud_Outcome_Status::REVIEW_ALLOWED,
+			],
+		];
+	}
+
+	/**
+	 * Tests if the order is marked with the capture completed correctly.
+	 * Public method update_order_status_from_intent calls private method mark_payment_capture_completed.
+	 *
+	 * @dataProvider mark_payment_capture_completed_provider
+	 */
+	public function test_mark_payment_capture_completed( $intent_args, $order_fraud_outcome_meta, $expected_fraud_outcome ) {
+		// Arrange: Create intention with proper outcome status, update order status to On Hold.
+		$this->intent = WC_Helper_Intention::create_intention( $intent_args );
+		$this->order_service->set_intention_status_for_order( $this->order, Payment_Intent_Status::REQUIRES_CAPTURE );
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+		if ( $order_fraud_outcome_meta ) {
+			$this->order_service->set_fraud_outcome_status_for_order( $this->order, $order_fraud_outcome_meta );
+		}
+
+		// Act: Attempt to mark the payment/order complete.
+		$this->order_service->update_order_status_from_intent( $this->order, $this->intent );
+
+		// Assert: Check to make sure the intent/transaction id was set, and that intent_status meta was set.
+		$this->assertEquals( $this->intent->get_id(), $this->order->get_transaction_id() );
+		$this->assertEquals( $this->intent->get_status(), $this->order_service->get_intention_status_for_order( $this->order ) );
+
+		// Assert: Confirm that the fraud outcome status was set correctly.
+		$this->assertEquals( $expected_fraud_outcome, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+
+		// Assert: Check that the order status was updated to a paid status.
+		$this->assertTrue( $this->order->has_status( wc_get_is_paid_statuses() ) );
+
+		// Assert: Check that the notes were updated.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'On hold to Processing', $notes[1]->content );
+		$this->assertStringContainsString( 'successfully captured</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+
+		// Assert: Check that the order was unlocked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->update_order_status_from_intent( $this->order, $this->intent );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertEquals( count( $notes ), count( $notes_2 ) );
+	}
+
+	public function mark_payment_capture_completed_provider() {
+		return [
+			'mark_capture_complete_no_fraud_outcome'     => [
+				'intent_args'             => [],
+				'order_fraud_outcome_meta' => false,
+				'expected_fraud_outcome'   => false,
+			],
+			'mark_capture_complete_fraud_outcome_allow'  => [
+				'intent_args'              => [
+					'metadata' => [
+						'fraud_outcome' => Fraud_Outcome_Status::ALLOW,
+					],
+				],
+				'order_fraud_outcome_meta' => false,
+				'expected_fraud_outcome'   => Fraud_Outcome_Status::ALLOW,
+			],
+			'mark_capture_complete_fraud_outcome_review' => [
+				'intent_args'              => [
+					'metadata' => [
+						'fraud_outcome' => Fraud_Outcome_Status::ALLOW,
+					],
+				],
+				'order_fraud_outcome_meta' => Fraud_Outcome_Status::REVIEW,
+				'expected_fraud_outcome'   => Fraud_Outcome_Status::REVIEW_ALLOWED,
+			],
+		];
+	}
+
+	/**
+	 * Tests if the order is marked with the payment authorized correctly.
+	 * Public method update_order_status_from_intent calls private method mark_payment_authorized.
+	 *
+	 * @dataProvider mark_payment_authorized_provider
+	 */
+	public function test_mark_payment_authorized( $intent_args, $expected_fraud_outcome ) {
+		// Arrange: Create intention with provided args.
+		$this->intent = WC_Helper_Intention::create_intention( $intent_args );
+
+		// Act: Attempt to mark the payment authorized.
+		$this->order_service->update_order_status_from_intent( $this->order, $this->intent );
+
+		// Assert: Check to make sure the intent_status meta was set.
+		$this->assertEquals( $this->intent->get_status(), $this->order_service->get_intention_status_for_order( $this->order ) );
+
+		// Assert: Confirm that the fraud outcome status was set correctly.
+		$this->assertEquals( $expected_fraud_outcome, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+
+		// Assert: Check that the order status was updated to on hold.
+		$this->assertTrue( $this->order->has_status( Order_Status::ON_HOLD ) );
+
+		// Assert: Check that the notes were updated.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
+		$this->assertStringContainsString( 'authorized</strong> using WooCommerce Payments', $notes[0]->content );
+		$this->assertStringContainsString( '/payments/transactions/details&id=pi_mock" target="_blank" rel="noopener noreferrer">pi_mock', $notes[0]->content );
+
+		// Assert: Check that the order was unlocked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->update_order_status_from_intent( $this->order, $this->intent );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertEquals( count( $notes ), count( $notes_2 ) );
+	}
+
+	public function mark_payment_authorized_provider() {
+		return [
+			'mark_authorized_no_fraud_outcome_intent_status_requires_capture' => [
+				'intent_args'            => [
+					'status' => Payment_Intent_Status::REQUIRES_CAPTURE,
+				],
+				'expected_fraud_outcome' => false,
+			],
+			'mark_authorized_no_fraud_outcome_intent_status_processing' => [
+				'intent_args'            => [
+					'status' => Payment_Intent_Status::PROCESSING,
+				],
+				'expected_fraud_outcome' => false,
+			],
+			'mark_authorized_fraud_outcome_allow' => [
+				'intent_args'            => [
+					'status'   => Payment_Intent_Status::REQUIRES_CAPTURE,
+					'metadata' => [
+						'fraud_outcome' => Fraud_Outcome_Status::ALLOW,
+					],
+				],
+				'expected_fraud_outcome' => Fraud_Outcome_Status::ALLOW,
+			],
+		];
+	}
+
+	/**
+	 * Method `mark_payment_authorized` should exit if the order status is already on-hold.
+	 */
+	public function test_mark_payment_authorized_exits_on_existing_order_status_on_hold() {
+		// Arrange: Create intention, set order status, and get the expected notes.
+		$this->intent = WC_Helper_Intention::create_intention( [ 'status' => Payment_Intent_Status::REQUIRES_CAPTURE ] );
+		$this->order->set_status( Order_Status::ON_HOLD );
+		$this->order->save();
+		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		// Act: Attempt to mark the payment/order on-hold.
+		$this->order_service->update_order_status_from_intent( $this->order, $this->intent );
+
+		// Assert: Check that the notes were not updated.
+		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertEquals( $expected_notes, $updated_notes );
+
+		// Assert: Check that the order is not locked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+	}
+
+
+
+
+
+
+
+
+
+
 
 	/**
 	 * Tests if the order was marked failed successfully.
@@ -156,7 +371,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_failed( $this->order, $this->intent_id, $intent_status, $this->charge_id, $message );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( $intent_status, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the order status was updated to failed status.
 		$this->assertTrue( $this->order->has_status( [ $intent_status ] ) );
@@ -218,53 +433,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests if the order was marked on-hold successfully.
-	 */
-	public function test_mark_payment_authorized() {
-		// Arrange: Set the intent and order statuses.
-		$intent_status = Payment_Intent_Status::REQUIRES_CAPTURE;
-		$order_status  = Order_Status::ON_HOLD;
-
-		// Act: Attempt to mark the payment/order on-hold.
-		$this->order_service->mark_payment_authorized( $this->order, $this->intent_id, $intent_status, $this->charge_id );
-
-		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
-
-		// Assert: Check that the order status was updated to on-hold status.
-		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
-
-		// Assert: Check that the notes were updated.
-		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to On hold', $notes[1]->content );
-		$this->assertStringContainsString( 'authorized</strong> using WooCommerce Payments', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
-
-		// Assert: Check that the order was unlocked.
-		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
-	}
-
-	/**
-	 * Method `mark_payment_authorized` should exit if the order status is already on-hold.
-	 */
-	public function test_mark_payment_authorized_exits_on_existing_order_status_on_hold() {
-		// Arrange: Set the intent status, order status, and get the expected notes.
-		$intent_status = Payment_Intent_Status::REQUIRES_CAPTURE;
-		$this->order->set_status( Order_Status::ON_HOLD );
-		$expected_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-
-		// Act: Attempt to mark the payment/order on-hold.
-		$this->order_service->mark_payment_authorized( $this->order, $this->intent_id, $intent_status, $this->charge_id );
-
-		// Assert: Check that the notes were not updated.
-		$updated_notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertEquals( $expected_notes, $updated_notes );
-
-		// Assert: Check that the order is not locked.
-		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
-	}
-
-	/**
 	 * Tests marking/leaving the payment in pending status with a started note.
 	 */
 	public function test_mark_payment_started() {
@@ -276,7 +444,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_started( $this->order, $this->intent_id, $intent_status, $this->charge_id );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( $intent_status, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the order status was left on pending status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -311,33 +479,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests if the payument was captured successfully.
-	 */
-	public function test_mark_payment_capture_completed() {
-		// Arrange: Set the intent status.
-		$intent_status = Payment_Intent_Status::SUCCEEDED;
-
-		// Act: Attempt to mark the payment/order complete.
-		$this->order_service->mark_payment_capture_completed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
-
-		// Assert: Check to make sure the intent/transaction id was set, and that intent_status meta was set.
-		$this->assertEquals( $this->intent_id, $this->order->get_transaction_id() );
-		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
-
-		// Assert: Check that the order status was updated to a paid status.
-		$this->assertTrue( $this->order->has_status( wc_get_is_paid_statuses() ) );
-
-		// Assert: Check that the notes were updated.
-		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
-		$this->assertStringContainsString( 'Pending payment to Processing', $notes[1]->content );
-		$this->assertStringContainsString( 'successfully captured</strong> using WooCommerce Payments', $notes[0]->content );
-		$this->assertStringContainsString( '/payments/transactions/details&id=pi_123" target="_blank" rel="noopener noreferrer">pi_123', $notes[0]->content );
-
-		// Assert: Check that the order was unlocked.
-		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
-	}
-
-	/**
 	 * Tests if the payment capture was noted failed.
 	 */
 	public function test_mark_payment_capture_failed() {
@@ -348,7 +489,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_capture_failed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( $intent_status, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ Order_Status::PENDING ] ) );
@@ -373,7 +514,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_capture_failed( $this->order, $this->intent_id, $intent_status, $this->charge_id );
 
 		// Assert: Check to make sure the intent_status meta was not set.
-		$this->assertEquals( '', $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( '', $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the order status was not updated.
 		$this->assertTrue( $this->order->has_status( [ Order_Status::PENDING ] ) );
@@ -400,7 +541,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_capture_expired( $this->order, $this->intent_id, $intent_status, $this->charge_id );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( $intent_status, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the order status was updated to cancelled status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -433,7 +574,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_payment_capture_cancelled( $this->order, $this->intent_id, $intent_status );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( $intent_status, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the order status was updated to cancelled status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );
@@ -546,7 +687,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->mark_terminal_payment_completed( $this->order, $this->intent_id, $intent_status );
 
 		// Assert: Check to make sure the intent_status meta was set.
-		$this->assertEquals( $intent_status, $this->order->get_meta( '_intention_status' ) );
+		$this->assertEquals( $intent_status, $this->order_service->get_intention_status_for_order( $this->order ) );
 
 		// Assert: Check that the order status was updated to completed status.
 		$this->assertTrue( $this->order->has_status( [ $order_status ] ) );

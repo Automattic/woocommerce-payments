@@ -572,17 +572,6 @@ class WC_Payments {
 		add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 
-		add_filter(
-			'wcpay_api_request_params',
-			function( $params, $api, $method ) {
-				if ( false !== strpos( $api, WC_Payments_API_Client::INTENTIONS_API ) && WC_Payments_API_Client::POST === $method ) {
-					$params['fraud_settings_enabled'] = 'true';
-				}
-				return $params;
-			},
-			10,
-			3
-		);
 	}
 
 	/**

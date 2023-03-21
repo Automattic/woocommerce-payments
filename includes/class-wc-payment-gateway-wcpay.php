@@ -402,7 +402,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
 		add_action( 'admin_notices', [ $this, 'display_errors' ], 9999 );
 		add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
-		add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
+		// TODO: REMOVE THIS BEFORE MERGING. Need to fix this once the UPE issue is fixed.
+		if ( ! get_option( 'woocommerce_order_action_capture_charge_added' ) ) {
+			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
+			update_option( 'woocommerce_order_action_capture_charge_added', 1 );
+		}
+		add_action( 'shutdown', function() {
+			update_option( 'woocommerce_order_action_capture_charge_added', 0 );
+		} );
 		add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
 
 		add_action( 'wp_ajax_update_order_status', [ $this, 'update_order_status' ] );
@@ -752,12 +759,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
+			// We set this variable to be used in following checks.
+			$blocked_due_to_fraud_rules = $e instanceof API_Exception && 'wcpay_blocked_by_fraud_rule' === $e->get_error_code();
+
 			/**
 			 * TODO: Determine how to do this update with Order_Service.
 			 * It seems that the status only needs to change in certain instances, and within those instances the intent
 			 * information is not added to the order, as shown by tests.
 			 */
-			if ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) {
+			if ( ! $blocked_due_to_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
 				$order->update_status( Order_Status::FAILED );
 			}
 
@@ -765,7 +775,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->failed_transaction_rate_limiter->bump();
 			}
 
-			if ( ! empty( $payment_information ) ) {
+			if ( $blocked_due_to_fraud_rules ) {
+				$this->order_service->mark_order_blocked_for_fraud( $order, '', Payment_Intent_Status::CANCELED, '' );
+			} elseif ( ! empty( $payment_information ) ) {
+				/**
+				 * TODO: Move the contents of this else into the Order_Service.
+				 */
 				/* translators: %1: the failed payment amount, %2: error message  */
 				$error_message = __(
 					'A payment of %1$s <strong>failed</strong> to complete with the following message: <code>%2$s</code>.',
@@ -803,6 +818,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( $e instanceof Process_Payment_Exception && 'rate_limiter_enabled' === $e->get_error_code() ) {
+				/**
+				 * TODO: Move the contents of this into the Order_Service.
+				 */
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 						/* translators: %1: the failed payment amount */

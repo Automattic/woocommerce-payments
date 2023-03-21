@@ -82,6 +82,7 @@ class Order_Fraud_And_Risk_Meta_Box {
 
 			case Fraud_Outcome_Status::BLOCK:
 				$status          = __( 'Blocked', 'woocommerce-payments' );
+				// TODO: Are we going to cancel the orders? The note states we are, but if we do, we do not allow them to correct mistakes and could create a lot of additional orders.
 				$description     = __( 'The payment for this order was blocked by your risk filtering, and the order has been cancelled.', 'woocommerce-payments' );
 				$callout         = __( 'View payment details', 'woocommerce-payments' );
 				$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );

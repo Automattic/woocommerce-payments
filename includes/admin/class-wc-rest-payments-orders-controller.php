@@ -275,10 +275,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				);
 			}
 
-			// Actualize order status.
-			$charge = $intent->get_charge();
-			$this->order_service->mark_payment_capture_completed( $order, $intent_id, $result['status'], $charge->get_id() );
-
 			return rest_ensure_response(
 				[
 					'status' => $result['status'],
