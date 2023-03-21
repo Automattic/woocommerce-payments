@@ -37,8 +37,6 @@ jobs:
             test_branches: 'merchant'
           - test_groups: 'upe'
             test_branches: 'merchant'
-          - test_groups: 'upe'
-            test_branches: 'shopper'
           - test_groups: 'upeSplit'
             test_branches: 'merchant'
     
