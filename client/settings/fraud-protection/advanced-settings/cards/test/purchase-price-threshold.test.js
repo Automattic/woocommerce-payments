@@ -70,7 +70,6 @@ describe( 'Purchase price threshold card', () => {
 				<PurchasePriceThresholdRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
-
 		expect(
 			screen.queryByText(
 				'A price range must be set for this filter to take effect.',
