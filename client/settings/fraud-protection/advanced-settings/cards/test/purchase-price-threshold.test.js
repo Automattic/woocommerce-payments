@@ -70,9 +70,13 @@ describe( 'Purchase price threshold card', () => {
 				<PurchasePriceThresholdRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
+
 		expect(
 			screen.queryByText(
-				'A price range must be set for this filter to take effect.'
+				'A price range must be set for this filter to take effect.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 	} );
@@ -88,7 +92,10 @@ describe( 'Purchase price threshold card', () => {
 		);
 		expect(
 			screen.queryByText(
-				'A price range must be set for this filter to take effect.'
+				'A price range must be set for this filter to take effect.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -104,7 +111,10 @@ describe( 'Purchase price threshold card', () => {
 		);
 		expect(
 			screen.queryByText(
-				'A price range must be set for this filter to take effect.'
+				'A price range must be set for this filter to take effect.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -120,7 +130,10 @@ describe( 'Purchase price threshold card', () => {
 		);
 		expect(
 			screen.queryByText(
-				'A price range must be set for this filter to take effect.'
+				'A price range must be set for this filter to take effect.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -141,7 +154,10 @@ describe( 'Purchase price threshold card', () => {
 		).not.toBeInTheDocument();
 		expect(
 			screen.queryByText(
-				'Maximum purchase price must be greater than the minimum purchase price.'
+				'Maximum purchase price must be greater than the minimum purchase price.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 	} );

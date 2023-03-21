@@ -48,27 +48,31 @@ const getInfoSVGIcon = () => {
 };
 
 const FraudProtectionRuleCardNotice = ( { type, children } ) => {
+	const supportedTypes = [ 'error', 'warning', 'info' ];
+
+	if ( ! supportedTypes.includes( type ) ) {
+		return null;
+	}
+
+	// The default icon for these notices are the (!) icon.
 	let icon = <NoticeOutlineIcon />;
 
+	// If the type is info, we want to use the info icon instead.
 	if ( 'info' === type ) {
 		icon = getInfoSVGIcon();
 	}
 
 	return (
-		0 <= [ 'error', 'warning', 'info' ].indexOf( type ) && (
-			<>
-				<BannerNotice
-					status={ type }
-					icon={ icon }
-					className={
-						'fraud-protection-rule-card-notice fraud-protection-rule-card-notice-' +
-						type
-					}
-					children={ children }
-					isDismissible={ false }
-				/>
-			</>
-		)
+		<BannerNotice
+			status={ type }
+			icon={ icon }
+			className={
+				'fraud-protection-rule-card-notice fraud-protection-rule-card-notice-' +
+				type
+			}
+			children={ children }
+			isDismissible={ false }
+		/>
 	);
 };
 

@@ -74,7 +74,10 @@ describe( 'Order velocity card', () => {
 		);
 		expect(
 			screen.queryByText(
-				'A maximum order count must be set for this filter to take effect.'
+				'A maximum order count must be set for this filter to take effect.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 	} );

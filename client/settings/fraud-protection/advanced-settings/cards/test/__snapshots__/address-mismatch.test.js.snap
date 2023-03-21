@@ -79,54 +79,65 @@ exports[`Address mismatch card renders correctly 1`] = `
         </p>
       </div>
       <div
-        class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
+        class="wcpay-banner-notice wcpay-banner-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
       >
         <div
-          class="fraud-protection-rule-card-notice-icon"
+          class="components-notice__content"
         >
-          <svg
-            data-testid="rule-card-notice-info-icon-svg"
-            fill="none"
-            height="18"
-            viewBox="0 0 24 24"
-            width="18"
-            xmlns="http://www.w3.org/2000/svg"
+          <div
+            class="components-flex css-1nh0b0-Flex eboqfv50"
           >
-            <circle
-              cx="12"
-              cy="9"
-              r="5"
-              stroke="#007CBA"
-              stroke-width="1.42857"
-            />
-            <line
-              stroke="#007CBA"
-              stroke-width="1.5"
-              x1="9"
-              x2="15"
-              y1="16.8818"
-              y2="16.8818"
-            />
-            <line
-              stroke="#007CBA"
-              stroke-width="1.5"
-              x1="10"
-              x2="14"
-              y1="19.25"
-              y2="19.25"
-            />
-          </svg>
-        </div>
-        <div
-          class="fraud-protection-rule-card-notice-text"
-        >
-          This filter may modify the address input on your checkout. 
-          <a
-            data-link-type="wc-admin"
-            href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-          >
-            Learn more
-          </a>
+            <div
+              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-1s295sp-Item eboqfv51"
+            >
+              <svg
+                aria-hidden="true"
+                data-testid="rule-card-notice-info-icon-svg"
+                fill="none"
+                focusable="false"
+                height="24"
+                role="img"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="12"
+                  cy="9"
+                  r="5"
+                  stroke="#007CBA"
+                  stroke-width="1.42857"
+                />
+                <line
+                  stroke="#007CBA"
+                  stroke-width="1.5"
+                  x1="9"
+                  x2="15"
+                  y1="16.8818"
+                  y2="16.8818"
+                />
+                <line
+                  stroke="#007CBA"
+                  stroke-width="1.5"
+                  x1="10"
+                  x2="14"
+                  y1="19.25"
+                  y2="19.25"
+                />
+              </svg>
+            </div>
+            <div
+              class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
+            >
+              This filter may modify the address input on your checkout. 
+              <a
+                data-link-type="wc-admin"
+                href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+              >
+                Learn more
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -275,54 +286,65 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
         </p>
       </div>
       <div
-        class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
+        class="wcpay-banner-notice wcpay-banner-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
       >
         <div
-          class="fraud-protection-rule-card-notice-icon"
+          class="components-notice__content"
         >
-          <svg
-            data-testid="rule-card-notice-info-icon-svg"
-            fill="none"
-            height="18"
-            viewBox="0 0 24 24"
-            width="18"
-            xmlns="http://www.w3.org/2000/svg"
+          <div
+            class="components-flex css-1nh0b0-Flex eboqfv50"
           >
-            <circle
-              cx="12"
-              cy="9"
-              r="5"
-              stroke="#007CBA"
-              stroke-width="1.42857"
-            />
-            <line
-              stroke="#007CBA"
-              stroke-width="1.5"
-              x1="9"
-              x2="15"
-              y1="16.8818"
-              y2="16.8818"
-            />
-            <line
-              stroke="#007CBA"
-              stroke-width="1.5"
-              x1="10"
-              x2="14"
-              y1="19.25"
-              y2="19.25"
-            />
-          </svg>
-        </div>
-        <div
-          class="fraud-protection-rule-card-notice-text"
-        >
-          This filter may modify the address input on your checkout. 
-          <a
-            data-link-type="wc-admin"
-            href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-          >
-            Learn more
-          </a>
+            <div
+              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-1s295sp-Item eboqfv51"
+            >
+              <svg
+                aria-hidden="true"
+                data-testid="rule-card-notice-info-icon-svg"
+                fill="none"
+                focusable="false"
+                height="24"
+                role="img"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="12"
+                  cy="9"
+                  r="5"
+                  stroke="#007CBA"
+                  stroke-width="1.42857"
+                />
+                <line
+                  stroke="#007CBA"
+                  stroke-width="1.5"
+                  x1="9"
+                  x2="15"
+                  y1="16.8818"
+                  y2="16.8818"
+                />
+                <line
+                  stroke="#007CBA"
+                  stroke-width="1.5"
+                  x1="10"
+                  x2="14"
+                  y1="19.25"
+                  y2="19.25"
+                />
+              </svg>
+            </div>
+            <div
+              class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
+            >
+              This filter may modify the address input on your checkout. 
+              <a
+                data-link-type="wc-admin"
+                href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+              >
+                Learn more
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -486,54 +508,65 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
         </p>
       </div>
       <div
-        class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
+        class="wcpay-banner-notice wcpay-banner-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
       >
         <div
-          class="fraud-protection-rule-card-notice-icon"
+          class="components-notice__content"
         >
-          <svg
-            data-testid="rule-card-notice-info-icon-svg"
-            fill="none"
-            height="18"
-            viewBox="0 0 24 24"
-            width="18"
-            xmlns="http://www.w3.org/2000/svg"
+          <div
+            class="components-flex css-1nh0b0-Flex eboqfv50"
           >
-            <circle
-              cx="12"
-              cy="9"
-              r="5"
-              stroke="#007CBA"
-              stroke-width="1.42857"
-            />
-            <line
-              stroke="#007CBA"
-              stroke-width="1.5"
-              x1="9"
-              x2="15"
-              y1="16.8818"
-              y2="16.8818"
-            />
-            <line
-              stroke="#007CBA"
-              stroke-width="1.5"
-              x1="10"
-              x2="14"
-              y1="19.25"
-              y2="19.25"
-            />
-          </svg>
-        </div>
-        <div
-          class="fraud-protection-rule-card-notice-text"
-        >
-          This filter may modify the address input on your checkout. 
-          <a
-            data-link-type="wc-admin"
-            href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-          >
-            Learn more
-          </a>
+            <div
+              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-1s295sp-Item eboqfv51"
+            >
+              <svg
+                aria-hidden="true"
+                data-testid="rule-card-notice-info-icon-svg"
+                fill="none"
+                focusable="false"
+                height="24"
+                role="img"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="12"
+                  cy="9"
+                  r="5"
+                  stroke="#007CBA"
+                  stroke-width="1.42857"
+                />
+                <line
+                  stroke="#007CBA"
+                  stroke-width="1.5"
+                  x1="9"
+                  x2="15"
+                  y1="16.8818"
+                  y2="16.8818"
+                />
+                <line
+                  stroke="#007CBA"
+                  stroke-width="1.5"
+                  x1="10"
+                  x2="14"
+                  y1="19.25"
+                  y2="19.25"
+                />
+              </svg>
+            </div>
+            <div
+              class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
+            >
+              This filter may modify the address input on your checkout. 
+              <a
+                data-link-type="wc-admin"
+                href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+              >
+                Learn more
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -620,54 +653,65 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
         </p>
       </div>
       <div
-        class="fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info"
+        class="wcpay-banner-notice wcpay-banner-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
       >
         <div
-          class="fraud-protection-rule-card-notice-icon"
+          class="components-notice__content"
         >
-          <svg
-            data-testid="rule-card-notice-info-icon-svg"
-            fill="none"
-            height="18"
-            viewBox="0 0 24 24"
-            width="18"
-            xmlns="http://www.w3.org/2000/svg"
+          <div
+            class="components-flex css-1nh0b0-Flex eboqfv50"
           >
-            <circle
-              cx="12"
-              cy="9"
-              r="5"
-              stroke="#007CBA"
-              stroke-width="1.42857"
-            />
-            <line
-              stroke="#007CBA"
-              stroke-width="1.5"
-              x1="9"
-              x2="15"
-              y1="16.8818"
-              y2="16.8818"
-            />
-            <line
-              stroke="#007CBA"
-              stroke-width="1.5"
-              x1="10"
-              x2="14"
-              y1="19.25"
-              y2="19.25"
-            />
-          </svg>
-        </div>
-        <div
-          class="fraud-protection-rule-card-notice-text"
-        >
-          This filter may modify the address input on your checkout. 
-          <a
-            data-link-type="wc-admin"
-            href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
-          >
-            Learn more
-          </a>
+            <div
+              class="components-flex__item wcpay-banner-notice__icon wcpay-banner-info-notice__icon css-1s295sp-Item eboqfv51"
+            >
+              <svg
+                aria-hidden="true"
+                data-testid="rule-card-notice-info-icon-svg"
+                fill="none"
+                focusable="false"
+                height="24"
+                role="img"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="12"
+                  cy="9"
+                  r="5"
+                  stroke="#007CBA"
+                  stroke-width="1.42857"
+                />
+                <line
+                  stroke="#007CBA"
+                  stroke-width="1.5"
+                  x1="9"
+                  x2="15"
+                  y1="16.8818"
+                  y2="16.8818"
+                />
+                <line
+                  stroke="#007CBA"
+                  stroke-width="1.5"
+                  x1="10"
+                  x2="14"
+                  y1="19.25"
+                  y2="19.25"
+                />
+              </svg>
+            </div>
+            <div
+              class="components-flex__item wcpay-banner-notice__content wcpay-banner-info-notice__content css-1s295sp-Item eboqfv51"
+            >
+              This filter may modify the address input on your checkout. 
+              <a
+                data-link-type="wc-admin"
+                href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods"
+              >
+                Learn more
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
