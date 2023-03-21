@@ -5,7 +5,7 @@
 import React from 'react';
 import { CheckboxControl } from '@wordpress/components';
 import { useCallback } from '@wordpress/element';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 
 const EnabledCurrenciesModalCheckbox = ( {
 	onChange,

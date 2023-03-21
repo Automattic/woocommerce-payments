@@ -9,7 +9,7 @@ import { CardHeader, Flex, FlexItem } from '@wordpress/components';
  */
 import { getGreeting } from './utils';
 import { useCurrentWpUser } from './hooks';
-import wooPaymentsLogo from '../../../assets/images/woopayments.svg';
+import wooPaymentsLogo from 'assets/images/woopayments.svg?asset';
 import './style.scss';
 
 /**
