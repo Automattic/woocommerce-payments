@@ -65,6 +65,7 @@ class Buyer_Fingerprinting_Service {
 		return [
 			'fraud_prevention_data_shopper_ip_hash' => $this->hash_data_for_fraud_prevention( WC_Geolocation::get_ip_address() ),
 			'fraud_prevention_data_shopper_ua_hash' => $fingerprint,
+			'fraud_prevention_data_ip_country'      => WC_Geolocation::geolocate_ip( '', true )['country'],
 		];
 	}
 }

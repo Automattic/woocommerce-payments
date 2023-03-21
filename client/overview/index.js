@@ -21,11 +21,12 @@ import ErrorBoundary from 'components/error-boundary';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import InboxNotifications from './inbox-notifications';
+import ConnectionSuccessNotice from './connection-sucess-notice';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import AccountBalances from 'components/account-balances';
-
-import './style.scss';
+import FRTDiscoverabilityBanner from 'wcpay/components/fraud-risk-tools-banner';
 import { useSettings } from 'wcpay/data';
+import './style.scss';
 
 const OverviewPage = () => {
 	const {
@@ -50,7 +51,7 @@ const OverviewPage = () => {
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
 	const queryParams = getQuery();
 
-	const showKycSuccessNotice =
+	const showConnectionSuccess =
 		'1' === queryParams[ 'wcpay-connection-success' ];
 
 	const showLoginError = '1' === queryParams[ 'wcpay-login-error' ];
@@ -83,19 +84,6 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
-			{ showKycSuccessNotice && (
-				<Notice
-					status="success"
-					isDismissible={ false }
-					className="wcpay-connection-success"
-				>
-					{ __(
-						"Thanks for verifying your business details. You're ready to start taking payments!",
-						'woocommerce-payments'
-					) }
-				</Notice>
-			) }
-
 			{ showLoginError && (
 				<Notice
 					status="error"
@@ -130,6 +118,14 @@ const OverviewPage = () => {
 			) }
 
 			<TestModeNotice topic={ topics.overview } />
+
+			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
+				<ErrorBoundary>
+					<FRTDiscoverabilityBanner />
+				</ErrorBoundary>
+			) }
+
+			{ showConnectionSuccess && <ConnectionSuccessNotice /> }
 
 			{ ! accountRejected && (
 				<ErrorBoundary>
