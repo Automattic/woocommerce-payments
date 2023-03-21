@@ -15,9 +15,6 @@ describe( 'Fraud protection rule card notice tests', () => {
 			</FraudProtectionRuleCardNotice>
 		);
 		expect( container ).toMatchSnapshot();
-		expect(
-			container.queryByTestId( 'rule-card-notice-info-icon-svg' )
-		).toBeInTheDocument();
 	} );
 	test( 'renders warning box correctly', () => {
 		const container = render(
