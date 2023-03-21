@@ -11,6 +11,13 @@ type SelectedCurrencyResponse = {
 	setSelectedCurrency: ( selectedCurrency: CurrencyCode ) => void;
 };
 
+/**
+ * Custom hook for retrieving and updating the selected currency.
+ * This is used to determine which currency to display in the overview page.
+ * The selected currency is stored in the `wcpay_overview_selected_currency` option.
+ *
+ * @return {SelectedCurrencyResponse} An object containing the selected currency, a setter function, and a loading state.
+ */
 export const useSelectedCurrency = (): SelectedCurrencyResponse => {
 	const selectedCurrencyOptionName = 'wcpay_overview_selected_currency';
 	const { updateOptions } = useDispatch( 'wc/admin/options' );
