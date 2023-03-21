@@ -36,6 +36,33 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/download',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'get_transactions_export' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/summary',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_transactions_summary' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/search',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_transactions_search_autocomplete' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/fraud-outcomes',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -63,28 +90,10 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/download',
-			[
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'get_transactions_export' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/summary',
+			'/' . $this->rest_base . '/fraud-outcomes/download',
 			[
 				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_transactions_summary' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/search',
-			[
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_transactions_search_autocomplete' ],
+				'callback'            => [ $this, 'get_fraud_outcome_transactions_export' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
@@ -149,6 +158,20 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		$search_term = $request->get_param( 'search_term' );
 
 		return $this->forward_request( 'get_fraud_outcome_transactions_search_autocomplete', [ $status, $search_term ] );
+	}
+
+	/**
+	 * Initiate transactions export via API.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_fraud_outcome_transactions_export( $request ) {
+		$status    = $request->get_param( 'status' );
+		$sort      = $request->get_param( 'sort' );
+		$direction = $request->get_param( 'direction' );
+		$search    = $request->get_param( 'search' );
+
+		return $this->forward_request( 'get_fraud_outcome_transactions_export', [ $status, $search, $sort, $direction ] );
 	}
 
 	/**

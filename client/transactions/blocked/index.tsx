@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Search, TableCard } from '@woocommerce/components';
 import {
@@ -12,11 +12,19 @@ import {
 	updateQueryString,
 } from '@woocommerce/navigation';
 import { uniq } from 'lodash';
+import apiFetch from '@wordpress/api-fetch';
+import {
+	downloadCSVFile,
+	generateCSVDataFromTable,
+	generateCSVFileName,
+} from '@woocommerce/csv-export';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import {
+	FraudOutcomeTransaction,
 	useFraudOutcomeTransactions,
 	useFraudOutcomeTransactionsSummary,
 } from 'data/index';
@@ -28,8 +36,12 @@ import {
 } from './columns';
 import { formatExplicitCurrency } from '../../utils/currency';
 import autocompleter from '../fraud-protection/autocompleter';
+import DownloadButton from '../../components/download-button';
+import { getFraudOutcomeTransactionsExport } from '../../data/transactions/resolvers';
 
 export const BlockedList = (): JSX.Element => {
+	const [ isDownloading, setIsDownloading ] = useState( false );
+	const { createNotice } = useDispatch( 'core/notices' );
 	const query = getQuery();
 
 	const columnsToDisplay = getBlockedListColumns();
@@ -48,6 +60,8 @@ export const BlockedList = (): JSX.Element => {
 	);
 
 	let summary;
+
+	const title = __( 'Blocked transactions', 'woocommerce-payments' );
 
 	const isAuthorizationsSummaryLoaded =
 		transactionsSummary.count !== undefined &&
@@ -101,11 +115,57 @@ export const BlockedList = (): JSX.Element => {
 		'woocommerce-payments'
 	);
 
+	const downloadable = !! rows.length;
+
+	const onDownload = async () => {
+		setIsDownloading( true );
+
+		// We destructure page and path to get the right params.
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { page, path, ...params } = getQuery();
+
+		try {
+			const { data } = await apiFetch< {
+				data: FraudOutcomeTransaction[];
+			} >( {
+				path: getFraudOutcomeTransactionsExport( 'block', params ),
+				method: 'GET',
+			} );
+
+			const populatedRows = data.map( ( transaction ) =>
+				getBlockedListColumnsStructure( transaction, columnsToDisplay )
+			);
+
+			downloadCSVFile(
+				generateCSVFileName( title, params ),
+				generateCSVDataFromTable( columnsToDisplay, populatedRows )
+			);
+
+			wcpayTracks.recordEvent(
+				'wcpay_fraud_outcome_transactions_download',
+				{
+					exported_transactions: rows.length,
+					total_transactions: transactionsSummary.count,
+				}
+			);
+		} catch ( e ) {
+			createNotice(
+				'error',
+				__(
+					'There was a problem generating your export.',
+					'woocommerce-payments'
+				)
+			);
+		}
+
+		setIsDownloading( false );
+	};
+
 	return (
 		<Page>
 			<TableCard
 				className="authorizations-list woocommerce-report-table has-search"
-				title={ __( 'Blocked transactions', 'woocommerce-payments' ) }
+				title={ title }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( query.per_page ?? '', 10 ) || 25 }
 				totalRows={ totalRows }
@@ -129,6 +189,13 @@ export const BlockedList = (): JSX.Element => {
 						}
 						autocompleter={ autocompleter( 'block' ) }
 					/>,
+					downloadable && (
+						<DownloadButton
+							key="download"
+							isDisabled={ isLoading || isDownloading }
+							onClick={ onDownload }
+						/>
+					),
 				] }
 			/>
 		</Page>

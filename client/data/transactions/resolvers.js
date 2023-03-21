@@ -174,3 +174,17 @@ export function* getFraudOutcomeTransactionsSummary( status, query ) {
 		yield updateErrorForFraudOutcomeTransactionsSummary( status, query, e );
 	}
 }
+
+export function getFraudOutcomeTransactionsExport( status, query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/transactions/fraud-outcomes/download`,
+		{
+			sort: query.orderby,
+			direction: query.order,
+			status,
+			...formatQueryFilters( query ),
+		}
+	);
+
+	return path;
+}

@@ -806,6 +806,24 @@ class WC_Payments_API_Client {
 	}
 
 	/**
+	 * Retrieves transactions summary for a given fraud outcome status.
+	 *
+	 * @param string $status Fraud outcome status.
+	 * @param array  $search The search terms.
+	 * @param string $sort      The column to be used for sorting.
+	 * @param string $direction The sorting direction.
+	 *
+	 * @return array
+	 */
+	public function get_fraud_outcome_transactions_export( $status, $search, $sort, $direction ) {
+		$fraud_outcomes = $this->get_fraud_outcome_transactions( $status, $search, $sort, $direction );
+
+		return [
+			'data' => $fraud_outcomes,
+		];
+	}
+
+	/**
 	 * Retrieves transaction list for a given fraud outcome status.
 	 *
 	 * @param string $status    Fraud outcome status.

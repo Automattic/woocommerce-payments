@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Search, TableCard } from '@woocommerce/components';
 import {
@@ -12,11 +12,19 @@ import {
 	updateQueryString,
 } from '@woocommerce/navigation';
 import { uniq } from 'lodash';
+import apiFetch from '@wordpress/api-fetch';
+import {
+	downloadCSVFile,
+	generateCSVDataFromTable,
+	generateCSVFileName,
+} from '@woocommerce/csv-export';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import {
+	FraudOutcomeTransaction,
 	useFraudOutcomeTransactions,
 	useFraudOutcomeTransactionsSummary,
 } from 'data/index';
@@ -29,8 +37,12 @@ import {
 import './style.scss';
 import { formatExplicitCurrency } from '../../utils/currency';
 import autocompleter from '../fraud-protection/autocompleter';
+import DownloadButton from '../../components/download-button';
+import { getFraudOutcomeTransactionsExport } from '../../data/transactions/resolvers';
 
 export const RiskReviewList = (): JSX.Element => {
+	const [ isDownloading, setIsDownloading ] = useState( false );
+	const { createNotice } = useDispatch( 'core/notices' );
 	const query = getQuery();
 	const columnsToDisplay = getRiskReviewListColumns();
 
@@ -44,13 +56,13 @@ export const RiskReviewList = (): JSX.Element => {
 		isLoading: isSummaryLoading,
 	} = useFraudOutcomeTransactionsSummary( 'review', query );
 
-	// const { authorizations, isLoading } = useAuthorizations( query );
-
 	const rows = transactions.map( ( transaction ) =>
 		getRiskReviewListColumnsStructure( transaction, columnsToDisplay )
 	);
 
 	let summary;
+
+	const title = __( 'Flagged transactions', 'woocommerce-payments' );
 
 	const isAuthorizationsSummaryLoaded =
 		transactionsSummary.count !== undefined &&
@@ -98,6 +110,55 @@ export const RiskReviewList = (): JSX.Element => {
 		'woocommerce-payments'
 	);
 
+	const downloadable = !! rows.length;
+
+	const onDownload = async () => {
+		setIsDownloading( true );
+
+		// We destructure page and path to get the right params.
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { page, path, ...params } = getQuery();
+
+		try {
+			const { data } = await apiFetch< {
+				data: FraudOutcomeTransaction[];
+			} >( {
+				path: getFraudOutcomeTransactionsExport( 'review', params ),
+				method: 'GET',
+			} );
+
+			const populatedRows = data.map( ( transaction ) =>
+				getRiskReviewListColumnsStructure(
+					transaction,
+					columnsToDisplay
+				)
+			);
+
+			downloadCSVFile(
+				generateCSVFileName( title, params ),
+				generateCSVDataFromTable( columnsToDisplay, populatedRows )
+			);
+
+			wcpayTracks.recordEvent(
+				'wcpay_fraud_outcome_transactions_download',
+				{
+					exported_transactions: rows.length,
+					total_transactions: transactionsSummary.count,
+				}
+			);
+		} catch ( e ) {
+			createNotice(
+				'error',
+				__(
+					'There was a problem generating your export.',
+					'woocommerce-payments'
+				)
+			);
+		}
+
+		setIsDownloading( false );
+	};
+
 	useEffect( () => {
 		wcpayTracks.recordEvent( 'page_view', {
 			path: 'payments_transactions_risk_review',
@@ -108,7 +169,7 @@ export const RiskReviewList = (): JSX.Element => {
 		<Page>
 			<TableCard
 				className="authorizations-list woocommerce-report-table has-search"
-				title={ __( 'Flagged transactions', 'woocommerce-payments' ) }
+				title={ title }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( query.per_page ?? '', 10 ) || 25 }
 				totalRows={ totalRows }
@@ -132,6 +193,13 @@ export const RiskReviewList = (): JSX.Element => {
 						}
 						autocompleter={ autocompleter( 'review' ) }
 					/>,
+					downloadable && (
+						<DownloadButton
+							key="download"
+							isDisabled={ isLoading || isDownloading }
+							onClick={ onDownload }
+						/>
+					),
 				] }
 			/>
 		</Page>
