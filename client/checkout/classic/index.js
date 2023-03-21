@@ -1,11 +1,6 @@
 /* global jQuery */
 
 /**
- * External dependencies
- */
-import { __ } from '@wordpress/i18n';
-
-/**
  * Internal dependencies
  */
 import './style.scss';
@@ -308,14 +303,6 @@ jQuery( function ( $ ) {
 	 * @param {Object} paymentMethod Payment method object.
 	 */
 	const handleOrderPayment = ( $form, { id } ) => {
-		if (
-			20 <
-			( $form.find( 'input[name="billing_phone"]' ).val() || '' ).length
-		) {
-			showError( __( 'Invalid phone number', 'woocommerce-payments' ) );
-			$form.removeClass( 'processing' ).unblock();
-			return;
-		}
 		const paymentSelector = isWCPaySepaChosen()
 			? '#wcpay-payment-method-sepa'
 			: '#wcpay-payment-method';

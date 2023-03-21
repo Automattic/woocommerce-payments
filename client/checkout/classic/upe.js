@@ -408,15 +408,6 @@ jQuery( function ( $ ) {
 			);
 			return false;
 		}
-		if (
-			20 <
-			( $form.find( 'input[name="billing_phone"]' ).val() || '' ).length
-		) {
-			showErrorCheckout(
-				__( 'Invalid phone number', 'woocommerce-payments' )
-			);
-			return false;
-		}
 
 		if ( ! isUPEComplete ) {
 			// If UPE fields are not filled, confirm payment to trigger validation errors

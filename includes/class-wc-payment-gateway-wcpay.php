@@ -702,6 +702,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
+			if ( 20 < strlen( $order->get_billing_phone() ) ) {
+				throw new Process_Payment_Exception(
+					__( 'Invalid phone number.', 'woocommerce-payments' ),
+					'invalid_phone_number'
+				);
+			}
 			// Check if session exists before instantiating Fraud_Prevention_Service.
 			if ( WC()->session ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
