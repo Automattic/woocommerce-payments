@@ -3,7 +3,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from '@wordpress/data';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
 
 /**
