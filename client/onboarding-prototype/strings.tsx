@@ -76,7 +76,10 @@ export default {
 	errors: {
 		generic: __( 'Please provide a response', 'woocommerce-payments' ),
 		email: __( 'Please provide a valid email', 'woocommerce-payments' ),
-		phone: __( 'Please provide a valid phone', 'woocommerce-payments' ),
+		phone: __(
+			'Please provide a valid phone number',
+			'woocommerce-payments'
+		),
 		url: __( 'Please provide a valid website', 'woocommerce-payments' ),
 	},
 	placeholders: {
