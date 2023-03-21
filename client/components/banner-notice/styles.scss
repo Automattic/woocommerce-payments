@@ -8,7 +8,7 @@ $is-success: #00a32a;
 $is-success-hover: #00982a;
 
 .wcpay-banner-notice.components-notice {
-	padding: 10px 0 12px 16px;
+	padding: 12px 0 12px 17px;
 	border-left: none;
 	border-radius: 2px;
 	justify-content: flex-start;
@@ -17,14 +17,16 @@ $is-success-hover: #00982a;
 	.wcpay-banner-notice__icon {
 		display: flex;
 		align-items: center;
-		padding-left: 2px;
-		padding-right: 4px;
 		min-height: auto;
 		min-width: auto;
+		margin-right: 12px;
 		svg {
 			width: 22px;
 			height: 22px;
 		}
+	}
+	.components-notice__content {
+		margin-top: 2px;
 	}
 	.wcpay-banner-notice__content__actions {
 		padding-top: 12px;
@@ -35,9 +37,14 @@ $is-success-hover: #00982a;
 	&.is-dismissible {
 		padding-right: 12px;
 	}
-	.components-notice__dismiss svg {
-		width: 15px;
-		height: 15px;
+	.components-notice__dismiss {
+		height: 24px;
+		width: 24px;
+		svg {
+			width: 15px;
+			height: 15px;
+			fill: $gray-900;
+		}
 	}
 
 	/* Specific styles for each variant */
