@@ -7,10 +7,15 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import FraudProtection from '..';
-import { useCurrentProtectionLevel, useCurrencies } from 'wcpay/data';
+import {
+	useCurrentProtectionLevel,
+	useCurrencies,
+	useAdvancedFraudProtectionSettings,
+} from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
 jest.mock( 'wcpay/data', () => ( {
+	useAdvancedFraudProtectionSettings: jest.fn(),
 	useCurrentProtectionLevel: jest.fn(),
 	useCurrencies: jest.fn(),
 } ) );
@@ -27,7 +32,8 @@ describe( 'FraudProtection', () => {
 					PLN: { name: 'Polish złoty', symbol: 'zł' },
 				},
 			},
-		} )
+		} ),
+		useAdvancedFraudProtectionSettings.mockReturnValue( [ [], jest.fn() ] )
 	);
 
 	it( 'renders', () => {
