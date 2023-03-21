@@ -40,7 +40,7 @@ type BalanceTab = {
 const AccountBalancesTabPanel: React.FC = () => {
 	const {
 		overviews,
-		isLoading,
+		isLoading: isAccountOverviewsLoading,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 
 	// While the data is loading, we show the default currency tab.
@@ -57,7 +57,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 
 	const { currencies } = overviews;
 
-	if ( ! isLoading && currencies.length !== 0 ) {
+	if ( ! isAccountOverviewsLoading && currencies.length !== 0 ) {
 		depositCurrencyTabs = currencies.map(
 			( overview: AccountOverview.Overview ) => ( {
 				name: overview.currency,
@@ -78,19 +78,19 @@ const AccountBalancesTabPanel: React.FC = () => {
 						type="available"
 						amount={ tab.availableFunds }
 						currencyCode={ tab.currencyCode }
-						isLoading={ isLoading }
+						isLoading={ isAccountOverviewsLoading }
 					/>
 					<BalanceBlock
 						type="pending"
 						amount={ tab.pendingFunds }
 						currencyCode={ tab.currencyCode }
-						isLoading={ isLoading }
+						isLoading={ isAccountOverviewsLoading }
 					/>
 					<BalanceBlock
 						type="reserved"
 						amount={ tab.reservedFunds }
 						currencyCode={ tab.currencyCode }
-						isLoading={ isLoading }
+						isLoading={ isAccountOverviewsLoading }
 					/>
 				</Flex>
 			) }
