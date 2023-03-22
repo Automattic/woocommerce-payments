@@ -286,7 +286,12 @@ class WC_Payments_API_Intention implements \JsonSerializable {
 		];
 	}
 
+	/**
+	 * Checks if the intent has a successful status.
+	 *
+	 * @return bool
+	 */
 	public function is_successful() {
-		return in_array( $this->get_status(), WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS ,true );
+		return in_array( $this->get_status(), WC_Payment_Gateway_WCPay::SUCCESSFUL_INTENT_STATUS, true );
 	}
 }

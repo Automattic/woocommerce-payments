@@ -34,7 +34,7 @@ class Complete_Without_Payment_Step extends Abstract_Step {
 	}
 
 	/**
-	 * Returns the ID of the order.
+	 * Returns the ID of the step.
 	 *
 	 * @return string
 	 */

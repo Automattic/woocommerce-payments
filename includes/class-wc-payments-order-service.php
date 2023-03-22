@@ -66,12 +66,19 @@ class WC_Payments_Order_Service {
 	 */
 	const WCPAY_REFUND_ID_META_KEY = '_wcpay_refund_id';
 
-		/**
+	/**
 	 * Meta key used to store WCPay refund status.
 	 *
 	 * @const string
 	 */
 	const WCPAY_REFUND_STATUS_META_KEY = '_wcpay_refund_status';
+
+	/**
+	 * Meta key used to store the test/live mode.
+	 *
+	 * @const string
+	 */
+	const MODE_META_KEY = '_wcpay_mode';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -459,6 +466,33 @@ class WC_Payments_Order_Service {
 		do_action( 'wcpay_order_intent_id_updated' );
 	}
 
+	/**
+	 * Get the test/live mode for the order.
+	 *
+	 * @param  mixed $order The order Id or order object.
+	 * @return bool
+	 */
+	public function get_mode_for_order( $order ) : string {
+		$order = wc_get_order( $order );
+		return $order->get_meta( self::MODE_META_KEY, true );
+	}
+
+	/**
+	 * Set the test/live mode for the order.
+	 *
+	 * @param WC_Order $order The order object.
+	 * @param string   $mode  The value to be set.
+	 */
+	public function set_mode_for_order( $order, $mode ) {
+		$order->update_meta_data( self::MODE_META_KEY, $mode );
+		$order->save_meta_data();
+		/**
+		 * Hook: When the order meta data _mode is updated.
+		 *
+		 * @since 5.4.0
+		 */
+		do_action( 'wcpay_order_mode_updated' );
+	}
 
 	/**
 	 * Get the payment metadata for payment method id.

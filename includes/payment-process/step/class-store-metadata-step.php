@@ -16,6 +16,28 @@ use WCPay\Payment_Process\Order_Payment;
  */
 class Store_Metadata_Step extends Abstract_Step {
 	/**
+	 * The mode object for the gateway.
+	 *
+	 * @var WCPay\Core\Mode
+	 */
+	protected $mode;
+
+	/**
+	 * The order service.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	protected $order_service;
+
+	/**
+	 * Loads all needed dependencies.
+	 */
+	public function __construct() {
+		$this->order_service = WC_Payments::get_order_service();
+		$this->mode          = WC_Payments::mode();
+	}
+
+	/**
 	 * Returns the ID of the step.
 	 *
 	 * @return string
@@ -45,10 +67,10 @@ class Store_Metadata_Step extends Abstract_Step {
 		}
 
 		$order = $payment->get_order();
-		$order->update_meta_data( '_payment_method_id', $payment->get_payment_method()->get_id() );
-		$order->update_meta_data( '_stripe_customer_id', $payment->get_var( 'customer_id' ) );
+		$this->order_service->set_payment_method_id_for_order( $order, $payment->get_payment_method()->get_id() );
+		$this->order_service->set_customer_id_for_order( $order, $payment->get_var( 'customer_id' ) );
 
 		// @todo: Store the test/live mode in the payment object.
-		$order->update_meta_data( '_wcpay_mode', WC_Payments::get_gateway()->is_in_test_mode() ? 'test' : 'prod' );
+		$this->order_service->set_mode_for_order( $order, $this->mode->is_in_test_mode() ? 'test' : 'prod' );
 	}
 }
