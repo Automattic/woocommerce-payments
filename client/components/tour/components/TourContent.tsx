@@ -1,15 +1,11 @@
 /**
  * External dependencies
  */
-import React from 'react';
-
-/**
- * Internal dependencies
- */
+import React, { ReactNode } from 'react';
 
 interface TourContentProps {
-	title: string;
-	description: string;
+	title: ReactNode;
+	description: ReactNode;
 }
 
 const TourContent: React.FC< TourContentProps > = ( {
