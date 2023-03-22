@@ -115,7 +115,6 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 mockUseSelectedCurrency.mockReturnValue( {
 	selectedCurrency: undefined,
 	setSelectedCurrency: jest.fn(),
-	isLoading: false,
 } );
 
 // Creates a mock Overview object for the given currency code and balance amounts.

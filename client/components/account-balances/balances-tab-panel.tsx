@@ -41,13 +41,9 @@ type BalanceTab = {
 const AccountBalancesTabPanel: React.FC = () => {
 	const {
 		overviews,
-		isLoading: isAccountOverviewsLoading,
+		isLoading,
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
-	const {
-		selectedCurrency,
-		setSelectedCurrency,
-		isLoading: isSelectedCurrencyLoading,
-	} = useSelectedCurrency();
+	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
 
 	const onTabSelect = ( tabName: BalanceTab[ 'name' ] ) => {
 		setSelectedCurrency( tabName );
@@ -67,7 +63,7 @@ const AccountBalancesTabPanel: React.FC = () => {
 
 	const { currencies } = overviews;
 
-	if ( ! isAccountOverviewsLoading && currencies.length !== 0 ) {
+	if ( ! isLoading && currencies.length !== 0 ) {
 		depositCurrencyTabs = currencies.map(
 			( overview: AccountOverview.Overview ) => ( {
 				name: overview.currency,
@@ -79,8 +75,6 @@ const AccountBalancesTabPanel: React.FC = () => {
 			} )
 		);
 	}
-
-	const isLoading = isSelectedCurrencyLoading || isAccountOverviewsLoading;
 
 	// Selected currency is not valid if it is not in the list of deposit currencies.
 	const isSelectedCurrencyValid =
