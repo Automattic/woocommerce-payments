@@ -237,6 +237,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Fraud and Risk Tools welcome tour was dismissed.
+	 *
+	 * @return bool
+	 */
+	public static function is_fraud_protection_welcome_tour_dismissed(): bool {
+		return '1' === get_option( 'wcpay_fraud_protection_welcome_tour_dismissed', '0' );
+	}
+
+	/**
 	 * Checks whether Simplify Deposits UI is enabled.
 	 *
 	 * @return bool
