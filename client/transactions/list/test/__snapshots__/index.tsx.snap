@@ -529,7 +529,6 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td
@@ -649,7 +648,6 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td
@@ -1425,7 +1423,6 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td
@@ -1545,7 +1542,6 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td
@@ -2303,7 +2299,6 @@ exports[`Transactions list renders correctly when filtered by deposit 1`] = `
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td
@@ -2994,7 +2989,6 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td
@@ -3124,7 +3118,6 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td
@@ -3948,7 +3941,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td
@@ -4068,7 +4060,6 @@ exports[`Transactions list when not filtered by deposit renders correctly 1`] = 
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td
@@ -4886,7 +4877,6 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td
@@ -5006,7 +4996,6 @@ exports[`Transactions list when not filtered by deposit renders table summary on
                     tabindex="-1"
                   >
                     Online
-                    
                   </a>
                 </td>
                 <td

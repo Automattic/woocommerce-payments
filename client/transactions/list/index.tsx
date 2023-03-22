@@ -105,10 +105,20 @@ const getPaymentSourceDetails = ( txn: Transaction ) => {
 };
 
 const getSourceDeviceIcon = ( txn: Transaction ) => {
-	const tooltipDescription =
-		txn.source_device === 'ios'
-			? __( 'Tap to Pay on iPhone', 'woocommerce-payments' )
-			: __( 'Tap to Pay on Android', 'woocommerce-payments' );
+	let tooltipDescription = '';
+
+	if ( txn.source_device === 'ios' ) {
+		tooltipDescription = __(
+			'Tap to Pay on iPhone',
+			'woocommerce-payments'
+		);
+	} else if ( txn.source_device === 'android' ) {
+		tooltipDescription = __(
+			'Tap to Pay on Android',
+			'woocommerce-payments'
+		);
+	}
+
 	return (
 		<Tooltip isVisible={ false } content={ tooltipDescription }>
 			<span className="woocommerce-taptopay__icon"></span>
@@ -389,7 +399,7 @@ export const TransactionsList = (
 				display: clickable(
 					<Fragment>
 						{ getChargeChannel( txn.channel ) }
-						{ txn.source_device ? getSourceDeviceIcon( txn ) : '' }
+						{ txn.source_device && getSourceDeviceIcon( txn ) }
 					</Fragment>
 				),
 			},
