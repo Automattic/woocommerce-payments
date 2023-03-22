@@ -2,9 +2,10 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
+import { getQuery } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -22,7 +23,7 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
 import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
 import ErrorBoundary from '../../components/error-boundary';
-import { useDepositDelayDays } from '../../data';
+import { useDepositDelayDays, useSettings } from '../../data';
 import FraudProtection from '../fraud-protection';
 
 const PaymentMethodsDescription = () => (
@@ -51,7 +52,7 @@ const ExpressCheckoutDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/payments/settings-guide/#section-4">
+		<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/settings-guide/#express-checkouts">
 			{ __( 'Learn more', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
@@ -112,7 +113,9 @@ const DepositsDescription = () => {
 const FraudProtectionDescription = () => {
 	return (
 		<>
-			<h2>{ __( 'Fraud protection', 'woocommerce-payments' ) }</h2>
+			<h2 id="fp-settings">
+				{ __( 'Fraud protection', 'woocommerce-payments' ) }
+			</h2>
 			<p>
 				{ __(
 					'Help avoid chargebacks by setting your security and fraud protection risk level.',
@@ -140,6 +143,18 @@ const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
+
+	const { isLoading } = useSettings();
+
+	useLayoutEffect( () => {
+		const { anchor } = getQuery();
+
+		if ( ! isLoading && anchor ) {
+			document
+				.querySelector( decodeURIComponent( anchor ) )
+				?.scrollIntoView( { behavior: 'smooth' } );
+		}
+	}, [ isLoading ] );
 
 	return (
 		<SettingsLayout>

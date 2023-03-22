@@ -25,6 +25,7 @@ use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Update_Intention;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Gateway;
@@ -671,6 +672,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			! ( WC_Payments_Features::is_upe_legacy_enabled() && ! WC_Payments_Features::is_upe_split_enabled() ) &&
 			( is_checkout() || has_block( 'woocommerce/checkout' ) ) &&
 			! is_wc_endpoint_url( 'order-pay' ) &&
+			WC()->cart instanceof WC_Cart &&
 			! WC()->cart->is_empty() &&
 			WC()->cart->needs_payment()
 		) {
@@ -1693,6 +1695,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_deposit_status();
 			case 'deposit_completed_waiting_period':
 				return $this->get_deposit_completed_waiting_period();
+			case 'current_protection_level':
+				return $this->get_current_protection_level();
+			case 'advanced_fraud_protection_settings':
+				return $this->get_advanced_fraud_protection_settings();
 
 			default:
 				return parent::get_option( $key, $empty_value );
@@ -2234,6 +2240,99 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
 		}
 		return $empty_value;
+	}
+
+	/**
+	 * Gets the current fraud protection level value.
+	 *
+	 * @return  string The current fraud protection level.
+	 */
+	protected function get_current_protection_level() {
+		// If fraud and risk tools feature is not enabled, do not expose the settings.
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			return '';
+		}
+
+		$this->maybe_refresh_fraud_protection_settings();
+		return get_option( 'current_protection_level', 'basic' );
+	}
+
+	/**
+	 * Gets the advanced fraud protection level settings value.
+	 *
+	 * @return  array|string The advanced level fraud settings for the store, if not saved, the default ones.
+	 *                       If there's a fetch error, it returns "error".
+	 */
+	protected function get_advanced_fraud_protection_settings() {
+		// If fraud and risk tools feature is not enabled, do not expose the settings.
+		if ( ! WC_Payments_Features::is_fraud_protection_settings_enabled() ) {
+			return [];
+		}
+
+		// Check if Stripe is connected.
+		if ( ! $this->is_connected() ) {
+			return [];
+		}
+
+		$this->maybe_refresh_fraud_protection_settings();
+		$transient_value = get_transient( 'wcpay_fraud_protection_settings' );
+		return false === $transient_value ? 'error' : $transient_value;
+	}
+
+	/**
+	 * Checks the synchronicity of fraud protection settings with the server, and updates the local cache when needed.
+	 *
+	 * @return  void
+	 */
+	protected function maybe_refresh_fraud_protection_settings() {
+		// It'll be good to run this only once per call, because if it succeeds, the latter won't require
+		// to run again, and if it fails, it will fail on other calls too.
+		static $runonce = false;
+
+		// If already ran this before on this call, return.
+		if ( $runonce ) {
+			return;
+		}
+
+		// Check if we have local cache available before pulling it from the server.
+		// If the transient exists, do nothing.
+		$cached_server_settings = get_transient( 'wcpay_fraud_protection_settings' );
+
+		if ( ! $cached_server_settings ) {
+			// When both local and server values don't exist, we need to reset the protection level on both to "Basic".
+			$needs_reset = false;
+
+			try {
+				// There's no cached ruleset, or the cache has expired. Try to fetch it from the server.
+				$latest_server_ruleset = $this->payments_api_client->get_latest_fraud_ruleset();
+				if ( isset( $latest_server_ruleset['ruleset_config'] ) ) {
+					// Update the local cache from the server.
+					set_transient( 'wcpay_fraud_protection_settings', $latest_server_ruleset['ruleset_config'], DAY_IN_SECONDS );
+					// Get the matching level for the ruleset, and set the option.
+					update_option( 'current_protection_level', Fraud_Risk_Tools::get_matching_protection_level( $latest_server_ruleset['ruleset_config'] ) );
+					return;
+				}
+				// If the response doesn't contain a ruleset, probably there's an error. Grey out the form.
+			} catch ( API_Exception $ex ) {
+				if ( 'wcpay_fraud_ruleset_not_found' === $ex->get_error_code() ) {
+					// If fetching returned a 'wcpay_fraud_ruleset_not_found' exception, save the basic protection as the server ruleset,
+					// and update the client with the same config.
+					$needs_reset = true;
+				}
+				// If the exception isn't what we want, probably there's an error. Grey out the form.
+			}
+
+			if ( $needs_reset ) {
+				// Set the Basic protection level as the default on both client and server.
+				$basic_protection_settings = Fraud_Risk_Tools::get_basic_protection_settings();
+				$this->payments_api_client->save_fraud_ruleset( $basic_protection_settings );
+				set_transient( 'wcpay_fraud_protection_settings', $basic_protection_settings, DAY_IN_SECONDS );
+				update_option( 'current_protection_level', 'basic' );
+			}
+
+			// Set the static flag to prevent duplicate calls to this method.
+			$runonce = true;
+		}
 	}
 
 	/**

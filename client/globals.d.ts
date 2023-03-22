@@ -11,6 +11,7 @@ declare const wcpaySettings: {
 		customSearch: boolean;
 		customDepositSchedules: boolean;
 		isAuthAndCaptureEnabled: boolean;
+		simplifyDepositsUi?: boolean;
 	};
 	fraudServices: unknown[];
 	isJetpackConnected: boolean;
@@ -53,6 +54,10 @@ declare const wcpaySettings: {
 	restUrl: string;
 	shouldUseExplicitPrice: boolean;
 	numDisputesNeedingResponse: string;
+	fraudProtection: {
+		isWelcomeTourDismissed?: boolean;
+	};
+	accountDefaultCurrency: string;
 };
 
 declare const wcTracks: any;
