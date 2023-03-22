@@ -164,12 +164,14 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 		$order = wc_get_order( $outcome['order_id'] );
 
 		$outcome['payment_intent']           = [];
-		$outcome['payment_intent']['id']     = $order->get_meta( '_intent_id' ) ?? $order->get_transaction_id();
+		$outcome['payment_intent']['id']     = $outcome['payment_intent_id'] ?? $order->get_meta( '_intent_id' ) ?? $order->get_transaction_id();
 		$outcome['payment_intent']['status'] = $order->get_meta( '_intention_status' );
 
 		$outcome['amount']        = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
 		$outcome['currency']      = $order->get_currency();
 		$outcome['customer_name'] = wc_clean( $order->get_billing_first_name() ) . ' ' . wc_clean( $order->get_billing_last_name() );
+
+		unset( $outcome['payment_intent_id'] );
 
 		return $outcome;
 	}

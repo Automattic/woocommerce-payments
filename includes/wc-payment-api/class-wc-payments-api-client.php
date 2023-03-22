@@ -787,6 +787,7 @@ class WC_Payments_API_Client {
 		$results = array_map(
 			function ( $result ) {
 				return [
+					'key'   => 'customer-' . $result['order_id'],
 					'label' => $result['customer_name'],
 				];
 			},
@@ -799,7 +800,14 @@ class WC_Payments_API_Client {
 			} else {
 				$prefix = __( 'Order #', 'woocommerce-payments' );
 			}
-			array_unshift( $results, [ 'label' => $prefix . $search_term ] );
+
+			array_unshift(
+				$results,
+				[
+					'key'   => 'order-' . $order->get_id(),
+					'label' => $prefix . $search_term,
+				]
+			);
 		}
 
 		return $results;

@@ -23,9 +23,9 @@ interface CompletionOption {
 const setupAutocompleter = ( status: string ): unknown => ( {
 	name: 'transactions',
 	className: 'woocommerce-search__transactions-result',
-	options( term: string ): Promise< CompletionOption[] > {
+	async options( term: string ): Promise< CompletionOption[] > {
 		const query = term ? { search_term: term } : {};
-		return apiFetch( {
+		const options: CompletionOption[] = await apiFetch( {
 			path: addQueryArgs(
 				'/wc/v3/payments/transactions/fraud-outcomes/search',
 				{
@@ -34,10 +34,21 @@ const setupAutocompleter = ( status: string ): unknown => ( {
 				}
 			),
 		} );
+
+		if ( ! term ) {
+			return options;
+		}
+
+		return options.filter(
+			( { label } ) =>
+				label
+					.toLocaleLowerCase()
+					.indexOf( term.toLocaleLowerCase() ) !== -1
+		);
 	},
 	isDebounced: true,
 	getOptionIdentifier( option: CompletionOption ): string {
-		return option.label;
+		return option.key;
 	},
 	getOptionKeywords( option: CompletionOption ): string[] {
 		return [ option.label ];
@@ -63,7 +74,7 @@ const setupAutocompleter = ( status: string ): unknown => ( {
 	// of replace/insertion, so we can just return the value.
 	getOptionCompletion( option: CompletionOption ): CompletionOption {
 		return {
-			key: option.label,
+			key: option.key || option.label,
 			label: option.label,
 		};
 	},
