@@ -57,12 +57,6 @@ class Save_Payment_Method_Step extends Abstract_Step {
 			return false;
 		}
 
-		// Failing payment methods should not be saved.
-		$intent = $this->get_intent_from_payment( $payment );
-		if ( ! $intent->is_successful() ) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -85,7 +79,7 @@ class Save_Payment_Method_Step extends Abstract_Step {
 	 * @return WP_User
 	 */
 	protected function get_user_from_payment( Order_Payment $payment ) {
-		return get_user_by( 'id', $payment->get_var( 'customer_id' ) );
+		return get_user_by( 'id', $payment->get_var( 'user_id' ) );
 	}
 
 	/**
@@ -98,9 +92,14 @@ class Save_Payment_Method_Step extends Abstract_Step {
 			return; // keep IDEs happy.
 		}
 
-		// @todo: This should support SetupIntents as well.
+		// Failing payment methods should not be saved.
 		$intent = $this->get_intent_from_payment( $payment );
-		$user   = $this->get_user_from_payment( $payment );
+		if ( ! $intent->is_successful() ) {
+			return;
+		}
+
+		// @todo: This should support SetupIntents as well.
+		$user = $this->get_user_from_payment( $payment );
 
 		// Setup intents are currently not deserialized as payment intents are, so check if it's an array first.
 		$payment_method_id = is_array( $intent ) ? $intent['payment_method'] : $intent->get_payment_method_id();

@@ -35,11 +35,7 @@ class Payment_Method_Factory {
 
 		// Look for a token first. ToDo: This might not work with blocks.
 		$token_name = 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
-		if ( ! isset( $request[ $token_name ] ) ) {
-			throw new Exception( 'The request does not contain a selected WCPay token' );
-		}
-
-		$token_id = $request[ $token_name ];
+		$token_id   = isset( $request[ $token_name ] ) ? $request[ $token_name ] : 'new';
 
 		if ( 'new' === $token_id ) {
 			// There must be a new payment method entered.

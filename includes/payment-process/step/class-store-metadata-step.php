@@ -73,6 +73,6 @@ class Store_Metadata_Step extends Abstract_Step {
 		$this->order_service->set_customer_id_for_order( $order, $payment->get_var( 'customer_id' ) );
 
 		// @todo: Store the test/live mode in the payment object.
-		$this->order_service->set_mode_for_order( $order, $this->mode->is_in_test_mode() ? 'test' : 'prod' );
+		$this->order_service->set_mode_for_order( $order, $this->mode->is_test() ? 'test' : 'prod' );
 	}
 }

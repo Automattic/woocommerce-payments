@@ -10,7 +10,7 @@ namespace WCPay\Payment_Process;
 use WCPay\Payment_Process\Storage\Payment_Storage;
 use WCPay\Payment_Process\Payment_Method\Payment_Method;
 use WCPay\Payment_Process\Payment_Method\Payment_Method_Factory;
-use WCPay\Payment_Process\Step\{ Metadata_Step, Abstract_Step, Add_Token_To_Order_Step, Complete_Without_Payment_Step, Customer_Details_Step, Save_Payment_Method_Step, Standard_Payment_Step, Store_Metadata_Step, Update_Order_Step, Update_Saved_Payment_Method_Step, Verify_Minimum_Amount_Step };
+use WCPay\Payment_Process\Step\{ Metadata_Step, Abstract_Step, Add_Token_To_Order_Step, Complete_Without_Payment_Step, Customer_Details_Step, Save_Payment_Method_Step, Setup_Payment_Step, Standard_Payment_Step, Store_Metadata_Step, Update_Order_Step, Update_Saved_Payment_Method_Step, Verify_Minimum_Amount_Step };
 
 /**
  * Main class, representing payments.
@@ -241,6 +241,7 @@ abstract class Payment {
 				Complete_Without_Payment_Step::class, // Action.
 				Verify_Minimum_Amount_Step::class, // Action.
 				Standard_Payment_Step::class, // Action.
+				Setup_Payment_Step::class, // Action.
 
 				Update_Saved_Payment_Method_Step::class, // Complete.
 				Save_Payment_Method_Step::class, // Complete.
