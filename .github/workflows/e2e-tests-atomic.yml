@@ -36,7 +36,9 @@ jobs:
           - test_groups: 'wcpay'
             test_branches: 'merchant'
           - test_groups: 'upe'
+            test_branches: 'merchant'
           - test_groups: 'upeSplit'
+            test_branches: 'merchant'
     
     env:
       E2E_GROUP: ${{ matrix.test_groups }}
