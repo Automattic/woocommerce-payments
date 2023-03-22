@@ -17,6 +17,7 @@ import {
 	useSettings,
 	useManualCapture,
 	useAuthorizationsSummary,
+	useFraudOutcomeTransactionsSummary,
 } from 'data/index';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -36,6 +37,7 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
+	useFraudOutcomeTransactionsSummary: jest.fn(),
 	useManualCapture: jest.fn(),
 	useSettings: jest.fn(),
 	useAuthorizationsSummary: jest.fn(),
@@ -59,6 +61,10 @@ const mockUseManualCapture = useManualCapture as jest.MockedFunction<
 
 const mockUseAuthorizationsSummary = useAuthorizationsSummary as jest.MockedFunction<
 	typeof useAuthorizationsSummary
+>;
+
+const mockUseFraudOutcomeTransactionsSummary = useFraudOutcomeTransactionsSummary as jest.MockedFunction<
+	typeof useFraudOutcomeTransactionsSummary
 >;
 
 declare const global: {
@@ -102,6 +108,11 @@ describe( 'TransactionsPage', () => {
 				count: 10,
 				total: 15,
 			},
+		} );
+
+		mockUseFraudOutcomeTransactionsSummary.mockReturnValue( {
+			isLoading: false,
+			transactionsSummary: {},
 		} );
 
 		global.wcpaySettings = {
