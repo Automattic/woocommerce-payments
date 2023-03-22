@@ -6,6 +6,7 @@
  */
 
 use WCPay\Core\Server\Request\List_Transactions;
+use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -126,14 +127,9 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_fraud_outcome_transactions( $request ) {
-		$status    = $request->get_param( 'status' );
-		$page      = (int) $request->get_param( 'page' );
-		$pagesize  = (int) ( $request->get_param( 'pagesize' ) ?? 25 );
-		$sort      = $request->get_param( 'sort' );
-		$direction = $request->get_param( 'direction' );
-		$search    = $request->get_param( 'search' );
+		$wcpay_request = List_Fraud_Outcome_Transactions::from_rest_request( $request );
 
-		return $this->forward_request( 'list_fraud_outcome_transactions_paginated', [ $status, $search, $page, $pagesize, $sort, $direction ] );
+		return $this->forward_request( 'list_fraud_outcome_transactions', [ $wcpay_request ] );
 	}
 
 	/**
@@ -142,10 +138,9 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_fraud_outcome_transactions_summary( $request ) {
-		$status = $request->get_param( 'status' );
-		$search = $request->get_param( 'search' );
+		$wcpay_request = List_Fraud_Outcome_Transactions::from_rest_request( $request );
 
-		return $this->forward_request( 'list_fraud_outcome_transactions_summary', [ $status, $search ] );
+		return $this->forward_request( 'list_fraud_outcome_transactions_summary', [ $wcpay_request ] );
 	}
 
 	/**
@@ -154,10 +149,9 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_fraud_outcome_transactions_search_autocomplete( $request ) {
-		$status      = $request->get_param( 'status' );
-		$search_term = $request->get_param( 'search_term' );
+		$wcpay_request = List_Fraud_Outcome_Transactions::from_rest_request( $request );
 
-		return $this->forward_request( 'get_fraud_outcome_transactions_search_autocomplete', [ $status, $search_term ] );
+		return $this->forward_request( 'get_fraud_outcome_transactions_search_autocomplete', [ $wcpay_request ] );
 	}
 
 	/**
@@ -166,12 +160,9 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_fraud_outcome_transactions_export( $request ) {
-		$status    = $request->get_param( 'status' );
-		$sort      = $request->get_param( 'sort' );
-		$direction = $request->get_param( 'direction' );
-		$search    = $request->get_param( 'search' );
+		$wcpay_request = List_Fraud_Outcome_Transactions::from_rest_request( $request );
 
-		return $this->forward_request( 'get_fraud_outcome_transactions_export', [ $status, $search, $sort, $direction ] );
+		return $this->forward_request( 'get_fraud_outcome_transactions_export', [ $wcpay_request ] );
 	}
 
 	/**
