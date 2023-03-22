@@ -32,8 +32,7 @@ interface BalanceBlockProps {
 	type: balanceType;
 	currencyCode: string;
 	amount?: number;
-	delayDays: number;
-	isNegativeBalance?: boolean;
+	tooltip: React.ReactElement< typeof BalanceTooltip >;
 	isLoading?: boolean;
 }
 
@@ -51,8 +50,7 @@ interface BalanceBlockProps {
 const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 	type,
 	currencyCode,
-	delayDays,
-	isNegativeBalance,
+	tooltip,
 	amount = 0,
 	isLoading = false,
 } ) => {
@@ -64,11 +62,7 @@ const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 				className="wcpay-account-balances__balances__item__title"
 			>
 				<span>{ fundLabelStrings[ type ] }</span>
-				<BalanceTooltip
-					type={ type }
-					delayDays={ delayDays }
-					isNegativeBalance={ isNegativeBalance }
-				/>
+				{ tooltip }
 			</p>
 			<p
 				className="wcpay-account-balances__balances__item__amount"

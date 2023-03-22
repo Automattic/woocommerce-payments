@@ -10,6 +10,7 @@ import { Flex, TabPanel } from '@wordpress/components';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import { getCurrencyTabTitle } from './utils';
 import BalanceBlock from './balance-block';
+import BalanceTooltip from './balance-tooltip';
 
 /**
  * BalanceTab
@@ -82,23 +83,27 @@ const AccountBalancesTabPanel: React.FC = () => {
 						type="available"
 						amount={ tab.availableFunds }
 						currencyCode={ tab.currencyCode }
-						delayDays={ tab.delayDays }
 						isLoading={ isLoading }
-						isNegativeBalance={ tab.availableFunds < 0 }
+						tooltip={
+							<BalanceTooltip
+								type="available"
+								isNegativeBalance={ tab.availableFunds < 0 }
+							/>
+						}
 					/>
 					<BalanceBlock
 						type="pending"
 						amount={ tab.pendingFunds }
 						currencyCode={ tab.currencyCode }
-						delayDays={ tab.delayDays }
 						isLoading={ isLoading }
+						tooltip={ <BalanceTooltip type="pending" /> }
 					/>
 					<BalanceBlock
 						type="reserved"
 						amount={ tab.reservedFunds }
 						currencyCode={ tab.currencyCode }
-						delayDays={ tab.delayDays }
 						isLoading={ isLoading }
+						tooltip={ <BalanceTooltip type="reserved" /> }
 					/>
 				</Flex>
 			) }
