@@ -49,6 +49,9 @@ describe( 'Shopper > Checkout > Failures with various cards', () => {
 	it( 'should throw an error that the card expiration date is in the past', async () => {
 		const cardInvalidExpDate = config.get( 'cards.invalid-exp-date' );
 		await fillCardDetails( page, cardInvalidExpDate );
+		await page.waitForSelector(
+			'div#wcpay-errors > ul.woocommerce-error > li'
+		);
 		await expect( page ).toMatchElement(
 			'div#wcpay-errors > ul.woocommerce-error > li',
 			{
