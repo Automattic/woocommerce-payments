@@ -67,7 +67,8 @@ export const getTransactionsSummaryError = ( state, query ) => {
 const getFraudOutcomeTransactionsForQuery = ( state, status, query ) => {
 	const index = getResourceId( query );
 	return (
-		getTransactionsState( state ).fraudProtection[ status ][ index ] || {}
+		getTransactionsState( state ).fraudProtection?.[ status ]?.[ index ] ||
+		{}
 	);
 };
 
@@ -79,15 +80,14 @@ export const getFraudOutcomeTransactions = ( state, status, query ) => {
 
 export const getFraudOutcomeTransactionsError = ( state, status, query ) => {
 	return (
-		getFraudOutcomeTransactionsForQuery( state, status, query ).error ||
-		null
+		getFraudOutcomeTransactionsForQuery( state, status, query ).error || {}
 	);
 };
 
 const getFraudOutcomeTransactionsSummaryForQuery = ( state, status, query ) => {
 	const index = getResourceId( query );
 	return (
-		getTransactionsState( state ).fraudProtection[ status ].summary[
+		getTransactionsState( state ).fraudProtection?.[ status ]?.summary[
 			index
 		] || {}
 	);
@@ -107,6 +107,6 @@ export const getFraudOutcomeTransactionsSummaryError = (
 ) => {
 	return (
 		getFraudOutcomeTransactionsSummaryForQuery( state, status, query )
-			.error || null
+			.error || {}
 	);
 };

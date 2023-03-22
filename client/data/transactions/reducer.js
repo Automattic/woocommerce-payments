@@ -65,7 +65,7 @@ const receiveTransactions = (
 				fraudProtection: {
 					...state.fraudProtection,
 					[ status ]: {
-						...state.fraudProtection[ status ],
+						...( state.fraudProtection?.[ status ] || {} ),
 						[ index ]: {
 							data,
 						},
@@ -78,7 +78,7 @@ const receiveTransactions = (
 				fraudProtection: {
 					...state.fraudProtection,
 					[ status ]: {
-						...state.fraudProtection[ status ],
+						...( state.fraudProtection?.[ status ] || {} ),
 						[ index ]: {
 							error,
 						},
@@ -91,9 +91,10 @@ const receiveTransactions = (
 				fraudProtection: {
 					...state.fraudProtection,
 					[ status ]: {
-						...state.fraudProtection[ status ],
+						...( state.fraudProtection?.[ status ] || {} ),
 						summary: {
-							...state.fraudProtection[ status ].summary,
+							...( state.fraudProtection?.[ status ]?.summary ||
+								{} ),
 							[ index ]: {
 								data,
 							},
@@ -107,9 +108,10 @@ const receiveTransactions = (
 				fraudProtection: {
 					...state.fraudProtection,
 					[ status ]: {
-						...state.fraudProtection[ status ],
+						...( state.fraudProtection?.[ status ] || {} ),
 						summary: {
-							...state.fraudProtection[ status ].summary,
+							...( state.fraudProtection?.[ status ]?.summary ||
+								{} ),
 							[ index ]: {
 								error,
 							},
