@@ -65,9 +65,9 @@ describe( 'Ruleset adapter utilities test', () => {
 				key: Rules.RULE_INTERNATIONAL_BILLING_ADDRESS,
 				outcome: Outcomes.BLOCK,
 				check: {
-					key: Checks.CHECK_BILLING_COUNTRY_SAME_WITH_ACCOUNT_COUNTRY,
-					operator: CheckOperators.OPERATOR_EQUALS,
-					value: false,
+					key: Checks.CHECK_BILLING_COUNTRY,
+					operator: CheckOperators.OPERATOR_IN,
+					value: 'US|CA',
 				},
 			},
 		];
@@ -87,9 +87,9 @@ describe( 'Ruleset adapter utilities test', () => {
 				key: Rules.RULE_INTERNATIONAL_IP_ADDRESS,
 				outcome: Outcomes.BLOCK,
 				check: {
-					key: Checks.CHECK_IP_COUNTRY_SAME_WITH_ACCOUNT_COUNTRY,
-					operator: CheckOperators.OPERATOR_EQUALS,
-					value: false,
+					key: Checks.CHECK_IP_COUNTRY,
+					operator: CheckOperators.OPERATOR_IN,
+					value: 'US|CA',
 				},
 			},
 		];
@@ -421,9 +421,28 @@ describe( 'Ruleset adapter utilities test', () => {
 			expect( output ).toEqual( expected );
 		}
 	);
-	test.each( [ true, false ] )(
+	test.each( [
+		[ true, 'all', 'in', '' ],
+		[ true, 'all_except', 'in', 'TR|BR' ],
+		[ true, 'specific', 'not_in', 'US|CA' ],
+		[ false, 'all', 'in', '' ],
+	] )(
 		'converts enabled international billing address filter to ruleset, blocking %s',
-		( block ) => {
+		( block, allowType, checkOperator, checkValue ) => {
+			global.wcSettings = {
+				admin: {
+					preloadSettings: {
+						general: {
+							woocommerce_allowed_countries: allowType,
+							woocommerce_specific_allowed_countries: [
+								'US',
+								'CA',
+							],
+							woocommerce_all_except_countries: [ 'TR', 'BR' ],
+						},
+					},
+				},
+			};
 			const config = Object.assign( {}, defaultUIConfig, {
 				[ Rules.RULE_INTERNATIONAL_BILLING_ADDRESS ]: {
 					enabled: true,
@@ -435,10 +454,9 @@ describe( 'Ruleset adapter utilities test', () => {
 					key: Rules.RULE_INTERNATIONAL_BILLING_ADDRESS,
 					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
 					check: {
-						key:
-							Checks.CHECK_BILLING_COUNTRY_SAME_WITH_ACCOUNT_COUNTRY,
-						operator: CheckOperators.OPERATOR_EQUALS,
-						value: false,
+						key: Checks.CHECK_BILLING_COUNTRY,
+						operator: checkOperator,
+						value: checkValue,
 					},
 				},
 			];
@@ -446,9 +464,28 @@ describe( 'Ruleset adapter utilities test', () => {
 			expect( output ).toEqual( expected );
 		}
 	);
-	test.each( [ true, false ] )(
+	test.each( [
+		[ true, 'all', 'in', '' ],
+		[ true, 'all_except', 'in', 'TR|BR' ],
+		[ true, 'specific', 'not_in', 'US|CA' ],
+		[ false, 'all', 'in', '' ],
+	] )(
 		'converts enabled international ip address filter to ruleset, blocking %s',
-		( block ) => {
+		( block, allowType, checkOperator, checkValue ) => {
+			global.wcSettings = {
+				admin: {
+					preloadSettings: {
+						general: {
+							woocommerce_allowed_countries: allowType,
+							woocommerce_specific_allowed_countries: [
+								'US',
+								'CA',
+							],
+							woocommerce_all_except_countries: [ 'TR', 'BR' ],
+						},
+					},
+				},
+			};
 			const config = Object.assign( {}, defaultUIConfig, {
 				[ Rules.RULE_INTERNATIONAL_IP_ADDRESS ]: {
 					enabled: true,
@@ -460,33 +497,9 @@ describe( 'Ruleset adapter utilities test', () => {
 					key: Rules.RULE_INTERNATIONAL_IP_ADDRESS,
 					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
 					check: {
-						key: Checks.CHECK_IP_COUNTRY_SAME_WITH_ACCOUNT_COUNTRY,
-						operator: CheckOperators.OPERATOR_EQUALS,
-						value: false,
-					},
-				},
-			];
-			const output = writeRuleset( config );
-			expect( output ).toEqual( expected );
-		}
-	);
-	test.each( [ true, false ] )(
-		'converts enabled international ip address filter to ruleset, blocking %s',
-		( block ) => {
-			const config = Object.assign( {}, defaultUIConfig, {
-				[ Rules.RULE_INTERNATIONAL_IP_ADDRESS ]: {
-					enabled: true,
-					block: block,
-				},
-			} );
-			const expected = [
-				{
-					key: Rules.RULE_INTERNATIONAL_IP_ADDRESS,
-					outcome: block ? Outcomes.BLOCK : Outcomes.REVIEW,
-					check: {
-						key: Checks.CHECK_IP_COUNTRY_SAME_WITH_ACCOUNT_COUNTRY,
-						operator: CheckOperators.OPERATOR_EQUALS,
-						value: false,
+						key: Checks.CHECK_IP_COUNTRY,
+						operator: checkOperator,
+						value: checkValue,
 					},
 				},
 			];
