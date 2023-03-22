@@ -115,16 +115,16 @@ jobs:
         run: |
           BODY="### Test the build 
           
-          #### Option 1. With Jurassic Ninja - available for logged-in A12s
+          #### Option 1. Jetpack Beta
+          
+          - Install and activate [Jetpack Beta](https://jetpack.com/download-jetpack-beta/).
+          - Use this build by searching for PR number \`${PR_NUMBER}\` or branch name \`${PR_HEAD_REF}\` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments          
+          
+          #### Option 2. Jurassic Ninja - available for logged-in A12s
          
           :rocket: [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
           
           :information_source: [Install this Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
-          
-          #### Option 2. With Jetpack Beta - available for everyone
-          
-          - Install and activate [Jetpack Beta](https://jetpack.com/download-jetpack-beta/).
-          - Use this build by searching for PR number \`${PR_NUMBER}\` or branch name \`${PR_HEAD_REF}\` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments
           
           ---
 
