@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { render } from '@testing-library/react';
+import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -11,18 +12,24 @@ import {
 	useCurrentProtectionLevel,
 	useCurrencies,
 	useAdvancedFraudProtectionSettings,
+	useSettings,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
 jest.mock( 'wcpay/data', () => ( {
 	useAdvancedFraudProtectionSettings: jest.fn(),
 	useCurrentProtectionLevel: jest.fn(),
+	useSettings: jest.fn(),
 	useCurrencies: jest.fn(),
 } ) );
 
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: jest.fn(),
+} ) );
+
 describe( 'FraudProtection', () => {
-	beforeEach(
-		() => useCurrentProtectionLevel.mockReturnValue( 'standard' ),
+	beforeEach( () => {
+		useCurrentProtectionLevel.mockReturnValue( 'standard' );
 		useCurrencies.mockReturnValue( {
 			isLoading: false,
 			currencies: {
@@ -32,9 +39,20 @@ describe( 'FraudProtection', () => {
 					PLN: { name: 'Polish złoty', symbol: 'zł' },
 				},
 			},
-		} ),
-		useAdvancedFraudProtectionSettings.mockReturnValue( [ [], jest.fn() ] )
-	);
+		} );
+
+		useAdvancedFraudProtectionSettings.mockReturnValue( [ [], jest.fn() ] );
+		useSettings.mockReturnValue( { isLoading: false } );
+		useDispatch.mockReturnValue( { updateOptions: jest.fn() } );
+
+		window.scrollTo = jest.fn();
+
+		global.wcpaySettings = {
+			fraudProtection: {
+				isWelcomeTourDismissed: false,
+			},
+		};
+	} );
 
 	it( 'renders', () => {
 		const { container: fraudProtectionSettings } = render(

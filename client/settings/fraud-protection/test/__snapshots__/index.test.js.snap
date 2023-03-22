@@ -9,7 +9,11 @@ exports[`FraudProtection renders 1`] = `
       class="components-card__body is-size-medium wcpay-card-body css-xmjzce-BodyUI e1q7k77g3"
     >
       <h4>
-        Set your payment risk level
+        <span
+          id="fraud-protection-card-title"
+        >
+          Set your payment risk level
+        </span>
       </h4>
       <fieldset>
         <ul>
