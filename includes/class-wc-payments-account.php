@@ -59,22 +59,6 @@ class WC_Payments_Account {
 		$this->payments_api_client      = $payments_api_client;
 		$this->database_cache           = $database_cache;
 		$this->action_scheduler_service = $action_scheduler_service;
-
-		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_to_onboarding' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
-		add_action( 'admin_init', [ $this, 'maybe_redirect_to_wcpay_connect' ], 12 ); // Run this after the redirect to onboarding logic.
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_loan_approved_inbox_note' ] );
-		add_action( self::INSTANT_DEPOSITS_REMINDER_ACTION, [ $this, 'handle_instant_deposits_inbox_reminder' ] );
-		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
-		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
-		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
-
-		// Add capital offer redirection.
-		add_action( 'admin_init', [ $this, 'maybe_redirect_to_capital_offer' ] );
-
-		// Add server links handler.
-		add_action( 'admin_init', [ $this, 'maybe_redirect_to_server_link' ] );
 	}
 
 	/**
