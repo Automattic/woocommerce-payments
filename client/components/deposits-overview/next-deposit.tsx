@@ -34,7 +34,9 @@ const NextDepositDetails: React.FC< NextDepositProps > = ( {
 } ): JSX.Element => {
 	const tableClass = 'wcpay-deposits-overview__table';
 	const nextDeposit = getNextDeposit( overview );
-	const nextDepositDate = getDepositDate( nextDeposit?.date ?? 0 );
+	const nextDepositDate = getDepositDate(
+		nextDeposit.date > 0 ? nextDeposit : null
+	);
 
 	return (
 		<>
