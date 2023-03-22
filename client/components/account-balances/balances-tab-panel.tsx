@@ -45,6 +45,10 @@ const AccountBalancesTabPanel: React.FC = () => {
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 	const { selectedCurrency, setSelectedCurrency } = useSelectedCurrency();
 
+	if ( ! isLoading && overviews.currencies.length === 0 ) {
+		return null;
+	}
+
 	const onTabSelect = ( tabName: BalanceTab[ 'name' ] ) => {
 		setSelectedCurrency( tabName );
 	};
