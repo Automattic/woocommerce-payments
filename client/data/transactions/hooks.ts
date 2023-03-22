@@ -93,6 +93,8 @@ interface TransactionsSummary {
 	isLoading: boolean;
 }
 
+export type FraudOutcomeStatus = 'allow' | 'review' | 'block';
+
 export interface FraudOutcomeTransaction {
 	amount: number;
 	created: string;
@@ -103,7 +105,7 @@ export interface FraudOutcomeTransaction {
 		id: string;
 		status: string;
 	};
-	status: 'allow' | 'review' | 'block';
+	status: FraudOutcomeStatus;
 }
 
 interface FraudOutcomeTransactions {

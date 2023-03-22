@@ -51,7 +51,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	 *
 	 * @param string $status Fraud outcome status.
 	 */
-	private function set_status( $status ) {
+	public function set_status( $status ) {
 		$this->status = $status;
 	}
 
@@ -60,7 +60,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	 *
 	 * @param array $search Search param.
 	 */
-	private function set_search( $search ) {
+	public function set_search( $search ) {
 		$this->set_param( 'search', $search );
 	}
 
@@ -69,7 +69,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	 *
 	 * @param string $search_term Search term param.
 	 */
-	private function set_search_term( $search_term ) {
+	public function set_search_term( $search_term ) {
 		$this->set_param( 'search_term', $search_term );
 	}
 

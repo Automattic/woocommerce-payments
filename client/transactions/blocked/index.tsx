@@ -63,13 +63,13 @@ export const BlockedList = (): JSX.Element => {
 
 	const title = __( 'Blocked transactions', 'woocommerce-payments' );
 
-	const isAuthorizationsSummaryLoaded =
+	const isTransactionsSummaryLoaded =
 		transactionsSummary.count !== undefined &&
 		transactionsSummary.total !== undefined &&
 		false === isSummaryLoading;
 	const totalRows = transactionsSummary.count || 0;
 
-	if ( isAuthorizationsSummaryLoaded ) {
+	if ( isTransactionsSummaryLoaded ) {
 		summary = [
 			{
 				label: __( 'transactions(s)', 'woocommerce-payments' ),
@@ -164,7 +164,7 @@ export const BlockedList = (): JSX.Element => {
 	return (
 		<Page>
 			<TableCard
-				className="authorizations-list woocommerce-report-table has-search"
+				className="blocked-transactions-list woocommerce-report-table has-search"
 				title={ title }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( query.per_page ?? '', 10 ) || 25 }
