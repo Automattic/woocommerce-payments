@@ -96,6 +96,8 @@ export async function clearCardDetails() {
 	await page.waitFor( 1000 );
 	await cardCvcInput.click( { clickCount: 3 } );
 	await page.keyboard.press( 'Backspace' );
+
+	await page.waitFor( 1000 );
 }
 
 export async function fillCardDetailsPayForOrder( page, card ) {
