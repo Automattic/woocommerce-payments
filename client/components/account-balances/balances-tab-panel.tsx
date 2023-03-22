@@ -81,38 +81,47 @@ const AccountBalancesTabPanel: React.FC = () => {
 		selectedCurrency &&
 		depositCurrencyTabs.some( ( tab ) => tab.name === selectedCurrency );
 
-	return (
-		<TabPanel
-			tabs={ depositCurrencyTabs }
-			onSelect={ onTabSelect }
-			initialTabName={
-				isSelectedCurrencyValid ? selectedCurrency : undefined
-			}
-		>
-			{ ( tab: BalanceTab ) => (
-				<Flex gap={ 0 } className="wcpay-account-balances__balances">
-					<BalanceBlock
-						type="available"
-						amount={ tab.availableFunds }
-						currencyCode={ tab.currencyCode }
-						isLoading={ isLoading }
-					/>
-					<BalanceBlock
-						type="pending"
-						amount={ tab.pendingFunds }
-						currencyCode={ tab.currencyCode }
-						isLoading={ isLoading }
-					/>
-					<BalanceBlock
-						type="reserved"
-						amount={ tab.reservedFunds }
-						currencyCode={ tab.currencyCode }
-						isLoading={ isLoading }
-					/>
-				</Flex>
-			) }
-		</TabPanel>
-	);
+	// Wrap TabPanel to allow a full re-render when the selected currency changes.
+	// since TabPanel will not allow controlled tab selection, we use the initialTabName prop.
+	const TabPanelComp: React.FC = () => {
+		return (
+			<TabPanel
+				tabs={ depositCurrencyTabs }
+				onSelect={ onTabSelect }
+				initialTabName={
+					isSelectedCurrencyValid ? selectedCurrency : undefined
+				}
+			>
+				{ ( tab: BalanceTab ) => (
+					<Flex
+						gap={ 0 }
+						className="wcpay-account-balances__balances"
+					>
+						<BalanceBlock
+							type="available"
+							amount={ tab.availableFunds }
+							currencyCode={ tab.currencyCode }
+							isLoading={ isLoading }
+						/>
+						<BalanceBlock
+							type="pending"
+							amount={ tab.pendingFunds }
+							currencyCode={ tab.currencyCode }
+							isLoading={ isLoading }
+						/>
+						<BalanceBlock
+							type="reserved"
+							amount={ tab.reservedFunds }
+							currencyCode={ tab.currencyCode }
+							isLoading={ isLoading }
+						/>
+					</Flex>
+				) }
+			</TabPanel>
+		);
+	};
+
+	return <TabPanelComp />;
 };
 
 export default AccountBalancesTabPanel;
