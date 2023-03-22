@@ -192,7 +192,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 
 		// Search by order id.
 		if ( preg_match( '/#\d+/', $term ) ) {
-			return false !== strpos( $term, (string) $outcome['order_id'] );
+			return $term === (string) $outcome['order_id'];
 		};
 
 		// Search by customer name.
