@@ -23,7 +23,7 @@ export async function fillCardDetails( page, card ) {
 			{ timeout: 30000 }
 		);
 
-		await cardNumberInput.type( card.number, { delay: 50 } );
+		await cardNumberInput.type( card.number, { delay: 20 } );
 
 		const cardDateInput = await stripeFrame.waitForSelector(
 			'[name="expiry"]'
@@ -32,15 +32,17 @@ export async function fillCardDetails( page, card ) {
 		await cardDateInput.type( card.expires.month + card.expires.year, {
 			delay: 20,
 		} );
+		await page.waitFor( 1000 );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
 			'[name="cvc"]'
 		);
-		await cardCvcInput.type( card.cvc, { delay: 50 } );
+		await cardCvcInput.type( card.cvc, { delay: 20 } );
+		await page.waitFor( 1000 );
 
 		const zip = await stripeFrame.$( '[name="postalCode"]' );
 		if ( null !== zip ) {
-			await zip.type( '90210', { delay: 50 } );
+			await zip.type( '90210', { delay: 20 } );
 		}
 	} else {
 		await page.waitForSelector( '.__PrivateStripeElement' );

@@ -22,6 +22,7 @@ describe( 'Shopper > Pay for Order', () => {
 	it( 'should be able to pay for a failed order', async () => {
 		// try to pay with a declined card
 		const declinedCard = config.get( 'cards.declined' );
+		await shopperWCP.selectNewPaymentMethod();
 		await fillCardDetails( page, declinedCard );
 		await expect( page ).toClick( '#place_order' );
 		await uiUnblocked();
