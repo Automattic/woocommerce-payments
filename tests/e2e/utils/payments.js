@@ -53,20 +53,20 @@ export async function fillCardDetails( page, card ) {
 			'[name="cardnumber"]',
 			{ timeout: 30000 }
 		);
-		await cardNumberInput.type( card.number, { delay: 50 } );
+		await cardNumberInput.type( card.number, { delay: 100 } );
 
 		const cardDateInput = await stripeFrame.waitForSelector(
 			'[name="exp-date"]'
 		);
 
 		await cardDateInput.type( card.expires.month + card.expires.year, {
-			delay: 50,
+			delay: 100,
 		} );
 
 		const cardCvcInput = await stripeFrame.waitForSelector(
 			'[name="cvc"]'
 		);
-		await cardCvcInput.type( card.cvc, { delay: 50 } );
+		await cardCvcInput.type( card.cvc, { delay: 100 } );
 	}
 }
 
