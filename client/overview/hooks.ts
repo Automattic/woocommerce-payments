@@ -1,13 +1,23 @@
 /**
  * External dependencies
  */
-import { useDispatch, useSelect } from '@wordpress/data';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
+
+/**
+ * Internal dependencies
+ */
 import { useAllDepositsOverviews } from 'wcpay/data';
+
+// Extend the Query interface to include the selected_currency query parameter.
+declare module '@woocommerce/navigation' {
+	interface Query {
+		selected_currency?: string;
+	}
+}
 
 type CurrencyCode = string;
 
 type SelectedCurrencyResponse = {
-	isLoading: boolean;
 	selectedCurrency?: CurrencyCode;
 	setSelectedCurrency: ( selectedCurrency: CurrencyCode ) => void;
 };
@@ -15,31 +25,23 @@ type SelectedCurrencyResponse = {
 /**
  * Custom hook for retrieving and updating the selected currency.
  * This is used to determine which currency to display in the overview page.
- * The selected currency is stored in the `wcpay_overview_selected_currency` option.
+ * The selected currency is set as a 'selected_currency' query parameter in the URL.
  *
- * @return {SelectedCurrencyResponse} An object containing the selected currency, a setter function, and a loading state.
+ * @return {SelectedCurrencyResponse} An object containing the selected currency and a setter function.
  */
 export const useSelectedCurrency = (): SelectedCurrencyResponse => {
-	const selectedCurrencyOptionName = 'wcpay_overview_selected_currency';
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
-
 	const setSelectedCurrency = ( currencyCode: CurrencyCode ) => {
-		updateOptions( {
-			[ selectedCurrencyOptionName ]: currencyCode,
+		updateQueryString( {
+			selected_currency: currencyCode,
 		} );
 	};
 
-	return useSelect( ( select ) => {
-		const { getOption, isResolving } = select( 'wc/admin/options' );
+	const selectedCurrency = getQuery().selected_currency;
 
-		return {
-			isLoading: isResolving( 'getOption', [
-				selectedCurrencyOptionName,
-			] ),
-			setSelectedCurrency,
-			selectedCurrency: getOption( selectedCurrencyOptionName ),
-		};
-	} );
+	return {
+		setSelectedCurrency,
+		selectedCurrency,
+	};
 };
 
 type SelectedCurrencyOverviewResponse = {
@@ -61,10 +63,7 @@ export const useSelectedCurrencyOverview = (): SelectedCurrencyOverviewResponse 
 	} = useAllDepositsOverviews() as AccountOverview.OverviewsResponse;
 	const { currencies, account } = overviews;
 
-	const {
-		selectedCurrency,
-		isLoading: isSelectedCurrencyLoading,
-	} = useSelectedCurrency();
+	const { selectedCurrency } = useSelectedCurrency();
 
 	const isSelectedCurrencyValid = currencies.some(
 		( currency ) => currency.currency === selectedCurrency
@@ -79,6 +78,6 @@ export const useSelectedCurrencyOverview = (): SelectedCurrencyOverviewResponse 
 	return {
 		account,
 		overview,
-		isLoading: isAccountOverviewsLoading || isSelectedCurrencyLoading,
+		isLoading: isAccountOverviewsLoading,
 	};
 };
