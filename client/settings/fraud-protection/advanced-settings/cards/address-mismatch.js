@@ -3,8 +3,6 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import interpolateComponents from 'interpolate-components';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -12,7 +10,6 @@ import { Link } from '@woocommerce/components';
 import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleDescription from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
-import FraudProtectionRuleCardNotice from '../rule-card-notice';
 
 const AddressMismatchRuleCard = () => (
 	<FraudProtectionRuleCard
@@ -40,20 +37,6 @@ const AddressMismatchRuleCard = () => (
 				'woocommerce-payments'
 			) }
 		</FraudProtectionRuleDescription>
-		<FraudProtectionRuleCardNotice type="info">
-			{ interpolateComponents( {
-				mixedString: __(
-					'This filter may modify the address input on your checkout. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-					'woocommerce-payments'
-				),
-				components: {
-					learnMoreLink: (
-						// eslint-disable-next-line max-len
-						<Link href="https://woocommerce.com/document/payments/additional-payment-methods/#available-methods" />
-					),
-				},
-			} ) }
-		</FraudProtectionRuleCardNotice>
 	</FraudProtectionRuleCard>
 );
 
