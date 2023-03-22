@@ -156,8 +156,7 @@ class WC_Payments_Order_Service {
 
 		$note = $this->generate_payment_failure_note( $intent_id, $charge_id, $message, $this->get_order_amount( $order ) );
 		if ( $this->order_note_exists( $order, $note )
-			|| $order->has_status( [ Order_Status::FAILED ] )
-			|| 'failed' === $this->get_intention_status_for_order( $order ) ) {
+			|| $order->has_status( [ Order_Status::FAILED ] ) ) {
 			$this->complete_order_processing( $order );
 			return;
 		}
@@ -245,6 +244,30 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Leaves order status as Pending, adds fraud meta data, and adds the fraud blocked note.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param array    $intent_data   The intent data associated with this order.
+	 *
+	 * @return void
+	 */
+	public function mark_order_blocked_for_fraud( $order, $intent_data ) {
+		if ( ! $this->order_prepared_for_processing( $order, $intent_data['intent_id'] ) ) {
+			return;
+		}
+
+		$note = $this->generate_fraud_blocked_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
+		if ( $this->order_note_exists( $order, $note ) ) {
+			$this->complete_order_processing( $order );
+			return;
+		}
+
+		$this->set_fraud_outcome_status_for_order( $order, Fraud_Outcome_Status::BLOCK );
+		$order->add_order_note( $note );
+		$this->complete_order_processing( $order, $intent_data['intent_status'] );
+	}
+
+	/**
 	 * Updates the order to on-hold status and adds a note about the dispute.
 	 *
 	 * @param WC_Order $order      Order object.
@@ -259,7 +282,6 @@ class WC_Payments_Order_Service {
 		}
 
 		$note = $this->generate_dispute_created_note( $dispute_id, $reason );
-
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
 		}
@@ -319,30 +341,6 @@ class WC_Payments_Order_Service {
 	public function mark_terminal_payment_completed( $order, $intent_id, $intent_status ) {
 		$this->update_order_status( $order, Order_Status::COMPLETED, $intent_id );
 		$this->complete_order_processing( $order, $intent_status );
-	}
-
-	/**
-	 * Leaves order status as Pending, adds fraud meta data, and adds the fraud blocked note.
-	 *
-	 * @param WC_Order $order         Order object.
-	 * @param array    $intent_data   The intent data associated with this order.
-	 *
-	 * @return void
-	 */
-	public function mark_order_blocked_for_fraud( $order, $intent_data ) {
-		if ( ! $this->order_prepared_for_processing( $order, $intent_id ) ) {
-			return;
-		}
-
-		$note = $this->generate_fraud_blocked_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
-		if ( $this->order_note_exists( $order, $note ) ) {
-			$this->complete_order_processing( $order );
-			return;
-		}
-
-		$this->set_fraud_outcome_status_for_order( $order, Fraud_Outcome_Status::BLOCK );
-		$order->add_order_note( $note );
-		$this->complete_order_processing( $order, $intent_data['intent_status'] );
 	}
 
 	/**

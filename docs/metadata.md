@@ -6,6 +6,9 @@ To improve the extensibility and stability of WooCommerce Payments, all WooComme
 
 ## Accessing Metadata
 
+TODO: Update this file.
+
+
 `WC_Payments_Order_Service` contains the getters and setters which can be used to access and update WooCommerce Payments Order metadata. Following are the metadata and methods provided:
 - `_intent_id`
 	- `get_intent_id_for_order( mixed $order ) : string`

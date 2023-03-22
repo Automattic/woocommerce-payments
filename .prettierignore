@@ -9,5 +9,6 @@ wordpress-org-assets
 tests/e2e/docker
 tests/e2e/deps
 
-docs/renovate.md
 docs/dependencies.md
+docs/metadata.md
+docs/renovate.md
