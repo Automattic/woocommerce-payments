@@ -13,6 +13,7 @@ use WC_Payment_Account;
 use WC_Payments_Utils;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_API_Intention;
+use WC_Payments_Features;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Payment_Process\Order_Payment;
@@ -127,6 +128,16 @@ class Standard_Payment_Step extends Abstract_Step {
 		$order  = $payment->get_order();
 		$amount = $order->get_total();
 
+		// @todo: Bruh, this should really not be here.
+		$upe_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! empty( $upe_payment_method ) && 'woocommerce_payments' !== $upe_payment_method ) {
+			$payment_methods = [ str_replace( 'woocommerce_payments_', '', $upe_payment_method ) ];
+		} elseif ( WC_Payments_Features::is_upe_split_enabled() ) {
+			$payment_methods = [ 'card' ];
+		} else {
+			$payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( null, true );
+		}
+
 		$request = Create_And_Confirm_Intention::create();
 		$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 		$request->set_currency_code( strtolower( $order->get_currency() ) );
@@ -136,7 +147,7 @@ class Standard_Payment_Step extends Abstract_Step {
 		$request->set_metadata( $payment->get_var( 'metadata' ) );
 		$request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
 		$request->set_off_session( $payment->is( Payment::MERCHANT_INITIATED ) );
-		$request->set_payment_methods( $this->gateway->get_payment_method_ids_enabled_at_checkout( null, true ) );
+		$request->set_payment_methods( $payment_methods );
 		if ( $payment->is( Payment::SAVE_PAYMENT_METHOD_TO_STORE ) ) {
 			$request->setup_future_usage();
 		}

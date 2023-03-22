@@ -40,6 +40,7 @@ class Verify_Minimum_Amount_Step extends Abstract_Step {
 	 * Tries catching the error without reaching the API.
 	 *
 	 * @param Payment $payment The payment, which is being processed.
+	 * @throws Amount_Too_Small_Exception
 	 */
 	public function action( Payment $payment ) {
 		if ( ! $payment instanceof Order_Payment ) {
