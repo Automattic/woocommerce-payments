@@ -71,10 +71,6 @@ class WC_Payments_Apple_Pay_Registration {
 		$this->payments_api_client     = $payments_api_client;
 		$this->account                 = $account;
 		$this->gateway                 = $gateway;
-
-		add_action( 'init', [ $this, 'add_domain_association_rewrite_rule' ], 5 );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'verify_domain_on_update' ] );
-		add_action( 'init', [ $this, 'init' ] );
 	}
 
 	/**

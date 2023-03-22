@@ -1105,6 +1105,15 @@ class WC_Payments {
 	}
 
 	/**
+	 * Returns the WC_Payments_Apple_Pay_Registration instance
+	 *
+	 * @return WC_Payments_Apple_Pay_Registration Apple Pay Registration instance.
+	 */
+	public static function get_apple_pay_registration() {
+		return self::$apple_pay_registration;
+	}
+
+	/**
 	 * Returns the WC_Payments_API_Client
 	 *
 	 * @return WC_Payments_API_Client API Client instance

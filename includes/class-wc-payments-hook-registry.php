@@ -28,12 +28,14 @@ class WC_Payments_Hook_Registry {
 		$this->add_filter( 'allowed_redirect_hosts', 'get_account_service', 'allowed_redirect_hosts' );
 		$this->add_action( 'jetpack_site_registered', 'get_account_service', 'clear_cache' );
 		$this->add_action( 'updated_option', 'get_account_service', 'possibly_update_wcpay_account_locale', 10, 3 );
-
 		// Add capital offer redirection.
 		$this->add_action( 'admin_init', 'get_account_service', 'maybe_redirect_to_capital_offer' );
-
 		// Add server links handler.
 		$this->add_action( 'admin_init', 'get_account_service', 'maybe_redirect_to_server_link' );
+
+		$this->add_action( 'init', 'get_apple_pay_registration', 'add_domain_association_rewrite_rule', 5 );
+		$this->add_action( 'woocommerce_woocommerce_payments_updated', 'get_apple_pay_registration', 'verify_domain_on_update' );
+		$this->add_action( 'init', 'get_apple_pay_registration', 'init' );
 	}
 
 	/**
