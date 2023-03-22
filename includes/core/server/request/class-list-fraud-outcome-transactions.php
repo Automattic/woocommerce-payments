@@ -56,6 +56,24 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	}
 
 	/**
+	 * Sets the search param.
+	 *
+	 * @param array $search Search param.
+	 */
+	private function set_search( $search ) {
+		$this->set_param( 'search', $search );
+	}
+
+	/**
+	 * Sets the search term param.
+	 *
+	 * @param string $search_term Search term param.
+	 */
+	private function set_search_term( $search_term ) {
+		$this->set_param( 'search_term', $search_term );
+	}
+
+	/**
 	 * Used to prepare request from WP Rest data.
 	 *
 	 * @param \WP_REST_Request $request Request object.
@@ -70,8 +88,8 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 		$search_term = $request->get_param( 'search_term' ) ?? '';
 
 		$wcpay_request->set_status( $status );
-		$wcpay_request->set_param( 'search', $search );
-		$wcpay_request->set_param( 'search_term', $search_term );
+		$wcpay_request->set_search( $search );
+		$wcpay_request->set_search_term( $search_term );
 
 		return $wcpay_request;
 	}
