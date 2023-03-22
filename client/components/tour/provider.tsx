@@ -14,6 +14,7 @@ import React, {
  */
 import WcPayTourContext from './context';
 import { TourProps } from './interfaces';
+import wcpayTracks from 'tracks';
 
 const WcPayTourContextProvider: React.FC< TourProps > = ( {
 	children,
@@ -66,6 +67,10 @@ const WcPayTourContextProvider: React.FC< TourProps > = ( {
 
 	const handleNextStepButtonClick = useCallback( () => {
 		if ( currentIndex >= steps.length - 1 ) {
+			wcpayTracks.recordEvent(
+				'wcpay_fraud_protection_tour_clicked_through',
+				{}
+			);
 			onTourEnd();
 			return;
 		}

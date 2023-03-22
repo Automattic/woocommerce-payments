@@ -24,6 +24,7 @@ import { Button } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';
 import InlineNotice from '../../../../components/inline-notice';
+import wcpayTracks from 'tracks';
 
 const ProtectionLevels = () => {
 	const [ isStandardModalOpen, setStandardModalOpen ] = useState( false );
@@ -41,6 +42,10 @@ const ProtectionLevels = () => {
 	] = useAdvancedFraudProtectionSettings();
 
 	const handleLevelChange = ( level ) => {
+		wcpayTracks.recordEvent(
+			'wcpay_fraud_protection_risk_level_preset_enabled',
+			{ preset: level }
+		);
 		updateProtectionLevel( level );
 	};
 

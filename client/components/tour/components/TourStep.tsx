@@ -20,6 +20,7 @@ import { __ } from '@wordpress/i18n';
 import WcPayTourContext from '../context';
 import { TourCoordinates, TourOptionPosition } from '../interfaces';
 import { calculateCoordinates } from '../utils';
+import wcpayTracks from 'tracks';
 
 interface TourStepProps {
 	selector: string;
@@ -112,6 +113,7 @@ const TourStep: React.FC< TourStepProps > = ( {
 	}, [ coordinates, isActive ] );
 
 	const handleCloseButtonClick = () => {
+		wcpayTracks.recordEvent( 'wcpay_fraud_protection_tour_abandoned', {} );
 		onCloseButtonClick?.();
 		onTourEnd();
 	};

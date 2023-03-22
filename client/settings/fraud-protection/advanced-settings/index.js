@@ -32,6 +32,7 @@ import './../style.scss';
 
 import { ProtectionLevel } from './constants';
 import { readRuleset, writeRuleset } from './utils';
+import wcpayTracks from 'tracks';
 
 const Breadcrumb = () => (
 	<h2 className="fraud-protection-header-breadcrumb">
@@ -120,6 +121,9 @@ const FraudProtectionAdvancedSettingsPage = () => {
 				advancedFraudProtectionSettings
 			);
 			await saveSettings( settings );
+			wcpayTracks.recordEvent(
+				'wcpay_fraud_protection_advanced_settings_saved'
+			);
 			setIsSavingSettings( false );
 		} else {
 			window.scrollTo( {
