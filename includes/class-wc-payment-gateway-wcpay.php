@@ -762,6 +762,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$order->update_status( Order_Status::FAILED );
 			}
 
+			do_action( 'woocommerce_payments_order_failed', $order, $e );
+
 			if ( $e instanceof API_Exception && $this->should_bump_rate_limiter( $e->get_error_code() ) ) {
 				$this->failed_transaction_rate_limiter->bump();
 			}
