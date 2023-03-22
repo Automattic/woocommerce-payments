@@ -55,6 +55,7 @@ declare const wcpaySettings: {
 	shouldUseExplicitPrice: boolean;
 	numDisputesNeedingResponse: string;
 	accountDefaultCurrency: string;
+	isFraudProtectionSettingsEnabled: boolean;
 };
 
 declare const wcTracks: any;
