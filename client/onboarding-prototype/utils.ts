@@ -1,15 +1,11 @@
 /**
  * External dependencies
  */
-import { forEach, set } from 'lodash';
+import { set, toPairs } from 'lodash';
 
 export const fromDotNotation = (
-	records: Record< string, unknown >
-): Record< string, unknown > => {
-	const result = {};
-	forEach(
-		records,
-		( value, key ) => value != null && set( result, key, value )
-	);
-	return result;
-};
+	record: Record< string, unknown >
+): Record< string, unknown > =>
+	toPairs( record ).reduce( ( result, [ key, value ] ) => {
+		return value != null ? set( result, key, value ) : result;
+	}, {} );
