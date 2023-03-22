@@ -10,7 +10,6 @@ namespace WCPay\Payment_Process\Step;
 use WCPay\Payment_Process\Order_Payment;
 use WCPay\Payment_Process\Payment;
 use WC_Payments_API_Intention;
-use WC_Payment_Tokens;
 use WC_Payments;
 use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
 

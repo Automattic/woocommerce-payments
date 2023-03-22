@@ -9,16 +9,15 @@ namespace WCPay\Payment_Process\Step;
 
 use WC_Order;
 use WC_Payments;
+use WC_Payment_Account;
 use WC_Payments_Utils;
 use WC_Payment_Gateway_WCPay;
-use WC_Payments_API_Client;
 use WC_Payments_API_Intention;
 use WCPay\Constants\Payment_Intent_Status;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
-use WCPay\Payment_Information;
 use WCPay\Payment_Process\Order_Payment;
 use WCPay\Payment_Process\Payment;
-use WCPay\Payment_Process\Payment_Method\Saved_Payment_Method;
+use WCPay\Payment_Process\Payment_Method\New_Payment_Method;
 
 /**
  * Performs a standard payment with a positive amount.
@@ -32,13 +31,6 @@ class Standard_Payment_Step extends Abstract_Step {
 	protected $gateway;
 
 	/**
-	 * The server API client.
-	 *
-	 * @var WC_Payments_API_Client
-	 */
-	protected $payments_api_client;
-
-	/**
 	 * WC_Payments_Order_Service instance
 	 *
 	 * @var WC_Payments_Order_Service
@@ -46,13 +38,20 @@ class Standard_Payment_Step extends Abstract_Step {
 	protected $order_service;
 
 	/**
+	 * WC_Payments_Account instance to get information about the account.
+	 *
+	 * @var WC_Payment_Account
+	 */
+	protected $account;
+
+	/**
 	 * Instantiates the step.
 	 */
 	public function __construct() {
 		// @todo: Change this with proper dependencies.
-		$this->gateway             = WC_Payments::get_gateway();
-		$this->payments_api_client = WC_Payments::get_payments_api_client();
-		$this->order_service       = WC_Payments::$order_service;
+		$this->gateway       = WC_Payments::get_gateway();
+		$this->order_service = WC_Payments::$order_service;
+		$this->account       = WC_Payments::get_account_service();
 	}
 
 	/**
@@ -84,6 +83,47 @@ class Standard_Payment_Step extends Abstract_Step {
 			return;
 		}
 
+		$intent = $this->request_intent_from_server( $payment );
+		$status = $intent->get_status();
+
+		// Store the intent in the payment, so it's available for follow-up steps.
+		$payment->set_var( 'intent', $intent );
+
+		// @todo: Remove this in favor of a separate WooPay code path.
+		if ( $intent->get_payment_method_id() !== $payment->get_payment_method()->get_id() ) {
+			$payment_method = new New_Payment_Method( $intent->get_payment_method_id() );
+			$payment->set_payment_method( $payment_method );
+		}
+
+		// The process cannot continue normally if the intent requires action.
+		if ( Payment_Intent_Status::REQUIRES_ACTION === $status ) {
+			if ( $payment->is( Payment::MERCHANT_INITIATED ) ) {
+				// Off-session payments, requiring action, make it impossible to continue.
+				$this->bail_if_action_is_required( $payment, $intent );
+			} else {
+				// Redirect if there is an action needed.
+				$this->redirect_if_action_is_required( $payment, $intent );
+			}
+
+			return;
+		}
+
+		// This is the happy path.
+		$payment->complete(
+			[
+				'result'   => 'success',
+				'redirect' => $this->gateway->get_return_url( $payment->get_order() ),
+			]
+		);
+	}
+
+	/**
+	 * Performs a create and confirm intention request, returning an intent object.
+	 *
+	 * @param Order_Payment $payment The payment, which should be directed to the server.
+	 * @return WC_Payments_API_Intention
+	 */
+	protected function request_intent_from_server( Order_Payment $payment ) {
 		$order  = $payment->get_order();
 		$amount = $order->get_total();
 
@@ -112,37 +152,18 @@ class Standard_Payment_Step extends Abstract_Step {
 		 *
 		 * @param Order_Payment $payment The payment, which is being processed.
 		 */
-		$intent = $request->send( 'wcpay_create_and_confirm_intent_request', $payment );
-
-		// We update the payment method ID server side when it's necessary to clone payment methods,
-		// for example when saving a payment method to a platform customer account. When this happens
-		// we need to make sure the payment method on the order matches the one on the merchant account
-		// not the one on the platform account. The payment method ID is updated on the order further
-		// down.
-		$payment_method = $intent->get_payment_method_id() ?? $payment->get_payment_method()->get_id();
-
-		// Off-session payments, requiring action, make it impossible to continue.
-		if ( $this->maybe_fail_if_action_is_required( $payment, $intent ) ) {
-			return;
-		}
-
-		$payment->set_var( 'intent', $intent );
+		return $request->send( 'wcpay_create_and_confirm_intent_request', $payment );
 	}
 
 	/**
 	 * Fails if an action is requried, but the customer is not present.
 	 *
-	 * @param Order_Payment             $payment   A payment, being processed.
-	 * @param WC_Payments_API_Intention $intention The intention, returned from the server.
+	 * @param Order_Payment             $payment A payment, being processed.
+	 * @param WC_Payments_API_Intention $intent  The intention, returned from the server.
 	 */
-	protected function maybe_fail_if_action_is_required( Order_Payment $payment, WC_Payments_API_Intention $intent ) {
-		$status = $intent->get_status();
-
-		if ( Payment_Intent_Status::REQUIRES_ACTION !== $status || ! $payment->is( Payment::MERCHANT_INITIATED ) ) {
-			return false;
-		}
-
+	protected function bail_if_action_is_required( Order_Payment $payment, WC_Payments_API_Intention $intent ) {
 		$order          = $payment->get_order();
+		$status         = $intent->get_status();
 		$payment_method = $intent->get_payment_method_id() ?? $payment->get_payment_method()->get_id();
 		$intent_id      = $intent->get_id();
 		$charge         = $intent->get_charge();
@@ -163,8 +184,55 @@ class Standard_Payment_Step extends Abstract_Step {
 		// Mark the payment as failed.
 		$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
 		$payment->complete( [] ); // @todo: Subs don't require a response here.
+	}
 
-		return true;
+	/**
+	 * Redirects to the right screen for the next action. That could be just a redirect,
+	 * or a more complicated hash change, which will trigger a modal on checkout.
+	 *
+	 * @param Order_Payment             $payment A payment, being processed.
+	 * @param WC_Payments_API_Intention $intent  The intention, returned from the server.
+	 */
+	protected function redirect_if_action_is_required( Order_Payment $payment, WC_Payments_API_Intention $intent ) {
+		$next_action = $intent->get_next_action();
+
+		if (
+			isset( $next_action['type'] )
+			&& 'redirect_to_url' === $next_action['type']
+			&& ! empty( $next_action['redirect_to_url']['url'] )
+		) {
+			return $payment->complete(
+				[
+					'result'   => 'success',
+					'redirect' => $next_action['redirect_to_url']['url'],
+				]
+			);
+		}
+
+		// @todo: Utils are static and hard to mock here. Replace with a standard method.
+		$encrypted_secret = WC_Payments_Utils::encrypt_client_secret(
+			$this->account->get_stripe_account_id(),
+			$intent->get_client_secret()
+		);
+
+		$redirect = sprintf(
+			'#wcpay-confirm-%s:%s:%s:%s',
+			'pi', // @todo: Setup intents should have `si` here.
+			$payment->get_order()->get_id(),
+			$encrypted_secret,
+			// Include a new nonce for update_order_status to ensure the update order
+			// status call works when a guest user creates an account during checkout.
+			wp_create_nonce( 'wcpay_update_order_status_nonce' )
+		);
+
+		$response = [
+			'result'         => 'success',
+			'redirect'       => $redirect,
+			// Include the payment method ID so the Blocks integration can save cards.
+			'payment_method' => $payment->get_payment_method()->get_id(),
+		];
+
+		$payment->complete( $response );
 	}
 
 	/**
