@@ -992,7 +992,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->prepare_payment_objects();
 
 		/**
-		 * Preparation part, defining the payment.
+		 * Preparation part, defining the payment. Should be replaced with `load_or_create_order_payment` after initial development.
 		 */
 		$payment = $this->payment_factory->create_order_payment( $order );
 

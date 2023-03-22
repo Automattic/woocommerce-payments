@@ -14,6 +14,7 @@ use WC_Payment_Gateway_WCPay;
 use WC_Payments_API_Client;
 use WC_Payments_API_Intention;
 use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Payment_Information;
 use WCPay\Payment_Process\Order_Payment;
 use WCPay\Payment_Process\Payment;
@@ -74,8 +75,7 @@ class Standard_Payment_Step extends Abstract_Step {
 	}
 
 	/**
-	 * Verifies the amount during the processing step.
-	 * Tries catching the error without reaching the API.
+	 * Creates a new standard payment.
 	 *
 	 * @param Payment $payment The payment, which is being processed.
 	 */
@@ -87,62 +87,54 @@ class Standard_Payment_Step extends Abstract_Step {
 		$order  = $payment->get_order();
 		$amount = $order->get_total();
 
-		// @todo: There are additional API parameters for subscription renewals.
-		// @todo: Maybe the mandate params should not live in the gateway anymore.
-		$additional_api_parameters = $this->gateway->get_mandate_params_for_order( $order );
-
-		// @todo: Maybe this check could be contained within the payment method object?
-		$additional_api_parameters['is_platform_payment_method'] = $this->gateway->is_platform_payment_method( $payment->get_payment_method() instanceof Saved_Payment_Method );
-
-		// This meta is only set by WooPay.
-		// We want to handle the intention creation differently when there are subscriptions.
-		// We're using simple products on WooPay so the current logic for WCPay subscriptions won't work there.
-		if ( '1' === $order->get_meta( '_woopay_has_subscription' ) ) {
-			$additional_api_parameters['woopay_has_subscription'] = 'true';
+		$request = Create_And_Confirm_Intention::create();
+		$request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+		$request->set_currency_code( strtolower( $order->get_currency() ) );
+		$request->set_payment_method( $payment->get_payment_method()->get_id() );
+		$request->set_customer( $payment->get_var( 'customer_id' ) );
+		$request->set_capture_method( $payment->is( Payment::MANUAL_CAPTURE ) );
+		$request->set_metadata( $payment->get_var( 'metadata' ) );
+		$request->set_level3( $this->gateway->get_level3_data_from_order( $order ) );
+		$request->set_off_session( $payment->is( Payment::MERCHANT_INITIATED ) );
+		$request->set_payment_methods( $this->gateway->get_payment_method_ids_enabled_at_checkout( null, true ) );
+		if ( $payment->is( Payment::SAVE_PAYMENT_METHOD_TO_STORE ) ) {
+			$request->setup_future_usage();
 		}
 
-		$payment_information = Payment_Information::from_payment_request( [] );
+		// For customer-initiated payments, get some details from the request.
+		if ( ! $payment->is( Payment::MERCHANT_INITIATED ) ) {
+			$this->add_cvc_confirmation_to_request( $request );
+			$this->add_fingerprint_to_request( $request );
+		}
 
-		// Create intention, try to confirm it & capture the charge (if 3DS is not required).
-		$intent = $this->payments_api_client->create_and_confirm_intention(
-			WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
-			strtolower( $order->get_currency() ),
-			$payment->get_payment_method()->get_id(),
-			$payment->get_var( 'customer_id' ),
-			$payment->is( Payment::MANUAL_CAPTURE ),
-			$payment->is( Payment::SAVE_PAYMENT_METHOD_TO_STORE ),
-			$payment->is( Payment::SAVE_PAYMENT_METHOD_TO_PLATFORM ),
-			$payment->get_var( 'metadata' ),
-			$this->gateway->get_level3_data_from_order( $order ),
-			$payment->is( Payment::MERCHANT_INITIATED ),
-			$additional_api_parameters,
-			$this->gateway->get_payment_method_ids_enabled_at_checkout( null, true ),
-			$payment_information->get_cvc_confirmation(),
-			$payment_information->get_fingerprint()
-		);
+		/**
+		 * Allows the request for creating and confirming intents to be modified.
+		 *
+		 * @param Order_Payment $payment The payment, which is being processed.
+		 */
+		$intent = $request->send( 'wcpay_create_and_confirm_intent_request', $payment );
 
-		$intent_id     = $intent->get_id();
-		$status        = $intent->get_status();
-		$charge        = $intent->get_charge();
-		$charge_id     = $charge ? $charge->get_id() : null;
-		$client_secret = $intent->get_client_secret();
-		$currency      = $intent->get_currency();
-		$next_action   = $intent->get_next_action();
-		$processing    = $intent->get_processing();
 		// We update the payment method ID server side when it's necessary to clone payment methods,
 		// for example when saving a payment method to a platform customer account. When this happens
 		// we need to make sure the payment method on the order matches the one on the merchant account
 		// not the one on the platform account. The payment method ID is updated on the order further
 		// down.
-		$payment_method = $intent->get_payment_method_id() ?? $payment_method;
+		$payment_method = $intent->get_payment_method_id() ?? $payment->get_payment_method()->get_id();
 
 		// Off-session payments, requiring action, make it impossible to continue.
-		if ( $this->maybe_fail_if_action_is_required() ) {
+		if ( $this->maybe_fail_if_action_is_required( $payment, $intent ) ) {
 			return;
 		}
 
+		$payment->set_var( 'intent', $intent );
 	}
 
+	/**
+	 * Fails if an action is requried, but the customer is not present.
+	 *
+	 * @param Order_Payment             $payment   A payment, being processed.
+	 * @param WC_Payments_API_Intention $intention The intention, returned from the server.
+	 */
 	protected function maybe_fail_if_action_is_required( Order_Payment $payment, WC_Payments_API_Intention $intent ) {
 		$status = $intent->get_status();
 
@@ -171,5 +163,43 @@ class Standard_Payment_Step extends Abstract_Step {
 		// Mark the payment as failed.
 		$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
 		$payment->complete( [] ); // @todo: Subs don't require a response here.
+
+		return true;
+	}
+
+	/**
+	 * Adds the CVC confirmation data from the POST request to the server request.
+	 *
+	 * @param Create_And_Confirm_Intention $request The request for creating and confirming an intention.
+	 */
+	protected function add_cvc_confirmation_to_request( Create_And_Confirm_Intention $request ) {
+		$payment_method = $_POST['payment_method'] ?? null; // phpcs:ignore
+		if ( null === $payment_method ) {
+			return;
+		}
+
+		$cvc_request_key = 'wc-' . $payment_method . '-payment-cvc-confirmation';
+		if (
+			! isset( $_POST[ $cvc_request_key ] ) || // phpcs:ignore
+			'new' === $_POST[ $cvc_request_key ] // phpcs:ignore
+		) {
+			return;
+		}
+
+		$request->set_cvc_confirmation( $_POST[ $cvc_request_key ] ); // phpcs:ignore
+	}
+
+	/**
+	 * Adds the fingerprint data from the POST request to the server request.
+	 *
+	 * @param Create_And_Confirm_Intention $request The request for creating and confirming an intention.
+	 */
+	protected function add_fingerprint_to_request( Create_And_Confirm_Intention $request ) {
+		if ( empty( $_POST['wcpay-fingerprint'] ) ) { // phpcs:ignore
+			return;
+		}
+
+		$normalized = wc_clean( $_POST['wcpay-fingerprint'] ); // phpcs:ignore
+		$request->set_fingerprint( is_string( $normalized ) ? $normalized : '' );
 	}
 }

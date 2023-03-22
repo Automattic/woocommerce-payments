@@ -28,6 +28,7 @@ abstract class Abstract_Step {
 	 * Checks if the step is applicable to a specific payment.
 	 *
 	 * @param Payment $payment The payment, which is being processed.
+	 * @return bool
 	 */
 	public function is_applicable( Payment $payment ) {
 		return true;
