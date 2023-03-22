@@ -7,6 +7,7 @@
 
 namespace WCPay\Payment_Process\Step;
 
+use WC_Order;
 use WC_Payment_Token_CC;
 use WC_Payments;
 use WC_Payments_Utils;
@@ -70,28 +71,21 @@ class Complete_Without_Payment_Step extends Abstract_Step {
 			return;
 		}
 
-		$order = $payment->get_order();
-		$order->payment_complete();
-
+		$order          = $payment->get_order();
 		$payment_method = $payment->get_payment_method();
-		if ( $payment->is( Payment::CHANGING_SUBSCRIPTION_PAYMENT_METHOD ) && $payment_method instanceof Saved_Payment_Method ) {
-			$token = $payment_method->get_token();
-			$note  = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the last 4 digit of the credit card */
-					__( 'Payment method is changed to: <strong>Credit card ending in %1$s</strong>.', 'woocommerce-payments' ),
-					[
-						'strong' => '<strong>',
-					]
-				),
-				$token instanceof WC_Payment_Token_CC ? $token->get_last4() : '----'
-			);
-			$order->add_order_note( $note );
 
-			do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $token );
-		}
-
+		$order->payment_complete();
 		$order->set_payment_method_title( __( 'Credit / Debit Card', 'woocommerce-payments' ) );
+
+		if ( $payment_method instanceof Saved_Payment_Method ) {
+			// We need to make sure the saved payment method is saved to the order so we can
+			// charge the payment method for a future payment.
+			$this->gateway->add_token_to_order( $order, $payment_method->get_token() );
+
+			if ( $payment->is( Payment::CHANGING_SUBSCRIPTION_PAYMENT_METHOD ) ) {
+				$this->add_subscription_payment_method_change_note( $order, $payment_method );
+			}
+		}
 
 		$payment->complete(
 			[
@@ -99,5 +93,30 @@ class Complete_Without_Payment_Step extends Abstract_Step {
 				'redirect' => $this->gateway->get_return_url( $order ),
 			]
 		);
+	}
+
+	/**
+	 * Adds a note whenever the payment method for a subscription is changed.
+	 *
+	 * @param WC_Order             $order          The order, where the note should be added.
+	 * @param Saved_Payment_Method $payment_method The new payment method.
+	 */
+	protected function add_subscription_payment_method_change_note( WC_Order $order, Saved_Payment_Method $payment_method ) {
+		$token = $payment_method->get_token();
+		$last4 = $token instanceof WC_Payment_Token_CC ? $token->get_last4() : '----';
+
+		$note = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the last 4 digit of the credit card */
+				__( 'Payment method is changed to: <strong>Credit card ending in %1$s</strong>.', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+				]
+			),
+			$last4
+		);
+		$order->add_order_note( $note );
+
+		do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $token );
 	}
 }

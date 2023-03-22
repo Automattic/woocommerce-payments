@@ -59,6 +59,8 @@ class Store_Metadata_Step extends Abstract_Step {
 	/**
 	 * Stores the data, completing the step.
 	 *
+	 * @todo: Originally, this was not a complete, but a preparation step.
+	 *
 	 * @param Payment $payment The processed payment.
 	 */
 	public function complete( Payment $payment ) {
