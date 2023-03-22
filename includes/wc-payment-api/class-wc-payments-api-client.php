@@ -73,6 +73,7 @@ class WC_Payments_API_Client {
 	const VAT_API                      = 'vat';
 	const LINKS_API                    = 'links';
 	const AUTHORIZATIONS_API           = 'authorizations';
+	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.

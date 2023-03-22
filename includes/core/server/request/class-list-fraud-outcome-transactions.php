@@ -9,6 +9,7 @@ namespace WCPay\Core\Server\Request;
 
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WC_Payments_Utils;
+use WC_Payments_API_Client;
 
 /**
  * Request class for getting intents.
@@ -35,7 +36,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
-		return 'fraud_outcomes/' . $this->status;
+		return WC_Payments_API_Client::FRAUD_OUTCOMES_API . '/' . $this->status;
 	}
 
 	/**
