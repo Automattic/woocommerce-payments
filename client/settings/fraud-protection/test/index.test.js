@@ -11,14 +11,16 @@ import FraudProtection from '..';
 import {
 	useCurrentProtectionLevel,
 	useCurrencies,
+	useAdvancedFraudProtectionSettings,
 	useSettings,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
 jest.mock( 'wcpay/data', () => ( {
+	useAdvancedFraudProtectionSettings: jest.fn(),
+	useCurrentProtectionLevel: jest.fn(),
 	useSettings: jest.fn(),
 	useCurrencies: jest.fn(),
-	useCurrentProtectionLevel: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -38,6 +40,8 @@ describe( 'FraudProtection', () => {
 				},
 			},
 		} );
+
+		useAdvancedFraudProtectionSettings.mockReturnValue( [ [], jest.fn() ] );
 		useSettings.mockReturnValue( { isLoading: false } );
 		useDispatch.mockReturnValue( { updateOptions: jest.fn() } );
 
