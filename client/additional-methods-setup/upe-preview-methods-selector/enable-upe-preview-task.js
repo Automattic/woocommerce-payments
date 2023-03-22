@@ -4,7 +4,7 @@
 import React, { useCallback, useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Button, Card, CardBody, ExternalLink } from '@wordpress/components';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 import { Icon, store, people } from '@wordpress/icons';
 
 /**

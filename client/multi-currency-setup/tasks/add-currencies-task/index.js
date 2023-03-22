@@ -4,7 +4,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { sprintf, __, _n } from '@wordpress/i18n';
 import { Button, Card, CardBody } from '@wordpress/components';
-import interpolateComponents from 'interpolate-components';
+import interpolateComponents from '@automattic/interpolate-components';
 import _ from 'lodash';
 
 /**

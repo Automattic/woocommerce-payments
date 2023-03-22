@@ -2,20 +2,20 @@
  * External dependencies
  */
 import React from 'react';
-import { Button } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
 import { OnboardingContextProvider, useOnboardingContext } from './context';
-import { Stepper, useStepperContext } from 'components/stepper';
+import { Stepper } from 'components/stepper';
 import {
 	ProgressiveOnboardingEligibleFields,
 	ProgressiveOnboardingEligibleResult,
 	OnboardingSteps,
 } from './types';
 import { fromDotNotation } from './utils';
+import { OnboardingForm } from './form';
 import PersonalDetails from './steps/personal-details';
 import BusinessDetails from './steps/business-details';
 import StoreDetails from './steps/store-details';
@@ -26,15 +26,11 @@ interface Props {
 	name: OnboardingSteps;
 }
 const Step: React.FC< Props > = ( { name, children } ) => {
-	const { nextStep } = useStepperContext();
 	return (
 		<>
 			<h1>{ strings.steps[ name ].heading }</h1>
 			<h1>{ strings.steps[ name ].subheading }</h1>
 			{ children }
-			<Button isPrimary onClick={ nextStep }>
-				{ strings.continue }
-			</Button>
 		</>
 	);
 };
@@ -77,13 +73,19 @@ const OnboardingStepper = () => {
 	return (
 		<Stepper onComplete={ handleComplete }>
 			<Step name="personal">
-				<PersonalDetails />
+				<OnboardingForm>
+					<PersonalDetails />
+				</OnboardingForm>
 			</Step>
 			<Step name="business">
-				<BusinessDetails />
+				<OnboardingForm>
+					<BusinessDetails />
+				</OnboardingForm>
 			</Step>
 			<Step name="store">
-				<StoreDetails />
+				<OnboardingForm>
+					<StoreDetails />
+				</OnboardingForm>
 			</Step>
 		</Stepper>
 	);

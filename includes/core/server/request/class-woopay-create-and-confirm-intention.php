@@ -12,8 +12,9 @@ namespace WCPay\Core\Server\Request;
  */
 class WooPay_Create_And_Confirm_Intention extends Create_And_Confirm_Intention {
 	const DEFAULT_PARAMS = [
-		'is_platform_payment_method' => false,
-		'woopay_has_subscription'    => false,
+		'is_platform_payment_method'      => false,
+		'woopay_has_subscription'         => false,
+		'save_payment_method_to_platform' => false,
 	];
 
 	/**
@@ -32,6 +33,15 @@ class WooPay_Create_And_Confirm_Intention extends Create_And_Confirm_Intention {
 	 */
 	public function set_has_woopay_subscription( $has = true ) {
 		$this->set_param( 'woopay_has_subscription', $has );
+	}
+
+	/**
+	 * Save payment method to platform.
+	 *
+	 * @param bool $save save payment method to platform.
+	 */
+	public function set_save_payment_method_to_platform( $save = true ) {
+		$this->set_param( 'save_payment_method_to_platform', $save );
 	}
 
 }
