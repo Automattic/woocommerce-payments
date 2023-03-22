@@ -57,7 +57,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	/**
 	 * Used to prepare request from WP Rest data.
 	 *
-	 * @param WP_REST_Request $request Request object.
+	 * @param \WP_REST_Request $request Request object.
 	 *
 	 * @return static
 	 */
@@ -175,7 +175,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 		};
 
 		// Search by customer name.
-		return preg_match( "/{$term}/i", $outcome['customer_name'] );
+		return (bool) preg_match( "/{$term}/i", $outcome['customer_name'] );
 	}
 
 	/**
