@@ -462,6 +462,7 @@ jQuery( function ( $ ) {
 		const upeElement = upeComponents.upeElement;
 		const elements = upeComponents.elements;
 		const isUPEComplete = upeComponents.isUPEComplete;
+
 		if ( ! upeElement ) {
 			showErrorCheckout(
 				__(
