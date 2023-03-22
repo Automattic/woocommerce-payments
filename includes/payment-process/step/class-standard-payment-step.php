@@ -71,7 +71,11 @@ class Standard_Payment_Step extends Abstract_Step {
 	 * @return bool
 	 */
 	public function is_applicable( Payment $payment ) {
-		return is_a( $payment, Order_Payment::class );
+		if ( ! $payment instanceof Order_Payment ) {
+			return false;
+		}
+
+		return $payment->get_order()->get_total() > 0;
 	}
 
 	/**
